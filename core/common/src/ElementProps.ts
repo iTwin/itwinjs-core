@@ -408,7 +408,10 @@ export interface ElementAspectProps extends EntityProps {
  * @extensions
  */
 export interface ExternalSourceAspectProps extends ElementAspectProps {
-  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
+  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source.
+   * @note Warning: in a future major release the `scope` property will be optional, since the scope is intended to be potentially invalid.
+   *       all references should treat it as potentially undefined, but we cannot change the type yet since that is a breaking change.
+   */
   scope: RelatedElementProps;
   /** The identifier of the object in the source repository. */
   identifier: string;
@@ -421,7 +424,11 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   version?: string;
   /** The optional cryptographic hash (any algorithm) of the source object's content. If defined, it must be guaranteed to change when the source object's content changes. */
   checksum?: string;
-  /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
+  /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process.
+   * @note Warning: if defined, jsonProperties must be a *string*, specifically a valid JSON string.
+   * @note Warning: in a future major release, the type of `jsonProperties` will be changed to object, and itwin.js will automatically stringify it when writing to the iModel.
+   * This will be a breaking change, since application code will have to change from supplying a string to supplying an object.
+  */
   jsonProperties?: any;
   /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;

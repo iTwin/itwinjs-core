@@ -12,7 +12,7 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { ZoneLocation, ZoneProps } from "./Zone";
 
 /** Zone State enum.
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 export enum ZoneState {
   Off,
@@ -24,6 +24,7 @@ export enum ZoneState {
 
 /**
  * A ZoneDef represents each zone within a Frontstage.
+ * @deprecated in 3.6. Use [[StagePanelDef]] or [[WidgetDef]] instead.
  * @public
  */
 export class ZoneDef extends WidgetHost {
@@ -34,13 +35,13 @@ export class ZoneDef extends WidgetHost {
   private _mergeWithZone?: ZoneLocation;
   private _zoneLocation: ZoneLocation = ZoneLocation.TopLeft;
 
-  /** Zone state.  Defaults to ZoneState.Open. @deprecated */
+  /** Zone state.  Defaults to ZoneState.Open. @deprecated in 3.0. */
   public get zoneState(): ZoneState { return this._zoneState; }
-  /** Indicates if other Zones may be merged with this Zone. Defaults to false. @deprecated */
+  /** Indicates if other Zones may be merged with this Zone. Defaults to false. @deprecated in 3.0. */
   public get allowsMerging(): boolean { return this._allowsMerging; }
   /** Any application data to attach to this Zone. */
   public get applicationData(): any | undefined { return this._applicationData; }
-  /** Indicates with which other zone to merge. @deprecated */
+  /** Indicates with which other zone to merge. @deprecated in 3.0. */
   public get mergeWithZone(): ZoneLocation | undefined { return this._mergeWithZone; }
 
   /** The Zone's location.
@@ -92,8 +93,7 @@ export class ZoneDef extends WidgetHost {
       this._zoneState = props.defaultState;
     if (props.allowsMerging !== undefined)
       this._allowsMerging = props.allowsMerging;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
     if (props.mergeWithZone !== undefined)
       this._mergeWithZone = props.mergeWithZone;
     this.setInitialWidth(props.initialWidth);

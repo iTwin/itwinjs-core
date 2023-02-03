@@ -124,7 +124,7 @@ class VerticalPropertyGridWidget extends React.Component {
 
   public override render() {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={true}
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={true} // eslint-disable-line deprecation/deprecation
         isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
     );
   }
@@ -194,7 +194,7 @@ class HorizontalPropertyGridWidget extends React.Component<{ style?: React.CSSPr
 
   public override render() {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal}
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} // eslint-disable-line deprecation/deprecation
         isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} style={this.props.style} />
     );
   }
@@ -239,7 +239,7 @@ class HorizontalPropertyGridContent extends React.Component {
 
   public override render(): React.ReactNode {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} isPropertySelectionEnabled={true}
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} isPropertySelectionEnabled={true} // eslint-disable-line deprecation/deprecation
         isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
     );
   }

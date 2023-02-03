@@ -10,17 +10,17 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Key,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
-  RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
+  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions,
+  HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
+  PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT } from "./Constants";
 import { buildElementsProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
+import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
@@ -39,16 +39,15 @@ export class PresentationManagerDetail implements IDisposable {
   constructor(params: PresentationManagerProps) {
     this._disposed = false;
 
-    const presentationAssetsRoot = params.presentationAssetsRoot ?? {
-      common: PRESENTATION_COMMON_ASSETS_ROOT,
-      backend: PRESENTATION_BACKEND_ASSETS_ROOT,
-    };
-    const mode = params.mode ?? PresentationManagerMode.ReadWrite;
-    const changeTrackingEnabled = mode === PresentationManagerMode.ReadWrite && !!params.updatesPollInterval;
+    const backendAssetsRoot = ((typeof params.presentationAssetsRoot === "string")
+      ? params.presentationAssetsRoot
+      : params.presentationAssetsRoot?.backend
+    ) ?? PRESENTATION_BACKEND_ASSETS_ROOT;
+
+    const changeTrackingEnabled = !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
       params.workerThreadsCount ?? 2,
-      mode,
       changeTrackingEnabled,
       params.caching,
       params.defaultFormats,
@@ -67,7 +66,7 @@ export class PresentationManagerDetail implements IDisposable {
 
     setupRulesetDirectories(
       this._nativePlatform,
-      typeof presentationAssetsRoot === "string" ? presentationAssetsRoot : presentationAssetsRoot.backend,
+      backendAssetsRoot,
       params.supplementalRulesetDirectories ?? [],
       params.rulesetDirectories ?? [],
     );
@@ -107,7 +106,7 @@ export class PresentationManagerDetail implements IDisposable {
     this._onManagerUsed = handler;
   }
 
-  public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
+  public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<string> {
     const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
@@ -115,7 +114,7 @@ export class PresentationManagerDetail implements IDisposable {
       ...strippedOptions,
       nodeKey: parentKey,
     };
-    return JSON.parse(await this.request(params), Node.listReviver);
+    return this.request(params);
   }
 
   public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
@@ -129,13 +128,24 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params));
   }
 
+  public async getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<string> {
+    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetNodesDescriptor,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      nodeKey: parentKey,
+    };
+    return this.request(params);
+  }
+
   public async getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
     const { rulesetOrId, instancePaths, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetNodePaths,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      paths: instancePaths.map((p) => p.map((s) => InstanceKey.toJSON(s))),
+      paths: instancePaths,
     };
     return JSON.parse(await this.request(params), NodePathElement.listReviver);
   }
@@ -211,6 +221,7 @@ export class PresentationManagerDetail implements IDisposable {
     const reviver = (key: string, value: any) => {
       return key === "" ? {
         total: value.total,
+        // eslint-disable-next-line deprecation/deprecation
         items: value.items.map(DisplayValueGroup.fromJSON),
       } : value;
     };
@@ -221,9 +232,8 @@ export class PresentationManagerDetail implements IDisposable {
     const params = {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
-      key: InstanceKey.toJSON(requestOptions.key),
     };
-    return JSON.parse(await this.request(params), LabelDefinition.reviver);
+    return JSON.parse(await this.request(params));
   }
 
   public async getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
@@ -447,7 +457,6 @@ interface UnitFormatMap {
 function createNativePlatform(
   id: string,
   workerThreadsCount: number,
-  mode: PresentationManagerMode,
   changeTrackingEnabled: boolean,
   caching: PresentationManagerProps["caching"],
   defaultFormats: UnitFormatMap | undefined,
@@ -456,10 +465,10 @@ function createNativePlatform(
   return new (createDefaultNativePlatform({
     id,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
-    mode,
     isChangeTrackingEnabled: changeTrackingEnabled,
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,
+    workerConnectionCacheSize: caching?.workerConnectionCacheSize,
     defaultFormats: toNativeUnitFormatsMap(defaultFormats),
     useMmap,
   }))();

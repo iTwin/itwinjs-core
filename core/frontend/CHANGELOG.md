@@ -1,6 +1,134 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+### Updates
+
+- Fix map-layers WMS request failure on some servers requiring 'Transparent' parameter value to bo upper-case (as specified in the WMS specification)
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+### Updates
+
+- Remove dependency on xml-js library in core-frontend.
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+### Updates
+
+- Add support for pickable view overlay decorations.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+### Updates
+
+- realityModelRange
+- Support reality meshes with 8- or 32-bit indices.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- Added a tolerance parameter to ArcgisUtilities.getZoomLevelsScales
+- Added support for ImageryTileTree with an incomplete tile tree definition (minLOD)
+- Support for reporting progress and cancelling 'BriefcaseConnection.pullChanges'.
+- Added ability to display normal maps
+- Fix for tools that supply hints to override the default AccuDraw origin.
+- Add preliminary alpha support for custom reality data providers.
+- Add IModelConnection.generateElementMeshes.
+- Fix an exception when adding an invalid map layer to a viewport.
+- Fix emphasis and hilite effects applied to point clouds.
+- Add support for customized reality model display.
+- Promote ViewPose-related APIs to public.
+- requestElementGraphics uses relative positions by default to address precision issues with coordinates far from the origin.
+- Add MarginOptions.paddingPercent for a more straightforward way to pad out a viewed volume.
+- Replace inline type definitions in CreateRenderMaterialArgs with named and documented interfaces.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+### Updates
+
+- ArcGIS tilemap requests were missing oauth2 token if available.
+- Reproject reality tiles to the surface of the Earth.
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+### Updates
+
+- Add functions to obtain the extents of geometric models asynchronously on the backend.
+- Fall back to requesting a tile from the backend when a request to cloud storage throws a 404 error.
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+_Version update only_
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Improve ambient occlusion effect by decreasing the size of shadows for more distant geometry, increasing the default maximum distance of the effect to 10,000 meters, and fading the effect as it approaches maximum distance.
+- Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage
+- Fix display issue with ArcGIS server of 'Geologic Map of North America'
+- Use createImageBitmap when creating textures for reality models (currently enabled for Chromium only)
+- Add waitForSceneCompletion API to Viewport.
+- lock down @types/semver to 7.3.10
+- add querySubCategories to imodelconnection
+- Updated Node types declaration to support latest v16
+- Improve support for display transforms in AccuSnap and ViewClipByElementTool.
+- Fix pan tool failing to work when zoomed out with planar globe mode.
+- Limit the shadow-casting range for tile trees that span the entire globe, like the OpenStreetMap buildings.
+- Add support for custom terrain providers.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+_Version update only_
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT

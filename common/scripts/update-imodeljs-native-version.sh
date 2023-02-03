@@ -45,7 +45,6 @@ echo "Updating @bentley/imodeljs-native to $AddonVersion..."
 
 # Update package.json files
 updatePackageJson "core/backend"
-updatePackageJson "full-stack-tests/backend"
 
 # Update XCode projects. This relies on the "version = " string occurring exactly once, specifying the imodeljs-native version.
 PbxProj1="$RepoRoot/tools/internal/ios/core-test-runner/core-test-runner.xcodeproj/project.pbxproj"
@@ -53,7 +52,16 @@ PbxProj2="$RepoRoot/test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-te
 
 for PbxProj in $PbxProj1 $PbxProj2
 do
-  sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+  # Note: on macOS, -i requires ''. linux will only accept that if you omit the space: -i''.
+  sed -i'' "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+done
+
+# Update Android projects.
+BuildGradle1="$RepoRoot/test-apps/display-test-app/android/imodeljs-test-app/app/build.gradle"
+for BuildGradle in $BuildGradle1
+do
+  # Note: on macOS, -i requires ''. linux will only accept that if you omit the space: -i''.
+  sed -i'' "s/com.github.itwin:mobile-native-android:.*'/com.github.itwin:mobile-native-android:$AddonVersion'/" "$BuildGradle"
 done
 
 # Purge node_modules

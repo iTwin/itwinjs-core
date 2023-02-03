@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import { ColorIndex, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
+import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexIndices } from "../../../render/primitives/VertexTable";
@@ -43,7 +43,7 @@ function expectIndices(indices: VertexIndices, expected: number[]): void {
   expect(indices.data.length).to.equal(expected.length * 3);
   const stream = ByteStream.fromUint8Array(indices.data);
   for (const expectedIndex of expected)
-    expect(stream.nextUint24).to.equal(expectedIndex);
+    expect(stream.readUint24()).to.equal(expectedIndex);
 }
 
 // expectedSegments = 2 indices per segment edge.
@@ -56,21 +56,21 @@ function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedS
   const stream = ByteStream.fromUint8Array(edges.data);
   const actualSegments: number[] = [];
   for (let i = 0; i < expectedSegments.length; i += 2) {
-    actualSegments.push(stream.nextUint24);
-    actualSegments.push(stream.nextUint24);
+    actualSegments.push(stream.readUint24());
+    actualSegments.push(stream.readUint24());
   }
 
   expect(expectedSilhouettes.length % 4).to.equal(0);
   const actualSilhouettes: number[] = [];
 
   for (let i = 0; i < expectedPaddingBytes; i++)
-    expect(stream.nextUint8).to.equal(0);
+    expect(stream.readUint8()).to.equal(0);
 
   for (let i = 0; i < expectedSilhouettes.length; i += 4) {
-    actualSilhouettes.push(stream.nextUint24);
-    actualSilhouettes.push(stream.nextUint24);
-    actualSilhouettes.push(stream.nextUint16);
-    actualSilhouettes.push(stream.nextUint16);
+    actualSilhouettes.push(stream.readUint24());
+    actualSilhouettes.push(stream.readUint24());
+    actualSilhouettes.push(stream.readUint16());
+    actualSilhouettes.push(stream.readUint16());
   }
 
   expect(actualSegments).to.deep.equal(expectedSegments);
@@ -83,23 +83,11 @@ describe("IndexedEdgeParams", () => {
       await IModelApp.shutdown();
     });
 
-    it("are not produced if unsupported by client device", async () => {
-      await IModelApp.startup({ renderSys: { useWebGL2: false } });
-      expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.false;
-      expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
-
-      const args = createMeshArgs();
-      const edges = EdgeParams.fromMeshArgs(args)!;
-      expect(edges).not.to.be.undefined;
-      expect(edges.segments).not.to.be.undefined;
-      expect(edges.silhouettes).not.to.be.undefined;
-      expect(edges.polylines).to.be.undefined; // converted to segments
-      expect(edges.indexed).to.be.undefined;
-    });
-
     it("are not produced if explicitly disabled by TileAdmin", async () => {
-      await IModelApp.startup({ tileAdmin: { enableIndexedEdges: false } });
-      expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.true;
+      await IModelApp.startup({
+        tileAdmin: { enableIndexedEdges: false },
+        localization: new EmptyLocalization(),
+      });
       expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
 
       const args = createMeshArgs();
@@ -114,7 +102,7 @@ describe("IndexedEdgeParams", () => {
 
   describe("when enabled", () => {
     before(async () => {
-      await IModelApp.startup();
+      await IModelApp.startup({ localization: new EmptyLocalization() });
     });
 
     after(async () => {

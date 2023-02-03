@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./Content";
 export * from "./EC";
+export * from "./Hierarchy";
 export * from "./Mocks";
 export * from "./PendingAsyncsHelper";
 export * from "./Promises";
 export * from "./random";
 export * from "./RpcHelper";
 export * from "./TestRpcManager";
-

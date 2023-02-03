@@ -2,21 +2,38 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { ComboBox, SelectOption } from "@itwin/itwinui-react";
+import { ComboBox, MenuItem, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilderRuleProperty]] component.
+ * @internal
+ */
 export interface PropertyFilterBuilderRulePropertyProps {
+  /** List of available properties. */
   properties: PropertyDescription[];
+  /** Currently selected property. */
   selectedProperty?: PropertyDescription;
+  /** Callback that is invoked when selected property changes. */
   onSelectedPropertyChanged: (property?: PropertyDescription) => void;
+  /** Custom renderer for property item inside selector. */
+  propertyRenderer?: (name: string) => React.ReactNode;
+  /** Specifies whether selector should be disabled or not. */
+  isDisabled?: boolean;
 }
 
-/** @alpha */
+/**
+ * Component that renders [[PropertyFilterBuilderRuleRenderer]] property selector.
+ * @internal
+ */
 export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
-  const { selectedProperty, properties, onSelectedPropertyChanged } = props;
+  const { selectedProperty, properties, onSelectedPropertyChanged, propertyRenderer, isDisabled } = props;
 
   const selectOptions = React.useMemo<SelectOption<string>[]>(() => properties.map((property) => ({
     id: property.name,
@@ -34,6 +51,12 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       onSelectedPropertyChanged(currentSelectedProperty);
   }, [properties, selectedProperty, onSelectedPropertyChanged]);
 
+  const itemRenderer = React.useCallback((selectOption: SelectOption<string>, { isSelected, id }) => {
+    return <MenuItem key={id} id={id} isSelected={isSelected}>
+      {propertyRenderer ? propertyRenderer(selectOption.value) : selectOption.label}
+    </MenuItem>;
+  }, [propertyRenderer]);
+
   return <div className="rule-property">
     <ComboBox
       options={selectOptions}
@@ -41,7 +64,10 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       value={selectedProperty?.name}
       inputProps={{
         placeholder: UiComponents.translate("filterBuilder.chooseProperty"),
+        disabled: isDisabled,
       }}
+      itemRenderer={itemRenderer}
+      enableVirtualization={true}
     />
   </div>;
 }

@@ -22,11 +22,11 @@ import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
 import { SceneContext } from "../../ViewContext";
-import { ScreenViewport } from "../../Viewport";
+import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo,
-  MapLayerTileTreeReference, MapTile, MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerTileTreeReference, MapTile,
+  MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
@@ -35,6 +35,30 @@ const scratchPoint = Point3d.create();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const scratchCorner = Point3d.createZero();
 const scratchZNormal = Vector3d.create(0, 0, 1);
+
+/** Utility interface that ties an imagery tile tree to its corresponding map-layer settings object.
+ * @internal
+ */
+interface MapLayerTreeSetting {
+  tree: ImageryMapTileTree;
+  settings: MapLayerSettings;
+}
+
+/** Map tile tree scale range visibility values.
+ * @beta */
+export enum MapTileTreeScaleRangeVisibility {
+  /** state is currently unknown (i.e. never been displayed)  */
+  Unknown = 0,
+
+  /** all currently selected tree tiles are visible (i.e within the scale range)  */
+  Visible,
+
+  /** all currently selected tree tiles are hidden (i.e outside the scale range)  */
+  Hidden,
+
+  /** currently selected tree tiles are partially visible (i.e some tiles are within the scale range, and some are outside.) */
+  Partial
+}
 
 /** A [quad tree](https://en.wikipedia.org/wiki/Quadtree) consisting of [[MapTile]]s representing the map imagery draped onto the surface of the Earth.
  * A `MapTileTree` enables display of a globe or planar map with [map imagery](https://en.wikipedia.org/wiki/Tiled_web_map) obtained from any number of sources, such as
@@ -45,6 +69,7 @@ const scratchZNormal = Vector3d.create(0, 0, 1);
  * The terrain displayed in a [[Viewport]] is determined by its [TerrainSettings]($common).
  * @beta
  */
+
 export class MapTileTree extends RealityTileTree {
   /** @internal */
   public ecefToDb: Transform;
@@ -83,8 +108,9 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public produceGeometry?: boolean;
   /** @internal */
-  public imageryTrees: ImageryMapTileTree[] = [];
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
+  private _imageryTreeState = new Map<Id64String, ImageryTileTreeState>();
   private _modelIdToIndex = new Map<Id64String, number>();
   /** @internal */
   public layerClassifiers = new Map<number, RenderPlanarClassifier>();
@@ -145,15 +171,37 @@ export class MapTileTree extends RealityTileTree {
     return this.useDepthBuffer ? this.loader.parentsAndChildrenExclusive : false;
   }
 
+  /** Return the imagery tile tree state of matching the provided imagery tree id.
+   * @internal
+   */
+  public getImageryTreeState(imageryTreeId: string) {
+    return this._imageryTreeState.get(imageryTreeId);
+  }
+
+  /** Return a cloned dictionary of the imagery tile tree states
+   * @internal
+   */
+  public cloneImageryTreeState() {
+    const clone = new Map<Id64String, ImageryTileTreeState>();
+    for (const [treeId, state] of this._imageryTreeState) {
+      clone.set(treeId, state.clone());
+    }
+    return clone;
+  }
+
   /** @internal */
   public tileFromQuadId(quadId: QuadId): MapTile | undefined {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
   }
 
-  /** @internal */
+  /** Add a new imagery tile tree / map-layer settings pair and initialize the imagery tile tree state.
+   * @internal
+   */
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
-    this.imageryTrees.push(tree);
+    this.layerImageryTrees.push({tree, settings});
     this._layerSettings.set(tree.modelId, settings);
+    if (!this._imageryTreeState.has(tree.modelId))
+      this._imageryTreeState.set(tree.modelId, new ImageryTileTreeState());
     this._modelIdToIndex.set(tree.modelId, index);
   }
 
@@ -177,7 +225,7 @@ export class MapTileTree extends RealityTileTree {
 
   /** @internal */
   public clearImageryTreesAndClassifiers() {
-    this.imageryTrees.length = 0;
+    this.layerImageryTrees.length = 0;
     this._layerSettings.clear();
     this._modelIdToIndex.clear();
     this.layerClassifiers.clear();
@@ -191,7 +239,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public override get maxDepth() {
     let maxDepth = this.loader.maxDepth;
-    this.imageryTrees?.forEach((imageryTree) => maxDepth = Math.max(maxDepth, imageryTree.maxDepth));
+    this.layerImageryTrees?.forEach((layerImageryTree) => maxDepth = Math.max(maxDepth, layerImageryTree.tree.maxDepth));
 
     return maxDepth;
   }
@@ -414,6 +462,84 @@ export class MapTileTree extends RealityTileTree {
     }
   }
 
+  /** Scan the list of currently selected reality tiles, and fire the viewport's 'onMapLayerScaleRangeVisibilityChanged ' event
+   * if any scale range visibility change is detected for one more map-layer definition.
+   * @internal
+   */
+  public override reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]) {
+
+    const debugControl = args.context.target.debugControl;
+
+    const layersVisibilityBefore =  this.cloneImageryTreeState();
+
+    const changes =  new Array<MapLayerScaleRangeVisibility> ();
+
+    if (!layersVisibilityBefore)
+      return;
+
+    for (const [treeId] of layersVisibilityBefore) {
+      const treeVisibility = this.getImageryTreeState(treeId);
+      if (treeVisibility) {
+        treeVisibility.reset();
+      }
+    }
+
+    let allTilesRead = true;
+    for (const selectedTile of selected) {
+      if (selectedTile instanceof MapTile) {
+        if (!selectedTile.isReady)
+          allTilesRead = false;
+        let selectedImageryTiles = selectedTile.imageryTiles;
+        if (selectedTile.hiddenImageryTiles) {
+          selectedImageryTiles = selectedImageryTiles ? [...selectedImageryTiles, ...selectedTile.hiddenImageryTiles] : selectedTile.hiddenImageryTiles;
+        }
+        if (selectedImageryTiles) {
+          for (const selectedImageryTile of selectedImageryTiles) {
+            const treeState = this.getImageryTreeState(selectedImageryTile.tree.id);
+            if (treeState) {
+              if (selectedImageryTile.isOutOfLodRange) {
+                treeState.setScaleRangeVisibility(false);
+              } else {
+                treeState.setScaleRangeVisibility(true);
+              }
+            }
+
+          }
+        }
+      }
+    }
+
+    if (!allTilesRead)
+      changes;
+
+    for (const [treeId, prevState] of layersVisibilityBefore) {
+      const newState = this.getImageryTreeState(treeId);
+      if (newState) {
+
+        const prevVisibility = prevState.getScaleRangeVisibility();
+        const visibility = newState.getScaleRangeVisibility();
+        if ( prevVisibility !== visibility) {
+
+          if (debugControl && debugControl.logRealityTiles) {
+            // eslint-disable-next-line no-console
+            console.log(`ImageryTileTree '${treeId}' changed prev state: '${MapTileTreeScaleRangeVisibility[prevVisibility]}' new state: '${MapTileTreeScaleRangeVisibility[visibility]}'`);
+          }
+
+          const mapLayersIndexes = args.context.viewport.getMapLayerIndexesFromIds(this.id, treeId);
+          for (const index of mapLayersIndexes ) {
+            changes.push({index:index.index, isOverlay: index.isOverlay, visibility});
+          }
+
+        }
+      }
+    }
+
+    if (changes.length !== 0) {
+      args.context.viewport.onMapLayerScaleRangeVisibilityChanged.raiseEvent(changes);
+    }
+
+  }
+
   /** @internal */
   public getFractionalTileCorners(quadId: QuadId): Point3d[] {
     const corners: Point3d[] = [];
@@ -561,7 +687,7 @@ class MapTreeSupplier implements TileTreeSupplier {
   public async createTileTree(id: MapTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     let bimElevationBias = 0, terrainProvider, geodeticOffset = 0;
     let applyTerrain = id.applyTerrain;
-    const modelId = iModel.transientIds.next;
+    const modelId = iModel.transientIds.getNext();
     const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
 
     const terrainOpts: TerrainMeshProviderOptions = {
@@ -616,7 +742,7 @@ export class MapTileTreeReference extends TileTreeReference {
   private readonly _iModel: IModelConnection;
   private _baseImageryLayerIncluded = false;
   private _baseColor?: ColorDef;
-  private readonly _layerTrees = new Array<MapLayerTileTreeReference>();
+  private readonly _layerTrees = new Array<MapLayerTileTreeReference | undefined>();
   private _baseTransparent = false;
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
@@ -719,7 +845,7 @@ export class MapTileTreeReference extends TileTreeReference {
     this._layerTrees.length = Math.min(layerSettings.length + baseLayerIndex, this._layerTrees.length);    // Truncate if number of layers reduced.
     for (let i = 0; i < layerSettings.length; i++) {
       const treeIndex = i + baseLayerIndex;
-      if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex].layerSettings.displayMatches(layerSettings[i]))
+      if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex]?.layerSettings.displayMatches(layerSettings[i]))
         this._layerTrees[treeIndex] = createMapLayerTreeReference(layerSettings[i], treeIndex, this._iModel)!;
     }
     this.clearLayers();
@@ -738,7 +864,7 @@ export class MapTileTreeReference extends TileTreeReference {
   protected override get _isLoadingComplete(): boolean {
     // Wait until drape tree is fully loaded too.
     for (const drapeTree of this._layerTrees)
-      if (!drapeTree.isLoadingComplete)
+      if (drapeTree && !drapeTree.isLoadingComplete)
         return false;
 
     return super._isLoadingComplete;
@@ -786,10 +912,27 @@ export class MapTileTreeReference extends TileTreeReference {
 
     return this._iModel.tiles.getTileTreeOwner(id, mapTreeSupplier);
   }
-  public getLayerImageryTreeRef(index: number) {
+  public getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined {
     const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
     const treeIndex = index + baseLayerIndex;
     return index < 0 || treeIndex >= this._layerTrees.length ? undefined : this._layerTrees[treeIndex];
+  }
+
+  /** Return the map-layer scale range visibility for the provided map-layer index.
+ * @internal
+ */
+  public getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+    if (undefined !== tree) {
+      const tileTreeRef = this.getLayerImageryTreeRef(index);
+      const treeId = tileTreeRef?.treeOwner.tileTree?.id;
+      if (treeId !== undefined) {
+        const treeState = tree.getImageryTreeState(treeId);
+        if (treeState !== undefined)
+          return treeState.getScaleRangeVisibility();
+      }
+    }
+    return MapTileTreeScaleRangeVisibility.Unknown;
   }
 
   public initializeLayers(context: SceneContext): boolean {
@@ -797,7 +940,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree)
       return false;     // Not loaded yet.
 
-    tree.imageryTrees.length = 0;
+    tree.layerImageryTrees.length = 0;
     if (0 === this._layerTrees.length)
       return !this.isOverlay;
 
@@ -805,21 +948,27 @@ export class MapTileTreeReference extends TileTreeReference {
     // Start displaying at the highest completely opaque layer...
     for (; treeIndex >= 1; treeIndex--) {
       const layerTreeRef = this._layerTrees[treeIndex];
-      if (layerTreeRef.isOpaque)
+      if (layerTreeRef?.isOpaque)
         break;    // This layer is completely opaque and will obscure all others so ignore lower ones.
     }
+
     for (; treeIndex < this._layerTrees.length; treeIndex++) {
       const layerTreeRef = this._layerTrees[treeIndex];
-      if (TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus && layerTreeRef.layerSettings.visible && !layerTreeRef.layerSettings.allSubLayersInvisible) {
+      // Load tile tree for each configured layer.
+      // Note: Non-visible layer are also added to allow proper tile tree scale range visibility reporting.
+      if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
+        && !layerTreeRef.layerSettings.allSubLayersInvisible) {
         const layerTree = layerTreeRef.treeOwner.load();
         if (undefined === layerTree)
           return false; // Not loaded yet.
+
         if (layerTree instanceof ImageryMapTileTree) {
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex);
         } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
           tree.addModelLayer(layerTreeRef, context);
       }
     }
+
     return true;
   }
 
@@ -871,21 +1020,26 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
-    this._layerTrees.forEach((imageryTree) => trees.disclose(imageryTree));
+    for (const imageryTree of this._layerTrees)
+      if (imageryTree)
+        trees.disclose(imageryTree);
+
     if (this._planarClipMask)
       this._planarClipMask.discloseTileTrees(trees);
   }
+
   public imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined === tree || tree.modelId !== mapTreeModelId)
       return undefined;
 
     for (const imageryTree of this._layerTrees)
-      if (imageryTree.treeOwner.tileTree && imageryTree.treeOwner.tileTree.modelId === layerTreeModelId)
+      if (imageryTree && imageryTree.treeOwner.tileTree && imageryTree.treeOwner.tileTree.modelId === layerTreeModelId)
         return imageryTree;
 
     return undefined;
   }
+
   public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined {
     const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
     return imageryTree === undefined ? imageryTree : imageryTree.layerSettings;
@@ -1004,7 +1158,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (tree) {
       tree.mapLoader.terrainProvider.addLogoCards(cards, vp);
       for (const imageryTreeRef of this._layerTrees) {
-        if (imageryTreeRef.layerSettings.visible) {
+        if (imageryTreeRef?.layerSettings.visible) {
           const imageryTree = imageryTreeRef.treeOwner.tileTree;
           if (imageryTree instanceof ImageryMapTileTree)
             imageryTree.addLogoCards(cards, vp);

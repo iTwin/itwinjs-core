@@ -188,17 +188,15 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** @internal */
-  public initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation): void {
-    if (panelLocation !== undefined)
-      this._location = panelLocation;
+  public initializeFromProps(props?: StagePanelProps, location?: StagePanelLocation): void {
+    if (location !== undefined)
+      this._location = location;
     if (!props)
       return;
     this._size = props.size;
     this._defaultSize = props.size;
     this._maxSizeSpec = props.maxSize;
     this._minSize = props.minSize;
-    if (panelLocation !== undefined)
-      this._location = panelLocation;
     if (props.defaultState !== undefined) {
       this._panelState = props.defaultState;
       this._defaultState = props.defaultState;
@@ -206,8 +204,7 @@ export class StagePanelDef extends WidgetHost {
     this._resizable = props.resizable;
     if (props.pinned !== undefined)
       this._pinned = props.pinned;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
     if (props.panelZones) {
       this._panelZones.initializeFromProps(props.panelZones, this._location);
     }

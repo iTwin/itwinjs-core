@@ -248,12 +248,12 @@ describe("test resuming transformations", () => {
     iTwinId = HubMock.iTwinId;
     accessToken = await HubWrappers.getAccessToken(BackendTestUtils.TestUserType.Regular);
     const seedPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");
-    SnapshotDb.createEmpty(seedPath, { rootSubject: { name: "resumption-tests-seed" } });
+    SnapshotDb.createEmpty(seedPath, { rootSubject: { name: "resumption-tests-seed" } }).close();
     seedDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "ResumeTestsSeed", description: "seed for resumption tests", version0: seedPath, noLocks: true });
     seedDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: seedDbId });
     await BackendTestUtils.ExtensiveTestScenario.prepareDb(seedDb);
     BackendTestUtils.ExtensiveTestScenario.populateDb(seedDb);
-    seedDb.saveChanges();
+    seedDb.performCheckpoint();
     await seedDb.pushChanges({ accessToken, description: "populated seed db" });
   });
 
@@ -319,16 +319,24 @@ describe("test resuming transformations", () => {
       throw Error("unreachable");
     })();
 
-    const regularToResumedIdMap = new Map<Id64String, Id64String>();
-    for (const [className, findMethod] of [["bis.Element", "findTargetElementId"], ["bis.CodeSpec", "findTargetCodeSpecId"]] as const) {
+    const [elemMap, codeSpecMap, aspectMap] = new Array(3).fill(undefined).map(() => new Map<Id64String, Id64String>());
+    for (const [className, findMethod, map] of [
+      ["bis.Element", "findTargetElementId", elemMap],
+      ["bis.CodeSpec", "findTargetCodeSpecId", codeSpecMap],
+      ["bis.ElementAspect", "findTargetAspectId", aspectMap],
+    ] as const) {
       for await (const [sourceElemId] of sourceDb.query(`SELECT ECInstanceId from ${className}`)) {
         const idInRegular = regularTransformer.context[findMethod](sourceElemId);
         const idInResumed = resumedTransformer.context[findMethod](sourceElemId);
-        regularToResumedIdMap.set(idInRegular, idInResumed);
+        map.set(idInRegular, idInResumed);
       }
     }
 
-    await assertIdentityTransformation(regularTarget, resumedTarget, (id) => regularToResumedIdMap.get(id) ?? Id64.invalid);
+    await assertIdentityTransformation(regularTarget, resumedTarget, {
+      findTargetElementId: (id) => elemMap.get(id) ?? Id64.invalid,
+      findTargetCodeSpecId: (id) => codeSpecMap.get(id) ?? Id64.invalid,
+      findTargetAspectId: (id) => aspectMap.get(id) ?? Id64.invalid,
+    });
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, resumedTarget);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
@@ -648,7 +656,7 @@ describe("test resuming transformations", () => {
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
     await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
     BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
+    sourceDb.performCheckpoint();
     await sourceDb.pushChanges({ accessToken, description: "populated source db" });
 
     const targetDbRev0Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "processChanges-targetDbRev0.bim");
@@ -656,7 +664,7 @@ describe("test resuming transformations", () => {
     const provenanceTransformer = new IModelTransformer(sourceDb, targetDbRev0, { wasSourceIModelCopiedToTarget: true });
     await provenanceTransformer.processAll();
     provenanceTransformer.dispose();
-    targetDbRev0.saveChanges();
+    targetDbRev0.performCheckpoint();
 
     BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
     sourceDb.saveChanges();
@@ -757,9 +765,11 @@ describe("test resuming transformations", () => {
   // TRANSFORMER_RESUMPTION_TEST_MAX_CRASHING_TRANSFORMATIONS (defaults to 200)
   it.skip("crashing transforms stats gauntlet", async () => {
     let crashableCallsMade = 0;
-    const { enableCrashes } = setupCrashingNativeAndTransformer({ onCrashableCallMade() {
-      ++crashableCallsMade;
-    } });
+    const { enableCrashes } = setupCrashingNativeAndTransformer({
+      onCrashableCallMade() {
+        ++crashableCallsMade;
+      },
+    });
 
     // TODO: don't run a new control test to compare with every crash test,
     // right now trying to run assertIdentityTransform against the control transform target dbs in the control loop yields

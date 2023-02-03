@@ -18,6 +18,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface ActionItemButtonProps extends CommonProps {
@@ -30,7 +31,7 @@ export interface ActionItemButtonProps extends CommonProps {
 }
 
 /** Helper method to set state from props */
-const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
+const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => { // eslint-disable-line deprecation/deprecation
 
   // Parent Component can only modify the isEnable state if the actionItem.isEnabled value is set to true.
   return {
@@ -41,15 +42,16 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 };
 
 /** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
+ * @deprecated in 3.5. Use [ActionButton]($appui-abstract) instead.
  * @public
  */
-export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
+export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> { // eslint-disable-line deprecation/deprecation
   private _componentUnmounting = false;
 
   /** @internal */
   public override readonly state: Readonly<BaseItemState>;
 
-  constructor(props: ActionItemButtonProps) {
+  constructor(props: ActionItemButtonProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     this.state = getItemStateFromProps(props);
@@ -96,7 +98,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   };
 
   /** @internal */
-  public static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState) {
+  public static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState) { // eslint-disable-line deprecation/deprecation
     const updatedState = getItemStateFromProps(props);
     // istanbul ignore else
     if (!PropsHelper.isShallowEqual(updatedState, state))

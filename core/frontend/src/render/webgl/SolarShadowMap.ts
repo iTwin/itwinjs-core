@@ -119,20 +119,12 @@ class Bundle implements WebGLDisposable {
       return undefined;
 
     let pixelDataType = GL.Texture.DataType.Float;
-    switch (System.instance.capabilities.maxRenderType) {
+    switch (System.instance.maxRenderType) {
       case RenderType.TextureFloat:
         break;
       case RenderType.TextureHalfFloat:
-        if (System.instance.capabilities.isWebGL2) {
-          pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
-          break;
-        } else {
-          const exthf = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
-          if (undefined !== exthf) {
-            pixelDataType = exthf.HALF_FLOAT_OES;
-            break;
-          }
-        }
+        pixelDataType = System.instance.context.HALF_FLOAT;
+        break;
       /* falls through */
       default:
         return undefined;
@@ -143,7 +135,7 @@ class Bundle implements WebGLDisposable {
     // Check if the system can render to a depth texture without a renderable color texture bound as well.
     // If it cannot, add a renderable color texture to the framebuffer.
     // MacOS Safari exhibited this behavior, which necessitated this code path.
-    if (!System.instance.capabilities.canRenderDepthWithoutColor) {
+    if (!System.instance.canRenderDepthWithoutColor) {
       const colTex = TextureHandle.createForAttachment(shadowMapWidth, shadowMapHeight, GL.Texture.Format.Rgba, pixelDataType);
       if (undefined === colTex)
         return undefined;
@@ -211,7 +203,7 @@ class ShadowMapParams {
 
 const defaultSunDirection = Vector3d.create(-1, -1, -1).normalize()!;
 const scratchFrustum = new Frustum();
-const scratchFrustumPlanes = new FrustumPlanes();
+const scratchFrustumPlanes = FrustumPlanes.createEmpty();
 
 export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   private _bundle?: Bundle;
@@ -376,7 +368,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     scratchFrustumPlanes.init(scratchFrustum);
 
     const viewIntersectShadowRange = Range3d.createNull();
-    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(scratchFrustumPlanes.planes!);
+    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(scratchFrustumPlanes.planes);
     ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(viewClipPlanes, shadowRange, (points: GrowableXYZArray) => {
       for (const point of points.getPoint3dArray())
         viewIntersectShadowRange.extendPoint(point);
@@ -501,11 +493,8 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     // mipmap resulting EVSM texture and set filtering options
     System.instance.activateTexture2d(TextureUnit.ShadowMap, bundle.shadowMapTexture.texture.getHandle());
     gl.generateMipmap(gl.TEXTURE_2D);
-    const fullFloat = System.instance.capabilities.maxRenderType === RenderType.TextureFloat;
-    if (fullFloat && System.instance.capabilities.supportsTextureFloatLinear || !fullFloat && System.instance.capabilities.supportsTextureHalfFloatLinear) {
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
     System.instance.setMaxAnisotropy(undefined);
     // target.recordPerformanceMetric("Compute EVSM");

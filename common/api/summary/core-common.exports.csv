@@ -17,14 +17,20 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
-beta;AuthorizationClient
+public;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
 public;AxisAlignedBox3d = Range3d
 public;AxisAlignedBox3dProps = Range3dProps
 internal;B3dmHeader 
+internal;BackendBuffer = Buffer_2
+deprecated;BackendBuffer = Buffer_2
 public;BackendError 
+public;BackendReadable = Readable
+deprecated;BackendReadable = Readable
+public;BackendWritable = Writable
+deprecated;BackendWritable = Writable
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapProvider
@@ -120,6 +126,7 @@ public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
 public;CodeScopeSpec
 public;CodeSpec
+public;CodeSpecProperties
 public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
@@ -131,12 +138,16 @@ internal;CompositeTileHeader
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 alpha;ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
+alpha;ConcreteEntityTypes
+alpha;ConcreteEntityTypes
+internal;toBisCoreRootClassFullName(type: ConcreteEntityTypes): string
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
 public;ContextRealityModelProps
 public;ContextRealityModelProps
 public;ContextRealityModels
+public;ContextRealityModelsArgs
 public;ContextRealityModelsContainer
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
@@ -154,6 +165,7 @@ public;CutStyleProps
 public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
 internal;DbBlobRequest 
 internal;DbBlobResponse 
+internal;DbQueryConfig
 public;DbQueryError 
 internal;DbQueryRequest 
 internal;DbQueryResponse 
@@ -181,6 +193,7 @@ public;DisplayStyleModelAppearanceProps
 public;DisplayStyleOverridesOptions
 public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
+beta;DisplayStyleRealityModelDisplayProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
@@ -220,6 +233,8 @@ public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGra
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
+beta;ElementMeshOptions
+beta;ElementMeshRequestProps 
 public;ElementPlanarClipMaskArgs 
 public;ElementProps 
 public;EmphasizeElementsProps
@@ -230,6 +245,8 @@ beta;EntityMetaData
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
+alpha;EntityReference = `${ConcreteEntityTypes}${Id64String}`
+alpha;EntityReferenceSet 
 public;Environment
 public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps
@@ -244,7 +261,6 @@ public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
 public;FeatureAppearanceSource
-internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
 public;FeatureOverrides 
@@ -264,10 +280,9 @@ internal;FormDataCommon
 public;FresnelSettings
 public;FresnelSettingsProps
 public;Frustum
-internal;FrustumPlanes
-internal;FrustumPlanes
+public;FrustumPlanes
+public;FrustumPlanes
 public;FunctionalElementProps 
-internal;GateValue = number | boolean | string | undefined
 public;GeocentricTransform 
 public;GeocentricTransformProps
 beta;GeoCoordinatesRequestProps
@@ -312,6 +327,7 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;getPullChangesIpcChannel: (iModelId: string) => string
 internal;getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference
 internal;GlbHeader 
 public;GlobeMode
@@ -347,7 +363,9 @@ public;HSVColor
 public;HSVConstants
 internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
+deprecated;HttpServerRequest 
 public;HttpServerResponse 
+deprecated;HttpServerResponse 
 internal;HydrateViewStateRequestProps
 internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
@@ -374,6 +392,7 @@ beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
 deprecated;IModelEncryptionProps
 public;IModelError 
+public;IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
@@ -450,6 +469,7 @@ internal;MeshPolylineList
 public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
+public;ModelExtentsProps
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -472,6 +492,9 @@ public;nextHighestPowerOfTwo(num: number): number
 internal;nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d
 public;NoContentError 
 internal;NonUniformColor
+public;NormalMapFlags
+beta;NormalMapParams
+public;NormalMapProps 
 public;Npc
 public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
@@ -481,6 +504,7 @@ internal;OpenAPIContentMap
 internal;OpenAPIDocument
 internal;OpenAPIEncoding
 public;OpenAPIInfo
+deprecated;OpenAPIInfo
 internal;OpenAPIMediaType
 internal;OpenAPIOperation
 internal;OpenAPIParameter
@@ -524,6 +548,11 @@ public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
 public;Point2dProps = number[]
+beta;PointCloudDisplayProps
+beta;PointCloudDisplaySettings
+beta;PointCloudEDLMode = "off" | "on" | "full"
+beta;PointCloudShape = "square" | "round"
+beta;PointCloudSizeMode = "voxel" | "pixel"
 beta;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
@@ -543,6 +572,7 @@ beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataMap 
 beta;PropertyMetaDataProps
+internal;PullChangesOptions
 public;QParams2d
 public;QParams3d
 public;QPoint2d
@@ -571,6 +601,7 @@ beta;QueryStats
 beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
+beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
@@ -580,13 +611,17 @@ beta;RealityDataProvider
 beta;RealityDataSourceKey
 beta;RealityDataSourceKey
 beta;RealityDataSourceProps
+beta;RealityModelDisplayProps
+beta;RealityModelDisplaySettings
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
 public;RelationshipProps 
+internal;RelTypeInfo
 public;RemoveFunction = () => void
 public;class RenderMaterial
 public;RenderMaterial
+public;RenderMaterialAssetMapsProps
 public;RenderMaterialAssetProps
 public;RenderMaterialProps 
 public;RenderMode
@@ -608,12 +643,14 @@ internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
 internal;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
+deprecated;RpcContentType
 internal;RpcControlChannel
 public;class RpcControlResponse
 internal;RpcDefaultConfiguration 
 internal;RpcDirectProtocol 
 internal;RpcDirectRequest 
 public;RpcEndpoint
+deprecated;RpcEndpoint
 public;class RpcInterface
 internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
@@ -634,6 +671,7 @@ internal;RpcPendingQueue
 public;RpcPendingResponse 
 internal;class RpcProtocol
 public;RpcProtocolEvent
+deprecated;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
 internal;RpcProtocolVersion
 internal;RpcPushChannel
@@ -647,13 +685,16 @@ internal;class RpcRequest
 internal;RpcRequestCallback_T = (request: RpcRequest) => void
 internal;RpcRequestContext
 public;RpcRequestEvent
+deprecated;RpcRequestEvent
 internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
 internal;RpcRequestFulfillment
 internal;RpcRequestFulfillment
 internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
 internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
 public;RpcRequestStatus
+deprecated;RpcRequestStatus
 public;RpcRequestStatus
+deprecated;RpcRequestStatus
 internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
@@ -802,6 +843,7 @@ public;ViewQueryParams
 public;ViewStateLoadProps
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
+internal;class WebAppRpcLogging
 internal;class WebAppRpcProtocol 
 internal;WebAppRpcRequest 
 public;WhiteOnWhiteReversalProps

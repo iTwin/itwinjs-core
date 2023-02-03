@@ -26,9 +26,9 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-editing": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
-    "@itwin/service-authorization": "^0.6.1",
+    "@itwin/service-authorization": "^0.6.3",
     "fs-extra": "^8.1.0",
-    "@xmldom/xmldom": "^0.7.0"
+    "@xmldom/xmldom": "~0.8.5"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -38,7 +38,7 @@
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",

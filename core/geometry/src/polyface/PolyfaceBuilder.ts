@@ -96,7 +96,7 @@ class FacetSector {
     this.xyz.setFromPoint3d(other.xyz);
     this.xyzIndex = other.xyzIndex;
     if (this.normal)
-      this.normal.setFromVector3d(other.normal!);
+      this.normal.setFromVector3d(other.normal);
     this.normalIndex = other.normalIndex;
     if (this.uv)
       this.uv.setFrom(other.uv);
@@ -328,12 +328,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Announce point coordinates.
    */
-     public addPoint(xyz: Point3d): number {
-      return this._polyface.addPoint(xyz);
-    }
+  public addPoint(xyz: Point3d): number {
+    return this._polyface.addPoint(xyz);
+  }
   /**
    * Announce point coordinates.
-   * @deprecated Use addPoint instead.
+   * @deprecated in 3.x. Use addPoint instead.
    */
   public findOrAddPoint(xyz: Point3d): number {
     return this.addPoint(xyz);
@@ -342,12 +342,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Announce uv parameter coordinates.
    */
-   public addParamXY(x: number, y: number): number {
+  public addParamXY(x: number, y: number): number {
     return this._polyface.addParamUV(x, y);
   }
   /**
    * Announce uv parameter coordinates.
-   * @deprecated Use addParamXY instead.
+   * @deprecated in 3.x. Use addParamXY instead.
    */
   public findOrAddParamXY(x: number, y: number): number {
     return this.addParamXY(x, y);
@@ -417,9 +417,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Announce uv parameter coordinates.
-   * @deprecated Use addParamInGrowableXYArray instead.
+   * @deprecated in 3.x. Use addParamInGrowableXYArray instead.
    */
-   public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
+  public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
     return this.addParamInGrowableXYArray(data, index);
   }
 
@@ -456,12 +456,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Announce point coordinates.
    */
-   public addPointXYZ(x: number, y: number, z: number): number {
+  public addPointXYZ(x: number, y: number, z: number): number {
     return this._polyface.addPointXYZ(x, y, z);
   }
   /**
    * Announce point coordinates.
-   * @deprecated Use addPointXYZ instead.
+   * @deprecated in 3.x. Use addPointXYZ instead.
    */
   public findOrAddPointXYZ(x: number, y: number, z: number): number {
     return this.addPointXYZ(x, y, z);
@@ -1848,7 +1848,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Return the polyface index array indices corresponding to the given edge, or undefined if error. */
-  private getEdgeIndices(edge: SortableEdge): {edgeIndexA: number, edgeIndexB: number} | undefined {
+  private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {
     let indexA = -1; let indexB = -1;
     for (let i = this._polyface.facetIndex0(edge.facetIndex); i < this._polyface.facetIndex1(edge.facetIndex); ++i) {
       if (edge.vertexIndexA === this._polyface.data.pointIndex[i])
@@ -1856,7 +1856,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       else if (edge.vertexIndexB === this._polyface.data.pointIndex[i])
         indexB = i;
     }
-    return (indexA < 0 || indexB < 0) ? undefined : {edgeIndexA: indexA, edgeIndexB: indexB };
+    return (indexA < 0 || indexB < 0) ? undefined : { edgeIndexA: indexA, edgeIndexB: indexB };
   }
 
   /** Create a side face between base and swept facets along a base boundary edge.
@@ -1933,7 +1933,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
     // collect base edges added to the builder, and extract boundary
     const numBaseFacets = firstSweptFacet - firstBaseFacet;
-    const baseFacetIndices = Array.from({length: numBaseFacets}, (_, i) => firstBaseFacet + i);
+    const baseFacetIndices = Array.from({ length: numBaseFacets }, (_, i) => firstBaseFacet + i);
     const baseFacetVisitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(this._polyface, baseFacetIndices, 1);
     const baseEdges = PolyfaceQuery.createIndexedEdges(baseFacetVisitor);
     const baseBoundaryEdges: SortableEdgeCluster[] = [];

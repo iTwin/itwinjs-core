@@ -66,7 +66,9 @@ export class DrawParams {
   public get target() { return this.programParams.target; }
   public get renderPass() { return this.programParams.renderPass; }
   public get projectionMatrix() { return this.programParams.projectionMatrix; }
-  public get isViewCoords() { return this.programParams.isViewCoords; }
+  public get isViewCoords() {
+    return this.programParams.isViewCoords || this.target.currentBranch.forceViewCoords;
+  }
   public get isOverlayPass() { return this.programParams.isOverlayPass; }
   public get context() { return this.programParams.context; }
 
@@ -212,7 +214,7 @@ export class PrimitiveCommand {
     if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
       isThematic = IsThematic.No;
 
-    const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
+    const wiremesh = target.currentViewFlags.wiremesh && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
     const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";

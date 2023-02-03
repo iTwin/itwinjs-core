@@ -17,6 +17,7 @@
     >.nz-grip {
       pointer-events: all;
       position: absolute;
+      z-index: 1;
     }
   }
 
@@ -80,7 +81,7 @@
 
       >.nz-grip {
         right: 0;
-        transform: translate(50%, -50%);
+        transform: translate(0, -50%);
       }
     }
 
@@ -112,7 +113,7 @@
 
       >.nz-grip {
         left: 0;
-        transform: translate(-50%, -50%);
+        transform: translate(0, -50%);
       }
     }
 
@@ -166,7 +167,7 @@
 
       >.nz-grip {
         bottom: 0;
-        transform: translate(-50%, 50%);
+        transform: translate(-50%, 0);
       }
     }
 
@@ -206,7 +207,7 @@
 
       >.nz-grip {
         top: 0;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, 0);
       }
     }
 

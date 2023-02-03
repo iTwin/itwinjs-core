@@ -19,6 +19,7 @@ import {
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
+/* eslint-disable deprecation/deprecation */
 /* eslint-disable @typescript-eslint/unbound-method */
 // cspell:ignore oldvalue newvalue
 
@@ -227,6 +228,7 @@ describe("RpcInterface", () => {
     // }
 
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
+    controlChannel.initialize();
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.interfaceName;
     const originalVersion = IModelReadRpcInterface.interfaceVersion;

@@ -21,17 +21,20 @@ pr:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 variables:
   - group: iTwin.js non-secret config variables
   - group: iTwin.js Integration Test Users
 
 jobs:
-  - job: Node_16_x
+  - job: Node_18_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          Node_Version: 16.x
+          nodeVersion: 18.x

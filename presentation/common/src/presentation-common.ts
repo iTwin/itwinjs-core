@@ -22,6 +22,7 @@ export * from "./presentation-common/Update";
 export * from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
 export * from "./presentation-common/LocalizationHelper";
+export * from "./presentation-common/InstanceFilterDefinition";
 
 /**
  * @module RPC
@@ -67,6 +68,7 @@ export * from "./presentation-common/content/ContentTraverser";
  * @docs-group-description Hierarchies
  * Types related to presentation [hierarchies]($docs/presentation/hierarchies/index.md).
  */
+export * from "./presentation-common/hierarchy/HierarchyLevel";
 export * from "./presentation-common/hierarchy/Key";
 export * from "./presentation-common/hierarchy/Node";
 export * from "./presentation-common/hierarchy/NodePathElement";

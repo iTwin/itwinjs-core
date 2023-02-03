@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { ColorDef, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Environment, EnvironmentProps, Gradient, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
 import { EnvironmentDecorations } from "../../EnvironmentDecorations";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
@@ -17,7 +17,7 @@ describe("EnvironmentDecorations", () => {
   let iModel: IModelConnection;
 
   function createView(env?: EnvironmentProps): SpatialViewState {
-    const view = SpatialViewState.createBlank(iModel, {x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1});
+    const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     if (env)
       view.displayStyle.environment = Environment.fromJSON(env);
 
@@ -44,12 +44,15 @@ describe("EnvironmentDecorations", () => {
         return;
 
       await this.sky.promise;
-      return BeDuration.wait(1);
+      return BeDuration.wait(1).then(() => {
+        expect(this.sky.promise).to.be.undefined;
+        expect(this.sky.params).not.to.be.undefined;
+      });
     }
   }
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
 
     const pngData = new Uint8Array([
       137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206,
@@ -62,12 +65,18 @@ describe("EnvironmentDecorations", () => {
       format: ImageSourceFormat.Png,
     };
 
-    const createTexture = () => {
-      return {} as unknown as RenderTexture;
+    const createdTexturesById = new Map<string | Gradient.Symb, RenderTexture>();
+    const createTexture = (id?: string | Gradient.Symb) => {
+      const texture = {} as unknown as RenderTexture;
+      if (undefined !== id)
+        createdTexturesById.set(id, texture);
+
+      return texture;
     };
 
-    IModelApp.renderSystem.createTextureFromCubeImages = createTexture;
-    IModelApp.renderSystem.createTexture = createTexture;
+    IModelApp.renderSystem.findTexture = (key?: string | Gradient.Symb) => undefined !== key ? createdTexturesById.get(key) : undefined;
+    IModelApp.renderSystem.createTextureFromCubeImages = (_a, _b, _c, _d, _e, _f, _g, params) => createTexture(params.key);
+    IModelApp.renderSystem.createTexture = (args) => createTexture(args.ownership && "external" !== args.ownership ? args.ownership.key : undefined);
     IModelApp.renderSystem.loadTextureImage = async () => Promise.resolve(textureImage);
 
     iModel = createBlankConnection();
@@ -156,8 +165,7 @@ describe("EnvironmentDecorations", () => {
     const dec = new Decorations(createView({ ground: { display: true } }), undefined, () => disposed = true);
     expect(disposed).to.be.false;
     expect(dec.ground).not.to.be.undefined;
-    expect(dec.sky.promise).not.to.be.undefined;
-    expect(dec.sky.params).to.be.undefined;
+    expect(dec.sky.params).not.to.be.undefined;
 
     await dec.load();
     expect(disposed).to.be.false;
@@ -200,23 +208,34 @@ describe("EnvironmentDecorations", () => {
 
   it("always loads sky", async () => {
     const dec = new Decorations(createView({ sky: { display: false } }));
-    expect(dec.sky.params).to.be.undefined;
-    expect(dec.sky.promise).not.to.be.undefined;
+    expect(dec.sky.params).not.to.be.undefined;
+    expect(dec.sky.promise).to.be.undefined;
 
     await dec.load();
     expect(dec.sky.params).not.to.be.undefined;
     expect(dec.sky.promise).to.be.undefined;
   });
 
-  it("notifies when asynchronous loading completes", async () => {
+  it("notifies when loading completes", async () => {
     let loaded = false;
+
+    // default gradient sky loads immediately.
     const dec = new Decorations(undefined, () => loaded = true);
-    expect(loaded).to.be.false;
-    await dec.load();
+    expect(loaded).to.be.true;
     expect(loaded).to.be.true;
 
     loaded = false;
-    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON({ twoColor: true }) }));
+
+    // textured sky sphere loads asynchronously the first time (must query texture image from backend)
+    dec.setEnvironment(dec.environment.clone({
+      sky: SkyBox.fromJSON({
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0x987",
+        },
+      }),
+    }));
+
     expect(loaded).to.be.false;
     await dec.load();
     expect(loaded).to.be.true;
@@ -227,7 +246,15 @@ describe("EnvironmentDecorations", () => {
     const params = dec.sky.params;
     expect(params).not.to.be.undefined;
 
-    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON({ twoColor: true }) }));
+    dec.setEnvironment(dec.environment.clone({
+      sky: SkyBox.fromJSON({
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0xabc",
+        },
+      }),
+    }));
+
     expect(dec.sky.params).to.equal(params);
     expect(dec.sky.promise).not.to.be.undefined;
 
@@ -264,6 +291,43 @@ describe("EnvironmentDecorations", () => {
     }));
 
     expect(dec.sky.params!.type).to.equal("cube");
+  });
+
+  it("loads synchronously if texture(s) were previously cached by RenderSystem", async () => {
+    // Asynchronously load sphere image
+    const dec = new Decorations(createView({
+      sky: {
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0xdef",
+        },
+      },
+    }));
+
+    expect(dec.sky.promise).not.to.be.undefined;
+    await dec.load();
+    expect(dec.sky.promise).to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("sphere");
+
+    const firstSphere = dec.sky.params;
+
+    // Change to gradient (synchronous)
+    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON(undefined) }));
+    expect(dec.sky.params!.type).to.equal("gradient");
+
+    // Change back to same sphere image - synchronous this time.
+    dec.setEnvironment(dec.environment.clone({
+      sky: SkyBox.fromJSON({
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0xdef",
+        },
+      }),
+    }));
+
+    expect(dec.sky.promise).to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("sphere");
+    expect(dec.sky.params).not.to.equal(firstSphere);
   });
 
   it("falls back to sky gradient on error", async () => {

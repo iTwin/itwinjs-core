@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { render, screen } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import { ElementTooltip } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils from "../TestUtils";
 
 describe("ElementTooltip", () => {
 
@@ -19,7 +20,7 @@ describe("ElementTooltip", () => {
 
   it("showTooltip & hideTooltip set isTooltipVisible appropriately", () => {
     const divElement = document.createElement("div");
-    mount(<ElementTooltip />);
+    render(<ElementTooltip />);
 
     ElementTooltip.showTooltip(divElement, "Tooltip message", { x: 10, y: 10 });
     ElementTooltip.showTooltip(divElement, "Tooltip message 2", { x: 20, y: 20 });
@@ -31,7 +32,7 @@ describe("ElementTooltip", () => {
 
   it("showTooltip should support HTMLElement", () => {
     const divElement = document.createElement("div");
-    const wrapper = mount(<ElementTooltip />);
+    render(<ElementTooltip />);
 
     const para = document.createElement("p");                       // Create a <p> element
     const t = document.createTextNode("HTMLElement message");       // Create a text node
@@ -40,8 +41,7 @@ describe("ElementTooltip", () => {
     ElementTooltip.showTooltip(divElement, para, { x: 10, y: 10 });
     expect(ElementTooltip.isTooltipVisible).to.be.true;
 
-    wrapper.update();
-    expect(wrapper.html().indexOf("<p>HTMLElement message</p>")).to.not.eq(0);
+    expect(screen.getByText(`HTMLElement message`)).to.exist;
   });
 
 });

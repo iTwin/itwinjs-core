@@ -1,14 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.76.1",
-  "pnpmVersion": "6.24.4",
-  "nodeSupportedVersionRange": ">=12.17.0 <17.0.0",
+  "rushVersion": "5.83.1",
+  "pnpmVersion": "6.35.1",
+  "nodeSupportedVersionRange": ">=16.13.0 <19.0.0",
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
-  "pnpmOptions": {
-    "useWorkspaces": true
-  },
   "approvedPackagesPolicy": {
     "reviewCategories": [
       "frontend",
@@ -237,42 +234,42 @@
       "packageName": "@itwin/appui-abstract",
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/core-react",
       "projectFolder": "ui/core-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/components-react",
       "projectFolder": "ui/components-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/imodel-components-react",
       "projectFolder": "ui/imodel-components-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/appui-layout-react",
       "projectFolder": "ui/appui-layout-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/appui-react",
       "projectFolder": "ui/appui-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
@@ -404,6 +401,13 @@
     {
       "packageName": "@itwin/map-layers-auth",
       "projectFolder": "extensions/map-layers-auth",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "projectFolder": "extensions/map-layers-formats",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

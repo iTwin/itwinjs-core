@@ -16,7 +16,7 @@ import { CachedGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
-import { RenderOrder } from "./RenderFlags";
+import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -29,9 +29,8 @@ export class PointCloudGeometry extends CachedGeometry {
   private readonly _colorHandle: BufferHandle | undefined = undefined;
   private readonly _hasFeatures: boolean;
 
-  private readonly _voxelSize: number;
+  public readonly voxelSize: number;
   public readonly colorIsBgr: boolean;
-  public readonly minimumPointSize: number;
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
   public override get asPointCloud(): PointCloudGeometry | undefined { return this; }
@@ -46,16 +45,15 @@ export class PointCloudGeometry extends CachedGeometry {
   constructor(pointCloud: PointCloudArgs) {
     super();
     this.buffers = BuffersContainer.create();
-    this._vertices = QBufferHandle3d.create(pointCloud.pointParams, pointCloud.points) as QBufferHandle3d;
+    this._vertices = QBufferHandle3d.create(pointCloud.qparams, pointCloud.positions) as QBufferHandle3d;
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointCloud, false);
     assert(undefined !== attrPos);
-    const vertexDataType = (pointCloud.points instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort;
+    const vertexDataType = (pointCloud.positions instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort;
     this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos.location, 3, vertexDataType, false, 0, 0, false)]);
-    this._vertexCount = pointCloud.points.length / 3;
+    this._vertexCount = pointCloud.positions.length / 3;
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;
-    this._voxelSize = pointCloud.voxelSize;
-    this.colorIsBgr = pointCloud.colorIsBgr;
-    this.minimumPointSize = pointCloud.minimumPointSize;
+    this.voxelSize = pointCloud.voxelSize;
+    this.colorIsBgr = "bgr" === pointCloud.colorFormat;
 
     if (undefined !== pointCloud.colors) {
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
@@ -73,9 +71,9 @@ export class PointCloudGeometry extends CachedGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return false; }
 
   public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
-  public override getPass(target: Target) {
+  public override getPass(target: Target): Pass {
     // Point clouds don't cast shadows.
-    return target.isDrawingShadowMap ? "none" : "opaque";
+    return target.isDrawingShadowMap ? "none" : "point-clouds";
   }
   public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
   public get qOrigin(): Float32Array { return this._vertices.origin; }
@@ -89,8 +87,10 @@ export class PointCloudGeometry extends CachedGeometry {
     System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
     this.buffers.unbind();
   }
+
+  // ###TODO delete this.
   public override getLineWeight(_params: ShaderProgramParams): number {
     // If line weight < 0 it is real size in meters (voxel size).
-    return (this._voxelSize > 0) ? - this._voxelSize : 1;
+    return (this.voxelSize > 0) ? - this.voxelSize : 1;
   }
 }

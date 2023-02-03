@@ -21,7 +21,7 @@ import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-// cspell:ignore rowid primarykey
+// cspell:ignore rowid primarykey julianday
 
 /** The Settings used by Workspace api
  * @beta
@@ -67,7 +67,7 @@ export namespace WorkspaceContainer {
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
     /** true if the container is public (doesn't require authentication) */
     isPublic?: boolean;
-    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. */
+    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
     syncOnConnect?: boolean;
   }
 
@@ -478,7 +478,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       return;
 
     cloudContainer.connect(this.workspace.cloudCache);
-    if (props.syncOnConnect) {
+    if (false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();
       } catch (e: unknown) {
@@ -761,11 +761,11 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
       const tempDbFile = join(KnownLocations.tmpdir, `empty.${ITwinWorkspaceDb.fileExt}`);
       if (fs.existsSync(tempDbFile))
-        fs.rmSync(tempDbFile);
+        IModelJsFs.removeSync(tempDbFile);
       EditableWorkspaceDb.createEmpty(tempDbFile);
       this.dbFileName = ITwinWorkspaceContainer.makeDbFileName(this.dbName, version);
       await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
-      fs.rmSync(tempDbFile);
+      IModelJsFs.removeSync(tempDbFile);
     }
     this.open();
   }

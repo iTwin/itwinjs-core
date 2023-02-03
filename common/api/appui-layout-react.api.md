@@ -249,13 +249,13 @@ export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resiz
 // @internal (undocumented)
 export const CursorTypeContext: React_2.Context<CursorType | undefined>;
 
-// @beta
+// @beta @deprecated
 export class Dialog extends React_2.PureComponent<DialogProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export interface DialogProps extends CommonProps {
     children?: React_2.ReactNode;
     titleBar?: React_2.ReactNode;
@@ -414,11 +414,12 @@ export interface DragHandleProps extends CommonProps {
 }
 
 // @internal (undocumented)
+export type DragItem = TabDragItem | WidgetDragItem | PanelGripDragItem | ResizeHandleDragItem;
+
+// @internal (undocumented)
 export class DragManager {
     // (undocumented)
     get draggedItem(): Dragged | undefined;
-    // (undocumented)
-    getDraggedIdOfType<T extends DragItem>(type: T["type"]): T["id"] | undefined;
     // (undocumented)
     handleDrag(x: number, y: number): void;
     // (undocumented)
@@ -429,10 +430,6 @@ export class DragManager {
     handleDragUpdate(): void;
     // (undocumented)
     handleTargetChanged(target: DropTargetState | undefined): void;
-    // (undocumented)
-    isDragged(item: DragItem): boolean;
-    // (undocumented)
-    isDraggedType(type: DragItem["type"]): boolean;
     // (undocumented)
     isTargeted(target: DropTargetState): boolean;
     // (undocumented)
@@ -535,7 +532,7 @@ export interface FloatingTabLocation {
 }
 
 // @internal (undocumented)
-export const FloatingWidget: React_2.NamedExoticComponent<FloatingWidgetProps>;
+export function FloatingWidget(props: FloatingWidgetProps): JSX.Element;
 
 // @internal (undocumented)
 export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState;
@@ -589,7 +586,21 @@ export interface FloatingWidgetLocation {
 }
 
 // @internal (undocumented)
+export const FloatingWidgetNodeContext: React_2.Context<React_2.ReactNode>;
+
+// @internal (undocumented)
 export interface FloatingWidgetProps {
+    // (undocumented)
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    // (undocumented)
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+}
+
+// @internal (undocumented)
+export function FloatingWidgetProvider(props: FloatingWidgetProviderProps): JSX.Element;
+
+// @internal (undocumented)
+export interface FloatingWidgetProviderProps {
     // (undocumented)
     floatingWidget: FloatingWidgetState;
     // (undocumented)
@@ -631,6 +642,16 @@ export interface FloatingWidgetSetBoundsAction {
 }
 
 // @internal (undocumented)
+export interface FloatingWidgetSetUserSizedAction {
+    // (undocumented)
+    readonly id: FloatingWidgetState["id"];
+    // (undocumented)
+    readonly type: "FLOATING_WIDGET_SET_USER_SIZED";
+    // (undocumented)
+    readonly userSized: boolean;
+}
+
+// @internal (undocumented)
 export interface FloatingWidgetsState {
     // (undocumented)
     readonly allIds: ReadonlyArray<FloatingWidgetState["id"]>;
@@ -666,10 +687,10 @@ export class Footer extends React_2.PureComponent<FooterProps> {
     render(): JSX.Element;
 }
 
-// @beta
-export function FooterIndicator(props: FooterIndicatorProps): JSX.Element;
+// @beta @deprecated
+export const FooterIndicator: React_2.ForwardRefExoticComponent<FooterIndicatorProps & React_2.RefAttributes<HTMLDivElement>>;
 
-// @beta
+// @beta @deprecated
 export interface FooterIndicatorProps extends CommonProps {
     children?: React_2.ReactNode;
     // @deprecated
@@ -678,7 +699,7 @@ export interface FooterIndicatorProps extends CommonProps {
     title?: string;
 }
 
-// @beta
+// @beta @deprecated
 export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     // (undocumented)
     static readonly defaultProps: FooterPopupDefaultProps;
@@ -686,16 +707,16 @@ export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export enum FooterPopupContentType {
     Dialog = "nz-content-dialog",
     Panel = "nz-content-panel"
 }
 
-// @beta
+// @beta @deprecated
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
-// @beta
+// @beta @deprecated
 export interface FooterPopupProps extends Partial<PopupProps> {
     contentType: FooterPopupContentType;
 }
@@ -710,13 +731,13 @@ export interface FooterProps extends CommonProps {
     safeAreaInsets?: SafeAreaInsets;
 }
 
-// @public
+// @public @deprecated
 export class FooterSeparator extends React_2.PureComponent<FooterSeparatorProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
@@ -1262,7 +1283,7 @@ export interface NestedStagePanelsManagerProps {
 export function NineZone(props: NineZoneProps): JSX.Element;
 
 // @internal (undocumented)
-export type NineZoneAction = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
+export type NineZoneAction = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | FloatingWidgetSetUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React_2.Context<NineZoneState>;
@@ -1395,6 +1416,8 @@ export interface NineZoneProps {
     children?: React_2.ReactNode;
     // (undocumented)
     dispatch: NineZoneDispatch;
+    // (undocumented)
+    floatingWidget?: React_2.ReactNode;
     // (undocumented)
     labels?: NineZoneLabels;
     // (undocumented)
@@ -1725,7 +1748,7 @@ export interface PanelToggleSpanAction {
 }
 
 // @internal (undocumented)
-export const PanelWidget: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<PanelWidgetProps & React_2.RefAttributes<WidgetComponent>>>;
+export const PanelWidget: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<PanelWidgetProps & React_2.RefAttributes<HTMLDivElement>>>;
 
 // @internal (undocumented)
 export interface PanelWidgetDragStartAction {
@@ -1947,7 +1970,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
 // @internal (undocumented)
 export type RightPanelSide = "right";
 
-// @beta
+// @beta @deprecated
 export enum SafeAreaInsets {
     // (undocumented)
     All = 15,
@@ -2008,9 +2031,6 @@ export interface SectionDropTargetState {
 
 // @internal (undocumented)
 export const SendBack: React_2.NamedExoticComponent<object>;
-
-// @internal (undocumented)
-export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps): NineZoneState;
 
 // @internal (undocumented)
 export const ShowWidgetIconContext: React_2.Context<boolean>;
@@ -2552,7 +2572,7 @@ export class Title extends React_2.PureComponent<TitleProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export class TitleBar extends React_2.PureComponent<TitleBarProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -2571,7 +2591,7 @@ export interface TitleBarButtonProps extends CommonProps {
     title?: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface TitleBarProps extends CommonProps {
     children?: React_2.ReactNode;
     title?: string;
@@ -2938,7 +2958,7 @@ export function useAnimatePanelWidgets(): {
     handleBeforeTransition: PanelWidgetProps["onBeforeTransition"];
     handlePrepareTransition: PanelWidgetProps["onPrepareTransition"];
     handleTransitionEnd: PanelWidgetProps["onTransitionEnd"];
-    getRef(widgetId: WidgetState["id"]): React_2.Ref<WidgetComponent>;
+    getRef(widgetId: WidgetState["id"]): React_2.Ref<HTMLDivElement>;
     transition: PanelWidgetProps["transition"];
     sizes: {
         [id: string]: PanelWidgetProps["size"];
@@ -2961,6 +2981,9 @@ export function useDoubleClick(onDoubleClick?: () => void): () => void;
 
 // @internal
 export function useDrag<T extends HTMLElement>(onDragStart?: (initialPointerPosition: Point, pointerPosition: Point) => void, onDrag?: (position: Point) => void, onDragEnd?: () => void, onTouchStart?: () => void, onDoubleClick?: () => void): (instance: T | null) => void;
+
+// @internal (undocumented)
+export function useDraggedItem(): DragItem | undefined;
 
 // @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
@@ -3044,9 +3067,6 @@ export interface UseDragWidgetArgs {
     // (undocumented)
     widgetId: WidgetState["id"];
 }
-
-// @internal (undocumented)
-export function useIsDragged(callback: () => boolean): boolean;
 
 // @internal (undocumented)
 export function useIsDraggedItem(item: DragItem): boolean;
@@ -3188,13 +3208,7 @@ export interface VerticalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
-export const Widget: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<WidgetProps & React_2.RefAttributes<WidgetComponent>>>;
-
-// @internal (undocumented)
-export interface WidgetComponent {
-    // (undocumented)
-    measure: () => Rectangle;
-}
+export const Widget: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<WidgetProps & React_2.RefAttributes<HTMLDivElement>>>;
 
 // @alpha @deprecated
 export class WidgetContent extends React_2.PureComponent<WidgetContentProps> {
@@ -3417,6 +3431,10 @@ export interface WidgetPanelsProps extends CommonProps {
 export interface WidgetProps extends CommonProps {
     // (undocumented)
     children?: React_2.ReactNode;
+    // (undocumented)
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    // (undocumented)
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
     // (undocumented)
     onTransitionEnd?(): void;
     // (undocumented)

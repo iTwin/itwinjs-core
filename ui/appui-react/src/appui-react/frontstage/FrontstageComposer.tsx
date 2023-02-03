@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { PointProps, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { PointProps, StagePanelLocation, UiError, WidgetState } from "@itwin/appui-abstract";
 import { CommonProps, Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
@@ -27,7 +27,7 @@ import { ModalFrontstage } from "./ModalFrontstage";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Interface defining callbacks for widget changes
- * @deprecated
+ * @deprecated in 3.0.
  * @public
  */
 export interface WidgetChangeHandler {
@@ -44,6 +44,7 @@ export interface WidgetChangeHandler {
 }
 
 /** Interface defining callbacks for stage panel changes
+ * @deprecated in 3.5. Used in UI1.0 only.
  * @public
  */
 export interface StagePanelChangeHandler {
@@ -60,7 +61,7 @@ export interface StagePanelChangeHandler {
 }
 
 /** Interface defining callbacks for ZoneDropTarget changes
- * @deprecated
+ * @deprecated in 3.0.
  * @public
  */
 export interface TargetChangeHandler {
@@ -68,6 +69,7 @@ export interface TargetChangeHandler {
 }
 
 /** Interface defining callbacks for nine zone changes
+ * @deprecated in 3.5. Used in UI1.0 only.
  * @public
  */
 export interface NineZoneChangeHandler {
@@ -76,6 +78,7 @@ export interface NineZoneChangeHandler {
 }
 
 /** Interface defining a provider for Zone definitions
+ * @deprecated in 3.5. Used in UI1.0 only.
  * @public
  */
 export interface ZoneDefProvider {
@@ -127,7 +130,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 ];
 
 /** FrontstageComposer React component.
- * @deprecated
+ * @deprecated in 3.0.
  * @public
  */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
@@ -346,7 +349,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (this._frontstageDef) {
       // istanbul ignore else
       if (this._frontstageDef.frontstageProvider) {
-        const frontstageRuntimeProps: FrontstageRuntimeProps = {
+        const runtimeProps: FrontstageRuntimeProps = {
           frontstageDef: this._frontstageDef,
           nineZone: this.state.nineZone,
           nineZoneChangeHandler: this,
@@ -356,7 +359,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           targetChangeHandler: this,
           zoneDefProvider: this,
         };
-        content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
+        if (!React.isValidElement(this._frontstageDef.frontstageProvider.frontstage)) {
+          throw new UiError(UiFramework.loggerCategory(this), "Frontstage provider should return a <Frontstage /> element in UI1.0");
+        }
+
+        content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps });
       } else {
         Logger.logError(UiFramework.loggerCategory(this), "FrontstageDef has no FrontstageProvider");
         content = null;

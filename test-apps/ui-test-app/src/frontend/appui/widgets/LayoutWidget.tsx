@@ -5,9 +5,9 @@
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import {
-  FrontstageDef, FrontstageManager, StagePanelState, useActiveFrontstageDef,
+  FrontstageDef, FrontstageManager, StagePanelLocation, StagePanelState, useActiveFrontstageDef, WidgetState,
 } from "@itwin/appui-react";
-import { SpecialKey, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { NumberInput, RectangleProps } from "@itwin/core-react";
 import { Button, Input, Select, SelectOption } from "@itwin/itwinui-react";
 
@@ -119,7 +119,7 @@ function WidgetSelect({
       return;
     }
     const newOptions = [];
-    for (const zoneDef of frontstageDef.zoneDefs) {
+    for (const zoneDef of frontstageDef.zoneDefs) { // eslint-disable-line deprecation/deprecation
       newOptions.push(...zoneDef.widgetDefs.map((w) => ({ label: w.id, value: w.id })));
     }
     for (const panelDef of frontstageDef.panelDefs) {

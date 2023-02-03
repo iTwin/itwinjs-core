@@ -6,8 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
-import { Logger } from "@itwin/core-bentley/lib/cjs/Logger";
+import { assert, Logger } from "@itwin/core-bentley";
 import { FrontendLoggerCategory } from "../../FrontendLoggerCategory";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { ShaderProgram } from "./ShaderProgram";
@@ -135,13 +134,10 @@ export class UniformHandle {
 
   public setUniform1ui(data: number) {
     if (this.updateDatum(DataType.Uint, data))
-      (System.instance.context as WebGL2RenderingContext).uniform1ui(this._location, data);
+      System.instance.context.uniform1ui(this._location, data);
   }
 
   public setUniformBitflags(data: number) {
-    if (System.instance.capabilities.isWebGL2)
-      this.setUniform1ui(data);
-    else
-      this.setUniform1f(data);
+    this.setUniform1ui(data);
   }
 }

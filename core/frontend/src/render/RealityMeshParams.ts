@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
 import {
   IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -16,11 +16,20 @@ import {
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
 
+function precondition(condition: boolean, message: string | (() => string)): asserts condition {
+  if (condition)
+    return;
+
+  if ("string" !== typeof message)
+    message = message();
+
+  throw new Error(`Logic Error: ${message}`);
+}
+
 /** Geometry for a reality mesh to be submitted to the [[RenderSystem]] for conversion to a [[RenderGraphic]].
  * A reality mesh is a simple triangle mesh to which a [RenderTexture]($common) image can be mapped. Sources of reality meshes
  * include [[TerrainMeshProvider]]s to which background map imagery is applied, and [ContextRealityModel]($common)s captured using
  * [photogrammetry](https://en.wikipedia.org/wiki/Photogrammetry).
- * @note Currently, reality meshes cannot contain more than 65,535 vertices.
  * @see [[RealityMeshParamsBuilder]] to incrementally construct a `RealityMeshParams`.
  * @beta
  */
@@ -32,7 +41,7 @@ export interface RealityMeshParams {
   /** The optional normal vector for each vertex in the mesh, indexed by [[indices]], stored as [OctEncodedNormal]($common)s. */
   normals?: Uint16Array;
   /** The integer indices of each triangle in the mesh. The array's length must be a multiple of 3. */
-  indices: Uint16Array;
+  indices: UintArray;
   /** @alpha unused by terrain meshes */
   featureID?: number; // default 0
   /** @alpha unused by terrain meshes */
@@ -43,8 +52,8 @@ export interface RealityMeshParams {
 export namespace RealityMeshParams {
   /** @internal */
   export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {
-    // The specialized reality mesh shaders expect a mesh with 16-bit indices, uvs, and no edges.
-    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices || !(mesh.indices instanceof Uint16Array))
+    // The specialized reality mesh shaders expect a mesh with uvs and no edges.
+    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
       return undefined;
 
     return {
@@ -148,7 +157,7 @@ export class RealityMeshParamsBuilder {
    * @see [[addQuad]] to add 4 indices describing two triangles sharing an edge.
    * @see [[addIndices]] to add any number of indices.
    */
-  public readonly indices: Uint16ArrayBuilder;
+  public readonly indices: UintArrayBuilder;
   /** The 3d position of each vertex in the mesh.
    * @see [[addQuantizedVertex]] and [[addUnquantizedVertex]] to add a vertex.
    */
@@ -170,7 +179,15 @@ export class RealityMeshParamsBuilder {
 
   /** Construct a builder from the specified options. */
   public constructor(options: RealityMeshParamsBuilderOptions) {
-    this.indices = new Uint16ArrayBuilder({ initialCapacity: options.initialIndexCapacity });
+    let initialType;
+    if (undefined !== options.initialVertexCapacity && options.initialVertexCapacity > 0xff)
+      initialType = options.initialVertexCapacity > 0xffff ? Uint32Array : Uint16Array;
+
+    this.indices = new UintArrayBuilder({
+      initialCapacity: options.initialIndexCapacity,
+      initialType,
+    });
+
     if (options.wantNormals)
       this.normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
 
@@ -214,15 +231,15 @@ export class RealityMeshParamsBuilder {
    * [[RealityMeshParamsBuilderOptions.wantNormals]] was `true` when the builder was constructed.
    * @see [[addUnquantizedVertex]] if your vertex data is not already quantized.
    * @returns the index of the new vertex in [[positions]].
+   * @throws Error if `normal` is `undefined` but `wantNormals` was specified at construction of the builder, or vice-versa.
    */
   public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): number {
-    assert(this.positions.length < 0xffff, "RealityMeshParams supports no more than 64k vertices");
-    assert((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
+    precondition((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
 
     this.positions.push(position);
     this.uvs.push(uv);
     if (undefined !== normal) {
-      assert(undefined !== this.normals, "Set RealityMeshParamsBuilderOptions.wantNormals");
+      assert(undefined !== this.normals);
       this.normals.push(normal);
     }
 
@@ -249,13 +266,14 @@ export class RealityMeshParamsBuilder {
   }
 
   private addIndex(index: number): void {
-    assert(index <= 0xffff, "RealityMeshParams supports no more than 64k vertices");
     this.indices.push(index);
   }
 
-  /** Extract the finished [[RealityMeshParams]]. */
+  /** Extract the finished [[RealityMeshParams]].
+   * @throws Error if the mesh contains no triangles.
+   */
   public finish(): RealityMeshParams {
-    assert(this.positions.length >= 3 && this.indices.length >= 3, "RealityMeshParams requires at least one triangle");
+    precondition(this.positions.length >= 3 && this.indices.length >= 3, "RealityMeshParams requires at least one triangle");
     return {
       positions: this.positions.finish(),
       uvs: this.uvs.finish(),

@@ -27,7 +27,7 @@ describe("StatusBarComposerControl", () => {
   });
 
   it("will render empty status bar", async () => {
-    const statusBarWidgetDef = new WidgetDef({
+    const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
       classId: StatusBarWidgetComposerControl,
       defaultState: WidgetState.Open,
       isFreeform: false,

@@ -1,8 +1,8 @@
 # iTwin.js Core Regression Testing Build
 #
-# Tests all supported versions of iTwin.js on 3 main supported platforms; Windows 10, Ubuntu 20.04, and MacOS .
+# Tests all supported versions of iTwin.js on 3 main supported platforms; Windows 10, Ubuntu 20.04, and MacOS.
 #
-# Starts with the minimum version (currently 12.20.0) and then follows the tip of each subsequent minor version.
+# Starts with the minimum version (currently 12.20.0) and then follows the tip of each subsequent major LTS (even-numbered) version.
 #
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
@@ -17,27 +17,62 @@ schedules:
         - release/*
 
 jobs:
-  - template: ci-core.yaml
-    parameters:
-      name: Node_16
-      nodeVersion: 16.x
-      pool:
-        demands: Agent.OS -equals $(platform)
-  - template: ci-core.yaml
-    parameters:
-      name: Node_14_x
-      nodeVersion: 14.x
-      pool:
-        demands: Agent.OS -equals $(platform)
-  - template: ci-core.yaml
-    parameters:
-      name: Node_12
-      nodeVersion: 12.x
-      pool:
-        demands: Agent.OS -equals $(platform)
-  - template: ci-core.yaml
-    parameters:
-      name: Node_12_22
-      nodeVersion: 12.22.0
-      pool:
-        demands: Agent.OS -equals $(platform)
+  - job:
+    variables:
+      - name: linux_pool
+        value: "iModeljs Linux"
+      - name: mac_pool
+        value: iModelTechCI
+      - name: win_pool
+        value: iModelTechCI
+
+    strategy:
+      matrix:
+        "Windows_Node_18_12_0":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+          node_version: 18.12.0
+        "Linux_Node_18_12_0":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+          node_version: 18.12.0
+        "MacOS_Node_18_12_0":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+          node_version: 18.12.0
+
+        "Windows_Node_16":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+          node_version: 16.x
+        "Linux_Node_16":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+          node_version: 16.x
+        "MacOS_Node_16":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+          node_version: 16.x
+      maxParallel: 3
+
+    pool:
+      name: $(name)
+      demands:
+        - Agent.OS -equals $(platform)
+
+    timeoutInMinutes: 60
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+      - template: ../templates/core-build.yaml
+        parameters:
+          nodeVersion: $(node_version)

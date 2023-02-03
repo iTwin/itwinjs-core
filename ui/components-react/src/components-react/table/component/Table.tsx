@@ -48,7 +48,8 @@ const TABLE_FILTER_ROW_HEIGHT = 32;
 
 /**
  * Specifies table selection target.
- * @public @deprecated
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
+ * @public
  */
 export enum TableSelectionTarget {
   Row,
@@ -83,7 +84,8 @@ interface ScrollState {
 }
 
 /** Properties for the Table React component
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
@@ -127,7 +129,7 @@ export interface TableProps extends CommonProps {
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency. */
   settingsStorage?: UiStateStorage;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency.
-   * @deprecated use settingsStorage property */
+   * @deprecated in 3.0. Use settingsStorage property */
   uiStateStorage?: UiStateStorage;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
@@ -157,7 +159,8 @@ export interface TableProps extends CommonProps {
 }
 
 /** Properties for a Table cell
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface CellProps {
   item: CellItem;
@@ -166,7 +169,8 @@ export interface CellProps {
 }
 
 /** Properties for a Table row
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface RowProps {
   index: number;
@@ -189,7 +193,8 @@ interface ReactDataGridColumnEventArgs {
 }
 
 /** Cell/Property Editor state
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableCellEditorState {
   active: boolean;
@@ -199,7 +204,8 @@ export interface TableCellEditorState {
 }
 
 /** Cell/Property Updated Args
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableCellUpdatedArgs {
   rowIndex: number;
@@ -208,7 +214,8 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableCellContextMenuArgs {
   /** Index of the row clicked */
@@ -283,7 +290,8 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
 
 /**
  * Table React component that displays rows and columns in a grid along with a header
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this class.
+ * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;
@@ -600,7 +608,6 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this._rowGetterAsync.cache.clear!();
     this.setState({ rowsCount, rows: [] });
-    this._rowGetterAsync(0, true); // eslint-disable-line @typescript-eslint/no-floating-promises
     return UpdateStatus.Continue;
   }
 
@@ -916,13 +923,13 @@ export class Table extends React.Component<TableProps, TableState> {
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this._rowGetterAsync(i - (i % this._pageAmount), false); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this._rowGetterAsync(i - (i % this._pageAmount)); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Return placeholder object
     return { item: { key: "", cells: [] }, index: i, cells: {} };
   };
 
-  private _rowGetterAsync = memoize(async (index: number, clearRows: boolean): Promise<void> => {
+  private _rowGetterAsync = memoize(async (index: number): Promise<void> => {
     // istanbul ignore next
     if (index < 0)
       return;
@@ -949,7 +956,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this.selectCells(loadResult.selectedCellKeys);
     this.setState((prev) => {
-      const rows = clearRows ? [] : [...prev.rows];
+      const rows = [...prev.rows];
       loadResult.rows.forEach((r, i) => { rows[index + i] = r; });
       return { rows };
     }, async () => {
@@ -1039,6 +1046,7 @@ export class Table extends React.Component<TableProps, TableState> {
       result.rows = await Promise.all(promises);
     } catch { }
 
+    // istanbul ignore else
     // Check if another loadRows got called while this one was still going
     if (currentSelectedRowGuid === this._rowLoadGuid) {
       for (const rowProps of result.rows) {

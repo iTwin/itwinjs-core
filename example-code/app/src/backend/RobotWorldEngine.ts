@@ -7,7 +7,7 @@ import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost } from "@itwin/core-backend";
 import {
-  Code, FeatureGates, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
+  Code, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
 } from "@itwin/core-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
@@ -23,7 +23,7 @@ import { RobotWorld } from "./RobotWorldSchema";
 // In particular, the service does collision detection between robots and obstacles.
 export class RobotWorldEngine {
 
-  private static _features = new FeatureGates();
+  private static _exposeWriteInterface = false;
 
   public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64String[]): number {
     let robotCount: number = 0;
@@ -147,9 +147,8 @@ export class RobotWorldEngine {
   private static chooseInterfacesToExpose(): RpcInterfaceDefinition[] {
     const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface];
 
-    if (this._features.check("robot.imodel.readwrite")) {
+    if (this._exposeWriteInterface)
       interfaces.push(RobotWorldWriteRpcInterface);
-    }
 
     return interfaces;
   }

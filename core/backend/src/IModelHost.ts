@@ -116,7 +116,7 @@ export interface IModelHostOptions {
 
   /**
    * @beta
-   * @deprecated use tileCacheStorage
+   * @deprecated in 3.x. use tileCacheStorage
    */
   tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
 
@@ -126,6 +126,13 @@ export interface IModelHostOptions {
    *       set this property with a custom ServerStorage.
    */
   tileCacheStorage?: ServerStorage;
+
+  /** The maximum size in bytes to which a local sqlite database used for caching tiles can grow before it is purged of least-recently-used tiles.
+   * The local cache is used only if an external cache has not been configured via [[tileCacheService]], [[tileCacheStorage]], and [[tileCacheAzureCredentials]].
+   * Defaults to 1 GB. Must be an unsigned integer. A value of zero disables the local cache entirely.
+   * @beta
+   */
+  maxTileCacheDbSize?: number;
 
   /** Whether to restrict tile cache URLs by client IP address (if available).
    * @beta
@@ -168,9 +175,7 @@ export interface IModelHostOptions {
    */
   crashReportingConfig?: CrashReportingConfig;
 
-  /** The AuthorizationClient used to get accessTokens
-   * @beta
-   */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   authorizationClient?: AuthorizationClient;
 }
 
@@ -181,6 +186,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultTileRequestTimeout = 20 * 1000;
   public static defaultLogTileLoadTimeThreshold = 40;
   public static defaultLogTileSizeThreshold = 20 * 1000000;
+  /** @internal */
+  public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
 
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
@@ -189,9 +196,9 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public workspace?: WorkspaceOpts;
   /** @beta */
   public hubAccess?: BackendHubAccess;
-  /** @beta */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
-  /** @beta @deprecated */
+  /** @beta @deprecated in 3.x. */
   public tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
   /** @beta */
   public restrictTileUrlsByClientIp?: boolean;
@@ -249,6 +256,8 @@ class ApplicationSettings extends BaseSettings {
  */
 export class IModelHost {
   private constructor() { }
+
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
 
   /** @alpha */
@@ -330,6 +339,9 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
   }
+  private static syncNativeLogLevels() {
+    this.platform.clearLogLevelCache();
+  }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
     this._platform = platform;
@@ -337,11 +349,12 @@ export class IModelHost {
       return;
 
     platform.logger = Logger;
+    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
   }
 
   /**
    * @internal
-   * @deprecated
+   * @deprecated in 3.x.
    * @note Use [[IModelHostOptions.tileCacheService]] to set the service provider.
    */
   public static tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
@@ -351,7 +364,7 @@ export class IModelHost {
 
   /**
    * @internal
-   * @deprecated
+   * @deprecated in 3.x.
    */
   public static tileUploader?: CloudStorageTileUploader; // eslint-disable-line deprecation/deprecation
 
@@ -602,10 +615,11 @@ export class IModelHost {
     const credentials = config.tileCacheAzureCredentials;
 
     if (!service && !storage && !credentials) {
-      this.platform.setUseTileCache(true);
+      this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
       return;
     }
-    this.platform.setUseTileCache(false);
+
+    this.platform.setMaxTileCacheSize(0);
     // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileUploader = new CloudStorageTileUploader();
     if (credentials) {

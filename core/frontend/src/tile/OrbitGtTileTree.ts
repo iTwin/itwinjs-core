@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
@@ -18,12 +18,12 @@ import {
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
+import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
@@ -42,6 +42,10 @@ interface OrbitGtTreeId {
   modelId: Id64String;
 }
 
+function compareSourceKeys(lhs: RealityDataSourceKey, rhs: RealityDataSourceKey): number {
+  return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
+}
+
 class OrbitGtTreeSupplier implements TileTreeSupplier {
   public getOwner(treeId: OrbitGtTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(treeId, this);
@@ -52,15 +56,24 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
-    let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
+    return compareStringsOrUndefined(lhs.modelId, rhs.modelId) || compareSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey);
+  }
 
-    return cmp;
+  public findCompatibleContextRealityModelId(sourceKey: RealityDataSourceKey, style: DisplayStyleState): Id64String | undefined {
+    const owners = style.iModel.tiles.getTreeOwnersForSupplier(this);
+    for (const owner of owners) {
+      // Find an existing tree with the same reality data source key.
+      if (0 === compareSourceKeys(sourceKey, owner.id.rdSourceKey)) {
+        const modelId = owner.id.modelId;
+        assert(undefined !== modelId);
+
+        // If the model Id is unused by any other context reality model in the view and does not identify a persistent reality model, use it.
+        if (Id64.isTransientId64(modelId) && !style.contextRealityModelStates.some((model) => model.modelId === modelId))
+          return modelId;
+      }
+    }
+
+    return undefined;
   }
 }
 
@@ -220,6 +233,7 @@ export class OrbitGtTileTree extends TileTree {
     super(treeParams);
 
     const worldContentRange = this.iModelTransform.multiplyRange(cloudRange);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.iModel.expandDisplayedExtents(worldContentRange);
     this._tileParams = { contentId: "0", range: cloudRange, maximumSize: 256 };
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
@@ -281,7 +295,7 @@ export class OrbitGtTileTree extends TileTree {
     const tileCount = frameData.tilesToRender.size();
 
     // Inform TileAdmin about tiles we are handling ourselves...
-    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, { requested: frameData.tilesToLoad.size(), selected: tileCount, ready: tileCount });
+    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, { requested: frameData.tilesToLoad.size() + (frameData.hasMissingData() ? 1 : 0), selected: tileCount, ready: tileCount });
 
     if (debugBuilder)
       debugBuilder.setSymbology(ColorDef.red, ColorDef.red, 1);
@@ -309,7 +323,15 @@ export class OrbitGtTileTree extends TileTree {
 
         features.add(new Feature(this.modelId), 1);
         const tilePoints = (tile.points8 != null) ? tile.points8.toNativeBuffer() : tile.points16.toNativeBuffer();
-        let renderGraphic = system.createPointCloud(new PointCloudArgs(tilePoints, qParams, tile.colors.toNativeBuffer(), features, voxelSize, true), this.iModel);
+        let renderGraphic = system.createPointCloud({
+          positions: tilePoints,
+          qparams: qParams,
+          colors: tile.colors.toNativeBuffer(),
+          features: features.toFeatureIndex(),
+          voxelSize,
+          colorFormat: "bgr",
+        }, this.iModel);
+
         renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
         args.graphics.add(renderGraphic);
         this._tileGraphics.set(key, new OrbitGtTileGraphic(renderGraphic, args.context.viewport, args.now));
@@ -468,12 +490,15 @@ export namespace OrbitGtTileTree {
 }
 
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextOrbitGtState]].
- * @internal
+ * @internal exported strictly for tests.
  */
-class OrbitGtTreeReference extends RealityModelTileTree.Reference {
+export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
   protected _rdSourceKey: RealityDataSourceKey;
+  private readonly _modelId: Id64String;
+
   public override get castsShadows() { return false; }
+  public override get modelId() { return this._modelId; }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);
@@ -486,6 +511,13 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       // TODO: Maybe we should throw an exception
       this._rdSourceKey = RealityDataSource.createKeyFromBlobUrl("", RealityDataProvider.OrbitGtBlob, RealityDataFormat.OPC);
     }
+
+    // ###TODO find compatible model Id
+    let modelId = props.modelId;
+    if (undefined === modelId && this._source instanceof DisplayStyleState)
+      modelId = orbitGtTreeSupplier.findCompatibleContextRealityModelId(this._rdSourceKey, this._source);
+
+    this._modelId = modelId ?? props.iModel.transientIds.getNext();
 
     const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);

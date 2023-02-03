@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { MockRender } from "@itwin/core-frontend";
+import { render, screen } from "@testing-library/react";
 import { expect } from "chai";
-import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
+  Backstage, FrontstageManager, SyncUiEventDispatcher,
 } from "../../appui-react";
-import { SeparatorBackstageItem } from "../../appui-react/backstage/Separator";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
 describe("Backstage", () => {
 
   before(async () => {
@@ -19,90 +20,85 @@ describe("Backstage", () => {
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
     SyncUiEventDispatcher.initialize();   // To process Backstage events
+    await MockRender.App.startup();
   });
 
-  after(() => {
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 
   describe("<Backstage />", () => {
-    it("should render - isVisible", () => {
-      mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
-    });
-
-    it("should render - !isVisible", () => {
-      mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
-    });
-
     it("renders correctly - isVisible", () => {
-      shallow(<Backstage isVisible={true} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
+      render(<Backstage isVisible={true} />);
+
+      expect(screen.getByRole("menu")).to.satisfy(selectorMatches(".nz-backstage-backstage.nz-open ul"));
+      expect(screen.getByRole("presentation")).to.satisfy(selectorMatches(".nz-backstage-backstage_overlay.nz-open"));
     });
 
     it("renders correctly - !isVisible", () => {
-      shallow(<Backstage isVisible={false} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
+      render(<Backstage isVisible={false} />);
+
+      expect(screen.getByRole("menu")).to.satisfy(selectorMatches(".nz-backstage-backstage ul")).and.not.satisfy(selectorMatches(".nz-open ul"));
+      expect(screen.getByRole("presentation")).to.satisfy(selectorMatches(".nz-backstage-backstage_overlay")).and.not.satisfy(selectorMatches(".nz-open"));
     });
 
     it("renders correctly with header", () => {
-      shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
+      render(<Backstage header={<div> Hello World! </div>} />);
+
+      expect(screen.getByText("Hello World!")).to.satisfy(selectorMatches(".nz-backstage-backstage .nz-header div"));
     });
 
     it("with child items", () => {
-      const commandHandler = () => { };
-      shallow(
-        // eslint-disable-next-line deprecation/deprecation
+      render(
         <Backstage isVisible={true}>
-          { /* eslint-disable-next-line deprecation/deprecation */ }
-          <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />
-          <SeparatorBackstageItem /> { /* eslint-disable-line deprecation/deprecation */ }
-          { /* eslint-disable-next-line deprecation/deprecation */ }
-          <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
-          <SeparatorBackstageItem /> { /* eslint-disable-line deprecation/deprecation */ }
-          {/* eslint-disable-next-line deprecation/deprecation */}
-          <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
-        </Backstage>, // eslint-disable-line deprecation/deprecation
-      ).dive().should.matchSnapshot();
+          <div>Content</div>
+        </Backstage>,
+      );
+      expect(screen.getByText("Content")).to.satisfy(selectorMatches(".nz-backstage-backstage ul div"));
     });
 
     it("should show", () => {
-      mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
-      Backstage.show(); // eslint-disable-line deprecation/deprecation
-      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
+      render(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+      Backstage.show();
+      expect(Backstage.isBackstageVisible).to.be.true;
     });
 
     it("should hide", () => {
-      mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
-      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
-      Backstage.hide(); // eslint-disable-line deprecation/deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
+      render(<Backstage isVisible={true} />);
+      expect(Backstage.isBackstageVisible).to.be.true;
+      Backstage.hide();
+      expect(Backstage.isBackstageVisible).to.be.false;
     });
 
     it("should toggle", () => {
-      mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
+      render(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
 
-      const toggleCommand = Backstage.backstageToggleCommand; // eslint-disable-line deprecation/deprecation
+      const toggleCommand = Backstage.backstageToggleCommand;
       toggleCommand.execute();
-      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.true;
 
       toggleCommand.execute();
-      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.false;
     });
 
     it("should show by updating isVisible prop", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
-      wrapper.setProps({ isVisible: true });
-      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
+      const {rerender} = render(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+      rerender(<Backstage isVisible={true} />);
+      expect(Backstage.isBackstageVisible).to.be.true;
     });
 
-    it("should close when clicking the overlay", () => {
+    it("should close when clicking the overlay", async () => {
+      const theUserTo = userEvent.setup();
       const spyMethod = sinon.spy();
-      const wrapper = mount(<Backstage isVisible={true} onClose={spyMethod} />); // eslint-disable-line deprecation/deprecation
-      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
-      const overlay = wrapper.find("div.nz-backstage-backstage_overlay");
-      overlay.simulate("click");
-      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
+      render(<Backstage isVisible={true} onClose={spyMethod} />);
+
+      await theUserTo.click(screen.getByRole("presentation"));
+
+      expect(Backstage.isBackstageVisible).to.be.false;
       expect(spyMethod.calledOnce).to.be.true;
     });
   });

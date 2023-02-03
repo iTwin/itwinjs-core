@@ -12,9 +12,9 @@ import { Matrix4d } from "@itwin/core-geometry";
 import { AttributeMap } from "../AttributeMap";
 import { Matrix4 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addVaryingColor } from "./Color";
@@ -34,6 +34,10 @@ const computeNormal = `
   vec3 normal = octDecodeNormal(a_norm); // normal coming in for is already in world space
   g_hillshadeIndex = normal.z;           // save off world Z for thematic hill shade mode index
   return normalize(u_worldToViewN * normal);
+`;
+
+export const finalizeNormal = `
+  return normalize(v_n) * (2.0 * float(gl_FrontFacing) - 1.0);
 `;
 
 const testInside = `
@@ -212,10 +216,12 @@ const mixFeatureColor = `
   `;
 
 function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: TextureUnit) {
-  addNormalMatrix(builder.vert, IsInstanced.No);
+  addNormalMatrix(builder.vert);
   builder.vert.addFunction(octDecodeNormal);
   builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
+  builder.frag.addGlobal("g_normal", VariableType.Vec3);
+  builder.frag.set(FragmentShaderComponent.FinalizeNormal, finalizeNormal);
   addThematicDisplay(builder, false, true);
   builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, false, false));
   builder.vert.addUniform("u_worldToViewN", VariableType.Mat3, (prog) => {
@@ -230,13 +236,13 @@ function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: 
   });
 }
 
-function addColorOverrideMix(frag: FragmentShaderBuilder) {
+/** @internal */
+export function addColorOverrideMix(frag: ShaderBuilder) {
   frag.addUniform("u_overrideColorMix", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_overrideColorMix", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.asRealityMesh!.overrideColorMix);
+      params.target.uniforms.realityModel.bindOverrideColorMix(uniform);
     });
   });
-
 }
 
 function createRealityMeshHiliterBuilder(): ProgramBuilder {
@@ -264,7 +270,7 @@ export function createRealityMeshHiliter(): ProgramBuilder {
 }
 
 /** @internal */
-export default function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder {
+export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
@@ -277,13 +283,8 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
   frag.addGlobal("classifierId", VariableType.Vec4);
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
-  let textureCount = System.instance.maxRealityImageryLayers;
-  let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
-  const caps = System.instance.capabilities;
-  if (Math.min(caps.maxFragTextureUnits, caps.maxVertTextureUnits) < 16 && IsThematic.Yes === flags.isThematic) {
-    textureCount--; // steal the last bg map layer texture for thematic gradient (just when thematic display is applied)
-    gradientTextureUnit = -1; // is dependent on drawing mode so will set later
-  }
+  const textureCount = System.instance.maxRealityImageryLayers;
+  const gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
 
   const feat = flags.featureMode;
   let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;

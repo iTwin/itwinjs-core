@@ -391,7 +391,7 @@ export namespace IModelJson {
      * Now both native and TypeScript will output both and accept either, preferring "origin".
      * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
      * @internal
-     * @deprecated use origin
+     * @deprecated in 3.x. use origin
      */
     baseOrigin?: XYZProps;
     /** base x size (required) */
@@ -464,7 +464,7 @@ export namespace IModelJson {
     /** primary radius  (elbow radius) */
     majorRadius: number;
     /** pipe radius */
-    minorRadius?: number;
+    minorRadius: number;
     /** sweep angle.
      * * if omitted, full 360 degree sweep.
      */
@@ -1208,8 +1208,8 @@ export namespace IModelJson {
       // optional specific X
       const radiusX = Reader.parseNumberProperty(json, "radiusX", radius);
       // missing Y and Z both pick up radiusX  (which may have already been defaulted from unqualified radius)
-      const radiusY = Reader.parseNumberProperty(json, "radiusX", radiusX);
-      const radiusZ = Reader.parseNumberProperty(json, "radiusX", radiusX);
+      const radiusY = Reader.parseNumberProperty(json, "radiusY", radiusX);
+      const radiusZ = Reader.parseNumberProperty(json, "radiusZ", radiusX);
       const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd"); // this may be undefined!!
 
       const axes = Reader.parseOrientation(json, true)!;
@@ -1237,8 +1237,7 @@ export namespace IModelJson {
     }
     /** Parse TorusPipe props to TorusPipe instance. */
     public static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined {
-
-      const axes = Reader.parseOrientation(json, true)!;
+      const axes = Reader.parseOrientation(json, true)!;  // force frame to be pure rotation (no scale or mirror)!
       const center = Reader.parsePoint3dProperty(json, "center");
       const radiusA = Reader.parseNumberProperty(json, "majorRadius");
       const radiusB = Reader.parseNumberProperty(json, "minorRadius");
@@ -1246,9 +1245,7 @@ export namespace IModelJson {
       const capped = Reader.parseBooleanProperty(json, "capped", false)!;
       if (center
         && radiusA !== undefined
-        && radiusB !== undefined
-      ) {
-
+        && radiusB !== undefined) {
         return TorusPipe.createDgnTorusPipe(center, axes.columnX(), axes.columnY(),
           radiusA, radiusB,
           sweepAngle ? sweepAngle : Angle.createDegrees(360), capped);
@@ -1557,13 +1554,13 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleTorusPipe(data: TorusPipe): any {
-
       const vectorX = data.cloneVectorX();
       const vectorY = data.cloneVectorY();
       const radiusA = data.getMajorRadius();
       const radiusB = data.getMinorRadius();
       const sweep = data.getSweepAngle();
       if (data.getIsReversed()) {
+        // the TorusPipe was created with negative sweep that was forced positive; restore original values
         vectorY.scaleInPlace(-1.0);
         sweep.setRadians(-sweep.radians);
       }
@@ -1578,7 +1575,6 @@ export namespace IModelJson {
         value.capped = data.capped;
       }
       return { torusPipe: value };
-
     }
 
     /** Convert strongly typed instance to tagged json */

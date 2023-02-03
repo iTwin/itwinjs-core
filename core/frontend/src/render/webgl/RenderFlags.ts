@@ -18,6 +18,7 @@ export const enum RenderPass {
   OpaqueLayers,       // XY planar models render without depth-testing in order based on priority
   OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
   OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
+  PointClouds,
   OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
   Classification,     // Stencil volumes for normal processing of reality data classification.
   TranslucentLayers,  // like Layers but drawn without depth write, blending with opaque
@@ -51,6 +52,7 @@ export type Pass =
   "opaque-linear" | // OpaqueLinear
   "opaque-planar" | // OpaquePlanar
   "translucent" | // Translucent
+  "point-clouds" | // PointClouds
   "view-overlay" | // ViewOverlay
   "classification" | // Classification
   "none" | // None
@@ -88,6 +90,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
       case "opaque-linear": return RenderPass.OpaqueLinear;
       case "opaque-planar": return RenderPass.OpaquePlanar;
       case "translucent": return RenderPass.Translucent;
+      case "point-clouds": return RenderPass.PointClouds;
       case "view-overlay": return RenderPass.ViewOverlay;
       case "classification": return RenderPass.Classification;
       case "none": return RenderPass.None;
@@ -118,6 +121,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
       case "opaque":
       case "opaque-planar":
       case "opaque-linear":
+      case "point-clouds":
         return true;
       default:
         return false;
@@ -135,8 +139,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
 }
 
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
- * WebGL 1 guarantees a minimum of 8 vertex texture units, and iOS provides no more than that.
- * WebGL 2 guarantees a minimum of 15 vertex texture units.
+ * WebGL 2 guarantees a minimum of 16 vertex texture units.
  * @internal
  */
 export enum TextureUnit {
@@ -148,7 +151,7 @@ export enum TextureUnit {
   Four = WebGLRenderingContext.TEXTURE4,
   Five = WebGLRenderingContext.TEXTURE5,
   Six = WebGLRenderingContext.TEXTURE6,
-  Seven = WebGLRenderingContext.TEXTURE7, // Last one guaranteed available for WebGL 1
+  Seven = WebGLRenderingContext.TEXTURE7,
 
   ClipVolume = Zero,
   FeatureSymbology = One,
@@ -169,20 +172,21 @@ export enum TextureUnit {
   ShadowMap = Seven,
   ThematicSensors = Seven,
 
-  // Textures used for up to 3 background or overlay map layers.
+  // Textures used for up to 6 background or overlay map layers.
   RealityMesh0 = Two,
   RealityMesh1 = VertexLUT, // Reality meshes do not use VertexLUT.
   RealityMesh2 = ShadowMap, //  Shadow map when picking -- PickDepthAndOrder otherwise....
-
-  // If more than 8 texture units are available, 3 additional background or overlay map layers.
   RealityMesh3 = WebGLRenderingContext.TEXTURE8,
   RealityMesh4 = WebGLRenderingContext.TEXTURE9,
   RealityMesh5 = WebGLRenderingContext.TEXTURE10,
 
   RealityMeshThematicGradient = WebGLRenderingContext.TEXTURE11,
 
-  // Lookup table for indexed edges - used only if WebGL 2 is available.
+  // Lookup table for indexed edges.
   EdgeLUT = WebGLRenderingContext.TEXTURE12,
+
+  // Normal map texture.
+  NormalMap = WebGLRenderingContext.TEXTURE13,
 }
 
 /**
@@ -242,7 +246,7 @@ export const enum SurfaceBitIndex {
   BackgroundFill,
   HasColorAndNormal,
   OverrideRgb,
-  NoFaceFront,
+  HasNormalMap,
   HasMaterialAtlas,
   Count,
 }
@@ -272,11 +276,10 @@ export const enum SurfaceFlags {
   // For textured meshes, use rgb from v_color instead of from texture.
   OverrideRgb = 1 << SurfaceBitIndex.OverrideRgb,
   // For geometry with fixed normals (terrain meshes) we must avoid front facing normal reversal or skirts will be incorrectly lit.
-  NoFaceFront = 1 << SurfaceBitIndex.NoFaceFront,
+  HasNormalMap = 1 << SurfaceBitIndex.HasNormalMap,
   HasMaterialAtlas = 1 << SurfaceBitIndex.HasMaterialAtlas,
 }
 
-/** @internal */
 /** 16-bit flags indicating what aspects of a feature's symbology are overridden.
  * @internal
  */
@@ -295,6 +298,17 @@ export const enum OvrFlags {
   ViewIndependentTransparency = 1 << 10,
 
   Rgba = Rgb | Alpha,
+}
+
+/** 8-bit flags indicating emphasis effects applied to a feature.
+ * @internal
+ */
+export const enum EmphasisFlags {
+  None = 0,
+  Hilite = 1,
+  Emphasized = 2,
+  Flashed = 4,
+  NonLocatable = 8,
 }
 
 /** @internal */

@@ -9,10 +9,10 @@ import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
   ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
 } from "../../../render/webgl/ShaderBuilder";
-import { System } from "../../../render/webgl/System";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("should convert ShaderVariable to glsl declaration", () => {
@@ -26,11 +26,8 @@ describe("ShaderBuilder", () => {
     expect(variable.buildDeclaration(true)).to.equal("mat4 x;");
 
     variable = ShaderVariable.create("x", VariableType.Vec2, VariableScope.Varying);
-    if (System.instance.capabilities.isWebGL2) {
-      expect(variable.buildDeclaration(true)).to.equal("out vec2 x;");
-      expect(variable.buildDeclaration(false)).to.equal("in vec2 x;");
-    } else
-      expect(variable.buildDeclaration(true)).to.equal("varying vec2 x;");
+    expect(variable.buildDeclaration(true)).to.equal("out vec2 x;");
+    expect(variable.buildDeclaration(false)).to.equal("in vec2 x;");
 
     variable = ShaderVariable.create("x", VariableType.Sampler2D, VariableScope.Uniform, undefined, VariablePrecision.Medium);
     expect(variable.buildDeclaration(true)).to.equal("uniform mediump sampler2D x;");
@@ -46,19 +43,12 @@ describe("ShaderBuilder", () => {
     vars.addVarying("z", VariableType.Int);
     vars.addGlobal("w", VariableType.Int, "123", true);
 
-    const parts = [
-      "uniform highp float x;",
-      "const int w = 123;",
-      "varying int z;\n",
-    ];
-
-    const partsWebGL2 = [
+    const expectedDecls = [
       "uniform highp float x;",
       "const int w = 123;",
       "out int z;\n",
-    ];
+    ].join("\n");
 
-    const expectedDecls = (System.instance.capabilities.isWebGL2 ? partsWebGL2.join("\n") : parts.join("\n"));
     expect(vars.buildDeclarations(true)).to.equal(expectedDecls);
   });
 

@@ -9,12 +9,10 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { CommonProps, FillCentered } from "@itwin/core-react";
-import { Indicator } from "@itwin/appui-react";
-import { Dialog, TitleBar } from "@itwin/appui-layout-react";
+import { StatusBarDialog, StatusBarLabelIndicator, StatusBarLabelSide } from "@itwin/appui-react";
 import { ColorPickerPopup } from "@itwin/imodel-components-react";
 import { ColorDef } from "@itwin/core-common";
 import { Button } from "@itwin/itwinui-react";
-import { StatusBarLabelSide } from "@itwin/appui-abstract";
 
 export function TestStatusBarDialog() {
   const colorDef = ColorDef.blue;
@@ -37,14 +35,19 @@ export class SampleStatusField extends React.Component<CommonProps> {
 
   public override render() {
     return (
-      <Indicator
-        iconName="icon-placeholder"
-        dialog={<Dialog titleBar={<TitleBar title={this._title} />}>
-          <TestStatusBarDialog />
-        </Dialog>}
+      <StatusBarLabelIndicator
+        iconSpec="icon-placeholder"
+        popup={
+          <StatusBarDialog
+            titleBar={
+              <StatusBarDialog.TitleBar  title={this._title} />
+            }
+          >
+            <TestStatusBarDialog />
+          </StatusBarDialog>
+        }
         label="Left"
-        isLabelVisible={true}
-        toolTip={this._title}
+        title={this._title}
         labelSide={StatusBarLabelSide.Left}
       />
     );

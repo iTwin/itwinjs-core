@@ -8,59 +8,13 @@ import { IModelError } from "@itwin/core-common";
 import { GLTimerResult, GLTimerResultCallback } from "../RenderSystem";
 import { System } from "./System";
 
-abstract class DisjointTimerExtension {
-  public abstract get isSupported(): boolean;
-  public abstract didDisjointEventHappen(): boolean;
-  public abstract createQuery(): WebGLQuery;
-  public abstract deleteQuery(q: WebGLQuery): void;
-  public abstract beginQuery(q: WebGLQuery): void;
-  public abstract endQuery(): void;
-  public abstract isResultAvailable(q: WebGLQuery): boolean;
-  public abstract getResult(q: WebGLQuery): number;
-}
-
-class DisjointTimerExtensionWebGL1 extends DisjointTimerExtension {
-  private _e: any; // EXT_disjoint_timer_query, not available in lib.dom.d.ts
-  private _context: WebGLRenderingContext;
-
-  public constructor(system: System) {
-    super();
-    this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
-    this._context = system.context;
-  }
-
-  public get isSupported(): boolean { return this._e !== undefined; }
-
-  public didDisjointEventHappen(): boolean {
-    return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
-  }
-
-  public createQuery(): WebGLQuery { return this._e.createQueryEXT() as WebGLQuery; }
-  public deleteQuery(q: WebGLQuery) { this._e.deleteQueryEXT(q); }
-
-  public beginQuery(q: WebGLQuery) { this._e.beginQueryEXT(this._e.TIME_ELAPSED_EXT, q); }
-  public endQuery() { this._e.endQueryEXT(this._e.TIME_ELAPSED_EXT); }
-
-  public isResultAvailable(q: WebGLQuery): boolean {
-    return this._e.getQueryObjectEXT(q, this._e.QUERY_RESULT_AVAILABLE_EXT);
-  }
-  public getResult(q: WebGLQuery): number {
-    return this._e.getQueryObjectEXT(q, this._e.QUERY_RESULT_EXT);
-  }
-}
-class DisjointTimerExtensionWebGL2 extends DisjointTimerExtension {
+class DisjointTimerExtension {
   private _e: any; // EXT_disjoint_timer_query, not available in lib.dom.d.ts
   private _context: WebGL2RenderingContext;
 
   public constructor(system: System) {
-    super();
-    if (system.capabilities.isWebGL2) {
-      this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
-      if (this._e === undefined) // If webgl2 timer doesn't work, attempt to use the older disjoint timer
-        this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
-    } else
-      this._e = undefined;
-    this._context = system.context as WebGL2RenderingContext;
+    this._e = system.disjointTimerQuery;
+    this._context = system.context;
   }
 
   public get isSupported(): boolean { return this._e !== undefined; }
@@ -109,10 +63,7 @@ export class GLTimer {
   private _resultsCallback?: GLTimerResultCallback;
 
   private constructor(system: System) {
-    if (system.capabilities.isWebGL2)
-      this._extension = new DisjointTimerExtensionWebGL2(system);
-    else
-      this._extension = new DisjointTimerExtensionWebGL1(system);
+    this._extension = new DisjointTimerExtension(system);
     this._queryStack = [];
     this._resultsCallback = undefined;
   }

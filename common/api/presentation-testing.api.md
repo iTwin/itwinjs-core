@@ -4,17 +4,22 @@
 
 ```ts
 
+import { BisCodeSpec } from '@itwin/core-common';
 import { Code } from '@itwin/core-common';
+import { CodeScopeProps } from '@itwin/core-common';
 import { Content } from '@itwin/presentation-common';
+import { ElementAspectProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
-import { GuidString } from '@itwin/core-bentley';
 import { HierarchyCacheMode } from '@itwin/presentation-backend';
+import { Id64String } from '@itwin/core-bentley';
 import { IModelApp } from '@itwin/core-frontend';
 import { IModelAppOptions } from '@itwin/core-frontend';
 import { IModelConnection } from '@itwin/core-frontend';
+import { IModelDb } from '@itwin/core-backend';
 import { IModelHostOptions } from '@itwin/core-backend';
 import { InstanceKey } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
+import { ModelProps } from '@itwin/core-common';
 import { Omit as Omit_2 } from '@itwin/presentation-common';
 import { PageOptions } from '@itwin/presentation-common';
 import { PresentationManagerProps as PresentationBackendProps } from '@itwin/presentation-backend';
@@ -24,11 +29,16 @@ import { PropertyRecord } from '@itwin/appui-abstract';
 import { Ruleset } from '@itwin/presentation-common';
 import { TreeNodeItem } from '@itwin/components-react';
 
+// @beta
+export function buildTestIModel(name: string, cb: (builder: TestIModelBuilder) => void): Promise<IModelConnection>;
+
 // @public
 export class ContentBuilder {
     constructor(props: ContentBuilderProps);
     createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType?: string): Promise<PropertyRecord[]>;
+    // @deprecated
     createContentForAllInstances(rulesetOrId: Ruleset | string, displayType?: string): Promise<ContentBuilderResult[]>;
+    // @deprecated
     createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType?: string): Promise<ContentBuilderResult[]>;
 }
 
@@ -47,6 +57,9 @@ export interface ContentBuilderResult {
 
 // @public
 export const defaultNodeMappingFunc: NodeMappingFunc;
+
+// @internal (undocumented)
+export const getTestOutputDir: () => string;
 
 // @public
 export class HierarchyBuilder {
@@ -75,33 +88,16 @@ export interface IContentBuilderDataProvider {
 }
 
 // @internal
-export class IModelTestUtility {
+export class IModelBuilder implements TestIModelBuilder {
+    constructor(iModel: IModelDb);
     // (undocumented)
-    addDrawingCategory(elementProps: ElementProps): string;
+    createCode(scopeModelId: CodeScopeProps, codeSpecName: BisCodeSpec, codeValue: string): Code;
     // (undocumented)
-    addDrawingGraphic(categoryId: string): void;
+    insertAspect<TProps extends ElementAspectProps>(props: TProps): void;
     // (undocumented)
-    addDrawingModel(): string;
+    insertElement<TProps extends ElementProps>(props: TProps): Id64String;
     // (undocumented)
-    addPhysicalModel(): string;
-    // (undocumented)
-    addPhysicalObject(categoryId: string): void;
-    // (undocumented)
-    addSpatialCategory(elementProps: ElementProps): string;
-    // (undocumented)
-    closeIModel(): void;
-    // (undocumented)
-    createIModel(): void;
-    // (undocumented)
-    getDrawingCategoryCode(codeValue: string): Code;
-    // (undocumented)
-    getSpatialCategoryCode(codeValue: string): Code;
-    // (undocumented)
-    iModelId: string;
-    // (undocumented)
-    iTwinId: GuidString;
-    // (undocumented)
-    outputFile: string;
+    insertModel<TProps extends ModelProps>(props: TProps): Id64String;
 }
 
 // @public
@@ -129,10 +125,19 @@ export interface PresentationTestingInitProps {
     };
     frontendAppOptions?: IModelAppOptions;
     frontendProps?: PresentationProps;
+    testOutputDir?: string;
 }
 
 // @public
 export const terminate: (frontendApp?: typeof IModelApp) => Promise<void>;
+
+// @beta
+export interface TestIModelBuilder {
+    createCode(scopeModelId: CodeScopeProps, codeSpecName: BisCodeSpec, codeValue: string): Code;
+    insertAspect<TProps extends ElementAspectProps>(props: TProps): void;
+    insertElement<TProps extends ElementProps>(props: TProps): Id64String;
+    insertModel<TProps extends ModelProps>(props: TProps): Id64String;
+}
 
 // (No @packageDocumentation comment for this package)
 

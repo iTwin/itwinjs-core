@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { DepthType } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { RenderState } from "../../../render/webgl/RenderState";
 import { System } from "../../../render/webgl/System";
+import { EmptyLocalization } from "@itwin/core-common";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -17,7 +17,7 @@ function withinTolerance(x: number, y: number): boolean {
 }
 
 describe("RenderState", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("should compare as expected", () => {
@@ -328,12 +328,10 @@ describe("RenderState", () => {
     newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.Blend) === true, "blend flag should now be enabled");
 
-    if (true || DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
-      prevState.copyFrom(newState);
-      newState.flags.stencilTest = true;
-      newState.apply(prevState);
-      assert.isTrue(gl.getParameter(GL.Capability.StencilTest) === true, "stencilTest flag should now be enabled");
-    }
+    prevState.copyFrom(newState);
+    newState.flags.stencilTest = true;
+    newState.apply(prevState);
+    assert.isTrue(gl.getParameter(GL.Capability.StencilTest) === true, "stencilTest flag should now be enabled");
 
     newState.frontFace = GL.FrontFace.Clockwise;
     newState.apply(prevState);

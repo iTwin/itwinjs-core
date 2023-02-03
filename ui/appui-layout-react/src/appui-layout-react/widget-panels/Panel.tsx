@@ -10,14 +10,13 @@ import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import produce from "immer";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
+import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
+import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { WidgetState } from "../state/WidgetState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetPanelGrip } from "./Grip";
-import { WidgetComponent } from "../widget/Widget";
 import { PanelTargets } from "../target/PanelTargets";
 import { SectionOutline } from "../outline/SectionOutline";
 import { PanelOutline } from "../outline/PanelOutline";
@@ -171,7 +170,6 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
   const [transition, setTransition] = React.useState<"init" | "transition" | undefined>();
   const [panelSize, setPanelSize] = React.useState<number | undefined>();
   const [initializing, setInitializing] = React.useState(false);
-  const autoCollapseUnpinnedPanels = React.useContext(AutoCollapseUnpinnedPanelsContext);
 
   const horizontal = isHorizontalPanelSide(panel.side);
   const style = React.useMemo(() => {
@@ -344,26 +342,6 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     return styleToApply;
   }, [horizontal, panel.splitterPercent]);
 
-  React.useLayoutEffect(() => {
-    if (!ref.current || !autoCollapseUnpinnedPanels)
-      return;
-
-    const panelRef = ref.current;
-    const listener = () => {
-      if (collapsing.current || panel.collapsed || panel.pinned)
-        return;
-      dispatch({
-        type: "PANEL_SET_COLLAPSED",
-        collapsed: true,
-        side: panel.side,
-      });
-    };
-    panelRef.addEventListener("mouseleave", listener);
-    return () => {
-      panelRef.removeEventListener("mouseleave", listener);
-    };
-  }, [dispatch, panel.collapsed, panel.pinned, panel.side, autoCollapseUnpinnedPanels]);
-
   const singleSection = panel.widgets.length === 1;
   const showSectionTargets = singleSection && !panel.collapsed;
   /* istanbul ignore next */
@@ -469,7 +447,7 @@ export function useAnimatePanelWidgets(): {
   handleBeforeTransition: PanelWidgetProps["onBeforeTransition"];
   handlePrepareTransition: PanelWidgetProps["onPrepareTransition"];
   handleTransitionEnd: PanelWidgetProps["onTransitionEnd"];
-  getRef(widgetId: WidgetState["id"]): React.Ref<WidgetComponent>;
+  getRef(widgetId: WidgetState["id"]): React.Ref<HTMLDivElement>;
   transition: PanelWidgetProps["transition"];
   sizes: { [id: string]: PanelWidgetProps["size"] };
 } {
@@ -481,7 +459,7 @@ export function useAnimatePanelWidgets(): {
   const [prevPanelWidgets, setPrevPanelWidgets] = React.useState(panel.widgets);
   const [prevWidgets, setPrevWidgets] = React.useState(widgets);
   const [sizes, setSizes] = React.useState<{ [id: string]: number | undefined }>({});
-  const refs = React.useRef(new Map<WidgetState["id"], React.RefObject<WidgetComponent>>());
+  const refs = React.useRef(new Map<WidgetState["id"], React.RefObject<HTMLDivElement>>());
   const widgetTransitions = React.useRef(new Map<WidgetState["id"], {
     from: number;
     to: number | undefined;
@@ -498,7 +476,7 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.set(widgetId, { from: 0, to: undefined });
         continue;
       }
-      const bounds = ref.current.measure();
+      const bounds = Rectangle.create(ref.current.getBoundingClientRect());
       widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, bounds.getSize()), to: undefined });
     }
     if (panel.widgets.length < prevPanelWidgets.length) {
@@ -576,7 +554,7 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         break;
       }
-      const bounds = ref.current.measure();
+      const bounds = Rectangle.create(ref.current.getBoundingClientRect());
       widgetTransition.to = getSize(horizontal.current, bounds.getSize());
 
       if (widgetTransition.from !== widgetTransition.to) {
@@ -637,7 +615,7 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         return;
       }
-      const bounds = ref.current.measure();
+      const bounds = Rectangle.create(ref.current.getBoundingClientRect());
       const from = getSize(horizontal.current, bounds.getSize());
       widgetTransitions.current.set(wId, { from, to: undefined });
     }

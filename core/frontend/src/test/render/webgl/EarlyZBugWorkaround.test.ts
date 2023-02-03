@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
+import { Capabilities } from "@itwin/webgl-compatibility";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
 import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
+import { EmptyLocalization } from "@itwin/core-common";
 
 class TestSystem extends System {
   private static _simulateBug = true;
 
-  protected constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
+  protected constructor(canvas: HTMLCanvasElement, context: WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ = TestSystem._simulateBug ? true : undefined;
     super(canvas, context, capabilities, options);
   }
@@ -22,6 +23,7 @@ class TestSystem extends System {
     this._simulateBug = simulateBug;
     return IModelApp.startup({
       renderSys: this.create({ preserveShaderSourceCode: true }),
+      localization: new EmptyLocalization(),
     });
   }
 }

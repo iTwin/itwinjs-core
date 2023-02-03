@@ -10,12 +10,13 @@ import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RequestNewBriefcaseProps, StorageValue, SyncMode,
+  RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
 import { ProgressCallback, RequestGlobalOptions } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
+import { OnDownloadProgress } from "./BriefcaseConnection";
 
 /** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for
  * backwards compatibility, a [SyncMode]($common). If [SyncMode.PullAndPush]($common) is supplied, a new briefcaseId will be acquired.
@@ -32,6 +33,8 @@ export type DownloadBriefcaseId =
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
   /** the full path for the briefcase file */
   fileName?: string;
+  /** Function called regularly to report progress of download. */
+  progressCallback?: OnDownloadProgress;
   /** interval for calling progress function, in milliseconds */
   progressInterval?: number;
 };
@@ -59,9 +62,14 @@ export interface NativeAppOpts extends IpcAppOptions {
  * @public
  */
 export class NativeApp {
+  private static _removeAppNotify?: RemoveFunction;
+
+  /** @deprecated in 3.x. use nativeAppIpc */
   public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
     return IpcApp.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
   }
+  /** A Proxy to call one of the [NativeAppFunctions]($common) functions via IPC. */
+  public static nativeAppIpc = IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppChannel);
 
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
@@ -72,7 +80,7 @@ export class NativeApp {
   };
   private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
-    await this.callNativeHost("overrideInternetConnectivity", by, status);
+    await this.nativeAppIpc.overrideInternetConnectivity(by, status);
   }
   private static hookBrowserConnectivityEvents() {
     if (typeof window === "object" && window.ononline && window.onoffline) {
@@ -91,11 +99,11 @@ export class NativeApp {
 
   /** determine whether the app currently has internet connectivity, if known */
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
-    return this.callNativeHost("checkInternetConnectivity");
+    return this.nativeAppIpc.checkInternetConnectivity();
   }
   /** @internal */
   public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
-    return this.callNativeHost("overrideInternetConnectivity", OverriddenBy.User, status);
+    return this.nativeAppIpc.overrideInternetConnectivity(OverriddenBy.User, status);
   }
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
@@ -110,7 +118,7 @@ export class NativeApp {
       return;
     this._isValid = true;
 
-    NativeAppNotifyHandler.register(); // receives notifications from backend
+    this._removeAppNotify = NativeAppNotifyHandler.register(); // receives notifications from backend
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.
@@ -122,6 +130,7 @@ export class NativeApp {
 
   /** @internal */
   public static async shutdown() {
+    this._removeAppNotify?.();
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
     await IpcApp.shutdown();
@@ -129,31 +138,50 @@ export class NativeApp {
   }
 
   public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
-    asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
+    asOf?: IModelVersion): Promise<BriefcaseDownloader>;
+
+  /**
+   * @deprecated in 3.6. [[progress]] argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
+   */
+  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+    // eslint-disable-next-line @typescript-eslint/unified-signatures
+    asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+
+  public static async requestDownloadBriefcase(
+    iTwinId: string,
+    iModelId: string,
+    downloadOptions: DownloadBriefcaseOptions,
+    asOf: IModelVersion = IModelVersion.latest(),
+    progress?: ProgressCallback
+  ): Promise<BriefcaseDownloader> {
+    const shouldReportProgress = !!progress || !!downloadOptions.progressCallback;
 
     let stopProgressEvents = () => { };
-    if (progress !== undefined) {
-      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
-        progress(data);
-      });
+    if (shouldReportProgress) {
+      const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
+        progress?.(data);
+        downloadOptions.progressCallback?.(data);
+      };
+
+      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, handleProgress);
     }
 
     const briefcaseId = (undefined !== downloadOptions.briefcaseId) ? downloadOptions.briefcaseId :
-      (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId));
+      (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.nativeAppIpc.acquireNewBriefcaseId(iModelId));
 
     const fileName = downloadOptions.fileName ?? await this.getBriefcaseFileName({ briefcaseId, iModelId });
     const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, iTwinId, asOf: asOf.toJSON(), fileName };
 
     const doDownload = async (): Promise<void> => {
       try {
-        await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined, downloadOptions.progressInterval);
+        await this.nativeAppIpc.downloadBriefcase(requestProps, shouldReportProgress, downloadOptions.progressInterval);
       } finally {
         stopProgressEvents();
       }
     };
 
     const requestCancel = async (): Promise<boolean> => {
-      const status = await this.callNativeHost("requestCancelDownloadBriefcase", fileName);
+      const status = await this.nativeAppIpc.requestCancelDownloadBriefcase(fileName);
       if (status)
         stopProgressEvents();
       return status;
@@ -164,19 +192,19 @@ export class NativeApp {
 
   /** Get the full path filename for a briefcase within the briefcase cache */
   public static async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
-    return this.callNativeHost("getBriefcaseFileName", props);
+    return this.nativeAppIpc.getBriefcaseFileName(props);
   }
 
   /** Delete an existing briefcase
    * @param fileName the briefcase fileName
    */
   public static async deleteBriefcase(fileName: string): Promise<void> {
-    await this.callNativeHost("deleteBriefcaseFiles", fileName);
+    await this.nativeAppIpc.deleteBriefcaseFiles(fileName);
   }
 
-  /**  Get a list of all briefcase files held in the local briefcase cache directory */
+  /** Get a list of all briefcase files held in the local briefcase cache directory */
   public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
-    return this.callNativeHost("getCachedBriefcases", iModelId);
+    return this.nativeAppIpc.getCachedBriefcases(iModelId);
   }
 
   /**
@@ -188,7 +216,7 @@ export class NativeApp {
     if (this._storages.has(name))
       return this._storages.get(name)!;
 
-    const storage = new Storage(await this.callNativeHost("storageMgrOpen", name));
+    const storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
     this._storages.set(storage.id, storage);
     return storage;
   }
@@ -202,13 +230,13 @@ export class NativeApp {
     if (!this._storages.has(storage.id))
       throw new Error(`Storage [Id=${storage.id}] not open`);
 
-    await this.callNativeHost("storageMgrClose", storage.id, deleteStorage);
+    await this.nativeAppIpc.storageMgrClose(storage.id, deleteStorage);
     this._storages.delete(storage.id);
   }
 
   /** Get the list of existing Storages on the local disk. */
   public static async getStorageNames(): Promise<string[]> {
-    return NativeApp.callNativeHost("storageMgrNames");
+    return NativeApp.nativeAppIpc.storageMgrNames();
   }
 }
 
@@ -222,17 +250,17 @@ export class Storage {
 
   /** get the type of a value for a key, or undefined if not present. */
   public async getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
-    return NativeApp.callNativeHost("storageGetValueType", this.id, key);
+    return NativeApp.nativeAppIpc.storageGetValueType(this.id, key);
   }
 
   /** Get the value for a key */
   public async getData(key: string): Promise<StorageValue> {
-    return NativeApp.callNativeHost("storageGet", this.id, key);
+    return NativeApp.nativeAppIpc.storageGet(this.id, key);
   }
 
   /** Set value for a key */
   public async setData(key: string, value: StorageValue): Promise<void> {
-    return NativeApp.callNativeHost("storageSet", this.id, key, value);
+    return NativeApp.nativeAppIpc.storageSet(this.id, key, value);
   }
 
   /**
@@ -240,16 +268,16 @@ export class Storage {
    * @note This can be expensive, depending on the number of keys present.
    */
   public async getKeys(): Promise<string[]> {
-    return NativeApp.callNativeHost("storageKeys", this.id);
+    return NativeApp.nativeAppIpc.storageKeys(this.id);
   }
 
   /** Remove a key and its data. */
   public async removeData(key: string): Promise<void> {
-    return NativeApp.callNativeHost("storageRemove", this.id, key);
+    return NativeApp.nativeAppIpc.storageRemove(this.id, key);
   }
 
   /** Remove all keys and their data. */
   public async removeAll(): Promise<void> {
-    return NativeApp.callNativeHost("storageRemoveAll", this.id);
+    return NativeApp.nativeAppIpc.storageRemoveAll(this.id);
   }
 }

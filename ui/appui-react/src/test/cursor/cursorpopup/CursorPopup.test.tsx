@@ -8,16 +8,17 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { Point } from "@itwin/core-react";
-import { CursorInformation, CursorPopup, CursorPopupContent, CursorPopupManager, CursorPopupOptions, CursorPopupRenderer, CursorPopupShow } from "../../../appui-react";
-import TestUtils, { mount } from "../../TestUtils";
+import { CursorInformation, CursorPopupContent, CursorPopupManager, CursorPopupOptions, CursorPopupRenderer } from "../../../appui-react";
+import TestUtils, { selectorMatches } from "../../TestUtils";
+import { render, screen } from "@testing-library/react";
 
 describe("CursorPopup", () => {
-  it("should mount", () => {
-    mount(<CursorPopupRenderer />);
+  beforeEach(() => {
+    CursorPopupManager.clearPopups();
   });
 
   it("should open and close", async () => {
-    mount(<CursorPopupRenderer />);
+    render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
@@ -31,7 +32,7 @@ describe("CursorPopup", () => {
   });
 
   it("should open, update and close", async () => {
-    mount(<CursorPopupRenderer />);
+    render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
@@ -49,7 +50,7 @@ describe("CursorPopup", () => {
   });
 
   it("should open and close with Props", async () => {
-    mount(<CursorPopupRenderer />);
+    render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const spyClose = sinon.spy();
@@ -75,17 +76,15 @@ describe("CursorPopup", () => {
 
   it("should open and close with fadeOut", () => {
     const fakeTimers = sinon.useFakeTimers();
-    const wrapper = mount(<CursorPopupRenderer />);
+    render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
-    CursorPopupManager.open("test", <div>Hello</div>, CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
+    CursorPopupManager.open("test", "Hello", CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
     expect(CursorPopupManager.popupCount).to.eq(1);
 
     CursorPopupManager.close("test", false, true);
-    wrapper.update();
-    const cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.state("showPopup")).to.eq(CursorPopupShow.FadeOut);
+    expect(screen.getByText("Hello")).to.satisfy(selectorMatches(".uifw-cursorpopup-fadeOut"));
 
     fakeTimers.tick(1000);
     fakeTimers.restore();
@@ -94,19 +93,17 @@ describe("CursorPopup", () => {
 
   it("should fadeOut correct popup", () => {
     const fakeTimers = sinon.useFakeTimers();
-    const wrapper = mount(<CursorPopupRenderer />);
+    render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
-    CursorPopupManager.open("test", <div>Hello</div>, CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
-    CursorPopupManager.open("test2", <div>Hello</div>, CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
+    CursorPopupManager.open("test", "Hello1", CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
+    CursorPopupManager.open("test2", "Hello2", CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
     expect(CursorPopupManager.popupCount).to.eq(2);
 
     CursorPopupManager.close("test", false, true);
-    wrapper.update();
-    const cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.length).to.eq(2);
-    expect(cursorPopup.at(0).state("showPopup")).to.eq(CursorPopupShow.FadeOut);
+    expect(screen.getByText("Hello1")).to.satisfy(selectorMatches(".uifw-cursorpopup-fadeOut"));
+    expect(screen.getByText("Hello2")).to.not.satisfy(selectorMatches(".uifw-cursorpopup-fadeOut"));
 
     fakeTimers.tick(1000);
     fakeTimers.restore();
@@ -117,237 +114,150 @@ describe("CursorPopup", () => {
   });
 
   it("should set relativePosition", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
-    const center = new Point(window.innerWidth / 2, window.innerHeight / 2);
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({height: 100, width: 100, x: 100, y: 100}));
+    render(<CursorPopupRenderer />);
+    const center = new Point(300, 300);
 
-    CursorPopupManager.open("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.TopLeft);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    let cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
+    CursorPopupManager.open("test", "Hello", center, new Point(20, 20), RelativePosition.TopLeft);
+    ([
+      [RelativePosition.TopLeft,{top: "180px", left: "180px"}],
+      [RelativePosition.Top,{top: "281px", left: "300.5px"}],
+      [RelativePosition.TopRight,{top: "281px", left: "320px"}],
+      [RelativePosition.Right,{top: "300.5px", left: "320px"}],
+      [RelativePosition.BottomRight,{top: "320px", left: "320px"}],
+      [RelativePosition.Bottom,{top: "320px", left: "300.5px"}],
+      [RelativePosition.BottomLeft,{top: "320px", left: "281px"}],
+      [RelativePosition.Left,{top: "300.5px", left: "281px"}],
+    ] as [RelativePosition, {top: string, left: string}][]).map(([position, topLeftCorner]) => {
+      CursorPopupManager.update("test", "Hello", center, new Point(20, 20), position);
 
-    CursorPopupManager.update("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.Top);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.Top);
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.TopRight);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopRight);
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.Right);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.Right);
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.BottomRight);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomRight);
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.Bottom);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.Bottom);
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.BottomLeft);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomLeft);
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, new Point(20, 20), RelativePosition.Left);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.Left);
-
+      expect(screen.getByText("Hello").style).to.include(topLeftCorner);
+    });
     CursorPopupManager.close("test", false);
   });
 
   it("should set offset if more than one popup in a position", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
-    const center = new Point(window.innerWidth / 2, window.innerHeight / 2);
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({height: 100, width: 100, x: 100, y: 100}));
+    render(<CursorPopupRenderer />);
+    const pt = new Point(300, 300);
     const offset = new Point(20, 20);
 
-    CursorPopupManager.open("test", <div>Hello</div>, center, offset, RelativePosition.TopLeft);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.open("test2", <div>World</div>, center, offset, RelativePosition.TopLeft);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    const cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.length).to.eq(2);
+    CursorPopupManager.open("test", <div>Hello</div>, pt, offset, RelativePosition.TopLeft);
+    CursorPopupManager.open("test2", <div>World</div>, pt, offset, RelativePosition.TopLeft);
 
-    CursorPopupManager.update("test", <div>Hello</div>, center, offset, RelativePosition.Top);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.update("test2", <div>World</div>, center, offset, RelativePosition.Top);
-    await TestUtils.flushAsyncOperations();
+    ([
+      [RelativePosition.TopLeft, {top: "180px", left: "180px"}, {top: "80px", left: "180px"}],
+      [RelativePosition.Top, {top: "180px", left: "250px"}, {top: "181px", left: "300.5px"}],
+      [RelativePosition.TopRight, {top: "180px", left: "320px"}, {top: "181px", left: "320px"}],
+      [RelativePosition.Right, {top: "250px", left: "320px"}, {top: "300.5px", left: "420px"}],
+      [RelativePosition.BottomRight, {top: "320px", left: "320px"}, {top: "420px", left: "320px"}],
+      [RelativePosition.Bottom, {top: "320px", left: "250px"}, {top: "420px", left: "300.5px"}],
+      [RelativePosition.BottomLeft, {top: "320px", left: "180px"}, {top: "420px", left: "281px"}],
+      [RelativePosition.Left, {top: "250px", left: "180px"}, {top: "300.5px", left: "181px"}],
+    ] as [RelativePosition, {top: string, left: string}, {top: string, left: string}][])
+      .map(([position, helloTopLeftCorner, worldTopLeftCorner]) => {
+        CursorPopupManager.update("test", "Hello", pt, offset, position);
+        CursorPopupManager.update("test2", "World", pt, offset, position);
 
-    CursorPopupManager.update("test", <div>Hello</div>, center, offset, RelativePosition.TopRight);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.update("test2", <div>World</div>, center, offset, RelativePosition.TopRight);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, offset, RelativePosition.Right);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.update("test2", <div>World</div>, center, offset, RelativePosition.Right);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, offset, RelativePosition.BottomRight);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.update("test2", <div>World</div>, center, offset, RelativePosition.BottomRight);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, offset, RelativePosition.Bottom);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.update("test2", <div>World</div>, center, offset, RelativePosition.Bottom);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, offset, RelativePosition.BottomLeft);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.update("test2", <div>World</div>, center, offset, RelativePosition.BottomLeft);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, center, offset, RelativePosition.Left);
-    await TestUtils.flushAsyncOperations();
-    CursorPopupManager.update("test2", <div>World</div>, center, offset, RelativePosition.Left);
-    await TestUtils.flushAsyncOperations();
-
+        expect(screen.getByText("Hello").style).to.include(helloTopLeftCorner);
+        expect(screen.getByText("World").style).to.include(worldTopLeftCorner);
+      });
     CursorPopupManager.close("test", false);
     CursorPopupManager.close("test2", false);
   });
 
   it("should flip right to left appropriately", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
-    const lowerRight = new Point(window.innerWidth + 25, window.innerHeight);
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({height: 100, width: 100, x: 100, y: 100}));
+    render(<CursorPopupRenderer />);
+    const offset = new Point(20, 20);
+    const pt = new Point(300, 300);
 
-    CursorPopupManager.open("test", <div>Hello</div>, new Point(0, 0), new Point(20, 20), RelativePosition.TopLeft);
-    await TestUtils.flushAsyncOperations();
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", {value: 301});
 
-    CursorPopupManager.update("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.Top);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    let cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.open("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.TopRight);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.open("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.Right);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.Left);
-
-    CursorPopupManager.update("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.Bottom);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.update("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.BottomRight);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.close("test", false);
+    ([
+      [RelativePosition.Top,{top: "180px", left: "180px"}],
+      [RelativePosition.TopRight,{top: "180px", left: "180px"}],
+      [RelativePosition.Right,{top: "250px", left: "180px"}],
+      [RelativePosition.BottomRight,{top: "320px", left: "180px"}],
+      [RelativePosition.Bottom,{top: "320px", left: "180px"}],
+    ] as [RelativePosition, {top: string, left: string}][]).map(([position, topLeftCorner]) => {
+      CursorPopupManager.open("test", "Hello", pt, offset, position);
+      CursorPopupManager.update("test", "Hello", pt, offset, position);
+      expect(screen.getByText("Hello").style).to.include(topLeftCorner);
+      CursorPopupManager.close("test", false);
+    });
+    Object.defineProperty(window, "innerWidth", {value: originalWidth});
   });
 
   it("should flip bottom to top appropriately", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
-    const lowerRight = new Point(window.innerWidth + 25, window.innerHeight + 25);
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({height: 100, width: 100, x: 100, y: 100}));
+    render(<CursorPopupRenderer />);
+    const offset = new Point(20, 20);
+    const pt = new Point(300, 300);
 
-    CursorPopupManager.open("test", <div>Hello</div>, new Point(0, 0), new Point(20, 20), RelativePosition.TopLeft);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.Left);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    let cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.open("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.BottomLeft);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.open("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.Bottom);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.update("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.Right);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
-    CursorPopupManager.update("test", <div>Hello</div>, lowerRight, new Point(20, 20), RelativePosition.BottomRight);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
-
+    const originalHeight = window.innerHeight;
+    Object.defineProperty(window, "innerHeight", {value: 301});
+    ([
+      [RelativePosition.Right,{top: "180px", left: "320px"}],
+      [RelativePosition.BottomRight,{top: "180px", left: "320px"}],
+      [RelativePosition.Bottom,{top: "180px", left: "250px"}],
+      [RelativePosition.BottomLeft,{top: "180px", left: "180px"}],
+      [RelativePosition.Left,{top: "180px", left: "180px"}],
+    ] as [RelativePosition, {top: string, left: string}][]).map(([position, topLeftCorner]) => {
+      CursorPopupManager.open("test", "Hello", pt, offset, position);
+      CursorPopupManager.update("test", "Hello", pt, offset, position);
+      expect(screen.getByText("Hello").style).to.include(topLeftCorner);
+      CursorPopupManager.close("test", false);
+    });
     CursorPopupManager.close("test", false);
+    Object.defineProperty(window, "innerHeight", {value: originalHeight});
   });
 
   it("should flip left to right appropriately", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({height: 100, width: 100, x: 100, y: 100}));
+    render(<CursorPopupRenderer />);
+    const offset = new Point(20, 20);
+    const pt = new Point(1, 300);
 
-    CursorPopupManager.open("test", <div>Hello</div>, new Point(0, 0), new Point(20, 20), RelativePosition.TopLeft);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, new Point(-30, -30), new Point(20, 20), RelativePosition.Top);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    let cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomRight);
-
-    CursorPopupManager.open("test", <div>Hello</div>, new Point(-30, -30), new Point(20, 20), RelativePosition.Bottom);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomRight);
-
-    CursorPopupManager.close("test", false);
+    ([
+      [RelativePosition.TopLeft,{top: "180px", left: "21px"}],
+      [RelativePosition.Top,{top: "180px", left: "21px"}],
+      [RelativePosition.Bottom,{top: "320px", left: "21px"}],
+      [RelativePosition.BottomLeft,{top: "320px", left: "21px"}],
+      [RelativePosition.Left,{top: "250px", left: "21px"}],
+    ] as [RelativePosition, {top: string, left: string}][]).map(([position, topLeftCorner]) => {
+      CursorPopupManager.open("test", "Hello", pt, offset, position);
+      CursorPopupManager.update("test", "Hello", pt, offset, position);
+      expect(screen.getByText("Hello").style).to.include(topLeftCorner);
+      CursorPopupManager.close("test", false);
+    });
   });
 
   it("should flip top to bottom appropriately", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({height: 100, width: 100, x: 100, y: 100}));
+    render(<CursorPopupRenderer />);
+    const offset = new Point(20, 20);
+    const pt = new Point(300, 1);
 
-    CursorPopupManager.open("test", <div>Hello</div>, new Point(0, 0), new Point(20, 20), RelativePosition.TopLeft);
-    await TestUtils.flushAsyncOperations();
-
-    CursorPopupManager.update("test", <div>Hello</div>, new Point(-30, -30), new Point(20, 20), RelativePosition.Left);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    let cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomRight);
-
-    CursorPopupManager.open("test", <div>Hello</div>, new Point(-30, -30), new Point(20, 20), RelativePosition.Right);
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-    cursorPopup = wrapper.find(CursorPopup);
-    expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomRight);
-
-    CursorPopupManager.close("test", false);
+    ([
+      [RelativePosition.TopLeft,{top: "21px", left: "180px"}],
+      [RelativePosition.Top,{top: "21px", left: "250px"}],
+      [RelativePosition.TopRight,{top: "21px", left: "320px"}],
+      [RelativePosition.Right,{top: "21px", left: "320px"}],
+      [RelativePosition.Left,{top: "21px", left: "180px"}],
+    ] as [RelativePosition, {top: string, left: string}][]).map(([position, topLeftCorner]) => {
+      CursorPopupManager.open("test", "Hello", pt, offset, position);
+      CursorPopupManager.update("test", "Hello", pt, offset, position);
+      expect(screen.getByText("Hello").style).to.include(topLeftCorner);
+      CursorPopupManager.close("test", false);
+    });
   });
 
   it("CursorPopupContent should render", () => {
-    const wrapper = mount(<CursorPopupContent>Hello world</CursorPopupContent>);
-    wrapper.unmount();
+    render(<CursorPopupContent>Hello world</CursorPopupContent>);
+
+    expect(screen.getByText("Hello world")).to.satisfy(selectorMatches(".uifw-cursorpopup-content"));
   });
 
   it("CursorPopupManager.update should log error when id not found", () => {

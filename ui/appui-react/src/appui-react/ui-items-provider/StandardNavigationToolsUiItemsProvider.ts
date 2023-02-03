@@ -36,14 +36,14 @@ export interface DefaultNavigationTools {
  * Provide standard tools for the ViewNavigationWidgetComposer.
  * @beta
  */
-export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
+export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider { // eslint-disable-line deprecation/deprecation
   public get id(): string { return "appui-react:StandardNavigationToolsUiItemsProvider"; }
 
   constructor(private defaultNavigationTools?: DefaultNavigationTools) { }
 
-  public provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] {
+  public provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] { // eslint-disable-line deprecation/deprecation
     const items: CommonToolbarItem[] = [];
-    if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+    if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Horizontal) { // eslint-disable-line deprecation/deprecation
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.horizontal || this.defaultNavigationTools.horizontal.rotateView)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.rotateViewCommand));
@@ -64,7 +64,7 @@ export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
         items.push(ToolbarHelper.createToolbarItemFromItemDef(60, CoreTools.viewRedoCommand));
       }
 
-    } else /* istanbul ignore else */if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
+    } else /* istanbul ignore else */if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) { // eslint-disable-line deprecation/deprecation
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.setupWalkCamera)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(5, CoreTools.setupCameraWalkTool));

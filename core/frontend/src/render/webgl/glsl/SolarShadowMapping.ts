@@ -68,10 +68,7 @@ float shadowMapEVSM(vec3 shadowPos) {
 const applySolarShadowMap = `
   if (v_shadowPos.x < 0.0 || v_shadowPos.x > 1.0 || v_shadowPos.y < 0.0 || v_shadowPos.y > 1.0 || v_shadowPos.z < 0.0 || v_shadowPos.z > 1.0)
     return baseColor;
-  vec3 toEye = kFrustumType_Perspective == u_frustum.z ? normalize(v_eyeSpace) : vec3(0.0, 0.0, -1.0);
-  vec3 normal = normalize(v_n);
-  normal = (dot(normal, toEye) > 0.0) ? -normal : normal;
-  float visible = (u_surfaceFlags[kSurfaceBitIndex_HasNormals] && (dot(normal, u_sunDir) < 0.0)) ? 0.0 : shadowMapEVSM(v_shadowPos);
+  float visible = (u_surfaceFlags[kSurfaceBitIndex_HasNormals] && (dot(g_normal, u_sunDir) < 0.0)) ? 0.0 : shadowMapEVSM(v_shadowPos);
   return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
 `;
 
@@ -87,7 +84,7 @@ const applySolarShadowMapTerrain = `
 export function addEvsmExponent(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_evsmExponent", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_evsmExponent", (uniform) => {
-      uniform.setUniform1f((RenderType.TextureFloat === System.instance.capabilities.maxRenderType) ? evsm32Exp : evsm16Exp);
+      uniform.setUniform1f((RenderType.TextureFloat === System.instance.maxRenderType) ? evsm32Exp : evsm16Exp);
     });
   });
 }

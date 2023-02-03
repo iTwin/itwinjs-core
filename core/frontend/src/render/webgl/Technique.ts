@@ -7,13 +7,13 @@
  */
 
 import { assert, dispose, using } from "@itwin/core-bentley";
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { BlurType } from "./CachedGeometry";
 import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
+import { createEDLCalcBasicProgram, createEDLCalcFullProgram, createEDLFilterProgram, createEDLMixProgram } from "./glsl/EDL";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
@@ -23,8 +23,7 @@ import { createCompositeProgram } from "./glsl/Composite";
 import { createCopyColorProgram } from "./glsl/CopyColor";
 import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
 import {
-  createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassCopyZUsingPointsProgram,
-  createVolClassSetBlendProgram,
+  createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassSetBlendProgram,
 } from "./glsl/CopyStencil";
 import { createEdgeBuilder, EdgeBuilderType } from "./glsl/Edge";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
@@ -36,14 +35,16 @@ import createPlanarGridProgram from "./glsl/PlanarGrid";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import createRealityMeshBuilder, { createClassifierRealityMeshHiliter, createRealityMeshHiliter } from "./glsl/RealityMesh";
+import {
+  addColorOverrideMix, createClassifierRealityMeshHiliter, createRealityMeshBuilder, createRealityMeshHiliter,
+} from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
-import { ProgramBuilder, VariableType, VertexShaderComponent } from "./ShaderBuilder";
+import { ProgramBuilder, VertexShaderComponent } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -63,18 +64,6 @@ export interface Technique extends WebGLDisposable {
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
   compileShaders(): boolean;
 }
-
-/* Placeholder technique used for techniques not supported by particular client.
- * e.g., IndexedEdgeTechnique only supported on WebGL 2.
- */
-const unsupportedTechnique: Technique = {
-  getShader: () => { throw new Error("Unsupported technique"); },
-  getShaderByIndex: () => { throw new Error("Unsupported technique"); },
-  getShaderCount: () => 0,
-  compileShaders: () => true,
-  isDisposed: true,
-  dispose: () => undefined,
-};
 
 /** A rendering technique implemented using a single shader program, typically for some specialized purpose.
  * @internal
@@ -172,7 +161,7 @@ export abstract class VariedTechnique implements Technique {
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
   protected abstract get _debugDescription(): string;
 
-  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLContext): void {
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGL2RenderingContext): void {
     const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
@@ -180,7 +169,7 @@ export abstract class VariedTechnique implements Technique {
       addLogDepth(builder);
 
       assert(!builder.frag.requiresEarlyZWorkaround);
-      if (System.instance.capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ)
+      if (System.instance.fragDepthDoesNotDisableEarlyZ)
         builder.frag.requiresEarlyZWorkaround = -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
     }
 
@@ -190,7 +179,7 @@ export abstract class VariedTechnique implements Technique {
     assert(!builder.frag.requiresEarlyZWorkaround);
   }
 
-  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLContext): void {
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGL2RenderingContext): void {
     assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
     assert(this._basicPrograms[index] !== undefined);
@@ -203,13 +192,13 @@ export abstract class VariedTechnique implements Technique {
     assert(this._clippingPrograms[index] !== undefined);
   }
 
-  protected addHiliteShader(gl: WebGLContext, instanced: IsInstanced, classified: IsClassified, posType: PositionType, create: CreateHiliter): void {
+  protected addHiliteShader(gl: WebGL2RenderingContext, instanced: IsInstanced, classified: IsClassified, posType: PositionType, create: CreateHiliter): void {
     const builder = create(instanced, classified, posType);
     scratchHiliteFlags.initForHilite(0, instanced, classified, posType);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
-  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLContext): void {
+  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGL2RenderingContext): void {
     flags.isTranslucent = true;
     addTranslucency(builder);
     this.addShader(builder, flags, gl);
@@ -301,7 +290,7 @@ class SurfaceTechnique extends VariedTechnique {
   // Plus 1 hilite shader = 19
   private static readonly _kUnquantized = SurfaceTechnique._kClassified + 19;
 
-  public constructor(gl: WebGLContext) {
+  public constructor(gl: WebGL2RenderingContext) {
     super(SurfaceTechnique._kUnquantized * 2);
 
     this._earlyZFlags = [
@@ -433,7 +422,7 @@ class PolylineTechnique extends VariedTechnique {
   private static readonly _kHilite = numFeatureVariants(PolylineTechnique._kFeature);
   private static readonly _kUnquantized = PolylineTechnique._kHilite + numHiliteVariants;
 
-  public constructor(gl: WebGLContext) {
+  public constructor(gl: WebGL2RenderingContext) {
     super(PolylineTechnique._kUnquantized * 2);
 
     this._earlyZFlags = [
@@ -499,7 +488,7 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly _kUnquantized = numFeatureVariants(EdgeTechnique._kFeature);
   private readonly _type: EdgeBuilderType;
 
-  public constructor(gl: WebGLContext, type: EdgeBuilderType) {
+  public constructor(gl: WebGL2RenderingContext, type: EdgeBuilderType) {
     super(EdgeTechnique._kUnquantized * 2);
     this._type = type;
 
@@ -563,7 +552,7 @@ class PointStringTechnique extends VariedTechnique {
   private static readonly _kHilite = numFeatureVariants(PointStringTechnique._kFeature);
   private static readonly _kUnquantized = PointStringTechnique._kHilite + numHiliteVariants;
 
-  public constructor(gl: WebGLContext) {
+  public constructor(gl: WebGL2RenderingContext) {
     super(PointStringTechnique._kUnquantized * 2);
 
     const flags = scratchTechniqueFlags;
@@ -616,13 +605,8 @@ class PointStringTechnique extends VariedTechnique {
 class PointCloudTechnique extends VariedTechnique {
   private static readonly _kHilite = 8;
 
-  public constructor(gl: WebGLContext) {
+  public constructor(gl: WebGL2RenderingContext) {
     super(PointCloudTechnique._kHilite + 2);
-
-    this._earlyZFlags = [
-      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
-      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
-    ];
 
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       this.addHiliteShader(gl, IsInstanced.No, iClassified, "quantized", (_inst, classified) => createPointCloudHiliter(classified));
@@ -635,11 +619,7 @@ class PointCloudTechnique extends VariedTechnique {
           const builder = createPointCloudBuilder(flags.isClassified, featureMode, thematic);
           if (FeatureMode.Overrides === featureMode) {
             addUniformFeatureSymbology(builder, true);
-            builder.vert.addUniform("u_overrideColorMix", VariableType.Float, (prog) => {
-              prog.addGraphicUniform("u_overrideColorMix", (uniform, params) => {
-                uniform.setUniform1f(params.geometry.asPointCloud!.overrideColorMix);
-              });
-            });
+            addColorOverrideMix(builder.vert);
             builder.vert.set(VertexShaderComponent.ApplyFeatureColor, mixFeatureColor);
           }
 
@@ -674,7 +654,7 @@ class PointCloudTechnique extends VariedTechnique {
 class RealityMeshTechnique extends VariedTechnique {
   private static readonly _numVariants = 98;
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGL2RenderingContext) {
     super(RealityMeshTechnique._numVariants);
     this._earlyZFlags = [
       TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
@@ -799,6 +779,10 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassBlend },
   { techniqueId: TechniqueId.Combine3Textures },
   { techniqueId: TechniqueId.PlanarGrid },
+  { techniqueId: TechniqueId.EDLCalcBasic },
+  { techniqueId: TechniqueId.EDLCalcFull },
+  { techniqueId: TechniqueId.EDLFilter },
+  { techniqueId: TechniqueId.EDLMix },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -811,7 +795,7 @@ export class Techniques implements WebGLDisposable {
   private _techniqueByPriorityIndex = 0;
   private _shaderIndex = 0;
 
-  public static create(gl: WebGLContext): Techniques {
+  public static create(gl: WebGL2RenderingContext): Techniques {
     const techs = new Techniques();
     techs.initializeBuiltIns(gl);
     return techs;
@@ -884,9 +868,8 @@ export class Techniques implements WebGLDisposable {
     let allCompiled = true;
 
     for (const tech of this._list) {
-      if (!tech.compileShaders()) {
+      if (!tech.compileShaders())
         allCompiled = false;
-      }
     }
 
     return allCompiled;
@@ -944,7 +927,7 @@ export class Techniques implements WebGLDisposable {
 
   private constructor() { }
 
-  private initializeBuiltIns(gl: WebGLContext): void {
+  private initializeBuiltIns(gl: WebGL2RenderingContext): void {
     this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
     this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
@@ -967,17 +950,14 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
+    this._list[TechniqueId.EDLCalcBasic] = new SingularTechnique(createEDLCalcBasicProgram(gl));
+    this._list[TechniqueId.EDLCalcFull] = new SingularTechnique(createEDLCalcFullProgram(gl));
+    this._list[TechniqueId.EDLFilter] = new SingularTechnique(createEDLFilterProgram(gl));
+    this._list[TechniqueId.EDLMix] = new SingularTechnique(createEDLMixProgram(gl));
 
-    if (System.instance.supportsIndexedEdges)
-      this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
-    else
-      this._list[TechniqueId.IndexedEdge] = unsupportedTechnique;
+    this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
 
-    if (System.instance.capabilities.supportsFragDepth)
-      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
-    else
-      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZUsingPointsProgram(gl));
-
+    this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));
     this._list[TechniqueId.VolClassBlend] = new SingularTechnique(createVolClassBlendProgram(gl));
     this._list[TechniqueId.VolClassColorUsingStencil] = new SingularTechnique(createVolClassColorUsingStencilProgram(gl));

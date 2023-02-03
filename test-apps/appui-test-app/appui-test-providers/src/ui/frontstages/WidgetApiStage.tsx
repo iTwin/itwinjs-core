@@ -6,22 +6,19 @@ import * as React from "react";
 import { useSelector } from "react-redux";
 
 import {
-  BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
-  IModelViewportControl, StagePanelState, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
-  StandardNavigationToolsUiItemsProvider,
-  StandardStatusbarUiItemsProvider,
-  StateManager,
-  UiFramework,
+  BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps,
+  FrontstageManager, FrontstageProps, IModelViewportControl, StagePanelState, StageUsage, StandardContentToolsUiItemsProvider, StandardFrontstageProps,
+  StandardFrontstageProvider, StandardNavigationToolsUiItemsProvider, StandardStatusbarUiItemsProvider, StateManager, UiFramework, UiItemsManager, WidgetState,
 } from "@itwin/appui-react";
 import {
-  ConditionalStringValue,
-  StageUsage, StandardContentLayouts, UiItemsManager,
+  ConditionalStringValue, StandardContentLayouts,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { WidgetApiStageUiItemsProvider } from "../providers/WidgetApiStageUiItemsProvider";
 import { getTestProviderState, setShowCustomViewOverlay, TestProviderState } from "../../store";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { SvgSmileyHappyVery } from "@itwin/itwinui-icons-react";
 
 /**
  * The WidgetApiStageContentGroupProvider class method `provideContentGroup` returns a ContentGroup that displays
@@ -70,7 +67,7 @@ export class WidgetApiStageContentGroupProvider extends ContentGroupProvider {
     return { ...contentGroupProps, contents: newContentsArray };
   }
 
-  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, UiFramework.getIModelConnection());
     if (savedViewLayoutProps) {
       const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
@@ -186,6 +183,23 @@ export function getToggleCustomOverlayCommandItemDef() {
       const showCustomViewOverlay = getTestProviderState().showCustomViewOverlay;
       StateManager.store.dispatch(setShowCustomViewOverlay(!showCustomViewOverlay));
       IModelApp.toolAdmin.dispatchUiSyncEvent(AppUiTestProviders.syncEventIdHideCustomViewOverlay);
+    },
+  });
+}
+
+export function getShowHideFloatingWidgetCommandItemDef() {
+  const commandId = "testHideShowFloatingWidget";
+  return new CommandItemDef({
+    commandId,
+    iconSpec: <SvgSmileyHappyVery />,
+    label: "Toggle Hidden Floating Widget Display",
+
+    execute: () => {
+      const def = FrontstageManager.activeFrontstageDef?.findWidgetDef("FW-H1");
+      if (def) {
+        const currentState = FrontstageManager.activeFrontstageDef?.getWidgetCurrentState(def);
+        def.setWidgetState(currentState === WidgetState.Floating ? WidgetState.Hidden : WidgetState.Floating);
+      }
     },
   });
 }

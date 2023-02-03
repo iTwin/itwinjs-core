@@ -12,7 +12,6 @@ import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
 } from "../ShaderBuilder";
-import { System } from "../System";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb, decodeUint24 } from "./Decode";
@@ -82,25 +81,13 @@ float getFeatureIndex() {
 `;
 }
 
-// Returns true if the specified flag is not globally overridden and is set in flags
 const nthFeatureBitSet = `
-bool nthFeatureBitSet(float flags, float n) {
-  return !nthBitSet(u_globalOvrFlags, n) && nthBitSet(flags, n);
-}
-`;
-const nthFeatureBitSet2 = `
 bool nthFeatureBitSet(float flags, uint n) {
   return 0u == (u_globalOvrFlags & n) && nthBitSet(flags, n);
 }
 `;
 
-// Returns 1.0 if the specified flag is not globally overridden and is set in flags
 const extractNthFeatureBit = `
-float extractNthFeatureBit(float flags, float n) {
-  return !nthBitSet(u_globalOvrFlags, n) && nthBitSet(flags, n) ? 1.0 : 0.0;
-}
-`;
-const extractNthFeatureBit2 = `
 float extractNthFeatureBit(float flags, uint n) {
   return 0u == (u_globalOvrFlags & n) && nthBitSet(flags, n) ? 1.0 : 0.0;
 }
@@ -241,16 +228,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   }
 
   if (wantGlobalOvrFlags) {
-    let bitmapType;
-    if (System.instance.capabilities.isWebGL2) {
-      vert.addFunction(nthFeatureBitSet2);
-      vert.addFunction(extractNthFeatureBit2);
-      bitmapType = VariableType.Uint;
-    } else {
-      vert.addFunction(nthFeatureBitSet);
-      vert.addFunction(extractNthFeatureBit);
-      bitmapType = VariableType.Float;
-    }
+    const bitmapType = VariableType.Uint;
+    vert.addFunction(nthFeatureBitSet);
+    vert.addFunction(extractNthFeatureBit);
+
     vert.addUniform("u_globalOvrFlags", bitmapType, (prog) => {
       prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
         let flags = 0.0;
@@ -306,6 +287,7 @@ export function addMaxAlpha(builder: ShaderBuilder): void {
 
 /** @internal */
 function addEmphasisFlags(builder: ShaderBuilder): void {
+  // Must be kept in sync with EmphasisFlags enum.
   builder.addBitFlagConstant("kEmphBit_Hilite", 0);
   builder.addBitFlagConstant("kEmphBit_Emphasize", 1);
   builder.addBitFlagConstant("kEmphBit_Flash", 2);
@@ -775,7 +757,15 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
  * @internal
  */
 export function addUniformHiliter(builder: ProgramBuilder): void {
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, `return vec4(1.0, 0.0, 0.0, 0.0);`);
+  builder.frag.addUniform("v_feature_hilited", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("v_feature_hilited", (uniform, params) => {
+      params.target.uniforms.batch.bindUniformSymbologyFlags(uniform);
+    });
+  });
+
+  addEmphasisFlags(builder.frag);
+  addExtractNthBit(builder.frag);
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeHiliteColor);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 }
 

@@ -174,7 +174,7 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static async create(props?: TileAdmin.Props): Promise<TileAdmin> {
-    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.callIpcHost("queryConcurrency", "cpu")) : undefined;
+    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.appFunctionIpc.queryConcurrency("cpu")) : undefined;
     const isMobile = ProcessDetector.isMobileBrowser;
     return new TileAdmin(isMobile, rpcConcurrency, props);
   }
@@ -285,34 +285,55 @@ export class TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    this._cleanup = this.addLoadListener(() => {
-      this._users.forEach((user) => {
-        if (user instanceof Viewport)
-          user.invalidateScene();
-      });
-    });
+    const removals = [
+      this.onTileLoad.addListener(() => this.invalidateAllScenes()),
+      this.onTileChildrenLoad.addListener(() => this.invalidateAllScenes()),
+      this.onTileTreeLoad.addListener(() => {
+        // A reality model tile tree's range may extend outside of the project extents - we'll want to recompute the extents
+        // of any spatial view's that may be displaying the reality model.
+        for (const user of this.tileUsers)
+          if (user instanceof Viewport && user.view.isSpatialView())
+            user.invalidateController();
+      }),
+    ];
+
+    this._cleanup = () => {
+      removals.forEach((removal) => removal());
+    };
   }
 
   private _tileStorage?: TileStorage;
+  private _tileStoragePromise?: Promise<TileStorage>;
   private async getTileStorage(): Promise<TileStorage> {
-    if (this._tileStorage === undefined) {
-      if (this._cloudStorage !== undefined) {
-        this._tileStorage = new TileStorage(this._cloudStorage);
-      } else {
-        await import("reflect-metadata");
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const azureFrontend = await require("./object-storage-azure")();
-        const azureStorage = new azureFrontend.AzureFrontendStorage(new azureFrontend.FrontendBlockBlobClientWrapperFactory());
-        this._tileStorage = new TileStorage(azureStorage);
-      }
+    if (this._tileStorage !== undefined)
+      return this._tileStorage;
+
+    // if object-storage-azure is already being dynamically loaded, just return the promise.
+    if (this._tileStoragePromise !== undefined)
+      return this._tileStoragePromise;
+
+    // if custom implementation is provided, construct a new TileStorage instance and return it.
+    if (this._cloudStorage !== undefined) {
+      this._tileStorage = new TileStorage(this._cloudStorage);
+      return this._tileStorage;
     }
-    return this._tileStorage;
+
+    // start dynamically loading default implementation and save the promise to avoid duplicate instances
+    this._tileStoragePromise = (async () => {
+      await import("reflect-metadata");
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import(/* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend");
+      const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
+      this._tileStorage = new TileStorage(azureStorage);
+      return this._tileStorage;
+    })();
+    return this._tileStoragePromise;
   }
 
   /** @internal */
-  public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get enableInstancing() { return this._enableInstancing; }
   /** @internal */
-  public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
+  public get enableIndexedEdges() { return this._enableIndexedEdges; }
   /** @internal */
   public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
   public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
@@ -683,8 +704,14 @@ export class TileAdmin {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
       requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
 
-    if (undefined === requestProps.quantizePositions)
-      requestProps = { ...requestProps, quantizePositions: false };
+    // For backwards compatibility, these options default to true in the backend. Explicitly set them to false in (newer) frontends if not supplied.
+    if (undefined === requestProps.quantizePositions || undefined === requestProps.useAbsolutePositions) {
+      requestProps = {
+        ...requestProps,
+        quantizePositions: requestProps.quantizePositions ?? false,
+        useAbsolutePositions: requestProps.useAbsolutePositions ?? false,
+      };
+    }
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
@@ -926,7 +953,7 @@ export class TileAdmin {
 
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
-    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
   }
 }
 

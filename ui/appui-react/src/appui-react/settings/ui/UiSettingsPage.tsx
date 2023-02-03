@@ -33,7 +33,20 @@ import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react
  *
  * @beta
  */
-export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }) {
+export function UiSettingsPage(): JSX.Element;
+
+/**
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported.
+ * @beta
+ */
+export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): JSX.Element; // eslint-disable-line @typescript-eslint/unified-signatures
+
+/**
+ * @deprecated in 3.6.
+ * @beta
+ */
+export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean }) {
+  const { allowSettingUiFrameworkVersion } = props || {};
   const themeTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeTitle"));
   const themeDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeDescription"));
   const autoHideTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoHideTitle"));
@@ -59,9 +72,11 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const animateToolSettingsDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.animateToolSettingsDescription"));
   const useToolAsToolSettingsLabelTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.useToolAsToolSettingsLabelTitle"));
   const useToolAsToolSettingsLabelDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.useToolAsToolSettingsLabelDescription"));
+  const toolbarOpacityTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.toolbarOpacityTitle"));
+  const toolbarOpacityDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.toolbarOpacityDescription"));
 
   const [theme, setTheme] = React.useState(() => UiFramework.getColorTheme());
-  const [uiVersion, setUiVersion] = React.useState(() => UiFramework.uiVersion);
+  const [uiVersion, setUiVersion] = React.useState(() => UiFramework.uiVersion); // eslint-disable-line deprecation/deprecation
   const [useDragInteraction, setUseDragInteraction] = React.useState(() => UiFramework.useDragInteraction);
   const [showWidgetIcon, setShowWidgetIcon] = React.useState(() => UiFramework.showWidgetIcon);
   const [autoCollapseUnpinnedPanels, setAutoCollapseUnpinnedPanels] = React.useState(() => UiFramework.autoCollapseUnpinnedPanels);
@@ -71,11 +86,13 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const [autoHideUi, setAutoHideUi] = React.useState(() => UiShowHideManager.autoHideUi);
   const [useProximityOpacity, setUseProximityOpacity] = React.useState(() => UiShowHideManager.useProximityOpacity);
   const [snapWidgetOpacity, setSnapWidgetOpacity] = React.useState(() => UiShowHideManager.snapWidgetOpacity);
+  const [toolbarOpacity, setToolbarOpacity] = React.useState(() => UiFramework.getToolbarOpacity());
 
   React.useEffect(() => {
     const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity", "configurableui:set-show-widget-icon",
       "configurableui:set-drag-interaction", "configurableui:set-framework-version",
-      "configurableui:set-auto-collapse-unpinned-panels", "configurableui:set-animate-tool-settings", "configurableui:set-use-tool-as-tool-settings-label", SyncUiEventId.ShowHideManagerSettingChange];
+      "configurableui:set-auto-collapse-unpinned-panels", "configurableui:set-animate-tool-settings",
+      "configurableui:set-use-tool-as-tool-settings-label", "configurableui:set-toolbar-opacity", SyncUiEventId.ShowHideManagerSettingChange];
 
     const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
@@ -84,8 +101,8 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
           setTheme(UiFramework.getColorTheme());
         if (UiShowHideManager.autoHideUi !== autoHideUi)
           setAutoHideUi(UiShowHideManager.autoHideUi);
-        if (UiFramework.uiVersion !== uiVersion)
-          setUiVersion(UiFramework.uiVersion);
+        if (UiFramework.uiVersion !== uiVersion) // eslint-disable-line deprecation/deprecation
+          setUiVersion(UiFramework.uiVersion); // eslint-disable-line deprecation/deprecation
         if (UiFramework.useDragInteraction !== useDragInteraction)
           setUseDragInteraction(UiFramework.useDragInteraction);
         if (UiFramework.showWidgetIcon !== showWidgetIcon)
@@ -104,11 +121,13 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
           setAnimateToolSettings(UiFramework.animateToolSettings);
         if (UiFramework.useToolAsToolSettingsLabel !== useToolAsToolSettingsLabel)
           setUseToolAsToolSettingsLabel(UiFramework.useToolAsToolSettingsLabel);
+        if (UiFramework.getToolbarOpacity() !== toolbarOpacity)
+          setToolbarOpacity(UiFramework.getToolbarOpacity());
       }
     };
     return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
   }, [autoCollapseUnpinnedPanels, autoHideUi, showWidgetIcon, snapWidgetOpacity, theme, uiVersion,
-    useDragInteraction, useProximityOpacity, widgetOpacity, animateToolSettings, useToolAsToolSettingsLabel]);
+    useDragInteraction, useProximityOpacity, widgetOpacity, animateToolSettings, useToolAsToolSettingsLabel, toolbarOpacity]);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
   const themeOptions: SelectOption<string>[] = [
@@ -148,7 +167,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
     }
   }, []);
   const onToggleFrameworkVersion = React.useCallback(async () => {
-    UiFramework.setUiVersion(uiVersion === "2" ? "1" : "2");
+    UiFramework.setUiVersion(uiVersion === "2" ? "1" : "2"); // eslint-disable-line deprecation/deprecation
   }, [uiVersion]);
 
   const onToggleDragInteraction = React.useCallback(async () => {
@@ -163,6 +182,13 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const OnToggleUseToolAsToolSettingsLabel = React.useCallback(async () => {
     UiFramework.setUseToolAsToolSettingsLabel(!useToolAsToolSettingsLabel);
   }, [useToolAsToolSettingsLabel]);
+
+  const onToolbarOpacityChange = React.useCallback(async (values: readonly number[]) => {
+    // istanbul ignore else
+    if (values.length > 0) {
+      UiFramework.setToolbarOpacity(values[0]);
+    }
+  }, []);
 
   return (
     <div className="uifw-settings">
@@ -183,8 +209,9 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
         settingUi={<ToggleSwitch checked={autoHideUi} onChange={onAutoHideChange} />}
       />
       {allowSettingUiFrameworkVersion && <SettingsItem title={useNewUiTitle.current} description={useNewUiDescription.current}
-        settingUi={<ToggleSwitch checked={UiFramework.uiVersion === "2"} onChange={onToggleFrameworkVersion} />}
+        settingUi={<ToggleSwitch checked={UiFramework.uiVersion === "2"} onChange={onToggleFrameworkVersion} />} // eslint-disable-line deprecation/deprecation
       />}
+      {/* eslint-disable-next-line deprecation/deprecation */}
       {UiFramework.uiVersion === "2" && <>
         <SettingsItem title={dragInteractionTitle.current} description={dragInteractionDescription.current}
           settingUi={<ToggleSwitch checked={useDragInteraction} onChange={onToggleDragInteraction} />}
@@ -206,6 +233,12 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
         />
         <SettingsItem title={useToolAsToolSettingsLabelTitle.current} description={useToolAsToolSettingsLabelDescription.current}
           settingUi={<ToggleSwitch checked={useToolAsToolSettingsLabel} onChange={OnToggleUseToolAsToolSettingsLabel} />}
+        />
+        <SettingsItem title={toolbarOpacityTitle.current} description={toolbarOpacityDescription.current}
+          settingUi={
+            <Slider style={{ flex: "1" }} values={[toolbarOpacity]} step={0.05} onChange={onToolbarOpacityChange}
+              min={0.20} max={1.0} maxLabel="1.0" tickLabels={["", "", "", "", ""]} />
+          }
         />
       </>
       }
@@ -246,12 +279,24 @@ function SettingsItem(props: SettingsItemProps) {
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
  * @beta
  */
+export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
+
+/**
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported. Use `getUiSettingsManagerEntry(itemPriority)` instead.
+ * @beta
+ */
+export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry; // eslint-disable-line @typescript-eslint/unified-signatures
+
+/**
+ * @deprecated in 3.6.
+ * @beta
+ */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {
   return {
     itemPriority, tabId: "uifw:UiStateStorage",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
     icon: IconSpecUtilities.createWebComponentIconSpec(widowSettingsIconSvg),
-    page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
+    page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />, // eslint-disable-line deprecation/deprecation
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),
   };
