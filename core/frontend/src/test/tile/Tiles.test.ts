@@ -11,6 +11,7 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
   Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
+  TileTreeOwner,
   TileTreeSupplier,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
@@ -128,6 +129,15 @@ describe("Tiles", () => {
     public prune() { }
   }
 
+  const createOnTileTreeLoadPromise: (treeOwner: TileTreeOwner) => Promise<void> =  async (treeOwner: TileTreeOwner)  => {
+    return new Promise((resolve) => {
+      IModelApp.tileAdmin.onTileTreeLoad.addListener((tileTreeOwner) => {
+        if (treeOwner === tileTreeOwner)
+          resolve();
+      });
+    });
+  };
+
   class Supplier implements TileTreeSupplier {
     public compareTileTreeIds(lhs: TestTree, rhs: TestTree): number {
       return lhs.treeId - rhs.treeId;
@@ -159,8 +169,17 @@ describe("Tiles", () => {
     const contentSize = 100;
     const tree1 = new TestTree(contentSize, imodel);
     const tree2 = new TestTree(contentSize, imodel);
-    imodel.tiles.getTileTreeOwner(tree1, supplier);
-    imodel.tiles.getTileTreeOwner(tree2, supplier);
+    const treeOwner1 = imodel.tiles.getTileTreeOwner(tree1, supplier);
+    const treeOwner2 = imodel.tiles.getTileTreeOwner(tree2, supplier);
+
+    // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)
+    // Unfortunately 'TileTreeOwner.load()' doesn't return a promise this test can await.
+    // To workaround this, we create our own Promise hooked to the 'onTileTreeLoad' event.
+    const promises = [createOnTileTreeLoadPromise(treeOwner1), createOnTileTreeLoadPromise(treeOwner2)];
+
+    treeOwner1.load();
+    treeOwner2.load();
+    await Promise.all(promises);
 
     let nbItems = 0;
     for ( const _item of imodel.tiles) {
@@ -168,10 +187,13 @@ describe("Tiles", () => {
     }
     expect(nbItems).to.equals(2);
 
-    // Make sure the right tree is removed
+    // Make sure the right tree is removed / disposed
     expect(tree1.isDisposed).to.be.false;
+    expect(tree2.isDisposed).to.be.false;
     imodel.tiles.resetTileTreeOwner(tree1, supplier);
     expect(tree1.isDisposed).to.be.true;
+    expect(tree2.isDisposed).to.be.false;
+
     nbItems = 0;
     for ( const item of imodel.tiles) {
       expect(item.id.id).to.equals(tree2.id);
