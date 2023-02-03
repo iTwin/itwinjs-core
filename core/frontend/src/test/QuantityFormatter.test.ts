@@ -5,7 +5,9 @@
 
 import { assert } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
 import { Parser, UnitProps } from "@itwin/core-quantity";
+import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
@@ -49,6 +51,7 @@ describe("Quantity formatter", async () => {
   const myLocalStorage = storageMock();
 
   before(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     Object.defineProperty(window, "localStorage", {
       get: () => myLocalStorage,
     });
@@ -62,6 +65,7 @@ describe("Quantity formatter", async () => {
   after(async () => {
     // restore the overriden property getter
     Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);
+    await IModelApp.shutdown();
   });
 
   it("Length should honor overrides from LocalUnitFormatProvider", async () => {

@@ -19,6 +19,8 @@ import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 

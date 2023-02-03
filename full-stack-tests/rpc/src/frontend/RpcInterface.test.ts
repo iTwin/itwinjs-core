@@ -19,6 +19,7 @@ import {
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
+/* eslint-disable deprecation/deprecation */
 /* eslint-disable @typescript-eslint/unbound-method */
 // cspell:ignore oldvalue newvalue
 

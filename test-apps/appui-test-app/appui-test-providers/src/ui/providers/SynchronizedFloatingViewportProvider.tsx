@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { BackstageItem, BackstageItemUtilities, CommonToolbarItem, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
-import { CustomItemDef, IModelConnectedViewSelector, ToolbarHelper } from "@itwin/appui-react";
+import { CommonToolbarItem } from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemUtilities, CustomItemDef, IModelConnectedViewSelector, StageUsage, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-react";
 import { OpenSynchronizedViewTool } from "../../tools/OpenSynchronizedViewTool";
 import { SynchronizedFloatingViewportStage } from "../frontstages/SynchronizedFloatingViewport";
 import { AppUiTestProviders } from "../../AppUiTestProviders";

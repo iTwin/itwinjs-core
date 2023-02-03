@@ -84,7 +84,7 @@ const applySolarShadowMapTerrain = `
 export function addEvsmExponent(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_evsmExponent", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_evsmExponent", (uniform) => {
-      uniform.setUniform1f((RenderType.TextureFloat === System.instance.capabilities.maxRenderType) ? evsm32Exp : evsm16Exp);
+      uniform.setUniform1f((RenderType.TextureFloat === System.instance.maxRenderType) ? evsm32Exp : evsm16Exp);
     });
   });
 }

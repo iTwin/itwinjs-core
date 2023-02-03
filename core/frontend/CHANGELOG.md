@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 11 Jan 2023 16:46:30 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+### Updates
+
+- Fix map-layers WMS request failure on some servers requiring 'Transparent' parameter value to bo upper-case (as specified in the WMS specification)
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+### Updates
+
+- Remove dependency on xml-js library in core-frontend.
 
 ## 3.5.2
 Wed, 11 Jan 2023 16:46:30 GMT

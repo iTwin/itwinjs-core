@@ -29,7 +29,7 @@ import { UiComponents } from "../UiComponents";
  * @public
  */
 export interface CustomToolbarItem extends CustomButtonDefinition {
-  /** React node that must result in providing a PopupItem @deprecated use panelContentNode */
+  /** React node that must result in providing a PopupItem @deprecated in 3.x. use panelContentNode */
   buttonNode?: React.ReactNode;
   /** defines the content to display in popup panel */
   panelContentNode?: React.ReactNode;
@@ -285,7 +285,7 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
   expandsTo?: Direction;
   /** Describes to which direction the overflow popup panels are expanded. Defaults to: [[Direction.Right]] */
   overflowExpandsTo?: Direction;
-  /** definitions for items of the toolbar. i.e. [[CommonToolbarItem]]. Items are expected to be already sorted by group and item. */
+  /** Definitions for items of the toolbar. Items are expected to be already sorted by group and item. */
   items: CommonToolbarItem[];
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;

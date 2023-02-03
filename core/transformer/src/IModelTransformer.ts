@@ -472,18 +472,25 @@ export class IModelTransformer extends IModelExportHandler {
 
     try {
       const startChangesetId = args.startChangesetId ?? this.sourceDb.changeset.id;
-      const firstChangesetIndex = (
-        await IModelHost.hubAccess.queryChangeset({
-          iModelId: this.sourceDb.iModelId,
-          changeset: { id: startChangesetId },
-          accessToken: args.accessToken,
-        })
-      ).index;
+      const endChangesetId = this.sourceDb.changeset.id;
+      const [firstChangesetIndex, endChangesetIndex] = await Promise.all(
+        [startChangesetId, endChangesetId]
+          .map(async (id) =>
+            IModelHost.hubAccess
+              .queryChangeset({
+                iModelId: this.sourceDb.iModelId,
+                changeset: { id },
+                accessToken: args.accessToken,
+              })
+              .then((changeset) => changeset.index)
+          )
+      );
+
       const changesetIds = await ChangeSummaryManager.createChangeSummaries({
         accessToken: args.accessToken,
         iModelId: this.sourceDb.iModelId,
         iTwinId: this.sourceDb.iTwinId,
-        range: { first: firstChangesetIndex },
+        range: { first: firstChangesetIndex, end: endChangesetIndex },
       });
 
       ChangeSummaryManager.attachChangeCache(this.sourceDb);

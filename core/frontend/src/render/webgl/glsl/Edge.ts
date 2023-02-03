@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { IsAnimated, IsInstanced, IsThematic, PositionType } from "../TechniqueFlags";
+import { IsAnimated, IsInstanced, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { TextureUnit } from "../RenderFlags";
 import { addAnimation } from "./Animation";
@@ -272,7 +272,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   }
 
   if (isAnimated) {
-    addAnimation(vert, false, IsThematic.No);
+    addAnimation(vert, false);
     vert.addInitializer(animateEndPoint);
   }
 
@@ -293,7 +293,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   addLineWeight(vert);
 
   if (isSilhouette || isIndexed) {
-    addNormalMatrix(vert, instanced);
+    addNormalMatrix(vert);
     addFrustum(builder);
     vert.addFunction(octDecodeNormal);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, isSilhouette ? checkForSilhouetteDiscardNonIndexed : checkForSilhouetteDiscardIndexed);

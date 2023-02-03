@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { printRuleset } from "./Utils";
@@ -32,18 +32,18 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "test",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           condition: `GetVariableStringValue("TREE_TYPE") = "models"`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["Model"] },
             arePolymorphic: true,
           }],
         }, {
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           condition: `GetVariableStringValue("TREE_TYPE") = "elements"`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["Element"] },
             arePolymorphic: true,
           }],
@@ -128,9 +128,9 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "test",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["Element"] },
             arePolymorphic: true,
             instanceFilter: `NOT HasVariable("ELEMENT_IDS") OR GetVariableIntValues("ELEMENT_IDS").AnyMatch(id => id = this.ECInstanceId)`,
@@ -255,19 +255,19 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "test",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
             arePolymorphic: true,
             groupByClass: false,
             groupByLabel: false,
           }],
         }, {
-          ruleType: RuleTypes.LabelOverride,
+          ruleType: "LabelOverride",
           label: `IIF(HasVariable("PREFIX"), GetVariableStringValue("PREFIX") & " " & this.CodeValue, this.CodeValue)`,
         }, {
-          ruleType: RuleTypes.InstanceLabelOverride,
+          ruleType: "InstanceLabelOverride",
           class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
           values: [],
         }],

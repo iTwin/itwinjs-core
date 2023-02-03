@@ -65,17 +65,21 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
 
   /**
    * An instance filter that should be applied for this hierarchy level.
-   * @alpha
+   *
+   * **Note:** May only be used on hierarchy levels that support filtering - check [[NavNode.supportsFiltering]] before
+   * requesting filtered children.
+   *
+   * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
 }
 
 /**
  * Params for hierarchy level descriptor requests.
- * @alpha
+ * @beta
  */
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
-  /** Key of the parent node to get descriptor for */
+  /** Key of the parent node to get hierarchy level descriptor for. */
   parentKey?: TNodeKey;
 }
 
@@ -105,10 +109,10 @@ export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable =
 
 /**
  * Request type for content sources requests.
- * @beta
+ * @public
  */
 export interface ContentSourcesRequestOptions<TIModel> extends RequestOptions<TIModel> {
-  /** Full names of classes to get content sources for. */
+  /** Full names of classes to get content sources for. Format for a full class name: `SchemaName:ClassName`. */
   classes: string[];
 }
 
@@ -154,13 +158,13 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 
 /**
  * Request type for element properties requests
- * @beta
+ * @public
  */
 export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
 
 /**
  * Request type for single element properties requests.
- * @beta
+ * @public
  */
 export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
   /** ID of the element to get properties for. */
@@ -169,11 +173,12 @@ export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestO
 
 /**
  * Request type for multiple elements properties requests.
- * @beta
+ * @public
  */
 export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
-  /** Classes of the elements to get properties for. If `elementClasses` is undefined all classes
-   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>",
+  /**
+   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
+   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
    * "<schema name or alias>:<class_name>".
    */
   elementClasses?: string[];
@@ -181,7 +186,7 @@ export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOp
 
 /**
  * Request type for content instance keys' requests.
- * @beta
+ * @public
  */
 export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
   /**
@@ -218,8 +223,8 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
- * Request options used for calculating selection based on picked instance ksy and selection scope
- * @alpha
+ * Request options used for calculating selection based on given instance keys and selection scope.
+ * @public
  */
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
   elementIds: Id64String[];
@@ -278,7 +283,7 @@ export type Prioritized<TOptions extends {}> = TOptions & {
 
 /**
  * Checks if supplied request options are for single or multiple element properties.
- * @beta
+ * @internal
  */
 export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel> {
   return (options as SingleElementPropertiesRequestOptions<TIModel>).elementId !== undefined;

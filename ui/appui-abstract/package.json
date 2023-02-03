@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "3.6.0-dev.53",
+  "version": "4.0.0-dev.4",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -36,7 +36,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.6.0-dev.53"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -104,6 +104,16 @@
     ],
     "rules": {
       "max-statements-per-line": "off"
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "src/test/**/*"
+        ],
+        "rules": {
+          "deprecation/deprecation": "off"
+        }
+      }
+    ]
   }
 }

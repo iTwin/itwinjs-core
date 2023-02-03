@@ -93,21 +93,31 @@ class ClassifierTextures implements WebGLDisposable {
   }
 }
 
-abstract class ClassifierFrameBuffers implements WebGLDisposable {
-  protected constructor(
+class ClassifierFrameBuffers implements WebGLDisposable {
+  private constructor(
     public readonly textures: ClassifierTextures,
-    private readonly _hilite: FrameBuffer) { }
+    private readonly _hilite: FrameBuffer,
+    private readonly _fbo: FrameBuffer,
+    private readonly _clearGeom: ViewportQuadGeometry) {
+  }
 
   public get isDisposed(): boolean {
-    return this.textures.isDisposed && this._hilite.isDisposed;
+    return this.textures.isDisposed && this._hilite.isDisposed && this._fbo.isDisposed && this._clearGeom.isDisposed;
   }
 
   public dispose(): void {
+    dispose(this._fbo);
+    dispose(this._clearGeom);
     dispose(this.textures);
     dispose(this._hilite);
   }
 
-  public abstract draw(cmds: DrawCommands, target: Target): void;
+  public draw(cmds: DrawCommands, target: Target): void {
+    System.instance.frameBufferStack.execute(this._fbo, true, false, () => {
+      target.techniques.draw(getDrawParams(target, this._clearGeom));
+      target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
+    });
+  }
 
   public drawHilite(cmds: DrawCommands, target: Target): void {
     const system = System.instance;
@@ -128,95 +138,12 @@ abstract class ClassifierFrameBuffers implements WebGLDisposable {
     if (undefined === hiliteFbo)
       return undefined;
 
-    if (System.instance.capabilities.supportsDrawBuffers)
-      return ClassifierMRTFrameBuffers.createMRT(textures, hiliteFbo);
-    else
-      return ClassifierMPFrameBuffers.createMP(textures, hiliteFbo);
-  }
-}
-
-class ClassifierMRTFrameBuffers extends ClassifierFrameBuffers {
-  private readonly _fbo: FrameBuffer;
-  private readonly _clearGeom: ViewportQuadGeometry;
-
-  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, fbo: FrameBuffer, geom: ViewportQuadGeometry) {
-    super(textures, hilite);
-    this._fbo = fbo;
-    this._clearGeom = geom;
-  }
-
-  public override get isDisposed(): boolean {
-    return super.isDisposed
-      && this._fbo.isDisposed
-      && this._clearGeom.isDisposed;
-  }
-
-  public override dispose(): void {
-    dispose(this._fbo);
-    dispose(this._clearGeom);
-    super.dispose();
-  }
-
-  public static createMRT(textures: ClassifierTextures, hilite: FrameBuffer): ClassifierMRTFrameBuffers | undefined {
     const fbo = FrameBuffer.create([textures.color.texture, textures.feature.texture]);
     if (undefined === fbo)
       return undefined;
 
     const geom = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
-    return undefined !== geom ? new ClassifierMRTFrameBuffers(textures, hilite, fbo, geom) : undefined;
-  }
-
-  public draw(cmds: DrawCommands, target: Target): void {
-    System.instance.frameBufferStack.execute(this._fbo, true, false, () => {
-      target.techniques.draw(getDrawParams(target, this._clearGeom));
-      target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
-    });
-  }
-}
-
-class ClassifierMPFrameBuffers extends ClassifierFrameBuffers {
-  private readonly _color: FrameBuffer;
-  private readonly _feature: FrameBuffer;
-
-  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, color: FrameBuffer, feature: FrameBuffer) {
-    super(textures, hilite);
-    this._color = color;
-    this._feature = feature;
-  }
-
-  public override get isDisposed(): boolean {
-    return super.isDisposed
-      && this._color.isDisposed
-      && this._feature.isDisposed;
-  }
-
-  public override dispose(): void {
-    dispose(this._color);
-    dispose(this._feature);
-    super.dispose();
-  }
-
-  public static createMP(textures: ClassifierTextures, hilite: FrameBuffer): ClassifierMPFrameBuffers | undefined {
-    const color = FrameBuffer.create([textures.color.texture]);
-    const feature = FrameBuffer.create([textures.feature.texture]);
-    return undefined !== color && undefined !== feature ? new ClassifierMPFrameBuffers(textures, hilite, color, feature) : undefined;
-  }
-
-  public draw(cmds: DrawCommands, target: Target): void {
-    const system = System.instance;
-    const gl = system.context;
-    const draw = (feature: boolean) => {
-      const fbo = feature ? this._feature : this._color;
-      system.frameBufferStack.execute(fbo, true, false, () => {
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(GL.BufferBit.Color);
-        target.compositor.currentRenderTargetIndex = feature ? 1 : 0;
-        target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
-      });
-    };
-
-    draw(false);
-    draw(true);
+    return undefined !== geom ? new this(textures, hiliteFbo, fbo, geom) : undefined;
   }
 }
 
@@ -266,8 +193,6 @@ class MaskFrameBuffer extends SingleTextureFrameBuffer {
     system.frameBufferStack.execute(this.fbo, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
-      if (!System.instance.capabilities.supportsDrawBuffers)
-        target.compositor.currentRenderTargetIndex = 0;
       target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
     });
   }

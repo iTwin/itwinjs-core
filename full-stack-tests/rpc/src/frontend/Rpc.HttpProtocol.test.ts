@@ -15,8 +15,8 @@ if (false) {
       const expectedPendings = 2;
       let pendingsReceived = 0;
 
-      const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
-        if (type !== RpcRequestEvent.PendingUpdateReceived || request.operation !== op1)
+      const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => { // eslint-disable-line deprecation/deprecation
+        if (type !== RpcRequestEvent.PendingUpdateReceived || request.operation !== op1) // eslint-disable-line deprecation/deprecation
           return;
 
         if ((request as any)[COUNT] === undefined) {
