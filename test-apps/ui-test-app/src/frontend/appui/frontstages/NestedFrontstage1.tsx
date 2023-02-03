@@ -109,7 +109,7 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-smiley-happy",
       label: "Open Modal Dialog",
-      execute: () => UiFramework.dialogs.modal.openDialog(<TestModalDialog />),
+      execute: () => UiFramework.dialogs.modal.open(<TestModalDialog />),
     });
   }
 

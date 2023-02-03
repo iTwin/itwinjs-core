@@ -323,7 +323,7 @@ export class OpenViewPopoutTool extends Tool {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, id: string, title: string }) {
   const handleClose = React.useCallback(() => {
-    UiFramework.content.dialogs.closeDialog(id);
+    UiFramework.content.dialogs.close(id);
   }, [id]);
 
   return (
@@ -373,7 +373,7 @@ export class OpenViewDialogTool extends Tool {
         y = (.3 * stage.nineZoneState.size.height) + (40 * (floatingContentCount - 1));
       }
     }
-    UiFramework.content.dialogs.openDialog(<IModelViewDialog x={x} y={y} id={OpenViewDialogTool.dialogId}
+    UiFramework.content.dialogs.open(<IModelViewDialog x={x} y={y} id={OpenViewDialogTool.dialogId}
       title={`IModel View (${OpenViewDialogTool._counter})`} />, OpenViewDialogTool.dialogId);
   }
 

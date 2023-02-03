@@ -136,7 +136,7 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
       opened: false,
     }), () => {
       if (!this.state.opened)
-        UiFramework.dialogs.modal.closeDialog();
+        UiFramework.dialogs.modal.close();
     });
   };
 

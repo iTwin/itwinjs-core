@@ -315,14 +315,14 @@ export class Frontstage4 extends FrontstageProvider {
   }
 
   private _closeModal = () => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   };
 
   private get _spinnerTestDialogItem() {
     const id = "spinners";
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
-      execute: () => { UiFramework.dialogs.modeless.openDialog(<SpinnerTestDialog opened={true} onClose={() => UiFramework.dialogs.modeless.closeDialog(id)} />, id); },
+      execute: () => { UiFramework.dialogs.modeless.open(<SpinnerTestDialog opened={true} onClose={() => UiFramework.dialogs.modeless.close(id)} />, id); },
     });
   }
 
@@ -332,7 +332,7 @@ export class Frontstage4 extends FrontstageProvider {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.sampleModelessDialog",
       execute: () => {
-        UiFramework.dialogs.modeless.openDialog(
+        UiFramework.dialogs.modeless.open(
           <SampleModelessDialog
             dialogId={dialogId}
             onClose={() => this._handleModelessClose(dialogId)}
@@ -342,7 +342,7 @@ export class Frontstage4 extends FrontstageProvider {
   }
 
   private _handleModelessClose = (dialogId: string) => {
-    UiFramework.dialogs.modeless.closeDialog(dialogId);
+    UiFramework.dialogs.modeless.close(dialogId);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Closed modeless dialog: ${dialogId}`));
   };
 
@@ -352,7 +352,7 @@ export class Frontstage4 extends FrontstageProvider {
       labelKey: "SampleApp:buttons.sampleModalDialog",
       // eslint-disable-next-line no-console
       execute: () => {
-        UiFramework.dialogs.modal.openDialog(
+        UiFramework.dialogs.modal.open(
           <SampleModalDialog
             onResult={(result) => this._handleModalResult(result)}
           />);
@@ -361,7 +361,7 @@ export class Frontstage4 extends FrontstageProvider {
   }
 
   private _handleModalResult(result: DialogButtonType) {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Modal dialog result: ${result}`));
   }
 
@@ -396,13 +396,13 @@ export class Frontstage4 extends FrontstageProvider {
           <>
             <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec} labelKey={AppTools.item6.label} />
             <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec} labelKey={AppTools.item5.label} />
-            <ToolButton toolId="openDialog" label="open modal" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.modalDialog())} />
-            <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.modalDialog2())} />
+            <ToolButton toolId="openDialog" label="open modal" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.open(this.modalDialog())} />
+            <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.open(this.modalDialog2())} />
             <ToolButton toolId="openDynamicModal" label="open dynamic modal" iconSpec="icon-tools" execute={this.handleOpenDynamicModal} />
-            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.radialMenu())} />
-            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.testPopup())} />
+            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.open(this.radialMenu())} />
+            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.open(this.testPopup())} />
             <ToolButton toolId="uiProviderModalTest" iconSpec="icon-placeholder" execute={this.handleOpenUiProviderDialogModal} />
-            <ToolButton toolId="reactSelectModalTest" iconSpec="icon-lightbulb" execute={() => UiFramework.dialogs.modal.openDialog(this.testReactSelectDialog())} />
+            <ToolButton toolId="reactSelectModalTest" iconSpec="icon-lightbulb" execute={() => UiFramework.dialogs.modal.open(this.testReactSelectDialog())} />
           </>
         }
       />;

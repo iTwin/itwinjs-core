@@ -106,7 +106,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       opened: false,
     }, () => {
       if (!this.state.opened)
-        UiFramework.dialogs.modal.closeDialog();
+        UiFramework.dialogs.modal.close();
       followUp();
     });
   };

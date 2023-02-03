@@ -67,8 +67,8 @@ export class AppUi {
       },
     ];
 
-    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(keyboardShortcutList);
-    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+    UiFramework.keyboardShortcuts.loadShortcuts(keyboardShortcutList);
+    UiFramework.keyboardShortcuts.loadShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
   }
 
   private static get _bumpToolSettingToggle() {
@@ -85,7 +85,7 @@ export class AppUi {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.showShortcutsMenu",
       execute: () => {
-        UiFramework.keyboardShortcuts.displayShortcutsMenu();
+        UiFramework.keyboardShortcuts.displayMenu();
       },
     });
   }

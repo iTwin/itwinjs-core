@@ -113,7 +113,7 @@ export class ConfigurableUiManager {
 
   /** Loads one or more Keyboard Shortcuts into the [[KeyboardShortcutManager]].
    * @param shortcutList  the properties of the Keyboard Shortcuts to load
-   * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts.loadKeyboardShortcuts` method.
+   * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts.loadShortcuts` method.
    */
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
     UiFramework.keyboardShortcuts.loadShortcuts(shortcutList);

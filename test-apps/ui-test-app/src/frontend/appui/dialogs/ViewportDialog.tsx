@@ -122,7 +122,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
       opened: false,
     }), () => {
       if (!this.state.opened)
-        UiFramework.dialogs.modeless.closeDialog(this.props.dialogId);
+        UiFramework.dialogs.modeless.close(this.props.dialogId);
       followUp();
     });
   };

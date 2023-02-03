@@ -48,7 +48,7 @@ export class CalculatorDialog extends React.Component<CalculatorDialogProps, Cal
 
   private _handleClose = () => {
     this.setState({ opened: false }, () => {
-      UiFramework.dialogs.modal.closeDialog();
+      UiFramework.dialogs.modal.close();
     });
   };
 

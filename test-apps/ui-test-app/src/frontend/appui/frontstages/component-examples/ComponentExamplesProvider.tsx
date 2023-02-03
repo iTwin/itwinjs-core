@@ -396,12 +396,12 @@ export function ColorPickerToggle({ hideRgb }: { hideRgb?: boolean }) {
   const [colorDialogTitle] = React.useState("Select Color");
   const [selectedColor, setSelectedColor] = React.useState(ColorDef.red);
   const handleBackgroundColorDialogOk = React.useCallback((newColorDef: ColorDef) => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     setSelectedColor(newColorDef);
   }, []);
 
   const handleBackgroundColorDialogCancel = React.useCallback(() => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   }, []);
 
   const presetColors = React.useRef(
@@ -426,7 +426,7 @@ export function ColorPickerToggle({ hideRgb }: { hideRgb?: boolean }) {
 
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
-    UiFramework.dialogs.modal.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
+    UiFramework.dialogs.modal.open(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
       colorInputType={!!hideRgb ? undefined : "rgb"} />);
   }, [colorDialogTitle, handleBackgroundColorDialogOk, handleBackgroundColorDialogCancel, hideRgb]);

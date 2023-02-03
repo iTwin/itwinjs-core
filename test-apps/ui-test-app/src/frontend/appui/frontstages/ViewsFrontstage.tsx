@@ -627,7 +627,7 @@ class AdditionalTools {
 
   private get _radialMenuItem() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { UiFramework.dialogs.modal.openDialog(this.radialMenu()); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { UiFramework.dialogs.modal.open(this.radialMenu()); },
     });
   }
 
@@ -638,12 +638,12 @@ class AdditionalTools {
   }
 
   private _closeModal = () => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   };
 
   private get _openCalculatorItem() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openCalculator", execute: () => { UiFramework.dialogs.modal.openDialog(<CalculatorDialog opened={true} />); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openCalculator", execute: () => { UiFramework.dialogs.modal.open(<CalculatorDialog opened={true} />); },
     });
   }
 
@@ -657,7 +657,7 @@ class AdditionalTools {
     const id = "spinners";
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
-      execute: () => { UiFramework.dialogs.modeless.openDialog(<SpinnerTestDialog opened={true} onClose={() => UiFramework.dialogs.modeless.closeDialog(id)} />, id); },
+      execute: () => { UiFramework.dialogs.modeless.open(<SpinnerTestDialog opened={true} onClose={() => UiFramework.dialogs.modeless.close(id)} />, id); },
     });
   }
 
@@ -669,7 +669,7 @@ class AdditionalTools {
 
     const dialog = <ViewportDialog opened={true} iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
-    UiFramework.dialogs.modeless.openDialog(dialog, id);
+    UiFramework.dialogs.modeless.open(dialog, id);
   }
 
   private get _reduceWidgetOpacity() {
@@ -690,7 +690,7 @@ class AdditionalTools {
         // const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
         const content = (
           <CursorPopupContent>
-            {UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode}
+            {UiFramework.frontstages.activeToolInformation?.toolUiProvider?.toolSettingsNode}
           </CursorPopupContent>
         );
         // CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 10);

@@ -115,5 +115,5 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     });
   };
 
-  private _closeDialog = (_followUp: () => void) => UiFramework.dialogs.modal.closeDialog();
+  private _closeDialog = (_followUp: () => void) => UiFramework.dialogs.modal.close();
 }

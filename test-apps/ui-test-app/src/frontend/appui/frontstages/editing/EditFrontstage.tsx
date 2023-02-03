@@ -158,12 +158,12 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.accuDrawDialogVertical",
       execute: () => {
-        UiFramework.dialogs.modeless.openDialog(
+        UiFramework.dialogs.modeless.open(
           <AccuDrawDialog
             opened={true}
             dialogId={dialogId}
             orientation={Orientation.Vertical}
-            onClose={() => UiFramework.dialogs.modeless.closeDialog(dialogId)}
+            onClose={() => UiFramework.dialogs.modeless.close(dialogId)}
           />, dialogId);
       },
     });
@@ -175,12 +175,12 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.accuDrawDialogHorizontal",
       execute: () => {
-        UiFramework.dialogs.modeless.openDialog(
+        UiFramework.dialogs.modeless.open(
           <AccuDrawDialog
             opened={true}
             dialogId={dialogId}
             orientation={Orientation.Horizontal}
-            onClose={() => UiFramework.dialogs.modeless.closeDialog(dialogId)}
+            onClose={() => UiFramework.dialogs.modeless.close(dialogId)}
           />, dialogId);
       },
     });

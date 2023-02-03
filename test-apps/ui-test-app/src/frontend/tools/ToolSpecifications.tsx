@@ -57,7 +57,7 @@ export function UnitsFormatDialog() {
   }, [unitFormat]);
 
   const handleClose = React.useCallback(() => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   }, []);
 
   const onRadioChange = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -638,14 +638,14 @@ export class AppTools {
       commandId: "errorMessage",
       iconSpec: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.open(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
     });
   }
   public static get noIconMessageBoxCommand() {
     return new CommandItemDef({
       commandId: "noIconMessage",
       labelKey: "SampleApp:buttons.noIconMessageBox",
-      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.open(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
     });
   }
 
@@ -654,7 +654,7 @@ export class AppTools {
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.open(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -663,7 +663,7 @@ export class AppTools {
       commandId: "informationMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.localization.getLocalizedString("SampleApp:buttons.informationMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.open(AppTools._messageBox(MessageSeverity.Information, IModelApp.localization.getLocalizedString("SampleApp:buttons.informationMessageBox"))),
     });
   }
 
@@ -672,7 +672,7 @@ export class AppTools {
       commandId: "questionMessage",
       iconSpec: "icon-help",
       labelKey: "SampleApp:buttons.questionMessageBox",
-      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.localization.getLocalizedString("SampleApp:buttons.questionMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.open(AppTools._messageBox(MessageSeverity.Question, IModelApp.localization.getLocalizedString("SampleApp:buttons.questionMessageBox"))),
     });
   }
 
@@ -681,7 +681,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.localization.getLocalizedString("SampleApp:buttons.warningMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.open(AppTools._messageBox(MessageSeverity.Warning, IModelApp.localization.getLocalizedString("SampleApp:buttons.warningMessageBox"))),
     });
   }
 
@@ -690,7 +690,7 @@ export class AppTools {
       commandId: " ",
       iconSpec: " icon-dashboard-2",
       label: "Open Units Formatting Dialog",
-      execute: () => UiFramework.dialogs.modal.openDialog(<UnitsFormatDialog />, "unitsFormatDialog"),
+      execute: () => UiFramework.dialogs.modal.open(<UnitsFormatDialog />, "unitsFormatDialog"),
     });
   }
 
@@ -865,9 +865,9 @@ export class AppTools {
       execute: async () => {
         const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
-          const contentLayout = UiFramework.content.layouts.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoHorizontalSplit);
+          const contentLayout = UiFramework.content.layouts.getForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoHorizontalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
-            await UiFramework.content.layouts.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+            await UiFramework.content.layouts.setActive(contentLayout, activeFrontstageDef.contentGroup);
           } else {
             IModelApp.notifications.outputMessage(
               new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
@@ -884,9 +884,9 @@ export class AppTools {
       execute: async () => {
         const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
-          const contentLayout = UiFramework.content.layouts.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoVerticalSplit);
+          const contentLayout = UiFramework.content.layouts.getForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoVerticalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
-            await UiFramework.content.layouts.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+            await UiFramework.content.layouts.setActive(contentLayout, activeFrontstageDef.contentGroup);
           } else {
             IModelApp.notifications.outputMessage(
               new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));

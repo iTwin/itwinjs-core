@@ -17,12 +17,12 @@ export class ExampleForm extends React.Component {
   private _pickListLabel = "Picker";
 
   public static open() {
-    UiFramework.dialogs.modal.openDialog(<ExampleForm />);
+    UiFramework.dialogs.modal.open(<ExampleForm />);
   }
 
   protected async handleSubmit(values: FieldValues): Promise<void> {
     await this.processFormSubmission(values);
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     const msg = JSON.stringify(values);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Form Submitted", msg));
   }
@@ -43,7 +43,7 @@ export class ExampleForm extends React.Component {
   }
 
   protected handleCancel() {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   }
 
   public override render() {

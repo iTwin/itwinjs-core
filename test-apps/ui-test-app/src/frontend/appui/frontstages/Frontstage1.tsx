@@ -281,7 +281,7 @@ class FrontstageToolWidget extends React.Component {
         if (activeFrontstageDef) {
           const contentLayout = new ContentLayoutDef(StandardContentLayouts.twoHorizontalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
-            await UiFramework.content.layouts.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+            await UiFramework.content.layouts.setActive(contentLayout, activeFrontstageDef.contentGroup);
           }
         }
       },
@@ -313,7 +313,7 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-smiley-happy",
       label: "Open Modal Dialog",
-      execute: () => UiFramework.dialogs.modal.openDialog(<TestModalDialog />),
+      execute: () => UiFramework.dialogs.modal.open(<TestModalDialog />),
     });
   }
 

@@ -315,7 +315,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerAllTools: true });
+    await EditTools.initialize();
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
