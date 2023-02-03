@@ -1548,10 +1548,10 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 
 // @public
 export class CurveCurve {
-    static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[]): CurveLocationDetailPair[];
+    static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[], tolerance?: number): CurveLocationDetailPair[];
     static closeApproachProjectedXYPairs(geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number): CurveLocationDetailPair[];
-    static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[];
-    static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[];
+    static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
+    static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     // @beta
     static intersectionXYZ(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
 }
@@ -1566,7 +1566,7 @@ export enum CurveCurveApproachType {
 
 // @internal
 export class CurveCurveIntersectXY extends NullGeometryHandler {
-    constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean);
+    constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any;
