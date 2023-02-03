@@ -966,7 +966,7 @@ export class MapTileTreeReference extends TileTreeReference {
         if (undefined === layerTree)
           return false; // Not loaded yet.
 
-        const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex == 0);
+        const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex === 0);
         if (layerTree instanceof ImageryMapTileTree) {
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
         } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
