@@ -132,16 +132,6 @@ class Bundle implements WebGLDisposable {
 
     const colorTextures: TextureHandle[] = [];
 
-    // Check if the system can render to a depth texture without a renderable color texture bound as well.
-    // If it cannot, add a renderable color texture to the framebuffer.
-    // MacOS Safari exhibited this behavior, which necessitated this code path.
-    if (!System.instance.canRenderDepthWithoutColor) {
-      const colTex = TextureHandle.createForAttachment(shadowMapWidth, shadowMapHeight, GL.Texture.Format.Rgba, pixelDataType);
-      if (undefined === colTex)
-        return undefined;
-      colorTextures.push(colTex);
-    }
-
     const fbo = FrameBuffer.create(colorTextures, depthTextureHandle);
     if (undefined === fbo)
       return undefined;
