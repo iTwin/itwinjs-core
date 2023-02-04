@@ -96,12 +96,12 @@ export class FrontstageDef {
   private _savedWidgetDefs?: SavedWidgets;
 
   public get id(): string { return this._id; }
-  /** @deprecated in 3.6. */
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.*/
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
-  /** @deprecated in 3.6. */
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.*/
   public get defaultContentId(): string { return this._defaultContentId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
-  /** @deprecated in 3.6. */
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.*/
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
@@ -407,7 +407,7 @@ export class FrontstageDef {
   }
 
   /** Starts the default tool for the Frontstage.
-   * @deprecated in 3.6.
+   * @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.
    */
   public startDefaultTool(): void {
     // Start the default tool

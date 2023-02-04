@@ -44,7 +44,7 @@ export enum StatusBarLabelSide {
 }
 
 /** Type for StatusBar Item Id
- * @deprecated in 3.6.
+ * @deprecated in 3.6. Please use StatusBarItemId from @itwin/appui-react.
  * @public
  */
 export type StatusBarItemId = CommonStatusBarItem["id"]; // eslint-disable-line deprecation/deprecation

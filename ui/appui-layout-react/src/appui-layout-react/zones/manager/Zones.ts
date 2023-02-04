@@ -31,7 +31,7 @@ import { setRectangleProps } from "../../state/internal/NineZoneStateHelpers";
  * |`4`| 5 |`6`|
  * |`7`|`8`|`9`|
  *
- * @deprecated in 3.0.
+ * @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  * @beta
  */
 export type WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
@@ -73,7 +73,7 @@ export type ZonesManagerWidgetsProps =
   { readonly [2]: ToolSettingsWidgetManagerProps };
 
 /** Available zone targets.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  * @beta
  */
 export enum ZoneTargetType {

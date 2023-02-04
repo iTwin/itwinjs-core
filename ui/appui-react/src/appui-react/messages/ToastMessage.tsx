@@ -33,7 +33,7 @@ export interface ToastMessageProps {
 
 /** Toast Message React component
  * @public
- * @deprecated in 3.3.
+ * @deprecated in 3.3.  Replaced by Toaster from @itwin/itwinui-react.
  */
 export function ToastMessage(props: ToastMessageProps) { // eslint-disable-line deprecation/deprecation
   const { id, messageDetails, severity, toastTarget, closeMessage } = props;

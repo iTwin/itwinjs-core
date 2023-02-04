@@ -31,7 +31,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   /** used to explicitly set the tooltip shown by a component. */
   readonly tooltip?: string | ConditionalStringValue;
   /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false.
-   * @deprecated in 3.0.
+   * @deprecated in 3.0. Free-form widgets are obsolete.
    * */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
@@ -61,7 +61,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   readonly syncEventIds?: string[];
   /** Function executed to determine the state of the widget.
    *  Used by UI 1.0 widgets ONLY.
-   * @deprecated in 3.3.
+   * @deprecated in 3.3. UI 1.0 support will be removed in AppUi 4.0.
   */
   readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState; // eslint-disable-line deprecation/deprecation
   /** Badge to be overlaid on the widget tab. */

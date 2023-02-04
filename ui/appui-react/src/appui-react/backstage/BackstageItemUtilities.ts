@@ -41,7 +41,7 @@ export class BackstageItemUtilities {
   });
 
   /** Helper method to set backstage item state from props.
-   * @deprecated in 3.6.
+   * @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.
    */
   public static getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // eslint-disable-line deprecation/deprecation
     const labelSpec = PropsHelper.getStringSpec(props.label, props.labelKey);

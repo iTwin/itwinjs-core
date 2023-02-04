@@ -113,7 +113,7 @@ export interface CustomButtonDefinition extends ToolbarItem {
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
- * @deprecated in 3.6.
+ * @deprecated in 3.6. Please use ToolbarItemId from @itwin/appui-react.
  * @public
  */
 export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation

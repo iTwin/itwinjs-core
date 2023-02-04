@@ -50,7 +50,7 @@ export class AppUiSettings implements UserSettingsProvider {
 
   public colorTheme: UiStateEntry<string>;
   public dragInteraction: UiStateEntry<boolean>;
-  /** @deprecated in 3.6. */
+  /** @deprecated in 3.6. FrameworkVersion is deprecated and will be removed in AppUi 4.0.*/
   public frameworkVersion: UiStateEntry<FrameworkVersionId>; // eslint-disable-line deprecation/deprecation
   public widgetOpacity: UiStateEntry<number>;
   public showWidgetIcon: UiStateEntry<boolean>;

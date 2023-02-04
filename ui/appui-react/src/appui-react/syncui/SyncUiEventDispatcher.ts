@@ -60,12 +60,12 @@ export enum SyncUiEventId {
   /** An InteractiveTool has been activated via the ToolAdmin. */
   ToolActivated = "toolactivated",
   /** A Task has been activated.
-   * @deprecated in 3.0. */
+   * @deprecated in 3.0. Task is obsolete. */
   TaskActivated = "taskactivated",
   /** The state of a Widget has changed. */
   WidgetStateChanged = "widgetstatechanged",
   /** A Workflow has been activated.
-   * @deprecated in 3.0. */
+   * @deprecated in 3.0. Workflow is obsolete. */
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",

@@ -97,7 +97,7 @@ export interface TableCellContentProps extends CommonProps {
 }
 
 /** State of the [[TableCellContent]] React component
- * @internal @deprecated
+ * @internal @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  */
 interface TableCellContentState {
   /** Rendered content */

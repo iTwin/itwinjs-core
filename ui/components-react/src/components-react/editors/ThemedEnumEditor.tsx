@@ -16,8 +16,8 @@ import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { ActionMeta, ValueType } from "react-select/src/types";
 
-/** Properties for [[EnumEditor]] component
- * @beta @deprecated in 3.0.
+/** Properties for [[ThemedEnumEditor]] component
+ * @beta @deprecated in 3.0. Use [EnumEditor]($components-react).
  */
 export interface ThemedEnumEditorProps extends PropertyEditorProps {
   /** Allow searching in enum list */
@@ -35,7 +35,7 @@ interface EnumEditorState {
 }
 
 /** EnumEditor React component that is a property editor with select input
- * @beta @deprecated in 3.0.
+ * @beta @deprecated in 3.0. Use [EnumEditor]($components-react).
  */
 export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -201,7 +201,7 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
 
 /** Enum Property Button Group Editor registered for the "enum" type name.
  * It uses the [[EnumEditor]] React component.
- * @beta @deprecated in 3.0.
+ * @beta @deprecated in 3.0. Use [EnumEditor]($components-react).
  */
 export class ThemedEnumPropertyEditor extends PropertyEditorBase {
 

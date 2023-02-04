@@ -27,7 +27,7 @@ import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
- * @public @deprecated in 3.0.
+ * @public @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export enum ZoneLocation {
   TopLeft = 1,

@@ -14,7 +14,7 @@ import { useRefs } from "../utils/hooks/useRefs";
 
 /** Toggle display types
  * @public
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use ToggleSwitch from @itwin/itwinui-react and its standard theming.
  */
 export enum ToggleButtonType {
   /** Primary (green) background */
@@ -37,7 +37,7 @@ export interface ToggleProps extends CommonProps {
   /** Show a check mark icon when the toggle is "on" (false is default) */
   showCheckmark?: boolean;
   /** Button type, either Primary or Blue (Blue is default).
-   * @deprecated in 3.0. */
+   * @deprecated in 3.0. Use icon in ToggleSwitch props from @itwin/itwinui-react */
   buttonType?: ToggleButtonType;  // eslint-disable-line deprecation/deprecation
   /** Function called when the toggle state is changed */
   onChange?: (checked: boolean) => any;

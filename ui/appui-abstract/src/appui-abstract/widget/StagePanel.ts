@@ -7,7 +7,7 @@
  */
 
 /** Enum for AppUi 1 `Zone` locations that can have widgets added to them at run-time via [[UiItemsProvider]].
- * @public @deprecated in 3.0.
+ * @public @deprecated in 3.0. UI 1.0 support will be removed in AppUi 4.0.
  */
 export enum AbstractZoneLocation {
   CenterLeft = 4,
@@ -22,12 +22,12 @@ export enum AbstractZoneLocation {
  */
 export enum StagePanelLocation {
   Top = 101,
-  /** @deprecated Used in UI1.0 only. */
+  /** @deprecated in 3.6 UI 1.0 support will be removed in AppUi 4.0. */
   TopMost,
   Left,
   Right,
   Bottom,
-  /** @deprecated Used in UI1.0 only. */
+  /** @deprecated in 3.6 UI 1.0 support will be removed in AppUi 4.0. */
   BottomMost,
 }
 

@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Panel]] component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Obsolete.
  * @alpha
  */
 export interface PanelProps extends CommonProps {
@@ -21,7 +21,7 @@ export interface PanelProps extends CommonProps {
 }
 
 /** Basic panel used in [[ExpandableItem]]. Used as base in [[Group]] and [[NestedGroup]] components.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Obsolete.
  * @alpha
  */
 export class Panel extends React.PureComponent<PanelProps> {
@@ -43,7 +43,7 @@ export class Panel extends React.PureComponent<PanelProps> {
   }
 
   /** Determines if an expandable group panel is open.
-   * @deprecated in 1.9.
+   * @deprecated in 1.9. Obsolete.
    */
   public static get isPanelOpen(): boolean {
     return (document.getElementsByClassName(Panel._groupPanelClassName).length > 0);

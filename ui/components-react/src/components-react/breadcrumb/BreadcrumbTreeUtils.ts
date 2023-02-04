@@ -15,7 +15,7 @@ import { UiComponents } from "../UiComponents";
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
  * @beta
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use Breadcrumbs from @itwin/itwinui-react.
  */
 export class BreadcrumbTreeUtils {
 
