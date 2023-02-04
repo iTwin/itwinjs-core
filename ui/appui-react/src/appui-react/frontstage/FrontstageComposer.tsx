@@ -27,6 +27,7 @@ import { ModalFrontstage } from "./ModalFrontstage";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Interface defining callbacks for widget changes
+ * @public
  * @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export interface WidgetChangeHandler {
