@@ -248,7 +248,7 @@ describe("OffsetMeshContext", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("OffsetOptionsSampler", () => {
+  it("OffsetOptionsSampler", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
@@ -276,7 +276,7 @@ describe("OffsetMeshContext", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetOptionsSampler");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("ChamferExample", () => {
+  it("ChamferExample", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
