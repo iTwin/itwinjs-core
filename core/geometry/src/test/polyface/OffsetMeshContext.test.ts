@@ -24,6 +24,8 @@ import { GraphChecker } from "../topology/Graph.test";
 import { OffsetMeshOptions, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { OffsetMeshContext } from "../../polyface/multiclip/OffsetMeshContext";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { SolidPrimitive } from "../../solid/SolidPrimitive";
 
 const globalSeparateFaceEdgeAndVertexOutputs = false;
 function cleanupZero(a: number, tol: number = 1.0e-12): number {
@@ -232,7 +234,6 @@ describe("OffsetMeshContext", () => {
     if (Checker.noisy.offsetMesh)
       OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
 
-    // -- this restricts to first sampler solid (a block) -- closedSweeps.length = 1;
     for (const s of closedSweeps) {
       const builder = PolyfaceBuilder.create(facetOptions);
       builder.addGeometryQuery(s);
@@ -244,6 +245,74 @@ describe("OffsetMeshContext", () => {
     OffsetMeshContext.stringDebugFunction = undefined;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetSampler");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("OffsetOptionsSampler", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const closedSweeps = Sample.createClosedSolidSampler(true, Angle.createDegrees(-90));
+    const openSweeps = Sample.createClosedSolidSampler(false, Angle.createDegrees(-90));
+    const allSweeps = closedSweeps.concat(openSweeps);
+    const facetOptions = StrokeOptions.createForCurves();
+    facetOptions.shouldTriangulate = true;
+    // Checker.noisy.offsetMesh = true;
+    if (Checker.noisy.offsetMesh)
+      OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+    const optionsA = OffsetMeshOptions.create();
+    optionsA.chamferAngleBetweenNormals = Angle.createDegrees(150);
+    const optionsB = OffsetMeshOptions.create();
+    optionsB.chamferAngleBetweenNormals = Angle.createDegrees(85);
+    for (const s of allSweeps) {
+      const builder = PolyfaceBuilder.create(facetOptions);
+      builder.addGeometryQuery(s);
+      const mesh = builder.claimPolyface();
+      const range = mesh.range();
+      x0 = displayOffsetsWithOptionExamples(ck, allGeometry, mesh, 0.05 * range.xLength(), [optionsA, optionsB], x0, !s.capped);
+    }
+    OffsetMeshContext.stringDebugFunction = undefined;
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetOptionsSampler");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it.only("ChamferExample", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const allSweeps: SolidPrimitive[] = [];
+    const a = 5.0;
+    const capped = false;
+    // make triangles with various angles at the origin.
+    for (const degreesBetweenNormals of [30, 45, 70, 85, 110, 140]) {
+      const point0 = Point3d.createZero();
+      const theta = Angle.createDegrees(180 - degreesBetweenNormals);
+      const point1 = Point3d.create(a, 0, 0);
+      const point2 = Point3d.create(a * theta.cos(), theta.sin(), 0);
+      const solid = LinearSweep.createZSweep([point2, point0, point1], 0, 3, capped)!;
+      allSweeps.push(solid);
+    }
+
+    // make arcs with various stroking.
+    const facetOptions = StrokeOptions.createForCurves();
+    facetOptions.shouldTriangulate = true;
+    // Checker.noisy.offsetMesh = true;
+    if (Checker.noisy.offsetMesh)
+      OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+    const optionsA = OffsetMeshOptions.create();
+    optionsA.chamferAngleBetweenNormals = Angle.createDegrees(150);
+    const optionsB = OffsetMeshOptions.create();
+    optionsB.chamferAngleBetweenNormals = Angle.createDegrees(85);
+    for (const s of allSweeps) {
+      const builder = PolyfaceBuilder.create(facetOptions);
+      builder.addGeometryQuery(s);
+      const mesh = builder.claimPolyface();
+      const range = mesh.range();
+      x0 = displayOffsetsWithOptionExamples(ck, allGeometry, mesh, 0.05 * range.xLength(), [optionsA, optionsB], x0, !s.capped);
+    }
+    OffsetMeshContext.stringDebugFunction = undefined;
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "ChamferExample");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -298,5 +367,37 @@ function testOffsets(_ck: Checker, allGeometry: GeometryQuery[], polyface: Index
     }
     y0 += yStepB;
   }
+  return x0;
+}
+/**
+ * @param originalWithOffsets if true, output the original in situ with each offset.  if false, only output the original at start.
+ */
+function displayOffsetsWithOptionExamples(_ck: Checker, allGeometry: GeometryQuery[], polyface: IndexedPolyface,
+  offset: number,
+  optionsArray: OffsetMeshOptions[],
+  xStart: number,
+  originalWithOffsets: boolean
+) {
+  let x0 = xStart;
+  const range = polyface.data.point.getRange();
+  const xStep = Math.max(range.xLength(), 10.0);
+  const yStepA = Math.max(range.yLength(), 10.0);
+
+  let y0 = 0;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
+  y0 += yStepA;
+  for (const offsetOptions of optionsArray) {
+    /*
+          const offsetMesh = PolyfaceQuery.cloneOffset(polyface, offsetSign * offset, offsetOptions);
+          y0 += yStepC;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMesh, x0, y0);
+    */
+    const offsetMeshB = PolyfaceQuery.cloneOffset(polyface, offset, offsetOptions);
+    if (originalWithOffsets)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMeshB, x0, y0);
+    y0 += yStepA;
+  }
+  x0 += xStep;
   return x0;
 }

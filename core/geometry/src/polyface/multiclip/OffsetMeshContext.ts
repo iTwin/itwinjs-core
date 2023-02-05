@@ -126,7 +126,7 @@ export class SectorOffsetProperties {
    * @param averageNormal pre-allocated vector to receive the average normal for a chamfer of the offset edge.
    * @param offsetDistance distance of offset being constructed.  The sign of this resolves angle ambiguity.
    * @param radiansTolerance tolerance for large angle between normals.
-   * @returns true if this edge has SectorOffsetProperties on both sides and the dihedral angle exceeds radiansTolerance.
+   * @returns true if this edge has SectorOffsetProperties on both sides and the angle between normals angle exceeds radiansTolerance.
    */
   public static edgeHasLargeExteriorAngleBetweenNormals(edgeNodeA: HalfEdge,
     edgeVector: Vector3d,
@@ -219,8 +219,7 @@ export class SectorOffsetProperties {
 /*
 About Chamfer Edges ..... as constructed in addChamferTopologyToAllEdges
 
-When edge vertex X to vertex Y has a sharp dihedral angle, a "chamfer face"
-Must be created to "fatten" it.
+When edge vertex X to vertex Y has a sharp angle between normals, a "chamfer face" must be created to "fatten" it.
 
 The original half edges (nodes) for the edge are AX and AY.  These are "mates" in the halfEdge mental model. As always,
 AX is (as needed)
@@ -314,9 +313,9 @@ export class OffsetMeshContext {
     this._outsideEndOfChamferFace = baseGraph.grabMask();
     this._exteriorMask = HalfEdgeMask.EXTERIOR;
     this._offsetCoordinatesReassigned = baseGraph.grabMask();
-    this._smoothSingleDihedralAngleRadians = options.smoothSingleDihedralAngle.radians;
-    this._chamferTurnRadians = options.chamferTurnAngle.radians;
-    this._smoothAccumulatedDihedralAngleRadians = options.smoothAccumulatedDihedralAngle.radians;
+    this._smoothRadiansBetweenNormals = options.smoothSingleAngleBetweenNormals.radians;
+    this._chamferTurnRadians = options.chamferAngleBetweenNormals.radians;
+    this._smoothAccumulatedRadiansBetweenNormals = options.smoothAccumulatedAngleBetweenNormals.radians;
   }
   private _basePolyface: IndexedPolyface;
   private _baseGraph: HalfEdgeGraph;
@@ -357,8 +356,8 @@ export class OffsetMeshContext {
   // * the inside of the sling face has _insideChamferSling
   // * the "outside" of the sling face - i.e. inside the chamfer face and at this vertex - has _outsideEndOfChamferFace
   // * the "outside" of the outgoing edge has _outsideOfChamferFace.
-  private _smoothSingleDihedralAngleRadians: number;
-  private _smoothAccumulatedDihedralAngleRadians: number;
+  private _smoothRadiansBetweenNormals: number;
+  private _smoothAccumulatedRadiansBetweenNormals: number;
   private _chamferTurnRadians: number;
   public static graphDebugFunction?: FacetOffsetGraphDebugFunction;
   public static stringDebugFunction?: FacetOffsetDebugString;
@@ -720,8 +719,8 @@ export class OffsetMeshContext {
     vertexSeed.clearMaskAroundVertex(this._breakMaskA);
     vertexSeed.clearMaskAroundVertex(this._breakMaskB);
 
-    const smoothSingleDihedralAngleRadians = this._smoothSingleDihedralAngleRadians;
-    const smoothAccumulatedDihedralAngleRadians = this._smoothAccumulatedDihedralAngleRadians;
+    const smoothSingleSmoothRadiansBetweenNormals = this._smoothRadiansBetweenNormals;
+    const accumulatedRadiansBetweenNormals = this._smoothAccumulatedRadiansBetweenNormals;
 
     // Step 1: Examine the edge between nodeA and the sector on its vertex predecessor side.  This (alone) determines single angle breaks.
     let numBreaks = 0;
@@ -753,7 +752,7 @@ export class OffsetMeshContext {
         } else if (!SectorOffsetProperties.almostEqualNormals(
           nodeP.edgeTag as SectorOffsetProperties,
           nodeR.edgeTag as SectorOffsetProperties,
-          smoothSingleDihedralAngleRadians)) {
+          smoothSingleSmoothRadiansBetweenNormals)) {
           nodeP.setMask(this._breakMaskA);
           numBreaks++;
           nodeR.setMask(this._breakMaskB);
@@ -785,7 +784,7 @@ export class OffsetMeshContext {
               nodeP.edgeTag as SectorOffsetProperties,
               nodeB.edgeTag as SectorOffsetProperties,
             );
-            if (accumulatedRadians > smoothAccumulatedDihedralAngleRadians) {
+            if (accumulatedRadians > accumulatedRadiansBetweenNormals) {
               nodeP.setMask(this._breakMaskB);
               nodeB.setMask(this._breakMaskA);
               numBreaks++;
@@ -890,7 +889,7 @@ export class OffsetMeshContext {
    * * at input, graph has all original faces and edges
    *   * each sector points to a faceProperties with original facet normal
    * * at exit:
-   *    * new "chamfer faces" are added outside of edges with dihedral angle in excess of options.dihedralAngleForChamferTrigger
+   *    * new "chamfer faces" are added outside of edges with angle between normal sin excess of options.chamferTurnAngleBetweenNormals
    *    * the original edge is split along its length to create space
    *      * one edge "along" each direction inside the slit.
    *      * a sling edge at each end of the slit.
@@ -910,12 +909,12 @@ export class OffsetMeshContext {
    */
   private addChamferTopologyToAllEdges(options: OffsetMeshOptions, distance: number) {
     const edgesToChamfer: HalfEdge[] = [];
-    const chamferRadians = options.chamferTurnAngle.radians;
+    const chamferRadians = options.chamferAngleBetweenNormals.radians;
     const vertexXYZ = Point3d.create();  // reuse
     const edgeVector = Vector3d.create();  // reuse
     const outwardEdgeVector = Vector3d.create(); // reuse
     const averageNormal = Vector3d.create(); // reuse
-    // collect all the edges with sharp dihedral angle.
+    // collect all the edges with sharp turn angle.
     this._baseGraph.announceEdges(
       (_graph: HalfEdgeGraph, edgeNode: HalfEdge) => {
         if (SectorOffsetProperties.edgeHasLargeExteriorAngleBetweenNormals(edgeNode, edgeVector, averageNormal,

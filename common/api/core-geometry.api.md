@@ -3809,11 +3809,11 @@ export class NumberArray {
 
 // @public
 export class OffsetMeshOptions {
-    chamferTurnAngle: Angle;
-    static create(smoothSingleDihedralAngle?: Angle, smoothAccumulatedDihedralAngle?: Angle, chamferTurnAngle?: Angle): OffsetMeshOptions;
+    chamferTurnAngleBetweenNormals: Angle;
+    static create(smoothSingleAngleBetweenNormals?: Angle, smoothAccumulatedAngleBetweenNormals?: Angle, chamferTurnAngleBetweenNormals?: Angle): OffsetMeshOptions;
     outputSelector?: OffsetMeshSelectiveOutputOptions;
-    smoothAccumulatedDihedralAngle: Angle;
-    smoothSingleDihedralAngle: Angle;
+    smoothAccumulatedAngleBetweenNormals: Angle;
+    smoothSingleAngleBetweenNormals: Angle;
 }
 
 // @public
@@ -5261,7 +5261,7 @@ export class Sample {
     static createCenteredRectangleXY(cx: number, cy: number, ax: number, ay: number, z?: number): Point3d[];
     static createClipPlanes(): ClipPlane[];
     static createClipPlaneSets(): UnionOfConvexClipPlaneSets[];
-    static createClosedSolidSampler(capped: boolean): SolidPrimitive[];
+    static createClosedSolidSampler(capped: boolean, rotationAngle?: Angle): SolidPrimitive[];
     static createConeBsplineSurface(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, numSection: number): BSplineSurface3dH | undefined;
     static createCones(): Cone[];
     static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[];

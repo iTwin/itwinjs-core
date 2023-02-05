@@ -74,15 +74,17 @@ export interface OffsetMeshSelectiveOutputOptions {
 }
 /**
  * Options carrier for cloneOffsetMesh
+ * * Default options are strongly recommended.
+ * * The option most likely to be changed is chamferTurnAngle
  * @public
  */
 export class OffsetMeshOptions {
-  /** max dihedral angle to be considered smooth */
-  public smoothSingleDihedralAngle: Angle;
-  /** max accumulation of dihedral angles to be considered smooth */
-  public smoothAccumulatedDihedralAngle: Angle;
-  /** When crossing an edge, this turn angle (typically 90 degrees) triggers a chamfer */
-  public chamferTurnAngle: Angle;
+  /** max angle between normals to be considered smooth */
+  public smoothSingleAngleBetweenNormals: Angle;
+  /** max accumulation of angle between normals to be considered smooth */
+  public smoothAccumulatedAngleBetweenNormals: Angle;
+  /** When crossing an edge, this turn angle (typically 120 degrees) triggers a chamfer */
+  public chamferAngleBetweenNormals: Angle;
   /** optional control structure for selective output.
    * * If undefined, output all expected offset facets.
    */
@@ -90,32 +92,35 @@ export class OffsetMeshOptions {
 
   /** Constructor -- CAPTURE parameters ... */
   private constructor(
-    smoothSingleDihedralAngle: Angle = Angle.createDegrees(25),
-    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees(60),
+    smoothSingleAngleBetweenNormals: Angle = Angle.createDegrees(25),
+    smoothAccumulatedAngleBetweenNormals: Angle = Angle.createDegrees(60),
     chamferTurnAngle: Angle = Angle.createDegrees(90)) {
-    this.smoothSingleDihedralAngle = smoothSingleDihedralAngle.clone();
-    this.smoothAccumulatedDihedralAngle = smoothAccumulatedDihedralAngle.clone();
-    this.chamferTurnAngle = chamferTurnAngle;
+    this.smoothSingleAngleBetweenNormals = smoothSingleAngleBetweenNormals.clone();
+    this.smoothAccumulatedAngleBetweenNormals = smoothAccumulatedAngleBetweenNormals.clone();
+    this.chamferAngleBetweenNormals = chamferTurnAngle.clone();
   }
   /** construct and return an OffsetMeshOptions with given parameters.
    * * Angles are forced to minimum values.
    * * Clones of the angles are given to the constructor.
+   * @param smoothSingleRadiansBetweenNormals an angle larger than this (between facets) is considered a sharp edge
+   * @param smoothAccumulatedAngleBetweenNormals angles that sum to this much may be consolidated for average normal
+   * @param chamferTurnAngleBetweenNormals when facets meet with larger angle, a chamfer edge may be added if the angle between facet normals is larger than this.
    */
   public static create(
-    smoothSingleDihedralAngle: Angle = Angle.createDegrees(25),
-    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees(60),
-    chamferTurnAngle: Angle = Angle.createDegrees(90)) {
+    smoothSingleAngleBetweenNormals: Angle = Angle.createDegrees(25),
+    smoothAccumulatedAngleBetweenNormals: Angle = Angle.createDegrees(60),
+    chamferTurnAngleBetweenNormals: Angle = Angle.createDegrees(120)) {
 
-    const mySmoothSingleDihedralAngle = smoothSingleDihedralAngle.clone();
-    const mySmoothAccumulatedDihedralAngle = smoothAccumulatedDihedralAngle.clone();
-    const myChamferTurnAngle = chamferTurnAngle.clone();
-    if (mySmoothSingleDihedralAngle.degrees < 1)
-      mySmoothAccumulatedDihedralAngle.setDegrees(1.0);
-    if (mySmoothAccumulatedDihedralAngle.degrees < 1.0)
-      mySmoothAccumulatedDihedralAngle.setDegrees(1.0);
-    if (mySmoothAccumulatedDihedralAngle.degrees < 15.0)
-      mySmoothAccumulatedDihedralAngle.setDegrees(15.0);
-    return new OffsetMeshOptions(mySmoothSingleDihedralAngle, mySmoothAccumulatedDihedralAngle, myChamferTurnAngle);
+    const mySmoothSingleRadiansBetweenNormals = smoothSingleAngleBetweenNormals.clone();
+    const mySmoothAccumulatedRadiansBetweenNormals = smoothAccumulatedAngleBetweenNormals.clone();
+    const myChamferTurnAngleBetweenNormals = chamferTurnAngleBetweenNormals.clone();
+    if (mySmoothSingleRadiansBetweenNormals.degrees < 1)
+      mySmoothAccumulatedRadiansBetweenNormals.setDegrees(1.0);
+    if (mySmoothAccumulatedRadiansBetweenNormals.degrees < 1.0)
+      mySmoothAccumulatedRadiansBetweenNormals.setDegrees(1.0);
+    if (mySmoothAccumulatedRadiansBetweenNormals.degrees < 15.0)
+      mySmoothAccumulatedRadiansBetweenNormals.setDegrees(15.0);
+    return new OffsetMeshOptions(mySmoothSingleRadiansBetweenNormals, mySmoothAccumulatedRadiansBetweenNormals, myChamferTurnAngleBetweenNormals);
   }
 }
 
