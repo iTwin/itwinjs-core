@@ -73,7 +73,7 @@ export interface OffsetMeshSelectiveOutputOptions {
   outputOffsetsFromVertices?: boolean;
 }
 /**
- * Options carrier for cloneOffsetMesh
+ * Options carrier for [[PolyfaceQuery.cloneOffset]].
  * * Default options are strongly recommended.
  * * The option most likely to be changed is chamferTurnAngle
  * @public

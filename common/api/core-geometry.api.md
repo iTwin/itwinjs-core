@@ -3809,7 +3809,7 @@ export class NumberArray {
 
 // @public
 export class OffsetMeshOptions {
-    chamferTurnAngleBetweenNormals: Angle;
+    chamferAngleBetweenNormals: Angle;
     static create(smoothSingleAngleBetweenNormals?: Angle, smoothAccumulatedAngleBetweenNormals?: Angle, chamferTurnAngleBetweenNormals?: Angle): OffsetMeshOptions;
     outputSelector?: OffsetMeshSelectiveOutputOptions;
     smoothAccumulatedAngleBetweenNormals: Angle;
