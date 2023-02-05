@@ -112,7 +112,6 @@ export class Capabilities {
   private _maxVertUniformVectors: number = 0;
   private _maxVaryingVectors: number = 0;
   private _maxFragUniformVectors: number = 0;
-  private _canRenderDepthWithoutColor: boolean = false;
   private _maxAnisotropy?: number;
   private _maxAntialiasSamples: number = 1;
   private _supportsCreateImageBitmap: boolean = false;
@@ -160,8 +159,6 @@ export class Capabilities {
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
-
-  public get canRenderDepthWithoutColor(): boolean { return this._canRenderDepthWithoutColor; }
 
   public get supportsShadowMaps(): boolean {
     return this.supportsTextureFloat || this.supportsTextureHalfFloat;
@@ -333,8 +330,6 @@ export class Capabilities {
     // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
     this._maxDepthType = this._isWebGL2 || this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
-    this._canRenderDepthWithoutColor = this._maxDepthType === DepthType.TextureUnsignedInt24Stencil8 ? this.isDepthRenderableWithoutColor(gl) : false;
-
     this._presentFeatures = this._gatherFeatures();
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
     const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
@@ -375,30 +370,6 @@ export class Capabilities {
     const fb: WebGLFramebuffer | null = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-
-    const fbStatus: number = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.deleteFramebuffer(fb);
-    gl.deleteTexture(tex);
-
-    gl.getError(); // clear any errors
-
-    return fbStatus === gl.FRAMEBUFFER_COMPLETE;
-  }
-
-  /** Determines if depth textures can be rendered without also having a color attachment bound on the host system. */
-  private isDepthRenderableWithoutColor(gl: WebGLContext): boolean {
-    const dtExt = this.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
-    if (dtExt === undefined)
-      return false;
-
-    const tex: WebGLTexture | null = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_STENCIL, 1, 1, 0, gl.DEPTH_STENCIL, dtExt.UNSIGNED_INT_24_8_WEBGL, null);
-
-    const fb: WebGLFramebuffer | null = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, tex, 0);
 
     const fbStatus: number = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
