@@ -8,6 +8,7 @@ Table of contents:
 - [Updated minimum requirements](#updated-minimum-requirements)
   - [Node.js](#node-js)
   - [WebGL](#webgl)
+- [Mesh offset](#mesh-offset)
 
 ## Updated minimum requirements
 
@@ -25,13 +26,16 @@ Over a year ago, support for WebGL 2 finally became [available in all major brow
 
 [IModelApp.queryRenderCompatibility]($frontend) will now produce [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility) for a client that does not support WebGL 2.
 
-### Mesh offset
+## Mesh offset
 
-The new static method `PolyfaceQuery.cloneOffsetMesh (inputMesh: IndexedPolyface, signedOffsetDistance: number, offsetOptions: OffsetMeshOptions)`
-creates a mesh with facets offset by given distance.
+The new static method [PolyfaceQuery.cloneOffsetMesh]($core-geometry) creates a mesh with facets offset by a given distance. The image below illustrates the basic concepts.
+
 ![Offset Example 1](./assets/cloneOffsetMeshBoxes.png "Original box mesh, offset box, and chamfered offset box")
-The image with 3 boxes shows the basic concepts.   At left is the original box, size 3 x 5 in the large face and 2 deep   The middle is constructed by `cloneOffsetMesh` with offset of 0.15 and default options.   Note that it maintains the original sharp corners.   The right box is constructed with `chamferAngleBetweenNormals` of 80 degrees.    This says that when the original angle between normals of adjacent facets exceeds 80 degrees the corner should be chamfered.   This creates the slender chamfer faces along the edges and the triangles at the vertices.  The default 120 degree chamfer threshhold encourages corners to be extended to intersection rather than chamfered.
+
+At left is the original box, size 3 x 5 in the large face and 2 deep. The middle is constructed by `cloneOffsetMesh` with offset of 0.15 and default options. Note that it maintains the original sharp corners. The right box is constructed with [OffsetMeshOptions.chamferAngleBetweenNormals]($core-geometry) of 80 degrees. This specifies that when the original angle between normals of adjacent facets exceeds 80 degrees the corner should be chamfered, creating the slender chamfer faces along the edges and the triangles at the vertices. The default 120 degree chamfer threshhold encourages corners to be extended to intersection rather than chamfered.
+
+The image below illustrates results with a more complex cross section.
 
 ![Offset Example 2](./assets/cloneOffsetMeshExample2.png "Offset with sharp corners and with chamfers.")
 
-The second example shows results with a more complex cross section.  The lower left is the original (smaller, inside) mesh with the (transparent) offset mesh around it with all sharp corners.   At upper right the offset has chamfers, again due to setting the `chamferAngleBetweenNormals` to 120 degrees.
+The lower left is the original (smaller, inside) mesh with the (transparent) offset mesh around it with all sharp corners. At upper right the offset has chamfers, again due to setting the `chamferAngleBetweenNormals` to 120 degrees.
