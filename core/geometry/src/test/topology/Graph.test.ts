@@ -14,7 +14,7 @@ import { Angle } from "../../geometry3d/Angle";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point2d} from "../../geometry3d/Point2dVector2d";
 import { Transform } from "../../geometry3d/Transform";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeFunction } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology/HalfEdgeGraphValidation";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
@@ -105,12 +105,18 @@ export class GraphChecker {
       data[i].tryTransformInPlace(transform);
   }
   public static printToConsole = true;
-  public static dumpGraph(graph: HalfEdgeGraph) {
+  public static dumpGraph(graph: HalfEdgeGraph | undefined,
+    formatNode: NodeFunction = HalfEdge.nodeToIdXYString,
+    formatNodeWithoutCoordinates: NodeFunction = HalfEdge.nodeToId) {
+    if (graph === undefined){
+      console.log ("   **** EMPTY GRAPH ****");
+      return;
+    }
     const faces = graph.collectFaceLoops();
     const vertices = graph.collectVertexLoops();
     const faceData = [];
     for (const f of faces) {
-      faceData.push(f.collectAroundFace(HalfEdge.nodeToIdXYString));
+      faceData.push(f.collectAroundFace(formatNode));
     }
     if (this.printToConsole) {
       console.log(`"**FACE LOOPS ${faces.length}`);
@@ -123,7 +129,7 @@ export class GraphChecker {
         vData.push("INCONSISTENT VERTEX XY");
         vData.push(JSON.stringify(v.collectAroundVertex(HalfEdge.nodeToIdMaskXY)));
       } else
-        vData.push([HalfEdge.nodeToIdXYString(v), v.collectAroundVertex(HalfEdge.nodeToId)]);
+        vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
     }
     if (this.printToConsole) {
       console.log(`"**VERTEX LOOPS ${vertices.length}`);
