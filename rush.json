@@ -213,8 +213,7 @@
       "packageName": "@itwin/presentation-components",
       "projectFolder": "presentation/components",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/presentation-opentelemetry",
@@ -227,50 +226,43 @@
       "packageName": "@itwin/presentation-testing",
       "projectFolder": "presentation/testing",
       "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/appui-abstract",
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/core-react",
       "projectFolder": "ui/core-react",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/components-react",
       "projectFolder": "ui/components-react",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/imodel-components-react",
       "projectFolder": "ui/imodel-components-react",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/appui-layout-react",
       "projectFolder": "ui/appui-layout-react",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/appui-react",
       "projectFolder": "ui/appui-react",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/ecschema-metadata",
