@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/eslint-plugin",
+      "comment": "improve internal resolution of formatter module in no-internal-report script",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin"
+}
