@@ -15,6 +15,7 @@ import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
 /* eslint-disable @itwin/prefer-get */
+// cSpell:words XXYZ YXYZ ZXYZ
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
@@ -683,7 +684,8 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * Construct a rigid matrix using vectorA and its 2 perpendicular.
+   * Construct a rigid matrix (orthogonal matrix with +1 determinant) using vectorA and its 2 perpendicular.
+   * * If axisOrder is not passed then `AxisOrder = AxisOrder.ZXY` is used as default.
    * * This function internally uses createPerpendicularVectorFavorXYPlane and createRigidFromColumns.
    */
   public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY,
@@ -696,7 +698,7 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return Matrix3d.createIdentity(result);
   }
-  /** Return the matrix for rotation of `angle` around `axis` */
+  /** Return the matrix for rotation of `angle` around desired `axis` */
   public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined {
     // Rodriguez formula (matrix form), https://mathworld.wolfram.com/RodriguesRotationFormula.html
     const c = angle.cos();
@@ -715,7 +717,7 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return undefined;
   }
-  /** Returns a rotation of specified angle around an axis
+  /** Returns a rotation of specified angle around one of the main axis (X,Y,Z).
    * @param axisIndex index of axis (AxisIndex.X, AxisIndex.Y, AxisIndex.Z) kept fixed by the rotation.
    * @param angle angle of rotation
    * @param result optional result matrix.
@@ -748,14 +750,33 @@ export class Matrix3d implements BeJSONFunctions {
     return myResult;
   }
   /**
- * Replace current columns Ui and Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui).
- * * There is no checking for i,j being 0,1,2.
- * * This is used in compute intensive inner loops
- * @param i first row index. **must be 0,1,2** (unchecked)
- * @param j second row index. **must be 0,1,2** (unchecked)
- * @param c fist coefficient
- * @param s second coefficient
- */
+   * Replace current rows Ui and Uj with (c*Ui + s*Uj) and (c*Uj - s*Ui).
+   * * There is no checking for i,j being 0,1,2.
+   * @param i first row index.  **must be 0,1,2** (unchecked)
+   * @param j second row index. **must be 0,1,2** (unchecked)
+   * @param c fist coefficient
+   * @param s second coefficient
+   */
+  private applyGivensRowOp(i: number, j: number, c: number, s: number): void {
+    let ii = 3 * i;
+    let jj = 3 * j;
+    const limit = ii + 3;
+    for (; ii < limit; ii++, jj++) {
+      const a = this.coffs[ii];
+      const b = this.coffs[jj];
+      this.coffs[ii] = a * c + b * s;
+      this.coffs[jj] = -a * s + b * c;
+    }
+  }
+  /**
+   * Replace current columns Ui and Uj with (c*Ui + s*Uj) and (c*Uj - s*Ui).
+   * * There is no checking for i,j being 0,1,2.
+   * * This is used in compute intensive inner loops
+   * @param i first row index. **must be 0,1,2** (unchecked)
+   * @param j second row index. **must be 0,1,2** (unchecked)
+   * @param c fist coefficient
+   * @param s second coefficient
+   */
   public applyGivensColumnOp(i: number, j: number, c: number, s: number): void {
     const limit = i + 9;
     for (; i < limit; i += 3, j += 3) {
@@ -766,12 +787,12 @@ export class Matrix3d implements BeJSONFunctions {
     }
   }
   /**
- * Create a matrix from column vectors.
- * ```
- * equation
- * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ U_z & V_z & W_z \end{bmatrix}
- * ```
- */
+   * Create a matrix from column vectors.
+   * ```
+   * equation
+   * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ U_z & V_z & W_z \end{bmatrix}
+   * ```
+   */
   public static createColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
       (
@@ -801,8 +822,9 @@ export class Matrix3d implements BeJSONFunctions {
    * * ColumnX points in the rightVector direction
    * * ColumnY points in the upVector direction
    * * ColumnZ is a unit cross product of ColumnX and ColumnY.
-   * * Optionally rotate the standard cube by 45 degrees ccw around Y to bring its left or right vertical edge to center.
-   * * Optionally rotate the standard cube by 35.264 degrees ccw around X (isometric rotation).
+   * * Optionally rotate by 45 degrees around `upVector` to bring its left or right vertical edge to center.
+   * * Optionally rotate by arctan(1/sqrt(2)) ~ 35.264 degrees around `rightVector` to bring the top or bottom
+   * horizontal edge of the view to the center (for isometric views).
    * * This is expected to be used with various principal unit vectors that are perpendicular to each other.
    * * STANDARD TOP VIEW: createViewedAxes(Vector3d.unitX(), Vector3d.unitY(), 0, 0)
    * * STANDARD FRONT VIEW: createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), 0, 0)
@@ -810,16 +832,20 @@ export class Matrix3d implements BeJSONFunctions {
    * * STANDARD RIGHT VIEW: createViewedAxes(Vector3d.unitY(), Vector3d.unitZ(), 0, 0)
    * * STANDARD LEFT VIEW: createViewedAxes(Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0)
    * * STANDARD BOTTOM VIEW: createViewedAxes(Vector3d.unitX(), Vector3d.unitY(-1), 0, 0)
+   * * STANDARD ISO VIEW: createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), -1, 1)
+   * * STANDARD RIGHT ISO VIEW: createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), 1, 1)
+   * * Front, right, back, left, top, and bottom standard views are views from faces of the cube
+   * and iso and right iso standard views are views from corners of the cube.
    * * Note: createViewedAxes is column-based so always returns local to world
    *
    * @param rightVector ColumnX of the returned matrix. Expected to be perpendicular to upVector.
    * @param upVector ColumnY of the returned matrix. Expected to be perpendicular to rightVector.
-   * @param leftNoneRight Specifies the ccw rotation around Y axis. Normally one of "-1", "0", and "1", where
-   * "-1" indicates rotation by 45 degrees to bring the left vertical edge to center, "0" means no rotation,
+   * @param leftNoneRight Specifies the ccw rotation around `upVector` axis. Normally one of "-1", "0", and "1",
+   * where "-1" indicates rotation by 45 degrees to bring the left vertical edge to center, "0" means no rotation,
    * and "1" indicates rotation by 45 degrees to bring the right vertical edge to center. Other numbers are
    * used as multiplier for this 45 degree rotation.
-   * @param topNoneBottom Specifies the ccw rotation around X axis. Normally one of "-1", "0", and "1", where
-   * "-1" indicates isometric rotation (35.264 degrees) to bring the bottom upward, "0" means no rotation,
+   * @param topNoneBottom Specifies the ccw rotation around `rightVector` axis. Normally one of "-1", "0", and "1",
+   * where "-1" indicates isometric rotation (35.264 degrees) to bring the bottom upward, "0" means no rotation,
    * and "1" indicates isometric rotation (35.264 degrees) to bring the top downward. Other numbers are
    * used as multiplier for the 35.264 degree rotation.
    * @returns matrix = [rightVector, upVector, rightVector cross upVector] with the applied rotations specified
@@ -858,9 +884,11 @@ export class Matrix3d implements BeJSONFunctions {
    * * Default is TOP view (`local X = world X`, `local Y = world Y`, `local Z = world Z`).
    * * To change view from the TOP to one of the other 7 standard views, we need to multiply "world data" to
    * the corresponding matrix1 provided by `createStandardWorldToView(index, false)` and then
-   * `matrix1.multiply(world data)` will returns "local data".
+   * `matrix1.multiply(world data)` will return "local data".
    * * To change view back to the TOP, we need to multiply "local data" to the corresponding matrix2 provided
    * by `createStandardWorldToView(index, true)` and then `matrix2.multiply(local data)` will returns "world data".
+   * * Note: No matter how you rotate the world axis, local X is always pointing right, local Y is always pointing up,
+   * and local Z is always pointing toward you.
    *
    * @param index standard view index `StandardViewIndex.Top, Bottom, Left, Right, Front, Back, Iso, RightIso`
    * @param invert if false (default), the return matrix is world to local (view) and if true, the the return
@@ -869,377 +897,201 @@ export class Matrix3d implements BeJSONFunctions {
    */
   public static createStandardWorldToView(index: StandardViewIndex, invert: boolean = false, result?: Matrix3d): Matrix3d {
     switch (index) {
-      // start with TOP view, ccw rotation by 180 degrees around X
+      // Start with TOP view, ccw rotation by 180 degrees around X
       case StandardViewIndex.Bottom:
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, -1, 0,
           0, 0, -1);
         break;
-      // start with TOP view, ccw rotation by -90 degrees around X and by 90 degrees around Z
+      // Start with TOP view, ccw rotation by -90 degrees around X and by 90 degrees around Z
       case StandardViewIndex.Left:
         result = Matrix3d.createRowValues(
           0, -1, 0,
           0, 0, 1,
           -1, 0, 0);
         break;
-      // start with TOP view, ccw rotation by -90 degrees around X and by -90 degrees around Z
+      // Start with TOP view, ccw rotation by -90 degrees around X and by -90 degrees around Z
       case StandardViewIndex.Right:
         result = Matrix3d.createRowValues(
           0, 1, 0,
           0, 0, 1,
           1, 0, 0);
         break;
-      // start with TOP view, ccw rotation by -90 degrees around X
+      // Start with TOP view, ccw rotation by -90 degrees around X
       case StandardViewIndex.Front:
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, 0, 1,
           0, -1, 0);
         break;
-      // start with TOP view, ccw rotation by -90 degrees around X and by 180 degrees around Z
+      // Start with TOP view, ccw rotation by -90 degrees around X and by 180 degrees around Z
       case StandardViewIndex.Back:
         result = Matrix3d.createRowValues(
           -1, 0, 0,
           0, 0, 1,
           0, 1, 0);
         break;
+      /**
+       * Isometric view
+       * Start with FRONT view, ccw rotation by -45 degrees around Y and by arctan(1/sqrt(2)) ~ 35.264 degrees around X
+       * cos(45) = 1/sqrt(2) = 0.70710678118 and sin(45) = 1/sqrt(2) = 0.70710678118
+       * cos(35.264) = 2/sqrt(6) = 0.81649658092 and sin(35.264) = 1/sqrt(3) = 0.57735026919
+       * More info: https://en.wikipedia.org/wiki/Isometric_projection
+       */
       case StandardViewIndex.Iso:
-        // start with FRONT view, ccw rotation by -45 degrees around Y and by 35.264 degrees around X
         result = Matrix3d.createRowValues(
           0.707106781186548, -0.70710678118654757, 0.00000000000000000,
           0.408248290463863, 0.40824829046386302, 0.81649658092772603,
           -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
         break;
+      // Start with FRONT view, ccw rotation by 45 degrees around Y and by 35.264 degrees around X
       case StandardViewIndex.RightIso:
         result = Matrix3d.createRowValues(
           0.707106781186548, 0.70710678118654757, 0.00000000000000000,
           -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
           0.577350269189626, -0.57735026918962573, 0.57735026918962573);
         break;
-      case StandardViewIndex.Top: // no rotation
+      // no rotation
+      case StandardViewIndex.Top:
       default:
         result = Matrix3d.createIdentity(result);
     }
     if (invert)
-      result.transposeInPlace();
+      result.transposeInPlace(); // matrix is rigid so transpose and inverse are the same
     return result;
   }
-  /*
-  // this implementation has problems distinguishing failure (normalize) from small angle.
-  public getAxisAndAngleOfRotation(): { axis: Vector3d, angle: Angle, error: boolean } {
-
-    const result = { axis: Vector3d.unitZ(), angle: Angle.createRadians(0), error: true };
-    if (this.isIdentity) {
-      result.error = false;
-      return result;
-    }
-    if (!this.isRigid())
-      return result;
-    const QMinusI = this.clone();
-    QMinusI.coffs[0] -= 1.0;
-    QMinusI.coffs[4] -= 1.0;
-    QMinusI.coffs[8] -= 1.0;
-    // Each column of (Q - I) is the motion of the corresponding axis vector
-    // during the rotation.
-    // Only one of the three axes can really be close to the rotation axis.
-    const delta0 = QMinusI.columnX();
-    const delta1 = QMinusI.columnY();
-    const delta2 = QMinusI.columnZ();
-    const cross01 = delta0.crossProduct(delta1);
-    const cross12 = delta1.crossProduct(delta2);
-    const cross20 = delta2.crossProduct(delta0);
-
-    const aa01 = cross01.magnitudeSquared();
-    const aa12 = cross12.magnitudeSquared();
-    const aa20 = cross20.magnitudeSquared();
-
-    const cross = cross01.clone(); // This will end up as the biggest cross product
-    const v0 = delta0.clone();  // This will end up as one of the two largest delta vectors
-    let aaMax = aa01;
-    if (aa12 > aaMax) {
-      cross.setFrom(cross12);
-      aaMax = aa12;
-      v0.setFrom(delta1);
-    }
-    if (aa20 > aaMax) {
-      cross.setFrom(cross20);
-      aaMax = aa20;
-      v0.setFrom(delta2);
-    }
-
-    if (aaMax === 0.0) {
-      // The vectors did not move.  Just accept the zero rotation, with error flag set.
-      return result;
-    }
-
-    v0.normalizeInPlace();
-    // V0 is a unit vector perpendicular to the rotation axis.
-    // Rotate it.   Its image V1 is also a unit vector, and the angle from V0 to V1 is the quat angle.
-    // CrossProduct is axis vector times sine of angle.
-    // Dot Product is cosine of angle.
-    // V2 is zero in 180 degree case, so we use the Cross from the search as the axis
-    //   as direction, being careful to keep sine positive.
-    const v1 = this.multiplyVector(v0);
-    const v2 = v0.crossProduct(v1);
-    const sine = v2.magnitude();
-    if (v2.dotProduct(cross) < 0.0)
-      cross.scaleInPlace(-1.0);
-    const cosine = v0.dotProduct(v1);
-    result.angle.setRadians(Math.atan2(sine, cosine));
-    result.axis.setFrom(cross);
-    result.error = !result.axis.tryNormalizeInPlace();
-    return result
+  /**
+   * Apply (in place) a jacobi update that zeros out this.at(i,j).
+   * @param i row index of zeroed member
+   * @param j column index of zeroed member
+   * @param k other row/column index (different from i and j)
+   * @param leftEigenVectors a matrix that its columns will be filled by eigenvectors of this Matrix3d
+   * (allocated by caller, computed and filled by this function)
+   */
+  private applyFastSymmetricJacobiUpdate(i: number, j: number, k: number, leftEigenVectors: Matrix3d): number {
+    const indexII = 4 * i;
+    const indexJJ = 4 * j;
+    const indexIJ = 3 * i + j;
+    const indexIK = 3 * i + k;
+    const indexJK = 3 * j + k;
+    const dotUU = this.coffs[indexII];
+    const dotVV = this.coffs[indexJJ];
+    const dotUV = this.coffs[indexIJ];
+    const jacobi = Angle.trigValuesToHalfAngleTrigValues(dotUU - dotVV, 2.0 * dotUV);
+    if (Math.abs(dotUV) < 1.0e-15 * (dotUU + dotVV))
+      return 0.0;
+    const c = jacobi.c;
+    const s = jacobi.s;
+    const cc = c * c;
+    const ss = s * s;
+    const sc2 = 2.0 * c * s;
+    this.coffs[indexII] = cc * dotUU + sc2 * dotUV + ss * dotVV;
+    this.coffs[indexJJ] = ss * dotUU - sc2 * dotUV + cc * dotVV;
+    this.coffs[indexIJ] = 0.0;
+    const a = this.coffs[indexIK];
+    const b = this.coffs[indexJK];
+    this.coffs[indexIK] = a * c + b * s;
+    this.coffs[indexJK] = -s * a + c * b;
+    this.coffs[3 * j + i] = 0.0;
+    this.coffs[3 * k + i] = this.coffs[indexIK];
+    this.coffs[3 * k + j] = this.coffs[indexJK];
+    leftEigenVectors.applyGivensColumnOp(i, j, c, s);
+    return Math.abs(dotUV);
   }
-*/
+  /**
+   * Factor this (symmetrized) as a product U * lambda * UT where U is orthogonal, lambda is diagonal.
+   * The upper triangle is mirrored to lower triangle to enforce symmetry.
+   * @param leftEigenvectors a matrix that its columns will be filled by eigenvectors of this Matrix3d
+   * (allocated by caller, computed and filled by this function)
+   * @param lambda a vector that its entries will be filled by eigenvalues of this Matrix3d
+   * (allocated by caller, computed and filled by this function)
+   */
+  public fastSymmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
+    const matrix = this.clone();
+    leftEigenvectors.setIdentity();
+    const tolerance = 1.0e-12 * this.sumSquares();
+    for (let iteration = 0; iteration < 7; iteration++) {
+      const sum = matrix.applyFastSymmetricJacobiUpdate(0, 1, 2, leftEigenvectors)
+        + matrix.applyFastSymmetricJacobiUpdate(0, 2, 1, leftEigenvectors)
+        + matrix.applyFastSymmetricJacobiUpdate(1, 2, 0, leftEigenvectors);
+      // console.log("symmetric sum", sum);
+      // console.log ("sum", sum);
+      if (sum < tolerance) {
+        // console.log("symmetric iterations", iteration);
+        lambda.set(matrix.at(0, 0), matrix.at(1, 1), matrix.at(2, 2));
+        return true;
+      }
+    }
+    return false;
+  }
   /**
    * Compute the (unit vector) axis and angle of rotation.
+   * * math details can be found at docs/learning/geometry/Angle.md
    * @returns Returns axis and angle of rotation with result.ok === true when the conversion succeeded.
    */
   public getAxisAndAngleOfRotation(): { axis: Vector3d, angle: Angle, ok: boolean } {
     const trace = this.coffs[0] + this.coffs[4] + this.coffs[8];
-    // trace = (xx + yy * zz) * (1-c) + 3 * c = 1 + 2c ==> c = (trace-1) / 2
-    const skewXY = this.coffs[3] - this.coffs[1];  // == 2sz
-    const skewYZ = this.coffs[7] - this.coffs[5]; // == 2sx
-    const skewZX = this.coffs[2] - this.coffs[6]; // == 2sy
-    const c = (trace - 1.0) / 2.0;
-    const s = Geometry.hypotenuseXYZ(skewXY, skewYZ, skewZX) / 2.0;
-    const e = c * c + s * s - 1.0;
+    const skewXY = this.coffs[3] - this.coffs[1];  // 2*z*sin
+    const skewYZ = this.coffs[7] - this.coffs[5]; // 2*y*sin
+    const skewZX = this.coffs[2] - this.coffs[6]; // 2*x*sin
+    // trace = (m00^2 + m11^2 + m22^2) * (1-cos) + 3cos = (1-cos) + 3cos = 1 + 2cos ==> cos = (trace-1) / 2
+    const c = (trace - 1.0) / 2.0; // cosine
+    const s = Geometry.hypotenuseXYZ(skewXY, skewYZ, skewZX) / 2.0; // sine
+    const e = c * c + s * s - 1.0; // s^2 + c^2 = 1
+    // if s^2 + c^2 != 1 then we have a bad matrix so return false
     if (Math.abs(e) > Geometry.smallAngleRadians) {
-      // the sine and cosine are not a unit circle point.   bad matrix . ..
       return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
     }
+    // sin is close to 0 then we got to special cases (angle 0 or 180) which needs to be handled differently
     if (Math.abs(s) < Geometry.smallAngleRadians) {
-      // There is no significant skew.
-      // The matrix is symmetric
-      // So it has simple eigenvalues -- either (1,1,1) or (1,-1,-1).
-      if (c > 0)  // no rotation
+      if (c > 0)  // sin = 0 and cos = 1 so angle = 0 (i.e., no rotation)
         return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: true };
-      // 180 degree flip around some axis ?
-      // Look for the simple case of a principal rotation ...
-      // look for a pair of (-1) entries on the diagonal ...
+      /**
+       * If sin = 0 and cos = -1 then angle = 180 (i.e., 180 degree rotation around some axis)
+       * then the rotation matrix becomes
+       *                                 2x^2-1  2xy      2xz
+       *                                 2xy     2y^2-1   2yz
+       *                                 2xz     2yz      2z^2-1
+       * Note that the matrix is symmetric.
+       * If rotation is around one the standard basis then non-diagonal entries become 0 and we
+       * have one 1 and two -1s on the diagonal.
+       * If rotation is around an axis other than standard basis, then the axis is the eigenvector
+       * of the rotation matrix with eigenvalue = 1.
+       */
       const axx = this.coffs[0];
       const ayy = this.coffs[4];
       const azz = this.coffs[8];
-      const theta180 = Angle.createDegrees(180);
-      // Look for principal axis flips as a special case . ..
+      // Look for a pair of "-1" entries on the diagonal (for rotation around the basis X,Y,Z axis)
       if (Geometry.isAlmostEqualNumber(-1.0, ayy) && Geometry.isAlmostEqualNumber(-1, azz)) {
-        // rotate around
-        return { axis: Vector3d.create(1, 0, 0), angle: theta180, ok: true };
+        return { axis: Vector3d.create(1, 0, 0), angle: Angle.createDegrees(180), ok: true };
       } else if (Geometry.isAlmostEqualNumber(-1.0, axx) && Geometry.isAlmostEqualNumber(-1, azz)) {
-        return { axis: Vector3d.create(0, 1, 0), angle: theta180, ok: true };
+        return { axis: Vector3d.create(0, 1, 0), angle: Angle.createDegrees(180), ok: true };
       } else if (Geometry.isAlmostEqualNumber(-1.0, axx) && Geometry.isAlmostEqualNumber(-1, ayy)) {
-        return { axis: Vector3d.create(0, 0, 1), angle: theta180, ok: true };
+        return { axis: Vector3d.create(0, 0, 1), angle: Angle.createDegrees(180), ok: true };
       }
-
-      // 180 degree flip around some other axis ...
-      // eigenvalues will have 1.0 once, -1.0 twice.
-      // These cases look for each place (x,y,z) that the 1.0 might appear.
-      // But fastSymmetricEigenvalues reliably always seems to put the 1.0 as the x eigenvalue.
-      // so only the getColumn(0) return seems reachable in unit tests.
+      // Look for eigenvector with eigenvalue = 1
       const eigenvectors = Matrix3d.createIdentity();
       const eigenvalues = Vector3d.create(0, 0, 0);
       if (this.fastSymmetricEigenvalues(eigenvectors, eigenvalues)) {
         for (let axisIndex = 0; axisIndex < 2; axisIndex++) {
           const lambda = eigenvalues.at(axisIndex);
           if (Geometry.isAlmostEqualNumber(1, lambda))
-            return { axis: eigenvectors.getColumn(axisIndex), angle: theta180, ok: true };
+            return { axis: eigenvectors.getColumn(axisIndex), angle: Angle.createDegrees(180), ok: true };
         }
-        // Don't know if this can be reached ....
+        // if no eigenvalue = 1 was found return false
         return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
       }
+      // if no axis was found return false
       return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
     }
+    // good matrix and non-zero sine
     const a = 1.0 / (2.0 * s);
-    const result = { axis: Vector3d.create(skewYZ * a, skewZX * a, skewXY * a), angle: Angle.createAtan2(s, c), ok: true };
-    return result;
-  }
-  /**
-   * Returns a matrix that rotates from vectorA to vectorB.
-   */
-  public static createRotationVectorToVector(vectorA: Vector3d, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined {
-    return this.createPartialRotationVectorToVector(vectorA, 1.0, vectorB, result);
-  }
-  /**
-   * Return a matrix that rotates a fraction of the angular sweep from vectorA to vectorB.
-   * @param vectorA initial vector position
-   * @param fraction fractional rotation.  1.0 is "all the way"
-   * @param vectorB final vector position
-   * @param result optional result matrix.
-   */
-  public static createPartialRotationVectorToVector(vectorA: Vector3d, fraction: number, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined {
-
-    let upVector = vectorA.unitCrossProduct(vectorB);
-    if (upVector) {  // the usual case --
-      return Matrix3d.createRotationAroundVector(upVector,
-        Angle.createRadians(fraction * vectorA.planarAngleTo(vectorB, upVector).radians));
-    }
-    // fail if either vector is zero ...
-    if (Geometry.isSmallMetricDistance(vectorA.magnitude())
-      || Geometry.isSmallMetricDistance(vectorB.magnitude()))
-      return undefined;
-    // nonzero but aligned vectors ...
-    if (vectorA.dotProduct(vectorB) > 0.0)
-      return Matrix3d.createIdentity(result);
-    // nonzero opposing vectors ..
-    upVector = Matrix3d.createPerpendicularVectorFavorPlaneContainingZ(vectorA, upVector);
-    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
-  }
-
-  /** Create a 90 degree rotation around a principal axis */
-  public static create90DegreeRotationAroundAxis(axisIndex: number): Matrix3d {
-    axisIndex = Geometry.cyclic3dAxis(axisIndex);
-    if (axisIndex === 0) {
-      const retVal = Matrix3d.createRowValues(
-        1, 0, 0,
-        0, 0, -1,
-        0, 1, 0);
-      retVal.setupInverseTranspose();
-      return retVal;
-    } else if (axisIndex === 1) {
-      const retVal = Matrix3d.createRowValues(
-        0, 0, 1,
-        0, 1, 0,
-        -1, 0, 0);
-      retVal.setupInverseTranspose();
-      return retVal;
-    } else {
-      const retVal = Matrix3d.createRowValues(
-        0, -1, 0,
-        1, 0, 0,
-        0, 0, 1);
-      retVal.setupInverseTranspose();
-      return retVal;
-    }
-  }
-  /** Return (a copy of) the X column */
-  public columnX(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[0], this.coffs[3], this.coffs[6], result); }
-  /** Return (a copy of)the Y column */
-  public columnY(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[1], this.coffs[4], this.coffs[7], result); }
-  /** Return (a copy of)the Z column */
-  public columnZ(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[2], this.coffs[5], this.coffs[8], result); }
-  /** Return the X column magnitude squared */
-  public columnXMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[0], this.coffs[3], this.coffs[6]); }
-  /** Return the Y column magnitude squared */
-  public columnYMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[1], this.coffs[4], this.coffs[7]); }
-  /** Return the Z column magnitude squared */
-  public columnZMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
-  /** Return the X column magnitude */
-  public columnXMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6]); }
-  /** Return the Y column magnitude */
-  public columnYMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7]); }
-  /** Return the Z column magnitude */
-  public columnZMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
-  /** Return magnitude of columnX cross columnY. */
-  public columnXYCrossProductMagnitude(): number {
-    return Geometry.crossProductMagnitude(
-      this.coffs[0], this.coffs[3], this.coffs[6],
-      this.coffs[1], this.coffs[4], this.coffs[7]);
-  }
-  /** Return the X row magnitude d */
-  public rowXMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[1], this.coffs[2]); }
-  /** Return the Y row magnitude  */
-  public rowYMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[3], this.coffs[4], this.coffs[5]); }
-  /** Return the Z row magnitude  */
-  public rowZMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[6], this.coffs[7], this.coffs[8]); }
-  /** Return the dot product of column X with column Y */
-  /** Return the dot product of column X with column Y */
-  public columnXDotColumnY(): number {
-    return this.coffs[0] * this.coffs[1]
-      + this.coffs[3] * this.coffs[4]
-      + this.coffs[6] * this.coffs[7];
-  }
-  /**
-   * Dot product of an indexed column with a vector given as x,y,z
-   * @param columnIndex index of column.  Must be 0,1,2
-   * @param x x component of vector
-   * @param y y component of vector
-   * @param z z component of vector
-   */
-  public columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number) {
-    return this.coffs[columnIndex] * x + this.coffs[columnIndex + 3] * y + this.coffs[columnIndex + 6] * z;
-  }
-  /** Return (a copy of) the X row */
-  public rowX(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[0], this.coffs[1], this.coffs[2], result); }
-  /** Return (a copy of) the Y row */
-  public rowY(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[3], this.coffs[4], this.coffs[5], result); }
-  /** Return (a copy of) the Z row */
-  public rowZ(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[6], this.coffs[7], this.coffs[8], result); }
-  /** Return the dot product of the vector parameter with the X column. */
-  public dotColumnX(vector: XYZ): number { return vector.x * this.coffs[0] + vector.y * this.coffs[3] + vector.z * this.coffs[6]; }
-  /** Return the dot product of the vector parameter with the Y column. */
-  public dotColumnY(vector: XYZ): number { return vector.x * this.coffs[1] + vector.y * this.coffs[4] + vector.z * this.coffs[7]; }
-  /** Return the dot product of the vector parameter with the Z column. */
-  public dotColumnZ(vector: XYZ): number { return vector.x * this.coffs[2] + vector.y * this.coffs[5] + vector.z * this.coffs[8]; }
-  /** Return the dot product of the vector parameter with the X row. */
-  public dotRowX(vector: XYZ): number { return vector.x * this.coffs[0] + vector.y * this.coffs[1] + vector.z * this.coffs[2]; }
-  /** Return the dot product of the vector parameter with the Y row. */
-  public dotRowY(vector: XYZ): number { return vector.x * this.coffs[3] + vector.y * this.coffs[4] + vector.z * this.coffs[5]; }
-  /** Return the dot product of the vector parameter with the Z row. */
-  public dotRowZ(vector: XYZ): number { return vector.x * this.coffs[6] + vector.y * this.coffs[7] + vector.z * this.coffs[8]; }
-  // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen
-  /** Return the dot product of the x,y,z with the X row. */
-  public dotRowXXYZ(x: number, y: number, z: number): number { return x * this.coffs[0] + y * this.coffs[1] + z * this.coffs[2]; }
-  /** Return the dot product of the x,y,z with the Y row. */
-  public dotRowYXYZ(x: number, y: number, z: number): number { return x * this.coffs[3] + y * this.coffs[4] + z * this.coffs[5]; }
-  /** Return the dot product of the x,y,z with the Z row. */
-  public dotRowZXYZ(x: number, y: number, z: number): number { return x * this.coffs[6] + y * this.coffs[7] + z * this.coffs[8]; }
-  /** Return the (vector) cross product of the Z column with the vector parameter. */
-  public columnZCrossVector(vector: XYZ, result?: Vector3d): Vector3d {
-    return Geometry.crossProductXYZXYZ(this.coffs[2], this.coffs[5], this.coffs[8], vector.x, vector.y, vector.z, result);
-  }
-  /*
-   * Replace current rows Ui Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui).
-   * @param i first row index.  must be 0,1,2 (unchecked)
-   * @param j second row index. must be 0,1,2 (unchecked)
-   * @param c fist coefficient
-   * @param s second coefficient
-   */
-  private applyGivensRowOp(i: number, j: number, c: number, s: number): void {
-    let ii = 3 * i;
-    let jj = 3 * j;
-    const limit = ii + 3;
-    for (; ii < limit; ii++, jj++) {
-      const a = this.coffs[ii];
-      const b = this.coffs[jj];
-      this.coffs[ii] = a * c + b * s;
-      this.coffs[jj] = -a * s + b * c;
-    }
-  }
-  /**
-   * create a rigid coordinate frame column z parallel to (_x_,_y_,_z_) and column x in the xy plane.
-   * * column z points from origin to x,y,z
-   * * column x is perpendicular and in the xy plane
-   * * column y is perpendicular to both.  It is the "up" vector on the view plane.
-   * * Multiplying a world vector times the transpose of this matrix transforms into the view xy
-   * * Multiplying the matrix times the an in-view vector transforms the vector to world.
-   * @param x eye x coordinate
-   * @param y eye y coordinate
-   * @param z eye z coordinate
-   * @param result
-   */
-  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: Matrix3d): Matrix3d {
-    result = Matrix3d.createIdentity(result);
-    const rxy = Geometry.hypotenuseXY(x, y);
-    if (Geometry.isSmallMetricDistance(rxy)) {
-      // special case for top or bottom view.
-      if (z < 0.0)
-        result.scaleColumnsInPlace(1.0, -1, -1.0);
-    } else {
-      //      const d = Geometry.hypotenuseSquaredXYZ(x, y, z);
-      const c = x / rxy;
-      const s = y / rxy;
-      result.setRowValues(
-        -s, 0, c,
-        c, 0, s,
-        0, 1, 0);
-      if (z !== 0.0) {
-        const r = Geometry.hypotenuseXYZ(x, y, z);
-        const s1 = z / r;
-        const c1 = rxy / r;
-        result.applyGivensColumnOp(1, 2, c1, -s1);
-      }
-    }
+    const result = {
+      axis: Vector3d.create(skewYZ * a, skewZX * a, skewXY * a),
+      angle: Angle.createAtan2(s, c),
+      ok: true,
+    };
     return result;
   }
   /** Rotate so columns i and j become perpendicular */
@@ -1271,8 +1123,7 @@ export class Matrix3d implements BeJSONFunctions {
   public factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean {
     matrixC.setFrom(this);
     matrixU.setIdentity();
-    const ss = this.sumSquares();
-    const tolerance = 1.0e-12 * ss;
+    const tolerance = 1.0e-12 * this.sumSquares();
     for (let iteration = 0; iteration < 7; iteration++) {
       const sum = matrixC.applyJacobiColumnRotation(0, 1, matrixU)
         + matrixC.applyJacobiColumnRotation(0, 2, matrixU)
@@ -1365,8 +1216,7 @@ export class Matrix3d implements BeJSONFunctions {
     matrix.coffs[3] = matrix.coffs[1];
     matrix.coffs[6] = matrix.coffs[2];
     matrix.coffs[7] = matrix.coffs[5];
-    const ss = this.sumSquares();
-    const tolerance = 1.0e-12 * ss;
+    const tolerance = 1.0e-12 * this.sumSquares();
     for (let iteration = 0; iteration < 7; iteration++) {
       const sum = leftEigenvectors.applySymmetricJacobi(0, 1, matrix)
         + leftEigenvectors.applySymmetricJacobi(0, 2, matrix)
@@ -1381,69 +1231,188 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return false;
   }
-  /** Apply (in place a jacobi update that zeros out this.at(i,j).
-   *
+  /**
+   * Return a matrix that rotates a fraction of the angular sweep from vectorA to vectorB.
+   * @param vectorA initial vector position
+   * @param fraction fractional rotation (1 means rotate all the way)
+   * @param vectorB final vector position
+   * @param result optional result matrix.
    */
-  private applyFastSymmetricJacobiUpdate(
-    i: number,  // row index of zeroed member
-    j: number,  // column index of zeroed member
-    k: number,  // other row/column index (different from i and j)
-    leftEigenVectors: Matrix3d): number {
-    const indexII = 4 * i;
-    const indexJJ = 4 * j;
-    const indexIJ = 3 * i + j;
-    const indexIK = 3 * i + k;
-    const indexJK = 3 * j + k;
-    const dotUU = this.coffs[indexII];
-    const dotVV = this.coffs[indexJJ];
-    const dotUV = this.coffs[indexIJ];
-    const jacobi = Angle.trigValuesToHalfAngleTrigValues(dotUU - dotVV, 2.0 * dotUV);
-    if (Math.abs(dotUV) < 1.0e-15 * (dotUU + dotVV))
-      return 0.0;
-    const c = jacobi.c;
-    const s = jacobi.s;
-    const cc = c * c;
-    const ss = s * s;
-    const sc2 = 2.0 * c * s;
-    this.coffs[indexII] = cc * dotUU + sc2 * dotUV + ss * dotVV;
-    this.coffs[indexJJ] = ss * dotUU - sc2 * dotUV + cc * dotVV;
-    this.coffs[indexIJ] = 0.0;
-    const a = this.coffs[indexIK];
-    const b = this.coffs[indexJK];
-    this.coffs[indexIK] = a * c + b * s;
-    this.coffs[indexJK] = -s * a + c * b;
-    this.coffs[3 * j + i] = 0.0;
-    this.coffs[3 * k + i] = this.coffs[indexIK];
-    this.coffs[3 * k + j] = this.coffs[indexJK];
-    leftEigenVectors.applyGivensColumnOp(i, j, c, s);
-    return Math.abs(dotUV);
+  public static createPartialRotationVectorToVector(vectorA: Vector3d, fraction: number, vectorB: Vector3d,
+    result?: Matrix3d): Matrix3d | undefined {
+    let upVector = vectorA.unitCrossProduct(vectorB);
+    // the usual case (both vectors and also their cross product is non-zero)
+    if (upVector) {
+      return Matrix3d.createRotationAroundVector(
+        upVector,
+        Angle.createRadians(fraction * vectorA.planarAngleTo(vectorB, upVector).radians)
+      );
+    }
+    // if either vector is zero
+    if (Geometry.isSmallMetricDistance(vectorA.magnitude())
+      || Geometry.isSmallMetricDistance(vectorB.magnitude()))
+      return undefined;
+    // aligned vectors (cross product = 0, dot product > 0)
+    if (vectorA.dotProduct(vectorB) > 0.0)
+      return Matrix3d.createIdentity(result);
+    // opposing vectors (cross product = 0, dot product < 0)
+    upVector = Matrix3d.createPerpendicularVectorFavorPlaneContainingZ(vectorA, upVector);
+    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
+  }
+  /** Returns a matrix that rotates from vectorA to vectorB. */
+  public static createRotationVectorToVector(vectorA: Vector3d, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined {
+    return this.createPartialRotationVectorToVector(vectorA, 1.0, vectorB, result);
+  }
+  /** Create a 90 degree rotation around a principal axis */
+  public static create90DegreeRotationAroundAxis(axisIndex: number): Matrix3d {
+    axisIndex = Geometry.cyclic3dAxis(axisIndex);
+    if (axisIndex === 0) {
+      const retVal = Matrix3d.createRowValues(
+        1, 0, 0,
+        0, 0, -1,
+        0, 1, 0);
+      retVal.setupInverseTranspose();
+      return retVal;
+    } else if (axisIndex === 1) {
+      const retVal = Matrix3d.createRowValues(
+        0, 0, 1,
+        0, 1, 0,
+        -1, 0, 0);
+      retVal.setupInverseTranspose();
+      return retVal;
+    } else {
+      const retVal = Matrix3d.createRowValues(
+        0, -1, 0,
+        1, 0, 0,
+        0, 0, 1);
+      retVal.setupInverseTranspose();
+      return retVal;
+    }
+  }
+  /** Return (a copy of) the X column */
+  public columnX(result?: Vector3d): Vector3d {
+    return Vector3d.create(this.coffs[0], this.coffs[3], this.coffs[6], result);
+  }
+  /** Return (a copy of) the Y column */
+  public columnY(result?: Vector3d): Vector3d {
+    return Vector3d.create(this.coffs[1], this.coffs[4], this.coffs[7], result);
+  }
+  /** Return (a copy of) the Z column */
+  public columnZ(result?: Vector3d): Vector3d {
+    return Vector3d.create(this.coffs[2], this.coffs[5], this.coffs[8], result);
+  }
+  /** Return the X column magnitude squared */
+  public columnXMagnitudeSquared(): number {
+    return Geometry.hypotenuseSquaredXYZ(this.coffs[0], this.coffs[3], this.coffs[6]);
+  }
+  /** Return the Y column magnitude squared */
+  public columnYMagnitudeSquared(): number {
+    return Geometry.hypotenuseSquaredXYZ(this.coffs[1], this.coffs[4], this.coffs[7]);
+  }
+  /** Return the Z column magnitude squared */
+  public columnZMagnitudeSquared(): number {
+    return Geometry.hypotenuseSquaredXYZ(this.coffs[2], this.coffs[5], this.coffs[8]);
+  }
+  /** Return the X column magnitude */
+  public columnXMagnitude(): number {
+    return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6]);
+  }
+  /** Return the Y column magnitude */
+  public columnYMagnitude(): number {
+    return Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7]);
+  }
+  /** Return the Z column magnitude */
+  public columnZMagnitude(): number {
+    return Geometry.hypotenuseXYZ(this.coffs[2], this.coffs[5], this.coffs[8]);
+  }
+  /** Return magnitude of columnX cross columnY. */
+  public columnXYCrossProductMagnitude(): number {
+    return Geometry.crossProductMagnitude(
+      this.coffs[0], this.coffs[3], this.coffs[6],
+      this.coffs[1], this.coffs[4], this.coffs[7]
+    );
+  }
+  /** Return the X row magnitude */
+  public rowXMagnitude(): number {
+    return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[1], this.coffs[2]);
+  }
+  /** Return the Y row magnitude  */
+  public rowYMagnitude(): number {
+    return Geometry.hypotenuseXYZ(this.coffs[3], this.coffs[4], this.coffs[5]);
+  }
+  /** Return the Z row magnitude  */
+  public rowZMagnitude(): number {
+    return Geometry.hypotenuseXYZ(this.coffs[6], this.coffs[7], this.coffs[8]);
+  }
+  /** Return the dot product of column X with column Y */
+  public columnXDotColumnY(): number {
+    return this.coffs[0] * this.coffs[1]
+      + this.coffs[3] * this.coffs[4]
+      + this.coffs[6] * this.coffs[7];
   }
   /**
-   * Factor this (symmetrized) as a product U * lambda * UT where U is orthogonal, lambda is diagonal.
-   * The upper triangle is mirrored to lower triangle to enforce symmetry.
-   * @param matrixC (allocate by caller, computed here)
-   * @param factor  (allocate by caller, computed here)
+   * Dot product of an indexed column with a vector given as x,y,z
+   * @param columnIndex index of column. Must be 0,1,2.
+   * @param x x component of vector
+   * @param y y component of vector
+   * @param z z component of vector
    */
-  public fastSymmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
-    const matrix = this.clone();
-    leftEigenvectors.setIdentity();
-    const ss = this.sumSquares();
-    const tolerance = 1.0e-12 * ss;
-    for (let iteration = 0; iteration < 7; iteration++) {
-      const sum = matrix.applyFastSymmetricJacobiUpdate(0, 1, 2, leftEigenvectors)
-        + matrix.applyFastSymmetricJacobiUpdate(0, 2, 1, leftEigenvectors)
-        + matrix.applyFastSymmetricJacobiUpdate(1, 2, 0, leftEigenvectors);
-      // console.log("symmetric sum", sum);
-      // console.log ("   sum", sum);
-      if (sum < tolerance) {
-        // console.log("symmetric iterations", iteration);
-        lambda.set(matrix.at(0, 0), matrix.at(1, 1), matrix.at(2, 2));
-        return true;
-      }
-    }
-    return false;
+  public columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number) {
+    return this.coffs[columnIndex] * x + this.coffs[columnIndex + 3] * y + this.coffs[columnIndex + 6] * z;
   }
-  /** Install data from xyz parts of Point4d  (w part of Point4d ignored) */
+  /** Return (a copy of) the X row */
+  public rowX(result?: Vector3d): Vector3d {
+    return Vector3d.create(this.coffs[0], this.coffs[1], this.coffs[2], result);
+  }
+  /** Return (a copy of) the Y row */
+  public rowY(result?: Vector3d): Vector3d {
+    return Vector3d.create(this.coffs[3], this.coffs[4], this.coffs[5], result);
+  }
+  /** Return (a copy of) the Z row */
+  public rowZ(result?: Vector3d): Vector3d {
+    return Vector3d.create(this.coffs[6], this.coffs[7], this.coffs[8], result);
+  }
+  /** Return the dot product of the vector parameter with the X column. */
+  public dotColumnX(vector: XYZ): number {
+    return vector.x * this.coffs[0] + vector.y * this.coffs[3] + vector.z * this.coffs[6];
+  }
+  /** Return the dot product of the vector parameter with the Y column. */
+  public dotColumnY(vector: XYZ): number {
+    return vector.x * this.coffs[1] + vector.y * this.coffs[4] + vector.z * this.coffs[7];
+  }
+  /** Return the dot product of the vector parameter with the Z column. */
+  public dotColumnZ(vector: XYZ): number {
+    return vector.x * this.coffs[2] + vector.y * this.coffs[5] + vector.z * this.coffs[8];
+  }
+  /** Return the dot product of the vector parameter with the X row. */
+  public dotRowX(vector: XYZ): number {
+    return vector.x * this.coffs[0] + vector.y * this.coffs[1] + vector.z * this.coffs[2];
+  }
+  /** Return the dot product of the vector parameter with the Y row. */
+  public dotRowY(vector: XYZ): number {
+    return vector.x * this.coffs[3] + vector.y * this.coffs[4] + vector.z * this.coffs[5];
+  }
+  /** Return the dot product of the vector parameter with the Z row. */
+  public dotRowZ(vector: XYZ): number {
+    return vector.x * this.coffs[6] + vector.y * this.coffs[7] + vector.z * this.coffs[8];
+  }
+  /** Return the dot product of the x,y,z with the X row. */
+  public dotRowXXYZ(x: number, y: number, z: number): number {
+    return x * this.coffs[0] + y * this.coffs[1] + z * this.coffs[2];
+  }
+  /** Return the dot product of the x,y,z with the Y row. */
+  public dotRowYXYZ(x: number, y: number, z: number): number {
+    return x * this.coffs[3] + y * this.coffs[4] + z * this.coffs[5];
+  }
+  /** Return the dot product of the x,y,z with the Z row. */
+  public dotRowZXYZ(x: number, y: number, z: number): number {
+    return x * this.coffs[6] + y * this.coffs[7] + z * this.coffs[8];
+  }
+  /** Return the cross product of the Z column with the vector parameter. */
+  public columnZCrossVector(vector: XYZ, result?: Vector3d): Vector3d {
+    return Geometry.crossProductXYZXYZ(this.coffs[2], this.coffs[5], this.coffs[8], vector.x, vector.y, vector.z, result);
+  }
+  /** Set data from xyz parts of Point4d  (w part of Point4d ignored) */
   public setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d) {
     this.inverseState = InverseMatrixState.unknown;
     this.setRowValues(
@@ -1469,16 +1438,22 @@ export class Matrix3d implements BeJSONFunctions {
       this.coffs[index + 6] = 0.0;
     }
   }
-  /** Set all columns of the matrix. Any undefined vector is zeros. */
-  public setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d | undefined) {
+  /**
+   * Set all columns of the matrix. Any undefined vector is zeros.
+   * @param vectorX values for column 0
+   * @param vectorY values for column 1
+   * @param vectorZ optional values for column 2 (it's optional in case column 2 is 000, which is a
+   * projection onto the xy-plane)
+   */
+  public setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d) {
     this.setColumn(0, vectorX);
     this.setColumn(1, vectorY);
     this.setColumn(2, vectorZ);
   }
   /**
-   * set entries in one row of the matrix.
-   * @param rowIndex row index. this is interpreted cyclically.
-   * @param value x,yz, values for row.  If undefined, zeros are installed.
+   * Set entries in one row of the matrix.
+   * @param rowIndex row index. This is interpreted cyclically (using Geometry.cyclic3dAxis).
+   * @param value x,y,z values for row.
    */
   public setRow(rowIndex: number, value: Vector3d) {
     const index = 3 * Geometry.cyclic3dAxis(rowIndex);
@@ -1487,27 +1462,36 @@ export class Matrix3d implements BeJSONFunctions {
     this.coffs[index + 2] = value.z;
     this.inverseState = InverseMatrixState.unknown;
   }
-  /** Return a (copy of) a column of the matrix.
-   * @param i column index.  This is corrected to 012 by Geometry.cyclic3dAxis.
+  /**
+   * Return (a copy of) a column of the matrix.
+   * @param i column index. This is interpreted cyclically (using Geometry.cyclic3dAxis).
+   * @param result optional preallocated result.
    */
   public getColumn(columnIndex: number, result?: Vector3d): Vector3d {
     const index = Geometry.cyclic3dAxis(columnIndex);
     return Vector3d.create(
       this.coffs[index],
       this.coffs[index + 3],
-      this.coffs[index + 6], result);
+      this.coffs[index + 6],
+      result
+    );
   }
-  /** Return a (copy of) a row of the matrix.
-   * @param i row index.  This is corrected to 012 by Geometry.cyclic3dAxis.
+  /**
+   * Return a (copy of) a row of the matrix.
+   * @param i row index. This is interpreted cyclically (using Geometry.cyclic3dAxis).
+   * @param result optional preallocated result.
    */
   public getRow(columnIndex: number, result?: Vector3d): Vector3d {
     const index = 3 * Geometry.cyclic3dAxis(columnIndex);
     return Vector3d.create(
       this.coffs[index],
       this.coffs[index + 1],
-      this.coffs[index + 2], result);
+      this.coffs[index + 2],
+      result
+    );
   }
-  /** Create a matrix from row vectors.
+  /**
+   * Create a matrix from row vectors.
    * ```
    * equation
    * \begin{bmatrix}U_x & U_y & U_z \\ V_x & V_y & V_z \\ W_x & W_y & W_z \end{bmatrix}
@@ -1518,15 +1502,22 @@ export class Matrix3d implements BeJSONFunctions {
       (
         vectorU.x, vectorU.y, vectorU.z,
         vectorV.x, vectorV.y, vectorV.z,
-        vectorW.x, vectorW.y, vectorW.z, result);
+        vectorW.x, vectorW.y, vectorW.z,
+        result
+      );
   }
-  /** Create a matrix that scales along a specified direction.
-   * * The scale factor can be negative.
-   *  * A scale of -1.0 (negative one) is a mirror across the plane perpendicular to the vector.
+  /**
+   * Create a matrix that scales along a specified `direction`. This means if you multiply the returned matrix
+   * by a `vector`, you get `directional scale` of that `vector`. Suppose `plane` is the plane perpendicular
+   * to the `direction`. When scale = 0, `directional scale` is projection of the `vector` to the `plane`.
+   * When scale = 1, `directional scale` is the `vector` itself. When scale = -1, `directional scale` is
+   * mirror of the `vector` across the `plane`. In general, When scale != 0, the result is computed by first
+   * projecting the `vector` to the `plane`, then translating that projection along the `direction` (if scale > 0)
+   * or in opposite direction (if scale < 0).
    * ```
    * equation
-   * \text{The matrix is } I - (s-1) U U^T
-   * \\ \text{with }U\text{ being the unit vector in the direction of the input vector.}
+   * \text{The matrix is } I + (s-1) D D^T
+   * \\ \text{with }D\text{ being the normalized direction vector and }s\text{ being the scale.}
    * ```
    */
   public static createDirectionalScale(direction: Vector3d, scale: number, result?: Matrix3d): Matrix3d {
@@ -1535,24 +1526,18 @@ export class Matrix3d implements BeJSONFunctions {
       const x = unit.x;
       const y = unit.y;
       const z = unit.z;
-      const a = (scale - 1);
-      return Matrix3d.createRowValues
-        (
-          1 + a * x * x, a * x * y, a * x * z,
-          a * y * x, 1 + a * y * y, a * y * z,
-          a * z * x, a * z * y, 1 + a * z * z, result);
+      const a = scale - 1;
+      return Matrix3d.createRowValues(
+        1 + a * x * x, a * x * y, a * x * z,
+        a * y * x, 1 + a * y * y, a * y * z,
+        a * z * x, a * z * y, 1 + a * z * z,
+        result
+      );
     }
     return Matrix3d.createUniformScale(scale);
   }
-  /* Create a matrix with the indicated column in the (normalized) direction, and the other two columns perpendicular. All columns are normalized.
-   * * The direction vector is normalized and appears in column axisIndex
-   * * If the direction vector is not close to Z, the "next" column ((axisIndex + 1) mod 3) will be in the XY plane in the direction of (direction cross Z)
-   * * If the direction vector is close to Z, the "next" column ((axisIndex + 1) mode 3) will be in the direction of (direction cross Y)
-  */
-  // static create1Vector(direction: Vector3d, axisIndex: number): Matrix3d;
-  // static createFromXYVectors(vectorX: Vector3d, vectorY: Vector3d, axisIndex: number): Matrix3d;
-
-  /** Multiply the matrix * vector, treating the vector is a column vector on the right.
+  /**
+   * Multiply `matrix * vector`, treating the vector is a column vector on the right.
    * ```
    * equation
    * \matrixXY{A}\columnSubXYZ{U}
@@ -1564,21 +1549,25 @@ export class Matrix3d implements BeJSONFunctions {
     const y = vectorU.y;
     const z = vectorU.z;
     return Vector3d.create(
-      (this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z),
-      (this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z),
-      (this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z),
-      result);
+      this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z,
+      this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z,
+      this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z,
+      result
+    );
   }
-  /** Multiply matrix * vector for each array member, i.e. the vector is a column vector on the right.
-   * @return the vector result
+  /**
+   * Multiply `matrix * vector` in place for vector in the array, i.e. treating the vector is a column
+   * vector on the right.
+   * * Each `vector` is updated to be `matrix * vector`
    */
   public multiplyVectorArrayInPlace(data: XYZ[]): void {
     for (const v of data) v.set(
-      (this.coffs[0] * v.x + this.coffs[1] * v.y + this.coffs[2] * v.z),
-      (this.coffs[3] * v.x + this.coffs[4] * v.y + this.coffs[5] * v.z),
-      (this.coffs[6] * v.x + this.coffs[7] * v.y + this.coffs[8] * v.z));
+      this.coffs[0] * v.x + this.coffs[1] * v.y + this.coffs[2] * v.z,
+      this.coffs[3] * v.x + this.coffs[4] * v.y + this.coffs[5] * v.z,
+      this.coffs[6] * v.x + this.coffs[7] * v.y + this.coffs[8] * v.z
+    );
   }
-  /** compute `origin - matrix * vector` */
+  /** Compute `origin - matrix * vector` */
   public static xyzMinusMatrixTimesXYZ(origin: XYAndZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
@@ -1587,18 +1576,20 @@ export class Matrix3d implements BeJSONFunctions {
       origin.x - (matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z),
       origin.y - (matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z),
       origin.z - (matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z),
-      result);
+      result
+    );
   }
-  /** compute  `origin + matrix * vector`  using only the xy parts of the inputs. */
+  /** Compute `origin + matrix * vector`  using only the xy parts of the inputs. */
   public static xyPlusMatrixTimesXY(origin: XAndY, matrix: Matrix3d, vector: XAndY, result?: Point2d): Point2d {
     const x = vector.x;
     const y = vector.y;
     return Point2d.create(
       origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y,
       origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y,
-      result);
+      result
+    );
   }
-  /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
+  /** Compute `origin + matrix * vector`  using all xyz parts of the inputs. */
   public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
@@ -1607,10 +1598,11 @@ export class Matrix3d implements BeJSONFunctions {
       origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
       origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
       origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
-      result);
+      result
+    );
   }
-  /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
-  public static xyzPlusMatrixTimesXYZInPlace(origin: XYZ, matrix: Matrix3d, vector: WritableXYAndZ) {
+  /** Updates vector to be `origin + matrix * vector` using all xyz parts of the inputs. */
+  public static xyzPlusMatrixTimesXYZInPlace(origin: XYZ, matrix: Matrix3d, vector: WritableXYAndZ): void {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -1618,70 +1610,87 @@ export class Matrix3d implements BeJSONFunctions {
     vector.y = origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z;
     vector.z = origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
   }
-  /** compute `origin + matrix * vector` where the final vector is given as direct x,y,z coordinates */
-  public static xyzPlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Point3d): Point3d {
+  /** Compute `origin + matrix * vector` where the final vector is given as direct x,y,z coordinates */
+  public static xyzPlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number,
+    result?: Point3d): Point3d {
     return Point3d.create(
       origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
       origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
       origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
-      result);
+      result
+    );
   }
   /**
    * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
-   * Multiply times point with coordinates `[x,y,z,w]`
+   * Multiply the 4x4 matrix by `[x,y,z,w]`
+   * ```
+   * equation
+   * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz \\ 0 & 0 & 0 & 1\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ w\end{bmatrix}
+   * ```
    * @param origin translation part (xyz in column 3)
    * @param matrix matrix part (leading 3x3)
    * @param x x part of multiplied point
    * @param y y part of multiplied point
    * @param z z part of multiplied point
    * @param w w part of multiplied point
-   * @param result optional result.
+   * @param result optional preallocated result.
    */
-  public static xyzPlusMatrixTimesWeightedCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
+  public static xyzPlusMatrixTimesWeightedCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number,
+    z: number, w: number, result?: Point4d): Point4d {
     return Point4d.create(
-      w * origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
-      w * origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
-      w * origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
+      matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z + origin.x * w,
+      matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z + origin.y * w,
+      matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z + origin.z * w,
       w,
-      result);
+      result
+    );
   }
   /**
    * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
-   * Multiply times point with coordinates `[x,y,z,w]`
+   * Multiply the 4x4 matrix by `[x,y,z,w]`
+   * ```
+   * equation
+   * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz \\ 0 & 0 & 0 & 1\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ w\end{bmatrix}
+   * ```
    * @param origin translation part (xyz in column 3)
    * @param matrix matrix part (leading 3x3)
    * @param x x part of multiplied point
    * @param y y part of multiplied point
    * @param z z part of multiplied point
    * @param w w part of multiplied point
-   * @param result optional result.
+   * @param result optional preallocated result.
    */
-  public static xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array {
+  public static xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number,
+    z: number, w: number, result?: Float64Array): Float64Array {
     if (!result)
       result = new Float64Array(4);
-    result[0] = w * origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z;
-    result[1] = w * origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z;
-    result[2] = w * origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
+    result[0] = matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z + origin.x * w;
+    result[1] = matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z + origin.y * w;
+    result[2] = matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z + origin.z * w;
     result[3] = w;
     return result;
   }
   /**
-   * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
-   * Multiply times point with coordinates `[x,y,z,w]`
+   * Treat the 3x3 matrix and origin as a 3x4 matrix.
+   * * Multiply the 3x4 matrix by `[x,y,z,1]`
+   * ```
+   * equation
+   * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ 1\end{bmatrix}
+   * ```
    * @param origin translation part (xyz in column 3)
    * @param matrix matrix part (leading 3x3)
    * @param x x part of multiplied point
    * @param y y part of multiplied point
    * @param z z part of multiplied point
-   * @param w w part of multiplied point
-   * @param result optional result.
+   * @param result optional preallocated result.
    */
-  public static xyzPlusMatrixTimesCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Float64Array): Float64Array {
+  public static xyzPlusMatrixTimesCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number,
+    z: number, result?: Float64Array): Float64Array {
     if (!result)
       result = new Float64Array(3);
-    result[0] = origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z;
-    result[1] = origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z;
-    result[2] = origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
+    result[0] = matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z + origin.x;
+    result[1] = matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z + origin.y;
+    result[2] = matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z + origin.z;
     return result;
   }
   /**
@@ -1701,9 +1710,9 @@ export class Matrix3d implements BeJSONFunctions {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
-    result.x = (this.coffs[0] * x + this.coffs[3] * y + this.coffs[6] * z);
-    result.y = (this.coffs[1] * x + this.coffs[4] * y + this.coffs[7] * z);
-    result.z = (this.coffs[2] * x + this.coffs[5] * y + this.coffs[8] * z);
+    result.x = this.coffs[0] * x + this.coffs[3] * y + this.coffs[6] * z;
+    result.y = this.coffs[1] * x + this.coffs[4] * y + this.coffs[7] * z;
+    result.z = this.coffs[2] * x + this.coffs[5] * y + this.coffs[8] * z;
     return result;
   }
   /** Multiply the matrix * (x,y,z), i.e. the vector (x,y,z) is a column vector on the right.
@@ -2258,7 +2267,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param scaleX scale factor for column x
    * @param scaleY scale factor for column y
    * @param scaleZ scale factor for column z
-   * @param result optional result.
+   * @param result optional preallocated result.
    */
   public scaleColumns(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
@@ -2279,7 +2288,7 @@ export class Matrix3d implements BeJSONFunctions {
     this.coffs[3] *= scaleX; this.coffs[4] *= scaleY; this.coffs[5] *= scaleZ;
     this.coffs[6] *= scaleX; this.coffs[7] *= scaleY; this.coffs[8] *= scaleZ;
     if (this.inverseState === InverseMatrixState.inverseStored && this.inverseCoffs !== undefined) {
-      // apply reciprocal scales to the ROWS of the inverse .  . .
+      // apply reverse scales to the ROWS of the inverse
       const divX = Geometry.conditionalDivideFraction(1.0, scaleX);
       const divY = Geometry.conditionalDivideFraction(1.0, scaleY);
       const divZ = Geometry.conditionalDivideFraction(1.0, scaleZ);
@@ -2295,7 +2304,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param scaleX scale factor for row x
    * @param scaleY scale factor for row y
    * @param scaleZ scale factor for row z
-   * @param result optional result.
+   * @param result optional preallocated result.
    */
   public scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
@@ -2346,7 +2355,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /** create a Matrix3d whose values are uniformly scaled from this.
    * @param scale scale factor to apply.
-   * @param result optional result.
+   * @param result optional preallocated result.
    * @returns Return the new or repopulated matrix
    */
   public scale(scale: number, result?: Matrix3d): Matrix3d {
@@ -2357,6 +2366,45 @@ export class Matrix3d implements BeJSONFunctions {
         this.coffs[6] * scale, this.coffs[7] * scale, this.coffs[8] * scale,
         result);
 
+  }
+  /**
+   * Create a rigid matrix (columns and rows are unit length and pairwise perpendicular) for
+   * the given eye coordinate.
+   * * column z is parallel to x,y,z
+   * * column x is perpendicular to column z and is in the xy plane
+   * * column y is perpendicular to both.  It is the "up" vector on the view plane.
+   * * Multiplying the returned matrix times a local (view) vector gives the world vector.
+   * * Multiplying transpose of the returned matrix times a world vector gives the local
+   * (view) vector.
+   * @param x eye x coordinate
+   * @param y eye y coordinate
+   * @param z eye z coordinate
+   * @param result optional preallocated result
+   */
+  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: Matrix3d): Matrix3d {
+    result = Matrix3d.createIdentity(result);
+    const rxy = Geometry.hypotenuseXY(x, y);
+    // if coordinate is (0,0,z), i.e., Top or Bottom view
+    if (Geometry.isSmallMetricDistance(rxy)) {
+      if (z < 0.0)
+        result.scaleColumnsInPlace(1.0, -1.0, -1.0);
+    } else {
+      const c = x / rxy;
+      const s = y / rxy;
+      // if coordinate is (x,y,0), i.e., Front or Back or Left or Right view
+      result.setRowValues(
+        -s, 0, c,
+        c, 0, s,
+        0, 1, 0);
+      // if coordinate is (x,y,z), i.e., other views such as Iso or RightIso
+      if (z !== 0.0) {
+        const r = Geometry.hypotenuseXYZ(x, y, z);
+        const s1 = z / r;
+        const c1 = rxy / r;
+        result.applyGivensColumnOp(1, 2, c1, -s1);
+      }
+    }
+    return result;
   }
   /** Return the determinant of this matrix. */
   public determinant(): number {

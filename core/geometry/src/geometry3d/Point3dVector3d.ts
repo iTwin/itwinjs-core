@@ -905,7 +905,7 @@ export class Vector3d extends XYZ {
     return { v: this.safeDivideOrNull(magnitude, result), mag: magnitude };
   }
   /**
-   * Return a unit vector parallel with this.  Return undefined if this.magnitude is near zero.
+   * Return a unit vector parallel with this. Return undefined if this.magnitude is near zero.
    * @param result optional result.
    */
   public normalize(result?: Vector3d): Vector3d | undefined {

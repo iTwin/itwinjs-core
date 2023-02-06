@@ -3555,7 +3555,7 @@ export class Matrix3d implements BeJSONFunctions {
     scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
     setAt(row: number, column: number, value: number): void;
     setColumn(columnIndex: number, value: Vector3d | undefined): void;
-    setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d | undefined): void;
+    setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d): void;
     setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d): void;
     setFrom(other: Matrix3d | undefined): void;
     setFromJSON(json?: Matrix3dProps | Matrix3d): void;
