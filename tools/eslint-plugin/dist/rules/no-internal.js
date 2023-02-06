@@ -9,6 +9,7 @@
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
+const path = require("path");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -72,10 +73,21 @@ module.exports = {
       return undefined;
     }
 
+    function dirContainsPath(dir, targetPath) {
+      const relative = path.relative(dir, targetPath);
+      return (
+        !!relative && !relative.startsWith("..") && !path.isAbsolute(relative)
+      );
+    }
+
     function isLocalFile(declaration) {
       if (declaration) {
         const fileName = getFileName(declaration.parent);
-        if (fileName && typeof fileName === "string" && !fileName.includes("node_modules"))
+        if (
+          fileName &&
+          typeof fileName === "string" &&
+          dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName)
+        )
           return true;
       }
       return false;
