@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Point } from "@itwin/core-react";
 import {
-  AccuDrawKeyboardShortcuts, CommandItemDef, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps, UiFramework,
+  AccuDrawKeyboardShortcuts, CommandItemDef, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps, SyncUiEventDispatcher, UiFramework,
 } from "../../appui-react";
 import { CursorInformation } from "../../appui-react/cursor/CursorInformation";
 import { KeyboardShortcutMenu } from "../../appui-react/keyboardshortcut/KeyboardShortcutMenu";
@@ -296,7 +296,7 @@ describe("KeyboardShortcut", () => {
       expect(ConditionalBooleanValue.getValue(childShortcutZ!.isDisabled)).to.be.false;
       expect(ConditionalBooleanValue.getValue(childShortcutZ!.isHidden)).to.be.false;
 
-      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
 
       expect(ConditionalBooleanValue.getValue(shortcut!.isDisabled)).to.be.true;
       expect(ConditionalBooleanValue.getValue(childShortcut!.isDisabled)).to.be.true;

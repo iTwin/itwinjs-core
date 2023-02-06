@@ -10,7 +10,7 @@ import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { SessionStateActionId } from "../redux/SessionState";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { UiFramework } from "../UiFramework";
 import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager";

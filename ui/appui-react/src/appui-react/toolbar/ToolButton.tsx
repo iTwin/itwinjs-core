@@ -13,7 +13,7 @@ import { BadgeUtilities, CommonProps, Icon } from "@itwin/core-react";
 import { getToolbarItemProps, Item } from "@itwin/appui-layout-react";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemProps } from "../shared/ItemProps";
-import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
@@ -85,12 +85,12 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
   };
 
   public override componentDidMount() {
-    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _execute = async () => {

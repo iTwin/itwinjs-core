@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { SelectionTool } from "@itwin/core-frontend";
 import { BadgeType } from "@itwin/appui-abstract";
-import { BaseItemState, SyncUiEventId, ToolButton, UiFramework } from "../../appui-react";
+import { BaseItemState, SyncUiEventDispatcher, SyncUiEventId, ToolButton, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ToolButton", () => {
@@ -92,7 +92,7 @@ describe("ToolButton", () => {
     expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
 
     expect(stateFunctionCalled).to.eq(false);
-    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
   });
 
@@ -108,7 +108,7 @@ describe("ToolButton", () => {
     mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
 
     expect(stateFunctionCalled).to.eq(false);
-    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
   });
 });

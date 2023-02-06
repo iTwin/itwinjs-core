@@ -271,7 +271,6 @@ beta;FrameworkContent
 beta;FrameworkControls
 beta;FrameworkDialog
 beta;FrameworkDialogs
-beta;FrameworkEvents
 beta;FrameworkFrontstages
 public;FrameworkKeyboardShortcut 
 public;FrameworkKeyboardShortcutContainer
@@ -714,7 +713,6 @@ deprecated;SyncUiEvent = UiSyncEvent
 public;SyncUiEventArgs = UiSyncEventArgs
 deprecated;SyncUiEventArgs = UiSyncEventArgs
 public;SyncUiEventDispatcher
-deprecated;SyncUiEventDispatcher
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
 internal;TabLocation

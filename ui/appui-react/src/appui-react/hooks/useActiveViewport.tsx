@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { ActiveContentChangedEventArgs } from "../framework/FrameworkContent";
-import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 
 /** React hook that maintains the active viewport.
@@ -43,7 +43,7 @@ export function useActiveViewport(): ScreenViewport | undefined {
       }
     };
 
-    return UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
   }, []);
 
   return activeViewport;

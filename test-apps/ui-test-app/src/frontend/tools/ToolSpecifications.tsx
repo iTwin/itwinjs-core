@@ -24,7 +24,7 @@ import { Dialog, FillCentered, ReactMessage, SvgPath, SvgSprite, UnderlinedButto
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentProps,
   IModelViewportControl, MessageManager, ReactNotifyMessageDetails, StatusBarDialog,
-  StatusBarItemUtilities, StatusBarLabelIndicator, StatusBarSeparator, SyncUiEventId, ToolItemDef, UiFramework,
+  StatusBarItemUtilities, StatusBarLabelIndicator, StatusBarSeparator, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
@@ -111,12 +111,12 @@ class AppItemsProvider implements UiItemsProvider {
 
   public static toggleStatusBarItem() {
     AppItemsProvider._sampleStatusVisible = !AppItemsProvider._sampleStatusVisible;
-    UiFramework.events.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
   }
 
   public static toggleBackstageItem() {
     AppItemsProvider._sampleBackstageItemVisible = !AppItemsProvider._sampleBackstageItemVisible;
-    UiFramework.events.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
   }
 
   public provideStatusBarItems(_stageId: string, _stageUsage: string): CommonStatusBarItem[] {

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { BackstageItemState, CommandLaunchBackstageItem, UiFramework } from "../../appui-react";
+import { BackstageItemState, CommandLaunchBackstageItem, SyncUiEventDispatcher, UiFramework } from "../../appui-react";
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
@@ -44,7 +44,7 @@ describe("Backstage", () => {
       );
 
       expect(stateFunc).to.not.have.been.called;
-      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunc).to.have.been.called;
 
       await theUserTo.click(screen.getByRole("menuitem"));

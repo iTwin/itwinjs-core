@@ -13,6 +13,7 @@ import { SessionStateActionId } from "../../redux/SessionState";
 import { MenuItemHelpers, MenuItemProps } from "../../shared/MenuItem";
 import { UiFramework } from "../../UiFramework";
 import { Logger } from "@itwin/core-bentley";
+import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 /** State for [[CursorPopupMenu]] component
  * @alpha
@@ -46,7 +47,7 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
       return;
 
     /* istanbul ignore else */
-    if (UiFramework.events.hasEventOfInterest(args.eventIds, [SessionStateActionId.UpdateCursorMenu])) {
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SessionStateActionId.UpdateCursorMenu])) {
       const menuData = UiFramework.getCursorMenuData();
       if (menuData && this._hostChildWindowId === menuData.childWindowId) {
         this.setState({ menuVisible: menuData.items && menuData.items.length > 0, items: menuData.items, menuX: menuData.position.x, menuY: menuData.position.y });
@@ -57,12 +58,12 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
   };
 
   public override componentDidMount() {
-    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _handleRefSet = (popupDiv: HTMLElement | null) => {

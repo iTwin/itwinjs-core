@@ -12,6 +12,7 @@ import { KeyboardShortcutProps } from "../framework/FrameworkKeyboardShortcuts";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 import { KeyboardShortcut, KeyboardShortcutContainer } from "./KeyboardShortcut";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 type OnShortcutFunc = (shortcut: KeyboardShortcut) => void;
 
@@ -26,7 +27,7 @@ export class InternalKeyboardShortcutManager {
    * @internal
   */
   public static initialize(): void {
-    UiFramework.events.onSyncUiEvent.addListener(InternalKeyboardShortcutManager._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(InternalKeyboardShortcutManager._handleSyncUiEvent);
   }
 
   /** Loads Keyboard Shortcuts into the managed list */
@@ -104,7 +105,7 @@ export class InternalKeyboardShortcutManager {
 
   private static _handleSyncUiEvent = (args: UiSyncEventArgs) => {
     const updateBooleanValue = (booleanValue: ConditionalBooleanValue) => {
-      if (UiFramework.events.hasEventOfInterest(args.eventIds, booleanValue.syncEventIds))
+      if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, booleanValue.syncEventIds))
         booleanValue.refresh();
     };
     const handleForSyncIds = (shortcut: KeyboardShortcut) => {

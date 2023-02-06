@@ -18,6 +18,7 @@ import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList } from "../shared/ItemMap";
 import { UiFramework } from "../UiFramework";
 import { GroupItemDef } from "./GroupItem";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Properties of [[Toolbar]] component. An ancestor of this toolbar must provide the WidgetOpacityContext.
  * @internal
@@ -93,12 +94,12 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
 
   public override componentDidMount() {
     this._isMounted = true;
-    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
     this._isMounted = false;
-    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   public override componentDidUpdate(prevProps: ToolbarProps, _prevState: ToolbarState) {

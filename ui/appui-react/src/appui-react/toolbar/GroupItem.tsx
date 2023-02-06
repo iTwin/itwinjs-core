@@ -26,6 +26,7 @@ import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -235,14 +236,14 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   };
 
   public override componentDidMount() {
-    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     UiFramework.frontstages.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
     UiFramework.frontstages.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     InternalFrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }

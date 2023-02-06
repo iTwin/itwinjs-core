@@ -22,6 +22,7 @@ import { isStatusBarItem } from "./StatusBarItem";
 import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
 import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
 import { UiFramework } from "../UiFramework";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -124,9 +125,9 @@ function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIds
     };
 
     // Note: that items with conditions have condition run when loaded into the items manager
-    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [itemsManager, itemsManager.items, syncIdsOfInterest]);
 }

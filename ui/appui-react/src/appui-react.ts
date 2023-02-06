@@ -75,7 +75,6 @@ export * from "./appui-react/framework/FrameworkChildWindows";
 export * from "./appui-react/framework/FrameworkContent";
 export * from "./appui-react/framework/FrameworkControls";
 export * from "./appui-react/framework/FrameworkDialogs";
-export * from "./appui-react/framework/FrameworkEvents";
 export * from "./appui-react/framework/FrameworkFrontstages";
 export * from "./appui-react/framework/FrameworkKeyboardShortcuts";
 export * from "./appui-react/framework/FrameworkToolSettings";

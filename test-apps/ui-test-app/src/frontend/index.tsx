@@ -17,7 +17,7 @@ import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
   InitialAppUiSettings,
-  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiStateStorageContext, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
@@ -411,7 +411,7 @@ export class SampleAppIModelApp {
     if (SampleAppIModelApp.isIModelLocal) {
       const currentIModelConnection = UiFramework.getIModelConnection();
       if (currentIModelConnection) {
-        UiFramework.events.clearConnectionEvents(currentIModelConnection);
+        SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
         await currentIModelConnection.close();
         UiFramework.setIModelConnection(undefined);
         SampleAppIModelApp.setIsIModelLocal(true, true); // set to true to hide iModelIndex option which should only show if External imodel is open.

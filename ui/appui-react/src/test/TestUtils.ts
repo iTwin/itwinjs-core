@@ -13,11 +13,10 @@ import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itw
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
-  FrameworkState, UiFramework,
+  FrameworkState, SyncUiEventDispatcher, UiFramework,
 } from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import userEvent from "@testing-library/user-event";
-import { InternalSyncUiEventDispatcher } from "../appui-react/syncui/InternalSyncUiEventDispatcher";
 export {userEvent};
 
 /* eslint-disable deprecation/deprecation */
@@ -90,7 +89,7 @@ export class TestUtils {
       TestUtils._uiFrameworkInitialized = true;
     }
     UiFramework.toolSettings.clearToolSettingsData();
-    InternalSyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
+    SyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 
   public static terminateUiFramework() {

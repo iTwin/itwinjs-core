@@ -16,6 +16,7 @@ import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { useDefaultBackstageItems } from "./useDefaultBackstageItems";
 import { useUiItemsProviderBackstageItems } from "./useUiItemsProviderBackstageItems";
 import { UiFramework } from "../UiFramework";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 // cSpell:ignore safearea
 
@@ -43,9 +44,9 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
       itemsManager.refreshAffectedItems(new Set(syncIdsOfInterest));
     }
 
-    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [itemsManager, itemsManager.items, syncIdsOfInterest]);
 }

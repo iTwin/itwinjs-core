@@ -10,7 +10,7 @@ import "./ContentDialog.scss";
 import * as React from "react";
 import { Dialog, DialogProps } from "@itwin/core-react";
 import { ActiveContentChangedEventArgs } from "../framework/FrameworkContent";
-import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import classnames from "classnames";
@@ -45,7 +45,7 @@ export function useActiveContentControlId(): string | undefined {
       }
     };
 
-    return UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
   }, []);
 
   return activeContentId;

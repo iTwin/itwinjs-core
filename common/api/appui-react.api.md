@@ -2409,18 +2409,6 @@ export interface FrameworkDialogs {
 }
 
 // @beta
-export interface FrameworkEvents {
-    clearConnectionEvents(iModelConnection: IModelConnection): void;
-    dispatchImmediateSyncUiEvent(eventId: string): void;
-    dispatchSyncUiEvent(eventId: string): void;
-    dispatchSyncUiEvents(eventIds: string[]): void;
-    hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
-    initializeConnectionEvents(iModelConnection: IModelConnection): void;
-    readonly onSyncUiEvent: UiSyncEvent;
-    readonly syncEventIds: Set<string>;
-}
-
-// @beta
 export interface FrameworkFrontstages {
     readonly activeFrontstageDef: FrontstageDef | undefined;
     readonly activeFrontstageId: string;
@@ -6107,14 +6095,13 @@ export type SyncUiEvent = UiSyncEvent;
 // @public @deprecated
 export type SyncUiEventArgs = UiSyncEventArgs;
 
-// @public @deprecated
+// @public
 export class SyncUiEventDispatcher {
     static clearConnectionEvents(iModelConnection: IModelConnection): void;
     static dispatchImmediateSyncUiEvent(eventId: string): void;
     static dispatchSyncUiEvent(eventId: string): void;
     static dispatchSyncUiEvents(eventIds: string[]): void;
     static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
-    // @deprecated
     static initialize(): void;
     static initializeConnectionEvents(iModelConnection: IModelConnection): void;
     static get onSyncUiEvent(): SyncUiEvent;
@@ -6773,8 +6760,6 @@ export class UiFramework {
     static get dialogs(): FrameworkDialogs;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
-    // @beta
-    static get events(): FrameworkEvents;
     static get frameworkState(): FrameworkState | undefined;
     // (undocumented)
     static get frameworkStateKey(): string;

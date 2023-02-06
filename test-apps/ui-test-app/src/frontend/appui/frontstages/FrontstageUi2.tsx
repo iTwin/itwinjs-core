@@ -8,6 +8,7 @@ import {
   IModelViewportControl, StageUsage, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
+  SyncUiEventDispatcher,
   UiFramework,
   UiItemsManager,
 } from "@itwin/appui-react";
@@ -177,9 +178,9 @@ export function MyCustomViewOverlay() {
     };
 
     // Note: that items with conditions have condition run when loaded into the items manager
-    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [setShowOverlay, showOverlay, syncIdsOfInterest]);
 

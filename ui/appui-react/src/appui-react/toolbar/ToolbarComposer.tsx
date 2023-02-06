@@ -21,6 +21,7 @@ import { ToolbarHelper } from "./ToolbarHelper";
 import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
 import { ToolActivatedEventArgs } from "../framework/FrameworkFrontstages";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOfInterest: string[]) {
@@ -36,9 +37,9 @@ function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOf
       }
     };
 
-    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [uiDataProvider, syncIdsOfInterest, uiDataProvider.items]);
 

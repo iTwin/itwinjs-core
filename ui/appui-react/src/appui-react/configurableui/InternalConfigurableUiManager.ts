@@ -17,13 +17,13 @@ import { MessageManager } from "../messages/MessageManager";
 import { PopupManager } from "../popup/PopupManager";
 import { ActivityTracker } from "./ActivityTracker";
 import { BeUiEvent } from "@itwin/core-bentley";
-import { InternalSyncUiEventDispatcher } from "../syncui/InternalSyncUiEventDispatcher";
 import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 import { InternalToolSettingsManager } from "../zones/toolsettings/InternalToolSettingsManager";
 import { InternalModelessDialogManager } from "../dialog/InternalModelessDialogManager";
 import { InternalContentDialogManager } from "../dialog/InternalContentDialogManager";
 import { InternalKeyboardShortcutManager } from "../keyboardshortcut/InternalKeyboardShortcut";
 import { InternalModalDialogManager } from "../dialog/InternalModalDialogManager";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Ui Activity Event Args interface.
  * @internal
@@ -77,7 +77,7 @@ export class InternalConfigurableUiManager {
     InternalConfigurableUiManager.register(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
 
     // Initialize SyncUiEventDispatcher so it can register event callbacks.
-    InternalSyncUiEventDispatcher.initialize();
+    SyncUiEventDispatcher.initialize();
 
     // Initialize the FrontstageManager
     InternalFrontstageManager.initialize();

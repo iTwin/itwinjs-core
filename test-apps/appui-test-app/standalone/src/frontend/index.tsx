@@ -16,7 +16,7 @@ import {
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs,
   IModelViewportControl,
   InitialAppUiSettings,
-  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiItemsManager, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { assert, Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
@@ -266,7 +266,7 @@ export class SampleAppIModelApp {
     if (SampleAppIModelApp.isIModelLocal) {
       const currentIModelConnection = UiFramework.getIModelConnection();
       if (currentIModelConnection) {
-        UiFramework.events.clearConnectionEvents(currentIModelConnection);
+        SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
         await currentIModelConnection.close();
         UiFramework.setIModelConnection(undefined);
         SampleAppIModelApp.setIsIModelLocal(true, true);

@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import {
   BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager, UiItemsProvider,
 } from "@itwin/appui-abstract";
-import { BackstageComposer, UiFramework, useGroupedItems } from "../../appui-react";
+import { BackstageComposer, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 import { act, render, screen } from "@testing-library/react";
@@ -18,7 +18,7 @@ const uiSyncEventId = "appuiprovider:backstage-item-visibility-changed";
 
 const triggerSyncRefresh = () => {
   TestUiItemsProvider.sampleStatusVisible = false;
-  UiFramework.events.dispatchImmediateSyncUiEvent(uiSyncEventId);
+  SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(uiSyncEventId);
 };
 
 class TestUiItemsProvider implements UiItemsProvider {

@@ -12,7 +12,7 @@ import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { TaskActivatedEventArgs, WorkflowManager } from "../workflow/Workflow";
@@ -62,14 +62,14 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
 
   public override componentDidMount() {
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+      SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     WorkflowManager.onTaskActivatedEvent.addListener(this._handleTaskActivatedEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
     WorkflowManager.onTaskActivatedEvent.removeListener(this._handleTaskActivatedEvent);
   }
 
@@ -79,7 +79,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
       return;
 
     /* istanbul ignore else */
-    if (UiFramework.events.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
       /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);

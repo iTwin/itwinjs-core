@@ -12,6 +12,7 @@ import {
 import { render, waitFor } from "@testing-library/react";
 import {
   CommandItemDef, CustomItemDef, FrameworkVersion, Frontstage, FrontstageActivatedEventArgs, FrontstageDef, FrontstageProps, FrontstageProvider, GroupItemDef,
+  SyncUiEventDispatcher,
   ToolbarComposer, ToolbarHelper, ToolItemDef,
 } from "../../appui-react";
 import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
@@ -376,7 +377,7 @@ describe("<ToolbarComposer  />", async () => {
 
       expect(renderedComponent.queryByTitle("Tool_1")).to.be.null;
       expect(renderedComponent.queryByTitle("Tool_2")).not.to.be.null;
-      UiFramework.events.dispatchImmediateSyncUiEvent(testItemEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
       expect(renderedComponent.queryByTitle("Tool_1")).to.be.null;
       expect(renderedComponent.queryByTitle("Tool_2")).not.to.be.null;
     });
@@ -399,7 +400,7 @@ describe("<ToolbarComposer  />", async () => {
       expect(renderedComponent.queryByTitle("Tool_Group_2")).to.be.null;
 
       visibleState = true;
-      UiFramework.events.dispatchImmediateSyncUiEvent(testItemEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
       expect(renderedComponent.queryByTitle("Tool_2B")).not.to.be.null;
       expect(renderedComponent.queryByTitle("Tool_Group_2")).not.to.be.null;
       expect(renderedComponent.queryByTitle("Tool_1C")).not.to.be.null;
@@ -490,7 +491,7 @@ describe("<ToolbarComposer  />", async () => {
       expect(renderedComponent.queryByTitle("visibility-test-tool")).not.to.be.null;
 
       testUiProvider.hidden = true;
-      UiFramework.events.dispatchImmediateSyncUiEvent(testUiProvider.syncEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testUiProvider.syncEventId);
       fakeTimers.tick(500);
       fakeTimers.restore();
 

@@ -7,7 +7,7 @@
  */
 
 import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
-import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 
 /** Class that maintain UiShowHide user settings between sessions
@@ -102,7 +102,7 @@ export class InternalUiShowHideManager {
   public static set autoHideUi(autoHide: boolean) {
     void UiShowHideSettingsProvider.storeAutoHideUi(autoHide);
     InternalUiShowHideManager._autoHideUi = autoHide;
-    UiFramework.events.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
   }
   /** Determines whether the widget panels are shown and hidden. Defaults to false. */
   public static get showHidePanels(): boolean {
@@ -137,7 +137,7 @@ export class InternalUiShowHideManager {
   public static set useProximityOpacity(value: boolean) {
     InternalUiShowHideManager._useProximityOpacity = value;
     void UiShowHideSettingsProvider.storeUseProximityOpacity(value);
-    UiFramework.events.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
     UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 
@@ -148,7 +148,7 @@ export class InternalUiShowHideManager {
   public static set snapWidgetOpacity(value: boolean) {
     InternalUiShowHideManager._snapWidgetOpacity = value;
     void UiShowHideSettingsProvider.storeSnapWidgetOpacity(value);
-    UiFramework.events.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
     UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 

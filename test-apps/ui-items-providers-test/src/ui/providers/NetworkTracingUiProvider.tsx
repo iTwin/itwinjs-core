@@ -16,7 +16,7 @@ import {
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { CustomToolbarItem } from "@itwin/components-react";
-import { Indicator, PropsHelper, StateManager, StatusBarItemUtilities, UiFramework } from "@itwin/appui-react";
+import { Indicator, PropsHelper, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher, UiFramework } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
 import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
@@ -85,7 +85,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
     StateManager.store.dispatch(setIsTraceAvailable(!getTestProviderState().isTraceAvailable));
 
     // tell the toolbar to reevaluate state of any item with this event Id
-    UiFramework.events.dispatchImmediateSyncUiEvent(
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(
       NetworkTracingUiProvider.syncEventIdTraceAvailable
     );
   }

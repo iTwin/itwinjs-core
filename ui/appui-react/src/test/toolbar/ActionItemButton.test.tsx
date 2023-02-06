@@ -7,7 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { ActionItemButton, BaseItemState, CommandItemDef, SyncUiEventId, UiFramework } from "../../appui-react";
+import { ActionItemButton, BaseItemState, CommandItemDef, SyncUiEventDispatcher, SyncUiEventId, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionItemButton", () => {
@@ -97,17 +97,17 @@ describe("ActionItemButton", () => {
     const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />); // eslint-disable-line deprecation/deprecation
     expect(stateFunctionCalled).to.eq(false);
     // force to state[0]
-    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
     // force to state[1]
     stateFunctionCalled = false;
-    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
     // force to state[2]
     stateFunctionCalled = false;
-    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
   });
@@ -130,7 +130,7 @@ describe("ActionItemButton", () => {
 
     const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />); // eslint-disable-line deprecation/deprecation
     expect(stateFunctionCalled).to.eq(false);
-    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
   });

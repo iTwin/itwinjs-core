@@ -10,7 +10,7 @@ import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "@itwin/appui-abstract";
-import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager, UiFramework } from "../../../appui-react";
+import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolSettingsManager } from "../../../appui-react";
 import TestUtils, { createStaticInternalPassthroughValidators } from "../../TestUtils";
 import { InternalToolSettingsManager } from "../../../appui-react/zones/toolsettings/InternalToolSettingsManager";
 
@@ -156,8 +156,8 @@ describe("InternalToolSettingsManager", () => {
 
   it("handleDispatchSyncUiEvent", () => {
     InternalToolSettingsManager.initialize();
-    const immediateStub = sinon.stub(UiFramework.events, "dispatchImmediateSyncUiEvent");
-    const timerStub = sinon.stub(UiFramework.events, "dispatchSyncUiEvent");
+    const immediateStub = sinon.stub(SyncUiEventDispatcher, "dispatchImmediateSyncUiEvent");
+    const timerStub = sinon.stub(SyncUiEventDispatcher, "dispatchSyncUiEvent");
     IModelApp.toolAdmin.dispatchUiSyncEvent("test1");
     timerStub.calledOnce.should.be.true;
 

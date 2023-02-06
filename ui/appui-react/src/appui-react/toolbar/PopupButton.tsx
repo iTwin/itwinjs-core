@@ -14,7 +14,7 @@ import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from
 import { ExpandableItem, Item } from "@itwin/appui-layout-react";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
-import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
@@ -125,14 +125,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   public override componentDidMount() {
     this._isMounted = true;
-    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public override componentWillUnmount() {
     this._isMounted = false;
     this._componentUnmounting = true;
-    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
     InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 

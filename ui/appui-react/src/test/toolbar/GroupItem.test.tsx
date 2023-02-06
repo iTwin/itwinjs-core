@@ -11,6 +11,7 @@ import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
 import {
   BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef,
+  SyncUiEventDispatcher,
   ToolbarDragInteractionContext, ToolGroupPanelContext, UiFramework,
 } from "../../appui-react";
 import * as GroupItemModule from "../../appui-react/toolbar/GroupItem";
@@ -128,11 +129,11 @@ describe("GroupItem", () => {
       );
 
       expect(stateFunctionCalled).to.eq(false);
-      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunctionCalled).to.eq(true);
 
       stateFunctionCalled = false;
-      UiFramework.events.dispatchImmediateSyncUiEvent(`${testEventId}-noop`);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(`${testEventId}-noop`);
       expect(stateFunctionCalled).to.eq(false);
     });
 
@@ -149,7 +150,7 @@ describe("GroupItem", () => {
         />,
       );
 
-      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     });
 
     it("should set focus to home on Esc", () => {

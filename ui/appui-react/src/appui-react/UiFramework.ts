@@ -25,7 +25,6 @@ import { FrameworkState } from "./redux/FrameworkState";
 import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from "./redux/SessionState";
 import { StateManager } from "./redux/StateManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
-import { InternalSyncUiEventDispatcher } from "./syncui/InternalSyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
@@ -43,12 +42,12 @@ import { FrameworkBackstage } from "./framework/FrameworkBackstage";
 import { FrameworkChildWindows } from "./framework/FrameworkChildWindows";
 import { FrameworkControls } from "./framework/FrameworkControls";
 import { FrameworkFrontstages } from "./framework/FrameworkFrontstages";
-import { FrameworkEvents, SyncUiEventId } from "./framework/FrameworkEvents";
 import { FrameworkToolSettings } from "./framework/FrameworkToolSettings";
 import { FrameworkContent } from "./framework/FrameworkContent";
 import { FrameworkDialogs } from "./framework/FrameworkDialogs";
 import { FrameworkKeyboardShortcuts } from "./framework/FrameworkKeyboardShortcuts";
 import { FrameworkVisibility } from "./framework/FrameworkVisibility";
+import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 
 // cSpell:ignore Mobi
 
@@ -139,14 +138,6 @@ export class UiFramework {
    */
   public static get frontstages(): FrameworkFrontstages {
     return InternalFrontstageManager;
-  }
-
-  /**
-   * Manage events
-   * @beta
-   */
-  public static get events(): FrameworkEvents {
-    return InternalSyncUiEventDispatcher;
   }
 
   /**
@@ -301,7 +292,7 @@ export class UiFramework {
     await UiIModelComponents.initialize();
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
-      UiFramework.events.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
 
     // Initialize the MessagePresenter interface in UiAdmin for Editor notifications
@@ -446,9 +437,9 @@ export class UiFramework {
   public static dispatchActionToStore(type: string, payload: any, immediateSync = false) {
     UiFramework.store.dispatch({ type, payload });
     if (immediateSync)
-      UiFramework.events.dispatchImmediateSyncUiEvent(type);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(type);
     else
-      UiFramework.events.dispatchSyncUiEvent(type);
+      SyncUiEventDispatcher.dispatchSyncUiEvent(type);
   }
 
   public static setAccudrawSnapMode(snapMode: SnapMode) {
@@ -503,8 +494,8 @@ export class UiFramework {
     if (oldConnection !== iModelConnection) {
       if (oldConnection?.iModelId)
         InternalFrontstageManager.clearFrontstageDefsForIModelId(oldConnection.iModelId);
-      oldConnection && undefined === iModelConnection && UiFramework.events.clearConnectionEvents(oldConnection);
-      iModelConnection && UiFramework.events.initializeConnectionEvents(iModelConnection);
+      oldConnection && undefined === iModelConnection && SyncUiEventDispatcher.clearConnectionEvents(oldConnection);
+      iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
     }
     UiFramework.setActiveIModelId(iModelConnection?.iModelId ?? "");
@@ -526,9 +517,9 @@ export class UiFramework {
 
     // istanbul ignore next
     if (immediateSync)
-      UiFramework.events.dispatchImmediateSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
     else
-      UiFramework.events.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
   }
 
   /** @public */

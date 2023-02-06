@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType, WidgetState } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId, UiFramework, WidgetChangedEventArgs,
+  ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventDispatcher, SyncUiEventId, UiFramework, WidgetChangedEventArgs,
   WidgetControl, WidgetDef, WidgetProps,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
@@ -194,7 +194,7 @@ describe("WidgetDef", () => {
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.canOpen()).to.be.true;
     // firing sync event should trigger state function and set state to Hidden.
-    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(widgetDef.isVisible).to.eq(false);
   });
 

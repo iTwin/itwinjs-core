@@ -10,7 +10,7 @@ import { Logger } from "@itwin/core-bentley";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   BackstageItemState, CoreTools, Frontstage, FrontstageLaunchBackstageItem,
-  FrontstageProps, FrontstageProvider, UiFramework,
+  FrontstageProps, FrontstageProvider, SyncUiEventDispatcher, UiFramework,
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
@@ -64,7 +64,7 @@ describe("Backstage", () => {
       );
 
       expect(stateFunc).not.to.have.been.called;
-      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunc).to.have.been.called;
 
       await theUserTo.click(screen.getByRole("menuitem"));

@@ -9,7 +9,7 @@ import { Logger } from "@itwin/core-bentley";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageProps,
-  FrontstageProvider, TaskLaunchBackstageItem, TaskPropsList, UiFramework, WorkflowManager, WorkflowPropsList,
+  FrontstageProvider, SyncUiEventDispatcher, TaskLaunchBackstageItem, TaskPropsList, UiFramework, WorkflowManager, WorkflowPropsList,
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
@@ -96,7 +96,7 @@ describe("Backstage", () => {
       );
 
       expect(stateFunc).not.to.be.called;
-      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunc).to.be.called;
 
       await theUserTo.click(screen.getByRole("menuitem"));

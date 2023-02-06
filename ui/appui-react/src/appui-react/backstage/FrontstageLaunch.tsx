@@ -11,7 +11,7 @@ import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
@@ -59,7 +59,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
 
   public override componentDidMount() {
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      this._removeSyncUiEventListener = UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+      this._removeSyncUiEventListener = SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     this._removeFrontstageActivatedEventListener = UiFramework.frontstages.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
   }
 
@@ -75,7 +75,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
       return;
 
     /* istanbul ignore else */
-    if (UiFramework.events.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
       /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);

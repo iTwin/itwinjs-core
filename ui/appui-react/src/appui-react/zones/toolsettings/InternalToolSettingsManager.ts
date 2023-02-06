@@ -9,8 +9,8 @@
 import { IModelApp, InteractiveTool } from "@itwin/core-frontend";
 import { DialogItem, DialogPropertySyncItem, UiEvent } from "@itwin/appui-abstract";
 import { focusIntoContainer } from "@itwin/core-react";
-import { UiFramework } from "../../UiFramework";
 import { SyncToolSettingsPropertiesEvent } from "../../framework/FrameworkToolSettings";
+import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 /** Tool Settings Manager class. Used to generate UI components for Tool Settings.
  * @internal
@@ -33,9 +33,9 @@ export class InternalToolSettingsManager {
 
   private static dispatchSyncUiEvent(syncEventId: string, useImmediateDispatch?: boolean): void {
     if (useImmediateDispatch)
-      UiFramework.events.dispatchImmediateSyncUiEvent(syncEventId);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncEventId);
     else
-      UiFramework.events.dispatchSyncUiEvent(syncEventId);
+      SyncUiEventDispatcher.dispatchSyncUiEvent(syncEventId);
   }
 
   /** Initializes the ToolSettingsManager

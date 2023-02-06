@@ -18,8 +18,7 @@ import {
 } from "../../appui-react";
 import { Backstage, BackstageEventArgs } from "../../appui-react/backstage/Backstage";
 import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../appui-react/workflow/Workflow";
-import TestUtils, { createStaticInternalPassthroughValidators } from "../TestUtils";
-import { InternalSyncUiEventDispatcher } from "../../appui-react/syncui/InternalSyncUiEventDispatcher";
+import TestUtils from "../TestUtils";
 /* eslint-disable deprecation/deprecation */
 
 const timeToWaitForUiSyncCallback = 60;
@@ -332,20 +331,5 @@ describe("SyncUiEventDispatcher", () => {
       IModelApp.viewManager.onSelectedViewportChanged.raiseEvent({ previous: viewportMock.object });
     });
 
-  });
-
-  it("calls Internal static for everything", () => {
-    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(SyncUiEventDispatcher, InternalSyncUiEventDispatcher);
-
-    validateMethod("clearConnectionEvents", {} as any);
-    validateMethod("dispatchImmediateSyncUiEvent", "id");
-    validateMethod("dispatchSyncUiEvent", "id");
-    validateMethod("dispatchSyncUiEvents", ["id"]);
-    validateMethod("hasEventOfInterest", {} as any, ["id"]);
-    validateMethod("initialize");
-    validateMethod("initializeConnectionEvents", {} as any);
-    validateMethod("setTimeoutPeriod", 6786);
-    validateProp("onSyncUiEvent");
-    validateProp("syncEventIds");
   });
 });

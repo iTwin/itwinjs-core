@@ -14,7 +14,7 @@ import * as React from "react";
 import { SettingsTabEntry } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
-import { SyncUiEventId } from "../../framework/FrameworkEvents";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
 import { IconSpecUtilities, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 
@@ -124,7 +124,7 @@ export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean
           setToolbarOpacity(UiFramework.getToolbarOpacity());
       }
     };
-    return UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
   }, [autoCollapseUnpinnedPanels, autoHideUi, showWidgetIcon, snapWidgetOpacity, theme, uiVersion,
     useDragInteraction, useProximityOpacity, widgetOpacity, animateToolSettings, useToolAsToolSettingsLabel, toolbarOpacity]);
 

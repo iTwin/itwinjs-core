@@ -19,6 +19,7 @@ import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
 import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -337,7 +338,7 @@ export class WidgetDef {
     if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;
       this._stateFunc = props.stateFunc; // eslint-disable-line deprecation/deprecation
-      UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+      SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     }
   }
 

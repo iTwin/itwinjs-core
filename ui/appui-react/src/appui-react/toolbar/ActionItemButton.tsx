@@ -12,7 +12,7 @@ import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Item } from "@itwin/appui-layout-react";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 import { UiFramework } from "../UiFramework";
@@ -109,13 +109,13 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
   /** @internal */
   public override componentDidMount() {
-    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   /** @internal */
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _execute = () => {

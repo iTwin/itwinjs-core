@@ -10,7 +10,7 @@ import * as React from "react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
-import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 /** @public */
 export function useUiStateStorageHandler(): UiStateStorage {
@@ -37,11 +37,11 @@ export function UiStateStorageHandler(props: UiSettingsProviderProps) {
   React.useEffect(() => {
     // istanbul ignore next
     const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
-      if (UiFramework.events.hasEventOfInterest(args.eventIds, [SyncUiEventId.UiStateStorageChanged]))
+      if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SyncUiEventId.UiStateStorageChanged]))
         setStateStorage(UiFramework.getUiStateStorage());
     };
 
-    return UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
   });
 
   return (

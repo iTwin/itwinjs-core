@@ -19,7 +19,7 @@ export interface SyncToolSettingsPropertiesEventArgs {
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> { }
 
 /**
- * [[UiFramework.events]] interface
+ * [[UiFramework.toolSettings]] interface
  * @beta
  */
 export interface FrameworkToolSettings {

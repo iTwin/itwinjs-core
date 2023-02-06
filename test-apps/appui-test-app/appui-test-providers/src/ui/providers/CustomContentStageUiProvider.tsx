@@ -6,7 +6,7 @@
 import {
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { BackstageItem, BackstageItemUtilities, CommandItemDef, CommonWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, StateManager, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiFramework, UiItemsProvider, WidgetState } from "@itwin/appui-react";
+import { BackstageItem, BackstageItemUtilities, CommandItemDef, CommonWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, StateManager, SyncUiEventDispatcher, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiFramework, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import * as React from "react";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
@@ -30,7 +30,7 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
     StateManager.store.dispatch(setHideCustomDialogButton(!getTestProviderState().hideCustomDialogButton));
 
     // tell the toolbar to reevaluate state of any item with this event Id
-    UiFramework.events.dispatchImmediateSyncUiEvent(
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(
       AppUiTestProviders.syncEventIdHideCustomDialogButton
     );
   };
