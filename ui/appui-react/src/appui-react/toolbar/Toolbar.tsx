@@ -16,9 +16,9 @@ import { AnyItemDef } from "../shared/AnyItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList } from "../shared/ItemMap";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { GroupItemDef } from "./GroupItem";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Properties of [[Toolbar]] component. An ancestor of this toolbar must provide the WidgetOpacityContext.
  * @internal

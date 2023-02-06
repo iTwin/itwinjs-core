@@ -22,11 +22,11 @@ import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
 import { BaseItemState, ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList, ItemMap } from "../shared/ItemMap";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);

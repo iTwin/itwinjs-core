@@ -12,6 +12,7 @@ import { Direction, FloatingWidgetState, PanelSide } from "@itwin/appui-layout-r
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { ItemList } from "../shared/ItemMap";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
@@ -19,7 +20,6 @@ import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
 import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /* eslint-disable deprecation/deprecation */
 

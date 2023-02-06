@@ -14,6 +14,7 @@ import {
 } from "@itwin/appui-abstract";
 import { CommonProps, Icon, useRefs, useResizeObserver } from "@itwin/core-react";
 import { eqlOverflown, FooterIndicator } from "@itwin/appui-layout-react";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { Indicator } from "../statusfields/Indicator";
 import { StatusBarOverflow } from "./Overflow";
 import { StatusBarOverflowPanel } from "./OverflowPanel";
@@ -21,8 +22,6 @@ import { StatusBarCenterSection, StatusBarContext, StatusBarLeftSection, StatusB
 import { isStatusBarItem } from "./StatusBarItem";
 import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
 import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
-import { UiFramework } from "../UiFramework";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /* eslint-disable deprecation/deprecation */
 

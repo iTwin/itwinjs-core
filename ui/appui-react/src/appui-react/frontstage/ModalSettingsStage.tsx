@@ -15,8 +15,8 @@ import { Logger } from "@itwin/core-bentley";
 import { Centered, SettingsContainer } from "@itwin/core-react";
 import { ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "../framework/FrameworkFrontstages";
 import { UiFramework } from "../UiFramework";
-import { StageUsage } from "./StageUsage";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { StageUsage } from "./StageUsage";
 
 function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: string }) {
   const id = UiFramework.frontstages.activeFrontstageDef?.id ?? "none";

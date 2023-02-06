@@ -15,13 +15,13 @@ import { Orientation } from "@itwin/core-react";
 import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@itwin/components-react";
 import { Direction, Toolbar, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
 import { ToolActivatedEventArgs } from "../framework/FrameworkFrontstages";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOfInterest: string[]) {

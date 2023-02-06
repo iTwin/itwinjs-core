@@ -11,12 +11,11 @@ import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue, isStageL
 import { CommonProps } from "@itwin/core-react";
 import { BackstageSeparator, Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { BackstageComposerItem } from "./BackstageComposerItem";
 import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { useDefaultBackstageItems } from "./useDefaultBackstageItems";
 import { useUiItemsProviderBackstageItems } from "./useUiItemsProviderBackstageItems";
-import { UiFramework } from "../UiFramework";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 // cSpell:ignore safearea
 

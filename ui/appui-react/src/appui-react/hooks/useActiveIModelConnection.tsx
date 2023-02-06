@@ -10,8 +10,8 @@ import { useEffect, useState } from "react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { IModelConnection } from "@itwin/core-frontend";
 import { SessionStateActionId } from "../redux/SessionState";
-import { UiFramework } from "../UiFramework";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 
 /** React hook that maintains the active IModelConnection. For this hook to work properly the
  * IModelConnection must be set using UiFramework.setIModelConnection method. This also requires

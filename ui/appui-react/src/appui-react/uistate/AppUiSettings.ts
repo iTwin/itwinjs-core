@@ -8,8 +8,8 @@
 
 import { UiStateEntry, UiStateStorage } from "@itwin/core-react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
-import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
 
 // cSpell:ignore configurableui
 

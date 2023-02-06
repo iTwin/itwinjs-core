@@ -8,7 +8,6 @@
  */
 
 import * as React from "react";
-import { UiFramework } from "../UiFramework";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "./SyncUiEventDispatcher";
 
 /**
