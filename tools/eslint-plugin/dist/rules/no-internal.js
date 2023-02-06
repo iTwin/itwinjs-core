@@ -86,6 +86,7 @@ module.exports = {
         if (
           fileName &&
           typeof fileName === "string" &&
+          !fileName.includes('node_modules') &&
           dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName)
         )
           return true;
