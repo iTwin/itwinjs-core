@@ -24,6 +24,9 @@ export class CoincidentGeometryQuery {
   private _vectorU?: Vector3d;
   private _vectorV?: Vector3d;
   private _tolerance: number;
+  public get tolerance(): number {
+    return this._tolerance;
+  }
   private constructor(tolerance: number = Geometry.smallMetricDistance) {
     this._tolerance = tolerance;
   }
