@@ -13,12 +13,12 @@ describe("Learning Snippets", () => {
 
   let imodel: IModelConnection;
 
-  beforeEach(async () => {
+  before(async () => {
     await initialize();
     imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
-  afterEach(async () => {
+  after(async () => {
     await imodel.close();
     await terminate();
   });

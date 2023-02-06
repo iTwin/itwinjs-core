@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improved tiling tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
