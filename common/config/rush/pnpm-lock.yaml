@@ -4117,7 +4117,6 @@ importers:
 
   ../../tools/eslint-plugin:
     specifiers:
-      '@itwin/build-tools': workspace:*
       '@types/eslint': ~7.2.13
       '@types/estree': ~0.0.48
       '@types/node': 18.11.5
@@ -4153,7 +4152,6 @@ importers:
       eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
       require-dir: 1.2.0
     devDependencies:
-      '@itwin/build-tools': link:../build
       '@types/eslint': 7.2.14
       '@types/estree': 0.0.52
       '@types/node': 18.11.5
