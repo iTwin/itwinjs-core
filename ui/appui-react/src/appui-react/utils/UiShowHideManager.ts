@@ -12,7 +12,7 @@ export { UiShowHideSettingsProvider };
 
 /** Maintains Ui Show/Hide state. The `Ui` includes widgets, panels and the status bar.
  * @public
- * @deprecated in 3.6. Use `UiFramework.visibility` property.
+ * @deprecated in 3.7. Use `UiFramework.visibility` property.
  */
 export class UiShowHideManager {
 

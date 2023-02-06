@@ -12,7 +12,7 @@ import { InternalContentViewManager as internal } from "./InternalContentViewMan
 
 /** Content View Manager class.
  * @public
- * @deprecated in 3.6. Use `UiFramework.content` property
+ * @deprecated in 3.7. Use `UiFramework.content` property
  */
 export class ContentViewManager {
   public static get onMouseDownChangedEvent() { return internal.onMouseDownChangedEvent; }

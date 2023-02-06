@@ -204,11 +204,11 @@ export class KeyboardShortcutContainer {
 
 /** Keyboard Shortcut Manager
  * @public
- * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts` property.
+ * @deprecated in 3.7. Use `UiFramework.keyboardShortcuts` property.
  */
 export class KeyboardShortcutManager {
   /** Initialize the Keyboard Shortcut manager
-   * @deprecated in 3.6. This is called internally.
+   * @deprecated in 3.7. This is called internally.
   */
   public static initialize(): void {
     internal.initialize();

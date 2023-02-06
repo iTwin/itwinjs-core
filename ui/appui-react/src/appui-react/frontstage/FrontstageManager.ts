@@ -21,11 +21,11 @@ import { InternalFrontstageManager as internal } from "./InternalFrontstageManag
 
 /** Frontstage Manager class.
  * @public
- * @deprecated in 3.6. Use `UiFramework.frontstages` property.
+ * @deprecated in 3.7. Use `UiFramework.frontstages` property.
  */
 export class FrontstageManager {
   /** Initializes the InternalFrontstageManager
-   * @deprecated in 3.6. This is called internally.
+   * @deprecated in 3.7. This is called internally.
   */
   public static initialize() {
     internal.initialize();

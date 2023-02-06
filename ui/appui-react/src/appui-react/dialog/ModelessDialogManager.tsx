@@ -32,11 +32,11 @@ export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {
 
 /** Modeless Dialog Manager class displays and manages multiple modeless dialogs
  * @public
- * @deprecated in 3.6. Use `UiFramework.dialogs.modeless` property.
+ * @deprecated in 3.7. Use `UiFramework.dialogs.modeless` property.
  */
 export class ModelessDialogManager {
   /** Initialize the modeless dialog manager
-   * @deprecated in 3.6. This is called internally.
+   * @deprecated in 3.7. This is called internally.
   */
   public static initialize(): void {
     internal.initialize();

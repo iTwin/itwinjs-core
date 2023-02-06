@@ -16,11 +16,11 @@ import { InternalContentDialogManager as internal } from "./InternalContentDialo
 
 /** Content Dialog Manager class displays and manages multiple modeless dialogs
  * @public
- * @deprecated in 3.6. Use `UiFramework.content.dialog` property.
+ * @deprecated in 3.7. Use `UiFramework.content.dialog` property.
  */
 export class ContentDialogManager {
   /** Initialize the modeless dialog manager.
-   * @deprecated in 3.6. This is called internally.
+   * @deprecated in 3.7. This is called internally.
   */
   public static initialize(): void {
     return internal.initialize();

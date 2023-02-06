@@ -199,7 +199,7 @@ export class UiFramework {
   public static useDefaultPopoutUrl = false;
 
   /** @public
-   * @deprecated in 3.6. Use `childWindows` property, name realignment.
+   * @deprecated in 3.7. Use `childWindows` property, name realignment.
   */
   public static get childWindowManager(): ChildWindowManager { // eslint-disable-line deprecation/deprecation
     return UiFramework.childWindows as ChildWindowManager; // eslint-disable-line deprecation/deprecation
@@ -384,7 +384,7 @@ export class UiFramework {
   }
 
   /** @public
-   * @deprecated in 3.6. Use `backstage` alternate property, name realignment.
+   * @deprecated in 3.7. Use `backstage` alternate property, name realignment.
   */
   public static get backstageManager(): BackstageManager {
     return UiFramework.backstage as BackstageManager;

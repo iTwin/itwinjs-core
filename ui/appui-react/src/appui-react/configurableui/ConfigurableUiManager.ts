@@ -16,11 +16,11 @@ import { InternalConfigurableUiManager as internal } from "./InternalConfigurabl
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @public
- * @deprecated in 3.6. Use `UiFramework.controls` property.
+ * @deprecated in 3.7. Use `UiFramework.controls` property.
  */
 export class ConfigurableUiManager {
   /** Initializes the InternalConfigurableUiManager and registers core controls.
-   * @deprecated in 3.6. This is called internally.
+   * @deprecated in 3.7. This is called internally.
   */
   public static initialize() {
     return internal.initialize();
@@ -35,7 +35,7 @@ export class ConfigurableUiManager {
    * [[ToolUiProvider]].
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
-   * @deprecated in 3.6. Use `register` method.
+   * @deprecated in 3.7. Use `register` method.
    */
   public static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void {
     return internal.register(classId, constructor);
@@ -58,7 +58,7 @@ export class ConfigurableUiManager {
 
   /** Unregisters a control that has been registered.
    * @param classId   the class id of the control to unregister
-   * @deprecated in 3.6. Use `unregister` method.
+   * @deprecated in 3.7. Use `unregister` method.
    */
   public static unregisterControl(classId: string): void {
     return internal.unregister(classId);
@@ -70,7 +70,7 @@ export class ConfigurableUiManager {
    * @param options   options passed to the constructor of the control
    * @param controlId controlId which may not be unique across all control instances.
    * @returns  the created control
-   * @deprecated in 3.6. Use `create` method.
+   * @deprecated in 3.7. Use `create` method.
    */
   public static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined {
     return internal.create(classId, uniqueId, options, controlId);
@@ -78,7 +78,7 @@ export class ConfigurableUiManager {
 
   /** Add a Frontstage via a provider into the [[FrontstageManager]].
    * @param frontstageProvider  Provider of the Frontstage to add
-   * @deprecated in 3.6. Use `UiFramework.frontstages.addFrontstageProvider` method.
+   * @deprecated in 3.7. Use `UiFramework.frontstages.addFrontstageProvider` method.
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
     UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
@@ -113,7 +113,7 @@ export class ConfigurableUiManager {
 
   /** Loads one or more Keyboard Shortcuts into the [[KeyboardShortcutManager]].
    * @param shortcutList  the properties of the Keyboard Shortcuts to load
-   * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts.loadShortcuts` method.
+   * @deprecated in 3.7. Use `UiFramework.keyboardShortcuts.loadShortcuts` method.
    */
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
     UiFramework.keyboardShortcuts.loadShortcuts(shortcutList);

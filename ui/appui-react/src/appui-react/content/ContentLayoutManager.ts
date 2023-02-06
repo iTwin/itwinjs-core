@@ -13,7 +13,7 @@ import { InternalContentLayoutManager as internal } from "./InternalContentLayou
 
 /** ContentLayout Manager class.
  * @public
- * @deprecated in 3.6. Use `UiFramework.content.layouts` property.
+ * @deprecated in 3.7. Use `UiFramework.content.layouts` property.
  */
 export class ContentLayoutManager {
   /** build a layout key that is unique for group layout combination */

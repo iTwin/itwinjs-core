@@ -29,7 +29,7 @@ export class ModalDialogRenderer extends React.PureComponent<CommonProps> {
 
 /** Modal Dialog Manager class displays and manages multiple modal dialogs
  * @public
- * @deprecated in 3.6. Use `UiFramework.dialogs.modal` property.
+ * @deprecated in 3.7. Use `UiFramework.dialogs.modal` property.
  */
 export class ModalDialogManager {
   /** Modal Dialog Changed Event */

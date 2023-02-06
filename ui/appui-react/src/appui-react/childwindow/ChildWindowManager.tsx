@@ -15,7 +15,7 @@ import { InternalChildWindowManager } from "./InternalChildWindowManager";
  * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
  * See also: [Child Window Manager]($docs/learning/ui/appui-react/ChildWindows.md)
  * @public
- * @deprecated in 3.6. Use `UiFramework.childWindows` property to access.
+ * @deprecated in 3.7. Use `UiFramework.childWindows` property to access.
  * */
 export class ChildWindowManager {
   private internal = new InternalChildWindowManager();
@@ -33,7 +33,7 @@ export class ChildWindowManager {
   }
 
   /**
-   * @deprecated in 3.6. Use `find` method.
+   * @deprecated in 3.7. Use `find` method.
    */
   public findChildWindow(
     childWindowId: string | undefined
@@ -42,7 +42,7 @@ export class ChildWindowManager {
   }
 
   /**
-   * @deprecated in 3.6. Use `findId` method.
+   * @deprecated in 3.7. Use `findId` method.
    */
   public findChildWindowId(
     contentWindow: Window | undefined | null
@@ -51,14 +51,14 @@ export class ChildWindowManager {
   }
 
   /** Close all child/pop-out windows. This typically is called when the frontstage is changed.
-   * @deprecated in 3.6. Use `closeAll` method.
+   * @deprecated in 3.7. Use `closeAll` method.
    */
   public closeAllChildWindows() {
     return this.internal.closeAll();
   }
 
   /**
-   * @deprecated in 3.6. Use `close` method.
+   * @deprecated in 3.7. Use `close` method.
    */
   public closeChildWindow = (
     childWindowId: string,
@@ -68,7 +68,7 @@ export class ChildWindowManager {
   };
 
   /**
-   * @deprecated in 3.6. Use `open` method.
+   * @deprecated in 3.7. Use `open` method.
    */
   // istanbul ignore next
   public openChildWindow(

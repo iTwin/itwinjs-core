@@ -13,11 +13,11 @@ import { InternalToolSettingsManager as internal } from "./InternalToolSettingsM
 
 /** Tool Settings Manager class. Used to generate UI components for Tool Settings.
  * @public
- * @deprecated in 3.6. Use `UiFramework.toolSettings` property.
+ * @deprecated in 3.7. Use `UiFramework.toolSettings` property.
  */
 export class ToolSettingsManager {
   /** Initializes the ToolSettingsManager
-   * @deprecated in 3.6. This is called internally.
+   * @deprecated in 3.7. This is called internally.
    */
   public static initialize() {
     return internal.initialize();
