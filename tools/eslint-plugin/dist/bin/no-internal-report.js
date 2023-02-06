@@ -5,33 +5,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 "use strict"
-const path = require('path');
-const fs = require('fs');
 
-function getNodeModulesDir(startPath) {
-  let currPath = startPath;
-  let baseName = path.basename(currPath);
-  while (baseName !== "node_modules") {
-    currPath = path.resolve(currPath, "..")
-    if (currPath === "/")
-      return undefined;
-    baseName = path.basename(currPath);
-  }
-  return currPath;
-}
-
-const nodeModules = getNodeModulesDir(path.dirname(process.argv[1]));
-if (!nodeModules)
-  throw ("Could not find node_modules directory");
-
-const distDir = path.join(nodeModules, "@itwin/eslint-plugin/dist")
-if (!fs.existsSync(distDir))
-  throw ("Could not find required dir: " + distDir);
+const formatterPath = require.resolve("../formatters/no-internal-summary.js");
 
 // Run eslint with the appropriate configuration and formatter to get a report of the no-internal rule
 let args = [
   "--no-eslintrc",
-  "-f", path.join(distDir, "formatters/no-internal-summary.js"),
+  "-f", formatterPath,
   "--plugin", "@itwin",
   "--rule", "@itwin/no-internal:'error'",
   "--parser", "@typescript-eslint/parser",
