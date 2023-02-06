@@ -15,6 +15,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */
+// cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT
 export class MatrixTests {
 
   public static testCreateProperties(ck: bsiChecker.Checker) {
@@ -382,7 +383,6 @@ describe("Matrix3d.setColumns", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-
 describe("Matrix3d.setRow", () => {
   it("setRow", () => {
     const ck = new bsiChecker.Checker();
