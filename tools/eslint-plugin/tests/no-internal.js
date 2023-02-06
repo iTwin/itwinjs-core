@@ -37,6 +37,12 @@ ruleTester.run(
       },
       {
         code: dedent`
+          import { Public } from "./local";
+          new Public().internal();
+        `,
+      },
+      {
+        code: dedent`
           import { Public } from "test-pkg-1";
           new Public().public();
         `,
@@ -53,23 +59,23 @@ ruleTester.run(
             messageId: "forbidden",
             data: {
               kind: "method",
-              name: "internal",
+              name: "Public.internal",
               tag: "internal",
             },
           },
-        ],
-      },
-      {
-        code: dedent`
-          import { Public } from "./local";
-          new Public().internal();
-        `,
-        errors: [
           {
             messageId: "forbidden",
             data: {
               kind: "method",
-              name: "internal",
+              name: "Public.internal",
+              tag: "internal",
+            },
+          },
+          {
+            messageId: "forbidden",
+            data: {
+              kind: "method",
+              name: "Public.internal",
               tag: "internal",
             },
           },
