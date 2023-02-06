@@ -4595,7 +4595,7 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     releaseMapTileUsage(): void;
     // (undocumented)
-    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus;
+    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus;
     // (undocumented)
     setContent(content: ImageryTileContent): void;
     // (undocumented)
@@ -4624,7 +4624,7 @@ export class ImageryMapTileTree extends RealityTileTree {
     // (undocumented)
     get isContentUnbounded(): boolean;
     // (undocumented)
-    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus;
+    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus;
     // (undocumented)
     protected _selectTiles(_args: TileDrawArgs): Tile[];
     // (undocumented)
@@ -6101,6 +6101,8 @@ export class MapTile extends RealityTile {
     protected _heightRange: Range1d | undefined;
     // @internal
     get hiddenImageryTiles(): ImageryMapTile[] | undefined;
+    // @internal
+    get highResolutionReplacementTiles(): ImageryMapTile[] | undefined;
     // @internal (undocumented)
     get imageryIsReady(): boolean;
     // @internal (undocumented)
@@ -6240,7 +6242,7 @@ export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
     // @internal
-    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number): void;
+    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean): void;
     // @internal (undocumented)
     addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
     // @internal (undocumented)
