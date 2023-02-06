@@ -15,6 +15,7 @@ import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
 /* eslint-disable @itwin/prefer-get */
+// cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
@@ -213,7 +214,10 @@ export class Matrix3d implements BeJSONFunctions {
   public inverseCoffs: Float64Array | undefined;
   /** Indicates if inverse is unknown, available, or known singular */
   public inverseState: InverseMatrixState;
+  /** The identity matrix */
   private static _identity: Matrix3d;
+  /** temporary buffer to store a matrix as a Float64Array (array of 9 floats) */
+  private static _productBuffer = new Float64Array(9);
   /** The identity Matrix3d. Value is frozen and cannot be modified. */
   public static get identity(): Matrix3d {
     if (undefined === this._identity) {
@@ -465,9 +469,20 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
   /**
- * Copy the transpose of the coffs to the inverseCoffs.
- * * Mark the matrix as inverseStored.
- */
+   * Create the inverseCoffs member (filled with zeros)
+   * This is for use by matrix * matrix multiplications which need to be sure the member is there to be
+   * filled with method-specific content.
+   */
+  private createInverseCoffsWithZeros() {
+    if (!this.inverseCoffs) {
+      this.inverseState = InverseMatrixState.unknown;
+      this.inverseCoffs = new Float64Array(9);
+    }
+  }
+  /**
+   * Copy the transpose of the coffs to the inverseCoffs.
+   * * Mark the matrix as inverseStored.
+   */
   private setupInverseTranspose() {
     const coffs = this.coffs;
     this.inverseState = InverseMatrixState.inverseStored;
@@ -685,6 +700,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Construct a rigid matrix using vectorA and its 2 perpendicular.
    * * This function internally uses createPerpendicularVectorFavorXYPlane and createRigidFromColumns.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/2PerpendicularVectorsTo1Vector
    */
   public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY,
     result?: Matrix3d): Matrix3d {
@@ -748,14 +764,33 @@ export class Matrix3d implements BeJSONFunctions {
     return myResult;
   }
   /**
- * Replace current columns Ui and Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui).
- * * There is no checking for i,j being 0,1,2.
- * * This is used in compute intensive inner loops
- * @param i first row index. **must be 0,1,2** (unchecked)
- * @param j second row index. **must be 0,1,2** (unchecked)
- * @param c fist coefficient
- * @param s second coefficient
- */
+   * Replace current rows Ui and Uj with (c*Ui + s*Uj) and (c*Uj - s*Ui).
+   * * There is no checking for i,j being 0,1,2.
+   * @param i first row index. **must be 0,1,2** (unchecked)
+   * @param j second row index. **must be 0,1,2** (unchecked)
+   * @param c fist coefficient
+   * @param s second coefficient
+   */
+  private applyGivensRowOp(i: number, j: number, c: number, s: number): void {
+    let ii = 3 * i;
+    let jj = 3 * j;
+    const limit = ii + 3;
+    for (; ii < limit; ii++, jj++) {
+      const a = this.coffs[ii];
+      const b = this.coffs[jj];
+      this.coffs[ii] = a * c + b * s;
+      this.coffs[jj] = -a * s + b * c;
+    }
+  }
+  /**
+   * Replace current columns Ui and Uj with (c*Ui + s*Uj) and (c*Uj - s*Ui).
+   * * There is no checking for i,j being 0,1,2.
+   * * This is used in compute intensive inner loops
+   * @param i first row index. **must be 0,1,2** (unchecked)
+   * @param j second row index. **must be 0,1,2** (unchecked)
+   * @param c fist coefficient
+   * @param s second coefficient
+   */
   public applyGivensColumnOp(i: number, j: number, c: number, s: number): void {
     const limit = i + 9;
     for (; i < limit; i += 3, j += 3) {
@@ -1188,60 +1223,6 @@ export class Matrix3d implements BeJSONFunctions {
   public columnZCrossVector(vector: XYZ, result?: Vector3d): Vector3d {
     return Geometry.crossProductXYZXYZ(this.coffs[2], this.coffs[5], this.coffs[8], vector.x, vector.y, vector.z, result);
   }
-  /*
-   * Replace current rows Ui Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui).
-   * @param i first row index.  must be 0,1,2 (unchecked)
-   * @param j second row index. must be 0,1,2 (unchecked)
-   * @param c fist coefficient
-   * @param s second coefficient
-   */
-  private applyGivensRowOp(i: number, j: number, c: number, s: number): void {
-    let ii = 3 * i;
-    let jj = 3 * j;
-    const limit = ii + 3;
-    for (; ii < limit; ii++, jj++) {
-      const a = this.coffs[ii];
-      const b = this.coffs[jj];
-      this.coffs[ii] = a * c + b * s;
-      this.coffs[jj] = -a * s + b * c;
-    }
-  }
-  /**
-   * create a rigid coordinate frame column z parallel to (_x_,_y_,_z_) and column x in the xy plane.
-   * * column z points from origin to x,y,z
-   * * column x is perpendicular and in the xy plane
-   * * column y is perpendicular to both.  It is the "up" vector on the view plane.
-   * * Multiplying a world vector times the transpose of this matrix transforms into the view xy
-   * * Multiplying the matrix times the an in-view vector transforms the vector to world.
-   * @param x eye x coordinate
-   * @param y eye y coordinate
-   * @param z eye z coordinate
-   * @param result
-   */
-  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: Matrix3d): Matrix3d {
-    result = Matrix3d.createIdentity(result);
-    const rxy = Geometry.hypotenuseXY(x, y);
-    if (Geometry.isSmallMetricDistance(rxy)) {
-      // special case for top or bottom view.
-      if (z < 0.0)
-        result.scaleColumnsInPlace(1.0, -1, -1.0);
-    } else {
-      //      const d = Geometry.hypotenuseSquaredXYZ(x, y, z);
-      const c = x / rxy;
-      const s = y / rxy;
-      result.setRowValues(
-        -s, 0, c,
-        c, 0, s,
-        0, 1, 0);
-      if (z !== 0.0) {
-        const r = Geometry.hypotenuseXYZ(x, y, z);
-        const s1 = z / r;
-        const c1 = rxy / r;
-        result.applyGivensColumnOp(1, 2, c1, -s1);
-      }
-    }
-    return result;
-  }
   /** Rotate so columns i and j become perpendicular */
   private applyJacobiColumnRotation(i: number, j: number, matrixU: Matrix3d): number {
     const uDotU = this.coffs[i] * this.coffs[i] + this.coffs[i + 3] * this.coffs[i + 3] + this.coffs[i + 6] * this.coffs[i + 6];
@@ -1528,6 +1509,7 @@ export class Matrix3d implements BeJSONFunctions {
    * \text{The matrix is } I - (s-1) U U^T
    * \\ \text{with }U\text{ being the unit vector in the direction of the input vector.}
    * ```
+   * * Visualization can be found at itwinjs.org/sandbox/SaeedTorabi/DirectionalScale
    */
   public static createDirectionalScale(direction: Vector3d, scale: number, result?: Matrix3d): Matrix3d {
     const unit = direction.normalize();
@@ -1685,7 +1667,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
   /**
-   * Multiply transpose of this matrix times a vector.
+   * Multiply the transpose matrix times a vector.
    * * This produces the same x,y,z as treating the vector as a row on the left of the (un-transposed) matrix.
    * ```
    * equation
@@ -1694,7 +1676,7 @@ export class Matrix3d implements BeJSONFunctions {
    * \text{Treating U as a row to the left of untransposed matrix\: return row}&\rowSubXYZ{V}&=&\rowSubXYZ{U}\matrixXY{A}
    * \end{matrix}
    * ```
-   * @return the vector result
+   * @return the vector result (optional)
    */
   public multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
@@ -1706,91 +1688,105 @@ export class Matrix3d implements BeJSONFunctions {
     result.z = (this.coffs[2] * x + this.coffs[5] * y + this.coffs[8] * z);
     return result;
   }
-  /** Multiply the matrix * (x,y,z), i.e. the vector (x,y,z) is a column vector on the right.
-   * @return the vector result
+  /**
+   * Multiply the matrix * [x,y,z], i.e. the vector [x,y,z] is a column vector on the right.
+   * @return the vector result (optional)
    */
   public multiplyXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
-    result.x = (this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z);
-    result.y = (this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z);
-    result.z = (this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z);
+    result.x = this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z;
+    result.y = this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z;
+    result.z = this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z;
     return result;
   }
-  /** Multiply the matrix * xyz, place result in (required) return value.
-   *   @param xyz right side
-   *   @param result result.
+  /**
+   * Multiply the matrix * xyz, place result in (required) return value.
+   * @param xyz right side
+   * @param result the result.
    */
   public multiplyXYZtoXYZ(xyz: XYZ, result: XYZ) {
     const x = xyz.x;
     const y = xyz.y;
     const z = xyz.z;
-    result.x = (this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z);
-    result.y = (this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z);
-    result.z = (this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z);
+    result.x = this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z;
+    result.y = this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z;
+    result.z = this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z;
     return result;
   }
-  /** Multiply the matrix * (x,y,0), i.e. the vector (x,y,z) is a column vector on the right.
-   *   @return the vector result
+  /**
+   * Multiply the matrix * [x,y,0], i.e. the vector [x,y,0] is a column vector on the right.
+   * @return the vector result (optional)
    */
   public multiplyXY(x: number, y: number, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
-    result.x = (this.coffs[0] * x + this.coffs[1] * y);
-    result.y = (this.coffs[3] * x + this.coffs[4] * y);
-    result.z = (this.coffs[6] * x + this.coffs[7] * y);
+    result.x = this.coffs[0] * x + this.coffs[1] * y;
+    result.y = this.coffs[3] * x + this.coffs[4] * y;
+    result.z = this.coffs[6] * x + this.coffs[7] * y;
     return result;
   }
-  /** compute `origin + this*[x,y,0]`  */
+  /**
+   * Compute origin + the matrix * [x,y,0].
+   * @return the vector result (optional)
+   */
   public originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d {
     return Point3d.create(
       origin.x + this.coffs[0] * x + this.coffs[1] * y,
       origin.y + this.coffs[3] * x + this.coffs[4] * y,
       origin.z + this.coffs[6] * x + this.coffs[7] * y,
-      result);
+      result
+    );
   }
-  /** Multiply matrix * (x, y, z) using any 3d object given containing those members */
+  /**
+   * Multiply the matrix * (x,y,z) in place, i.e. the vector (x,y,z) is a column vector on the right and
+   * the multiplication updates the vector values.
+   * @param xyzData the vector data
+   */
   public multiplyVectorInPlace(xyzData: XYZ): void {
     const x = xyzData.x;
     const y = xyzData.y;
     const z = xyzData.z;
-    const coffs = this.coffs;
-    xyzData.x = (coffs[0] * x + coffs[1] * y + coffs[2] * z);
-    xyzData.y = (coffs[3] * x + coffs[4] * y + coffs[5] * z);
-    xyzData.z = (coffs[6] * x + coffs[7] * y + coffs[8] * z);
+    xyzData.x = this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z;
+    xyzData.y = this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z;
+    xyzData.z = this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z;
   }
-  /** Multiply the transpose matrix times column using any 3d object with x,y,z members.
-   * This is equivalent to `multiplyTransposeVector` but always returns the result directly in the input.
+  /**
+   * Multiply the transpose matrix times [x,y,z] in place, i.e. the vector [x,y,z] is a column vector on
+   * the right and the multiplication updates the vector values.
+   * * This is equivalent to `multiplyTransposeVector` but always returns the result directly in the input.
+   * @param xyzData the vector data
    */
   public multiplyTransposeVectorInPlace(vectorU: XYZ): void {
     const x = vectorU.x;
     const y = vectorU.y;
     const z = vectorU.z;
-    const coffs = this.coffs;
-    vectorU.x = (coffs[0] * x + coffs[3] * y + coffs[6] * z);
-    vectorU.y = (coffs[1] * x + coffs[4] * y + coffs[7] * z);
-    vectorU.z = (coffs[2] * x + coffs[5] * y + coffs[8] * z);
+    vectorU.x = this.coffs[0] * x + this.coffs[3] * y + this.coffs[6] * z;
+    vectorU.y = this.coffs[1] * x + this.coffs[4] * y + this.coffs[7] * z;
+    vectorU.z = this.coffs[2] * x + this.coffs[5] * y + this.coffs[8] * z;
   }
-  /** Multiply the transpose matrix times column using individual numeric inputs.
-   * * This is equivalent to multiplying with the vector as a row to the left of the plain matrix.
+  /**
+   * Multiply the transpose matrix times column using individual numeric inputs.
+   * * This produces the same x,y,z as treating the vector as a row on the left of the (un-transposed) matrix.
    * ```
    * equation
    * \begin{matrix}
-   * \text{treating the input as a column } \columnXYZ{x}{y}{z}\text{ compute  }&\columnSubXYZ{V} &= &A^T \columnXYZ{x}{y}{z} \\
-   * \text{or row vector } \rowXYZ{x}{y}{z} \text{ compute }&\rowSubXYZ{V} &= &\rowXYZ{x}{y}{z} A \\
+   * \text{treating the input as a column vector } \columnXYZ{x}{y}{z}\text{ compute  }&\columnSubXYZ{V} &= &A^T \columnXYZ{x}{y}{z} \\
+   * \text{or as a row vector } \rowXYZ{x}{y}{z} \text{ compute }&\rowSubXYZ{V} &= &\rowXYZ{x}{y}{z} A \\
    * \phantom{8888}\text{and return V as a Vector3d} & & &
    * \end{matrix}
    * ````
-   * @return the vector result
+   * @return the vector result (optional)
    */
   public multiplyTransposeXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
-    result.x = (this.coffs[0] * x + this.coffs[3] * y + this.coffs[6] * z);
-    result.y = (this.coffs[1] * x + this.coffs[4] * y + this.coffs[7] * z);
-    result.z = (this.coffs[2] * x + this.coffs[5] * y + this.coffs[8] * z);
+    result.x = this.coffs[0] * x + this.coffs[3] * y + this.coffs[6] * z;
+    result.y = this.coffs[1] * x + this.coffs[4] * y + this.coffs[7] * z;
+    result.z = this.coffs[2] * x + this.coffs[5] * y + this.coffs[8] * z;
     return result;
   }
-  /** Solve `matrix * result = vector`.
-   * * This is equivalent to multiplication `result = matrixInverse * vector`.
-   * * Result is undefined if the matrix is singular (e.g. has parallel or zero length columns)
+  /**
+   * Solve `matrix * result = vector` for an unknown `result`.
+   * * This is equivalent to multiplication `result = inverse matrix * vector`.
+   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
    */
   public multiplyInverse(vector: Vector3d, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
@@ -1799,16 +1795,18 @@ export class Matrix3d implements BeJSONFunctions {
       const y = vector.y;
       const z = vector.z;
       return Vector3d.create(
-        (this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z),
-        (this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z),
-        (this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z),
-        result);
+        this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z,
+        this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z,
+        this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z,
+        result
+      );
     }
     return undefined;
   }
-  /** Solve `matrixTranspose * result = vector`.
+  /**
+   * Solve `matrixTranspose * result = vector` for an unknown `result`.
    * * This is equivalent to multiplication `result = matrixInverseTranspose * vector`.
-   * * Result is undefined if the matrix is singular (e.g. has parallel or zero length columns)
+   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
    */
   public multiplyInverseTranspose(vector: Vector3d, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
@@ -1817,103 +1815,111 @@ export class Matrix3d implements BeJSONFunctions {
       const y = vector.y;
       const z = vector.z;
       return Vector3d.create(
-        (this.inverseCoffs[0] * x + this.inverseCoffs[3] * y + this.inverseCoffs[6] * z),
-        (this.inverseCoffs[1] * x + this.inverseCoffs[4] * y + this.inverseCoffs[7] * z),
-        (this.inverseCoffs[2] * x + this.inverseCoffs[5] * y + this.inverseCoffs[8] * z),
-        result);
+        this.inverseCoffs[0] * x + this.inverseCoffs[3] * y + this.inverseCoffs[6] * z,
+        this.inverseCoffs[1] * x + this.inverseCoffs[4] * y + this.inverseCoffs[7] * z,
+        this.inverseCoffs[2] * x + this.inverseCoffs[5] * y + this.inverseCoffs[8] * z,
+        result
+      );
     }
     return undefined;
   }
   /**
-   * multiply `matrixInverse * [x,y,z]`.
-   * *  This is equivalent to solving `matrix * result = [x,y,z]`
-   * *  return as a Vector3d, or undefined if the matrix is singular.
+   * Multiply `matrixInverse * [x,y,z]`.
+   * * This is equivalent to solving `matrix * result = [x,y,z]` for an unknown `result`.
+   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
+   * @return result as a Vector3d or undefined (if the matrix is singular).
    */
   public multiplyInverseXYZAsVector3d(x: number, y: number, z: number, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
     if (this.inverseCoffs) {
       return Vector3d.create(
-        (this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z),
-        (this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z),
-        (this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z),
-        result);
+        this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z,
+        this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z,
+        this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z,
+        result
+      );
     }
     return undefined;
   }
   /**
-   * multiply `matrixInverse * [x,y,z]` and return packaged as `Point4d` with given weight.
-   * *  Equivalent to solving matrix * result = [x,y,z]
-   * *  return as a Point4d with the same weight.
-   * *  Called by Transform with x,y,z adjusted by subtraction ((xw) - w * origin.x, etc) where xw is the pre-weighted space point.
+   * Multiply `matrixInverse * [x,y,z]` and return result as `Point4d` with given weight.
+   * * Equivalent to solving `matrix * result = [x,y,z]` for an unknown `result`.
+   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
+   * @return result as a Point4d with the same weight.
    */
   public multiplyInverseXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d | undefined {
     this.computeCachedInverse(true);
     if (this.inverseCoffs) {
       return Point4d.create(
-        (this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z),
-        (this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z),
-        (this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z),
+        this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z,
+        this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z,
+        this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z,
         w,
-        result);
+        result
+      );
     }
     return undefined;
   }
   /**
-   * multiply `matrixInverse * [x,y,z]` and return packaged as `Point3d`.
-   * *  multiply matrixInverse * [x,y,z]
-   * *  Equivalent to solving matrix * result = [x,y,z]
-   * *  return as a Point3d.
+   * Multiply `matrixInverse * [x,y,z]` and return result as `Point3d`.
+   * * Equivalent to solving `matrix * result = [x,y,z]` for an unknown `result`.
+   * @return result as a Point3d or undefined (if the matrix is singular).
    */
   public multiplyInverseXYZAsPoint3d(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
     this.computeCachedInverse(true);
     if (this.inverseCoffs) {
       return Point3d.create(
-        (this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z),
-        (this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z),
-        (this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z),
-        result);
+        this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z,
+        this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z,
+        this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z,
+        result
+      );
     }
     return undefined;
   }
   /**
-   * * invoke a given matrix-matrix operation (product function) to compute this.inverseCOffs
-   * * set this.inverseCoffs
-   * * if either input cffA or coffB is undefined, set state to `InverseMatrixState.unknown` (but leave the inverseCoffs untouched)
+   * Invoke a given matrix*matrix operation to compute the inverse matrix and set this.inverseCoffs
+   * * If either input coffA or coffB is undefined, set state to `InverseMatrixState.unknown` but
+   * leave the inverseCoffs untouched.
+   * @param f the given matrix*matrix operation that is called by this function to compute the inverse.
+   * `f` must be a matrix*matrix operation. Otherwise, the function does not generate the inverse properly.
    */
-  private finishInverseCoffs(f: (factorA: Float64Array, factorB: Float64Array, result: Float64Array) => void, coffA?: Float64Array, coffB?: Float64Array): void {
+  private finishInverseCoffs(f: (factorA: Float64Array, factorB: Float64Array, result: Float64Array) => void,
+    coffA?: Float64Array, coffB?: Float64Array): void {
     if (coffA && coffB) {
       this.createInverseCoffsWithZeros();
       this.inverseState = InverseMatrixState.inverseStored;
-      f(coffA, coffB, this.inverseCoffs!);
+      f(coffA, coffB, this.inverseCoffs!); // call function f (which is provided by user) to compute the inverse.
     } else {
       this.inverseState = InverseMatrixState.unknown;
     }
   }
-  /*
-   Notes on inverses of products
-   * 1) M = A * B       MInverse = BInverse * AInverse
-   * 2) M = A * BInverse       MInverse = B * AInverse
-   * 3) M = AInverse * B       MInverse = BInverse * A
-   * 4) M = ATranspose * B       MInverse = BInverse * AInverseTranspose
-   * 5) M = A * BTranspose       MInverse = BInverseTranspose * AInverse
-  */
-  /** Multiply the instance matrix A by the input matrix B.
-   *   @return the matrix product A * B
+  // Notes on inverse of matrix products:
+  //      1) M = A * B           ===>  MInverse = BInverse * AInverse
+  //      2) M = A * BInverse    ===>  MInverse = B * AInverse
+  //      3) M = AInverse * B    ===>  MInverse = BInverse * A
+  //      4) M = A * BTranspose  ===>  MInverse = BInverseTranspose * AInverse
+  //      5) M = ATranspose * B  ===>  MInverse = BInverse * AInverseTranspose
+  /**
+   * Multiply `this` matrix times `other` matrix
+   * @return the matrix result: this*other
    */
   public multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d {
     result = result ? result : new Matrix3d();
     PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.coffs, result.coffs);
-    if (this.inverseState === InverseMatrixState.inverseStored && other.inverseState === InverseMatrixState.inverseStored)
+    if (this.inverseState === InverseMatrixState.inverseStored
+      && other.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixMatrix, other.inverseCoffs, this.inverseCoffs);
-    else if (this.inverseState === InverseMatrixState.singular || other.inverseState === InverseMatrixState.singular)
+    else if (this.inverseState === InverseMatrixState.singular
+      || other.inverseState === InverseMatrixState.singular)
       result.inverseState = InverseMatrixState.singular;
     else
       result.inverseState = InverseMatrixState.unknown;
     return result;
   }
-  private static _productBuffer = new Float64Array(9);
-  /** Multiply this matrix times inverse of other
-   *   @return the matrix result
+  /**
+   * Multiply `this` matrix times `inverse of other` matrix
+   * @return the matrix result: this*otherInverse
    */
   public multiplyMatrixMatrixInverse(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined {
     if (!other.computeCachedInverse(true))
@@ -1927,8 +1933,9 @@ export class Matrix3d implements BeJSONFunctions {
     PackedMatrix3dOps.copy(Matrix3d._productBuffer, result.coffs);
     return result;
   }
-  /** Multiply this matrix times inverse of other
-   *   @return the matrix result
+  /**
+   * Multiply `inverse of this` matrix times `other` matrix
+   * @return the matrix result: thisInverse*other
    */
   public multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined {
     if (!this.computeCachedInverse(true))
@@ -1942,30 +1949,32 @@ export class Matrix3d implements BeJSONFunctions {
     PackedMatrix3dOps.copy(Matrix3d._productBuffer, result.coffs);
     return result;
   }
-  /** Multiply `this` matrix times the transpose of `matrixB`.
+  /**
+   * Multiply `this` matrix times the transpose of `other` matrix
    * ```
    * equation
-   * \text{for instance matrix }A\text{ and other matrix }B\text{ return matrix }C{\text where }\\\matrixXY{C}=\matrixXY{A}\matrixTransposeSubXY{B}
+   * \text{for instance matrix }A\text{ and matrix }B\text{ return matrix }C{\text where }\\\matrixXY{C}=\matrixXY{A}\matrixTransposeSubXY{B}
    * ```
-   * @return the matrix result
+   * @return the matrix result: this*otherTranspose
    */
-  public multiplyMatrixMatrixTranspose(matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
+  public multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d {
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrixTranspose(this.coffs, matrixB.coffs, result.coffs);
-    if (this.inverseState === InverseMatrixState.inverseStored && matrixB.inverseState === InverseMatrixState.inverseStored)
-      result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixTransposeMatrix, matrixB.inverseCoffs, this.inverseCoffs);
-    else if (this.inverseState === InverseMatrixState.singular || matrixB.inverseState === InverseMatrixState.singular)
+    PackedMatrix3dOps.multiplyMatrixMatrixTranspose(this.coffs, other.coffs, result.coffs);
+    if (this.inverseState === InverseMatrixState.inverseStored && other.inverseState === InverseMatrixState.inverseStored)
+      result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixTransposeMatrix, other.inverseCoffs, this.inverseCoffs);
+    else if (this.inverseState === InverseMatrixState.singular || other.inverseState === InverseMatrixState.singular)
       result.inverseState = InverseMatrixState.singular;
     else
       result.inverseState = InverseMatrixState.unknown;
     return result;
   }
-  /** Matrix multiplication `thisTranspose * other`.
+  /**
+   * Multiply the transpose of `this` matrix times `other` matrix
    * ```
    * equation
    * \matrixXY{result}=\matrixXY{\text{this}}\matrixTransposeSubXY{\text{other}}
    * ```
-   *   @return the matrix result
+   * @return the matrix result: thisTranspose*other
    */
   public multiplyMatrixTransposeMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d {
     result = result ? result : new Matrix3d();
@@ -1978,32 +1987,34 @@ export class Matrix3d implements BeJSONFunctions {
       result.inverseState = InverseMatrixState.unknown;
     return result;
   }
-  /** multiply this Matrix3d (considered as a transform with 0 translation) times other Transform.
+  /**
+   * Multiply `this` Matrix3d (considered as a Transform with 0 translation) times `other` Transform.
    * ```
    * equation
    * \begin{matrix}
-   *    \text{This matrix }\bold{A}\text{ promoted to block transform} & \blockTransform{A}{0} \\
-   *    \text{other transform with matrix part }\bold{B}\text{ and translation }\bold{b} & \blockTransform{B}{b}\\
+   * \text{This matrix }\bold{A}\text{ promoted to block transform} & \blockTransform{A}{0} \\
+   * \text{other transform with matrix part }\bold{B}\text{ and translation }\bold{b} & \blockTransform{B}{b}\\
    * \text{product}& \blockTransform{A}{0}\blockTransform{B}{b}=\blockTransform{AB}{Ab}
    * \end{matrix}
    * ```
-   * @param other right hand Matrix3d for multiplication.
-   * @param result optional preallocated result to reuse.
+   * @param other Right hand Matrix3d for multiplication.
+   * @param result the Transform result (optional)
    */
   public multiplyMatrixTransform(other: Transform, result?: Transform): Transform {
     if (!result)
       return Transform.createRefs(
         this.multiplyXYZ(other.origin.x, other.origin.y, other.origin.z),
-        this.multiplyMatrixMatrix(other.matrix));
-    // be sure to do the point multiplication first before aliasing changes the matrix ..
+        this.multiplyMatrixMatrix(other.matrix)
+      );
+    // be sure to do the point multiplication first before aliasing changes the matrix
     this.multiplyXYZtoXYZ(other.origin, result.origin);
     this.multiplyMatrixMatrix(other.matrix, result.matrix);
     return result;
   }
   /**
    * Return the transpose of `this` matrix.
-   * If `result` is passed as argument, then the function copies the transpose of `this` into `result`
-   * `this` is not changed unless also passed as the result, i.e., this.transpose(this) transposes `this` in place
+   * * If `result` is passed as argument, then the function copies the transpose of `this` into `result`.
+   * * `this` is not changed unless also passed as the result, i.e., `this.transpose(this)` transposes `this` in place.
    */
   public transpose(result?: Matrix3d): Matrix3d {
     if (!result)
@@ -2024,18 +2035,22 @@ export class Matrix3d implements BeJSONFunctions {
   public transposeInPlace() {
     PackedMatrix3dOps.transposeInPlace(this.coffs);
     if (this.inverseCoffs)
-      PackedMatrix3dOps.transposeInPlace(this.inverseCoffs);
+      PackedMatrix3dOps.transposeInPlace(this.inverseCoffs); // inverse of transpose is equal to transpose of inverse
   }
-  /** return the inverse matrix.
-   * The return is undefined if the matrix is singular (has columns that are coplanar or colinear)
-   * * Note that each Matrix3d object caches its own inverse, and has methods to multiply the inverse times matrices and vectors.
-   * * Hence explicitly constructing this new inverse object is rarely necessary.
+  /**
+   * Return the inverse matrix.
+   * The return is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
+   * * If `result == this`, then content of inverse of `this` matrix is copied into `this`. Otherwise, inverse
+   * of `this` is stored in `result`.
+   * * **Note:** Each Matrix3d object caches its own inverse (`this.inverseCoffs`) and has methods to multiply
+   * the inverse times matrices and vectors (e.g., `multiplyMatrixInverseMatrix`, `multiplyMatrixMatrixInverse`,
+   * `multiplyInverse`). Hence explicitly constructing this new inverse object is rarely necessary.
    */
   public inverse(result?: Matrix3d): Matrix3d | undefined {
     if (!this.computeCachedInverse(true))
       return undefined;
     if (result === this) {
-      // swap the contents (preserve pointers .. caller better know what they are doing)
+      // swap the contents of this.coffs and this.inverseCoffs
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
       PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
       PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
@@ -2051,36 +2066,51 @@ export class Matrix3d implements BeJSONFunctions {
     result.inverseState = this.inverseState;
     return result;
   }
-  /* Alternate implementation of computedCachedInverse - more direct addressing of arrays.
-     This is indeed 10% faster than using static work areas. */
-
-  // take the cross product of two rows of source.
-  // store as a column of dest.
-  private static indexedRowCrossProduct(source: Float64Array, rowStart0: number, rowStart1: number, dest: Float64Array, columnStart: number) {
+  /**
+   * Take the dot product of a row (specified by `rowStartA`) of `coffA` and `columnStartB` of `coffB`.
+   * * **Note:** We don't validate row/column numbers. Pass 0/3/6 for row 0/1/2 and pass 0/1/2 for column 0/1/2.
+   */
+  private static rowColumnDot(coffA: Float64Array, rowStartA: number, coffB: Float64Array, columnStartB: number): number {
+    return coffA[rowStartA] * coffB[columnStartB] +
+      coffA[rowStartA + 1] * coffB[columnStartB + 3] +
+      coffA[rowStartA + 2] * coffB[columnStartB + 6];
+  }
+  /**
+   * Take the cross product of 2 rows (specified by `rowStart0` and `rowStart1`) of `source` and store the result
+   * in `columnStart` of `dest`.
+   * * **Note:** We don't validate row/column numbers. Pass 0/3/6 for row 0/1/2 and pass 0/1/2 for column 0/1/2.
+   */
+  private static indexedRowCrossProduct(source: Float64Array, rowStart0: number, rowStart1: number,
+    dest: Float64Array, columnStart: number): void {
     dest[columnStart] = source[rowStart0 + 1] * source[rowStart1 + 2] - source[rowStart0 + 2] * source[rowStart1 + 1];
     dest[columnStart + 3] = source[rowStart0 + 2] * source[rowStart1] - source[rowStart0] * source[rowStart1 + 2];
     dest[columnStart + 6] = source[rowStart0] * source[rowStart1 + 1] - source[rowStart0 + 1] * source[rowStart1];
   }
-  // take the cross product of two columns of source.
-  // store as third column in same Matrix3d.
-  // This is private because the columnStart values are unchecked raw indices into the coffs
-  private indexedColumnCrossProductInPlace(colStart0: number, colStart1: number, colStart2: number) {
+  /**
+   * Take the cross product of 2 columns (i.e., `colStart0` and `colStart1`) of `this` matrix and store the
+   * result in `colStart2` of the same matrix.
+   * * **Note:** We don't validate column numbers. Pass 0/1/2 for column 0/1/2.
+   */
+  private indexedColumnCrossProductInPlace(colStart0: number, colStart1: number, colStart2: number): void {
     const coffs = this.coffs;
     coffs[colStart2] = coffs[colStart0 + 3] * coffs[colStart1 + 6] - coffs[colStart0 + 6] * coffs[colStart1 + 3];
     coffs[colStart2 + 3] = coffs[colStart0 + 6] * coffs[colStart1] - coffs[colStart0] * coffs[colStart1 + 6];
     coffs[colStart2 + 6] = coffs[colStart0] * coffs[colStart1 + 3] - coffs[colStart0 + 3] * coffs[colStart1];
   }
-  /** Form cross products among columns in axisOrder.
-   * For axis order ABC,
-   * * form cross product of column A and B, store in C
+  /**
+   * Form cross products among columns in axisOrder.
+   * For axis order ABC:
+   * * form cross product of column A and B, store in C.
    * * form cross product of column C and A, store in B.
+   * * [A   B   C] ===> [A   B   AxB] ===> [A   (AxB)xA   AxB]
+   *
    * This means that in the final matrix:
-   * * column A is strictly parallel to original column A
-   * * column B is linear combination of only original A and B
+   * * column A is same as original column A.
+   * * column B is linear combination of original A and B (i.e., is in the plane of original A and B).
    * * column C is perpendicular to A and B of both the original and final.
-   * * original column C does not participate in the result.
+   * * original column C is overwritten and does not participate in the result.
    */
-  public axisOrderCrossProductsInPlace(axisOrder: AxisOrder) {
+  public axisOrderCrossProductsInPlace(axisOrder: AxisOrder): void {
     switch (axisOrder) {
       case AxisOrder.XYZ: {
         this.indexedColumnCrossProductInPlace(0, 1, 2);
@@ -2114,41 +2144,44 @@ export class Matrix3d implements BeJSONFunctions {
       }
     }
   }
-  /** Normalize each column in place.
-   * * For false return the magnitudes are stored in the originalMagnitudes vector but no columns are altered.
-   * @returns Return true if all columns had nonzero lengths.
-   * @param originalMagnitudes optional vector to receive original column magnitudes.
+  /**
+   * Normalize each column in place.
+   * @param originalRowMagnitudes optional vector to store original column magnitudes.
+   * @returns Return true if all columns have non-zero lengths. Otherwise, return false.
+   * * If false is returned, the magnitudes are stored in the `originalRowMagnitudes` vector but no columns
+   * are altered.
    */
-  public normalizeColumnsInPlace(originalMagnitudes?: Vector3d): boolean {
+  public normalizeColumnsInPlace(originalRowMagnitudes?: Vector3d): boolean {
     const ax = this.columnXMagnitude();
     const ay = this.columnYMagnitude();
     const az = this.columnZMagnitude();
-    if (originalMagnitudes)
-      originalMagnitudes.set(ax, ay, az);
+    if (originalRowMagnitudes)
+      originalRowMagnitudes.set(ax, ay, az);
     if (Geometry.isSmallMetricDistance(ax) || Geometry.isSmallMetricDistance(ay) || Geometry.isSmallMetricDistance(az))
       return false;
     this.scaleColumns(1.0 / ax, 1.0 / ay, 1.0 / az, this);
     return true;
   }
-  /** Normalize each row in place */
-  public normalizeRowsInPlace(originalMagnitudes?: Vector3d): boolean {
+  /**
+ * Normalize each row in place.
+ * @param originalColumnMagnitudes optional vector to store original row magnitudes.
+ * @returns Return true if all rows have non-zero lengths. Otherwise, return false.
+ * * If false is returned, the magnitudes are stored in the `originalColumnMagnitudes` vector but no rows
+ * are altered.
+ */
+  public normalizeRowsInPlace(originalColumnMagnitudes?: Vector3d): boolean {
     const ax = this.rowXMagnitude();
     const ay = this.rowYMagnitude();
     const az = this.rowZMagnitude();
-    if (originalMagnitudes)
-      originalMagnitudes.set(ax, ay, az);
+    if (originalColumnMagnitudes)
+      originalColumnMagnitudes.set(ax, ay, az);
     if (Geometry.isSmallMetricDistance(ax) || Geometry.isSmallMetricDistance(ay) || Geometry.isSmallMetricDistance(az))
       return false;
     this.scaleRows(1.0 / ax, 1.0 / ay, 1.0 / az, this);
     return true;
   }
-  // take the cross product of two rows of source.
-  // store as a column of dest.
-  private static rowColumnDot(coffA: Float64Array, rowStartA: number, coffB: Float64Array, columnStartB: number): number {
-    return coffA[rowStartA] * coffB[columnStartB] + coffA[rowStartA + 1] * coffB[columnStartB + 3] + coffA[rowStartA + 2] * coffB[columnStartB + 6];
-  }
   /**
-   * Returns true if the matrix is singular (i.e. collapses data to a plane, line, or point)
+   * Returns true if the matrix is singular.
    */
   public isSingular(): boolean {
     return !this.computeCachedInverse(true);
@@ -2156,22 +2189,14 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Mark this matrix as singular.
    */
-  public markSingular() {
+  public markSingular(): void {
     this.inverseState = InverseMatrixState.singular;
   }
   /**
-   * Create the inverseCoffs member (filled with zeros)
-   * This is for use by matrix * matrix multiplications which need to be sure the member is there to be
-   * filled with method-specific content.
-   */
-  private createInverseCoffsWithZeros() {
-    if (!this.inverseCoffs) {
-      this.inverseState = InverseMatrixState.unknown;
-      this.inverseCoffs = new Float64Array(9);
-    }
-  }
-  /** compute the inverse of this Matrix3d. The inverse is stored for later use.
-   * @returns Return true if the inverse computed.  (False if the columns collapse to a point, line or plane.)
+   * Compute the inverse of `this` Matrix3d. The inverse is stored in `this.inverseCoffs` for later use.
+   * @param useCacheIfAvailable if `true`, use the previously computed inverse if available. If `false`,
+   * recompute the inverse.
+   * @returns Return `true` if the inverse is computed. Return `false` if matrix is singular.
    */
   public computeCachedInverse(useCacheIfAvailable: boolean): boolean {
     if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
@@ -2182,70 +2207,45 @@ export class Matrix3d implements BeJSONFunctions {
     this.createInverseCoffsWithZeros();
     const coffs = this.coffs;
     const inverseCoffs = this.inverseCoffs!;
-    Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0);
-    Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1);
-    Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2);
+    /**
+     * We calculate the inverse using cross products.
+     * Math details can be found at
+     * https://www.chilimath.com/lessons/advanced-algebra/determinant-3x3-matrix/
+     * In summary, if M = [A   B   C] then inverse of M = (1/det)[BxC   CxA   AxB] where det is the
+     * determinant of matrix M and can be calculated by "A dot BxC".
+     */
+    Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0); // BxC
+    Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1); // CxA
+    Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2); // AxB
     Matrix3d.numComputeCache++;
-    const d = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0);
-    if (d === 0.0) {     // better test?
+    const det = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0); // A dot BxC
+    if (det === 0.0) {
       this.inverseState = InverseMatrixState.singular;
       this.inverseCoffs = undefined;
       return false;
     }
-    const f = 1.0 / d;
-    for (let i = 0; i < 9; i++)inverseCoffs[i] *= f;
+    const f = 1.0 / det;
+    for (let i = 0; i < 9; i++)
+      inverseCoffs[i] *= f;
     this.inverseState = InverseMatrixState.inverseStored;
-    // verify inverse
-    // const p = new Float64Array(9);
-    // for (let i = 0; i < 9; i += 3)
-    //   for (let j = 0; j < 3; j++)
-    //    p[i + j] = Matrix3d.rowColumnDot (coffs, i, inverseCoffs, j);
     return true;
   }
-  /* "Classic" inverse implementation with temporary vectors.
-    private static rowX: Vector3d = Vector3d.create();
-    private static rowY: Vector3d = Vector3d.create();
-    private static rowZ: Vector3d = Vector3d.create();
-    private static crossXY: Vector3d = Vector3d.create();
-    private static crossZX: Vector3d = Vector3d.create();
-    private static crossYZ: Vector3d = Vector3d.create();
-  private computeCachedInverse(useCacheIfAvailable: boolean) {
-      if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
-        Matrix3d.numUseCache++;
-        return this.inverseState === InverseMatrixState.inverseStored;
-      }
-      this.inverseState = InverseMatrixState.unknown;
-      Matrix3d.numComputeCache++;
-      const rowX = this.rowX(Matrix3d.rowX);
-      const rowY = this.rowY(Matrix3d.rowY);
-      const rowZ = this.rowZ(Matrix3d.rowZ);
-      const crossXY = rowX.crossProduct(rowY, Matrix3d.crossXY);
-      const crossYZ = rowY.crossProduct(rowZ, Matrix3d.crossYZ);
-      const crossZX = rowZ.crossProduct(rowX, Matrix3d.crossZX);
-      const d = rowX.dotProduct(crossYZ);  // that's the determinant
-      if (d === 0.0) {     // better test?
-        this.inverseState = InverseMatrixState.singular;
-        this.inverseCoffs = undefined;
-        return false;
-      }
-      const f = 1.0 / d;
-      this.inverseState = InverseMatrixState.inverseStored;   // Currently just lists that the inverse has been stored... singular case not handled
-      this.inverseCoffs = Float64Array.from([crossYZ.x * f, crossZX.x * f, crossXY.x * f,
-      crossYZ.y * f, crossZX.y * f, crossXY.y * f,
-      crossYZ.z * f, crossZX.z * f, crossXY.z * f]);
-      return true;
-    }
-  */
-  /** convert a (row,column) index pair to the single index within flattened array of 9 numbers in row-major-order  */
+  /**
+   * Convert a (row,column) index pair to the single index within flattened array of 9 numbers in row-major-order
+   * * **Note:** Out of range row/column is interpreted cyclically.
+   */
   public static flatIndexOf(row: number, column: number): number {
     return 3 * Geometry.cyclic3dAxis(row) + Geometry.cyclic3dAxis(column);
   }
-  /** Get a column by index (0,1,2), packaged as a Point4d with given weight.   Out of range index is interpreted cyclically.  */
+  /**
+   * Get elements of column `index` packaged as a Point4d with given `weight`.
+   * * **Note:** Out of range index is interpreted cyclically.
+   */
   public indexedColumnWithWeight(index: number, weight: number, result?: Point4d): Point4d {
     index = Geometry.cyclic3dAxis(index);
     return Point4d.create(this.coffs[index], this.coffs[index + 3], this.coffs[index + 6], weight, result);
   }
-  /** return the entry at specific row and column */
+  /** Return the entry at specific row and column */
   public at(row: number, column: number): number {
     return this.coffs[Matrix3d.flatIndexOf(row, column)];
   }
@@ -2279,7 +2279,7 @@ export class Matrix3d implements BeJSONFunctions {
     this.coffs[3] *= scaleX; this.coffs[4] *= scaleY; this.coffs[5] *= scaleZ;
     this.coffs[6] *= scaleX; this.coffs[7] *= scaleY; this.coffs[8] *= scaleZ;
     if (this.inverseState === InverseMatrixState.inverseStored && this.inverseCoffs !== undefined) {
-      // apply reciprocal scales to the ROWS of the inverse .  . .
+      // apply reciprocal scales to the ROWS of the inverse
       const divX = Geometry.conditionalDivideFraction(1.0, scaleX);
       const divY = Geometry.conditionalDivideFraction(1.0, scaleY);
       const divZ = Geometry.conditionalDivideFraction(1.0, scaleZ);
@@ -2357,6 +2357,59 @@ export class Matrix3d implements BeJSONFunctions {
         this.coffs[6] * scale, this.coffs[7] * scale, this.coffs[8] * scale,
         result);
 
+  }
+  /**
+   * Create a rigid matrix (columns and rows are unit length and pairwise perpendicular) for
+   * the given eye coordinate.
+   * * column 2 is parallel to (x,y,z).
+   * * column 0 is perpendicular to column 2 and is in the xy plane.
+   * * column 1 is perpendicular to both. It is the "up" vector on the view plane.
+   * * Multiplying the returned matrix times a local (view) vector gives the world vector.
+   * * Multiplying transpose of the returned matrix times a world vector gives the local (view) vector.
+   * @param x eye x coordinate
+   * @param y eye y coordinate
+   * @param z eye z coordinate
+   * @param result optional preallocated result
+   */
+  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: Matrix3d): Matrix3d {
+    result = Matrix3d.createIdentity(result);
+    const rxy = Geometry.hypotenuseXY(x, y);
+    // if coordinate is (0,0,z), i.e., Top or Bottom view
+    if (Geometry.isSmallMetricDistance(rxy)) {
+      if (z < 0.0)
+        result.scaleColumnsInPlace(1.0, -1.0, -1.0);
+    } else {
+      /**
+       * The matrix that the "else" statement creates is
+       *        [-s   -s1*c    c1*c]
+       *        [c    -s1*s    c1*s]
+       *        [0      c1      s1 ]
+       * where
+       *        c = x / sqrt(x*x + y*y)
+       *        s = y / sqrt(x*x + y*y)
+       *        c1 = sqrt(x*x + y*y) / sqrt(x*x + y*y + z*z)
+       *        s1 = z / sqrt(x*x + y*y + z*z)
+       *
+       * This is an orthogonal matrix meaning it rotates the standard XYZ axis to ABC axis system
+       * (if matrix is [A B C]). The matrix rotates (0,0,1), i.e., the default Top view or Z axis,
+       *  to the eye point (x/r,y/r,z/r). The matrix also rotates (1,0,0) to a point on XY plane.
+       */
+      const c = x / rxy;
+      const s = y / rxy;
+      // if coordinate is (x,y,0), e.g., Front or Back or Left or Right view (for those 4 views x or y is 0 not both)
+      result.setRowValues(
+        -s, 0, c,
+        c, 0, s,
+        0, 1, 0);
+      // if coordinate is (x,y,z) and z is not 0, i.e., other views such as Iso or RightIso
+      if (z !== 0.0) {
+        const r = Geometry.hypotenuseXYZ(x, y, z);
+        const s1 = z / r;
+        const c1 = rxy / r;
+        result.applyGivensColumnOp(1, 2, c1, -s1);
+      }
+    }
+    return result;
   }
   /** Return the determinant of this matrix. */
   public determinant(): number {

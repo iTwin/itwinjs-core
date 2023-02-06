@@ -3499,7 +3499,7 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
     multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixMatrixInverse(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
-    multiplyMatrixMatrixTranspose(matrixB: Matrix3d, result?: Matrix3d): Matrix3d;
+    multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixTransform(other: Transform, result?: Transform): Transform;
     multiplyMatrixTransposeMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d;
@@ -3511,8 +3511,8 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyXY(x: number, y: number, result?: Vector3d): Vector3d;
     multiplyXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     multiplyXYZtoXYZ(xyz: XYZ, result: XYZ): XYZ;
-    normalizeColumnsInPlace(originalMagnitudes?: Vector3d): boolean;
-    normalizeRowsInPlace(originalMagnitudes?: Vector3d): boolean;
+    normalizeColumnsInPlace(originalRowMagnitudes?: Vector3d): boolean;
+    normalizeRowsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
     static numComputeCache: number;
     static numUseCache: number;
     originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d;

@@ -15,6 +15,7 @@ import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry";
  * `degrees` or `radians` because both are available if requested by caller.
  * * The various access method are named so that callers can specify whether untyped numbers passed in or
  * out are degrees or radians.
+ * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/AngleSweep
  * @public
  */
 export class Angle implements BeJSONFunctions {
