@@ -22,7 +22,7 @@
     "build:ci": "",
     "clean": "",
     "lint": "",
-    "test": "",
+    "test": "mocha \"tests/*.js\"",
     "docs": "",
     "cover": ""
   },
@@ -52,6 +52,7 @@
     "@typescript-eslint/typescript-estree": "~4.31.0",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
-    "typescript": "~4.4.0"
+    "typescript": "~4.4.0",
+    "@itwin/build-tools": "workspace:*"
   }
 }
