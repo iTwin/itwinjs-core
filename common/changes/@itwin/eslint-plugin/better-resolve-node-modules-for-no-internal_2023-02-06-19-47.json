@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/eslint-plugin",
-      "comment": "improve internal resolution of formatter module in no-internal-report script",
+      "comment": "make no-internal-report usable from inside the monorepo",
       "type": "none"
     }
   ],
