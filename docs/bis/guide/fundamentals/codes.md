@@ -81,6 +81,17 @@ In this example, the Building instance is providing the CodeScope for the Floor.
 
 For a given Element, the combination of it `CodeSpec`, `CodeScope`, and `CodeValue` properties must be unique within the BIS repository. All `null` values are considered to be unique.
 
+## CodeSpec creation guidelines
+
+The following table summarizes the typical purpose behind the creation of a CodeSpec by schema designers, Connector or Application developers as well as by end-users and admins. Typical CodeScopes and the strategy for referencing of CodeScope-Elements for each case is also presented.
+
+| Creator | CodeSpec Purpose | Typical CodeScopes | CodeScope-Element Referencing |
+|---|---|---|---|
+| Shared-domains & Authoring Applications | Code-classification for classes, usually `DefinitionElement`s, that model concepts considered repository-specific artifacts, in order to:<br/>- Ensure uniqueness (at Subject-specific & global scopes) or to... <br/>- Provide a well-known way to find certain instances (at global scope). | By-model or by-parent. | via ElementId |
+| Connectors | Reproduce existing code/tag/name-uniqueness rules in the source format, if any. | - By-model or by-parent.<br/>- By-related-element if applicable depending on source format.<br/>- By-repository is typically invalid. | via ElementId |
+| Users / Admins | Code-classification set up via app-configuration for specific classes. Code-uniqueness typically expected across repositories. | Any CodeScope appropriate to each case. | via FederationGuid |
+
+
 ---
 | Next: [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
 |:---
