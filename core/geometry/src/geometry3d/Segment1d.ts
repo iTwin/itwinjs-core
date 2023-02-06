@@ -92,7 +92,7 @@ export class Segment1d {
    */
   public reverseInPlace(): void { const x = this.x0; this.x0 = this.x1; this.x1 = x; }
   /**
-   * * if `x1<x0` multiplied by the scale factor is (strictly) negative, swap the x0 and x1 member values.
+   * * if `x1-x0` multiplied by the scale factor is (strictly) negative, swap the x0 and x1 member values.
    * * This makes the fractionToPoint evaluates reverse direction.
    */
   public reverseIfNeededForDeltaSign(sign: number = 1): void {
