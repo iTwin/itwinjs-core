@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Frontstage
+ */
 import { UiEvent } from "@itwin/appui-abstract";
 import { IModelConnection, Tool } from "@itwin/core-frontend";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";

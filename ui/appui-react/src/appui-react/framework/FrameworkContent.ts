@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module ContentView
+ */
+
 import { ContentLayoutProps, UiEvent } from "@itwin/appui-abstract";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProps } from "../content/ContentGroup";
