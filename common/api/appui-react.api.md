@@ -2447,10 +2447,8 @@ export interface FrameworkFrontstages {
     readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
-    setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
     setActiveFrontstage(frontstageId: string): Promise<void>;
     setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void>;
-    setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
     setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
     setActiveTool(tool: Tool): void;
     setActiveToolId(toolId: string): void;

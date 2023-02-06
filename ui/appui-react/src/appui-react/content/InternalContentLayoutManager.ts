@@ -7,6 +7,7 @@
  */
 
 import { ContentLayoutProps } from "@itwin/appui-abstract";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
@@ -82,14 +83,14 @@ export class InternalContentLayoutManager {
    * @param contentGroup  Content Group to make active
    */
   public static async setActive(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
-    await UiFramework.frontstages.setActiveLayout(contentLayoutDef, contentGroup);
+    await InternalFrontstageManager.setActiveLayout(contentLayoutDef, contentGroup);
   }
 
   /** Sets the active Content Group.
    * @param contentGroup  Content Group to make active
    */
   public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
-    await UiFramework.frontstages.setActiveContentGroup(contentGroup);
+    await InternalFrontstageManager.setActiveContentGroup(contentGroup);
   }
 
   /** Refreshes the active layout and content group.

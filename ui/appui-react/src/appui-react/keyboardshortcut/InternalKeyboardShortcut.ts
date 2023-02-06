@@ -9,7 +9,6 @@
 import { ConditionalBooleanValue, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { KeyboardShortcutProps } from "../framework/FrameworkKeyboardShortcuts";
-import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 import { KeyboardShortcut, KeyboardShortcutContainer } from "./KeyboardShortcut";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";

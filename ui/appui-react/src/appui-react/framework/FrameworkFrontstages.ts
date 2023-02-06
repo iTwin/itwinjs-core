@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { UiEvent } from "@itwin/appui-abstract";
 import { IModelConnection, Tool } from "@itwin/core-frontend";
-import { ContentGroup } from "../content/ContentGroup";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
-import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
+import { ContentLayoutActivatedEvent } from "../content/ContentLayout";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
@@ -275,17 +274,6 @@ export interface FrameworkFrontstages {
 
   /** Gets the active tool's [[ToolInformation]] */
   readonly activeToolInformation: ToolInformation | undefined;
-
-  /** Sets the active layout, content group and active content.
-   * @param contentLayoutDef  Content layout to make active
-   * @param contentGroup  Content Group to make active
-   */
-  setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
-
-  /** Sets the active layout, content group and active content.
-   * @param contentGroup  Content Group to make active
-   */
-  setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
 
   /** Opens a modal Frontstage. Modal Frontstages can be stacked.
    * @param modalFrontstage  Information about the modal Frontstage

@@ -205,7 +205,7 @@ export function getSplitSingleViewportCommandDef() {
             contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
 
           const contentGroup = new ContentGroup(contentGroupProps);
-          await UiFramework.frontstages.setActiveContentGroup(contentGroup);
+          await UiFramework.content.layouts.setActiveContentGroup(contentGroup);
         }
       } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentGroup?.getContentControls().length &&
          activeFrontstageDef.contentControls[0].viewport) {
@@ -231,7 +231,7 @@ export function getSplitSingleViewportCommandDef() {
             contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
 
           const contentGroup = new ContentGroup(contentGroupProps);
-          await UiFramework.frontstages.setActiveContentGroup(contentGroup);
+          await UiFramework.content.layouts.setActiveContentGroup(contentGroup);
         }
       }
     },

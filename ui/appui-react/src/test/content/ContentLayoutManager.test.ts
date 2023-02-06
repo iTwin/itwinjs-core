@@ -10,6 +10,7 @@ import * as sinon from "sinon";
 import { UiFramework } from "../../appui-react";
 import { ContentGroup, ContentGroupProps, ContentProps } from "../../appui-react/content/ContentGroup";
 import { ContentLayoutManager } from "../../appui-react/content/ContentLayoutManager";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("ContentLayoutManager", () => {
   before(async () => {
@@ -60,7 +61,7 @@ describe("ContentLayoutManager", () => {
     expect(foundLayoutDef?.id).to.be.eq(layoutDef.id);
   });
 
-  it("should call  UiFramework.frontstages.setActiveContentGroup", async () => {
+  it("should call  InternalFrontstageManager.setActiveContentGroup", async () => {
     const uniqueGroupId = getUniqueId();
     const contentProps: ContentProps[] = [{ id: "myContent", classId: "TestContentControl" }, { id: "myContent2", classId: "TestContentControl" }];
     const groupProps: ContentGroupProps = {
@@ -70,7 +71,7 @@ describe("ContentLayoutManager", () => {
     };
 
     const contentGroup = new ContentGroup(groupProps);
-    const spy = sinon.stub(UiFramework.frontstages as any, "setActiveContentGroup").returns(Promise.resolve());
+    const spy = sinon.stub(InternalFrontstageManager, "setActiveContentGroup").returns(Promise.resolve());
     await ContentLayoutManager.setActiveContentGroup(contentGroup);
     expect(spy).to.have.been.called;
   });
