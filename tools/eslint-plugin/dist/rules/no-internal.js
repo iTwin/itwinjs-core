@@ -51,6 +51,9 @@ module.exports = {
               type: "string",
               enum: ["public", "beta", "alpha", "internal"]
             }
+          },
+          includeLocalFiles: {
+            type: "boolean"
           }
         }
       }
@@ -61,6 +64,7 @@ module.exports = {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
+    const includeLocalFiles = context.options[0].includeLocalFiles || false;
 
     function getFileName(parent) {
       let currentParent = parent;
@@ -81,6 +85,17 @@ module.exports = {
       return false;
     }
 
+    function isPackageFile(declaration) {
+      if (declaration) {
+        const fileName = getFileName(declaration.parent);
+        // TODO this should not just be maplayers
+        if (fileName && typeof fileName === "string" && fileName.includes("map-layers/")) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     function getParentSymbolName(declaration) {
       if (declaration.parent && declaration.parent.symbol && !declaration.parent.symbol.escapedName.startsWith('"'))
         return declaration.parent.symbol.escapedName;
@@ -94,7 +109,7 @@ module.exports = {
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags)
           for (const tag of jsDoc.tags) {
-            if (bannedTags.includes(tag.tagName.escapedText) && !isLocalFile(declaration)) {
+            if (bannedTags.includes(tag.tagName.escapedText) && (!isLocalFile(declaration) || includeLocalFiles) && !isPackageFile(declaration)) {
               let name;
               if (declaration.kind === ts.SyntaxKind.Constructor)
                 name = declaration.parent.symbol.escapedName;

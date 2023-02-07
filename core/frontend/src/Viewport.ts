@@ -381,7 +381,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.invalidateDecorations();
   }
 
-  /** @internal */
+  /** Mark the viewport's render plan as invalid, so that the next call to [[renderFrame]] will recreate it.
+   * TODO explain what render plan is, hard to find elsewhere in docs.
+   * RenderPlan is internal, should it be public if this is going to be public?
+   * A render plan holds settings like frustum and display style settings for a particular render scene
+   */
   public invalidateRenderPlan(): void {
     this._renderPlanValid = false;
     this.invalidateScene();

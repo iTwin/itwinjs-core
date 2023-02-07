@@ -599,7 +599,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** change viewport to include range of map layer.
-   * @internal
+   * @param layerIndex
+   * @param isOverlay
+   * @param vp
    */
   public async viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean> {
     const range = await this.getMapLayerRange(layerIndex, isOverlay);

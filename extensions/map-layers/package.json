@@ -112,7 +112,21 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/ui"
+    "extends": [
+      "plugin:@itwin/ui"
+    ],
+    "rules": {
+      "@itwin/no-internal": [
+        "error",
+        {
+          "tag": [
+            "internal",
+            "alpha"
+          ],
+          "includeLocalFiles": true
+        }
+      ]
+    }
   },
   "mocha": {
     "require": [

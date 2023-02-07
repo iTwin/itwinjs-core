@@ -85,7 +85,10 @@ export interface MapLayerFormatEntry {
   accessClient?: MapLayerAccessClient;
 }
 
-/** @beta */
+/** TODO what is this, needs docs.
+ * Look at TerrainProviderRegistry for example?
+ * @beta
+ * */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
   constructor(opts?: MapLayerOptions) {
@@ -134,7 +137,7 @@ export class MapLayerFormatRegistry {
     return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
-  /** @internal */
+  /** TODO docs */
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;

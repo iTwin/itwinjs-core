@@ -88,14 +88,16 @@ export interface Localization {
 
   /** Register a new Namespace and return a Promise that is fulfilled when the content is loaded.
    * If the namespace is already registered, its Promise will be returned.
-   * @param name - the name of the namespace.
+   * @param namespace - the name of the namespace.
    * @note - The registerNamespace method starts fetching the appropriate version of the JSON localization file from the server,
    * based on the current locale. To make sure that fetch is complete before performing translations from this namespace, await
    * fulfillment of returned Promise.
    * @see [Localization in iTwin.js]($docs/learning/frontend/Localization.md)
    */
   registerNamespace(namespace: string): Promise<void>;
-  /** @internal */
+  /** TODO find where/how used
+   * @param namespace - the name of the namespace.
+   */
   unregisterNamespace(namespace: string): void;
   /** @internal */
   getNamespacePromise(name: string): Promise<void> | undefined;

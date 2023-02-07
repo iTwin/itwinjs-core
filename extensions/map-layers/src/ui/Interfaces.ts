@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@itwin/core-bentley";
 import {  MapSubLayerProps } from "@itwin/core-common";
-import { HitDetail,  MapLayerImageryProvider, MapTileTreeScaleRangeVisibility } from "@itwin/core-frontend";
+import { HitDetail, MapLayerImageryProvider, MapTileTreeScaleRangeVisibility } from "@itwin/core-frontend";
 
 export interface StyleMapLayerSettings {
   /** Name */
