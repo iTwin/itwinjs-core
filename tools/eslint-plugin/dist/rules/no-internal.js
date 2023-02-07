@@ -52,6 +52,9 @@ module.exports = {
               type: "string",
               enum: ["public", "beta", "alpha", "internal"]
             }
+          },
+          dontAllowWorkspaceInternal: {
+            type: "boolean"
           }
         }
       }
@@ -59,7 +62,13 @@ module.exports = {
   },
 
   create(context) {
-    const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
+    const [bannedTags, allowWorkspaceInternal] =
+      context.options.length > 0
+        ? [
+            context.options[0].tag,
+            !context.options[0].dontAllowWorkspaceInternal,
+          ]
+        : [["alpha", "internal"], false];
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -87,7 +96,8 @@ module.exports = {
           fileName &&
           typeof fileName === "string" &&
           !fileName.includes('node_modules') &&
-          dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName)
+          (allowWorkspaceInternal ||
+            dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName))
         )
           return true;
       }

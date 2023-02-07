@@ -11,7 +11,12 @@ const BentleyESLintPlugin = require("../dist");
 const { supportSkippedAndOnlyInTests, dedent } = require("./testUtils");
 const NoInternalESLintRule = BentleyESLintPlugin.rules["no-internal"];
 
-const fixtureDir = path.join(__dirname, "fixtures", "no-internal");
+const fixtureDir = path.join(
+  __dirname,
+  "fixtures",
+  "no-internal",
+  "workspace-pkg-1"
+);
 
 const ruleTester = new ESLintTester({
   parser: require.resolve("@typescript-eslint/parser"),
@@ -45,6 +50,13 @@ ruleTester.run(
         code: dedent`
           import { Public } from "test-pkg-1";
           new Public().public();
+        `,
+      },
+      {
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
+          new Public().internal();
         `,
       },
     ],
@@ -86,6 +98,23 @@ ruleTester.run(
           import { internal } from "test-pkg-1";
           internal()
         `,
+        errors: [
+          {
+            messageId: "forbidden",
+            data: {
+              kind: "function",
+              name: "internal",
+              tag: "internal",
+            },
+          },
+        ],
+      },
+      {
+        code: dedent`
+          import { Public } from "workspace-pkg-2";
+          internal();
+        `,
+        options: [{ dontAllowWorkspaceInternal: true }],
         errors: [
           {
             messageId: "forbidden",
