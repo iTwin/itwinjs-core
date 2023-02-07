@@ -8,7 +8,10 @@ const fs = require("fs");
 function linkFixtureNoInternal() {
   fs.symlinkSync(
     path.normalize("../../workspace-pkg-2"),
-    path.join(__dirname, "fixtures/no-internal/workspace-pkg-1/node_modules/"),
+    path.join(
+      __dirname,
+      "no-internal/workspace-pkg-1/node_modules/workspace-pkg-2"
+    ),
     "dir"
   );
 }
