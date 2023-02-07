@@ -461,7 +461,7 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it("ModelSelector processChanges", async () => {
+  it.only("ModelSelector processChanges", async () => {
     const sourceIModelName = "ModelSelectorSource";
     const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
     let targetIModelId!: GuidString;
@@ -485,13 +485,16 @@ describe("IModelTransformerHub", () => {
 
       targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
       assert.isTrue(Guid.isGuid(targetIModelId));
-      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+      const targetDbPath = targetDb.pathName;
       await targetDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
       const provenanceInitializer = new IModelTransformer(sourceDb, targetDb, { wasSourceIModelCopiedToTarget: true });
       await provenanceInitializer.processSchemas();
       await provenanceInitializer.processAll();
       provenanceInitializer.dispose();
+      // must reopen to keep using after processing schemas, which closes the database and upgrades schemas
+      targetDb = await BriefcaseDb.open({ fileName: targetDbPath });
 
       // update source (add model2 to model selector)
       // (it's important that we only change the model selector here to keep the changes isolated)

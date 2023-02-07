@@ -1152,8 +1152,14 @@ export class IModelTransformer extends IModelExportHandler {
     doUpgrade = true,
   } = {}): Promise<void> {
     if (doUpgrade && this.targetDb instanceof BriefcaseDb && !(this.targetDb instanceof StandaloneDb)) {
+      const fileName = this.targetDb.pathName;
       this.targetDb.close();
-      await BriefcaseDb.upgradeSchemas({ fileName: this.targetDb.pathName });
+      await BriefcaseDb.upgradeSchemas({ fileName });
+      // it does change the type (drops readonly)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      (this.targetDb as BriefcaseDb) = await BriefcaseDb.open({ fileName });
+      (this.context.targetDb as BriefcaseDb) = this.targetDb;
+      (this.importer.targetDb as BriefcaseDb) = this.targetDb;
     }
     // we do not need to initialize for this since no entities are exported
     try {
