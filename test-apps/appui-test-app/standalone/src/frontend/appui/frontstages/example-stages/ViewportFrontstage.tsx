@@ -6,11 +6,14 @@ import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps, IModelViewportControl, StandardFrontstageProps, StandardFrontstageProvider, UiFramework } from "@itwin/appui-react";
 import React from "react";
 
+// __PUBLISH_EXTRACT_START__ Example_Viewport_Frontstage_Group_Provider_1
 export class ViewportFrontstageGroupProvider extends ContentGroupProvider {
+// __PUBLISH_EXTRACT_END__
   public override async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
     throw new Error("Method not implemented.");
   }
-
+/* eslint-disable @typescript-eslint/indent */
+// __PUBLISH_EXTRACT_START__ Example_Viewport_Frontstage_Group_Provider_2
   public override async contentGroup(): Promise<ContentGroup> {
     return new ContentGroup({
       id: "content-group",
@@ -28,7 +31,10 @@ export class ViewportFrontstageGroupProvider extends ContentGroupProvider {
     });
   }
 }
+// __PUBLISH_EXTRACT_END__
+/* eslint-enable @typescript-eslint/indent */
 
+// __PUBLISH_EXTRACT_START__ Example_Register_Viewport_Frontstage
 export function registerViewportFrontstage(): void {
   const stageProps: StandardFrontstageProps = {
     id: "example:ViewportFrontstage",
@@ -38,4 +44,4 @@ export function registerViewportFrontstage(): void {
   };
   ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
 }
-
+// __PUBLISH_EXTRACT_END__
