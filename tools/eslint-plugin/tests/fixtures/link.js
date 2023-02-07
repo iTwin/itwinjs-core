@@ -16,9 +16,9 @@ function linkFixtureNoInternal() {
   );
 }
 
-try {
-  linkFixtureNoInternal();
-} catch {
-  // ignore errors, it probably already exists, and we don't want to bother people
-  // with an error at install time
-}
+//try {
+linkFixtureNoInternal();
+//} catch {
+// ignore errors, it probably already exists, and we don't want to bother people
+// with an error at install time
+//}
