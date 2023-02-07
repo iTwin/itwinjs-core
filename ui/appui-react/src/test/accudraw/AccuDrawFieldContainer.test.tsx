@@ -13,9 +13,9 @@ import { Orientation } from "@itwin/core-react";
 import TestUtils from "../TestUtils";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { AccuDrawFieldContainer } from "../../appui-react/accudraw/AccuDrawFieldContainer";
-import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
 import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 import { AccuDrawUiSettings } from "../../appui-react/accudraw/AccuDrawUiSettings";
+import { UiFramework } from "../../appui-react";
 
 // cspell:ignore uiadmin
 
@@ -188,7 +188,7 @@ describe("AccuDrawFieldContainer", () => {
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
 
-    KeyboardShortcutManager.setFocusToHome();
+    UiFramework.keyboardShortcuts.setFocusToHome();
     expect(document.activeElement === input).to.be.false;
 
     const spyGrab = sinon.spy();
@@ -277,7 +277,7 @@ describe("AccuDrawFieldContainer", () => {
   });
 
   it("should set focus to home on Esc", () => {
-    const spy = sinon.spy(KeyboardShortcutManager, "setFocusToHome");
+    const spy = sinon.spy(UiFramework.keyboardShortcuts, "setFocusToHome");
     const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
@@ -287,7 +287,7 @@ describe("AccuDrawFieldContainer", () => {
     fireEvent.keyDown(input!, { key: SpecialKey.Escape });
     spy.calledOnce.should.true;
 
-    (KeyboardShortcutManager.setFocusToHome as any).restore();
+    (UiFramework.keyboardShortcuts.setFocusToHome as any).restore();
   });
 
   describe("FrameworkAccuDraw.uiStateStorage", () => {

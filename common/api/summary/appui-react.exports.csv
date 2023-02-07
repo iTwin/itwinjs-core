@@ -126,6 +126,7 @@ alpha;CategoryVisibilityHandlerParams
 deprecated;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
 public;ChildWindowManager
+deprecated;ChildWindowManager
 beta;ClassGroupingOption
 deprecated;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
@@ -160,6 +161,7 @@ public;ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo, opt
 public;ConfigurableUiControlType
 public;ConfigurableUiElement
 public;ConfigurableUiManager
+deprecated;ConfigurableUiManager
 public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, action: ConfigurableUiActionsUnion): ConfigurableUiState
 public;ConfigurableUiState
 public;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => InferableComponentEnhancerWithProps
@@ -170,7 +172,9 @@ public;ContentControlActivatedEvent
 public;ContentControlActivatedEventArgs
 public;ContentDialog(props: ContentDialogProps): JSX.Element
 public;ContentDialogChangedEvent 
+public;ContentDialogInfo
 public;ContentDialogManager
+deprecated;ContentDialogManager
 public;ContentDialogProps 
 public;ContentDialogRenderer 
 public;ContentGroup
@@ -182,10 +186,12 @@ public;ContentLayoutActivatedEventArgs
 public;ContentLayoutComponentProps 
 public;ContentLayoutDef
 public;ContentLayoutManager
+deprecated;ContentLayoutManager
 public;ContentProps
 public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
 public;ContentToolWidgetComposerProps
 public;ContentViewManager
+deprecated;ContentViewManager
 internal;ContentWrapper(props: ContentWrapperProps): JSX.Element
 public;CoreTools
 public;createAction
@@ -259,13 +265,25 @@ public;FooterModeField(props: FooterModeFieldProps): JSX.Element
 deprecated;FooterModeField(props: FooterModeFieldProps): JSX.Element
 public;FooterModeFieldProps 
 beta;FrameworkAccuDraw 
+public;FrameworkBackstage
+beta;FrameworkChildWindows
+beta;FrameworkContent
+beta;FrameworkControls
+beta;FrameworkDialog
+beta;FrameworkDialogs
+beta;FrameworkFrontstages
+public;FrameworkKeyboardShortcut 
+public;FrameworkKeyboardShortcutContainer
+beta;FrameworkKeyboardShortcuts
 public;FrameworkReducer: (state: CombinedReducerState
 beta;FrameworkRootState
+beta;FrameworkStackedDialog
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 public;FrameworkState
 internal;FrameworkStateReducer(state: NineZoneState, action: NineZoneAction, frontstageDef: FrontstageDef): NineZoneState
 alpha;FrameworkToolAdmin 
+beta;FrameworkToolSettings
 public;FrameworkUiAdmin 
 public;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
 deprecated;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
@@ -279,6 +297,7 @@ public;FrameworkVersionProps
 deprecated;FrameworkVersionProps
 internal;FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element
 internal;FrameworkVersionSwitchProps
+beta;FrameworkVisibility
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
@@ -298,6 +317,7 @@ deprecated;FrontstageLaunchBackstageItem
 public;FrontstageLaunchBackstageItemProps 
 deprecated;FrontstageLaunchBackstageItemProps 
 public;FrontstageManager
+deprecated;FrontstageManager
 internal;FrontstageNineZoneStateChangedEventArgs 
 public;FrontstageProps 
 deprecated;FrontstageProps 
@@ -351,7 +371,6 @@ public;IModelConnectedViewport: ConnectedComponent
 beta;IModelConnectedViewSelector: ConnectedComponent
 public;IModelViewportControl 
 public;IModelViewportControlOptions
-internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator(props: IndicatorProps): JSX.Element
 deprecated;Indicator(props: IndicatorProps): JSX.Element
 public;InitialAppUiSettings
@@ -391,6 +410,7 @@ deprecated;IVisibilityHandler
 public;KeyboardShortcut 
 public;KeyboardShortcutContainer
 public;KeyboardShortcutManager
+deprecated;KeyboardShortcutManager
 public;KeyboardShortcutMenu 
 public;KeyboardShortcutMenuEvent 
 public;KeyboardShortcutMenuState
@@ -433,6 +453,7 @@ public;MessageManager
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager
+deprecated;ModalDialogManager
 public;ModalDialogRenderer 
 public;ModalFrontstage 
 public;ModalFrontstageChangedEvent 
@@ -441,12 +462,15 @@ public;ModalFrontstageClosedEvent
 public;ModalFrontstageClosedEventArgs
 internal;ModalFrontstageComposer({ stageInfo }:
 public;ModalFrontstageInfo
+internal;ModalFrontstageItem
 public;ModalFrontstageProps 
 alpha;ModalFrontstageRequestedCloseEvent 
 alpha;ModalFrontstageRequestedCloseEventArgs
 public;ModelessDialog 
 public;ModelessDialogChangedEvent 
+public;ModelessDialogInfo
 public;ModelessDialogManager
+deprecated;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
@@ -765,6 +789,7 @@ internal;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 public;ToolSettingsGridContainer({ componentGenerator }:
 internal;ToolSettingsGridProps
 public;ToolSettingsManager
+deprecated;ToolSettingsManager
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
@@ -781,13 +806,9 @@ public;ToolWidgetPropsEx
 deprecated;ToolWidgetPropsEx 
 internal;toPanelSide(location: StagePanelLocation_2): PanelSide
 internal;TrackingTime
-internal;UiActivityEvent 
-internal;UiActivityEventArgs
 public;UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): JSX.Element
 public;UiDataProvidedDialogProps
 public;UiFramework
-internal;UiIntervalEvent 
-internal;UiIntervalEventArgs
 beta;UiItemsManager 
 beta;UiItemsProvider = UiItemsProvider_2
 beta;UiItemsProviderOverrides = UiItemProviderOverrides
@@ -797,6 +818,7 @@ beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 deprecated;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 public;UiSettingsProviderProps
 public;UiShowHideManager
+deprecated;UiShowHideManager
 internal;UiShowHideSettingsProvider 
 internal;UiStateStorageContext: React_2.Context
 public;UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element
@@ -814,7 +836,7 @@ public;useActiveViewport(): ScreenViewport | undefined
 internal;useActivityMessage({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): void
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
-public;useBackstageManager: () => BackstageManager
+public;useBackstageManager: () => FrameworkBackstage
 internal;useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport): Category[]
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem_2[]
 public;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem_2[]
@@ -824,7 +846,7 @@ deprecated;useFrameworkVersion(): FrameworkVersionId
 internal;useFrontstageManager(frontstageDef: FrontstageDef, useToolAsToolSettingsLabel?: boolean): void
 internal;useGroupedItems: (items: ReadonlyArray
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
-public;useIsBackstageOpen: (manager: BackstageManager) => boolean
+public;useIsBackstageOpen: (manager: FrameworkBackstage) => boolean
 internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch

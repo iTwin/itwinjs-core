@@ -12,8 +12,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { StagePanelLocation } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StagePanelState } from "./StagePanelDef";
+import { UiFramework } from "../UiFramework";
 
 // cspell:ignore stagepanelheader
 
@@ -61,7 +61,7 @@ export class StagePanelHeader extends React.PureComponent<StagePanelHeaderProps>
   }
 
   private _handleCollapseButtonClick = () => {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
     // istanbul ignore if
     if (!activeFrontstageDef)
       return;

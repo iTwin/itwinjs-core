@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { ScreenViewport, ViewManip, ViewState } from "@itwin/core-frontend";
-import { ContentControl, ContentViewManager, FloatingViewportContent, FloatingViewportContentControl, FrontstageManager, UiFramework, useActiveIModelConnection } from "@itwin/appui-react";
+import { ContentControl, FloatingViewportContent, FloatingViewportContentControl, UiFramework, useActiveIModelConnection } from "@itwin/appui-react";
 
 import "./SynchronizedFloatingViewComponent.scss";
 import { getViewDefinitions } from "../components/ViewDefinitionSelector";
@@ -39,7 +39,7 @@ export function SynchronizedFloatingView({ contentId }: { contentId: string }) {
     if ([...ids].length === 0) {
       ViewManip.fitView(args.viewport as ScreenViewport, false);
     }
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
 
     const viewContentControl = activeFrontstageDef?.contentControls?.find((contentControl) => contentControl.viewport === args.viewport);
 
@@ -77,7 +77,7 @@ export function SynchronizedFloatingView({ contentId }: { contentId: string }) {
       }
     }  else {
       // change was for main viewport of frontstage and we need to set mirror in floating viewport here
-      const floatingPIPViewport = FrontstageManager.activeFrontstageDef?.contentControls.find((thisControl: ContentControl) => {
+      const floatingPIPViewport = UiFramework.frontstages.activeFrontstageDef?.contentControls.find((thisControl: ContentControl) => {
         return (thisControl.classId === contentId);
       });
       const noChangeRequired = ((args.viewport.view.is2d() && floatingPIPViewport?.viewport?.view.is3d()) ||
@@ -121,7 +121,7 @@ export function SynchronizedFloatingView({ contentId }: { contentId: string }) {
       settwoDViewDefinitions(localTwoTwoDViewDefs);
       setthreeDViewDefinitions(localThreeTwoDViewDefs);
       // Set initial view state
-      const mainViewportOnFrontstage = ContentViewManager.getActiveContentControl();
+      const mainViewportOnFrontstage = UiFramework.content.getActiveContentControl();
       const isMainViewport3d = mainViewportOnFrontstage?.viewport?.view.is3d();
       let initialViewIdToLoad;
 
