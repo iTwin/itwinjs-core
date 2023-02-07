@@ -18,6 +18,7 @@
     "no-internal-report": "dist/bin/no-internal-report.js"
   },
   "scripts": {
+    "prepare": "node tests/fixtures/link.js",
     "build": "",
     "build:ci": "",
     "clean": "",
