@@ -42,7 +42,7 @@ import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
  */
 
 /** Properties of a Stage Panel Zone
- * @public @deprecated in 3.0.
+ * @public @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export interface StagePanelZoneProps {
   /** Properties for the Widgets in this Zone.
@@ -55,7 +55,7 @@ export interface StagePanelZoneProps {
 }
 
 /** Properties of the Stage Panel Zones
- * @public @deprecated in 3.0.
+ * @public @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export interface StagePanelZonesProps {
   /** Properties for the Widgets in the Start section. */

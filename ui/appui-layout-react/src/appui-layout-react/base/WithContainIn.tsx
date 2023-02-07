@@ -11,7 +11,7 @@ import { Rectangle, RectangleProps } from "@itwin/core-react";
 import { Css } from "../utilities/Css";
 
 /** Properties of [[withContainIn]] HOC.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Obsolete.
  * @alpha
  */
 export interface WithContainInProps {
@@ -22,7 +22,7 @@ export interface WithContainInProps {
 }
 
 /** Contains the component bounds both vertically and horizontally. This is default containment method for [[withContainIn]].
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Obsolete.
  * @alpha
  */
 export const contain = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
@@ -31,7 +31,7 @@ export const contain = (componentBounds: RectangleProps, containerBounds: Rectan
 };
 
 /** Contains the component bounds horizontally.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Obsolete.
  * @alpha
  */
 export const containHorizontally = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
@@ -40,7 +40,7 @@ export const containHorizontally = (componentBounds: RectangleProps, containerBo
 };
 
 /** Contains the component bounds vertically.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Obsolete.
  * @alpha
  */
 export const containVertically = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
@@ -49,8 +49,8 @@ export const containVertically = (componentBounds: RectangleProps, containerBoun
 };
 
 /** HOC which will ensure, that wrapped component bounds are contained in specified container bounds.
- * @deprecated in 3.0.
- * @alpha Transfer to core-react or remove if used with popups only.
+ * @deprecated in 3.0. Obsolete.
+ * @alpha
  */
 export const withContainIn = <ComponentProps extends {}>(
   // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -34,7 +34,7 @@ export interface StickyMessageProps {
 
 /** Sticky Message React component
  * @public
- * @deprecated in 3.3.
+ * @deprecated in 3.3. Replaced by Toaster from @itwin/itwinui-react.
  */
 export function StickyMessage(props: StickyMessageProps) { // eslint-disable-line deprecation/deprecation
   const { id, messageDetails, severity, closeMessage } = props;
