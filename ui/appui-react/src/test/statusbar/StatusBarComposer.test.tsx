@@ -233,7 +233,7 @@ describe("StatusBarComposer", () => {
       const dummy: FrontstageProps = { id: "status-bar-1", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
       const frontstageDef = new FrontstageDef();
       await frontstageDef.initializeFromProps(dummy);
-      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
       const items: StatusBarItem[] = [
         StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
@@ -275,7 +275,7 @@ describe("StatusBarComposer", () => {
       const dummy: FrontstageProps = { id: "status-bar-2", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
       const frontstageDef = new FrontstageDef();
       await frontstageDef.initializeFromProps(dummy);
-      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
       const items: StatusBarItem[] = [
         StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
@@ -353,7 +353,7 @@ describe("StatusBarComposer", () => {
       const dummy: FrontstageProps = { id: "oldstatus-bar-3", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
       const frontstageDef = new FrontstageDef();
       await frontstageDef.initializeFromProps(dummy);
-      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
       // make sure we have enough size to render without overflow
       sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
@@ -397,7 +397,7 @@ describe("StatusBarComposer", () => {
       const dummy: FrontstageProps = { id: "oldstatus-bar-4", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
       const frontstageDef = new FrontstageDef();
       await frontstageDef.initializeFromProps(dummy);
-      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
       // make sure we have enough size to render without overflow
       sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
