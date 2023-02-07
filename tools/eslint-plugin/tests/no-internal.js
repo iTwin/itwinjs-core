@@ -111,7 +111,7 @@ ruleTester.run(
       },
       {
         code: dedent`
-          import { Public } from "workspace-pkg-2";
+          import { internal } from "workspace-pkg-2";
           internal();
         `,
         options: [{ dontAllowWorkspaceInternal: true }],

@@ -41,9 +41,8 @@ module.exports = {
       obj.invalid.some((test) => Boolean(test.only));
     const keepTest = (test) => (hasOnly ? test.only : !test.skip);
     const stripExtraTags = (test) => {
-      delete test.skip;
-      delete test.only;
-      return test;
+      const { skip: _skip, only: _only, ...testWithoutSkipOrOnly } = test;
+      return testWithoutSkipOrOnly;
     };
     return {
       valid: obj.valid.filter(keepTest).map(stripExtraTags),

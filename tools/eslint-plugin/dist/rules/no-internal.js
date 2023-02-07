@@ -62,13 +62,8 @@ module.exports = {
   },
 
   create(context) {
-    const [bannedTags, allowWorkspaceInternal] =
-      context.options.length > 0
-        ? [
-            context.options[0].tag,
-            !context.options[0].dontAllowWorkspaceInternal,
-          ]
-        : [["alpha", "internal"], false];
+    const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
+    const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
