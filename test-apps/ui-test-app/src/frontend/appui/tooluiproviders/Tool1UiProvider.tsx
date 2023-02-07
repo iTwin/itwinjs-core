@@ -8,8 +8,9 @@ import { IModelApp } from "@itwin/core-frontend";
 import { DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@itwin/imodel-components-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolSettingsManager,
+  ConfigurableCreateInfo, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid,
   ToolUiProvider,
+  UiFramework,
 } from "@itwin/appui-react";
 import { Tool1 } from "../../tools/Tool1";
 
@@ -37,9 +38,9 @@ function Tool1Color() {
         }
       }
     };
-    ToolSettingsManager.onSyncToolSettingsProperties.addListener(handleChanged);
+    UiFramework.toolSettings.onSyncToolSettingsProperties.addListener(handleChanged);
     return () => {
-      ToolSettingsManager.onSyncToolSettingsProperties.removeListener(handleChanged);
+      UiFramework.toolSettings.onSyncToolSettingsProperties.removeListener(handleChanged);
     };
   }, []);
 
@@ -86,4 +87,4 @@ class Tool1UiProvider extends ToolUiProvider {
   }
 }
 
-ConfigurableUiManager.registerControl("Tool1", Tool1UiProvider);
+UiFramework.controls.register("Tool1", Tool1UiProvider);
