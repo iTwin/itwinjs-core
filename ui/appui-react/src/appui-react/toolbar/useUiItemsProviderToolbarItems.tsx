@@ -13,7 +13,7 @@ import {
 } from "@itwin/appui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { UiFramework } from "../UiFramework";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
  * @public
@@ -34,7 +34,7 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
     manager.onItemsChanged.addListener(handleChanged);
     // istanbul ignore else
     if (providersRef.current !== uiProviders || currentStageRef.current !== stageId) {
-      const frontstageDef = FrontstageManager.activeFrontstageDef;
+      const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
       // istanbul ignore else
       if (frontstageDef) {
         const usage = frontstageDef.usage;

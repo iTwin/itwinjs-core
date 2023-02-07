@@ -11,7 +11,7 @@
 import "./AnalysisAnimationToolSettings.scss";
 import * as React from "react";
 import { Icon } from "@itwin/core-react";
-import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, ToolUiProvider, UiFramework } from "@itwin/appui-react";
 import { Direction, Item, Toolbar } from "@itwin/appui-layout-react";
 import { IModelApp } from "@itwin/core-frontend";
 
@@ -50,7 +50,7 @@ export class AnalysisAnimationToolSettings extends React.Component<Props, Animat
   }
 
   public override componentWillUnmount() {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
+    const activeContentControl = UiFramework.content.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
       activeContentControl.viewport.analysisFraction = 0;
       window.cancelAnimationFrame(this._requestFrame);
@@ -64,7 +64,7 @@ export class AnalysisAnimationToolSettings extends React.Component<Props, Animat
       return;
     }
 
-    const activeContentControl = ContentViewManager.getActiveContentControl();
+    const activeContentControl = UiFramework.content.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
       const now = (new Date()).getTime();
       let elapsedTime = this.state.elapsedTime + (now - this._timeLastCycle);
@@ -118,7 +118,7 @@ export class AnalysisAnimationToolSettings extends React.Component<Props, Animat
       return; // already not animating!
     this.setState({ isAnimating: false, isAnimationPaused: false, elapsedTime: 0 });
 
-    const activeContentControl = ContentViewManager.getActiveContentControl();
+    const activeContentControl = UiFramework.content.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
       activeContentControl.viewport.analysisFraction = 0;
     }
@@ -126,7 +126,7 @@ export class AnalysisAnimationToolSettings extends React.Component<Props, Animat
   };
 
   private _handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
+    const activeContentControl = UiFramework.content.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
       const elapsedTime = parseInt(event.target.value, 10);
       if (elapsedTime === 0) {

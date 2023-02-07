@@ -13,7 +13,7 @@ import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itw
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
-  FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
+  FrameworkState, SyncUiEventDispatcher, UiFramework,
 } from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import userEvent from "@testing-library/user-event";
@@ -88,7 +88,7 @@ export class TestUtils {
 
       TestUtils._uiFrameworkInitialized = true;
     }
-    ToolSettingsManager.clearToolSettingsData();
+    UiFramework.toolSettings.clearToolSettingsData();
     SyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 
@@ -408,6 +408,92 @@ export function childStructure(selectors: string) {
     return !!e.querySelector(selectors);
   };
   return satisfier;
+}
+
+/**
+ * **WARNING:** THIS DO NOT TEST `INTERNAL` IMPLEMENTATION **AT ALL**, ONLY THAT IT IS CALLED.
+ *
+ * Used for Manager classes that have a 1-1 Internal implementation, that should directly call the
+ * internal implementation.
+ * @param tested *Manager class with statics
+ * @param internal Internal*Manager class (with statics)
+ * @returns [methodValidator, propValidator]
+ */
+export function createStaticInternalPassthroughValidators<P extends Object>(tested: P, internal: any) {
+  type CallableOnly<Src> = {
+    [Prop in keyof Src as Src[Prop] extends (...args: any[]) => any ? Prop : never]: Src[Prop];
+  };
+  type C = CallableOnly<P>;
+
+  /**
+   * `method` will be mocked on the `internal` class and called on the `tested` class, then validates that the
+   * internal method was called with the same arguments.
+   * ```
+   * sinon.stub(internal, method);
+   * tested[method](...args);
+   * expect(internal[method]).was.calledOnceWithExactly(...args);
+   * ```
+   * When a tuple `method` is provided, the first one will be used on the tested class, the second one on the internal.
+   * ```
+   * sinon.stub(internal, method[1]);
+   * tested[method[0]](...args);
+   * expect(internal[method[1]]).was.calledOnceWithExactly(...args);
+   * ```
+   * @param method Name of the method to test (only callable member will show up)
+   * @param args List of arguments that the method expects (type do not really matter, only the number of items does)
+   */
+  function methodValidator<T extends keyof C>(method: T | [T, string], ...args: C[T] extends (...args: any[]) => any ? Parameters<C[T]> : never) {
+    const [tMethod, iMethod] = Array.isArray(method) ? method : [method, method];
+    sinon.stub(internal, iMethod);
+    (tested as any)[tMethod](...args);
+    expect(internal[iMethod], `Method ${String(iMethod)} was not called once on the internal class.`).to.have.been.calledOnceWithExactly(...args);
+  }
+
+  type PropOnly<Src> = {
+    [Prop in keyof Src as Src[Prop] extends (...args: any[]) => any ? never : Prop]: Src[Prop];
+  };
+  type G = PropOnly<P>;
+  /**
+   * Stub the getter on the `internal` class to return a `Symbol` and validate that calling the `tested`
+   * will return the Symbol (regardless of actual type, tested class should NOT validate anyway);
+   * ```
+   * const returned = Symbol();
+   * sinon.stub(internal, prop).get(() => returned);
+   * expect(tested[prop]).to.eq(returned);
+   * ```
+   * When a tuple `prop` is provided, the first one will be used on the tested class, the second one on the internal.
+   * ```
+   * const returned = Symbol();
+   * sinon.stub(internal, prop[1]).get(() => returned);
+   * expect(tested[prop[0]]).to.eq(returned);
+   * ```
+   * When `readWrite` is `true`, will also stub the setter and validate that passing a different
+   * `Symbol` to the tested will be also passed to the setter
+   * ```
+   * const symbol = Symbol();
+   * const setter = sinon.spy();
+   * sinon.stub(internal.prop).set(setter);
+   * tested[prop] = symbol;
+   * expect(setter).to.have.beenCalledOnceWithExactly(symbol);
+   * ```
+   * @param prop Name of the property to test (only non callable member will show up)
+   * @param readWrite Type of property defaults to onlyGet (getter, getter and setter, or direct property)
+   */
+  function getterValidator<T extends keyof G>(prop: T | [T, string], readWrite = false) {
+    const [tProp, iProp] = Array.isArray(prop) ? prop : [prop, prop];
+    const returned = Symbol("returnedValue");
+    const setValue = Symbol("setValue") as any;
+    const setter = sinon.spy();
+    sinon.stub(internal, iProp).get(() => returned).set(setter);
+    expect((tested as any)[tProp]).to.eq(returned);
+
+    if (readWrite) {
+      (tested as any)[tProp] = setValue;
+      expect(setter, `Internal setter ${String(iProp)} was not called.`).to.have.been.calledOnceWithExactly(setValue);
+    }
+  }
+
+  return [methodValidator, getterValidator] as [typeof methodValidator, typeof getterValidator];
 }
 
 export default TestUtils;   // eslint-disable-line: no-default-export

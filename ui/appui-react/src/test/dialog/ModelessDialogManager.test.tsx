@@ -6,10 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { ConfigurableUiManager, DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../appui-react";
-import TestUtils, { userEvent } from "../TestUtils";
+import { DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../appui-react";
+import TestUtils, { createStaticInternalPassthroughValidators, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
+import { InternalModelessDialogManager } from "../../appui-react/dialog/InternalModelessDialogManager";
+/* eslint-disable deprecation/deprecation */
 
 describe("ModelessDialogManager", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
@@ -26,7 +28,6 @@ describe("ModelessDialogManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework(true);
-    ConfigurableUiManager.initialize();
     await MockRender.App.startup();
 
     ModelessDialogManager.onModelessDialogChangedEvent.addListener(handleModelessDialogChanged);
@@ -215,4 +216,21 @@ describe("ModelessDialogManager", () => {
     expect(ModelessDialogManager.dialogCount).to.eq(0);
   });
 
+  it("calls Internal static for everything", () => {
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ModelessDialogManager, InternalModelessDialogManager);
+
+    validateMethod("closeAll");
+    validateMethod(["closeDialog", "close"], "id");
+    validateMethod(["getDialogInfo", "getInfo"], "id");
+    validateMethod(["getDialogZIndex", "getZIndex"], "id");
+    validateMethod("handlePointerDownEvent", {} as any, "id", sinon.spy());
+    validateMethod("initialize");
+    validateMethod(["openDialog", "open"], "", "id", document);
+    validateMethod("update");
+    validateProp(["activeDialog", "active"]);
+    validateProp(["dialogCount", "count"]);
+    validateProp("dialogManager");
+    validateProp("dialogs");
+    validateProp("onModelessDialogChangedEvent");
+  });
 });

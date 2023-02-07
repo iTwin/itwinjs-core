@@ -8,14 +8,13 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Matrix3d } from "@itwin/core-geometry";
 import { MockRender, OrthographicViewState, ScreenViewport } from "@itwin/core-frontend";
-import { BasicNavigationWidget, CommandItemDef, ConfigurableUiManager, ContentViewManager, ToolbarHelper, ViewportContentControl } from "../../appui-react";
+import { BasicNavigationWidget, CommandItemDef, ContentViewManager, ToolbarHelper, ViewportContentControl } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("BasicNavigationWidget", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
-    ConfigurableUiManager.initialize();
   });
 
   after(async () => {
@@ -86,7 +85,7 @@ describe("BasicNavigationWidget", () => {
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => spatialViewStateMock.object);
 
-    sinon.stub(ContentViewManager, "getActiveContentControl").returns(contentControlMock.object);
+    sinon.stub(ContentViewManager, "getActiveContentControl").returns(contentControlMock.object); // eslint-disable-line deprecation/deprecation
 
     mount(<BasicNavigationWidget />);
   });

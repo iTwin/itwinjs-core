@@ -14,15 +14,14 @@ import {
 import { Orientation } from "@itwin/core-react";
 import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@itwin/components-react";
 import { Direction, Toolbar, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
+import { ToolActivatedEventArgs } from "../framework/FrameworkFrontstages";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOfInterest: string[]) {
@@ -49,10 +48,10 @@ function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOf
       uiDataProvider.setActiveToolId(toolId);
     };
 
-    FrontstageManager.onToolActivatedEvent.addListener(handleToolActivatedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.addListener(handleToolActivatedEvent);
 
     return () => {
-      FrontstageManager.onToolActivatedEvent.removeListener(handleToolActivatedEvent);
+      UiFramework.frontstages.onToolActivatedEvent.removeListener(handleToolActivatedEvent);
     };
   }, [uiDataProvider, uiDataProvider.items]);
 }
@@ -214,11 +213,11 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
 }
 
 const useProximityOpacitySetting = () => {
-  const [proximityOpacity, setProximityOpacity] = React.useState(UiShowHideManager.useProximityOpacity);
+  const [proximityOpacity, setProximityOpacity] = React.useState(UiFramework.visibility.useProximityOpacity);
   React.useEffect(() => {
     // istanbul ignore next
     const handleUiVisibilityChanged = () => {
-      setProximityOpacity(UiShowHideManager.useProximityOpacity);
+      setProximityOpacity(UiFramework.visibility.useProximityOpacity);
     };
     UiFramework.onUiVisibilityChanged.addListener(handleUiVisibilityChanged);
     return () => {
