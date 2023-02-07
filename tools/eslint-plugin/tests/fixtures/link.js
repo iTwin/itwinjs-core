@@ -12,7 +12,7 @@ function linkFixtureNoInternal() {
       __dirname,
       "no-internal/workspace-pkg-1/node_modules/workspace-pkg-2"
     ),
-    "dir"
+    "junction"
   );
 }
 
