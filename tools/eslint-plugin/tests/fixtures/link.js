@@ -1,6 +1,5 @@
-// can't reliably have symlinks on windows,
-// so create them in this script called at package dependency installation (rush install)
-// using the `prepare` script in package.json
+// Can't reliably have symlinks via git on windows .
+// so create them in this script called before running tests
 
 const path = require("path");
 const fs = require("fs");
@@ -16,9 +15,4 @@ function linkFixtureNoInternal() {
   );
 }
 
-//try {
 linkFixtureNoInternal();
-//} catch {
-// ignore errors, it probably already exists, and we don't want to bother people
-// with an error at install time
-//}
