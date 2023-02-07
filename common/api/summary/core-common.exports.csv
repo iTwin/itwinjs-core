@@ -147,6 +147,7 @@ public;ContextRealityModel
 public;ContextRealityModelProps
 public;ContextRealityModelProps
 public;ContextRealityModels
+public;ContextRealityModelsArgs
 public;ContextRealityModelsContainer
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
@@ -362,7 +363,9 @@ public;HSVColor
 public;HSVConstants
 internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
+deprecated;HttpServerRequest 
 public;HttpServerResponse 
+deprecated;HttpServerResponse 
 internal;HydrateViewStateRequestProps
 internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
@@ -501,6 +504,7 @@ internal;OpenAPIContentMap
 internal;OpenAPIDocument
 internal;OpenAPIEncoding
 public;OpenAPIInfo
+deprecated;OpenAPIInfo
 internal;OpenAPIMediaType
 internal;OpenAPIOperation
 internal;OpenAPIParameter
@@ -639,12 +643,14 @@ internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
 internal;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
+deprecated;RpcContentType
 internal;RpcControlChannel
 public;class RpcControlResponse
 internal;RpcDefaultConfiguration 
 internal;RpcDirectProtocol 
 internal;RpcDirectRequest 
 public;RpcEndpoint
+deprecated;RpcEndpoint
 public;class RpcInterface
 internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
@@ -665,6 +671,7 @@ internal;RpcPendingQueue
 public;RpcPendingResponse 
 internal;class RpcProtocol
 public;RpcProtocolEvent
+deprecated;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
 internal;RpcProtocolVersion
 internal;RpcPushChannel
@@ -678,13 +685,16 @@ internal;class RpcRequest
 internal;RpcRequestCallback_T = (request: RpcRequest) => void
 internal;RpcRequestContext
 public;RpcRequestEvent
+deprecated;RpcRequestEvent
 internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
 internal;RpcRequestFulfillment
 internal;RpcRequestFulfillment
 internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
 internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
 public;RpcRequestStatus
+deprecated;RpcRequestStatus
 public;RpcRequestStatus
+deprecated;RpcRequestStatus
 internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl

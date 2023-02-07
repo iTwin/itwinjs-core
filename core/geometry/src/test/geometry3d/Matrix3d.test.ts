@@ -330,6 +330,7 @@ function testCacheUse(ck: bsiChecker.Checker, name: string, numCompute: number, 
   Matrix3d.numComputeCache = 0;
   Matrix3d.numUseCache = 0;
 }
+
 describe("Matrix3d.cachedInverse", () => {
   it("cachedInverse", () => {
     const ck = new bsiChecker.Checker();
@@ -363,5 +364,48 @@ describe("Matrix3d.cachedInverse", () => {
     ck.testExactNumber(0, Matrix3d.numComputeCache, "B numComputeCache");
     ck.testExactNumber(numInvert, Matrix3d.numUseCache, "B numUseCache");
     expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Matrix3d.setColumns", () => {
+  it("setColumns", () => {
+    const ck = new bsiChecker.Checker();
+    const vectorX: Vector3d = Vector3d.create(1, 2, 3);
+    const vectorY: Vector3d = Vector3d.create(4, 5, 6);
+    const expectedMatrix: Matrix3d = Matrix3d.createRowValues(
+      1, 4, 0,
+      2, 5, 0,
+      3, 6, 0);
+    const theMatrix = Matrix3d.createIdentity();
+    theMatrix.setColumns(vectorX, vectorY);
+    ck.testMatrix3d(theMatrix, expectedMatrix, "matrixes are equal");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Matrix3d.setRow", () => {
+  it("setRow", () => {
+    const ck = new bsiChecker.Checker();
+    const vector: Vector3d = Vector3d.create(1, 2, 3);
+    const expectedMatrix: Matrix3d = Matrix3d.createRowValues(
+      1, 2, 3,
+      0, 1, 0,
+      0, 0, 1);
+    const theMatrix = Matrix3d.createIdentity();
+    theMatrix.setRow(0, vector);
+    ck.testMatrix3d(theMatrix, expectedMatrix, "matrixes are equal");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Matrix3d.createDirectionalScale", () => {
+  it("createDirectionalScale", () => {
+    const scale = -1;
+    const vector = Vector3d.create(1, 0, 1);
+    const direction = Vector3d.create(0, 0, 1);
+    const expectedDirectionScale = Vector3d.create(1, 0, -1);
+    const matrix = Matrix3d.createDirectionalScale(direction, scale);
+    const returnedDirectionScale = matrix.multiplyVector(vector);
+    expect(expectedDirectionScale).to.deep.equal(returnedDirectionScale);
   });
 });

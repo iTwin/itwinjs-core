@@ -7,7 +7,7 @@ import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } fro
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
 /** Sample RPC interface. */
-export default abstract class SampleRpcInterface extends RpcInterface {
+export default abstract class SampleRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SampleRpcInterface";
 

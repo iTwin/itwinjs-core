@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "allow tolerance to be specified for curve-curve xy intersection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

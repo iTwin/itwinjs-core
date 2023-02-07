@@ -6,10 +6,8 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { System } from "../System";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeBaseColor = "return u_bgColor;";
@@ -21,7 +19,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createClearPickAndColorProgram(context: WebGLContext): ShaderProgram {
+export function createClearPickAndColorProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
@@ -32,13 +30,8 @@ export function createClearPickAndColorProgram(context: WebGLContext): ShaderPro
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
-  if (!System.instance.capabilities.supportsMRTPickShaders) {
-    // NB: This shader is never used - we gl.clear() directly
-    frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
-  } else {
-    frag.addDrawBuffersExtension(3);
-    frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
-  }
+  frag.addDrawBuffersExtension(3);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 
   builder.vert.headerComment = "//!V! ClearPickAndColor";
   builder.frag.headerComment = "//!F! ClearPickAndColor";

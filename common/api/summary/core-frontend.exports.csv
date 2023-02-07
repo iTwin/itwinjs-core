@@ -39,6 +39,7 @@ public;Animator
 internal;ArcGisErrorCode
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
+internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
@@ -435,6 +436,7 @@ internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
+internal;OrbitGtTreeReference 
 public;OrthographicViewState 
 public;OsmBuildingDisplayOptions
 public;OutputMessageAlert

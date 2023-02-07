@@ -1575,6 +1575,7 @@ export class TransientIdSequence {
     getNext(): Id64String;
     // @deprecated
     get next(): Id64String;
+    peekNext(): Id64String;
 }
 
 // @public

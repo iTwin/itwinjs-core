@@ -7,7 +7,7 @@
  */
 
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Returns nodes for instances of specific ECClasses.
@@ -17,7 +17,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
-  specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
+  specType: "InstanceNodesOfSpecificClasses";
 
   /**
    * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that

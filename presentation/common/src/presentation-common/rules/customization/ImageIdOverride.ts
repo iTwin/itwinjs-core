@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * ImageId override rules allow setting an image ID to specific types of ECInstances.
@@ -17,7 +17,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  */
 export interface ImageIdOverride extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.ImageIdOverride;
+  ruleType: "ImageIdOverride";
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition

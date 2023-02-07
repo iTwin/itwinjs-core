@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { WidgetState } from "@itwin/appui-abstract";
-import { FrontstageManager } from "@itwin/appui-react";
+import { FrontstageManager, WidgetState } from "@itwin/appui-react";
 import { Tool } from "@itwin/core-frontend";
 
 /** Tool that will set widget state of a widget. I.e. `widget setstate w1 2` where w1 is widget id and 2 is WidgetState. */

@@ -599,7 +599,10 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
     },
     {
       "name": "[Presentation] Tests: Common",
@@ -618,7 +621,10 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
     },
     {
       "name": "[Presentation] Tests: Components",
@@ -641,7 +647,10 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui,presentation}/*/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
     },
     {
       "name": "[Presentation] Tests: Frontend",
@@ -662,7 +671,10 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
     },
     {
       "name": "[Presentation] Tests: Full Stack",
@@ -677,13 +689,13 @@
         "--no-config",
         "--no-timeouts"
       ],
-      "env": {
-        "NODE_ENV": "development"
-      },
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
         "${workspaceFolder}/full-stack-tests/presentation/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
     },
     {
       "name": "[Presentation] Tests: Testing",
@@ -706,7 +718,10 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
     },
     // MISC
     {

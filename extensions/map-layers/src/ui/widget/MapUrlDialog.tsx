@@ -284,6 +284,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         } else {
           return await updateAttachedLayer(source, validation);
         }
+      } else if (validation.status === MapLayerSourceStatus.InvalidCoordinateSystem){
+        const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCoordinateSystem");
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+        return true;
       } else {
         const authNeeded = await updateAuthState(source, validation);
         if (authNeeded) {

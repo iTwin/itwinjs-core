@@ -12,10 +12,11 @@ import { ProvidedItem } from "../items/ProvidedItem";
 import { WidgetState } from "./WidgetState";
 
 /** Properties for a Widget.
+ * @deprecated in 3.6. Use [CommonWidgetProps]($appui-react) instead.
  * @public
  */
-export interface AbstractWidgetProps extends ProvidedItem {
-  /** Gets the widget content */
+export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+  /** Gets the widget content. */
   readonly getWidgetContent: () => any;
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
@@ -24,12 +25,14 @@ export interface AbstractWidgetProps extends ProvidedItem {
    */
   readonly id?: string;
   /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Unloaded. */
-  readonly defaultState?: WidgetState;
+  readonly defaultState?: WidgetState; // eslint-disable-line deprecation/deprecation
   /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
   readonly label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
   readonly tooltip?: string | ConditionalStringValue;
-  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. @deprecated */
+  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false.
+   * @deprecated in 3.0.
+   * */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
   readonly applicationData?: any;
@@ -58,9 +61,9 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly syncEventIds?: string[];
   /** Function executed to determine the state of the widget.
    *  Used by UI 1.0 widgets ONLY.
-   * @deprecated
+   * @deprecated in 3.3.
   */
-  readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
+  readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState; // eslint-disable-line deprecation/deprecation
   /** Badge to be overlaid on the widget tab. */
   readonly badgeType?: BadgeType;
   /** Handler for widget state changed event */

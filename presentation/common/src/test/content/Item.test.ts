@@ -4,13 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { InstanceKey } from "../../presentation-common";
 import { Item, ItemJSON } from "../../presentation-common/content/Item";
 import { NestedContentValueJSON } from "../../presentation-common/content/Value";
 import { createTestECInstanceKey } from "../_helpers/EC";
-import {
-  createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinition, createRandomLabelDefinitionJSON,
-} from "../_helpers/random";
+import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
 
 describe("Item", () => {
 
@@ -37,7 +34,7 @@ describe("Item", () => {
       const item = new Item([], "", "", undefined, {}, {}, []);
       item.inputKeys = [inputKey];
       const json = item.toJSON();
-      expect(json?.inputKeys).to.deep.eq([InstanceKey.toJSON(inputKey)]);
+      expect(json.inputKeys).to.deep.eq([inputKey]);
     });
 
   });
@@ -48,9 +45,9 @@ describe("Item", () => {
     beforeEach(() => {
       testItemJSON = {
         primaryKeys: [],
-        labelDefinition: createRandomLabelDefinitionJSON(),
+        labelDefinition: createRandomLabelDefinition(),
         imageId: faker.random.uuid(),
-        classInfo: createRandomECClassInfoJSON(),
+        classInfo: createRandomECClassInfo(),
         values: {
           key1: faker.random.number(),
           key2: faker.random.words(),
@@ -77,8 +74,8 @@ describe("Item", () => {
       const inputKey = createTestECInstanceKey();
       const item = Item.fromJSON({
         primaryKeys: [],
-        inputKeys: [InstanceKey.toJSON(inputKey)],
-        labelDefinition: createRandomLabelDefinitionJSON(),
+        inputKeys: [inputKey],
+        labelDefinition: createRandomLabelDefinition(),
         imageId: "",
         values: {},
         displayValues: {},
@@ -97,8 +94,9 @@ describe("Item", () => {
     });
 
     it("creates valid Item with nested content values", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const nestedContentValueJSON: NestedContentValueJSON = {
-        primaryKeys: [createRandomECInstanceKeyJSON()],
+        primaryKeys: [createRandomECInstanceKey()],
         values: { nested: null },
         displayValues: { nested: "" },
         mergedFieldNames: [faker.random.word()],

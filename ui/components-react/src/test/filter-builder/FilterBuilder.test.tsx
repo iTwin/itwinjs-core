@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import chai, { expect } from "chai";
 import chaiSubset from "chai-subset";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { buildPropertyFilter, PropertyFilterBuilder } from "../../components-react/filter-builder/FilterBuilder";
-import { PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
+import { PropertyFilterBuilder } from "../../components-react/filter-builder/FilterBuilder";
+import { buildPropertyFilter, PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
 import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
 import { PropertyFilter } from "../../components-react/filter-builder/Types";

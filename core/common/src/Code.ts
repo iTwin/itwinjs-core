@@ -222,24 +222,32 @@ export namespace CodeScopeSpec {
     RelatedElement = 4,
   }
 
-  /** Requirements for how the CodeScope Element is identified.
+  /**
+   * Requirements for how the CodeScope Element is identified.
    * @public
    */
   export enum ScopeRequirement {
-    /** The Code is required to have a valid ElementId as its scope */
+    /** The ElementId of CodeScope element identifies its scope. Used for Codes that are unique only within a single iModel. */
     ElementId = 1,
-    /** The Code is required to have a valid FederationGuid as its scope */
+    /** The FederationGuid of the CodeScope element identifies its scope. Used for Codes that are globally unique. */
     FederationGuid = 2,
   }
 }
 
 /**
- * The properties of a CodeSpec
- * @public */
+ * The JSON properties of a CodeSpec
+ * @public
+ */
 export interface CodeSpecProperties {
   scopeSpec: {
+    /** the type of CodeSpec */
     type: CodeScopeSpec.Type;
+    /** If true, the federationGuid of the scope element identifies the scope, for Codes that are globally unique.
+     * Otherwise, the ElementId of the scopeElement is used, for Codes that are scoped only within a single iModel.
+     */
     fGuidRequired?: boolean;
+    /** The relationship className (in the form "schema:class"), when `type` is `CodeScopeSpec.Type.RelatedElement` */
+    relationship?: string;
   };
   spec?: {
     isManagedWithDgnDb?: boolean;

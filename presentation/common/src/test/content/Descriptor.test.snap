@@ -108,8 +108,6 @@ Object {
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x4",
           "sourceClassInfo": "0x2",
           "targetClassInfo": "0x3",
@@ -169,8 +167,6 @@ Object {
       "navigationPropertyClasses": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x4",
           "sourceClassInfo": "0x2",
           "targetClassInfo": "0x3",
@@ -179,7 +175,6 @@ Object {
       "pathFromInputToSelectClass": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x4",
           "sourceClassInfo": "0x2",
           "targetClassInfo": "0x3",
@@ -189,8 +184,6 @@ Object {
         Array [
           Object {
             "isForwardRelationship": true,
-            "isPolymorphicRelationship": false,
-            "isPolymorphicTargetClass": false,
             "relationshipInfo": "0x4",
             "sourceClassInfo": "0x2",
             "targetClassInfo": "0x3",
@@ -201,8 +194,6 @@ Object {
         Array [
           Object {
             "isForwardRelationship": true,
-            "isPolymorphicRelationship": false,
-            "isPolymorphicTargetClass": false,
             "relationshipInfo": "0x4",
             "sourceClassInfo": "0x2",
             "targetClassInfo": "0x3",

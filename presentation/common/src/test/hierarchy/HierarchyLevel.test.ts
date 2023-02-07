@@ -12,7 +12,9 @@ describe("HierarchyLevel", () => {
   describe("fromJSON", () => {
 
     it("creates valid HierarchyLevel from JSON", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const hl = HierarchyLevel.fromJSON({
+        // eslint-disable-next-line deprecation/deprecation
         nodes: [Node.toJSON(createTestNode())],
         supportsFiltering: true,
       });

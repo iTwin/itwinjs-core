@@ -330,8 +330,10 @@ export class Element extends Entity {
       val.code = this.code;
 
     val.model = this.model;
-    val.userLabel = this.userLabel;
-    val.federationGuid = this.federationGuid;
+    if (undefined !== this.userLabel) // NOTE: blank string should be included in JSON
+      val.userLabel = this.userLabel;
+    if (this.federationGuid)
+      val.federationGuid = this.federationGuid;
     if (this.parent)
       val.parent = this.parent;
 
@@ -427,8 +429,17 @@ export class Element extends Entity {
     return msg;
   }
 
-  /** Insert this Element into the iModel. */
-  public insert() { return this.id = this.iModel.elements.insertElement(this.toJSON()); }
+  /**
+   * Insert this Element into the iModel.
+   * @see [[IModelDb.Elements.insertElement]]
+   * @note For convenience, the value of `this.id` is updated to reflect the resultant element's id.
+   * However when `this.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
+   * the value of `this.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[IModelDb.Elements.getElement]])
+   * if you intend to continue working with it. That will ensure its values reflect the persistent state.
+   */
+  public insert() {
+    return this.id = this.iModel.elements.insertElement(this.toJSON());
+  }
   /** Update this Element in the iModel. */
   public update() { this.iModel.elements.updateElement(this.toJSON()); }
   /** Delete this Element from the iModel. */

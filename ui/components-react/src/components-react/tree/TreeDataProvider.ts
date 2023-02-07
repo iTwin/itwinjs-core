@@ -69,7 +69,7 @@ export type TreeDataProviderMethod = (node?: TreeNodeItem) => Promise<DelayLoade
  * @public
  */
 export interface ITreeDataProvider {
-  /** @deprecated */
+  /** @deprecated in 2.x. */
   onTreeNodeChanged?: BeEvent<TreeDataChangesListener>;
   getNodesCount(parent?: TreeNodeItem): Promise<number>;
   getNodes(parent?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;
@@ -139,7 +139,7 @@ export interface EditableTreeDataProvider extends ITreeDataProvider {
 /**
  * MutableTreeDataProvider provides manipulation processing for the Tree.
  * Useful for Drag & Drop processing.
- * @beta @deprecated
+ * @beta @deprecated in 3.0.
  */
 export interface MutableTreeDataProvider extends ITreeDataProvider {
   insertNode(parent: TreeNodeItem | undefined, child: TreeNodeItem, index?: number): void;

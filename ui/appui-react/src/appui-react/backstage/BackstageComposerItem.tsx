@@ -19,7 +19,7 @@ import { useBackstageManager } from "./BackstageManager";
 
 /** @internal */
 export interface BackstageComposerActionItemProps {
-  readonly item: BackstageActionItem;
+  readonly item: BackstageActionItem; // eslint-disable-line deprecation/deprecation
 }
 
 /** @internal */
@@ -50,7 +50,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
 
 /** @internal */
 export interface BackstageComposerStageLauncherProps {
-  readonly item: BackstageStageLauncher;
+  readonly item: BackstageStageLauncher; // eslint-disable-line deprecation/deprecation
 }
 
 /** @internal */
@@ -88,7 +88,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
  */
 export interface BackstageComposerItemProps {
   /** Backstage item to render */
-  readonly item: BackstageItem;
+  readonly item: BackstageItem; // eslint-disable-line deprecation/deprecation
   readonly providerId?: string;
 }
 
@@ -96,7 +96,7 @@ export interface BackstageComposerItemProps {
  * @internal
  */
 export function BackstageComposerItem({ item }: BackstageComposerItemProps) {
-  if (isStageLauncher(item)) {
+  if (isStageLauncher(item)) { // eslint-disable-line deprecation/deprecation
     return (
       <BackstageComposerStageLauncher
         item={item}

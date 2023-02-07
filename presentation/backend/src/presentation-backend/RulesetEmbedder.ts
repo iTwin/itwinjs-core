@@ -23,7 +23,7 @@ import { normalizeVersion } from "./Utils";
 
 /**
  * Interface for callbacks which will be called before and after Element/Model updates
- * @beta
+ * @public
  */
 interface UpdateCallbacks {
   onBeforeUpdate: (props: Entity) => Promise<void>;
@@ -32,7 +32,7 @@ interface UpdateCallbacks {
 
 /**
  * Interface for callbacks which will be called before and after Element/Model is inserted
- * @beta
+ * @public
  */
 interface InsertCallbacks {
   onBeforeInsert: (props: Entity) => Promise<void>;
@@ -41,7 +41,7 @@ interface InsertCallbacks {
 
 /**
  * Options for [[RulesetEmbedder.insertRuleset]] operation.
- * @beta
+ * @public
  */
 export interface RulesetInsertOptions {
   /**
@@ -67,13 +67,11 @@ export interface RulesetInsertOptions {
 
   /**
    * Callbacks that will be called before and after `Entity` updates
-   * @beta
    */
   onEntityUpdate?: UpdateCallbacks;
 
   /**
    * Callbacks that will be called before and after `Entity` is inserted
-   * @beta
    */
   onEntityInsert?: InsertCallbacks;
 }
@@ -89,7 +87,7 @@ export interface RulesetEmbedderProps {
 
 /**
  * An API for embedding presentation rulesets into iModels.
- * @beta
+ * @public
  */
 export class RulesetEmbedder {
 

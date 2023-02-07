@@ -35,6 +35,7 @@
     "ExternalLoginTryAgain": "Try Again",
     "ExternalLoginWaiting": "Waiting for external login process to complete...",
     "InvalidCredentials": "Invalid credentials provided",
+    "InvalidCoordinateSystem": "Map layer geographic coordinate system is not supported",
     "MissingCredentials": "This layer requires credentials to be provided",
     "Name": "Name",
     "NameInputPlaceHolder": "Enter Map Name",

@@ -22,7 +22,7 @@ import { CachingElementIdsContainer } from "./Utils";
 /**
  * Visibility tree node types.
  * @beta
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export enum ModelsTreeNodeType {
   Unknown,
@@ -36,7 +36,7 @@ export enum ModelsTreeNodeType {
 /**
  * Type definition of predicate used to decide if node can be selected
  * @beta
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
@@ -55,7 +55,7 @@ export interface ModelsVisibilityHandlerProps {
 /**
  * Visibility handler used by [[ModelsTree]] to control visibility of the tree items.
  * @alpha
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export class ModelsVisibilityHandler implements IVisibilityHandler {
   private _props: ModelsVisibilityHandlerProps;

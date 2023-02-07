@@ -19,6 +19,8 @@ import { useUiItemsProviderBackstageItems } from "./useUiItemsProviderBackstageI
 
 // cSpell:ignore safearea
 
+/* eslint-disable deprecation/deprecation */
+
 /** Private function to set up sync event monitoring of backstage items */
 function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIdsOfInterest: string[]) {
   const isInitialMount = React.useRef(true);

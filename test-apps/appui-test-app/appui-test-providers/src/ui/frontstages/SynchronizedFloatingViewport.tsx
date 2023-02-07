@@ -5,13 +5,14 @@
 import * as React from "react";
 import {
   BackstageAppButton, BackstageManager, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
-  IModelViewportControl, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  IModelViewportControl, StageUsage, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
   UiFramework,
+  UiItemsManager,
 } from "@itwin/appui-react";
 import {
-  StageUsage, StandardContentLayouts, UiItemsManager,
+  StandardContentLayouts,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { SynchronizedFloatingViewportProvider } from "../providers/SynchronizedFloatingViewportProvider";

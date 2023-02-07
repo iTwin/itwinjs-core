@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * Style override rules allow customizing display style of specific types of ECInstances.
@@ -17,7 +17,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  */
 export interface StyleOverride extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.StyleOverride;
+  ruleType: "StyleOverride";
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition

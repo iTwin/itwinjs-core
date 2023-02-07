@@ -209,14 +209,7 @@ export class SelectionScopesHelper {
     return keys;
   }
 
-  /**
-   * Computes selection set based on provided selection scope.
-   * @param requestOptions Options for the request
-   * @param keys Keys of elements to get the content for.
-   * @param scopeId ID of selection scope to use for computing selection
-   */
   public static async computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
-  /** @alpha */
   public static async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb>): Promise<KeySet>;
   public static async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> | SelectionScopeRequestOptions<IModelDb>, elementIds?: Id64String[], scopeId?: string): Promise<KeySet> {
     if (!isComputeSelectionRequestOptions(requestOptions)) {
