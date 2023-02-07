@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AnyWidgetProps, ConfigurableUiManager, DrawingNavigationAidControl, NavigationWidgetDef } from "../../appui-react";
+import { AnyWidgetProps, DrawingNavigationAidControl, NavigationWidgetDef, UiFramework } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 
 describe("DrawingNavigationAidControl", () => {
@@ -12,8 +12,8 @@ describe("DrawingNavigationAidControl", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    if (!ConfigurableUiManager.isControlRegistered("DrawingNavigationAid"))
-      ConfigurableUiManager.registerControl("DrawingNavigationAid", DrawingNavigationAidControl);
+    if (!UiFramework.controls.isRegistered("DrawingNavigationAid"))
+      UiFramework.controls.register("DrawingNavigationAid", DrawingNavigationAidControl);
   });
 
   after(() => {

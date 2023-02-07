@@ -11,13 +11,12 @@ import * as moq from "typemoq";
 import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
 import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@itwin/appui-layout-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps,
+  ConfigurableCreateInfo, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageProps,
   FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl, WidgetDef,
 } from "../../appui-react";
 import { StagePanelRuntimeProps } from "../../appui-react/stagepanels/StagePanel";
 import { StagePanelDef, StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
 import TestUtils, { mount } from "../TestUtils";
 
 /* eslint-disable react/jsx-key */
@@ -199,10 +198,10 @@ describe("StagePanel", () => {
     }
 
     const frontstageProvider = new Frontstage1();
-    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
       const widgetDef = frontstageDef.findWidgetDef("stagePanelWidget");
@@ -218,10 +217,10 @@ describe("StagePanel", () => {
     expect(wrapper.find("div.uifw-stagepanel.nz-panel-bottom").length).to.eq(2);
 
     UiFramework.setIsUiVisible(false);
-    UiShowHideManager.showHidePanels = true;
+    UiFramework.visibility.showHidePanels = true;
     wrapper.update();
     expect(wrapper.find("div.uifw-stagepanel").length).to.eq(0);
-    UiShowHideManager.showHidePanels = false;
+    UiFramework.visibility.showHidePanels = false;
   });
 
   it("should update stagePanelWidgets", () => {
