@@ -1472,3 +1472,46 @@ export async function runWithCpuProfiler<F extends () => any>(
   session.disconnect();
   return result;
 }
+
+export function getProfileVersion(db: IModelDb): ProfileVersion {
+  const rows = db.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db' WHERE Name='SchemaVersion'", (s) => [...s]);
+  const profile = JSON.parse(rows[0][1]);
+  assert(profile.major);
+  assert(profile.minor);
+  assert(profile.sub1);
+  assert(profile.sub2);
+  return profile;
+}
+
+export interface ProfileVersion {
+  major: number;
+  minor: number;
+  sub1: number;
+  sub2: number;
+}
+
+/**
+ * Compare two profile versions, returning
+ * a positive integer if the first is greater than the second,
+ * 0 if they are equal,
+ * or a negative integer if the first is less than the second
+ */
+export function cmpProfileVersion(a: ProfileVersion, b: ProfileVersion): number {
+  if (a.major > b.major)
+    return 1;
+  else if (a.major < b.major)
+    return -1;
+  else if (a.minor > b.minor)
+    return 1;
+  else if (a.minor < b.minor)
+    return -1;
+  else if (a.sub1 > b.sub1)
+    return 1;
+  else if (a.sub1 < b.sub1)
+    return -1;
+  else if (a.sub2 > b.sub2)
+    return 1;
+  else if (a.sub2 < b.sub2)
+    return -1;
+  return 0;
+}

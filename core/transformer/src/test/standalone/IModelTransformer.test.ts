@@ -27,7 +27,7 @@ import {
   AspectTrackingImporter,
   AspectTrackingTransformer,
   assertIdentityTransformation, AssertOrderTransformer,
-  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  ClassCounter, cmpProfileVersion, FilterByViewTransformer, getProfileVersion, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, runWithCpuProfiler, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -2022,6 +2022,101 @@ describe("IModelTransformer", () => {
     expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
     await noSystemSchemasTransformer.processSchemas();
     noSystemSchemasTransformer.dispose();
+  });
+
+  it("handles unknown new schema references in biscore", async () => {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRef.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
+
+    const biscoreVersion = sourceDb.querySchemaVersion("BisCore");
+    assert(biscoreVersion !== undefined);
+    const fakeSchemaVersion =  "1.0.99";
+    expect(Semver.lt(biscoreVersion,fakeSchemaVersion)).to.be.true;
+    const biscoreText = sourceDb.nativeDb.schemaToXmlString("BisCore");
+    assert(biscoreText !== undefined);
+    const fakeBisCoreUpdateText = biscoreText
+      .replace(/(<ECSchema .*?>)/, '$1 <ECSchemaReference name="NewRef" version="01.00.00" alias="nr"/>')
+      .replace(/(?<=alias="bis" version=")[^"]*(?=")/,fakeSchemaVersion);
+    // console.log(fakeBisCoreUpdateText.slice(0, 2000));
+
+    const newReffedSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="NewRef" alias="nr" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    await sourceDb.importSchemaStrings([newReffedSchema, fakeBisCoreUpdateText]);
+    sourceDb.saveChanges();
+
+    const targetDb1File = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget1.bim");
+    const targetDb1 = SnapshotDb.createEmpty(targetDb1File, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb1);
+    expect(transformer.exporter.wantSystemSchemas).to.be.true;
+    await transformer.processSchemas();
+    transformer.dispose();
+
+    const targetDb2File = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget2.bim");
+    const targetDb2 = SnapshotDb.createEmpty(targetDb2File, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget2" } });
+
+    const noSystemSchemasExporter = new IModelExporter(sourceDb);
+    noSystemSchemasExporter.wantSystemSchemas = false;
+    const noSystemSchemasTransformer = new IModelTransformer(noSystemSchemasExporter, targetDb2);
+    expect(noSystemSchemasExporter.wantSystemSchemas).to.be.false;
+    expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
+    await noSystemSchemasTransformer.processSchemas();
+    noSystemSchemasTransformer.dispose();
+  });
+
+  it.only("transform iModels with schema upgrade", async () => {
+    // this seed has an old biscore, so we know that transforming an empty source (which starts with a fresh, updated biscore)
+    // will cause an update to the old biscore in this target
+    const oldDbPath = BackendTestUtils.IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const oldDb = SnapshotDb.openFile(oldDbPath);
+
+    const newDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-New.bim");
+    let newDb = SnapshotDb.createFrom(oldDb, newDbPath);
+    newDb.close();
+    StandaloneDb.upgradeStandaloneSchemas(newDbPath);
+    newDb = SnapshotDb.openFile(newDbPath);
+
+    assert(
+      Semver.lt(
+        Schema.toSemverString(oldDb.querySchemaVersion("BisCore")!),
+        Schema.toSemverString(newDb.querySchemaVersion("BisCore")!)),
+      "The 'old' database unexpectedly did not have an older version of BisCore"
+    );
+
+    const oldDbProfileIsOlder = cmpProfileVersion( getProfileVersion(oldDb), getProfileVersion(newDb),) === -1;
+    assert(
+      oldDbProfileIsOlder,
+      "The 'old' database unexpectedly did not have an older profile version"
+    );
+
+    const sourceDbs = [oldDb, newDb];
+    const targetSeeds = [oldDb, newDb];
+    const doUpgradeVariants = [true, false];
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-Target.bim");
+
+    /* eslint-disable @typescript-eslint/indent */
+    for (const sourceDb of sourceDbs)
+    for (const targetSeed of targetSeeds)
+    /* eslint-disable @typescript-eslint/indent */
+    for (const doUpgrade of doUpgradeVariants) {
+      if (IModelJsFs.existsSync(targetDbPath))
+        IModelJsFs.unlinkSync(targetDbPath);
+
+      const targetDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      await transformer.processSchemas({ doUpgrade });
+
+      transformer.dispose();
+      transformer.targetDb.close();
+    }
+
+    oldDb.close();
+    newDb.close();
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
