@@ -9,7 +9,7 @@ import React from "react";
 // __PUBLISH_EXTRACT_START__ Example_Viewport_Frontstage_Group_Provider_1
 export class ViewportFrontstageGroupProvider extends ContentGroupProvider {
 // __PUBLISH_EXTRACT_END__
-  public override async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public override async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     throw new Error("Method not implemented.");
   }
 /* eslint-disable @typescript-eslint/indent */
