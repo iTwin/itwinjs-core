@@ -1,6 +1,23 @@
 # Change Log - @itwin/presentation-components
 
-This log was last generated on Thu, 26 Jan 2023 22:53:28 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+-  Use EmptyLocalization for localization in tests to increase test performance
+- Added support for initial filter to presentation instance filter builder
+- API promotions
+- Correctly render 'NavigationPropertyEditor' when it is used in dialog
+- Correctly handle navigation property value when converting 'PresentationInstanceFilter' into ECExpression
+- Fixed PresentationInstanceFilter to InstanceFilterDefinition coversion to use operator supported by ECExpressions
+- API promotion
+- Fix duplicate classes displayed in instance filter class selector
+- Added dialog for presentation instance filter
+- Deprecate `PresentationPropertyDataProvider` properties `includeFieldsWithNoValues` and `includeFieldsWithCompositeValues`. Should use `FilteringPropertyDataProvider` instead.
+- Added API to enable hierarchy level filtering in trees using presentation library
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:28 GMT
