@@ -6,11 +6,11 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsToolbars, ZoneDef } from "../../appui-react";
+import { FrontstageDef, UiFramework, WidgetDef, WidgetPanelsToolbars, ZoneDef } from "../../appui-react";
 
 describe("WidgetPanelsToolbars", () => {
   it("should not render", () => {
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => undefined);
     const sut = shallow(<WidgetPanelsToolbars />);
     sut.should.matchSnapshot();
   });
@@ -21,7 +21,7 @@ describe("WidgetPanelsToolbars", () => {
     const topRight = new ZoneDef();
     const topLeftWidget = new WidgetDef();
     const topRightWidget = new WidgetDef();
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => frontstageDef);
     sinon.stub(frontstageDef, "topLeft").get(() => topLeft);
     sinon.stub(frontstageDef, "topRight").get(() => topRight);
     sinon.stub(topLeft, "getSingleWidgetDef").returns(topLeftWidget);

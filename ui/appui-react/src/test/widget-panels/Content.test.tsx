@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { addPanelWidget, addTab, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@itwin/appui-layout-react";
 import { Rectangle } from "@itwin/core-react";
-import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../appui-react";
+import { FrontstageDef, UiFramework, WidgetContent, WidgetDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("WidgetContent", () => {
@@ -27,7 +27,7 @@ describe("WidgetContent", () => {
     const widget = new WidgetDef({ // eslint-disable-line deprecation/deprecation
       id: "w1",
     });
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => frontstage);
     sinon.stub(frontstage, "findWidgetDef").returns(widget);
     sinon.stub(widget, "reactNode").get(() => <>Content</>);
     const { container } = render(
@@ -48,7 +48,7 @@ describe("WidgetContent", () => {
     let nineZone = createNineZoneState();
     nineZone = addTab(nineZone, "w1");
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => undefined);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub()}
@@ -68,7 +68,7 @@ describe("WidgetContent", () => {
     nineZone = addTab(nineZone, "w1");
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     const frontstage = new FrontstageDef();
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => frontstage);
     sinon.stub(frontstage, "findWidgetDef").returns(undefined);
     const { container } = render(
       <NineZoneProvider

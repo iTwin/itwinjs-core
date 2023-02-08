@@ -9,8 +9,8 @@ import { NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-fronten
 import { WidgetState } from "@itwin/appui-abstract";
 import { FooterPopup } from "@itwin/appui-layout-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, WidgetDef,
+  ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, UiFramework, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -38,8 +38,8 @@ import TestUtils, { mount } from "../TestUtils";
     before(async () => {
       await TestUtils.initializeUiFramework();
 
-      ConfigurableUiManager.unregisterControl("AppStatusBar");
-      ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+      UiFramework.controls.unregister("AppStatusBar");
+      UiFramework.controls.register("AppStatusBar", AppStatusBarWidgetControl);
 
       const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,

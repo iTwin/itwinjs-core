@@ -6,220 +6,117 @@
  * @module Utilities
  */
 
-import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
-import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework, UserSettingsProvider } from "../UiFramework";
-
-/** Class that maintain UiShowHide user settings between sessions
- * @internal
- */
-export class UiShowHideSettingsProvider implements UserSettingsProvider {
-  private static _settingsNamespace = "AppUiSettings";
-  private static _autoHideUiKey = "AutoHideUi";
-  private static _useProximityOpacityKey = "UseProximityOpacity";
-  private static _snapWidgetOpacityKey = "SnapWidgetOpacity";
-  public readonly providerId = "UiShowHideSettingsProvider";
-
-  public static initialize() {
-    UiFramework.registerUserSettingsProvider(new UiShowHideSettingsProvider());
-  }
-
-  public async loadUserSettings(storage: UiStateStorage): Promise<void> {
-    let result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._autoHideUiKey);
-    if (result.status === UiStateStorageStatus.Success)
-      UiShowHideManager.setAutoHideUi(result.setting);
-
-    result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._useProximityOpacityKey);
-    if (result.status === UiStateStorageStatus.Success)
-      UiShowHideManager.setUseProximityOpacity(result.setting);
-
-    result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._snapWidgetOpacityKey);
-    if (result.status === UiStateStorageStatus.Success)
-      UiShowHideManager.setSnapWidgetOpacity(result.setting);
-  }
-
-  public static async storeAutoHideUi(v: boolean, storage?: UiStateStorage) {
-    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._autoHideUiKey, v);
-  }
-
-  public static async storeUseProximityOpacity(v: boolean, storage?: UiStateStorage) {
-    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._useProximityOpacityKey, v);
-  }
-
-  public static async storeSnapWidgetOpacity(v: boolean, storage?: UiStateStorage) {
-    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._snapWidgetOpacityKey, v);
-  }
-}
-
-/** The default inactivity time.
- * @internal
- */
-export const INACTIVITY_TIME_DEFAULT = 3500;  /** Wait 3.5 seconds */
+import { InternalUiShowHideManager as internal, UiShowHideSettingsProvider } from "./InternalUiShowHideManager";
+// reexporting to ensure no breaking changes in barrel exports, remove when removing deprecated.
+export { UiShowHideSettingsProvider };
 
 /** Maintains Ui Show/Hide state. The `Ui` includes widgets, panels and the status bar.
  * @public
+ * @deprecated in 3.7. Use `UiFramework.visibility` property.
  */
 export class UiShowHideManager {
-  private static _isUiVisible: boolean = true;
-  private static _autoHideUi: boolean = true;
-  private static _showHidePanels: boolean = false;
-  private static _showHideFooter: boolean = false;
-  private static _inactivityTime: number = INACTIVITY_TIME_DEFAULT;
-  private static _timeout: NodeJS.Timeout;
-  private static _useProximityOpacity: boolean = false;
-  private static _snapWidgetOpacity: boolean = false;
 
   /** Determines if the Ui is visible */
   public static get isUiVisible() {
-    return UiShowHideManager._isUiVisible;
+    return internal.isUiVisible;
   }
   public static set isUiVisible(visible: boolean) {
-    UiShowHideManager._isUiVisible = visible;
+    internal.isUiVisible = visible;
   }
 
   /** @internal */
   public static setAutoHideUi(value: boolean) {
-    UiShowHideManager._autoHideUi = value;
+    return internal.setAutoHideUi(value);
   }
 
   /** @internal */
   public static setUseProximityOpacity(value: boolean) {
-    UiShowHideManager._useProximityOpacity = value;
+    return internal.setUseProximityOpacity(value);
   }
 
   /** @internal */
   public static setSnapWidgetOpacity(value: boolean) {
-    UiShowHideManager._snapWidgetOpacity = value;
+    return internal.setSnapWidgetOpacity(value);
   }
 
   /** Determines whether the `auto-hide Ui` feature is on. Defaults to false.
    * When true, the Ui automatically hides after a few seconds of inactivity.
    */
   public static get autoHideUi(): boolean {
-    return UiShowHideManager._autoHideUi;
+    return internal.autoHideUi;
   }
 
   public static set autoHideUi(autoHide: boolean) {
-    void UiShowHideSettingsProvider.storeAutoHideUi(autoHide);
-    UiShowHideManager._autoHideUi = autoHide;
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
+    internal.autoHideUi = autoHide;
   }
   /** Determines whether the widget panels are shown and hidden. Defaults to false. */
   public static get showHidePanels(): boolean {
-    return UiShowHideManager._showHidePanels;
+    return internal.showHidePanels;
   }
   public static set showHidePanels(showHide: boolean) {
-    UiShowHideManager._showHidePanels = showHide;
-    UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
+    internal.showHidePanels = showHide;
   }
 
   /** Determines whether the status bar is shown and hidden. Defaults to false. */
   public static get showHideFooter(): boolean {
-    return UiShowHideManager._showHideFooter;
+    return internal.showHideFooter;
   }
   public static set showHideFooter(showHide: boolean) {
-    UiShowHideManager._showHideFooter = showHide;
-    UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
+    internal.showHideFooter = showHide;
   }
 
   /** Determines the amount of inactivity time before the Ui is hidden. Defaults to 3.5 seconds. */
   public static get inactivityTime(): number {
-    return UiShowHideManager._inactivityTime;
+    return internal.inactivityTime;
   }
   public static set inactivityTime(time: number) {
-    UiShowHideManager._inactivityTime = time;
+    internal.inactivityTime = time;
   }
 
   /** Determines whether the proximity of the mouse should alter the opacity of a toolbar. Defaults to true. */
   public static get useProximityOpacity(): boolean {
-    return UiShowHideManager._useProximityOpacity;
+    return internal.useProximityOpacity;
   }
   public static set useProximityOpacity(value: boolean) {
-    UiShowHideManager._useProximityOpacity = value;
-    void UiShowHideSettingsProvider.storeUseProximityOpacity(value);
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
-    UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
+    internal.useProximityOpacity = value;
   }
 
   /** Determines whether the opacity of a toolbar should snap. Defaults to false. */
   public static get snapWidgetOpacity(): boolean {
-    return UiShowHideManager._snapWidgetOpacity;
+    return internal.snapWidgetOpacity;
   }
   public static set snapWidgetOpacity(value: boolean) {
-    UiShowHideManager._snapWidgetOpacity = value;
-    void UiShowHideSettingsProvider.storeSnapWidgetOpacity(value);
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
-    UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
+    internal.snapWidgetOpacity = value;
   }
 
   /** Handler for when a Frontstage is ready */
   public static handleFrontstageReady() {
     // istanbul ignore next
-    if (!UiShowHideManager._autoHideUi)
-      return;
-
-    UiShowHideManager.showUiAndResetTimer();
+    return internal.handleFrontstageReady();
   }
 
   /** Handler for when the mouse moves over the content area */
   public static handleContentMouseMove(_event?: React.MouseEvent<HTMLElement, MouseEvent>) {
-    if (!UiShowHideManager._autoHideUi)
-      return;
-
-    UiShowHideManager.showUiAndResetTimer();
+    return internal.handleContentMouseMove(_event);
   }
 
   /** Handler for when the mouse enters a widget */
   public static handleWidgetMouseEnter(_event?: React.MouseEvent<HTMLElement, MouseEvent>) {
-    if (!UiShowHideManager._autoHideUi)
-      return;
-
-    UiShowHideManager.showUiAndCancelTimer();
+    return internal.handleWidgetMouseEnter(_event);
   }
 
   /** Shows the Ui and resets the inactivity timer */
   public static showUiAndResetTimer() {
-    setTimeout(() => {
-      UiShowHideManager.showUi();
-      UiShowHideManager.resetTimer();
-    });
+    return internal.showUiAndResetTimer();
   }
 
   /** Shows the Ui and cancels the inactivity timer */
   public static showUiAndCancelTimer() {
-    setTimeout(() => {
-      UiShowHideManager.showUi();
-      UiShowHideManager.cancelTimer();
-    });
-  }
-
-  private static cancelTimer() {
-    clearTimeout(UiShowHideManager._timeout);
-  }
-
-  private static resetTimer() {
-    UiShowHideManager.cancelTimer();
-    UiShowHideManager._timeout = setTimeout(UiShowHideManager.hideUi, UiShowHideManager._inactivityTime);
-  }
-
-  private static showUi() {
-    UiFramework.setIsUiVisible(true);
-  }
-
-  private static hideUi() {
-    UiFramework.setIsUiVisible(false);
+    return internal.showUiAndCancelTimer();
   }
 
   /** @internal */
   public static terminate() {
-    UiShowHideManager.cancelTimer();
-    // Ensure that next use will have default values for tests.
-    UiShowHideManager._isUiVisible = true;
-    UiShowHideManager._autoHideUi = true;
-    UiShowHideManager._showHidePanels = false;
-    UiShowHideManager._showHideFooter = false;
-    UiShowHideManager._inactivityTime = INACTIVITY_TIME_DEFAULT;
-    UiShowHideManager._useProximityOpacity = false;
-    UiShowHideManager._snapWidgetOpacity = false;
+    return internal.terminate();
   }
 }
