@@ -36,7 +36,7 @@ export enum SyncUiEventId {
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
   /** Backstage has been closed.
-   * @deprecated Use BackstageEvent instead
+   * @deprecated in 3.7. Use BackstageEvent instead
    */
   BackstageCloseEvent = "backstagecloseevent",
   /** Backstage has been closed. */
@@ -81,12 +81,12 @@ export enum SyncUiEventId {
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
- * @public @deprecated use UiSyncEventArgs in appui-abstract instead
+ * @public @deprecated in 3.7, use UiSyncEventArgs in appui-abstract instead
  */
 export type SyncUiEventArgs = UiSyncEventArgs;
 
 /** SyncUi Event class.
- * @public @deprecated use UiSyncEvent in appui-abstract instead
+ * @public @deprecated in 3.7, use UiSyncEvent in appui-abstract instead
  */
 export type SyncUiEvent = UiSyncEvent;
 
