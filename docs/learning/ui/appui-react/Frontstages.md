@@ -12,14 +12,14 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 
 ### Implementing ContentGroupProvider
 
-[ContentGroupProvider]($appui-react) describes the contents that the Frontstage will contain.
+[ContentGroupProvider]($appui-react) describes the contents that the frontstage will contain.
 
 ```tsx
 [[include:Example_Viewport_Frontstage_Group_Provider_1]]
 [[include:Example_Viewport_Frontstage_Group_Provider_2]]
 ```
 
-### Registering Frontstage
+### Registering frontstage
 
 Stage contents are then wrapped by a [StandardFrontstageProvider]($appui-react) class and registered by [ConfigurableUiManager]($appui-react) for further use.
 
@@ -27,7 +27,7 @@ Stage contents are then wrapped by a [StandardFrontstageProvider]($appui-react) 
 [[include:Example_Register_Viewport_Frontstage]]
 ```
 
-Other Ui items (like toolbars) contained within the Frontstage should be registered separately using [UiItemsManager]($appui-abstract).
+Other UI items (like toolbars) contained within the frontstage should be linked with the frontstage using [UiItemsManager]($appui-abstract).
 
 ### Usage
 
@@ -38,12 +38,16 @@ determine if it should supply items such as tool button, widgets, or status bar 
 
 ### Implementing FrontstageProvider
 
+[FrontstageProvider]($appui-react) contains all the information about what is displayed on the frontstage. This includes the main content view as well as various side panels and tools passed as [FrontstageConfig]($appui-react) properties.
+
 ```tsx
 [[include:Example_Custom_Frontstage_Provider_1]]
 [[include:Example_Custom_Frontstage_Provider_2]]
 ```
 
 ### Implementing ContentControl
+
+[ContentControl]($appui-react) describes the main content view of the frontstage.
 
 ```tsx
 [[include:Example_Custom_Content_Control]]
