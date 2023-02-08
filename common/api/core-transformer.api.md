@@ -206,7 +206,7 @@ export interface IModelImportOptions {
 // @beta
 export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
-    readonly context: IModelCloneContext;
+    get context(): IModelCloneContext;
     detectElementDeletes(): Promise<void>;
     detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
@@ -254,7 +254,17 @@ export class IModelTransformer extends IModelExportHandler {
     processModel(sourceModeledElementId: Id64String): Promise<void>;
     processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): Promise<void>;
     processRelationships(baseRelClassFullName: string): Promise<void>;
-    processSchemas(): Promise<void>;
+    processSchemas({
+        /**
+        * Upgrade the profile of the target while transforming schemas.
+        * This can prevent errors when the source's schemas and/or profile are too new.
+        * This will close and reopen the target several times, and push changes.
+        * This does nothing if it is not a briefcase.
+        * @note Your original [BriefcaseDb]($backend) object will have been closed and is therefore unusable
+        */
+        doUpgrade, }?: {
+        doUpgrade?: boolean | undefined;
+    }): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     get provenanceDb(): IModelDb;
     static get provenanceElementAspectClasses(): (typeof Entity)[];
