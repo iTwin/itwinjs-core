@@ -1169,12 +1169,11 @@ export class IModelTransformer extends IModelExportHandler {
       Object.defineProperty(this.targetDb, "nativeDb", {
         get() {
           throw Error(
-            "This briefcase has been closed by the transformer.\n"
-            + "Was this briefcase the target of a transformation with `processSchemas`'s default options?\n"
+            "This briefcase has been closed by the transformer during `processSchemas`.\n"
             + "Since 4.0, `processSchemas`'s `doUpgrade` option by default closes the target you give it, in order "
             + "to upgrade schemas.\n"
             + "Either pass options like `processSchemas({doUpgrade: false})` to go back to the old default behavior, "
-            + "or get an open copy of the target back from the transformer with `IModelTransformer.reopenTarget()`."
+            + "or get the newly opened copy of the target back from the transformer with `IModelTransformer.targetDb`."
           );
         },
       });
@@ -1197,11 +1196,6 @@ export class IModelTransformer extends IModelExportHandler {
     } finally {
       IModelJsFs.removeSync(this._schemaExportDir);
     }
-  }
-
-  /** convenience method to reopen the target database after a transformation. */
-  public async reopenTarget(): Promise<IModelDb> {
-    return this.targetDb;
   }
 
   /** Cause all fonts to be exported from the source iModel and imported into the target iModel.

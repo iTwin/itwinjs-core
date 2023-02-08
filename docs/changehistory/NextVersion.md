@@ -47,6 +47,7 @@ The lower left is the original (smaller, inside) mesh with the (transparent) off
 
 ### @itwin/core-transformer
 
-[IModelTransformer.processSchemas]($transformer) will now upgrade schemas in (and the profile of) the target database by default with [BriefcaseDb.upgradeSchemas].
-This can be turned off in the options, like `myTransformer.processSchemas({ doUpgrade: false })`. Upgrading is recommended, but the new behavior will close the target
-during upgrade, and therefore to use it after the transformation, you must reopen it.
+[IModelTransformer.processSchemas]($transformer) will now upgrade schemas in (and the profile of) the target database by default with
+[BriefcaseDb.upgradeSchemas]. This can be turned off in the options, like `myTransformer.processSchemas({ doUpgrade: false })`.
+Upgrading is recommended, but the new behavior will close the target during upgrade, and therefore to use it and close it after, you
+must use the [IModelTransformer.targetDb]($transformer) property rather than the reference with which you initialized the transformer.
