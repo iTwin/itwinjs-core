@@ -2,6 +2,24 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/core-geometry_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "allow tolerance to be specified for curve-curve xy intersection"
+          },
+          {
+            "comment": "BSplineCurve3d.create validates input knots"
+          },
+          {
+            "comment": "Expose PathFragments to callers. Removal of some duplicated code."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/core-geometry_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",

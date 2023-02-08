@@ -1,6 +1,29 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+- Allow map-layer requiring authentication to be correctly initialized after a saved view restore.
+- Map-layers oauth2 requests optimization and improvements
+- Added new viewport event (onMapLayerScaleRangeVisibilityChanged); this event is fired, whenever the visibility of a tile tree changes based on the current viewport state.
+- Remove dependency on xml-js library in core-frontend.
+- Improved map-layer coordinate systems validation and error reporting.
+- Send single change event for deletion of selected/hilited elements.
+- Use new 'ProgressFunction' instead of 'ProgressCallback' when downloading briefcase or changes.
+- Use EmptyLocalization for localization in tests to increase test performance
+- Save the tool settings property before reinitialize the tool when a property change in the tool settings of the MeasureAreaByPointsTool
+- Fix greenUp flag for GLTF normal maps (set to true).
+- Promote ViewState3d.lookAt and Viewport.queryVisibleFeatures to public.
+- Deprecate IModelConnection.displayedExtents.
+- Prevent flickering skybox in synchronized viewports.
+- Add support for normal maps in iModel tiles.
+- Avoid creating unnecessary copies of tile trees for context reality models.
+- Make the contents of a Viewport react more smoothly when the containing div is resized."
+- React to RPC deprecations.
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
