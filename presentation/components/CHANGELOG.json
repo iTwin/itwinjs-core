@@ -2,6 +2,48 @@
   "name": "@itwin/presentation-components",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/presentation-components_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": " Use EmptyLocalization for localization in tests to increase test performance"
+          },
+          {
+            "comment": "Added support for initial filter to presentation instance filter builder"
+          },
+          {
+            "comment": "API promotions"
+          },
+          {
+            "comment": "Correctly render 'NavigationPropertyEditor' when it is used in dialog"
+          },
+          {
+            "comment": "Correctly handle navigation property value when converting 'PresentationInstanceFilter' into ECExpression"
+          },
+          {
+            "comment": "Fixed PresentationInstanceFilter to InstanceFilterDefinition coversion to use operator supported by ECExpressions"
+          },
+          {
+            "comment": "API promotion"
+          },
+          {
+            "comment": "Fix duplicate classes displayed in instance filter class selector"
+          },
+          {
+            "comment": "Added dialog for presentation instance filter"
+          },
+          {
+            "comment": "Deprecate `PresentationPropertyDataProvider` properties `includeFieldsWithNoValues` and `includeFieldsWithCompositeValues`. Should use `FilteringPropertyDataProvider` instead."
+          },
+          {
+            "comment": "Added API to enable hierarchy level filtering in trees using presentation library"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/presentation-components_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:28 GMT",

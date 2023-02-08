@@ -1,233 +1,227 @@
-# 3.5.0 Change Notes
+# 3.6.0 Change Notes
 
 Table of contents:
 
+- [API support policies](#api-support-policies)
+- [Electron 22 support](#electron-22-support)
 - [Display system](#display-system)
-  - [Reality model display customization](#reality-model-display-customization)
-  - [View padding](#view-padding)
-- [Presentation](#presentation)
-  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
-  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
-- [Element aspect ids](#element-aspect-ids)
-- [AppUi](#appui)
-- [New packages](#new-packages)
-  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
+  - [Point cloud shading](#point-cloud-shading)
+  - [Normal mapping](#normal-mapping)
+  - [Smooth viewport resizing](#smooth-viewport-resizing)
+  - [Pickable view overlays](#pickable-view-overlays)
+  - [Element clipping example](#element-clipping-example)
+  - [Support larger terrain meshes](#support-larger-terrain-meshes)
 - [Geometry](#geometry)
-  - [Polyface](#polyface)
-  - [Curves](#curves)
-- [Deprecations](#deprecations)
-  - [@itwin/appui-layout-react](#itwinappui-layout-react)
-  - [@itwin/appui-react](#itwinappui-react)
-  - [@itwin/components-react](#itwincomponents-react)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-common](#itwincore-common)
-  - [@itwin/core-geometry](#itwincore-geometry)
-  - [@itwin/core-transformer](#itwincore-transformer)
-  - [@itwin/presentation-backend](#itwinpresentation-backend)
+  - [Query mesh convexity](#query-mesh-convexity)
+- [Write-ahead logging](#write-ahead-logging)
+- [Presentation](#presentation)
+  - [Hierarchy levels filtering](#hierarchy-levels-filtering)
+  - [Grouping nodes HiliteSet](#grouping-nodes-hiliteset)
+- [API promotions](#api-promotions)
+- [API deprecations](#api-deprecations)
+
+## API support policies
+
+iTwin.js now documents the [official policies](../learning/api-support-policies.md) defining the level of stability and support afforded to its public APIs and each major release.
+
+## Electron 22 support
+
+In addition to already supported Electron versions, iTwin.js now supports [Electron 22](https://www.electronjs.org/blog/electron-22-0).
 
 ## Display system
 
-### Reality model display customization
+### Point cloud shading
 
-You can now customize various aspects of how a reality model is displayed within a [Viewport]($frontend) by applying your own [RealityModelDisplaySettings]($common) to the model. For contextual reality models, use [ContextRealityModel.displaySettings]($common); for persistent reality [Model]($backend)s, use [DisplayStyleSettings.setRealityModelDisplaySettings]($common).
+Point clouds can provide valuable real-world context when visualizing an iTwin, but it can often be difficult to discern individual features within the cloud of points - especially when the point cloud lacks color data. You can now accentuate the depth, shape, and surface of a point cloud using a technique called "eye-dome lighting" that uses the relative depths of the points to compute a lighting effect.
 
-For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
+Point cloud shading is specified by several properties of [RealityModelDisplaySettings.pointCloud]($common), all with names prefixed with `edl` (short for "eye-dome lighting"):
 
-Point clouds provide the following additional customizations:
+- [PointCloudDisplaySettings.edlMode]($common) enables the effect if set to "on" or "full".
+- [PointCloudDisplaySettings.edlStrength]($common) specifies the intensity of the effect.
+- [PointCloudDisplaySettings.edlRadius]($common) specifies the radius in pixels around each point that should be sampled to detect differences in depth.
+- [PointCloudDisplaySettings.edlFilter]($common) specifies whether to apply a filtering pass to smooth out the effect, when `edlMode` is set to "full".
 
-- [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
-- When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
-- [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
+Each point cloud in a view can have its own independent EDL settings. You can configure those settings via [ContextRealityModel.displaySettings]($common) for context reality models, and [DisplayStyleSettings.setRealityModelDisplaySettings]($common) for persistent reality models. Adjusting related settings like [PointCloudDisplaySettings.sizeMode]($common) and [PointCloudDisplaySettings.shape]($common) can influence the shading effect.
 
-### View padding
+A monochrome point cloud with (bottom) and without (top) shading:
 
-Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
+![Monochrome point cloud shading](./assets/edl-mono.jpg)
 
-Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
+A colorized point cloud with (bottom) and without (top) shading:
 
-```
-{paddingPercent: {left: .2, right: .2, top: .2, bottom: .2}}
-// is equivalent to
-{paddingPercent: .2}
-```
+![Colorized point cloud shading](./assets/edl-color.jpg)
 
-and
+### Normal mapping
 
-```
-{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
-// is equivalent to
-{paddingPercent: {right: .5, bottom: .5}
-```
+[Normal mapping](https://en.wikipedia.org/wiki/Normal_mapping) is a technique that simulates additional surface details by mapping a texture containing normal vectors onto a surface. [RenderMaterial]($common)s now support applying normal maps.
 
-Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
+You can create a [RenderMaterial]($common) with a normal map on the frontend via [RenderSystem.createRenderMaterial]($frontend). The normal map is specified by the [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend).
 
-The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
+To create a [RenderMaterialElement]($backend) with a normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend).
 
-Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
+The image below illustrates the effects of normal mapping. The cubes in the top row have no normal maps, while the cubes in the bottom row are normal mapped.
 
-## Presentation
+![Normal mapping](./assets/normal-maps.jpg)
 
-### Controlling in-memory cache sizes
+### Smooth viewport resizing
 
-The presentation library uses a number of SQLite connections, each of which have an associated in-memory page cache. Ability to control the size of these caches on the backend has been added to allow consumers fine-tune their configuration based on their memory restrictions and use cases.
+Previously, when a [Viewport]($frontend)'s canvas was resized there would be a delay of up to one second during which the viewport's contents would appear stretched or squished, before they were redrawn to match the new canvas dimensions. This was due to the unavailability of [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) in some browsers. Now that `ResizeObserver` is supported by all major browsers, we are able to use it to make the contents of the viewport update smoothly during a resize operation.
 
-The configuration is done when initializing [Presentation]($presentation-backend) or creating a [PresentationManager]($presentation-backend):
+### Pickable view overlays
 
-```ts
-Presentation.initialize({
-  caching: {
-    // use 8 megabytes page cache for worker connections to iModels
-    workerConnectionCacheSize: 8 * 1024 * 1024,
-    // use a disk-based hierarchy cache with a 4 megabytes in-memory page cache
-    hierarchies: {
-      mode: HierarchyCacheMode.Disk,
-      memoryCacheSize: 4 * 1024 * 1024,
-    },
-  },
-});
-```
+A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
 
-See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
+### Element clipping example
 
-### Changes to infinite hierarchy prevention
+In some cases it is useful to apply a [clipping volume](https://www.itwinjs.org/reference/core-common/views/viewdetails/clipvector/) to a view that mimics the shape of one or more elements. For example, you may have a view displaying a reality mesh captured from a real-world asset like a factory, and a design model representing the same asset, and wish to isolate the portions of the reality mesh corresponding to a series of pipe elements in the design model.
 
-The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
+display-test-app now provides an [example tool](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/ViewClipByElementGeometryTool.ts) demonstrating how this can be achieved. It uses [IModelConnection.generateElementMeshes]($frontend) to produce [Polyface]($core-geometry)s from one or more elements; decomposes them into a set of convex hulls using [VHACD.js](https://www.npmjs.com/package/vhacd-js); and creates a clipping volume from the hulls via [ConvexClipPlaneSet.createConvexPolyface]($core-geometry). The example tool can be accessed in display-test-app using the keyin `dta clip element geometry`.
 
-Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
+### Support larger terrain meshes
 
-The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
-
-#### Example
-
-Say, we have two instances A and B and they point to each other through a relationship:
-
-```
-A -> refers to -> B
-B -> refers to -> A
-```
-
-With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
-
-With previous approach the produced hierarchy "breaks" at the B node and looks like this:
-
-```
-+ A
-+--+ B
-```
-
-With the new approach we "break" at the duplicate A node:
-
-```
-+ A
-+--+ B
-   +--+ A
-```
-
-## Element aspects
-
-### Aspect Ids
-
-[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so the ids returned are not unique from all element ids and may collide.
-
-### ExternalSourceAspect find methods
-
-[ExternalSourceAspect.findBySource]($core-backend) is deprecated. Use [ExternalSourceAspect.findAllBySource]($core-backend) instead.
-
-An [Element]($core-backend) can have more than one ExternalSourceAspect with the same scope, kind, and identifier. Also, many elements could have ExternalSourceAspects with the same scope, kind, and identifier. Therefore, `ExternalSourceAspect.findAllBySource` returns an *array*.
-
-If an app expects there to be only one [ExternalSourceAspect]($core-backend) with a given scope, kind, and identifier in the iModel, it must check that the array returned by ExternalSourceAspect.findAllBySource contains only one item.
-
-To narrow the search to just the `ExternalSourceAspect`s on a single element, use an ECSql query, such as `select ecinstanceid from Bis.ExternalSourceAspect where scope.id=? and kind=? and identifier=? and element.id=?`. If only one such aspect is expected, verify that only one row is found.
-
-## AppUi
-
-### Setting allowed panel zones for widgets
-
-When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
-
-## New packages
-
-### @itwin/map-layers-formats
-
-A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeature` format which allows vector data published by [ArcGIS Feature services](https://enterprise.arcgis.com/en/server/latest/publish-services/windows/what-is-a-feature-service-.htm) to be displayed in a [Viewport]($frontend).
-
-To use this package, you must initialize it by calling [MapLayersFormats.initialize]($map-layers-formats) to register the additional formats. This should be done only **after** [IModelApp.startup]($frontend) has been called.
+Previously, [RealityMeshParams]($frontend) only supported 16-bit vertex indices, which limited the number of vertices that could be produced by a [TerrainMeshProvider]($frontend). That limit has been extended to 32 bits (the maximum supported by WebGL). The code has also been optimized to allocate only as many bytes per vertex index as required. For example, if a mesh contains fewer than 256 vertices, only one byte will be allocated per vertex index.
 
 ## Geometry
 
-### Polyface
+### Query mesh convexity
 
-The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
+A new method [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) permits testing the convexity of a mesh by inspecting the dihedral angles of all of its edges. For an example of its usage, see the [element clipping example](#element-clipping-example).
 
-### Curves
+## Write-ahead logging
 
-The methods [CurveCollection.projectedParameterRange]($core-geometry) and [CurvePrimitive.projectedParameterRange]($core-geometry) have been added for computing the range of fractional projection parameters of the instance curve(s) onto a `Ray3d`. The default implementation of the latter method returns undefined to avoid a circular dependency, so extenders of [CurvePrimitive]($core-geometry) should override as appropriate.
+Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_journal_mode) journal mode for writes to local briefcase files. It now uses [write-ahead logging](https://www.sqlite.org/wal.html) (WAL) mode. This change should be invisible to applications, other than performance of [IModelDb.saveChanges]($backend) should improve in most cases. However, there are a few subtle implications of this change that may affect existing applications:
 
-## Deprecations
+- Attempting to open more than one simultaneous writeable connections to the same briefcase will now fail on open. Previously, both opens would succeed, followed by a failure on the first attempted write by one or the other connection.
+- Failure to close a writeable briefcase may leave a "-wal" file. Previously, if a program crashed or exited with an open briefcase, it would leave the briefcase file as-of its last call to `IModelDb.saveChanges`. Now, there will be another file with the name of the briefcase with "-wal" appended. This is not a problem and the briefcase is completely intact, except that the briefcase file itself is not sufficient for copying (it will not include recent changes.) The "-wal" file will be used by future connections and will be deleted the next time the briefcase is successfully closed.
+- Attempting to copy an open-for-write briefcase file may not include recent changes. This scenario generally only arises for tests. If you wish to copy an open-for-write briefcase file, you must now call [IModelDb.performCheckpoint]($backend) first.
 
-### @itwin/appui-layout-react
+## Presentation
 
-All non-internal components are deprecated with their corresponding replacements available in `@itwin/appui-react` package. Going forward `@itwin/appui-layout-react` package is considered as internal implementation detail of the `@itwin/appui-react` package and should not be used directly.
+### Hierarchy levels filtering
 
-| Deprecated        | Replacement                                        |
-| ----------------- | -------------------------------------------------- |
-| `Dialog`          | [StatusBarDialog]($appui-react)                    |
-| `FooterIndicator` | [StatusBarIndicator]($appui-react)                 |
-| `FooterPopup`     | `popup` prop of [StatusBarIndicator]($appui-react) |
-| `FooterSeparator` | [StatusBarSeparator]($appui-react)                 |
-| `SafeAreaInsets`  | [SafeAreaInsets]($appui-react)                     |
-| `TitleBar`        | [StatusBarDialog.TitleBar]($appui-react)           |
+Ability to filter individual hierarchy levels was added for tree components that use [PresentationTreeDataProvider]($presentation-components). To enable this, [PresentationTreeRenderer]($presentation-components) should be passed to [ControlledTree]($components-react) through [ControlledTreeProps.treeRenderer]($components-react):
 
-### @itwin/appui-react
+```ts
+return <ControlledTree
+  // other props
+  treeRenderer={(treeProps) => <PresentationTreeRenderer {...treeProps} imodel={imodel} modelSource={modelSource} />}
+/>;
+```
 
-A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
-`FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
-`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`, `Zone`, `ZoneDef`.
+[PresentationTreeRenderer]($presentation-components) renders nodes with action buttons for applying and clearing filters. Some hierarchy levels might not be filterable depending on the presentation rules used to build them. In that case, action buttons for those hierarchy levels are not rendered. If applied filter does not produce any nodes, `There are no child nodes matching current filter` message is rendered in that hierarchy level.
 
-Pseudo components used by the [FrontstageProvider]($appui-react) are deprecated and replaced by corresponding configuration interfaces:
+![Filtered Tree](./assets/filtered-tree.jpg)
 
-| Component    | Replacement                      |
-| ------------ | -------------------------------- |
-| `Frontstage` | [FrontstageConfig]($appui-react) |
-| `Widget`     | [WidgetConfig]($appui-react)     |
-| `StagePanel` | [StagePanelConfig]($appui-react) |
+Dialog component for creating hierarchy level filter is opened when node's `Filter` button is clicked. This dialog allows to create complex filters with multiple conditions based on properties from instances that are represented by the nodes in that hierarchy level.
 
-Other deprecations and their replacements:
+![Filter Builder Dialog](./assets/filter-builder-dialog.jpg)
 
-| Deprecated             | Replacement                                |
-| ---------------------- | ------------------------------------------ |
-| `ActionItemButton`     | [ActionButton]($appui-abstract)            |
-| `ActivityMessagePopup` | Activity messages are set-up automatically |
-| `Backstage`            | [BackstageComposer]($appui-react)          |
-| `BackstageEvent`       | [BackstageManager.onToggled]($appui-react) |
-| `GroupButton`          | [GroupButton]($appui-abstract)             |
-| `Indicator`            | [StatusBarIndicator]($appui-react)         |
-| `ToolButton`           | [CommonToolbarItem]($appui-abstract)       |
-| `withSafeArea`         | [SafeAreaContext]($appui-react)            |
+### Grouping nodes HiliteSet
 
-### @itwin/components-react
+[HiliteSetProvider.getHiliteSet]($presentation-frontend) now supports getting [HiliteSet]($presentation-frontend) for grouping nodes. Previously, [HiliteSetProvider.getHiliteSet]($presentation-frontend) used to return empty [HiliteSet]($presentation-frontend) if called with key of the grouping node. Now it returns [HiliteSet]($presentation-frontend) for all the instances that are grouped under grouping node. This also means that now elements will be hilited in viewport using [Unified Selection](../presentation/unified-selection/index.md) when grouping node is selected in the tree.
 
-All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
+## API promotions
 
-### @itwin/core-backend
+The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' [stability contract](../learning/api-support-policies.md).
 
-The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
+### @itwin/core-bentley
 
-The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
- The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+- [AccessToken]($bentley)
 
 ### @itwin/core-common
 
-[Localization.getLocalizedStringWithNamespace]($common) is deprecated in favor of using [Localization.getLocalizedString]($common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
+- [AuthorizationClient]($common)
+- [FrustumPlanes]($common)
 
-### @itwin/core-geometry
+### @itwin/core-frontend
 
-The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
+- [Viewport.queryVisibleFeatures]($frontend)
+- [ViewState3d.lookAt]($frontend)
 
-### @itwin/core-transformer
+### @itwin/presentation-common
 
-[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
+- Presentation rules:
+  - [InstanceLabelOverridePropertyValueSpecification.propertySource]($presentation-common)
+  - [ChildNodeSpecificationBase.suppressSimilarAncestorsCheck]($presentation-common)
+  - [RequiredSchemaSpecification]($presentation-common) and its usages:
+    - [SubCondition.requiredSchemas]($presentation-common)
+    - [RuleBase.requiredSchemas]($presentation-common)
+    - [Ruleset.requiredSchemas]($presentation-common)
+- Content traversal - related APIs:
+  - [traverseContent]($presentation-common)
+  - [IContentVisitor]($presentation-common)
+- Selection scope computation - related APIs:
+  - [SelectionScopeProps]($presentation-common)
+  - [ComputeSelectionRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getElementProperties]($presentation-common)
+- Element properties request - related APIs:
+  - [ElementProperties]($presentation-common)
+  - [ElementPropertiesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.computeSelection]($presentation-common)
+- Content sources request - related APIs:
+  - [ContentSourcesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentSources]($presentation-common)
+- Content instance keys request - related APIs:
+  - [ContentInstanceKeysRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentInstanceKeys]($presentation-common)
+- [NestedContentField.relationshipMeaning]($presentation-common)
+- [ContentFlags.IncludeInputKeys]($presentation-common) and [Item.inputKeys]($presentation-common)
 
 ### @itwin/presentation-backend
 
-[PresentationManagerProps.mode]($presentation-backend) has been deprecated because there is no performance difference between [PresentationManager]($presentation-backend) working in `ReadOnly` or `ReadWrite` modes.
+- Presentation manager's caching related APIs:
+  - [HierarchyCacheMode]($presentation-backend)
+  - [HierarchyCacheConfig]($presentation-backend)
+  - [PresentationManagerCachingConfig.hierarchies]($presentation-backend) and [PresentationManagerCachingConfig.workerConnectionCacheSize]($presentation-backend)
+- [PresentationManager.getElementProperties]($presentation-backend) and [MultiElementPropertiesResponse]($presentation-backend)
+- [PresentationManager.getContentSources]($presentation-backend)
+- [PresentationManager.computeSelection]($presentation-backend)
+- [RulesetEmbedder]($presentation-backend) and related APIs
+
+### @itwin/presentation-frontend
+
+- [PresentationManager.getContentSources]($presentation-frontend)
+- [PresentationManager.getElementProperties]($presentation-frontend)
+- [PresentationManager.getContentInstanceKeys]($presentation-frontend)
+
+### @itwin/presentation-components
+
+- [FavoritePropertiesDataFilterer]($presentation-components)
+- [PresentationPropertyDataProvider.getPropertyRecordInstanceKeys]($presentation-components)
+- [PresentationTreeDataProviderProps.customizeTreeNodeItem]($presentation-components)
+- [PresentationTreeNodeLoaderProps.seedTreeModel]($presentation-components)
+
+## API deprecations
+
+### @itwin/core-bentley
+
+[ByteStream]($bentley)'s `next` property getters like [ByteStream.nextUint32]($bentley) and [ByteStream.nextFloat64]($bentley) have been deprecated and replaced with corresponding `read` methods like [ByteStream.readUint32]($bentley) and [ByteStream.readFloat64]($bentley). The property getters have the side effect of incrementing the stream's current read position, which can result in surprising behavior and may [trip up code optimizers](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593) that assume property access is free of side effects.
+
+Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is called. Code optimizers like [Angular](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593)'s may elide repeated calls to `next` assuming it will return the same value each time. Prefer to use the new [TransientIdSequence.getNext]($bentley) method instead.
+
+### @itwin/core-frontend
+
+[ScreenViewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
+
+[NativeApp.requestDownloadBriefcase]($frontend) parameter `progress` is deprecated in favor of `progressCallback` in [DownloadBriefcaseOptions]($frontend). Similarly, `progressCallback` in [PullChangesOptions]($frontend) is now deprecated and should be replaced with `downloadProgressCallback` in [PullChangesOptions]($frontend). Both new variables are of type [OnDownloadProgress]($frontend), which more accurately represents information reported during downloads.
+
+[IModelConnection.displayedExtents]($frontend) and [IModelConnection.expandDisplayedExtents]($frontend) are deprecated. The displayed extents are expanded every time a [ContextRealityModel]($common) is added to any view in the iModel, and never shrink. They were previously used to compute the viewed extents of every [SpatialViewState]($frontend), which could produce an unnecessarily large frustum resulting in graphical artifacts. Now each spatial view computes its extents based on the extents of the models it is currently displaying. `displayedExtents` is still computed as before to support existing users of the API, but its use is not recommended.
+
+### @itwin/core-backend
+
+[RenderMaterialElement.Params]($backend) is defined as a class, which makes it unwieldy to use. You can now use the interface [RenderMaterialElementParams]($backend) instead.
+
+### @itwin/appui-abstract
+
+[UiItemsProvider]($appui-abstract) and other AppUI specific types and APIs are deprecated and moved to `@itwin/appui-react` package.
+For a replacement in case of API rename consult @deprecated tag in the documentation.
+
+### @itwin/appui-react
+
+[ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
+
+[SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.
+
+### @itwin/presentation-common
+
+A bunch of `{api_name}JSON` interfaces, completely matching their sibling `{api_name}` definition, thus having no real benefit, have been forcing us to map back and forth between `{api_name}` and `{api_name}JSON` with `{api_name}.toJSON` and `{api_name}.fromJSON` helper functions. Majority of them are marked public as they're part of public RPC interface, but are generally not expected to be directly used by consumer code. They have been deprecated with the recommendation to use `{api_name}`.
