@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { createPortal } from 'react-dom';
+import { createPortal } from "react-dom";
 import { TreeModelSource, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { PresentationInstanceFilterInfo } from "../../instance-filter-builder/PresentationInstanceFilterBuilder";
@@ -54,16 +54,18 @@ export function PresentationTreeRenderer(props: PresentationTreeRendererProps) {
       <TreeRenderer {...restProps} nodeRenderer={filterableNodeRenderer} />
       {
         filterNode && filterNode.filtering && divRef.current
-          ? createPortal(<TreeNodeFilterBuilderDialog
-            imodel={imodel}
-            onApply={(info) => {
-              applyFilter(filterNode, info);
-              setFilterNode(undefined);
-            }}
-            onClose={() => { setFilterNode(undefined); }}
-            filteringInfo={filterNode.filtering}
-          />,
-            divRef.current.ownerDocument.body)
+          ? createPortal(
+            <TreeNodeFilterBuilderDialog
+              imodel={imodel}
+              onApply={(info) => {
+                applyFilter(filterNode, info);
+                setFilterNode(undefined);
+              }}
+              onClose={() => { setFilterNode(undefined); }}
+              filteringInfo={filterNode.filtering}
+            />,
+            divRef.current.ownerDocument.body
+          )
           : null
       }
     </div>
