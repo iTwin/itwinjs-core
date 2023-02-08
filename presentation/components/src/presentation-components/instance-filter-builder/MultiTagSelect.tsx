@@ -8,31 +8,38 @@ import Component, {
   components, ControlProps, IndicatorProps, MenuProps, MultiValueProps, OptionProps, Props, ValueContainerProps,
 } from "react-select";
 import { SvgCaretDown, SvgCheckmarkSmall, SvgCloseSmall } from "@itwin/itwinui-icons-react";
+import { useResizeObserver } from "@itwin/core-react";
 
 /** @internal */
 export function MultiTagSelect<Option>(props: Props<Option>) {
-  return <Component
-    {...props}
-    styles={{
-      control: () => ({ display: "grid", gridTemplateColumns: "auto auto", height: "41px", padding: "0 0 0 12px" }),
-      menu: () => ({ position: "absolute", zIndex: 9999 }),
-      option: () => ({}),
-      input: (style) => ({ ...style, order: -1, flex: 0 }),
-      valueContainer: (style) => ({ ...style, padding: 0, flexWrap: "nowrap" }),
-      indicatorsContainer: () => ({ marginLeft: "auto", display: "flex" }),
-      multiValue: (style) => ({ ...style, margin: 0 }),
-    }}
-    components={{
-      Control: TagSelectControl,
-      Menu: TagSelectMenu,
-      ValueContainer: TagSelectValueContainer,
-      MultiValue: TagMultiValue,
-      Option: TagSelectOption,
-      DropdownIndicator: TagSelectDropdownIndicator,
-      ClearIndicator: TagSelectClearIndicator,
-    }}
-    isMulti={true}
-  />;
+  const [width, setWidth] = React.useState<number>();
+  const selectRef = useResizeObserver(React.useCallback((newWidth) => { setWidth(newWidth); }, []));
+
+  return (<div ref={selectRef}>
+    <Component
+      {...props}
+      styles={{
+        control: () => ({ display: "grid", gridTemplateColumns: "auto auto", height: "41px", padding: "0 0 0 12px" }),
+        container: () => ({ width: "auto" }),
+        menu: () => ({ position: "absolute", zIndex: 9999, width }),
+        option: () => ({}),
+        input: (style) => ({ ...style, order: -1, flex: 0 }),
+        valueContainer: (style) => ({ ...style, padding: 0, flexWrap: "nowrap" }),
+        indicatorsContainer: () => ({ marginLeft: "auto", display: "flex" }),
+        multiValue: (style) => ({ ...style, margin: 0 }),
+      }}
+      components={{
+        Control: TagSelectControl,
+        Menu: TagSelectMenu,
+        ValueContainer: TagSelectValueContainer,
+        MultiValue: TagMultiValue,
+        Option: TagSelectOption,
+        DropdownIndicator: TagSelectDropdownIndicator,
+        ClearIndicator: TagSelectClearIndicator,
+      }}
+      isMulti={true}
+    />
+  </div>);
 }
 
 function TagSelectControl<Option>({ children, ...props }: ControlProps<Option>) {
