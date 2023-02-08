@@ -462,7 +462,7 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it.only("ModelSelector processChanges", async () => {
+  it("ModelSelector processChanges", async () => {
     const sourceIModelName = "ModelSelectorSource";
     const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
     let targetIModelId!: GuidString;
@@ -618,13 +618,14 @@ describe("IModelTransformerHub", () => {
       const branchIModelName = "RevSyncDeleteBranch";
       branchIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: branchIModelName, noLocks: true, version0: masterDb.pathName });
       assert.isTrue(Guid.isGuid(branchIModelId));
-      const branchDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId });
+      let branchDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId });
       await branchDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(branchDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
       const provenanceInitializer = new IModelTransformer(masterDb, branchDb, { wasSourceIModelCopiedToTarget: true });
       await provenanceInitializer.processSchemas();
       await provenanceInitializer.processAll();
       provenanceInitializer.dispose();
+      branchDb = provenanceInitializer.targetDb as BriefcaseDb;
       branchDb.saveChanges();
       await branchDb.pushChanges({ accessToken, description: "setup branch" });
 
