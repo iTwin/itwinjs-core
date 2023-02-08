@@ -5,16 +5,13 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-// cspell:word CWXY
-// cspell:word arctan
-// cspell:word Rodrigues
 
 import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
-// cspell:word CCWXY
 
+// cspell:words CWXY CCWXY arctan Rodrigues
 /**
  *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.
  *  * `XYZ` is not instantiable.
