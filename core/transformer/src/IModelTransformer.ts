@@ -330,6 +330,8 @@ export class IModelTransformer extends IModelExportHandler {
   public dispose(): void {
     Logger.logTrace(loggerCategory, "dispose()");
     this.context.dispose();
+    if (this._shouldCloseTargetAtDisposal)
+      this.targetDb.close();
   }
 
   /** Log current settings that affect IModelTransformer's behavior. */
@@ -1146,6 +1148,8 @@ export class IModelTransformer extends IModelExportHandler {
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
+  private _shouldCloseTargetAtDisposal = false;
+
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
@@ -1155,13 +1159,29 @@ export class IModelTransformer extends IModelExportHandler {
      * Upgrade the profile of the target while transforming schemas.
      * This can prevent errors when the source's schemas and/or profile are too new.
      * This will close and reopen the target several times, and push changes.
-     * This does nothing if it is not a briefcase
+     * This does nothing if it is not a briefcase.
+     * @note Your original [BriefcaseDb]($backend) object will have been closed and is therefore unusable
      */
     doUpgrade = true,
   } = {}): Promise<void> {
     if (doUpgrade && this.targetDb instanceof BriefcaseDb && !(this.targetDb instanceof StandaloneDb)) {
       const fileName = this.targetDb.pathName;
       this.targetDb.close();
+      // NOTE: it is potentially a breaking change but preferably the nativeDb getter in IModelDb will eventually throw
+      // rather than patching it on here
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      Object.defineProperty(this.targetDb, "nativeDb", {
+        get() {
+          throw Error(
+            "This briefcase has been closed by the transformer.\n"
+            + "Was this briefcase the target of a transformation with `processSchemas`'s default options?\n"
+            + "Since 4.0, `processSchemas`'s `doUpgrade` option by default closes the target you give it, in order "
+            + "to upgrade schemas.\n"
+            + "Either pass options like `processSchemas({doUpgrade: false})` to go back to the old default behavior, "
+            + "or get an open copy of the target back from the transformer with `IModelTransformer.reopenTarget()`."
+          );
+        },
+      });
       await BriefcaseDb.upgradeSchemas({ fileName });
       // it does change the type (drops readonly)
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -1169,6 +1189,7 @@ export class IModelTransformer extends IModelExportHandler {
       (this.importer.targetDb as BriefcaseDb) = this.targetDb;
       this._context = undefined; // free our invalidated context in case it was initialized
       await this.context.initialize(); // the getter will lazily create a new valid context
+      this._shouldCloseTargetAtDisposal = true;
     }
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
@@ -1181,6 +1202,12 @@ export class IModelTransformer extends IModelExportHandler {
     } finally {
       IModelJsFs.removeSync(this._schemaExportDir);
     }
+  }
+
+  /** convenience method to reopen the target database after a transformation. */
+  public reopenTarget(): IModelDb {
+    this._shouldCloseTargetAtDisposal = false; // we've passed the reference on, so don't close it.
+    return this.targetDb;
   }
 
   /** Cause all fonts to be exported from the source iModel and imported into the target iModel.
