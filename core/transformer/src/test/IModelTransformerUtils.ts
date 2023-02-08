@@ -1474,12 +1474,12 @@ export async function runWithCpuProfiler<F extends () => any>(
 }
 
 export function getProfileVersion(db: IModelDb): ProfileVersion {
-  const rows = db.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db' WHERE Name='SchemaVersion'", (s) => [...s]);
-  const profile = JSON.parse(rows[0][1]);
-  assert(profile.major);
-  assert(profile.minor);
-  assert(profile.sub1);
-  assert(profile.sub2);
+  const rows = db.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db' AND Name='SchemaVersion'", (s) => [...s]);
+  const profile = JSON.parse(rows[0].strData);
+  assert(profile.major !== undefined);
+  assert(profile.minor !== undefined);
+  assert(profile.sub1 !== undefined);
+  assert(profile.sub2 !== undefined);
   return profile;
 }
 

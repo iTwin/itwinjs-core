@@ -1160,7 +1160,7 @@ export class IModelTransformer extends IModelExportHandler {
      */
     doUpgrade = true,
   } = {}): Promise<void> {
-    if (doUpgrade && this.targetDb instanceof BriefcaseDb && !(this.targetDb instanceof StandaloneDb)) {
+    if (doUpgrade && this.targetDb instanceof BriefcaseDb) {
       const fileName = this.targetDb.pathName;
       this.targetDb.close();
       // NOTE: it is potentially a breaking change but preferably the nativeDb getter in IModelDb will eventually throw
@@ -1177,7 +1177,11 @@ export class IModelTransformer extends IModelExportHandler {
           );
         },
       });
-      await BriefcaseDb.upgradeSchemas({ fileName });
+      if (this.targetDb instanceof StandaloneDb) {
+        StandaloneDb.upgradeStandaloneSchemas(fileName);
+      } else {
+        await BriefcaseDb.upgradeSchemas({ fileName });
+      }
       // it does change the type (drops readonly)
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       (this.targetDb as BriefcaseDb) = await BriefcaseDb.open({ fileName });

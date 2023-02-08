@@ -2068,7 +2068,7 @@ describe("IModelTransformer", () => {
     noSystemSchemasTransformer.dispose();
   });
 
-  it.only("transform iModels with schema upgrade", async () => {
+  it("transform iModels with schema upgrade", async () => {
     // this seed has an old biscore, so we know that transforming an empty source (which starts with a fresh, updated biscore)
     // will cause an update to the old biscore in this target
     const oldDbPath = BackendTestUtils.IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
@@ -2077,14 +2077,17 @@ describe("IModelTransformer", () => {
     const newDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-New.bim");
     let newDb = SnapshotDb.createFrom(oldDb, newDbPath);
     newDb.close();
+    setToStandalone(newDbPath);
     StandaloneDb.upgradeStandaloneSchemas(newDbPath);
     newDb = SnapshotDb.openFile(newDbPath);
 
+    const bisCoreVersionInOld = oldDb.querySchemaVersion("BisCore")!;
+    const bisCoreVersionInNew = newDb.querySchemaVersion("BisCore")!;
     assert(
       Semver.lt(
-        Schema.toSemverString(oldDb.querySchemaVersion("BisCore")!),
-        Schema.toSemverString(newDb.querySchemaVersion("BisCore")!)),
-      "The 'old' database unexpectedly did not have an older version of BisCore"
+        Schema.toSemverString(bisCoreVersionInOld),
+        Schema.toSemverString(bisCoreVersionInNew)),
+      `The 'old' database with biscore version ${bisCoreVersionInOld} was not less than the 'new' database biscore of ${bisCoreVersionInNew}`
     );
 
     const oldDbProfileIsOlder = cmpProfileVersion( getProfileVersion(oldDb), getProfileVersion(newDb),) === -1;
@@ -2099,6 +2102,10 @@ describe("IModelTransformer", () => {
 
     const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-Target.bim");
 
+    const expectedFailureCases = [
+      { sourceDb: newDb, targetSeed: oldDb, doUpgrade: false },
+    ] as const;
+
     /* eslint-disable @typescript-eslint/indent */
     for (const sourceDb of sourceDbs)
     for (const targetSeed of targetSeeds)
@@ -2107,9 +2114,31 @@ describe("IModelTransformer", () => {
       if (IModelJsFs.existsSync(targetDbPath))
         IModelJsFs.unlinkSync(targetDbPath);
 
-      const targetDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
+      let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
+      targetDb.close();
+      setToStandalone(targetDbPath);
+      targetDb = StandaloneDb.openFile(targetDbPath);
+
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformer.processSchemas({ doUpgrade });
+      try {
+        await transformer.processSchemas({ doUpgrade });
+      } catch (err) {
+        const wasExpected = expectedFailureCases.find((c) =>
+          c.sourceDb.pathName === sourceDb.pathName
+          && c.targetSeed.pathName === targetSeed.pathName
+          && c.doUpgrade === doUpgrade
+        );
+        if (!wasExpected) {
+          // eslint-disable-next-line no-console
+          console.log([
+            "Unexpected failure:",
+            `sourceDb: ${sourceDb.pathName}`,
+            `targetSeed: ${targetSeed.pathName}`,
+            `doUpgrade: ${doUpgrade}`,
+          ].join("\n"));
+          throw err;
+        }
+      }
 
       transformer.dispose();
       transformer.targetDb.close();
