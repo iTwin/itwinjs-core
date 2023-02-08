@@ -14,8 +14,8 @@ There are several mechanisms available in BIS that domain authors can take advan
 * A Model can contain Elements.
 * An Element can be sub-modeled by a Model.
 * An Element can own child Elements.
-* A *Spatial Organizer* can hold an Element as part of a hierarchical spatial decomposition of a *Facility*, from the perspective of a specific discipline.
-* A *Physical System* can group member Elements as part of a hierarchical organization by sub-systems, from the perspective of a specific discipline.
+* An Element can be spatially organized by a *Spatial Organizer* into a hierarchy according to a specific discipline.
+* A *Physical System* can group member Elements as part of a hierarchical organization by sub-systems, according to a specific discipline.
 * The provenance of an Element can be traced back to an *External Source*, whose organization may be hierarchical.
 
 Each of these mechanism is intended to be used in specific circumstances which are explained in this chapter.
@@ -42,9 +42,9 @@ For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `D
 
 An Element can own child Elements. This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a *top-level* Element. An Element with a parent is considered a *child* Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child. A parent Element and all its children are required to be contained in the same model.
 
-### Element Held by Spatial Organizer
+### Element Organized by Spatial Organizer
 
-A Spatial Organizer, typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can *hold* Spatial Elements and aggregate other Spatial Structure elements.
+A [Spatial Organizer](../../domains/SpatialComposition.ecschema.md#ispatialorganizer), typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can *organize* (i.e. either *hold* or *reference*) Spatial Elements and aggregate other Spatial Structure elements.
 
 These concepts are part of the rules and patterns introduced by the [SpatialComposition](../../domains/spatialcomposition.ecschema/) schema. They aim to enable the modeling of the Spatial Structure of infrastructure.
 
