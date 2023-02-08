@@ -330,8 +330,6 @@ export class IModelTransformer extends IModelExportHandler {
   public dispose(): void {
     Logger.logTrace(loggerCategory, "dispose()");
     this.context.dispose();
-    if (this._shouldCloseTargetAtDisposal)
-      this.targetDb.close();
   }
 
   /** Log current settings that affect IModelTransformer's behavior. */
@@ -1148,8 +1146,6 @@ export class IModelTransformer extends IModelExportHandler {
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
-  private _shouldCloseTargetAtDisposal = false;
-
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
@@ -1189,7 +1185,6 @@ export class IModelTransformer extends IModelExportHandler {
       (this.importer.targetDb as BriefcaseDb) = this.targetDb;
       this._context = undefined; // free our invalidated context in case it was initialized
       await this.context.initialize(); // the getter will lazily create a new valid context
-      this._shouldCloseTargetAtDisposal = true;
     }
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
@@ -1205,8 +1200,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** convenience method to reopen the target database after a transformation. */
-  public reopenTarget(): IModelDb {
-    this._shouldCloseTargetAtDisposal = false; // we've passed the reference on, so don't close it.
+  public async reopenTarget(): Promise<IModelDb> {
     return this.targetDb;
   }
 
