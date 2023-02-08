@@ -24,7 +24,7 @@ export interface EditorPosition {
   /** Determines the column position for the type editor */
   columnIndex: number;
   /** Number of columns to occupy. Defaults to 1
-   * @deprecated in 2.x.
+   * @deprecated in 2.19. No longer necessary, ignored.
    */
   columnSpan?: number;
 }
