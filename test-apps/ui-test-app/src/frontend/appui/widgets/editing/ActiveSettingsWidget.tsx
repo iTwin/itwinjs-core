@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { ActiveSettingsManager, iModelInfoAvailableEvent } from "../../../api/ActiveSettingsManager";
 
 interface ActiveSettingsComponentState {
@@ -101,4 +101,4 @@ export class ActiveSettingsWidget extends WidgetControl {
     this.reactNode = <ActiveSettingsComponent />;
   }
 }
-ConfigurableUiManager.registerControl("ActiveSettings", ActiveSettingsWidget);
+UiFramework.controls.register("ActiveSettings", ActiveSettingsWidget);

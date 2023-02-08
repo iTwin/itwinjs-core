@@ -49,7 +49,7 @@ iTwin.js strives to support as many modern browsers as possible, though it requi
 
 ## Electron
 
-- Windows
+To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 4.0, Electron 23 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
 
 ## Mobile Native
 

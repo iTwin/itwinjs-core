@@ -11,10 +11,9 @@ import { render, screen } from "@testing-library/react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import TestUtils from "../TestUtils";
 import { ConfigurableUiContent } from "../../appui-react/configurableui/ConfigurableUiContent";
-import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
 import { FrameworkToolAdmin } from "../../appui-react/tools/FrameworkToolAdmin";
 import userEvent from "@testing-library/user-event";
-import { CursorInformation } from "../../appui-react";
+import { CursorInformation, UiFramework } from "../../appui-react";
 
 describe("ConfigurableUiContent", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
@@ -30,7 +29,7 @@ describe("ConfigurableUiContent", () => {
     render(<Provider store={TestUtils.store} >
       <ConfigurableUiContent />
     </Provider>);
-    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+    expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
 
     const toolAdmin = new FrameworkToolAdmin();
     let keyEvent = new KeyboardEvent("keydown", { key: "a" });

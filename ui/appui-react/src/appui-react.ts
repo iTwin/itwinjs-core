@@ -70,6 +70,16 @@ export * from "./appui-react/dialog/UiDataProvidedDialog";
 export * from "./appui-react/feedback/ValidationTextbox";
 export * from "./appui-react/feedback/ElementTooltip";
 
+export * from "./appui-react/framework/FrameworkBackstage";
+export * from "./appui-react/framework/FrameworkChildWindows";
+export * from "./appui-react/framework/FrameworkContent";
+export * from "./appui-react/framework/FrameworkControls";
+export * from "./appui-react/framework/FrameworkDialogs";
+export * from "./appui-react/framework/FrameworkFrontstages";
+export * from "./appui-react/framework/FrameworkKeyboardShortcuts";
+export * from "./appui-react/framework/FrameworkToolSettings";
+export * from "./appui-react/framework/FrameworkVisibility";
+
 export * from "./appui-react/frontstage/Frontstage";
 export * from "./appui-react/frontstage/FrontstageComposer";
 export * from "./appui-react/frontstage/FrontstageConfig";
