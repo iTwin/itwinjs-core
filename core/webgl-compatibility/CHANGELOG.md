@@ -1,6 +1,11 @@
 # Change Log - @itwin/webgl-compatibility
 
-This log was last generated on Thu, 26 Jan 2023 22:53:28 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+_Version update only_
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:28 GMT

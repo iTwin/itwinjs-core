@@ -2,6 +2,36 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/presentation-common_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "API promotions"
+          },
+          {
+            "comment": "Deprecate a number of `{api_name}JSON` interfaces in favor of sibling `{api_name}` interface"
+          },
+          {
+            "comment": "Take `InstanceFilterDefinition` instead of pure string ECExpression for hierarchy level filter"
+          },
+          {
+            "comment": "Allow specifying enum values in presentation rules as strings"
+          },
+          {
+            "comment": "Add APIs to get hierarchy level descriptor"
+          },
+          {
+            "comment": "Introduce unfilterable nodes and hierarchy levels"
+          },
+          {
+            "comment": "React to RPC deprecations."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/presentation-common_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:28 GMT",

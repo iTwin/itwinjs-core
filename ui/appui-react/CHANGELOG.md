@@ -1,6 +1,21 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:39 GMT
+
+### Updates
+
+- Expose AppUI specific types previously defined in @itwin/appui-abstract.
+- Deprecated tree components that were movet to '@itwin/tree-widget-react' package
+- Use EmptyLocalization for localization in tests to increase test performance
+- Deprecate UI1.0 related properties.
+- React to RPC deprecations.
+- Add viewportRef as a props for the FloatingWidgetComponent. Caller might be needing to grab a reference to the viewport. Also, change the initialViewState to allow passing a function that returns a ViewState
+- Use React.ForwardedRef rather than just a callback.
+- Issue #4879: Make sure floating viewports properly set their content as active and display the active view highlight bar.
+- Fix floating widget offset issue.
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
