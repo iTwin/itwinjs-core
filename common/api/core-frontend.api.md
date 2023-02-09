@@ -264,6 +264,7 @@ import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
+import { RenderType } from '@itwin/webgl-compatibility';
 import { RgbColor } from '@itwin/core-common';
 import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
@@ -4594,7 +4595,7 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     releaseMapTileUsage(): void;
     // (undocumented)
-    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus;
+    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus;
     // (undocumented)
     setContent(content: ImageryTileContent): void;
     // (undocumented)
@@ -4623,7 +4624,7 @@ export class ImageryMapTileTree extends RealityTileTree {
     // (undocumented)
     get isContentUnbounded(): boolean;
     // (undocumented)
-    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus;
+    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus;
     // (undocumented)
     protected _selectTiles(_args: TileDrawArgs): Tile[];
     // (undocumented)
@@ -6100,6 +6101,8 @@ export class MapTile extends RealityTile {
     protected _heightRange: Range1d | undefined;
     // @internal
     get hiddenImageryTiles(): ImageryMapTile[] | undefined;
+    // @internal
+    get highResolutionReplacementTiles(): ImageryMapTile[] | undefined;
     // @internal (undocumented)
     get imageryIsReady(): boolean;
     // @internal (undocumented)
@@ -6239,7 +6242,7 @@ export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
     // @internal
-    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number): void;
+    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean): void;
     // @internal (undocumented)
     addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
     // @internal (undocumented)
@@ -9210,13 +9213,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     get supportsCreateImageBitmap(): boolean;
     // @internal (undocumented)
-    get supportsIndexedEdges(): boolean;
-    // @internal (undocumented)
-    get supportsInstancing(): boolean;
-    // @internal (undocumented)
     get supportsLogZBuffer(): boolean;
-    // @internal (undocumented)
-    get supportsNonuniformScaledInstancing(): boolean;
     waitForAllExternalTextures(): Promise<void>;
 }
 
@@ -9237,13 +9234,10 @@ export namespace RenderSystem {
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
         errorOnMissingUniform?: boolean;
-        // @internal
-        filterMapDrapeTextures?: boolean;
-        // @internal
-        filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
         planProjections?: boolean;
         preserveShaderSourceCode?: boolean;
+        // @deprecated
         useWebGL2?: boolean;
     }
 }
@@ -9535,6 +9529,7 @@ export interface ScreenSpaceEffectBuilder {
     addUniformArray: (params: UniformArrayParams) => void;
     addVarying: (name: string, type: VaryingType) => void;
     finish: () => void;
+    // @deprecated
     readonly isWebGL2: boolean;
     shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
 }

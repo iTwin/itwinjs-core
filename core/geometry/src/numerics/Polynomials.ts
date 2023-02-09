@@ -1677,6 +1677,30 @@ export class SmallSystem {
     return undefined;
   }
   /**
+   * Compute the intersection of three planes.
+   * @param xyzA point on the first plane
+   * @param normalA normal of the first plane
+   * @param xyzB point on the second plane
+   * @param normalB normal of the second plane
+   * @param xyzC point on the third plane
+   * @param normalC normal of the third plane
+   * @param result optional result
+   * @returns intersection point of the three planes (as a Vector3d), or undefined if at least two planes are parallel.
+   */
+  public static intersect3Planes(
+    xyzA: Point3d, normalA: Vector3d,
+    xyzB: Point3d, normalB: Vector3d,
+    xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined {
+      return this.linearSystem3d (
+        normalA.x, normalA.y, normalA.z,
+        normalB.x, normalB.y, normalB.z,
+        normalC.x, normalC.y, normalC.z,
+        Geometry.dotProductXYZXYZ (xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
+        Geometry.dotProductXYZXYZ (xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
+        Geometry.dotProductXYZXYZ (xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
+    }
+
+  /**
    * * in rowB, replace `rowB[j] += a * rowB[pivot] * rowA[j] / rowA[pivot]` for `j>pivot`
    * @param rowA row that does not change
    * @param pivotIndex index of pivot (divisor) in rowA.

@@ -800,9 +800,26 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (sector.uv)
       sector.uvIndex = this._polyface.addParam(sector.uv);
   }
+  private addSectorTriangle(sectorA0: FacetSector, sectorA1: FacetSector, sectorA2: FacetSector) {
+    if (sectorA0.xyz.isAlmostEqual(sectorA1.xyz)
+      || sectorA1.xyz.isAlmostEqual(sectorA2.xyz)
+      || sectorA2.xyz.isAlmostEqual(sectorA0.xyz)) {
+      // trivially degenerate triangle !!! skip !!!
+    } else {
+      if (this._options.needNormals)
+        this.addIndexedTriangleNormalIndexes(sectorA0.normalIndex, sectorA1.normalIndex, sectorA2.normalIndex);
+      if (this._options.needParams)
+        this.addIndexedTriangleParamIndexes(sectorA0.uvIndex, sectorA1.uvIndex, sectorA2.uvIndex);
+      this.addIndexedTrianglePointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorA2.xyzIndex);
+      this._polyface.terminateFacet();
+    }
+  }
   private addSectorQuadA01B01(sectorA0: FacetSector, sectorA1: FacetSector, sectorB0: FacetSector, sectorB1: FacetSector) {
     if (sectorA0.xyz.isAlmostEqual(sectorA1.xyz) && sectorB0.xyz.isAlmostEqual(sectorB1.xyz)) {
       // ignore null quad !!
+    } else if (this._options.shouldTriangulate) {
+      this.addSectorTriangle(sectorA0, sectorA1, sectorB1);
+      this.addSectorTriangle(sectorB1, sectorB0, sectorA0);
     } else {
       if (this._options.needNormals)
         this.addIndexedQuadNormalIndexes(sectorA0.normalIndex, sectorA1.normalIndex, sectorB0.normalIndex, sectorB1.normalIndex);
@@ -810,10 +827,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         this.addIndexedQuadParamIndexes(sectorA0.uvIndex, sectorA1.uvIndex, sectorB0.uvIndex, sectorB1.uvIndex);
       this.addIndexedQuadPointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorB0.xyzIndex, sectorB1.xyzIndex);
       this._polyface.terminateFacet();
-
     }
-
   }
+
   /** Add facets between lineStrings with matched point counts.
    * * surface normals are computed from (a) curve tangents in the linestrings and (b)rule line between linestrings.
    * * Facets are announced to addIndexedQuad.
@@ -884,12 +900,29 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
     const numPoints = pointA.length;
     for (let i = 1; i < numPoints; i++) {
-      if (pointA.atUncheckedIndex(i - 1) !== pointA.atUncheckedIndex(i) || pointB.atUncheckedIndex(i - 1) !== pointB.atUncheckedIndex(i)) {
-        this.addIndexedQuadPointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i));
-        if (normalA && normalB)
-          this.addIndexedQuadNormalIndexes(normalA.atUncheckedIndex(i - 1), normalA.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1), normalB.atUncheckedIndex(i));
-        if (paramA && paramB)
-          this.addIndexedQuadParamIndexes(paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i));
+      if (this.options.shouldTriangulate) {
+        if (distinctIndices(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i))) {
+          this.addIndexedTrianglePointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i));
+          if (normalA && normalB)
+            this.addIndexedTriangleNormalIndexes(normalA.atUncheckedIndex(i - 1), normalA.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1));
+          if (paramA && paramB)
+            this.addIndexedTriangleParamIndexes(paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1));
+        }
+        if (distinctIndices(pointB.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i - 1))) {
+          this.addIndexedTrianglePointIndexes(pointA.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1));
+          if (normalA && normalB)
+            this.addIndexedTriangleNormalIndexes(normalA.atUncheckedIndex(i - 1), normalB.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1));
+          if (paramA && paramB)
+            this.addIndexedTriangleParamIndexes(paramA.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1));
+        }
+      } else {
+        if (pointA.atUncheckedIndex(i - 1) !== pointA.atUncheckedIndex(i) || pointB.atUncheckedIndex(i - 1) !== pointB.atUncheckedIndex(i)) {
+          this.addIndexedQuadPointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i));
+          if (normalA && normalB)
+            this.addIndexedQuadNormalIndexes(normalA.atUncheckedIndex(i - 1), normalA.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1), normalB.atUncheckedIndex(i));
+          if (paramA && paramB)
+            this.addIndexedQuadParamIndexes(paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i));
+        }
         this._polyface.terminateFacet();
       }
     }
@@ -1960,4 +1993,8 @@ function resolveToIndexedXYZCollectionOrCarrier(points: Point3d[] | LineString3d
   if (points instanceof LineString3d)
     return points.packedPoints;
   return points;
+}
+
+function distinctIndices(i0: number, i1: number, i2: number): boolean {
+  return i0 !== i1 && i1 !== i2 && i2 !== i0;
 }

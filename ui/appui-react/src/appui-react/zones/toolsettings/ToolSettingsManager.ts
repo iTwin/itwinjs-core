@@ -6,154 +6,69 @@
  * @module ToolSettings
  */
 
-import { IModelApp, InteractiveTool } from "@itwin/core-frontend";
-import { DialogItem, DialogPropertySyncItem, UiEvent } from "@itwin/appui-abstract";
-import { focusIntoContainer } from "@itwin/core-react";
-import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
-
-// -----------------------------------------------------------------------------
-// Events
-// -----------------------------------------------------------------------------
-
-/** Sync Tool Settings Properties Event Args interface.
- * @public
- */
-export interface SyncToolSettingsPropertiesEventArgs {
-  toolId: string;
-  syncProperties: DialogPropertySyncItem[];
-}
-
-/** Sync Tool Settings Properties Event class.
- * @public
- */
-export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> { }
-
-// -----------------------------------------------------------------------------
-// ToolSettingsManager class
-// -----------------------------------------------------------------------------
+import { InteractiveTool } from "@itwin/core-frontend";
+import { DialogItem, UiEvent } from "@itwin/appui-abstract";
+import { SyncToolSettingsPropertiesEvent } from "../../framework/FrameworkToolSettings";
+import { InternalToolSettingsManager as internal } from "./InternalToolSettingsManager";
 
 /** Tool Settings Manager class. Used to generate UI components for Tool Settings.
  * @public
+ * @deprecated in 3.7. Use `UiFramework.toolSettings` property.
  */
 export class ToolSettingsManager {
-  private static _useDefaultToolSettingsProvider = false;
-  private static _toolIdForToolSettings: string = "";
-  private static _activeToolLabel: string = "";
-  private static _activeToolDescription: string = "";
-
-  // istanbul ignore next
-  private static syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void {
-    ToolSettingsManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
-  }
-
-  // istanbul ignore next
-  private static reloadToolSettingsProperties(): void {
-    ToolSettingsManager.onReloadToolSettingsProperties.emit();
-  }
-
-  private static dispatchSyncUiEvent(syncEventId: string, useImmediateDispatch?: boolean): void {
-    if (useImmediateDispatch)
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncEventId);
-    else
-      SyncUiEventDispatcher.dispatchSyncUiEvent(syncEventId);
-  }
-
-  /** Initializes the ToolSettingsManager */
+  /** Initializes the ToolSettingsManager
+   * @deprecated in 3.7. This is called internally.
+   */
   public static initialize() {
-    // istanbul ignore else
-    if (IModelApp && IModelApp.toolAdmin) {
-      IModelApp.toolAdmin.toolSettingsChangeHandler = ToolSettingsManager.syncToolSettingsProperties;
-      IModelApp.toolAdmin.reloadToolSettingsHandler = ToolSettingsManager.reloadToolSettingsProperties;
-      IModelApp.toolAdmin.toolSyncUiEventDispatcher = ToolSettingsManager.dispatchSyncUiEvent;
-    }
+    return internal.initialize();
   }
 
   /** clear cached Tool Settings properties. */
   public static clearToolSettingsData() {
-    ToolSettingsManager.useDefaultToolSettingsProvider = false;
-    ToolSettingsManager._activeToolLabel = "";
-    ToolSettingsManager._activeToolDescription = "";
-    ToolSettingsManager._toolIdForToolSettings = "";
+    return internal.clearToolSettingsData();
   }
 
   /** Cache Tool Settings properties */
   public static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
-    ToolSettingsManager.clearToolSettingsData();
-    // istanbul ignore else
-    if (toolLabel)
-      ToolSettingsManager._activeToolLabel = toolLabel;
-
-    // istanbul ignore else
-    if (toolDescription)
-      ToolSettingsManager._activeToolDescription = toolDescription;
-
-    /* istanbul ignore else */
-    if (toolSettingsProperties && toolSettingsProperties.length > 0) {
-      // istanbul ignore else
-      if (toolId)
-        ToolSettingsManager._toolIdForToolSettings = toolId;
-
-      ToolSettingsManager._useDefaultToolSettingsProvider = true;
-      return true;
-    }
-    return false;
+    return internal.initializeToolSettingsData(toolSettingsProperties, toolId, toolLabel, toolDescription);
   }
 
   /** Set of data used in Tool Settings for the specified tool. The tool specified should be the "active" tool.
    */
-  public static initializeDataForTool(tool: InteractiveTool) {
-    ToolSettingsManager.initializeToolSettingsData(tool.supplyToolSettingsProperties(), tool.toolId, tool.flyover, tool.description);
+  public static initializeDataForTool(tool: InteractiveTool): void {
+    return internal.initializeDataForTool(tool);
   }
 
   /** Returns the toolSettings properties that can be used to populate the tool settings widget. */
   public static get toolSettingsProperties(): DialogItem[] {
-    if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolSettingsManager._toolIdForToolSettings) {
-      const properties = IModelApp.toolAdmin.activeTool.supplyToolSettingsProperties();
-      // istanbul ignore else
-      if (properties)
-        return properties;
-    }
-
-    return [];
+    return internal.toolSettingsProperties;
   }
 
   /** Returns true if the Tool Settings are to be auto populated from the toolSettingsProperties.
    * The setter is chiefly for testing.
    */
-  public static get useDefaultToolSettingsProvider(): boolean { return ToolSettingsManager._useDefaultToolSettingsProvider; }
-  public static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean) { ToolSettingsManager._useDefaultToolSettingsProvider = useDefaultToolSettings; }
+  public static get useDefaultToolSettingsProvider(): boolean { return internal.useDefaultToolSettingsProvider; }
+  public static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean) { internal.useDefaultToolSettingsProvider = useDefaultToolSettings; }
 
   /** The name of the active tool. This is typically the flyover text specified for the tool. */
-  public static get activeToolLabel(): string { return ToolSettingsManager._activeToolLabel; }
-  public static set activeToolLabel(label: string) { ToolSettingsManager._activeToolLabel = label; }
+  public static get activeToolLabel(): string { return internal.activeToolLabel; }
+  public static set activeToolLabel(label: string) { internal.activeToolLabel = label; }
 
   /** Returns the description of the active tool. */
-  public static get activeToolDescription(): string { return ToolSettingsManager._activeToolDescription; }
+  public static get activeToolDescription(): string { return internal.activeToolDescription; }
 
   /** Get ToolSettings Properties sync event. */
-  public static readonly onSyncToolSettingsProperties = new SyncToolSettingsPropertiesEvent();
-  public static readonly onReloadToolSettingsProperties = new UiEvent<void>();
+  public static get onSyncToolSettingsProperties(): SyncToolSettingsPropertiesEvent { return internal.onSyncToolSettingsProperties; }
+  public static get onReloadToolSettingsProperties(): UiEvent<void> { return internal.onReloadToolSettingsProperties; }
 
   /** Gets the Id of the active tool. If a tool is not active, blank is returned.
    * @return  Id of the active tool, or blank if one is not active.
    */
   public static get toolIdForToolSettings(): string {
-    return ToolSettingsManager._toolIdForToolSettings;
+    return internal.toolIdForToolSettings;
   }
 
   public static focusIntoToolSettings(): boolean {
-    let divElement = document.querySelector("div.nz-toolSettings-docked");
-    if (divElement) {
-      if (focusIntoContainer(divElement as HTMLDivElement))
-        return true;
-    }
-
-    divElement = document.querySelector("div.uifw-tool-settings-grid-container");
-    if (divElement) {
-      if (focusIntoContainer(divElement as HTMLDivElement))
-        return true;
-    }
-
-    return false;
+    return internal.focusIntoToolSettings();
   }
 }

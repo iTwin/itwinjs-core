@@ -9,7 +9,7 @@ import {
   ControlledTree, DelayLoadedTreeNodeItem, EditableTreeDataProvider, SelectionMode, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
   TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
 } from "@itwin/components-react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, ContentControl, UiFramework } from "@itwin/appui-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export class TreeExampleContentControl extends ContentControl {
@@ -104,4 +104,4 @@ const createNodes = (n: number, label: string, levels: number, hierarchy: Simple
   hierarchy.set(parentId, nodes);
 };
 
-ConfigurableUiManager.registerControl("TreeExampleContent", TreeExampleContentControl);
+UiFramework.controls.register("TreeExampleContent", TreeExampleContentControl);

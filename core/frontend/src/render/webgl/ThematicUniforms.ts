@@ -208,6 +208,6 @@ export class ThematicUniforms implements WebGLDisposable {
 
 function _getGradientDimension(): number {
   const preferDimension = 8192;
-  const maxDimension = System.instance.capabilities.maxTextureSize;
+  const maxDimension = System.instance.maxTextureSize;
   return (preferDimension > maxDimension) ? maxDimension : preferDimension;
 }

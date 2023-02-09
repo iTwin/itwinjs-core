@@ -11,7 +11,6 @@ import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { System } from "./System";
 import { Texture2DData, Texture2DHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
@@ -23,10 +22,10 @@ interface ThematicSensorsTexture {
   readonly data: Texture2DData;
 }
 
-/** Maintains a texture representing a list of thematic sensors.
+/** Maintains a floating-point texture representing a list of thematic sensors.
  * @internal
  */
-export abstract class ThematicSensors implements WebGLDisposable {
+export class ThematicSensors implements WebGLDisposable {
   private readonly _texture: ThematicSensorsTexture;
   /** Used for writing to texture data. */
   private readonly _view: DataView;
@@ -57,7 +56,7 @@ export abstract class ThematicSensors implements WebGLDisposable {
         target.plan.thematic.sensorSettings.distanceCutoff);
     }
 
-    const obj = System.instance.capabilities.supportsTextureFloat ? FloatSensors.createFloat(target, range, sensors) : PackedSensors.createPacked(target, range, sensors);
+    const obj = this.createFloat(target, range, sensors);
     obj._update(obj.target.uniforms.frustum.viewMatrix);
     return obj;
   }
@@ -108,7 +107,14 @@ export abstract class ThematicSensors implements WebGLDisposable {
     this._view = new DataView(texture.data.buffer);
   }
 
-  protected abstract append(value: number): void;
+  public static createFloat(target: Target, range: Range3d, sensors: ThematicDisplaySensor[]): ThematicSensors {
+    const data = new Float32Array(sensors.length * 4);
+    const handle = Texture2DHandle.createForData(1, sensors.length, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    assert(undefined !== handle);
+    return new this({ handle, data }, target, range, sensors);
+  }
+
+  protected append(value: number) { this.appendFloat(value); }
 
   protected appendFloat(value: number): void {
     this._view.setFloat32(this._curPos, value, true);
@@ -131,61 +137,6 @@ export abstract class ThematicSensors implements WebGLDisposable {
   }
 
   private appendSensor(position: Point3d, value: number): void { this.appendValues(position.x, position.y, position.z, value); }
-}
-
-/** Stores thematic sensors in floating-point texture.
- * @internal
- */
-class FloatSensors extends ThematicSensors {
-  public static createFloat(target: Target, range: Range3d, sensors: ThematicDisplaySensor[]): ThematicSensors {
-    const data = new Float32Array(sensors.length * 4);
-    const handle = Texture2DHandle.createForData(1, sensors.length, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
-    assert(undefined !== handle);
-    return new FloatSensors({ handle, data }, target, range, sensors);
-  }
-
-  protected append(value: number) { this.appendFloat(value); }
-
-  private constructor(texture: ThematicSensorsTexture, target: Target, range: Range3d, sensors: ThematicDisplaySensor[]) {
-    super(texture, target, range, sensors);
-  }
-}
-
-/** Stores thematic sensors packed into RGBA texture.
- * @internal
- */
-class PackedSensors extends ThematicSensors {
-  public static createPacked(target: Target, range: Range3d, sensors: ThematicDisplaySensor[]): ThematicSensors {
-    const data = new Uint8Array(sensors.length * 4 * 4);
-    const handle = Texture2DHandle.createForData(4, sensors.length, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
-    assert(undefined !== handle);
-    return new PackedSensors({ handle, data }, target, range, sensors);
-  }
-
-  protected append(value: number) {
-    const sign = value < 0 ? 1 : 0;
-    value = Math.abs(value);
-    const exponent = Math.floor(Math.log10(value)) + 1;
-    value = value / Math.pow(10, exponent);
-
-    const bias = 38;
-    let temp = value * 256;
-    const b0 = Math.floor(temp);
-    temp = (temp - b0) * 256;
-    const b1 = Math.floor(temp);
-    temp = (temp - b1) * 256;
-    const b2 = Math.floor(temp);
-    const b3 = (exponent + bias) * 2 + sign;
-
-    this.appendUint8(b0);
-    this.appendUint8(b1);
-    this.appendUint8(b2);
-    this.appendUint8(b3);
-  }
-
-  private constructor(texture: ThematicSensorsTexture, target: Target, range: Range3d, sensors: ThematicDisplaySensor[]) {
-    super(texture, target, range, sensors);
-  }
 }
 
 function _sensorRadiusAffectsRange(sensor: ThematicDisplaySensor, sensorRadius: number, range: Range3d) {
