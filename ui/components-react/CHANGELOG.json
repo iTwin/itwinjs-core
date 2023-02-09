@@ -2,6 +2,36 @@
   "name": "@itwin/components-react",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/components-react_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use EmptyLocalization for localization in tests to increase test performance"
+          },
+          {
+            "comment": "API promotion"
+          },
+          {
+            "comment": "API promotion"
+          },
+          {
+            "comment": "Fixed rule rendering in 'PropertyFilterBuilder' component to not render symbol '0' with 'IS TRUE' operator."
+          },
+          {
+            "comment": "`PropertyFilterBuilder`: Do not show rule group operator if there are less than 2 rules"
+          },
+          {
+            "comment": "Replace inline require with a top-level import"
+          },
+          {
+            "comment": "Fixed 'FilteringInput' placeholder text localization"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/components-react_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",
