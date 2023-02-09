@@ -1158,7 +1158,7 @@ export class IModelTransformer extends IModelExportHandler {
      * This does nothing if it is not a briefcase.
      * @note Your original [BriefcaseDb]($backend) object will have been closed and is therefore unusable
      */
-    doUpgrade = true,
+    doUpgrade = false,
   } = {}): Promise<void> {
     if (doUpgrade && this.targetDb instanceof BriefcaseDb) {
       const fileName = this.targetDb.pathName;

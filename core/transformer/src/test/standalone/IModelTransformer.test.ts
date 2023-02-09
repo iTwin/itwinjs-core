@@ -2024,7 +2024,7 @@ describe("IModelTransformer", () => {
     noSystemSchemasTransformer.dispose();
   });
 
-  it("transform iModels with schema upgrade", async () => {
+  it("transform iModels with profile upgrade", async () => {
     const oldDbPath = BackendTestUtils.IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const oldDb = SnapshotDb.openFile(oldDbPath);
 
@@ -2044,7 +2044,7 @@ describe("IModelTransformer", () => {
       `The 'old' database with biscore version ${bisCoreVersionInOld} was not less than the 'new' database biscore of ${bisCoreVersionInNew}`
     );
 
-    const oldDbProfileIsOlder = cmpProfileVersion( getProfileVersion(oldDb), getProfileVersion(newDb),) === -1;
+    const oldDbProfileIsOlder = cmpProfileVersion(getProfileVersion(oldDb), getProfileVersion(newDb)) === -1;
     assert(
       oldDbProfileIsOlder,
       "The 'old' database unexpectedly did not have an older profile version"
@@ -2071,11 +2071,13 @@ describe("IModelTransformer", () => {
       let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
       targetDb.close();
       setToStandalone(targetDbPath);
+      if (doUpgrade)
+        StandaloneDb.upgradeStandaloneSchemas(targetDbPath);
       targetDb = StandaloneDb.openFile(targetDbPath);
 
       const transformer = new IModelTransformer(sourceDb, targetDb);
       try {
-        await transformer.processSchemas({ doUpgrade });
+        await transformer.processSchemas();
       } catch (err) {
         const wasExpected = expectedFailureCases.find((c) =>
           c.sourceDb.pathName === sourceDb.pathName
