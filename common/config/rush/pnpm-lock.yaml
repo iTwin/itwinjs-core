@@ -2446,7 +2446,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2770,7 +2770,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -2866,7 +2866,7 @@ importers:
       '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
@@ -3040,7 +3040,7 @@ importers:
       '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
@@ -3726,7 +3726,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3812,7 +3812,7 @@ importers:
       '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
@@ -4441,7 +4441,7 @@ importers:
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons': ^1.14.0
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -4591,7 +4591,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-icons-react': ^1.15.0
       '@itwin/itwinui-react': ~1.46.0
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
