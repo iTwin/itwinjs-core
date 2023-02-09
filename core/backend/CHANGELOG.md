@@ -1,6 +1,23 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:39 GMT
+
+### Updates
+
+- add CodeSpecs.updateProperties
+- add flag schemaLockHeld
+- Added getOriginPropertyName() method to column info.
+- add allowPreceding as an optional boolean to CheckpointProps interface
+- Log a warning when we fail to download a v2 checkpoint, but download a v1 checkpoint successfully.
+- Promote IModelHost.authorizationClient to public.
+- Add support for material elements with normal maps
+- React to RPC deprecations.
+- Fix documentation of ExternalSourceAspectProps.jsonProperties. It must be a string.
+- Element.toJSON should not include undefined values for userLabel or federationGuid
+- allow passing a custom schema read context to IModelDb.importSchemas
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT

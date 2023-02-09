@@ -2,6 +2,42 @@
   "name": "@itwin/appui-react",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/appui-react_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Expose AppUI specific types previously defined in @itwin/appui-abstract."
+          },
+          {
+            "comment": "Deprecated tree components that were movet to '@itwin/tree-widget-react' package"
+          },
+          {
+            "comment": "Use EmptyLocalization for localization in tests to increase test performance"
+          },
+          {
+            "comment": "Deprecate UI1.0 related properties."
+          },
+          {
+            "comment": "React to RPC deprecations."
+          },
+          {
+            "comment": "Add viewportRef as a props for the FloatingWidgetComponent. Caller might be needing to grab a reference to the viewport. Also, change the initialViewState to allow passing a function that returns a ViewState"
+          },
+          {
+            "comment": "Use React.ForwardedRef rather than just a callback."
+          },
+          {
+            "comment": "Issue #4879: Make sure floating viewports properly set their content as active and display the active view highlight bar."
+          },
+          {
+            "comment": "Fix floating widget offset issue."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/appui-react_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",
