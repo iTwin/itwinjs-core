@@ -5,12 +5,14 @@
 
 import { expect } from "chai";
 
-import { AxisOrder } from "../../Geometry";
+import { AxisIndex, AxisOrder, Geometry, StandardViewIndex } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { InverseMatrixState, Matrix3d, PackedMatrix3dOps } from "../../geometry3d/Matrix3d";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
