@@ -2097,7 +2097,7 @@ describe("IModelTransformer", () => {
       }
 
       transformer.dispose();
-      transformer.targetDb.close();
+      targetDb.close();
     }
 
     oldDb.close();

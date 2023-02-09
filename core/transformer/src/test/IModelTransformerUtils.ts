@@ -1497,21 +1497,11 @@ export interface ProfileVersion {
  * or a negative integer if the first is less than the second
  */
 export function cmpProfileVersion(a: ProfileVersion, b: ProfileVersion): number {
-  if (a.major > b.major)
-    return 1;
-  else if (a.major < b.major)
-    return -1;
-  else if (a.minor > b.minor)
-    return 1;
-  else if (a.minor < b.minor)
-    return -1;
-  else if (a.sub1 > b.sub1)
-    return 1;
-  else if (a.sub1 < b.sub1)
-    return -1;
-  else if (a.sub2 > b.sub2)
-    return 1;
-  else if (a.sub2 < b.sub2)
-    return -1;
+  for (const subKey of ["major", "minor", "sub1", "sub2"] as const) {
+    if (a[subKey] > b[subKey])
+      return 1;
+    else if (a[subKey] < b[subKey])
+      return -1;
+  }
   return 0;
 }
