@@ -424,6 +424,7 @@ describe("IModelTransformer", () => {
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Transform3d-Source" } });
     const categoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const category = sourceDb.elements.getElement<SpatialCategory>(categoryId);
     const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
     const textureId = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "one white pixel");
     const renderMaterialId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterial", {
@@ -444,7 +445,7 @@ describe("IModelTransformer", () => {
       category: categoryId,
       code: Code.createEmpty(),
       userLabel: `PhysicalObject`,
-      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, undefined, renderMaterialId),
+      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, category.myDefaultSubCategoryId(), renderMaterialId),
       placement: Placement3d.fromJSON({ origin: { x: 0, y: 0 }, angles: {} }),
     };
     const objId = sourceDb.elements.insertElement(physicalObjectProps1);
@@ -454,7 +455,7 @@ describe("IModelTransformer", () => {
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
 
     // transform
-    const transformer = new IModelTransformer(sourceDb, targetDb);
+    const transformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
     await transformer.processAll();
 
     const objIdInTarget = transformer.context.findTargetElementId(objId);
@@ -463,7 +464,11 @@ describe("IModelTransformer", () => {
     const objInTarget = targetDb.elements.getElement<PhysicalObject>({ id: objIdInTarget, wantGeometry: true });
 
     assert(objInTarget.geom);
-    assert(objInTarget.geom.find((g) => g.image?.textureId === textureIdInTarget));
+    const materialOfObjIdInTarget = objInTarget.geom.find((g) => g.material?.materialId)?.material?.materialId;
+    assert(materialOfObjIdInTarget);
+    const materialOfObjInTarget = targetDb.elements.getElement<RenderMaterialElement>(materialOfObjIdInTarget);
+    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId).to.equal(textureIdInTarget);
+    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId).to.equal(textureIdInTarget);
 
     // clean up
     transformer.dispose();
