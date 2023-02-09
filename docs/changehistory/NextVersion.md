@@ -44,10 +44,3 @@ The image below illustrates results with a more complex cross section.
 ![Offset Example 2](./assets/cloneOffsetMeshExample2.png "Offset with sharp corners and with chamfers.")
 
 The lower left is the original (smaller, inside) mesh with the (transparent) offset mesh around it with all sharp corners. At upper right the offset has chamfers, again due to setting the `chamferAngleBetweenNormals` to 120 degrees.
-
-### @itwin/core-transformer
-
-[IModelTransformer.processSchemas]($transformer) will now upgrade schemas in (and the profile of) the target database by default with
-[BriefcaseDb.upgradeSchemas]. This can be turned off in the options, like `myTransformer.processSchemas({ doUpgrade: false })`.
-Upgrading is recommended, but the new behavior will close the target during upgrade, and therefore to use it and close it after, you
-must use the [IModelTransformer.targetDb]($transformer) property rather than the reference with which you initialized the transformer.

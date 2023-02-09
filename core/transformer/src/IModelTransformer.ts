@@ -14,11 +14,11 @@ import {
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  BriefcaseDb, ChangeSummaryManager,
+  ChangeSummaryManager,
   ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
   ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
-  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, StandaloneDb, Subject, SynchronizationConfigLink,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
   ChangeOpCode, Code, CodeSpec, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, EntityReferenceSet,
@@ -232,18 +232,8 @@ export class IModelTransformer extends IModelExportHandler {
   public readonly sourceDb: IModelDb;
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
-
-  private _context?: IModelCloneContext;
-
-  /**
-   * The IModelTransformContext for this IModelTransformer.
-   * @note It is lazy to avoid creating and initializing a context that would likely be thrown away by the upgrade process
-   * in [[processSchemas]]
-   */
-  public get context(): IModelCloneContext {
-    return this._context ??= new IModelCloneContext(this.sourceDb, this.targetDb);
-  }
-
+  /** The IModelTransformContext for this IModelTransformer. */
+  public readonly context: IModelCloneContext;
   /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
   public get targetScopeElementId(): Id64String {
     return this._options.targetScopeElementId;
@@ -324,6 +314,8 @@ export class IModelTransformer extends IModelExportHandler {
       /* eslint-enable deprecation/deprecation */
     }
     this.targetDb = this.importer.targetDb;
+    // create the IModelCloneContext, it must be initialized later
+    this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }
 
   /** Dispose any native resources associated with this IModelTransformer. */
@@ -1150,45 +1142,8 @@ export class IModelTransformer extends IModelExportHandler {
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
-  public async processSchemas({
-    /**
-     * Upgrade the profile of the target while transforming schemas.
-     * This can prevent errors when the source's schemas and/or profile are too new.
-     * This will close and reopen the target several times, and push changes.
-     * This does nothing if it is not a briefcase.
-     * @note Your original [BriefcaseDb]($backend) object will have been closed and is therefore unusable
-     */
-    doUpgrade = false,
-  } = {}): Promise<void> {
-    if (doUpgrade && this.targetDb instanceof BriefcaseDb) {
-      const fileName = this.targetDb.pathName;
-      this.targetDb.close();
-      // NOTE: it is potentially a breaking change but preferably the nativeDb getter in IModelDb will eventually throw
-      // rather than patching it on here
-      // eslint-disable-next-line @typescript-eslint/dot-notation
-      Object.defineProperty(this.targetDb, "nativeDb", {
-        get() {
-          throw Error(
-            "This briefcase has been closed by the transformer during `processSchemas`.\n"
-            + "Since 4.0, `processSchemas`'s `doUpgrade` option by default closes the target you give it, in order "
-            + "to upgrade schemas.\n"
-            + "Either pass options like `processSchemas({doUpgrade: false})` to go back to the old default behavior, "
-            + "or get the newly opened copy of the target back from the transformer with `IModelTransformer.targetDb`."
-          );
-        },
-      });
-      if (this.targetDb instanceof StandaloneDb) {
-        StandaloneDb.upgradeStandaloneSchemas(fileName);
-      } else {
-        await BriefcaseDb.upgradeSchemas({ fileName });
-      }
-      // it does change the type (drops readonly)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      (this.targetDb as BriefcaseDb) = await BriefcaseDb.open({ fileName });
-      (this.importer.targetDb as BriefcaseDb) = this.targetDb;
-      this._context = undefined; // free our invalidated context in case it was initialized
-      await this.context.initialize(); // the getter will lazily create a new valid context
-    }
+  public async processSchemas(): Promise<void> {
+    // we do not need to initialize for this since no entities are exported
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
       await this.exporter.exportSchemas();
@@ -1258,18 +1213,17 @@ export class IModelTransformer extends IModelExportHandler {
 
   /**
    * Initialize prerequisites of processing, you must initialize with an [[InitFromExternalSourceAspectsArgs]] if you
-   * are intending to process changes, but you should prefer calling [[processChanges]] instead, as it and all
-   * `process*` functions implicitly initialize the transformation.
+   * are intending process changes, but prefer using [[processChanges]]
    * Called by all `process*` functions implicitly.
    * Overriders must call `super.initialize()` first
    */
   public async initialize(args?: InitFromExternalSourceAspectsArgs) {
     if (this._initialized)
       return;
-    this._initialized = true;
     await this.context.initialize();
     // eslint-disable-next-line deprecation/deprecation
     await this.initFromExternalSourceAspects(args);
+    this._initialized = true;
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.

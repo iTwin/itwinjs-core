@@ -24,13 +24,8 @@ export class IModelCloneContext extends IModelElementCloneContext {
 
   private _refTypesCache = new ECReferenceTypesCache();
 
-  private _initialized = false;
-
   /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
   public override async initialize() {
-    if (this._initialized)
-      return;
-    this._initialized = true;
     await this._refTypesCache.initAllSchemasInIModel(this.sourceDb);
   }
 

@@ -198,7 +198,6 @@ async function transformWithCrashAndRecover<
   let crashed = false;
   try {
     await transformerProcessing(transformer);
-    targetDb = transformer.targetDb as DbType;
   } catch (transformerErr) {
     expect((transformerErr as Error).message).to.equal("crash");
     crashed = true;
@@ -207,13 +206,11 @@ async function transformWithCrashAndRecover<
       "transformer-state.db"
     );
     transformer.saveStateToFile(dumpPath);
-    targetDb = transformer.targetDb as DbType;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TransformerClass = transformer.constructor as typeof IModelTransformer;
     transformer = TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb) as Transformer;
     disableCrashing?.(transformer);
     await transformerProcessing(transformer);
-    targetDb = transformer.targetDb as DbType;
   }
 
   expect(crashed).to.be.true;
@@ -270,10 +267,9 @@ describe("test resuming transformations", () => {
 
     const [regularTransformer, regularTarget] = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new IModelTransformer(sourceDb, targetDb);
       await transformNoCrash({ sourceDb, targetDb, transformer });
-      targetDb = transformer.targetDb as BriefcaseDb;
       targetDb.saveChanges();
       return [transformer, targetDb] as const;
     })();
@@ -287,7 +283,6 @@ describe("test resuming transformations", () => {
       // after exporting 10 elements, save and push changes
       transformer.elementExportsUntilCall = 10;
       transformer.callback = async () => {
-        targetDb = transformer.targetDb as BriefcaseDb;
         targetDb.saveChanges();
         await targetDb.pushChanges({ accessToken, description: "early state save" });
         transformer.saveStateToFile(dumpPath);
@@ -308,7 +303,6 @@ describe("test resuming transformations", () => {
         expect((transformerErr as Error).message).to.equal("interrupt");
         interrupted = true;
         // redownload to simulate restarting without any JS state
-        targetDb = transformer.targetDb as BriefcaseDb;
         expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.true;
         targetDb.close();
         targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
@@ -359,10 +353,10 @@ describe("test resuming transformations", () => {
 
     const crashingTarget = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = 10;
-      targetDb = await transformWithCrashAndRecover({
+      await transformWithCrashAndRecover({
         sourceDb, targetDb, transformer, disableCrashing(t) {
           t.elementExportsUntilCall = undefined;
         },
@@ -374,10 +368,9 @@ describe("test resuming transformations", () => {
 
     const regularTarget = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new IModelTransformer(sourceDb, targetDb);
       await transformNoCrash({ sourceDb, targetDb, transformer });
-      targetDb = transformer.targetDb as BriefcaseDb;
       targetDb.saveChanges();
       transformer.dispose();
       return targetDb;
@@ -610,7 +603,7 @@ describe("test resuming transformations", () => {
 
     const crashingTarget = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.relationshipExportsUntilCall = 2;
       let crashed = false;
@@ -627,7 +620,6 @@ describe("test resuming transformations", () => {
         transformer.saveStateToFile(dumpPath);
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const TransformerClass = transformer.constructor as typeof CountdownToCrashTransformer;
-        targetDb = transformer.targetDb as BriefcaseDb;
         TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
         transformer.relationshipExportsUntilCall = undefined;
         await transformer.processAll();
@@ -641,10 +633,9 @@ describe("test resuming transformations", () => {
 
     const regularTarget = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new IModelTransformer(sourceDb, targetDb);
       await transformNoCrash({ sourceDb, targetDb, transformer });
-      targetDb = transformer.targetDb as BriefcaseDb;
       targetDb.saveChanges();
       transformer.dispose();
       return targetDb;
@@ -708,10 +699,10 @@ describe("test resuming transformations", () => {
         noLocks: true,
         version0: targetDbRev0Path,
       });
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = 10;
-      targetDb = await transformWithCrashAndRecover({
+      await transformWithCrashAndRecover({
         sourceDb, targetDb, transformer, disableCrashing(t) {
           t.elementExportsUntilCall = undefined;
         }, async transformerProcessing(t) {
@@ -739,10 +730,10 @@ describe("test resuming transformations", () => {
 
     const crashingTarget = await (async () => {
       const targetDbPath = "/tmp/huge-model-out.bim";
-      let targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
+      const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = Number(process.env.TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_ELEMENTS_BEFORE_CRASH) || 2_500_000;
-      targetDb = await transformWithCrashAndRecover({
+      await transformWithCrashAndRecover({
         sourceDb, targetDb, transformer, disableCrashing(t) {
           t.elementExportsUntilCall = undefined;
         },

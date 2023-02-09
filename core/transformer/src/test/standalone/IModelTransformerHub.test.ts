@@ -25,7 +25,6 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 import * as sinon from "sinon";
-import { ECReferenceTypesCache } from "../../ECReferenceTypesCache";
 
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -486,17 +485,13 @@ describe("IModelTransformerHub", () => {
 
       targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
       assert.isTrue(Guid.isGuid(targetIModelId));
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
       await targetDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
-      const contextInitRefCacheSpy = sinon.spy(ECReferenceTypesCache.prototype, "initAllSchemasInIModel");
       const provenanceInitializer = new IModelTransformer(sourceDb, targetDb, { wasSourceIModelCopiedToTarget: true });
       await provenanceInitializer.processSchemas();
       await provenanceInitializer.processAll();
-      assert(contextInitRefCacheSpy.calledOnce, "context ref cache was initialized more than once while doing a transformation");
       provenanceInitializer.dispose();
-      // our db object will have been closed by `processSchemas` upgrading the schemas, so we must get the one the transformer re-opened
-      targetDb = provenanceInitializer.targetDb as BriefcaseDb;
 
       // update source (add model2 to model selector)
       // (it's important that we only change the model selector here to keep the changes isolated)
@@ -618,14 +613,13 @@ describe("IModelTransformerHub", () => {
       const branchIModelName = "RevSyncDeleteBranch";
       branchIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: branchIModelName, noLocks: true, version0: masterDb.pathName });
       assert.isTrue(Guid.isGuid(branchIModelId));
-      let branchDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId });
+      const branchDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId });
       await branchDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(branchDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
       const provenanceInitializer = new IModelTransformer(masterDb, branchDb, { wasSourceIModelCopiedToTarget: true });
       await provenanceInitializer.processSchemas();
       await provenanceInitializer.processAll();
       provenanceInitializer.dispose();
-      branchDb = provenanceInitializer.targetDb as BriefcaseDb;
       branchDb.saveChanges();
       await branchDb.pushChanges({ accessToken, description: "setup branch" });
 
