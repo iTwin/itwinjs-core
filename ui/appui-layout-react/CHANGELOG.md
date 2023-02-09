@@ -1,6 +1,16 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:39 GMT
+
+### Updates
+
+- Fix a floating widget resize issue.
+- Fix Grip.scss webpack variables issue.
+- Updated the side panel handles
+- Fix floating widget offset issue.
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
