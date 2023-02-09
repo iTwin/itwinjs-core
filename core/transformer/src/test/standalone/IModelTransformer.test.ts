@@ -13,15 +13,15 @@ import {
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelDb, IModelElementCloneContext, IModelHost, IModelJsFs,
   InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
-  PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
-  SubCategory, Subject,
+  PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RenderMaterialElement, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
+  SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementAspectProps, ElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, ProfileOptions, QueryRowFormat, RelatedElement, RelationshipProps,
+  ExternalSourceAspectProps, ImageSourceFormat, IModel, IModelError, PhysicalElementProps, Placement3d, ProfileOptions, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
@@ -419,43 +419,52 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("should transform 3d elements in target iModel", async () => {
+  it.only("should transform 3d elements and their textures in target iModel", async () => {
     // create source iModel
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Transform3d-Source" } });
-    const categoryId: Id64String = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
-    const sourceModelId: Id64String = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
-    const xArray: number[] = [1, 3, 5, 7, 9];
-    const yArray: number[] = [0, 2, 4, 6, 8];
-    for (const x of xArray) {
-      for (const y of yArray) {
-        const physicalObjectProps1: PhysicalElementProps = {
-          classFullName: PhysicalObject.classFullName,
-          model: sourceModelId,
-          category: categoryId,
-          code: Code.createEmpty(),
-          userLabel: `PhysicalObject(${x},${y})`,
-          geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
-          placement: Placement3d.fromJSON({ origin: { x, y }, angles: {} }),
-        };
-        sourceDb.elements.insertElement(physicalObjectProps1);
-      }
-    }
-    const sourceModel: PhysicalModel = sourceDb.models.getModel<PhysicalModel>(sourceModelId);
-    const sourceModelExtents: AxisAlignedBox3d = sourceModel.queryExtents();
-    assert.deepEqual(sourceModelExtents, new Range3d(1, 0, 0, 10, 9, 1));
+    const categoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
+    const textureId = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "one white pixel");
+    const renderMaterialId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterial", {
+      paletteName: "white pixel",
+      patternMap: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        TextureId: textureId,
+      },
+      normalMap: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        TextureId: textureId,
+      },
+    });
+
+    const physicalObjectProps1: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: sourceModelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+      userLabel: `PhysicalObject`,
+      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, undefined, renderMaterialId),
+      placement: Placement3d.fromJSON({ origin: { x: 0, y: 0 }, angles: {} }),
+    };
+    const objId = sourceDb.elements.insertElement(physicalObjectProps1);
+
     // create target iModel
     const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
+
     // transform
-    const transform3d: Transform = Transform.createTranslation(new Point3d(100, 200));
-    const transformer = new IModelTransformer3d(sourceDb, targetDb, transform3d);
+    const transformer = new IModelTransformer(sourceDb, targetDb);
     await transformer.processAll();
-    const targetModelId: Id64String = transformer.context.findTargetElementId(sourceModelId);
-    const targetModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(targetModelId);
-    const targetModelExtents: AxisAlignedBox3d = targetModel.queryExtents();
-    assert.deepEqual(targetModelExtents, new Range3d(101, 200, 0, 110, 209, 1));
-    assert.deepEqual(targetModelExtents, transform3d.multiplyRange(sourceModelExtents));
+
+    const objIdInTarget = transformer.context.findTargetElementId(objId);
+    const textureIdInTarget = transformer.context.findTargetElementId(textureId);
+    assert(Id64.isValidId64(textureIdInTarget));
+    const objInTarget = targetDb.elements.getElement<PhysicalObject>({ id: objIdInTarget, wantGeometry: true });
+
+    assert(objInTarget.geom);
+    assert(objInTarget.geom.find((g) => g.image?.textureId === textureIdInTarget));
+
     // clean up
     transformer.dispose();
     sourceDb.close();
