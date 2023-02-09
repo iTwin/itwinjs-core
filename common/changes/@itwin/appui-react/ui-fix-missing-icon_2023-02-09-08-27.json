@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix `@itwin/itwinui-icons-react` dependency version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

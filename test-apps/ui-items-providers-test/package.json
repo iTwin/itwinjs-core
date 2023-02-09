@@ -51,7 +51,7 @@
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
     "@itwin/itwinui-react": "~1.46.0",
-    "@itwin/itwinui-icons-react": "^1.8.0",
+    "@itwin/itwinui-icons-react": "^1.15.0",
     "@itwin/itwinui-css": "0.x",
     "classnames": "^2.3.1",
     "react": "^17.0.0",
