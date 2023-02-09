@@ -12,7 +12,8 @@ export class ViewportFrontstageGroupProvider extends ContentGroupProvider {
   public override async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     throw new Error("Method not implemented.");
   }
-/* eslint-disable @typescript-eslint/indent */
+
+  // eslint-disable-next-line @typescript-eslint/indent
 // __PUBLISH_EXTRACT_START__ Example_Viewport_Frontstage_Group_Provider_2
   public override async contentGroup(): Promise<ContentGroup> {
     return new ContentGroup({
@@ -32,7 +33,6 @@ export class ViewportFrontstageGroupProvider extends ContentGroupProvider {
   }
 }
 // __PUBLISH_EXTRACT_END__
-/* eslint-enable @typescript-eslint/indent */
 
 // __PUBLISH_EXTRACT_START__ Example_Register_Viewport_Frontstage
 export function registerViewportFrontstage(): void {

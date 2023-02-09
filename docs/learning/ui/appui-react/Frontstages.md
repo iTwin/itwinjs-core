@@ -27,7 +27,7 @@ Stage contents are then wrapped by a [StandardFrontstageProvider]($appui-react) 
 [[include:Example_Register_Viewport_Frontstage]]
 ```
 
-Other UI items (like toolbars) contained within the frontstage should be linked with the frontstage using [UiItemsManager]($appui-abstract).
+Other UI items (like toolbars) contained within the frontstage should be registered via [UiItemsManager]($appui-abstract).
 
 ### Usage
 
