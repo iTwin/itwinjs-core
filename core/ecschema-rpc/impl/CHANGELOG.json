@@ -2,6 +2,18 @@
   "name": "@itwin/ecschema-rpcinterface-impl",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/ecschema-rpcinterface-impl_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "React to RPC deprecations."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/ecschema-rpcinterface-impl_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",
