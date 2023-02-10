@@ -2,6 +2,24 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/build-tools_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix script paths for situation when repository path has spaces"
+          },
+          {
+            "comment": "add copy-assets script to betools command"
+          },
+          {
+            "comment": "Added ability to override default exclude pattern for tests when generating docs"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/build-tools_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",
