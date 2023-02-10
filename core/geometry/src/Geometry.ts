@@ -404,18 +404,23 @@ export class Geometry {
     return 2 - ((-axis - 1) % 3);
   }
   /** Return the AxisOrder for which axisIndex is the first named axis.
-   * * `axisIndex===0`returns AxisOrder.XYZ
-   * * `axisIndex===1`returns AxisOrder.YZX
-   * * `axisIndex===2`returns AxisOrder.ZXY
+   * * `axisIndex === 0` returns `AxisOrder.XYZ`
+   * * `axisIndex === 1` returns `AxisOrder.YZX`
+   * * `axisIndex === 2` returns `AxisOrder.ZXY`
    */
   public static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder {
-    if (axisIndex === 0) return AxisOrder.XYZ;
-    if (axisIndex === 1) return AxisOrder.YZX;
-    if (axisIndex === 2) return AxisOrder.ZXY;
+    if (axisIndex === 0)
+      return AxisOrder.XYZ;
+    if (axisIndex === 1)
+      return AxisOrder.YZX;
+    if (axisIndex === 2)
+      return AxisOrder.ZXY;
     return Geometry.axisIndexToRightHandedAxisOrder(Geometry.cyclic3dAxis(axisIndex));
   }
   /** Return the largest absolute distance from a to either of b0 or b1 */
-  public static maxAbsDiff(a: number, b0: number, b1: number): number { return Math.max(Math.abs(a - b0), Math.abs(a - b1)); }
+  public static maxAbsDiff(a: number, b0: number, b1: number): number {
+    return Math.max(Math.abs(a - b0), Math.abs(a - b1));
+  }
   /** Return the largest absolute absolute value among x,y,z */
   public static maxAbsXYZ(x: number, y: number, z: number): number {
     return Geometry.maxXYZ(Math.abs(x), Math.abs(y), Math.abs(z));
@@ -456,19 +461,33 @@ export class Geometry {
     return q;
   }
   /** Return the hypotenuse `sqrt(x*x + y*y)`. This is much faster than `Math.hypot(x,y)`. */
-  public static hypotenuseXY(x: number, y: number): number { return Math.sqrt(x * x + y * y); }
+  public static hypotenuseXY(x: number, y: number): number {
+    return Math.sqrt(x * x + y * y);
+  }
   /** Return the squared `hypotenuse (x*x + y*y)`. */
-  public static hypotenuseSquaredXY(x: number, y: number): number { return x * x + y * y; }
+  public static hypotenuseSquaredXY(x: number, y: number): number {
+    return x * x + y * y;
+  }
   /** Return the square of x */
-  public static square(x: number): number { return x * x; }
+  public static square(x: number): number {
+    return x * x;
+  }
   /** Return the hypotenuse `sqrt(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseXYZ(x: number, y: number, z: number): number { return Math.sqrt(x * x + y * y + z * z); }
+  public static hypotenuseXYZ(x: number, y: number, z: number): number {
+    return Math.sqrt(x * x + y * y + z * z);
+  }
   /** Return the squared hypotenuse `(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseSquaredXYZ(x: number, y: number, z: number): number { return x * x + y * y + z * z; }
+  public static hypotenuseSquaredXYZ(x: number, y: number, z: number): number {
+    return x * x + y * y + z * z;
+  }
   /** Return the (full 4d) hypotenuse `sqrt(x*x + y*y + z*z + w*w)`. This is much faster than `Math.hypot(x,y,z,w)`. */
-  public static hypotenuseXYZW(x: number, y: number, z: number, w: number): number { return Math.sqrt(x * x + y * y + z * z + w * w); }
+  public static hypotenuseXYZW(x: number, y: number, z: number, w: number): number {
+    return Math.sqrt(x * x + y * y + z * z + w * w);
+  }
   /** Return the squared hypotenuse `(x*x + y*y + z*z+w*w)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number): number { return x * x + y * y + z * z + w * w; }
+  public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number): number {
+    return x * x + y * y + z * z + w * w;
+  }
   /**
    * Return the distance between xy points given as numbers.
    * @param x0 x coordinate of point 0

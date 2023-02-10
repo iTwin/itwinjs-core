@@ -13,9 +13,7 @@ import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent, ViewStateProp } from "@itwin/imodel-components-react";
 import { FillCentered } from "@itwin/core-react";
 
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { DefaultViewOverlay } from "./DefaultViewOverlay";
@@ -154,8 +152,8 @@ export class IModelViewportControl extends ViewportContentControl {
         // for convenience, if window defined bind viewport to window
         if (undefined !== window)
           (window as any).viewport = v;
-        if (!FrontstageManager.isLoading)
-          FrontstageManager.activeFrontstageDef?.setActiveViewFromViewport(v);
+        if (!UiFramework.frontstages.isLoading)
+          UiFramework.frontstages.activeFrontstageDef?.setActiveViewFromViewport(v);
       }}
       getViewOverlay={this._getViewOverlay}
     />;
@@ -172,8 +170,8 @@ export class IModelViewportControl extends ViewportContentControl {
         // for convenience, if window defined bind viewport to window
         if (undefined !== window)
           (window as any).viewport = v;
-        if (!FrontstageManager.isLoading)
-          FrontstageManager.activeFrontstageDef?.setActiveViewFromViewport(v);
+        if (!UiFramework.frontstages.isLoading)
+          UiFramework.frontstages.activeFrontstageDef?.setActiveViewFromViewport(v);
       }}
       getViewOverlay={this._getViewOverlay}
     />;
@@ -204,4 +202,4 @@ export class IModelViewportControl extends ViewportContentControl {
   }
 }
 
-ConfigurableUiManager.registerControl(IModelViewportControl.id, IModelViewportControl);
+UiFramework.controls.register(IModelViewportControl.id, IModelViewportControl);

@@ -138,6 +138,9 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   global.requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 0);
   });
+
+  // eslint-disable-next-line no-console
+  console.log(`[${new Date().toISOString()}] Tests initialized`);
 };
 
 export const initialize = async (options?: { backendTimeout?: number, localization?: Localization }) => {
@@ -151,6 +154,8 @@ export const initializeWithClientServices = async () => {
 export const terminate = async () => {
   delete (global as any).requestAnimationFrame;
   await terminateTesting();
+  // eslint-disable-next-line no-console
+  console.log(`[${new Date().toISOString()}] Tests terminated`);
 };
 
 export const resetBackend = () => {

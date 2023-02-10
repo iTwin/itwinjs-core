@@ -6,14 +6,15 @@
 import { expect } from "chai";
 import * as React from "react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+  ConfigurableCreateInfo, ContentControl, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs,
-  ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
+  ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, UiFramework, Widget, Zone,
 } from "../../../appui-react";
 import { ToolInformation } from "../../../appui-react/zones/toolsettings/ToolInformation";
 import TestUtils from "../../TestUtils";
 import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@itwin/appui-abstract";
 import { Input, Slider } from "@itwin/itwinui-react";
+import { InternalFrontstageManager } from "../../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("ToolUiProvider", () => {
 
@@ -90,9 +91,9 @@ describe("ToolUiProvider", () => {
   }
 
   const frontstageProvider = new Frontstage1();
-  ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+  UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
 
-  ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
+  UiFramework.controls.register(testToolId, Tool2UiProvider);
 
   class TestDataProvider extends UiLayoutDataProvider { }
 
@@ -104,17 +105,17 @@ describe("ToolUiProvider", () => {
   });
 
   it("starting a tool with tool settings", async () => {
-    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-      FrontstageManager.ensureToolInformationIsSet(testToolId);
-      FrontstageManager.setActiveToolId(testToolId);
-      expect(FrontstageManager.activeToolId).to.eq(testToolId);
+      InternalFrontstageManager.ensureToolInformationIsSet(testToolId);
+      UiFramework.frontstages.setActiveToolId(testToolId);
+      expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 
-      const toolInformation = FrontstageManager.activeToolInformation;
+      const toolInformation = UiFramework.frontstages.activeToolInformation;
       expect(toolInformation).to.not.be.undefined;
 
       if (toolInformation) {
@@ -132,13 +133,13 @@ describe("ToolUiProvider", () => {
         }
       }
 
-      const toolSettingsProvider = FrontstageManager.activeToolSettingsProvider;
+      const toolSettingsProvider = InternalFrontstageManager.activeToolSettingsProvider;
       expect(toolSettingsProvider).to.not.be.undefined;
 
-      const toolSettingsNode = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
+      const toolSettingsNode = InternalFrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
-      const horizontalToolSettingsNode = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
+      const horizontalToolSettingsNode = InternalFrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
       expect(horizontalToolSettingsNode).to.not.be.undefined;
       expect(horizontalToolSettingsNode!.length).to.eq(5);
     }
@@ -153,10 +154,10 @@ describe("ToolUiProvider", () => {
   }
 
   it("ToolInformation with invalid ToolUiProvider should throw Error", () => {
-    ConfigurableUiManager.registerControl("ToolTest1", TestContentControl);
+    UiFramework.controls.register("ToolTest1", TestContentControl);
     const toolInfo = new ToolInformation("ToolTest1");
     expect(() => toolInfo.toolUiProvider).to.throw(Error);
-    ConfigurableUiManager.unregisterControl("ToolTest1");
+    UiFramework.controls.unregister("ToolTest1");
   });
 
 });
