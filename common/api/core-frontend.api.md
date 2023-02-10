@@ -4314,6 +4314,7 @@ export interface Hilites {
 
 // @public
 export class HiliteSet {
+    // @internal
     constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
     clear(): void;
     get elements(): Id64.Uint32Set;
@@ -7238,8 +7239,9 @@ export interface NativeAppOpts extends IpcAppOptions {
     nativeApp?: {};
 }
 
-// @public
+// @internal
 export class NoRenderApp {
+    // (undocumented)
     static startup(opts?: IModelAppOptions): Promise<void>;
 }
 

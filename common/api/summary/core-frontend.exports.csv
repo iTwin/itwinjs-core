@@ -417,7 +417,7 @@ internal;MutableChangeFlags
 public;NativeApp
 internal;NativeAppLogger
 public;NativeAppOpts 
-public;NoRenderApp
+internal;NoRenderApp
 public;class NotificationHandler
 public;NotificationManager 
 public;NotifyMessageDetails
