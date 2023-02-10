@@ -10,15 +10,15 @@ import * as React from "react";
 import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@itwin/core-react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Item } from "@itwin/appui-layout-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { UiFramework } from "../UiFramework";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface ActionItemButtonProps extends CommonProps {
@@ -42,7 +42,7 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 };
 
 /** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
- * @deprecated Use [ActionButton]($appui-abstract) instead.
+ * @deprecated in 3.5. Use [ActionButton]($appui-abstract) instead.
  * @public
  */
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> { // eslint-disable-line deprecation/deprecation
@@ -67,7 +67,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
     // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
     if (args.eventIds.has(SyncUiEventId.ToolActivated)) {
-      newState.isActive = this.props.actionItem.id === FrontstageManager.activeToolId;
+      newState.isActive = this.props.actionItem.id === UiFramework.frontstages.activeToolId;
       refreshState = true;
     }
 

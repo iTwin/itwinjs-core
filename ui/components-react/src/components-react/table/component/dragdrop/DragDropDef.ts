@@ -11,7 +11,7 @@ import { CommonProps } from "@itwin/core-react";
 
 /** Enum for different DropEffects.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export enum DropEffects {
   None = 0,
@@ -22,7 +22,7 @@ export enum DropEffects {
 
 /** Enum for status of current drag/drop item
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export enum DropStatus {
   None = 0,
@@ -33,7 +33,7 @@ export enum DropStatus {
 
 /** Properties and callbacks for the withDragSource Higher-Order Component.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface DropTargetProps<DragDropObject = any> {
   /**
@@ -51,7 +51,7 @@ export interface DropTargetProps<DragDropObject = any> {
 
 /** Properties and callbacks for the withDragSource Higher-Order Component.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface DragSourceProps<DragDropObject = any> {
   /** Triggered when DragSource has begun a drag. */
@@ -76,7 +76,7 @@ export interface DragSourceProps<DragDropObject = any> {
 
 /** Base DragDropArguments interface, used by both DragSourceArguments and DragTargetArguments.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface DragDropArguments<DragDropObject = any> {
   /** Arbitrary data being transferred. Actual data structure determined by the return value of the onDragSourceBegin callback. */
@@ -123,7 +123,7 @@ export interface DragDropArguments<DragDropObject = any> {
 
 /** Properties for DragLayer components
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface DragLayerProps<DragDropObject = any> extends CommonProps {
   args?: DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
@@ -131,7 +131,7 @@ export interface DragLayerProps<DragDropObject = any> extends CommonProps {
 
 /** Interface for arguments supplied to DragSource callbacks, including onDragSourceBegin, and onDragSourceEnd, as well as to the DragLayers as a prop.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface DragSourceArguments<DragDropObject = any> extends DragDropArguments<DragDropObject> { // eslint-disable-line deprecation/deprecation
   /** Parent object, using the data structure relevant to object being used.
@@ -144,7 +144,7 @@ export interface DragSourceArguments<DragDropObject = any> extends DragDropArgum
 
 /** Interface for arguments supplied to DropTarget callbacks, including onDropTargetOver, onDropTargetDrop, and canDropTargetDrop.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface DropTargetArguments<DragDropObject = any> extends DragSourceArguments<DragDropObject> { // eslint-disable-line deprecation/deprecation
   /** Object that is being dropped onto, using the data structure relevant to object being used.

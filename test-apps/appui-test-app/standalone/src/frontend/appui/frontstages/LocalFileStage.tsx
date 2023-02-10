@@ -14,13 +14,14 @@ import { OpenDialogOptions } from "electron";
 import { FillCentered } from "@itwin/core-react";
 import {
   BackstageAppButton,
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager,
+  ConfigurableCreateInfo, ContentControl, ContentGroupProps,
+  StageUsage,
   StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
-import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
 async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
   const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
@@ -66,11 +67,11 @@ class LocalFileOpenControl extends ContentControl {
   }
 
   private _handleClose = () => {
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
   };
 
   private _handleViewsSelected = async (iModelConnection: IModelConnection, views: Id64String[]) => {
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
     await SampleAppIModelApp.setViewIdAndOpenMainStage(iModelConnection, views);
   };
 }
@@ -83,7 +84,7 @@ export class LocalFileOpenFrontstage {
 
     if (LocalFileSupport.localFilesSupported() || fullBimFileName) {
       // if frontstage has not yet been registered register it now
-      if (!FrontstageManager.hasFrontstage(LocalFileOpenFrontstage.stageId)) {
+      if (!UiFramework.frontstages.hasFrontstage(LocalFileOpenFrontstage.stageId)) {
         const contentGroupProps: ContentGroupProps = {
           id: "appui-test-app:LocalFileOpenGroup",
           layout: StandardContentLayouts.singleView,
@@ -105,7 +106,7 @@ export class LocalFileOpenFrontstage {
           hideStatusBar: true,
         };
 
-        ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
+        UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
         UiItemsManager.register(new LocalFileOpenStageBackstageItemsProvider());
       } else {
         // if stage has already been register then this is not the initial startup of the app so don't use the file spec from the environment.
@@ -127,8 +128,8 @@ export class LocalFileOpenFrontstage {
     }
 
     if (LocalFileSupport.localFilesSupported()) {
-      const frontstageDef = await FrontstageManager.getFrontstageDef(LocalFileOpenFrontstage.stageId);
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      const frontstageDef = await UiFramework.frontstages.getFrontstageDef(LocalFileOpenFrontstage.stageId);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
     }
   }
 }

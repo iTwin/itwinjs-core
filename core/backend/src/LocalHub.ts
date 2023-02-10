@@ -113,9 +113,7 @@ export class LocalHub {
     if (!arg.version0) { // if they didn't supply a version0 file, create a blank one.
       IModelJsFs.recursiveMkDirSync(version0Root);
       IModelJsFs.removeSync(version0);
-      const blank = SnapshotDb.createEmpty(version0, { rootSubject: { name: arg.description ?? arg.iModelName } });
-      blank.saveChanges();
-      blank.close();
+      SnapshotDb.createEmpty(version0, { rootSubject: { name: arg.description ?? arg.iModelName } }).close();
     }
 
     const path = this.uploadCheckpoint({ changesetIndex: 0, localFile: version0 });

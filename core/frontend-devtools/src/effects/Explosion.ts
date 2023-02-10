@@ -91,7 +91,7 @@ class ParticleSystem {
 
   public constructor(texture: RenderTexture, iModel: IModelConnection, numEmissions: number) {
     this._texture = texture;
-    this._pickableId = iModel.transientIds.next;
+    this._pickableId = iModel.transientIds.getNext();
     this._numEmissions = numEmissions;
     this._lastUpdateTime = Date.now();
 

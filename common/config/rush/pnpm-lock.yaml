@@ -10,7 +10,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.6.0
+      '@bentley/imodeljs-native': 3.6.6
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -42,7 +42,7 @@ importers:
       internal-tools: workspace:*
       inversify: ~5.0.1
       js-base64: ^3.6.1
-      json5: ^2.2.0
+      json5: ^2.2.3
       mocha: ^10.0.0
       multiparty: ^4.2.1
       null-loader: ^4.0.1
@@ -56,7 +56,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.12.0
-      '@bentley/imodeljs-native': 3.6.0
+      '@bentley/imodeljs-native': 3.6.6
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -65,7 +65,7 @@ importers:
       fs-extra: 8.1.0
       inversify: 5.0.5
       js-base64: 3.7.3
-      json5: 2.2.2
+      json5: 2.2.3
       multiparty: 4.2.3
       semver: 7.3.8
       ws: 7.5.9
@@ -394,7 +394,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
       chai: ^4.1.2
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       mocha: ^10.0.0
       open: ^7.0.0
@@ -420,7 +420,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
       chai: 4.3.7
-      electron: 22.0.0
+      electron: 23.0.0
       eslint: 7.32.0
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -551,6 +551,7 @@ importers:
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
       '@itwin/object-storage-core': 1.4.0
+      '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.2.12
       '@loaders.gl/draco': 3.2.12
       deep-assign: 2.0.0
@@ -571,7 +572,6 @@ importers:
       '@itwin/core-orbitgt': link:../orbitgt
       '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/deep-assign': 0.1.1
@@ -1325,7 +1325,7 @@ importers:
       '@types/node': 18.11.5
       chai: ^4.1.2
       cpx2: ^3.0.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       mocha: ^10.0.0
       rimraf: ^3.0.2
@@ -1337,11 +1337,11 @@ importers:
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      electron: 22.0.0
+      electron: 23.0.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.5.0_electron@22.0.0
+      '@itwin/oidc-signin-tool': 3.5.0_electron@23.0.0
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
@@ -1366,7 +1366,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.6.0
-      '@itwin/service-authorization': ^0.6.1
+      '@itwin/service-authorization': ^0.6.3
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1391,7 +1391,7 @@ importers:
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/projects-client': 0.6.0
-      '@itwin/service-authorization': 0.6.2
+      '@itwin/service-authorization': 0.6.3
       '@xmldom/xmldom': 0.8.6
       fs-extra: 8.1.0
     devDependencies:
@@ -1428,7 +1428,7 @@ importers:
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-color-react': ~1.0.3
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -1481,7 +1481,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.5_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
@@ -1791,7 +1791,7 @@ importers:
       crypto-browserify: 3.12.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       glob: ^7.1.2
@@ -1825,7 +1825,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.0
+      '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.2.1
@@ -1836,7 +1836,7 @@ importers:
       '@itwin/reality-data-client': 0.9.0
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
-      electron: 22.0.0
+      electron: 23.0.0
       fs-extra: 8.1.0
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
@@ -1844,7 +1844,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.5.0_electron@22.0.0
+      '@itwin/oidc-signin-tool': 3.5.0_electron@23.0.0
       '@itwin/projects-client': 0.6.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
@@ -2021,6 +2021,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~4.4.0
     dependencies:
@@ -2059,6 +2060,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      source-map-support: 0.5.21
       typemoq: 2.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2096,7 +2098,7 @@ importers:
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
       chai: ^4.1.2
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       express: ^4.16.3
       glob: ^7.1.2
@@ -2117,7 +2119,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/express-server': link:../../core/express-server
-      electron: 22.0.0
+      electron: 23.0.0
       express: 4.18.2
       semver: 7.3.8
       spdy: 4.0.2
@@ -2166,7 +2168,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.6.0
-      '@itwin/service-authorization': ^0.6.1
+      '@itwin/service-authorization': ^0.6.3
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2209,7 +2211,7 @@ importers:
       '@itwin/oidc-signin-tool': 3.5.0
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@itwin/service-authorization': 0.6.2
+      '@itwin/service-authorization': 0.6.3
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       dotenv: 10.0.0
@@ -2365,7 +2367,7 @@ importers:
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
-      typescript-json-schema: ^0.43.0
+      typescript-json-schema: ^0.55.0
       yargs: ^17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2400,7 +2402,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
       typemoq: 2.1.0
       typescript: 4.4.4
-      typescript-json-schema: 0.43.0
+      typescript-json-schema: 0.55.0
       yargs: 17.6.2
 
   ../../presentation/components:
@@ -2417,7 +2419,7 @@ importers:
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@testing-library/react': ^12.0.0
@@ -2469,7 +2471,7 @@ importers:
     dependencies:
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.2
       fast-deep-equal: 3.1.3
       fast-sort: 3.2.0
@@ -2725,6 +2727,7 @@ importers:
 
   ../../test-apps/appui-test-app/appui-test-providers:
     specifiers:
+      '@bentley/icons-generic': ^1.0.15
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
       '@itwin/appui-react': workspace:*
@@ -2737,9 +2740,10 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2757,6 +2761,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
+      '@bentley/icons-generic': 1.0.34
       '@itwin/appui-abstract': link:../../../ui/appui-abstract
       '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
       '@itwin/appui-react': link:../../../ui/appui-react
@@ -2767,9 +2772,10 @@ importers:
       '@itwin/core-geometry': link:../../../core/geometry
       '@itwin/core-quantity': link:../../../core/quantity
       '@itwin/core-react': link:../../../ui/core-react
+      '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../../presentation/common
       '@itwin/presentation-components': link:../../../presentation/components
       '@itwin/presentation-frontend': link:../../../presentation/frontend
@@ -2833,7 +2839,7 @@ importers:
       '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
       '@itwin/map-layers-formats': workspace:*
@@ -2857,7 +2863,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -2902,7 +2908,7 @@ importers:
       '@itwin/editor-backend': link:../../../editor/backend
       '@itwin/editor-common': link:../../../editor/common
       '@itwin/editor-frontend': link:../../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.0
+      '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/express-server': link:../../../core/express-server
       '@itwin/frontend-devtools': link:../../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
@@ -2914,7 +2920,7 @@ importers:
       '@itwin/imodels-client-management': 2.2.1
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
       '@itwin/map-layers-formats': link:../../../extensions/map-layers-formats
@@ -2955,7 +2961,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.0
+      electron: 23.0.0
       eslint: 7.32.0
       fs-extra: 8.1.0
       internal-tools: link:../../../tools/internal
@@ -3007,7 +3013,7 @@ importers:
       '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
       '@itwin/map-layers-formats': workspace:*
@@ -3031,7 +3037,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -3076,7 +3082,7 @@ importers:
       '@itwin/editor-backend': link:../../../editor/backend
       '@itwin/editor-common': link:../../../editor/common
       '@itwin/editor-frontend': link:../../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.0
+      '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/express-server': link:../../../core/express-server
       '@itwin/frontend-devtools': link:../../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
@@ -3087,7 +3093,7 @@ importers:
       '@itwin/imodels-client-management': 2.2.1
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
       '@itwin/map-layers-formats': link:../../../extensions/map-layers-formats
@@ -3128,7 +3134,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.0
+      electron: 23.0.0
       eslint: 7.32.0
       fs-extra: 8.1.0
       internal-tools: link:../../../tools/internal
@@ -3172,7 +3178,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       express: ^4.16.3
       internal-tools: workspace:*
@@ -3192,13 +3198,13 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.0
+      '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.2.1
       '@itwin/imodels-access-frontend': 2.2.1
       '@itwin/imodels-client-authoring': 2.2.1
       '@itwin/imodels-client-management': 2.2.1
-      '@itwin/oidc-signin-tool': 3.5.0_electron@22.0.0
+      '@itwin/oidc-signin-tool': 3.5.0_electron@23.0.0
       '@itwin/reality-data-client': 0.9.0
       body-parser: 1.20.1
     devDependencies:
@@ -3215,7 +3221,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.0
+      electron: 23.0.0
       eslint: 7.32.0
       express: 4.18.2
       internal-tools: link:../../tools/internal
@@ -3270,7 +3276,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       eslint-plugin-deprecation: 1.2.1
       eslint-plugin-import: 2.23.4
@@ -3309,7 +3315,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.0
+      '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.2.1
@@ -3337,7 +3343,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.0
+      electron: 23.0.0
       eslint: 7.32.0
       eslint-plugin-deprecation: 1.2.1_eslint@7.32.0+typescript@4.4.4
       eslint-plugin-import: 2.23.4_eslint@7.32.0
@@ -3367,7 +3373,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/node': 18.11.5
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -3382,7 +3388,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -3398,7 +3404,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       chai: ^4.1.2
       eslint: ^7.11.0
       mocha: ^10.0.0
@@ -3418,7 +3424,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       eslint: 7.32.0
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -3435,7 +3441,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/node': 18.11.5
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
@@ -3454,7 +3460,7 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/lodash': 4.14.191
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -3470,7 +3476,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/fs-extra': ^4.0.7
       '@types/node': 18.11.5
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -3487,7 +3493,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/fs-extra': 4.0.12
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -3503,7 +3509,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/node': 18.11.5
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
@@ -3522,7 +3528,7 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/lodash': 4.14.191
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -3544,7 +3550,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
@@ -3576,7 +3582,7 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       cross-env: 5.2.1
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -3604,7 +3610,7 @@ importers:
       '@itwin/express-server': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3617,7 +3623,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
@@ -3642,11 +3648,11 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.0
+      '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -3667,7 +3673,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.0
+      electron: 23.0.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
@@ -3693,7 +3699,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -3720,7 +3726,7 @@ importers:
       '@itwin/core-react': link:../../ui/core-react
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -3779,7 +3785,7 @@ importers:
       '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
       '@itwin/map-layers-formats': workspace:*
@@ -3803,7 +3809,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -3846,7 +3852,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.0
+      '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
@@ -3857,7 +3863,7 @@ importers:
       '@itwin/imodels-client-management': 2.2.1
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../extensions/map-layers-auth
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
@@ -3897,7 +3903,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.0
+      electron: 23.0.0
       eslint: 7.32.0
       fs-extra: 8.1.0
       internal-tools: link:../../tools/internal
@@ -3985,9 +3991,9 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       detect-port: ~1.3.0
-      electron: ^22.0.0
+      electron: ^23.0.0
       eslint: ^7.11.0
       express: ^4.16.3
       jsonc-parser: ~2.0.3
@@ -4017,8 +4023,8 @@ importers:
       '@types/lodash': 4.14.191
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
-      electron: 22.0.0
+      '@types/yargs': 17.0.19
+      electron: 23.0.0
       eslint: 7.32.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -4091,7 +4097,7 @@ importers:
       '@typescript-eslint/typescript-estree': ~4.31.0
       eslint: ^7.11.0
       eslint-import-resolver-node: 0.3.4
-      eslint-import-resolver-typescript: 2.4.0
+      eslint-import-resolver-typescript: ^2.7.1
       eslint-plugin-deprecation: 1.2.1
       eslint-plugin-import: 2.23.4
       eslint-plugin-jam3: 0.2.3
@@ -4107,7 +4113,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 4.31.2_8f0416aa8ec58a469909c5c0f73069bc
       '@typescript-eslint/parser': 4.31.2_eslint@7.32.0+typescript@4.4.4
       eslint-import-resolver-node: 0.3.4
-      eslint-import-resolver-typescript: 2.4.0_ee2ddb12623c985c36290f985ad5559c
+      eslint-import-resolver-typescript: 2.7.1_ee2ddb12623c985c36290f985ad5559c
       eslint-plugin-deprecation: 1.2.1_eslint@7.32.0+typescript@4.4.4
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-jam3: 0.2.3
@@ -4292,7 +4298,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@types/chai': 4.3.1
@@ -4337,7 +4343,7 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.2
       immer: 9.0.6
       lodash: 4.17.21
@@ -4408,7 +4414,7 @@ importers:
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons': ^1.14.0
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -4473,7 +4479,7 @@ importers:
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons': 1.16.0
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components
       classnames: 2.3.2
       immer: 9.0.6
@@ -4558,7 +4564,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -4635,7 +4641,7 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       '@types/shortid': 0.0.29
       callable-instance2: 1.0.0
       classnames: 2.3.2
@@ -4727,7 +4733,7 @@ importers:
       '@itwin/core-i18n': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -4774,7 +4780,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.2
       dompurify: 2.4.1
       lodash: 4.17.21
@@ -4840,7 +4846,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ~1.46.0
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -4895,7 +4901,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       callable-instance2: 1.0.0
       classnames: 2.3.2
       eventemitter2: 5.0.1
@@ -4969,7 +4975,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
-      '@types/yargs': ^17.0.10
+      '@types/yargs': 17.0.19
       eslint: ^7.11.0
       glob: ^7.1.2
       mocha: ^10.0.0
@@ -4988,7 +4994,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/glob': 5.0.37
       '@types/mocha': 8.2.3
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       eslint: 7.32.0
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -5381,7 +5387,7 @@ packages:
       convert-source-map: 1.9.0
       debug: 4.3.4
       gensync: 1.0.0-beta.2
-      json5: 2.2.2
+      json5: 2.2.3
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -7022,8 +7028,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.6.0:
-    resolution: {integrity: sha512-g54C76ieXHELXJAdUErLWIGookMCmEaZzvvROvFihu5geAQQ+DYPYjEqpP39DvS+Id/uUYvr3HoNwe0BZzc9Ww==}
+  /@bentley/imodeljs-native/3.6.6:
+    resolution: {integrity: sha512-4KoIjibO7B+qf04MklBEr4dnJtcryqOsgdFH4Hlg9jkp7nj9lwlbb0+AnW1BeyAvIW2jp768MIDjxOhnB8GROg==}
     requiresBuild: true
     dev: false
 
@@ -7743,7 +7749,7 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.5.1_electron@22.0.0:
+  /@itwin/certa/3.5.1_electron@23.0.0:
     resolution: {integrity: sha512-kKonJY4IznEHPNV0GaP0l02atPqwgatUZ3Cvxkv8BndfNgbaGR3dHLlRwuDuc/yYReLBkpIZDhbPAVsgBzvASw==}
     hasBin: true
     peerDependencies:
@@ -7753,7 +7759,7 @@ packages:
         optional: true
     dependencies:
       detect-port: 1.3.0
-      electron: 22.0.0
+      electron: 23.0.0
       express: 4.18.2
       jsonc-parser: 2.0.3
       lodash: 4.17.21
@@ -7801,14 +7807,14 @@ packages:
       webpack: 5.75.0
     dev: true
 
-  /@itwin/electron-authorization/0.8.5_electron@22.0.0:
+  /@itwin/electron-authorization/0.8.5_electron@23.0.0:
     resolution: {integrity: sha512-ynmZSEpyjrVl+Ro99jYL1GKFsVgb0MlHMrntdTxFjkbVOh9VtocX9gdw8oGrlrVuOYpy1jxd3+0uj36fRmv91w==}
     peerDependencies:
       electron: '>=14.0.0 <18.0.0'
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@openid/appauth': 1.3.1
-      electron: 22.0.0
+      electron: 23.0.0
       keytar: 7.9.0
       open: 8.4.0
       username: 5.1.0
@@ -7823,7 +7829,7 @@ packages:
       react-dom: ^16.13.0 || ^17.0.2 || 17
     dependencies:
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.2
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -7875,9 +7881,6 @@ packages:
       - debug
     dev: false
 
-  /@itwin/itwinui-css/0.61.0:
-    resolution: {integrity: sha512-hdbeabfuZSr53ykzCdu+phQdlwMVYninRt+K+1tnUDJCdPVYOx3WFUltnbq1mCDASF/ZQDpbPFsxY4aQ/tx4Hw==}
-
   /@itwin/itwinui-css/0.63.1:
     resolution: {integrity: sha512-GWXRaaYBxbmIpXncrf6yOeqvyIaQWmtdx8lJ/UehT+vjahcklO00+dFEzWBboFdE/4ftDOqurqbuiDcNf2lugQ==}
 
@@ -7913,13 +7916,13 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
 
-  /@itwin/itwinui-react/1.42.0_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-mnZXhDodCZK4KsJdvh4KmV94/OzJJycKsWubbmDPOJvtLDjvxBmdJ4hLpJwktNu0B/MTEiDTU227tadZdbXZYQ==}
+  /@itwin/itwinui-react/1.46.0_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-Leb0KFC7p6Gx9Wx90fYcH8KXeBk9zEvbhrMy5mMhPehA2HnQVvOO/tcwh2SKN+9KZdEB3J8hGArzNeE23Qx85A==}
     peerDependencies:
       react: '>=16.8.6 < 19.0.0 || 17'
       react-dom: '>=16.8.6 < 19.0.0 || 17'
     dependencies:
-      '@itwin/itwinui-css': 0.61.0
+      '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-illustrations-react': 1.3.1_react-dom@17.0.2+react@17.0.2
       '@tippyjs/react': 4.2.6_react-dom@17.0.2+react@17.0.2
@@ -8012,10 +8015,10 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/oidc-signin-tool/3.5.0_electron@22.0.0:
+  /@itwin/oidc-signin-tool/3.5.0_electron@23.0.0:
     resolution: {integrity: sha512-2jw9Qjc4SM6yYME7kx19r3mMHUI++JfgvXwKe8eHaWXGMCx+PM7gUzLuRQ8d5Fk0zWPaxGsuVtQ4pBW4EFeJQQ==}
     dependencies:
-      '@itwin/certa': 3.5.1_electron@22.0.0
+      '@itwin/certa': 3.5.1_electron@23.0.0
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -8046,11 +8049,11 @@ packages:
       - debug
     dev: false
 
-  /@itwin/service-authorization/0.6.2:
-    resolution: {integrity: sha512-4zFhPwskE7rd6mlNPvzDLyfRR2EE2+dzknD7IAXSF+we+l5clLyGmsCV0Z5moFgPE0wa1TCXpkxKklQmhrzuCA==}
+  /@itwin/service-authorization/0.6.3:
+    resolution: {integrity: sha512-dJgNADV4eo76epyef0Qr3E1zvC2VhmLs6eDtyJC2stlEHq/aFwtZvhsHlGelgsEOKab/HqY8X6TDEWJ/gK0eew==}
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
-      jsonwebtoken: 8.5.1
+      jsonwebtoken: 9.0.0
       jwks-rsa: 2.1.5
       openid-client: 4.9.1
     transitivePeerDependencies:
@@ -8330,7 +8333,7 @@ packages:
       '@types/istanbul-lib-coverage': 2.0.4
       '@types/istanbul-reports': 3.0.1
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.17
+      '@types/yargs': 17.0.19
       chalk: 4.1.2
     dev: true
 
@@ -8807,7 +8810,7 @@ packages:
     resolution: {integrity: sha512-lR8q/9W7hZpMWweNiAKU7NQerBnzQQLvi8qnTDU/fxItPhtZVMbPV3lbCwjhIlNBe9Bbr5V+KHshvWmVSG9cxQ==}
     dependencies:
       ejs: 3.1.8
-      json5: 2.2.2
+      json5: 2.2.3
       magic-string: 0.25.9
       string.prototype.matchall: 4.0.8
     dev: true
@@ -9793,8 +9796,8 @@ packages:
       '@types/yargs-parser': 21.0.0
     dev: true
 
-  /@types/yargs/17.0.17:
-    resolution: {integrity: sha512-72bWxFKTK6uwWJAVT+3rF6Jo6RTojiJ27FQo8Rf60AL+VZbzoVPnMFhKsUnbjR8A3BTCYQ7Mv3hnl8T0A+CX9g==}
+  /@types/yargs/17.0.19:
+    resolution: {integrity: sha512-cAx3qamwaYX9R0fzOIZAlFpo4A+1uBVCxqpKz9D26uTF4srRXaGTTsikQmaotCtNdbhzyUH7ft6p9ktz9s6UNQ==}
     dependencies:
       '@types/yargs-parser': 21.0.0
     dev: true
@@ -11363,7 +11366,7 @@ packages:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
 
   /buffer-equal-constant-time/1.0.1:
-    resolution: {integrity: sha1-+OcRMvf/5uAaXJaXpMbz5I1cyBk=}
+    resolution: {integrity: sha512-zRpUiDwd/xk6ADqPMATG8vc9VPrkck7T07OIx0gnjmJAnHnTVXNQG3vfvWNuiZIkwu9KrKdA1iJKfsfTVxE6NA==}
     dev: false
 
   /buffer-from/1.1.2:
@@ -12941,8 +12944,8 @@ packages:
   /electron-to-chromium/1.4.284:
     resolution: {integrity: sha512-M8WEXFuKXMYMVr45fo8mq0wUrrJHheiKZf6BArTKk9ZBYCKJEOU5H8cdWgDT+qCVZf7Na4lVUaZsA+h6uA9+PA==}
 
-  /electron/22.0.0:
-    resolution: {integrity: sha512-cgRc4wjyM+81A0E8UGv1HNJjL1HBI5cWNh/DUIjzYvoUuiEM0SS0hAH/zaFQ18xOz2ced6Yih8SybpOiOYJhdg==}
+  /electron/23.0.0:
+    resolution: {integrity: sha512-S6hVtTAjauMiiWP9sBVR5RpcUC464cNZ06I2EMUjeZBq+KooS6tLmNsfw0zLpAXDp1qosjlBP3v71NTZ3gd9iA==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -13424,8 +13427,8 @@ packages:
       resolve: 1.22.1
     dev: true
 
-  /eslint-import-resolver-typescript/2.4.0_ee2ddb12623c985c36290f985ad5559c:
-    resolution: {integrity: sha512-useJKURidCcldRLCNKWemr1fFQL1SzB3G4a0li6lFGvlc5xGe1hY343bvG07cbpCzPuM/lK19FIJB3XGFSkplA==}
+  /eslint-import-resolver-typescript/2.7.1_ee2ddb12623c985c36290f985ad5559c:
+    resolution: {integrity: sha512-00UbgGwV8bSgUv34igBDbTOtKhqoRMy9bFjNehT40bXg6585PNIct8HhXZ0SybqB9rWtXj9crcku8ndDn/gIqQ==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: '*'
@@ -13436,7 +13439,7 @@ packages:
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       glob: 7.2.3
       is-glob: 4.0.3
-      resolve: 1.19.0
+      resolve: 1.22.1
       tsconfig-paths: 3.14.1
     transitivePeerDependencies:
       - supports-color
@@ -13569,7 +13572,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.46.1_8608c6f3b6e2d881514e8b7329e7ea6e
       '@typescript-eslint/experimental-utils': 5.46.1_eslint@8.29.0+typescript@4.4.4
       eslint: 8.29.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -14650,17 +14653,6 @@ packages:
 
   /glob-to-regexp/0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
-
-  /glob/7.1.7:
-    resolution: {integrity: sha512-OvD9ENzPLbegENnYP5UUfJIirTg4+XwMWGaQfQTY0JenxNvvIKP3U3/tAQSPIu/lHxXYSZmpXlUHeqAIdKzBLQ==}
-    dependencies:
-      fs.realpath: 1.0.0
-      inflight: 1.0.6
-      inherits: 2.0.4
-      minimatch: 3.1.2
-      once: 1.4.0
-      path-is-absolute: 1.0.1
-    dev: true
 
   /glob/7.2.0:
     resolution: {integrity: sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==}
@@ -16356,7 +16348,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -16660,12 +16652,6 @@ packages:
   /json-stable-stringify-without-jsonify/1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
-  /json-stable-stringify/1.0.2:
-    resolution: {integrity: sha512-eunSSaEnxV12z+Z73y/j5N37/In40GK4GmsSy+tEHJMxknvqnA7/djeYtAgW0GsWHUfg+847WJjKaEylk2y09g==}
-    dependencies:
-      jsonify: 0.0.1
-    dev: true
-
   /json-stringify-safe/5.0.1:
     resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
 
@@ -16675,8 +16661,8 @@ packages:
     dependencies:
       minimist: 1.2.7
 
-  /json5/2.2.2:
-    resolution: {integrity: sha512-46Tk9JiOL2z7ytNQWFLpj99RZkVgeHf87yGQKsIkaPz1qSH9UczKH1rO7K3wgRselo0tYMUNfecYpm/p1vC7tQ==}
+  /json5/2.2.3:
+    resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
     engines: {node: '>=6'}
     hasBin: true
 
@@ -16705,10 +16691,6 @@ packages:
     optionalDependencies:
       graceful-fs: 4.2.10
 
-  /jsonify/0.0.1:
-    resolution: {integrity: sha512-2/Ki0GcmuqSrgFyelQq9M05y7PS0mEwuIzrf3f1fPqkVDVRvZrPZtVSMHxdgo8Aq0sxAOb/cr2aqqA3LeWHVPg==}
-    dev: true
-
   /jsonpath/1.1.1:
     resolution: {integrity: sha512-l6Cg7jRpixfbgoWgkrl77dgEj8RPvND0wMH6TwQmi9Qs4TFfS9u5cUFnbeKTwj5ga5Y3BTGGNI28k117LJ009w==}
     dependencies:
@@ -16736,6 +16718,16 @@ packages:
       lodash.once: 4.1.1
       ms: 2.1.3
       semver: 5.7.1
+    dev: false
+
+  /jsonwebtoken/9.0.0:
+    resolution: {integrity: sha512-tuGfYXxkQGDPnLJ7SibiQgVgeDgfbPq2k2ICcbgqW8WxWLBAxKQM/ZCu/IT8SOSwmaYl4dpTFCW5xZv7YbbWUw==}
+    engines: {node: '>=12', npm: '>=6'}
+    dependencies:
+      jws: 3.2.2
+      lodash: 4.17.21
+      ms: 2.1.3
+      semver: 7.3.8
     dev: false
 
   /jsx-ast-utils/3.3.3:
@@ -16928,7 +16920,7 @@ packages:
     dependencies:
       big.js: 5.2.2
       emojis-list: 3.0.0
-      json5: 2.2.2
+      json5: 2.2.3
 
   /loader-utils/3.2.1:
     resolution: {integrity: sha512-ZvFw1KWS3GVyYBYb7qkmRM/WwL2TQQBxgCK62rlvm4WpVQ23Nb4tYjApUlfjrEGvOs7KHEsmyUn75OHZrJMWPw==}
@@ -18235,6 +18227,10 @@ packages:
 
   /path-browserify/1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
+    dev: true
+
+  /path-equal/1.2.5:
+    resolution: {integrity: sha512-i73IctDr3F2W+bsOWDyyVm/lqsXO47aY9nsFZUjTT/aljSbkxHxxCoyZ9UUrM8jK0JVod+An+rl48RCsvWM+9g==}
     dev: true
 
   /path-exists/3.0.0:
@@ -19886,7 +19882,7 @@ packages:
     dependencies:
       object-assign: 4.1.1
       react: 17.0.2
-      react-is: 17.0.2
+      react-is: 18.2.0
     dev: true
 
   /react-table/7.8.0_react@17.0.2:
@@ -20376,7 +20372,6 @@ packages:
   /safe-stable-stringify/2.4.1:
     resolution: {integrity: sha512-dVHE6bMtS/bnL2mwualjc6IxEv1F+OCUpA46pKUj6F8uDbUM0jCCulPqRNPSnWwGNKx5etqMjZYdXtrm5KJZGA==}
     engines: {node: '>=10'}
-    dev: false
 
   /safer-buffer/2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
@@ -21777,9 +21772,9 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.20.5
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-util: 27.5.1
-      json5: 2.2.2
+      json5: 2.2.3
       lodash.memoize: 4.1.2
       make-error: 1.3.6
       semver: 7.3.8
@@ -21790,6 +21785,39 @@ packages:
   /ts-key-enum/2.0.12:
     resolution: {integrity: sha512-Ety4IvKMaeG34AyXMp5r11XiVZNDRL+XWxXbVVJjLvq2vxKRttEANBE7Za1bxCAZRdH2/sZT6jFyyTWxXz28hw==}
     dev: false
+
+  /ts-node/10.9.1_27a5f0538b82676f8e26b230eeee0b99:
+    resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+      '@types/node':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.3
+      '@types/node': 16.18.9
+      acorn: 8.8.1
+      acorn-walk: 8.2.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 4.8.4
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: true
 
   /ts-node/10.9.1_cb191e8e79887c1a30195666ae91e5fa:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
@@ -21982,27 +22010,33 @@ packages:
       lodash: 4.17.21
       postinstall-build: 5.0.3
 
-  /typescript-json-schema/0.43.0:
-    resolution: {integrity: sha512-4c9IMlIlHYJiQtzL1gh2nIPJEjBgJjDUs50gsnnc+GFyDSK1oFM3uQIBSVosiuA/4t6LSAXDS9vTdqbQC6EcgA==}
+  /typescript-json-schema/0.55.0:
+    resolution: {integrity: sha512-BXaivYecUdiXWWNiUqXgY6A9cMWerwmhtO+lQE7tDZGs7Mf38sORDeQZugfYOZOHPZ9ulsD+w0LWjFDOQoXcwg==}
     hasBin: true
     dependencies:
       '@types/json-schema': 7.0.11
-      glob: 7.1.7
-      json-stable-stringify: 1.0.2
-      typescript: 4.0.8
-      yargs: 15.4.1
-    dev: true
-
-  /typescript/4.0.8:
-    resolution: {integrity: sha512-oz1765PN+imfz1MlZzSZPtC/tqcwsCyIYA8L47EkRnRW97ztRk83SzMiWLrnChC0vqoYxSU1fcFUDA5gV/ZiPg==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
+      '@types/node': 16.18.9
+      glob: 7.2.3
+      path-equal: 1.2.5
+      safe-stable-stringify: 2.4.1
+      ts-node: 10.9.1_27a5f0538b82676f8e26b230eeee0b99
+      typescript: 4.8.4
+      yargs: 17.6.2
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
     dev: true
 
   /typescript/4.4.4:
     resolution: {integrity: sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==}
     engines: {node: '>=4.2.0'}
     hasBin: true
+
+  /typescript/4.8.4:
+    resolution: {integrity: sha512-QCh+85mCy+h0IGff8r5XWzOVSbBO+KfeYrMQh7NJ58QujwcE22u+NUSmUxqF+un70P9GXKxa2HCNiTTMJknyjQ==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+    dev: true
 
   /typical/4.0.0:
     resolution: {integrity: sha512-VAH4IvQ7BDFYglMd7BPRDfLgxZZX4O4TFcRDA6EN5X7erNJJq+McIEp8np9aVtxrCJ6qx4GTYVfOWNjcqwZgRw==}

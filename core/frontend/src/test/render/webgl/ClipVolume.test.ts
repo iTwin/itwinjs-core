@@ -6,10 +6,11 @@ import { expect } from "chai";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@itwin/core-geometry";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { IModelApp } from "../../../IModelApp";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ClipVolume", async () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

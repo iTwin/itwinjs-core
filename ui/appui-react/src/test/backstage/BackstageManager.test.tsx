@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EmptyLocalization } from "@itwin/core-common";
 import { MockRender } from "@itwin/core-frontend";
 import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";
@@ -14,7 +13,7 @@ import TestUtils from "../TestUtils";
 describe("BackstageManager", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
   });
   after(async () => {
     await MockRender.App.shutdown();
@@ -82,10 +81,10 @@ describe("BackstageManager", () => {
 
   it("getBackstageToggleCommand generates toggle button", () => {
     const command = BackstageManager.getBackstageToggleCommand();
-    const initialState = UiFramework.backstageManager.isOpen;
+    const initialState = UiFramework.backstageManager.isOpen; // eslint-disable-line deprecation/deprecation
     command.execute();
 
-    expect(UiFramework.backstageManager.isOpen).to.eq(!initialState);
+    expect(UiFramework.backstageManager.isOpen).to.eq(!initialState); // eslint-disable-line deprecation/deprecation
   });
 
   it("getBackstageToggleCommand handles icon override", () => {
@@ -130,10 +129,10 @@ describe("useIsBackstageOpen", () => {
 describe("useBackstageManager", () => {
   it("returns UiFramework.backstageManager instance", async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
 
     const {result} = renderHook(() => useBackstageManager());
-    expect(result.current).to.equal(UiFramework.backstageManager);
+    expect(result.current).to.equal(UiFramework.backstageManager); // eslint-disable-line deprecation/deprecation
 
     await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();

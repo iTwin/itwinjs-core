@@ -700,7 +700,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   // Define a culling frustum. Commands associated with Graphics whose ranges do not intersect the frustum will be skipped.
-  public setCheckRange(frustum: Frustum) { this._frustumPlanes = new FrustumPlanes(frustum); }
+  public setCheckRange(frustum: Frustum) { this._frustumPlanes = FrustumPlanes.fromFrustum(frustum); }
   // Clear the culling frustum.
   public clearCheckRange(): void { this._frustumPlanes = undefined; }
 

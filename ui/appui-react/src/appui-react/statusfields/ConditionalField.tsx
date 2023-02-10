@@ -36,7 +36,7 @@ interface ConditionalFieldState {
 /**
  * A component that expects its children to be a function that will be passed the current component Props.
  * @public
- * @deprecated In upcoming version, all props passed down to the bool function will be undefined, making this component useless.
+ * @deprecated in 3.3. In upcoming version, all props passed down to the bool function will be undefined, making this component useless.
  */
 export class ConditionalField extends React.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
   /** @internal */

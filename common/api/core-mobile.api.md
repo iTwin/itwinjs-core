@@ -211,10 +211,6 @@ export interface MobileNotifications {
     // (undocumented)
     notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
     // (undocumented)
-    notifyEnterBackground: () => void;
-    // (undocumented)
-    notifyEnterForeground: () => void;
-    // (undocumented)
     notifyMemoryWarning: () => void;
     // (undocumented)
     notifyOrientationChanged: () => void;
@@ -225,23 +221,23 @@ export interface MobileNotifications {
 // @beta (undocumented)
 export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;
 
-// @beta (undocumented)
+// @internal (undocumented)
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
-// @beta
+// @internal
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
     static get args(): any;
     static get platform(): RpcMobilePlatform;
     // (undocumented)
     abstract protocol: MobileRpcProtocol;
-    // @internal (undocumented)
+    // (undocumented)
     static setup: {
         obtainPort: () => number;
         checkPlatform: () => boolean;
     };
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface MobileRpcGateway {
     // (undocumented)
     connectionId: number;
@@ -255,15 +251,15 @@ export interface MobileRpcGateway {
     sendString: (message: string, connectionId: number) => void;
 }
 
-// @beta
+// @internal
 export class MobileRpcManager {
     static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
-    // @internal (undocumented)
+    // (undocumented)
     static ready(): Promise<void>;
 }
 
-// @beta
+// @internal
 export class MobileRpcProtocol extends RpcProtocol {
     constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
     // (undocumented)
@@ -284,10 +280,10 @@ export class MobileRpcProtocol extends RpcProtocol {
     socket: WebSocket;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class MobileRpcRequest extends RpcRequest {
     protected load(): Promise<RpcSerializedValue>;
-    // @internal (undocumented)
+    // (undocumented)
     notifyResponse(fulfillment: RpcRequestFulfillment): void;
     readonly protocol: MobileRpcProtocol;
     protected send(): Promise<number>;
@@ -312,7 +308,7 @@ export enum Orientation {
     Unknown = 0
 }
 
-// @beta
+// @internal
 export enum RpcMobilePlatform {
     // (undocumented)
     Android = 1,

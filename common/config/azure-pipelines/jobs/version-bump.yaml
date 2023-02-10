@@ -46,9 +46,9 @@ jobs:
     - checkout: self
 
     - task: NodeTool@0
-      displayName: Use Node 12.x
+      displayName: Use Node 18.x
       inputs:
-        versionSpec: 12.x
+        versionSpec: 18.x
         checkLatest: true
 
     - bash: |
@@ -176,9 +176,9 @@ jobs:
       steps:
       - checkout: self
       - task: NodeTool@0
-        displayName: 'Use Node 12.x'
+        displayName: 'Use Node 18.x'
         inputs:
-          versionSpec: 12.x
+          versionSpec: 18.x
           checkLatest: true
 
       - bash: |

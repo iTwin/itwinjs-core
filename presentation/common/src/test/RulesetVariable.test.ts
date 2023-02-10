@@ -87,6 +87,7 @@ describe("RulesetVariable", () => {
     });
 
     it("returns non CompressedId64Set variables as is", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const boolVariable: BooleanRulesetVariableJSON = {
         type: VariableValueTypes.Bool,
         id: "test",
@@ -94,6 +95,7 @@ describe("RulesetVariable", () => {
       };
       expect(RulesetVariable.fromJSON(boolVariable)).to.eq(boolVariable);
 
+      // eslint-disable-next-line deprecation/deprecation
       const intVariable: IntRulesetVariableJSON = {
         type: VariableValueTypes.Int,
         id: "test",
@@ -101,6 +103,7 @@ describe("RulesetVariable", () => {
       };
       expect(RulesetVariable.fromJSON(intVariable)).to.eq(intVariable);
 
+      // eslint-disable-next-line deprecation/deprecation
       const intArrayVariable: IntsRulesetVariableJSON = {
         type: VariableValueTypes.IntArray,
         id: "test",
@@ -108,6 +111,7 @@ describe("RulesetVariable", () => {
       };
       expect(RulesetVariable.fromJSON(intArrayVariable)).to.eq(intArrayVariable);
 
+      // eslint-disable-next-line deprecation/deprecation
       const id64Variable: Id64RulesetVariableJSON = {
         type: VariableValueTypes.Id64,
         id: "test",
@@ -122,6 +126,7 @@ describe("RulesetVariable", () => {
       };
       expect(RulesetVariable.fromJSON(id64ArrayVariable)).to.eq(id64ArrayVariable);
 
+      // eslint-disable-next-line deprecation/deprecation
       const stringVariable: StringRulesetVariableJSON = {
         type: VariableValueTypes.String,
         id: "test",

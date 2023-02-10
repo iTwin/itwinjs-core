@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../ImageUtil";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
@@ -24,7 +24,7 @@ const bitmapData = new Uint8Array([
 ]);
 
 describe("Texture tests", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("should produce an attachment texture (rgb, unsigned byte)", () => {

@@ -22,22 +22,22 @@ export interface Node {
   description?: string;
   /**
    * Image ID
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
   /**
    * Foreground color
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   foreColor?: string;
   /**
    * Background color
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   backColor?: string;
   /**
    * Font style
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   fontStyle?: string;
   /** Does this node have child nodes */
@@ -50,19 +50,25 @@ export interface Node {
   isExpanded?: boolean;
   /**
    * Is checkbox visible for this node
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isCheckboxVisible?: boolean;
   /**
    * Is this node's checkbox checked
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isChecked?: boolean;
   /**
    * Is this node's checkbox enabled
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isCheckboxEnabled?: boolean;
+  /**
+   * Identifies whether the hierarchy level below this node supports filtering. If not, requesting either a hierarchy level descriptor or
+   * a hierarchy level with [[HierarchyRequestOptions.instanceFilter]] will throw an error with [[PresentationStatus.InvalidArgument]] status.
+   * @beta
+   */
+  supportsFiltering?: boolean;
   /** Extended data injected into this node */
   extendedData?: {
     [key: string]: any;
@@ -72,29 +78,35 @@ export interface Node {
 /**
  * Serialized [[Node]] JSON representation.
  * @public
+ * @deprecated in 3.x. Use [[Node]].
  */
 export interface NodeJSON {
+  // eslint-disable-next-line deprecation/deprecation
   key: NodeKeyJSON;
+  // TODO: rename to `label`
+  // eslint-disable-next-line deprecation/deprecation
   labelDefinition: LabelDefinitionJSON;
   description?: string;
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   imageId?: string;
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   foreColor?: string;
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   backColor?: string;
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   fontStyle?: string;
   hasChildren?: boolean;
   isSelectionDisabled?: boolean;
   isEditable?: boolean;
   isExpanded?: boolean;
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   isCheckboxVisible?: boolean;
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   isChecked?: boolean;
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   isCheckboxEnabled?: boolean;
+  /** @beta */
+  supportsFiltering?: boolean;
   extendedData?: {
     [key: string]: any;
   };
@@ -109,50 +121,61 @@ export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
 /**
  * Serialized [[PartialNode]] JSON representation.
  * @public
+ * @deprecated in 3.x. Use [[PartialNode]].
  */
+// eslint-disable-next-line deprecation/deprecation
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
 
 /** @public */
 export namespace Node {
-  /** Serialize given [[Node]] to JSON */
+  /**
+   * Serialize given [[Node]] to JSON
+   * @deprecated in 3.x. Use [[Node]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
   export function toJSON(node: Node): NodeJSON {
-    const { key, label, ...baseNode } = node;
+    const { label, ...baseNode } = node;
     return {
       ...baseNode,
-      key: NodeKey.toJSON(key),
-      labelDefinition: LabelDefinition.toJSON(label),
+      labelDefinition: label,
     };
   }
 
   /** @internal */
+  // eslint-disable-next-line deprecation/deprecation
   export function toPartialJSON(node: PartialNode): PartialNodeJSON {
     if (node.key === undefined) {
       return node;
     }
 
-    const { key, label, ...baseNode } = node;
+    const { label, ...baseNode } = node;
     return {
       ...baseNode,
-      key: NodeKey.toJSON(key),
-      labelDefinition: LabelDefinition.toJSON(label),
+      labelDefinition: label,
     };
   }
 
-  /** Deserialize [[Node]] from JSON */
+  /**
+   * Deserialize [[Node]] from JSON
+   * @deprecated in 3.x. Use [[Node]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: NodeJSON | string): Node {
     if (typeof json === "string")
       return JSON.parse(json, reviver);
     const { labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
+      // eslint-disable-next-line deprecation/deprecation
       key: NodeKey.fromJSON(json.key),
-      label: LabelDefinition.fromJSON(labelDefinition),
+      label: labelDefinition,
     };
   }
 
   /** @internal */
+  // eslint-disable-next-line deprecation/deprecation
   export function fromPartialJSON(json: PartialNodeJSON): PartialNode {
     if (json.key === undefined) {
       return json;
@@ -161,18 +184,19 @@ export namespace Node {
     const { key, labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
+      // eslint-disable-next-line deprecation/deprecation
       key: NodeKey.fromJSON(key),
-      label: LabelDefinition.fromJSON(labelDefinition),
+      label: labelDefinition,
     };
   }
 
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing [[Node]] objects.
-   *
    * @internal
    */
   export function reviver(key: string, value: any): any {
+    // eslint-disable-next-line deprecation/deprecation
     return key === "" ? fromJSON(value) : value;
   }
 
@@ -180,19 +204,19 @@ export namespace Node {
    * Deserialize nodes list from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized nodes list
-   *
    * @internal
    */
+  // eslint-disable-next-line deprecation/deprecation
   export function listFromJSON(json: NodeJSON[] | string): Node[] {
     if (typeof json === "string")
       return JSON.parse(json, listReviver);
+    // eslint-disable-next-line deprecation/deprecation
     return json.map((m) => fromJSON(m));
   }
 
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing [[Node]][] objects.
-   *
    * @internal
    */
   export function listReviver(key: string, value: any): any {

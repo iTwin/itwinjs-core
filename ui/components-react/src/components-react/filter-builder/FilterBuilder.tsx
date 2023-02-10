@@ -2,58 +2,55 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
 import * as React from "react";
-import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
-import { ActiveRuleGroupContext, PropertyFilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
+import { PropertyDescription } from "@itwin/appui-abstract";
+import {
+  ActiveRuleGroupContext, PropertyFilterBuilderContext, PropertyFilterBuilderContextProps, PropertyFilterBuilderRuleRenderingContext,
+  PropertyFilterBuilderRuleRenderingContextProps, useActiveRuleGroupContextProps,
+} from "./FilterBuilderContext";
+import { PropertyFilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
 import { PropertyFilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
-import {
-  isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderActions, PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup,
-  PropertyFilterBuilderRuleGroupItem, usePropertyFilterBuilderState,
-} from "./FilterBuilderState";
-import { isUnaryPropertyFilterOperator } from "./Operators";
+import { buildPropertyFilter, usePropertyFilterBuilderState } from "./FilterBuilderState";
 import { PropertyFilter } from "./Types";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilder]] component.
+ * @beta
+ */
 export interface PropertyFilterBuilderProps {
+  /** List of properties available to be used in filter rules. */
   properties: PropertyDescription[];
+  /** Callback that is invoked when filter changes. */
   onFilterChanged: (filter?: PropertyFilter) => void;
+  /** Callback that is invoked when property is selected in any rule. */
   onRulePropertySelected?: (property: PropertyDescription) => void;
+  /** Custom renderer for rule operator selector. */
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+  /** Custom renderer for rule value input. */
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
-  ruleGroupDepthLimit?: number;
+  /** Custom renderer for property selector in rule. */
   propertyRenderer?: (name: string) => React.ReactNode;
-  disablePropertySelection?: boolean;
+  /** Specifies how deep rule groups can be nested. */
+  ruleGroupDepthLimit?: number;
+  /** Specifies whether component is disabled or not. */
+  isDisabled?: boolean;
+  /** Initial filter that should be shown when component is mounted. */
   initialFilter?: PropertyFilter;
 }
 
-/** @alpha */
-export interface PropertyFilterBuilderContextProps {
-  actions: PropertyFilterBuilderActions;
-  properties: PropertyDescription[];
-  onRulePropertySelected?: (property: PropertyDescription) => void;
-  ruleGroupDepthLimit?: number;
-}
-
-/** @alpha */
-export const PropertyFilterBuilderContext = React.createContext<PropertyFilterBuilderContextProps>(null!);
-
-/** @alpha */
-export interface PropertyFilterBuilderRuleRenderingContextProps {
-  ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
-  ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
-  propertyRenderer?: (name: string) => React.ReactNode;
-  disablePropertySelection?: boolean;
-}
-
-/** @alpha */
-export const PropertyFilterBuilderRuleRenderingContext = React.createContext<PropertyFilterBuilderRuleRenderingContextProps>({});
-
 const ROOT_GROUP_PATH: string[] = [];
 
-/** @alpha */
+/**
+ * Component for building complex filters. It allows to create filter rules or rule groups based on provided list of properties.
+ * @beta
+ */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection, initialFilter } = props;
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, isDisabled, initialFilter } = props;
   const { state, actions } = usePropertyFilterBuilderState(initialFilter);
   const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -70,8 +67,8 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
     [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
   );
   const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(
-    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection }),
-    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection]
+    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, isDisabled }),
+    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, isDisabled]
   );
   return (
     <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
@@ -84,82 +81,4 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
       </PropertyFilterBuilderContext.Provider>
     </PropertyFilterBuilderRuleRenderingContext.Provider>
   );
-}
-
-/** @internal */
-export function buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined {
-  if (isPropertyFilterBuilderRuleGroup(groupItem))
-    return buildPropertyFilterFromRuleGroup(groupItem);
-  return buildPropertyFilterFromRule(groupItem);
-}
-
-function buildPropertyFilterFromRuleGroup(rootGroup: PropertyFilterBuilderRuleGroup): PropertyFilter | undefined {
-  if (rootGroup.items.length === 0)
-    return undefined;
-
-  const rules = new Array<PropertyFilter>();
-  for (const item of rootGroup.items) {
-    const rule = buildPropertyFilter(item);
-    if (!rule)
-      return undefined;
-    rules.push(rule);
-  }
-
-  if (rules.length === 1)
-    return rules[0];
-
-  return {
-    operator: rootGroup.operator,
-    rules,
-  };
-}
-
-function buildPropertyFilterFromRule(rule: PropertyFilterBuilderRule): PropertyFilter | undefined {
-  const { property, operator, value } = rule;
-  if (!property || operator === undefined)
-    return undefined;
-
-  if (!isUnaryPropertyFilterOperator(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
-    return undefined;
-
-  return { property, operator, value };
-}
-
-function useActiveRuleGroupContextProps(rootElementRef: React.RefObject<HTMLElement>) {
-  const [activeElement, setActiveElement] = React.useState<HTMLElement | undefined>();
-
-  const onFocus: React.FocusEventHandler<HTMLElement> = React.useCallback((e) => {
-    e.stopPropagation();
-    setActiveElement(e.currentTarget);
-  }, []);
-
-  const onBlur: React.FocusEventHandler<HTMLElement> = React.useCallback((e) => {
-    e.stopPropagation();
-    if (activeElement !== e.currentTarget || (rootElementRef.current && rootElementRef.current.contains(e.relatedTarget)))
-      return;
-
-    setActiveElement(undefined);
-  }, [activeElement, rootElementRef]);
-
-  const onMouseOver: React.MouseEventHandler<HTMLElement> = React.useCallback((e) => {
-    e.stopPropagation();
-    setActiveElement(e.currentTarget);
-  }, []);
-
-  const onMouseOut: React.MouseEventHandler<HTMLElement> = React.useCallback((e) => {
-    e.stopPropagation();
-    // istanbul ignore if
-    if (activeElement !== e.currentTarget)
-      return;
-
-    setActiveElement(undefined);
-  }, [activeElement]);
-
-  return React.useMemo(() => ({
-    activeElement,
-    onFocus,
-    onBlur,
-    onMouseOver,
-    onMouseOut,
-  }), [activeElement, onFocus, onBlur, onMouseOver, onMouseOut]);
 }

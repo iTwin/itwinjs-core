@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ViewFlags } from "@itwin/core-common";
+import { EmptyLocalization, ViewFlags } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { StandardViewId } from "../StandardView";
 import { Viewport } from "../Viewport";
@@ -22,7 +22,7 @@ describe("TwoWayViewportSync", () => {
   let vp1: Viewport;
   let vp2: Viewport;
 
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   beforeEach(() => {
@@ -179,7 +179,7 @@ describe("connectViewports", () => {
   const nVps = 4;
   const vps: Viewport[] = [];
 
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   beforeEach(() => {

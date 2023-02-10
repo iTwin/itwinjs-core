@@ -13,8 +13,6 @@ import { getInstancesCount, SelectionScope } from "@itwin/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 // cSpell:ignore configurableui
 import { Backstage } from "../backstage/Backstage";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { WorkflowManager } from "../workflow/Workflow";
@@ -162,35 +160,35 @@ export class SyncUiEventDispatcher {
     // clear any registered listeners - this should only be encountered in unit test scenarios
     this._unregisterListenerFuncs.forEach((unregisterListenerFunc) => unregisterListenerFunc());
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onContentControlActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onContentLayoutActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentLayoutActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onFrontstageActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageActivating);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageReadyEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onFrontstageReadyEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageReady);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onModalFrontstageChangedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ModalFrontstageChanged);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onNavigationAidActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.NavigationAidActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onToolActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onToolActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ToolActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onWidgetStateChangedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     }));
 
@@ -206,7 +204,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated); // eslint-disable-line deprecation/deprecation
     }));
 
-    this._unregisterListenerFuncs.push(ContentViewManager.onActiveContentChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.content.onActiveContentChangedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
     }));
 

@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EmptyLocalization } from "@itwin/core-common";
 import { MockRender } from "@itwin/core-frontend";
 import { render, screen } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  Backstage, FrontstageManager, SyncUiEventDispatcher,
+  Backstage, UiFramework,
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 
@@ -19,9 +18,8 @@ describe("Backstage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    await FrontstageManager.setActiveFrontstageDef(undefined);
-    SyncUiEventDispatcher.initialize();   // To process Backstage events
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
+    await MockRender.App.startup();
   });
 
   after(async () => {

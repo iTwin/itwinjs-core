@@ -13,14 +13,14 @@ import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, StagePanelsManager,
 } from "@itwin/appui-layout-react";
 import {
-  FrontstageComposer, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
+  FrontstageComposer, getNestedStagePanelKey, isCollapsedToPanelState,
   ModalFrontstageInfo, StagePanelDef, StagePanelState, UiFramework,
 } from "../../appui-react";
 import TestUtils, { childStructure, userEvent } from "../TestUtils";
 import { TestFrontstage } from "./FrontstageTestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -44,7 +44,7 @@ describe("FrontstageComposer", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     UiFramework.setUiVersion("1");
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
   });
 
   after(async () => {
@@ -53,31 +53,31 @@ describe("FrontstageComposer", () => {
   });
 
   beforeEach(() => {
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => undefined);
     theUserTo = userEvent.setup();
   });
 
   it("FrontstageComposer support of ModalFrontstage", async () => {
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
     render(<FrontstageComposer />);
 
     const modalFrontstage = new TestModalFrontstage();
-    FrontstageManager.openModalFrontstage(modalFrontstage);
-    expect(FrontstageManager.modalFrontstageCount).to.eq(1);
+    UiFramework.frontstages.openModalFrontstage(modalFrontstage);
+    expect(UiFramework.frontstages.modalFrontstageCount).to.eq(1);
 
     expect(screen.getByRole("presentation")).to.satisfy(childStructure(".uifw-modal-frontstage"));
 
     await theUserTo.click(screen.getByTitle("modalFrontstage.backButtonTitle"));
-    expect(FrontstageManager.modalFrontstageCount).to.eq(0);
+    expect(UiFramework.frontstages.modalFrontstageCount).to.eq(0);
   });
 
   it("should handle tab click", async () => {
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     const nineZoneProps: NineZoneManagerProps = {
       zones: {
@@ -91,7 +91,7 @@ describe("FrontstageComposer", () => {
         },
       },
     };
-    const handleTabClickStub = sinon.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
+    const handleTabClickStub = sinon.stub(InternalFrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
 
     ref.current?.handleTabClick(6, 0);
 
@@ -102,9 +102,9 @@ describe("FrontstageComposer", () => {
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     const zoneDef = frontstageDef!.getZoneDef(6)!;
     const widgetDef1 = zoneDef.widgetDefs[0];
@@ -122,9 +122,9 @@ describe("FrontstageComposer", () => {
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     const zoneDef = frontstageDef!.getZoneDef(6)!;
     const widgetDef1 = zoneDef.widgetDefs[0];
@@ -139,9 +139,9 @@ describe("FrontstageComposer", () => {
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     const zoneDef = frontstageDef!.getZoneDef(6)!;
     const widgetDef2 = zoneDef.widgetDefs[1];
@@ -154,7 +154,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should log error if FrontstageComposer.getZoneDef called with no active frontstageDef", async () => {
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const spyMethod = sinon.spy(Logger, "logError");
@@ -162,18 +162,18 @@ describe("FrontstageComposer", () => {
     ref.current?.getZoneDef(1);
     spyMethod.called.should.true;
 
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
   });
 
   it("should handle panel collapse", async () => {
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-    const frontstage = FrontstageManager.activeFrontstageDef!;
+    const frontstage = UiFramework.frontstages.activeFrontstageDef!;
     const stagePanel = new StagePanelDef();
     const getStagePanelDef = sinon.stub(frontstage, "getStagePanelDef").returns(stagePanel);
 
@@ -189,7 +189,7 @@ describe("FrontstageComposer", () => {
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const panelDef = new StagePanelDef();
-    FrontstageManager.onPanelStateChangedEvent.emit({ panelDef, panelState: StagePanelState.Minimized });
+    UiFramework.frontstages.onPanelStateChangedEvent.emit({ panelDef, panelState: StagePanelState.Minimized });
     const panelKey = getNestedStagePanelKey(panelDef.location);
     const panels = ref.current!.state.nineZone.nested.panels[panelKey.id];
     const panel = StagePanelsManager.getPanel(panelKey.type, panels);
@@ -199,10 +199,10 @@ describe("FrontstageComposer", () => {
   it("should hide tool settings widget", async () => {
     render(<FrontstageComposer />);
 
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
-    const hideWidgetSpy = sinon.spy(FrontstageManager.NineZoneManager, "hideWidget");
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => undefined);
+    const hideWidgetSpy = sinon.spy(InternalFrontstageManager.NineZoneManager, "hideWidget");
 
-    FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });
+    UiFramework.frontstages.onToolActivatedEvent.emit({ toolId: "" });
 
     expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any)).to.be.true;
   });
@@ -210,7 +210,7 @@ describe("FrontstageComposer", () => {
   it("should disallow pointer up selection on pointer down", async () => {
     const ref = React.createRef<FrontstageComposer>();
     const {container} = render(<FrontstageComposer ref={ref} />);
-    FrontstageManager.onToolPanelOpenedEvent.emit();
+    InternalFrontstageManager.onToolPanelOpenedEvent.emit();
     expect(ref.current?.state.allowPointerUpSelection).to.be.true;
 
     await theUserTo.click(container.firstElementChild!);
@@ -223,7 +223,7 @@ describe("FrontstageComposer", () => {
     const {container} = render(<FrontstageComposer ref={ref} />);
     await theUserTo.pointer({target: container.firstElementChild!, keys:"[MouseLeft>]"});
 
-    FrontstageManager.onToolPanelOpenedEvent.emit();
+    InternalFrontstageManager.onToolPanelOpenedEvent.emit();
     expect(ref.current?.state.allowPointerUpSelection).to.be.true;
 
     await theUserTo.pointer("[/MouseLeft]");
@@ -231,13 +231,13 @@ describe("FrontstageComposer", () => {
   });
 
   it("should set zone width based on initialWidth of the zone", async () => {
-    const nineZoneManager = FrontstageManager.NineZoneManager;
-    sinon.stub(FrontstageManager, "NineZoneManager").returns(nineZoneManager);
+    const nineZoneManager = InternalFrontstageManager.NineZoneManager;
+    sinon.stub(InternalFrontstageManager, "NineZoneManager").returns(nineZoneManager);
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
     const zoneDef4 = frontstageDef!.getZoneDef(4)!;
     sinon.stub(zoneDef4, "initialWidth").get(() => 200);
 
@@ -246,7 +246,7 @@ describe("FrontstageComposer", () => {
       ...ref.current!.state.nineZone.zones,
     };
     const stub = sinon.stub(manager, "setZoneWidth").returns(zones);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
       expect(stub.calledOnceWithExactly(4, 200, sinon.match.any)).to.be.true;

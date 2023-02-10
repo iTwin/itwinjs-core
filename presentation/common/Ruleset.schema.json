@@ -92,38 +92,7 @@
         "customizationRules": {
           "description": "A list of customization rules that\napply only to nodes produced by this rule.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/NodeArtifactsRule"
-              },
-              {
-                "$ref": "#/definitions/CheckBoxRule"
-              },
-              {
-                "$ref": "#/definitions/ExtendedDataRule"
-              },
-              {
-                "$ref": "#/definitions/GroupingRule"
-              },
-              {
-                "$ref": "#/definitions/ImageIdOverride"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverride"
-              },
-              {
-                "$ref": "#/definitions/LabelOverride"
-              },
-              {
-                "$ref": "#/definitions/PropertySortingRule"
-              },
-              {
-                "$ref": "#/definitions/DisabledSortingRule"
-              },
-              {
-                "$ref": "#/definitions/StyleOverride"
-              }
-            ]
+            "$ref": "#/definitions/CustomizationRule"
           },
           "type": "array"
         },
@@ -152,20 +121,7 @@
         "specifications": {
           "description": "A list of hierarchy specifications that define what nodes are going to be returned.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/CustomNodeSpecification"
-              },
-              {
-                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
-              }
-            ]
+            "$ref": "#/definitions/ChildNodeSpecification"
           },
           "type": "array"
         },
@@ -185,6 +141,23 @@
         "ruleType"
       ],
       "type": "object"
+    },
+    "ChildNodeSpecification": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/CustomNodeSpecification"
+        },
+        {
+          "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
+        },
+        {
+          "$ref": "#/definitions/RelatedInstanceNodesSpecification"
+        }
+      ],
+      "description": "Hierarchy rule specifications that define what nodes are going to be returned by the rule."
     },
     "ClassGroup": {
       "additionalProperties": false,
@@ -434,17 +407,7 @@
         "relationshipPaths": {
           "description": "Specifies a chain of relationship path specifications that\nforms a path from an input instance to the output instances. When this array is empty, the specification produces no results.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
-              },
-              {
-                "items": {
-                  "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
-                },
-                "type": "array"
-              }
-            ]
+            "$ref": "#/definitions/RepeatableRelationshipPathSpecification"
           },
           "type": "array"
         },
@@ -499,17 +462,7 @@
         "specifications": {
           "description": "A list of content specifications that define what content is going to be returned. This is the most\nimportant attribute which is responsible for defining what instances' properties are included in the\nreturned content.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/ContentRelatedInstancesSpecification"
-              },
-              {
-                "$ref": "#/definitions/SelectedNodeInstancesSpecification"
-              },
-              {
-                "$ref": "#/definitions/ContentInstancesOfSpecificClassesSpecification"
-              }
-            ]
+            "$ref": "#/definitions/ContentSpecification"
           },
           "type": "array"
         }
@@ -519,6 +472,20 @@
         "specifications"
       ],
       "type": "object"
+    },
+    "ContentSpecification": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ContentRelatedInstancesSpecification"
+        },
+        {
+          "$ref": "#/definitions/ContentInstancesOfSpecificClassesSpecification"
+        },
+        {
+          "$ref": "#/definitions/SelectedNodeInstancesSpecification"
+        }
+      ],
+      "description": "Content rule specifications which define what content is returned\nwhen rule is used."
     },
     "CustomNodeSpecification": {
       "additionalProperties": false,
@@ -653,14 +620,7 @@
         "queries": {
           "description": "Specifications of queries used to create the content. Query specifications define the actual\nresults of the specification.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/StringQuerySpecification"
-              },
-              {
-                "$ref": "#/definitions/ECPropertyValueQuerySpecification"
-              }
-            ]
+            "$ref": "#/definitions/QuerySpecification"
           },
           "type": "array"
         },
@@ -701,6 +661,41 @@
         "rendererName"
       ],
       "type": "object"
+    },
+    "CustomizationRule": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/NodeArtifactsRule"
+        },
+        {
+          "$ref": "#/definitions/CheckBoxRule"
+        },
+        {
+          "$ref": "#/definitions/ExtendedDataRule"
+        },
+        {
+          "$ref": "#/definitions/GroupingRule"
+        },
+        {
+          "$ref": "#/definitions/ImageIdOverride"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverride"
+        },
+        {
+          "$ref": "#/definitions/LabelOverride"
+        },
+        {
+          "$ref": "#/definitions/PropertySortingRule"
+        },
+        {
+          "$ref": "#/definitions/DisabledSortingRule"
+        },
+        {
+          "$ref": "#/definitions/StyleOverride"
+        }
+      ],
+      "description": "Customization rules allow customizing each node or content item separately.\nMost of the rules have a `condition` property which uses ECExpressions\nfor conditional rule filtering.\n\n**Nested customization rules:**\n\nCustomization rules may be specified at ruleset level, in which case they're\napplied to all content produced by the ruleset, or nested under navigation rules,\nin which case they're applied only for nodes created by those rules.\n\n**Customization rule priorities:**\n\nCustomization rules have a `priority` attribute which defines the order in which they're applied. If priorities match,\nrules engine looks at the nesting level - the deeper the rule is nested, the higher is its `priority`.\nIf the nesting levels also match, the rule defined first wins."
     },
     "DefaultPropertyCategoryOverride": {
       "additionalProperties": false,
@@ -869,17 +864,7 @@
         "groups": {
           "description": "Specifies a list of grouping specifications\nwhich describe the kind of grouping that should be applied.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/ClassGroup"
-              },
-              {
-                "$ref": "#/definitions/PropertyGroup"
-              },
-              {
-                "$ref": "#/definitions/SameLabelInstanceGroup"
-              }
-            ]
+            "$ref": "#/definitions/GroupingSpecification"
           },
           "type": "array"
         },
@@ -912,6 +897,20 @@
         "ruleType"
       ],
       "type": "object"
+    },
+    "GroupingSpecification": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ClassGroup"
+        },
+        {
+          "$ref": "#/definitions/PropertyGroup"
+        },
+        {
+          "$ref": "#/definitions/SameLabelInstanceGroup"
+        }
+      ],
+      "description": "Grouping rule specifications."
     },
     "IdCategoryIdentifier": {
       "additionalProperties": false,
@@ -1010,32 +1009,7 @@
         "values": {
           "description": "Specifications of values used to override label. The first non-empty value is used as the actual label.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/InstanceLabelOverrideCompositeValueSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverridePropertyValueSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverrideClassNameSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverrideClassLabelSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverrideBriefcaseIdSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverrideRelatedInstanceLabelSpecification"
-              }
-            ]
+            "$ref": "#/definitions/InstanceLabelOverrideValueSpecification"
           },
           "type": "array"
         }
@@ -1115,33 +1089,7 @@
                 "type": "boolean"
               },
               "spec": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverrideCompositeValueSpecification"
-                  },
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverridePropertyValueSpecification"
-                  },
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverrideClassNameSpecification"
-                  },
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverrideClassLabelSpecification"
-                  },
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverrideBriefcaseIdSpecification"
-                  },
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
-                  },
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
-                  },
-                  {
-                    "$ref": "#/definitions/InstanceLabelOverrideRelatedInstanceLabelSpecification"
-                  }
-                ],
-                "description": "Specification to define how the label for `InstanceLabelOverride` should be created."
+                "$ref": "#/definitions/InstanceLabelOverrideValueSpecification"
               }
             },
             "required": [
@@ -1227,17 +1175,7 @@
       "description": "Specification uses label of another related instance as the label content.",
       "properties": {
         "pathToRelatedInstance": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/RelationshipStepSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/RelationshipStepSpecification"
-              },
-              "type": "array"
-            }
-          ],
+          "$ref": "#/definitions/RelationshipPathSpecification",
           "description": "Specification of the relationship path from `InstanceLabelOverride.class`\nto class of the related instance."
         },
         "specType": {
@@ -1275,6 +1213,35 @@
         "value"
       ],
       "type": "object"
+    },
+    "InstanceLabelOverrideValueSpecification": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/InstanceLabelOverrideCompositeValueSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverridePropertyValueSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverrideClassNameSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverrideClassLabelSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverrideBriefcaseIdSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverrideRelatedInstanceLabelSpecification"
+        }
+      ],
+      "description": "Specification to define how the label for `InstanceLabelOverride` should be created."
     },
     "InstanceNodesOfSpecificClassesSpecification": {
       "additionalProperties": false,
@@ -1634,6 +1601,23 @@
       ],
       "type": "object"
     },
+    "PropertyEditorParameters": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PropertyEditorJsonParameters"
+        },
+        {
+          "$ref": "#/definitions/PropertyEditorMultilineParameters"
+        },
+        {
+          "$ref": "#/definitions/PropertyEditorRangeParameters"
+        },
+        {
+          "$ref": "#/definitions/PropertyEditorSliderParameters"
+        }
+      ],
+      "description": "Parameters for `PropertyEditorSpecification`"
+    },
     "PropertyEditorRangeParameters": {
       "additionalProperties": false,
       "description": "Range parameters for property editors that support ranges",
@@ -1706,20 +1690,7 @@
         "parameters": {
           "description": "Parameters for the editor.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/PropertyEditorJsonParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorMultilineParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorRangeParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorSliderParameters"
-              }
-            ]
+            "$ref": "#/definitions/PropertyEditorParameters"
           },
           "type": "array"
         }
@@ -1903,7 +1874,7 @@
           "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
         },
         "isDisplayed": {
-          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\n\nThe value can also be set using an ECExpression.",
+          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n  If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\n\nThe value can also be set using an ECExpression.",
           "type": [
             "string",
             "boolean"
@@ -1918,7 +1889,7 @@
           "type": "string"
         },
         "name": {
-          "description": "Name of the ECProperty to apply overrides to. A `\"*\"` may be specified to match all properties in current context.\nThe current context is determined based on where the override is specified:\n\n- When used in a content modifier, the\n   properties of the ECClass specified by the `class` attribute are used.\n\n- When used in one of the content specifications,\n   properties produced by that specification are used.",
+          "description": "Name of the ECProperty to apply overrides to. A `\"*\"` may be specified to match all properties in current context.\nThe current context is determined based on where the override is specified:\n\n- When used in a content modifier, the\n  properties of the ECClass specified by the `class` attribute are used.\n\n- When used in one of the content specifications,\n  properties produced by that specification are used.",
           "type": "string"
         },
         "overridesPriority": {
@@ -1938,6 +1909,17 @@
         "name"
       ],
       "type": "object"
+    },
+    "QuerySpecification": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/StringQuerySpecification"
+        },
+        {
+          "$ref": "#/definitions/ECPropertyValueQuerySpecification"
+        }
+      ],
+      "description": "Query specifications used in `CustomQueryInstanceNodesSpecification`."
     },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
@@ -2001,17 +1983,7 @@
         "relationshipPaths": {
           "description": "Specifies a chain of relationship path specifications\nthat forms a path from a source instance to the output instances. When this array is empty, the specification produces\nno results.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
-              },
-              {
-                "items": {
-                  "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
-                },
-                "type": "array"
-              }
-            ]
+            "$ref": "#/definitions/RepeatableRelationshipPathSpecification"
           },
           "type": "array"
         },
@@ -2047,17 +2019,7 @@
           "type": "boolean"
         },
         "relationshipPath": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/RelationshipStepSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/RelationshipStepSpecification"
-              },
-              "type": "array"
-            }
-          ],
+          "$ref": "#/definitions/RelationshipPathSpecification",
           "description": "Specifies a chain of relationship path specifications\nthat forms a path from the primary instance to the related instances."
         }
       },
@@ -2120,17 +2082,7 @@
           "description": "List of names or definitions of related class properties that should be included in the content."
         },
         "propertiesSource": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/RelationshipStepSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/RelationshipStepSpecification"
-              },
-              "type": "array"
-            }
-          ],
+          "$ref": "#/definitions/RelationshipPathSpecification",
           "description": "Specifies a chain of relationship path specifications that\nforms a path from the content instance to the related instance(s) whose properties should additionally be loaded."
         },
         "relationshipMeaning": {
@@ -2176,6 +2128,20 @@
       ],
       "type": "object"
     },
+    "RelationshipPathSpecification": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RelationshipStepSpecification"
+        },
+        {
+          "items": {
+            "$ref": "#/definitions/RelationshipStepSpecification"
+          },
+          "type": "array"
+        }
+      ],
+      "description": "Relationship path specification is used to define a relationship path to an ECClass."
+    },
     "RelationshipStepSpecification": {
       "additionalProperties": false,
       "description": "Specification of a single step in `RelationshipPathSpecification`.",
@@ -2202,6 +2168,20 @@
         "relationship"
       ],
       "type": "object"
+    },
+    "RepeatableRelationshipPathSpecification": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
+        },
+        {
+          "items": {
+            "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
+          },
+          "type": "array"
+        }
+      ],
+      "description": "This specification declares a step in a relationship path between a source and target ECInstances. A step\ncan optionally be repeated a number of times to traverse the same relationship recursively. Multiple\nspecifications of this type can be chained together to express complex indirect relationships."
     },
     "RepeatableRelationshipStepSpecification": {
       "additionalProperties": false,
@@ -2300,38 +2280,7 @@
         "customizationRules": {
           "description": "A list of customization rules that\napply only to nodes produced by this rule.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/NodeArtifactsRule"
-              },
-              {
-                "$ref": "#/definitions/CheckBoxRule"
-              },
-              {
-                "$ref": "#/definitions/ExtendedDataRule"
-              },
-              {
-                "$ref": "#/definitions/GroupingRule"
-              },
-              {
-                "$ref": "#/definitions/ImageIdOverride"
-              },
-              {
-                "$ref": "#/definitions/InstanceLabelOverride"
-              },
-              {
-                "$ref": "#/definitions/LabelOverride"
-              },
-              {
-                "$ref": "#/definitions/PropertySortingRule"
-              },
-              {
-                "$ref": "#/definitions/DisabledSortingRule"
-              },
-              {
-                "$ref": "#/definitions/StyleOverride"
-              }
-            ]
+            "$ref": "#/definitions/CustomizationRule"
           },
           "type": "array"
         },
@@ -2360,20 +2309,7 @@
         "specifications": {
           "description": "A list of hierarchy specifications that define what nodes are going to be returned.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/CustomNodeSpecification"
-              },
-              {
-                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
-              }
-            ]
+            "$ref": "#/definitions/ChildNodeSpecification"
           },
           "type": "array"
         },
@@ -2394,12 +2330,62 @@
       ],
       "type": "object"
     },
+    "Rule": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ContentRule"
+        },
+        {
+          "$ref": "#/definitions/DefaultPropertyCategoryOverride"
+        },
+        {
+          "$ref": "#/definitions/NodeArtifactsRule"
+        },
+        {
+          "$ref": "#/definitions/CheckBoxRule"
+        },
+        {
+          "$ref": "#/definitions/ExtendedDataRule"
+        },
+        {
+          "$ref": "#/definitions/GroupingRule"
+        },
+        {
+          "$ref": "#/definitions/ImageIdOverride"
+        },
+        {
+          "$ref": "#/definitions/InstanceLabelOverride"
+        },
+        {
+          "$ref": "#/definitions/LabelOverride"
+        },
+        {
+          "$ref": "#/definitions/PropertySortingRule"
+        },
+        {
+          "$ref": "#/definitions/DisabledSortingRule"
+        },
+        {
+          "$ref": "#/definitions/StyleOverride"
+        },
+        {
+          "$ref": "#/definitions/ChildNodeRule"
+        },
+        {
+          "$ref": "#/definitions/RootNodeRule"
+        },
+        {
+          "$ref": "#/definitions/ContentModifier"
+        }
+      ],
+      "description": "A union of all presentation rule types."
+    },
     "SameLabelInstanceGroup": {
       "additionalProperties": false,
       "description": "Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping,\nbut instead of showing a grouping node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents\nmultiple ECInstances.",
       "properties": {
         "applicationStage": {
-          "description": "Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first\ngrouped node can be produced. To alleviate the performance impact when this specification is used, two `applicationStage` settings have been introduced:\n\n- `\"Query\"` groups instances during ECSql query, which can often make use of database indices and is generally fairly quick. It is chosen\n   as the default option, however, it fails to produce grouping nodes when certain ruleset specifications are involved.\n\n- `\"PostProcess\"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will\n   produce the expected result in all cases.",
+          "description": "Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first\ngrouped node can be produced. To alleviate the performance impact when this specification is used, two `applicationStage` settings have been introduced:\n\n- `\"Query\"` groups instances during ECSql query, which can often make use of database indices and is generally fairly quick. It is chosen\n  as the default option, however, it fails to produce grouping nodes when certain ruleset specifications are involved.\n\n- `\"PostProcess\"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will\n  produce the expected result in all cases.",
           "enum": [
             "PostProcess",
             "Query"
@@ -2613,20 +2599,7 @@
         "specifications": {
           "description": "A list of hierarchy specifications that define what nodes are going to be returned.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/CustomNodeSpecification"
-              },
-              {
-                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
-              },
-              {
-                "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
-              }
-            ]
+            "$ref": "#/definitions/ChildNodeSpecification"
           },
           "type": "array"
         },
@@ -2717,7 +2690,7 @@
       "type": "object"
     }
   },
-  "description": "Presentation ruleset is a list of rules that define tree hierarchy and content provided by\nthe presentation library. The ruleset consists of:\n- Ruleset options\n- Hierarchy rules:\n   - Root node rules\n   - Child node rules\n- Content rules for content you see in content controls like property grid and table.\n- Customization rules used for additional customizations such as styling, labeling, checkboxes, etc.\n- User-controllable variables.",
+  "description": "Presentation ruleset is a list of rules that define tree hierarchy and content provided by\nthe presentation library. The ruleset consists of:\n- Ruleset options\n- Hierarchy rules:\n  - Root node rules\n  - Child node rules\n- Content rules for content you see in content controls like property grid and table.\n- Customization rules used for additional customizations such as styling, labeling, checkboxes, etc.\n- User-controllable variables.",
   "properties": {
     "id": {
       "description": "Ruleset identifier. This ID is used to bind UI components with the specific rule set.",
@@ -2734,53 +2707,7 @@
     "rules": {
       "description": "Presentation rules used to create hierarchies and content",
       "items": {
-        "anyOf": [
-          {
-            "$ref": "#/definitions/ContentRule"
-          },
-          {
-            "$ref": "#/definitions/DefaultPropertyCategoryOverride"
-          },
-          {
-            "$ref": "#/definitions/NodeArtifactsRule"
-          },
-          {
-            "$ref": "#/definitions/CheckBoxRule"
-          },
-          {
-            "$ref": "#/definitions/ExtendedDataRule"
-          },
-          {
-            "$ref": "#/definitions/GroupingRule"
-          },
-          {
-            "$ref": "#/definitions/ImageIdOverride"
-          },
-          {
-            "$ref": "#/definitions/InstanceLabelOverride"
-          },
-          {
-            "$ref": "#/definitions/LabelOverride"
-          },
-          {
-            "$ref": "#/definitions/PropertySortingRule"
-          },
-          {
-            "$ref": "#/definitions/DisabledSortingRule"
-          },
-          {
-            "$ref": "#/definitions/StyleOverride"
-          },
-          {
-            "$ref": "#/definitions/ChildNodeRule"
-          },
-          {
-            "$ref": "#/definitions/RootNodeRule"
-          },
-          {
-            "$ref": "#/definitions/ContentModifier"
-          }
-        ]
+        "$ref": "#/definitions/Rule"
       },
       "type": "array"
     },

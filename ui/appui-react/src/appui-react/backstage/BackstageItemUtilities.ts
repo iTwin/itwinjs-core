@@ -6,46 +6,16 @@
  * @module Backstage
  */
 
-import { BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@itwin/appui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
+import { BackstageActionItem, BackstageItemType, BackstageStageLauncher } from "./BackstageItem";
 import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 
-/** Used to specify the item type added to the backstage menu.
- * @beta
- * @deprecated Use [BackstageItemType]($appui-abstract) instead
- */
-export enum BackstageItemType {
-  /** Item that executes an action function */
-  ActionItem = 1,
-  /** Item that activate a stage. */
-  StageLauncher = 2,
-}
-
-/** Describes the data needed to insert an action button into the backstage menu.
- * @beta
- * @deprecated Use [BackstageActionItem]($appui-abstract) instead
- */
-export interface BackstageActionItem extends UIA_BackstageActionItem {
-  readonly type: BackstageItemType.ActionItem; // eslint-disable-line deprecation/deprecation
-}
-
-/** Describes the data needed to insert an action button into the backstage menu.
- * @beta
- * @deprecated Use [BackstageStageLauncher]($appui-abstract) instead
- */
-export interface BackstageStageLauncher extends UIA_BackstageStageLauncher {
-  readonly type: BackstageItemType.StageLauncher; // eslint-disable-line deprecation/deprecation
-}
-
 /** Utilities for creating and maintaining backstage items
- * @beta @deprecated
+ * @beta
  */
 export class BackstageItemUtilities {
-  /** Creates a stage launcher backstage item
-   * @beta
-   * @deprecated Use [BackstageItemUtilities.createStageLauncher]($appui-abstract) instead
-   */
-  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // eslint-disable-line deprecation/deprecation
+  /** Creates a stage launcher backstage item. */
+  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({
     groupPriority,
     icon: iconSpec,
     id: frontstageId,
@@ -57,11 +27,8 @@ export class BackstageItemUtilities {
     ...overrides,
   });
 
-  /** Creates an action backstage item
-   * @beta
-   * @deprecated Use [BackstageItemUtilities.createActionItem]($appui-abstract) instead
-   */
-  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
+  /** Creates an action backstage item. */
+  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({
     execute,
     groupPriority,
     icon: iconSpec,
@@ -73,7 +40,9 @@ export class BackstageItemUtilities {
     ...overrides,
   });
 
-  /** Helper method to set backstage item state from props */
+  /** Helper method to set backstage item state from props.
+   * @deprecated in 3.6.
+   */
   public static getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // eslint-disable-line deprecation/deprecation
     const labelSpec = PropsHelper.getStringSpec(props.label, props.labelKey);
     const subtitleSpec = PropsHelper.getStringSpec(props.description, props.descriptionKey);

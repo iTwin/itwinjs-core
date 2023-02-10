@@ -15,7 +15,7 @@ import { getClassName } from "@itwin/appui-abstract";
 import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
-  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
+  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiStateStorageContext, UiStateStorageHandler,
@@ -27,7 +27,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
-  NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
+  NativeAppOpts, OnDownloadProgress, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -176,12 +176,6 @@ interface SampleIModelParams {
   stageId?: string;
 }
 
-interface ProgressInfo {
-  percent?: number;
-  total?: number;
-  loaded: number;
-}
-
 export class SampleAppIModelApp {
   public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
@@ -321,7 +315,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerAllTools: true });
+    await EditTools.initialize();
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
@@ -395,9 +389,11 @@ export class SampleAppIModelApp {
 
     let iModelConnection: IModelConnection | undefined;
     if (ProcessDetector.isMobileAppFrontend) {
-      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-      });
+      const progressCallback: OnDownloadProgress = ({ loaded, total }) => {
+        const percent = (loaded / total).toFixed(2);
+        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
+      };
+      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly, progressCallback }, IModelVersion.latest());
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       SampleAppIModelApp.setIsIModelLocal(true, true);
@@ -447,19 +443,19 @@ export class SampleAppIModelApp {
     if (stageId === defaultFrontstage) {
       if (stageId === ViewsFrontstage.stageId) {
         const frontstageProvider = new ViewsFrontstage();
-        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
       } else {
         const frontstageProvider = new EditFrontstage();
-        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
       }
-      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
+      frontstageDef = await UiFramework.frontstages.getFrontstageDef(stageId);
 
     } else {
-      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
+      frontstageDef = await UiFramework.frontstages.getFrontstageDef(stageId);
     }
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      UiFramework.frontstages.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
         if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
@@ -488,10 +484,11 @@ export class SampleAppIModelApp {
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-          // eslint-disable-next-line no-console
-          console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-        });
+        const progressCallback: OnDownloadProgress = ({ loaded, total }) => {
+          const percent = (loaded / total).toFixed(2);
+          Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
+        };
+        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly, progressCallback }, IModelVersion.latest());
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
@@ -655,8 +652,8 @@ export class SampleAppIModelApp {
   }
 
   public static async showFrontstage(frontstageId: string) {
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageId);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
   }
 
   public static setTargetVersion(version: TargetOptions["version"]) {
@@ -724,13 +721,13 @@ const SampleAppViewer2 = () => {
   React.useEffect(() => {
     if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization)
       IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
-    FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
-    FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
+    UiFramework.frontstages.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
+    UiFramework.frontstages.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
     return () => {
       if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization)
         IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
-      FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
-      FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
+      UiFramework.frontstages.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
+      UiFramework.frontstages.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
     };
   }, []);
 

@@ -7,6 +7,7 @@
  */
 
 /** Properties for an item provided by UiItemsProvider
+ * @deprecated in 3.6. Use [ProviderItem]($appui-react) instead.
  * @public
  */
 export interface ProvidedItem {

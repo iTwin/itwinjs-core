@@ -409,7 +409,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
   /**
    * Set the coordinates of a single point given as coordinates.
-   * @deprecated Use setXYAtCheckedPointIndex instead
+   * @deprecated in 3.x. Use setXYAtCheckedPointIndex instead
    */
    public setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean {
     return this.setXYAtCheckedPointIndex(pointIndex, x, y);

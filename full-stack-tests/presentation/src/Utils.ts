@@ -113,3 +113,15 @@ export class IModelBuilder {
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 }
+
+/** Get path to a directory that is safe to use for read-write scenarios when running the tests */
+export function getOutputRoot() {
+  return path.join("out", process.pid.toString());
+}
+
+/** Given a file name, returns a path that is safe to use for read-write scenarios when running the tests */
+export function prepareOutputFilePath(fileName: string): string {
+  const filePath = path.join(getOutputRoot(), fileName);
+  IModelJsFs.removeSync(filePath);
+  return filePath;
+}

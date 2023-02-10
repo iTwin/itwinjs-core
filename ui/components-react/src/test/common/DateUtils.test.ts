@@ -25,9 +25,9 @@ describe("DateUtils", () => {
   });
   it("toTimeString", () => {
     expect(toTimeString(new Date("June 30, 2016, 00:00:00 GMT -0000"), 0,
-      { locales: "en-US", options: { hour: "2-digit", minute: "numeric", second: "numeric", hour12: true } })).to.equal("12:00:00 AM");
+      { locales: "en-US", options: { hour: "2-digit", minute: "numeric", second: "numeric", hour12: true } }).replace("\u202f", " ")).to.equal("12:00:00 AM");
     expect(toTimeString(new Date("June 30, 2016, 00:00:00 GMT -0000"), undefined,
-      { locales: "en-US", options: { hour: "2-digit", minute: "numeric", second: "numeric", hour12: true } })
+      { locales: "en-US", options: { hour: "2-digit", minute: "numeric", second: "numeric", hour12: true } }).replace("\u202f", " ")
     ).to.match(/\d{2}:\d{2}:\d{2} (AM|PM)/).not.to.be.null;
   });
 

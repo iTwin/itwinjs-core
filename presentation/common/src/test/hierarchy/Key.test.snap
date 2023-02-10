@@ -27,17 +27,17 @@ exports[`NodeKey fromJSON creates ECInstancesNodeKey 1`] = `
 Object {
   "instanceKeys": Array [
     Object {
-      "className": "challenge",
-      "id": "0x279b0000018393",
+      "className": "Tunisia",
+      "id": "0x124e700000179e8",
     },
     Object {
-      "className": "Licensed",
-      "id": "0x8a8c00000016f2",
+      "className": "Awesome Fresh Shirt",
+      "id": "0xa3a10000008b64",
     },
   ],
   "pathFromRoot": Array [
-    "8efb19d6-5612-49c3-acc4-9e211fa0dd9c",
-    "06215be1-0c42-457f-8e21-dca1b4638454",
+    "129c3ecc-49e2-411f-a0dd-9c06215be10c",
+    "4257fce2-1dca-41b4-a384-5452f11d05d9",
   ],
   "type": "ECInstancesNode",
   "version": 2,

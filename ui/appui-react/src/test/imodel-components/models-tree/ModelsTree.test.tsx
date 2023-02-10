@@ -28,6 +28,8 @@ import { createCategoryNode, createElementClassGroupingNode, createElementNode, 
 import { BisCodeSpec, CategoryProps, Code, ElementProps, IModel, ModelProps, PhysicalElementProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { join } from "path";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("ModelsTree", () => {
 
   const sizeProps = { width: 200, height: 200 };

@@ -20,6 +20,8 @@ import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 import { DefaultContentTools } from "./StandardContentToolsUiItemsProvider";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Defines options that may be set in frontstage app data to control what group priorities
  * to use for each tool button that can be added by this extension. Defining groupIds is optional

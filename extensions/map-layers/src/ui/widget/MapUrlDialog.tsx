@@ -5,10 +5,10 @@
 // cSpell:ignore Modeless WMTS
 
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { Button, Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
-import { IModelApp, MapLayerAccessClient, MapLayerImageryProviderStatus, MapLayerSource,
+import { IModelApp, MapLayerAccessClient, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Dialog, Icon, useCrossOriginPopup } from "@itwin/core-react";
@@ -149,7 +149,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       props.onCancelResult();
       return;
     }
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.close();
   }, [props]);
 
   const onUsernameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,12 +219,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }, layerRequiringCredentialsIdx, isOverlay);
     vp.displayStyle.changeMapLayerCredentials(layerRequiringCredentialsIdx, isOverlay, source.userName, source.password);
 
-    // Reset the provider's status
+    // Either initial attach/initialize failed or the layer failed to load at least one tile
+    // because of an invalid token; in both cases tile tree needs to be fully reset
     const provider = vp.getMapLayerImageryProvider(layerRequiringCredentialsIdx, isOverlay);
-    if (provider && provider.status !== MapLayerImageryProviderStatus.Valid) {
-      provider.status = MapLayerImageryProviderStatus.Valid;
-    }
-
+    provider?.resetStatus();
+    vp.resetMapLayer(layerRequiringCredentialsIdx, isOverlay);
     vp.invalidateRenderPlan();
 
     // This handler will close the layer source handler, and therefore the MapUrl dialog.
@@ -285,6 +284,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         } else {
           return await updateAttachedLayer(source, validation);
         }
+      } else if (validation.status === MapLayerSourceStatus.InvalidCoordinateSystem){
+        const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCoordinateSystem");
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+        return true;
       } else {
         const authNeeded = await updateAuthState(source, validation);
         if (authNeeded) {
@@ -338,7 +341,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const source = createSource();
     if (source === undefined || props.mapLayerSourceToEdit) {
 
-      ModalDialogManager.closeDialog();
+      UiFramework.dialogs.modal.close();
       onOkResult();
 
       if (source === undefined) {
@@ -380,12 +383,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         // In theory the modal dialog should always get closed by the parent
         // AttachLayerPanel's 'onOkResult' handler.  We close it here just in case.
         if (closeDialog) {
-          ModalDialogManager.closeDialog();
+          UiFramework.dialogs.modal.close();
           onOkResult();
         }
       } catch (_error) {
         onOkResult();
-        ModalDialogManager.closeDialog();
+        UiFramework.dialogs.modal.close();
       }
     })();
 

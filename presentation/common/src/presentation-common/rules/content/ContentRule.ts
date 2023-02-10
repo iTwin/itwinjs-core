@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 import { ContentSpecification } from "./ContentSpecification";
 
 /**
@@ -20,7 +20,7 @@ import { ContentSpecification } from "./ContentSpecification";
  */
 export interface ContentRule extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.Content;
+  ruleType: "Content";
 
   /**
    * Defines a condition which needs to be met in order for the rule to be used. The condition is an

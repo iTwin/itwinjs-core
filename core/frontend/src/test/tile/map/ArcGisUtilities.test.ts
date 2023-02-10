@@ -4,11 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import sinon from "sinon";
+import { MapLayerSourceStatus } from "../../../core-frontend";
 import { ArcGisUtilities } from "../../../tile/map/ArcGisUtilities";
+import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods";
 
 describe("ArcGisUtilities", () => {
   const tolerance = 0.1;
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
 
   it("should compute resolution and scale for LOD range", async () => {
     let scales = ArcGisUtilities.computeZoomLevelsScales(5,10);
@@ -68,5 +76,23 @@ describe("ArcGisUtilities", () => {
     lods = ArcGisUtilities.getZoomLevelsScales(22, 256, undefined, 5000);
     expect(lods.minLod).to.be.undefined;
     expect(lods.maxLod).to.equals(16);
+  });
+
+  it("should validate proper source ", async () => {
+
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
+      return {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false};
+    });
+    const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS", []);
+    expect((await result).status).to.equals(MapLayerSourceStatus.Valid);
+  });
+
+  it("validate should detect invalid coordinate system ", async () => {
+
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
+      return {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false};
+    });
+    const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS",[]);
+    expect((await result).status).to.equals(MapLayerSourceStatus.InvalidCoordinateSystem);
   });
 });

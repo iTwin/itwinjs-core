@@ -124,7 +124,7 @@ export interface CreateIModelProps extends IModelProps {
  * Encryption-related properties that can be supplied when creating or opening snapshot iModels.
  * NOTE: Encrypted iModels are no longer supported since they require licensed code.
  * @public
- * @deprecated
+ * @deprecated in 3.x.
  */
 export interface IModelEncryptionProps {
   /** The password used to encrypt/decrypt the snapshot iModel. */

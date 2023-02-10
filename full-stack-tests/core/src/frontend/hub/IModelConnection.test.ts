@@ -196,7 +196,7 @@ describe("IModelConnection (#integration)", () => {
 
   it("should generate unique transient IDs", () => {
     for (let i = 1; i < 40; i++) {
-      const id = iModel.transientIds.next;
+      const id = iModel.transientIds.getNext();
       expect(Id64.getLocalId(id)).to.equal(i); // auto-incrementing local ID beginning at 1
       expect(Id64.getBriefcaseId(id)).to.equal(0xffffff); // illegal briefcase ID
       expect(Id64.isTransient(id)).to.be.true;

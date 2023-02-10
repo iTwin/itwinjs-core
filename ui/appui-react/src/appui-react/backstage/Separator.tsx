@@ -12,7 +12,7 @@ import { BackstageItemProps } from "./BackstageItemProps";
 
 /** Separator Backstage item.
  * @public
- * @deprecated
+ * @deprecated in 3.0.
  */
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> { // eslint-disable-line deprecation/deprecation
   private static _sSeparatorBackstageItemKey: number;

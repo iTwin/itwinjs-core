@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../appui-react";
+import { ActiveContentChangedEventArgs, UiFramework, useActiveViewport } from "../../appui-react";
 import { renderHook } from "@testing-library/react-hooks";
 
 describe("useActiveViewport", () => {
@@ -41,7 +41,7 @@ describe("useActiveViewport", () => {
       },
     };
 
-    ContentViewManager.onActiveContentChangedEvent.emit({} as ActiveContentChangedEventArgs);
+    UiFramework.content.onActiveContentChangedEvent.emit({} as ActiveContentChangedEventArgs);
     expect(result.current).to.eq(selectedViewMock2.object);
   });
 });

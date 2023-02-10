@@ -60,7 +60,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _assigningScript = false;
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated use [[onScheduleScriptChanged]].
+   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just before the [[scheduleScript]] property is changed. */
@@ -318,7 +318,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated Use [[scheduleScript]].
+   * @deprecated in 3.x. Use [[scheduleScript]].
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
@@ -862,7 +862,12 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
-    this._settings = new DisplayStyleSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyleSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 }
@@ -880,7 +885,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
     super(props, iModel, source);
-    this._settings = new DisplayStyle3dSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 

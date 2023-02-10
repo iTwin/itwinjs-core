@@ -172,7 +172,10 @@ export class ExternalSourceAspect extends ElementMultiAspect {
    * If present, this value must be guaranteed to change when any of the source object's content changes.
    */
   public version?: string;
-  /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
+  /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process.
+   * @note Warning: in a future major release, the type of `jsonProperties` will be changed to object, and itwin.js will automatically stringify it when writing to the iModel.
+   * This will be a breaking change, since application code will have to change from supplying a string to supplying an object.
+   */
   public jsonProperties?: string;
   /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   public source?: RelatedElement;
@@ -189,7 +192,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /** @deprecated findAllBySource */
+  /** @deprecated in 3.x. findAllBySource */
   public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     let elementId: Id64String | undefined;

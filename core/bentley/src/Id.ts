@@ -664,8 +664,24 @@ export namespace Id64 {
 export class TransientIdSequence {
   private _localId: number = 0;
 
+  /** Generate and return the next transient Id64String in the sequence.
+   * @deprecated in 3.x. Use [[getNext]].
+   */
+  public get next(): Id64String {
+    return this.getNext();
+  }
+
   /** Generate and return the next transient Id64String in the sequence. */
-  public get next(): Id64String { return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff); }
+  public getNext(): Id64String {
+    return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff);
+  }
+
+  /** Preview the transient Id64String that will be returned by the next call to [[getNext]].
+   * This is primarily useful for tests.
+   */
+  public peekNext(): Id64String {
+    return Id64.fromLocalAndBriefcaseIds(this._localId + 1, 0xffffff);
+  }
 }
 
 /**

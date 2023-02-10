@@ -73,6 +73,23 @@ describe("YPR", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("GenerateRegression", () => {
+    const ck = new bsiChecker.Checker();
+    for (const degreesYaw of [1.0, 10.0, 20.0]) {
+      for (const degreesPitch of [1.0, 15.0, 28.0]) {
+        for (const degreesRoll of [-20.0, 15.0, 12.0]) {
+          const yprA = YawPitchRollAngles.createDegrees(degreesYaw, degreesPitch, degreesRoll);
+          const matrixA = yprA.toMatrix3d();
+          const yprB = YawPitchRollAngles.createFromMatrix3d(matrixA);
+          if (ck.testType(yprB, YawPitchRollAngles, "ypr inverted"))
+            ck.testTrue(yprA.isAlmostEqual(yprB), "yprRoundTrip");
+          console.log({ yprA, matrixA });
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("freeze", () => {
     const ypr = YawPitchRollAngles.createDegrees(1, 2, 3);
     ypr.freeze();

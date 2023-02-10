@@ -98,7 +98,7 @@ export const withLinks = (stringValue: string, links?: LinkElementsInfo, highlig
 
 /**
  * Properties for [[LinksRenderer]] component.
- * @alpha
+ * @public
  */
 export interface LinksRendererProps {
   value: string;
@@ -108,7 +108,7 @@ export interface LinksRendererProps {
 
 /**
  * React component for rendering string with links.
- * @alpha
+ * @public
  */
 export function LinksRenderer(props: LinksRendererProps) {
   return <>{withLinks(props.value, props.links, props.highlighter)}</>;

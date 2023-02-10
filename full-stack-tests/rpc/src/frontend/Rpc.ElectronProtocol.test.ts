@@ -18,7 +18,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       const client = TestRpcInterface3.getClient();
 
       const removeListener = client.configuration.protocol.events.addListener((type, object) => {
-        if (type !== RpcProtocolEvent.ResponseLoaded)
+        if (type !== RpcProtocolEvent.ResponseLoaded) // eslint-disable-line deprecation/deprecation
           return;
 
         if (!request)

@@ -3,13 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import {
-  AbstractWidgetProps,
-  StagePanelLocation, StagePanelSection,
-  StageUsage,
-  UiItemsProvider, WidgetState,
-} from "@itwin/appui-abstract";
 import { ViewAttributesWidgetComponent } from "../widgets/ViewAttributesWidget";
+import { CommonWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 
 /**
  * Test UiItemsProvider that provide FloatingWidgets in any General usage stage.
@@ -18,9 +13,8 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
   public static providerId = "appui-test-providers:FloatingWidgetsUiProvider";
   public readonly id = FloatingWidgetsUiItemsProvider.providerId;
 
-  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation,
-    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection): ReadonlyArray<CommonWidgetProps> {
+    const widgets: CommonWidgetProps[] = [];
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Left && section === StagePanelSection.Start) {
       widgets.push({
         id: "appui-test-providers:ViewAttributesWidget",
