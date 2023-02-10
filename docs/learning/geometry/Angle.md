@@ -1,8 +1,8 @@
 ## fraction of an angle sweep returned by different API
-![>](./figs/Angle/AngleSweepFraction.jpg)
+![>](./figs/Angle/angleSweepFraction.jpg)
 
 ## half-angle using the dot products to find ellipse semi-axis
-![>](./figs/Angle/EllipseHalfAngle.jpg)
+![>](./figs/Angle/ellipseHalfAngle.jpg)
 
 ## Derivation of 3d Rotation Matrices
 ![>](./figs/Angle/3dRotationMatrices.jpg)
