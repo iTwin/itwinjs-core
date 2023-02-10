@@ -1391,31 +1391,36 @@ describe("IModelTransformer", () => {
     ] as const;
   }
 
+  function createEmptyTargetWithIdsStartingAfterSource(sourceDb: IModelDb, createTarget: () => StandaloneDb): StandaloneDb {
+    const nextId = (db: IModelDb) => db.withSqliteStatement("SELECT Val FROM be_Local WHERE Name='bis_elementidsequence'", (s)=>[...s])[0].val;
+    sourceDb.saveChanges(); // save to make sure we get the latest id value
+    const sourceNextId = nextId(sourceDb);
+    const targetDb = createTarget();
+    const pathName = targetDb.pathName;
+    targetDb.withSqliteStatement("UPDATE be_Local SET Val=? WHERE Name='bis_elementidsequence'", (s)=>{
+      s.bindInteger(1, sourceNextId + 1);
+      assert(s.step() === DbResult.BE_SQLITE_DONE);
+    });
+    targetDb.saveChanges();
+    targetDb.close();
+    return StandaloneDb.openFile(pathName);
+  }
+
   /**
-   * A transformer that inserts an element at the beginning to ensure the target doesn't end up with the same ids as the source.
-   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence,
-   * which can happen deterministically in several cases, as well as just copy-paste errors where you accidentally test a
-   * source or target db against itself
+   * A transformer that resets the target's id sequence to ensure the target doesn't end up with the same ids as the source.
+   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence.
    * @note it modifies the target so there are side effects
    */
-  class ShiftElemIdsTransformer extends IModelTransformer {
-    constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
-      super(...args);
-      try {
-        // the choice of element to insert is arbitrary, anything easy works
-        PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "MyShiftElemIdsPhysicalModel");
-      } catch (_err) { } // ignore error in case someone tries to transform the same target multiple times with this
+  class ShiftedIdsEmptyTargetTransformer extends IModelTransformer {
+    constructor(source: IModelDb, createTarget: () => StandaloneDb, options?: IModelTransformOptions) {
+      super(source, createEmptyTargetWithIdsStartingAfterSource(source, createTarget), options);
     }
   }
 
-  /** combination of @see AssertOrderTransformer and @see ShiftElemIdsTransformer */
+  /** combination of @see AssertOrderTransformer and @see ShiftedIdsEmptyTargetTransformer */
   class AssertOrderAndShiftIdsTransformer extends AssertOrderTransformer {
-    constructor(...args: ConstructorParameters<typeof AssertOrderTransformer>) {
-      super(...args);
-      try {
-        // the choice of element to insert is arbitrary, anything easy works
-        PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "MyShiftElemIdsPhysicalModel");
-      } catch (_err) { } // ignore error in case someone tries to transform the same target multiple times with this
+    constructor(order: Id64String[], source: IModelDb, createTarget: () => StandaloneDb, options?: IModelTransformOptions) {
+      super(order, source, createEmptyTargetWithIdsStartingAfterSource(source, createTarget), options);
     }
   }
 
@@ -1427,31 +1432,33 @@ describe("IModelTransformer", () => {
     ] = createIModelWithDanglingReference({ name: "DanglingReferences", path: sourceDbPath });
 
     const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "DanglingReferenceTarget-reject.bim");
-    const targetDbForRejected = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+    const targetDbForRejected = StandaloneDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+    const targetDbForRejectedPath = targetDbForRejected.pathName;
+    targetDbForRejected.close();
 
-    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected);
+    const defaultTransformer = new ShiftedIdsEmptyTargetTransformer(sourceDb, () => StandaloneDb.openFile(targetDbForRejectedPath));
     await expect(defaultTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const rejectDanglingReferencesTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected, { danglingReferencesBehavior: "reject" });
+    const rejectDanglingReferencesTransformer = new ShiftedIdsEmptyTargetTransformer(sourceDb, () => StandaloneDb.openFile(targetDbForRejectedPath), { danglingReferencesBehavior: "reject" });
     await expect(rejectDanglingReferencesTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
     const runTransform = async (opts: Pick<IModelTransformOptions, "danglingReferencesBehavior">) => {
       const thisTransformTargetPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", `DanglingReferenceTarget-${opts.danglingReferencesBehavior}.bim`);
-      const targetDb = SnapshotDb.createEmpty(thisTransformTargetPath, { rootSubject: sourceDb.rootSubject });
-      const transformer = new ShiftElemIdsTransformer(sourceDb, targetDb, opts);
+      const createTargetDb = () => StandaloneDb.createEmpty(thisTransformTargetPath, { rootSubject: sourceDb.rootSubject });
+      const transformer = new ShiftedIdsEmptyTargetTransformer(sourceDb, createTargetDb, opts);
       await expect(transformer.processAll()).not.to.be.rejected;
-      targetDb.saveChanges();
+      transformer.targetDb.saveChanges();
 
       expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
       const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
       expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
       const displayStyleInTargetId = transformer.context.findTargetElementId(displayStyleId);
-      const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
+      const displayStyleInTarget = transformer.targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
       const physObjsInTarget = physicalObjects.map((physObjInSource) => {
         const physObjInTargetId = transformer.context.findTargetElementId(physObjInSource.id);
@@ -2135,15 +2142,16 @@ describe("IModelTransformer", () => {
     const textureId = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "one white pixel");
     const renderMaterial = sourceDb.elements.getElement<RenderMaterialElement>(renderMaterialId);
     // update the texture id into the model so that they are processed out of order (material exported before texture)
-    if (!("Map" in renderMaterial.jsonProperties.materialAssets.renderMaterial))
+    if (renderMaterial.jsonProperties.materialAssets.renderMaterial.Map === undefined)
       renderMaterial.jsonProperties.materialAssets.renderMaterial.Map = {};
-    if (!("Pattern" in renderMaterial.jsonProperties.materialAssets.renderMaterial.Map))
+    if (renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern === undefined)
       renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern = {};
-    if (!("Normal" in renderMaterial.jsonProperties.materialAssets.renderMaterial.Map))
+    if (renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal === undefined)
       renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal = {};
     renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.TextureId = textureId;
     renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId = textureId;
     renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId = textureId;
+    renderMaterial.update();
 
     const physicalObjectProps1: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
@@ -2158,28 +2166,28 @@ describe("IModelTransformer", () => {
 
     // create target iModel
     const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Target.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
+    const createTargetDb = () => StandaloneDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
 
     // transform
-    const transformer = new AssertOrderAndShiftIdsTransformer([renderMaterialId, textureId], sourceDb, targetDb);
+    const transformer = new AssertOrderAndShiftIdsTransformer([renderMaterialId, textureId], sourceDb, createTargetDb);
     await transformer.processAll();
 
     const objIdInTarget = transformer.context.findTargetElementId(objId);
     const textureIdInTarget = transformer.context.findTargetElementId(textureId);
     assert(Id64.isValidId64(textureIdInTarget));
-    const objInTarget = targetDb.elements.getElement<PhysicalObject>({ id: objIdInTarget, wantGeometry: true });
+    const objInTarget = transformer.targetDb.elements.getElement<PhysicalObject>({ id: objIdInTarget, wantGeometry: true });
 
     assert(objInTarget.geom);
     const materialOfObjIdInTarget = objInTarget.geom.find((g) => g.material?.materialId)?.material?.materialId;
     assert(materialOfObjIdInTarget);
-    const materialOfObjInTarget = targetDb.elements.getElement<RenderMaterialElement>(materialOfObjIdInTarget);
+    const materialOfObjInTarget = transformer.targetDb.elements.getElement<RenderMaterialElement>(materialOfObjIdInTarget);
     expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId).to.equal(textureIdInTarget);
     expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId).to.equal(textureIdInTarget);
 
     // clean up
     transformer.dispose();
     sourceDb.close();
-    targetDb.close();
+    transformer.targetDb.close();
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
