@@ -958,15 +958,15 @@ export namespace CodeService {
         readonly guid: CodeGuid;
         readonly json?: SettingObject;
         readonly origin: CodeOriginName;
-        readonly scope: ScopeGuid;
-        readonly spec: CodeSpecName;
+        readonly scopeGuid: ScopeGuid;
+        readonly specName: CodeSpecName;
         readonly state?: CodeState;
         readonly value: CodeValue;
     }
     export interface CodeFilter extends ValueFilter {
         readonly origin?: CodeOriginName;
-        readonly scope?: ScopeGuid;
-        readonly spec?: CodeSpecName;
+        readonly scopeGuid?: ScopeGuid;
+        readonly specName?: CodeSpecName;
     }
     export type CodeGuid = GuidString;
     export interface CodeGuidStateJson {
@@ -1044,9 +1044,9 @@ export namespace CodeService {
     }
     export interface ScopeAndSpec {
         // (undocumented)
-        readonly scope: ScopeGuid;
+        readonly scopeGuid: ScopeGuid;
         // (undocumented)
-        readonly spec: CodeSpecName;
+        readonly specName: CodeSpecName;
     }
     export type ScopeGuid = GuidString;
     export interface ScopeSpecAndValue extends ScopeAndSpec {
