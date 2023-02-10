@@ -1440,11 +1440,13 @@ describe("IModelTransformer", () => {
     await expect(defaultTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
+    defaultTransformer.targetDb.close();
 
     const rejectDanglingReferencesTransformer = new ShiftedIdsEmptyTargetTransformer(sourceDb, () => StandaloneDb.openFile(targetDbForRejectedPath), { danglingReferencesBehavior: "reject" });
     await expect(rejectDanglingReferencesTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
+    defaultTransformer.targetDb.close();
 
     const runTransform = async (opts: Pick<IModelTransformOptions, "danglingReferencesBehavior">) => {
       const thisTransformTargetPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", `DanglingReferenceTarget-${opts.danglingReferencesBehavior}.bim`);
