@@ -56,10 +56,10 @@ ruleTester.run(
         code: `// @deprecated in 3.6 Use XYZ instead.`
       },
       {
-        code: `/* @deprecated in 2.x. Use xyz instead. */`
+        code: `/* @deprecated in 12.x. Use xyz instead. */`
       },
       {
-        code: `// @deprecated in 2.x, use xyz instead
+        code: `// @deprecated in 2.19, use xyz instead
         function canWeUseFunctions() {}`
       },
       {
@@ -67,7 +67,7 @@ ruleTester.run(
         class canWeUseAClass {};`
       },
       {
-        code: `/* @deprecated in 2.x Use XYZ */
+        code: `/* @deprecated in 2.x, Use XYZ instead */
         let canWeUseArrowFunction = () => {};`
       },
       {
@@ -81,7 +81,7 @@ ruleTester.run(
         namespace canWeUseNamespaces {}`
       },
       {
-        code: `// @deprecated in 3.6 Use XYZ instead.
+        code: `// @deprecated in 3.6. Use XYZ instead.
         export enum canWeUseEnum {}`
       },
       {
@@ -95,6 +95,12 @@ ruleTester.run(
           downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
         }
         `,
+      },
+      {
+        code: `// @deprecated in 2.x. Use [[InternalDocRef]] instead`
+      },
+      {
+        code: `/** @deprecated in 3.x. Use [ExternalDocRef]($package) instead */`
       },
     ],
     invalid: [

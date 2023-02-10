@@ -18,8 +18,11 @@ module.exports = {
       Program(node) {
         let match;
         for (const comment of node.comments) {
-          if (match = /@deprecated(?<in> in \d+(\.(\d|x))+.{5,})?/.exec(comment.value)) {
-            if (!match?.groups?.in) {
+          if (match = /@deprecated(?<in> in \d+\.(\d|x)+[.,\s](?<sentence>.+))?/.exec(comment.value)) {
+            if ((match?.groups?.in) && (match?.groups?.sentence && match?.groups?.sentence.replace(/\s/g, '').length > 5)) {
+              continue;
+            }
+            else {
               context.report({ node: comment, messageId: "requireVersionAndSentence" });
             }
           }
