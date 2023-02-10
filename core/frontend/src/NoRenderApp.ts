@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module IModelApp
+ */
+
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { AnimationBranchStates } from "./render/GraphicBranch";
