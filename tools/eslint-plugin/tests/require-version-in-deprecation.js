@@ -84,7 +84,18 @@ ruleTester.run(
         code: `// @deprecated in 3.6 Use XYZ instead.
         export enum canWeUseEnum {}`
       },
-
+      {
+        code: `
+        interface BackendHubAccess {
+          /**
+           * download a v1 checkpoint
+           * @deprecated in 3.x. Here's a description.
+           * @internal
+           */
+          downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+        }
+        `,
+      },
     ],
     invalid: [
       {
@@ -128,7 +139,33 @@ ruleTester.run(
          `,
         errors: [{ messageId: "requireVersionAndSentence" }],
       },
-
+      {
+        code: `
+          /** @deprecated in 3.6. Ok.*/
+          function descriptionTooShort() {}
+        `,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `
+          /** @deprecated in 3.6.                                                        */
+          function whitespaceIsNotADescription() {}
+        `,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `
+        interface BackendHubAccess {
+          /**
+           * download a v1 checkpoint
+           * @deprecated in 3.x.
+           * @internal
+           */
+          downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+        }
+        `,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
     ],
   })
 );
