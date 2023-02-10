@@ -24,7 +24,7 @@
     "lint": "",
     "test": "mocha \"tests/*.js\"",
     "docs": "",
-    "cover": ""
+    "cover": "npm -s test"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "~4.31.0",
