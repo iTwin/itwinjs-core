@@ -235,6 +235,7 @@ export class HiliteSet {
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
    * @param syncWithSelectionSet If true, the contents of the `elements` set will be synchronized with those in the `iModel`'s [[SelectionSet]].
+   * @internal
    */
   public constructor(public iModel: IModelConnection, syncWithSelectionSet = true) {
     this._elements = new HilitedElementIds(iModel, syncWithSelectionSet);
