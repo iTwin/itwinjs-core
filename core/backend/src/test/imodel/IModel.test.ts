@@ -379,9 +379,6 @@ describe("iModel", () => {
   });
 
   it("attempt to apply material to new element in imodel5", () => {
-    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
-    // bottom right pixel.  The rest of the square is red.
-
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
     const testTextureDescription = "empty description";
