@@ -60,12 +60,16 @@ export class NullRenderSystem extends RenderSystem {
   public override createRenderGraphic() { return undefined; }
 }
 
-/**
- * A class for applications that must run in environments where WebGL is not present.
- * This is typically used in tests.
- * @internal
+/** A utility class intended for applications (primarily test-runners) that run in environments that lack support for WebGL.
+ * It installs a [[RenderSystem]] that produces no graphics.
+ * Use [[NoRenderApp.startup]] instead of [[IModelApp.startup]] to initialize your application frontend.
+ * You may then use the [[IModelApp]] API as normal.
+ * @public
  */
 export class NoRenderApp {
+  /** Initializes [[IModelApp]] with a [[RenderSystem]] that produces no graphics.
+   * Use this in place of [[IModelApp.startup]], then proceed to use [[IModelApp]]'s API as normal.
+   */
   public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
