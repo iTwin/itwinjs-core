@@ -2129,7 +2129,7 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it.only("should transform 3d elements and their textures in target iModel", async () => {
+  it("should transform 3d elements and their textures in target iModel", async () => {
     // create source iModel
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Transform3d-Source" } });
