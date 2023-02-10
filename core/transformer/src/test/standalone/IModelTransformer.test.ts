@@ -419,57 +419,43 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("should transform 3d elements and their textures in target iModel", async () => {
+  it("should transform 3d elements in target iModel", async () => {
     // create source iModel
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Transform3d-Source" } });
-    const categoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
-    const category = sourceDb.elements.getElement<SpatialCategory>(categoryId);
-    const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
-    const textureId = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "one white pixel");
-    const renderMaterialId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterial", {
-      paletteName: "white pixel",
-      patternMap: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        TextureId: textureId,
-      },
-      normalMap: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        TextureId: textureId,
-      },
-    });
-
-    const physicalObjectProps1: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: sourceModelId,
-      category: categoryId,
-      code: Code.createEmpty(),
-      userLabel: `PhysicalObject`,
-      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, category.myDefaultSubCategoryId(), renderMaterialId),
-      placement: Placement3d.fromJSON({ origin: { x: 0, y: 0 }, angles: {} }),
-    };
-    const objId = sourceDb.elements.insertElement(physicalObjectProps1);
-
+    const categoryId: Id64String = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const sourceModelId: Id64String = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
+    const xArray: number[] = [1, 3, 5, 7, 9];
+    const yArray: number[] = [0, 2, 4, 6, 8];
+    for (const x of xArray) {
+      for (const y of yArray) {
+        const physicalObjectProps1: PhysicalElementProps = {
+          classFullName: PhysicalObject.classFullName,
+          model: sourceModelId,
+          category: categoryId,
+          code: Code.createEmpty(),
+          userLabel: `PhysicalObject(${x},${y})`,
+          geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
+          placement: Placement3d.fromJSON({ origin: { x, y }, angles: {} }),
+        };
+        sourceDb.elements.insertElement(physicalObjectProps1);
+      }
+    }
+    const sourceModel: PhysicalModel = sourceDb.models.getModel<PhysicalModel>(sourceModelId);
+    const sourceModelExtents: AxisAlignedBox3d = sourceModel.queryExtents();
+    assert.deepEqual(sourceModelExtents, new Range3d(1, 0, 0, 10, 9, 1));
     // create target iModel
     const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
-
     // transform
-    const transformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
+    const transform3d: Transform = Transform.createTranslation(new Point3d(100, 200));
+    const transformer = new IModelTransformer3d(sourceDb, targetDb, transform3d);
     await transformer.processAll();
-
-    const objIdInTarget = transformer.context.findTargetElementId(objId);
-    const textureIdInTarget = transformer.context.findTargetElementId(textureId);
-    assert(Id64.isValidId64(textureIdInTarget));
-    const objInTarget = targetDb.elements.getElement<PhysicalObject>({ id: objIdInTarget, wantGeometry: true });
-
-    assert(objInTarget.geom);
-    const materialOfObjIdInTarget = objInTarget.geom.find((g) => g.material?.materialId)?.material?.materialId;
-    assert(materialOfObjIdInTarget);
-    const materialOfObjInTarget = targetDb.elements.getElement<RenderMaterialElement>(materialOfObjIdInTarget);
-    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId).to.equal(textureIdInTarget);
-    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId).to.equal(textureIdInTarget);
-
+    const targetModelId: Id64String = transformer.context.findTargetElementId(sourceModelId);
+    const targetModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(targetModelId);
+    const targetModelExtents: AxisAlignedBox3d = targetModel.queryExtents();
+    assert.deepEqual(targetModelExtents, new Range3d(101, 200, 0, 110, 209, 1));
+    assert.deepEqual(targetModelExtents, transform3d.multiplyRange(sourceModelExtents));
     // clean up
     transformer.dispose();
     sourceDb.close();
@@ -1422,6 +1408,17 @@ describe("IModelTransformer", () => {
     }
   }
 
+  /** combination of @see AssertOrderTransformer and @see ShiftElemIdsTransformer */
+  class AssertOrderAndShiftIdsTransformer extends AssertOrderTransformer {
+    constructor(...args: ConstructorParameters<typeof AssertOrderTransformer>) {
+      super(...args);
+      try {
+        // the choice of element to insert is arbitrary, anything easy works
+        PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "MyShiftElemIdsPhysicalModel");
+      } catch (_err) { } // ignore error in case someone tries to transform the same target multiple times with this
+    }
+  }
+
   it("reference deletion is considered invalid when danglingReferencesBehavior='reject' and that is the default", async () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "DanglingReferenceSource.bim");
     const [
@@ -2123,6 +2120,66 @@ describe("IModelTransformer", () => {
       transformer.dispose();
       sinon.restore();
     }
+  });
+
+  it.only("should transform 3d elements and their textures in target iModel", async () => {
+    // create source iModel
+    const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Transform3d-Source" } });
+    const categoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const category = sourceDb.elements.getElement<SpatialCategory>(categoryId);
+    const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
+    const renderMaterialId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterial", {
+      paletteName: "something",
+    });
+    const textureId = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "one white pixel");
+    const renderMaterial = sourceDb.elements.getElement<RenderMaterialElement>(renderMaterialId);
+    // update the texture id into the model so that they are processed out of order (material exported before texture)
+    if (!("Map" in renderMaterial.jsonProperties.materialAssets.renderMaterial))
+      renderMaterial.jsonProperties.materialAssets.renderMaterial.Map = {};
+    if (!("Pattern" in renderMaterial.jsonProperties.materialAssets.renderMaterial.Map))
+      renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern = {};
+    if (!("Normal" in renderMaterial.jsonProperties.materialAssets.renderMaterial.Map))
+      renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal = {};
+    renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.TextureId = textureId;
+    renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId = textureId;
+    renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId = textureId;
+
+    const physicalObjectProps1: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: sourceModelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+      userLabel: `PhysicalObject`,
+      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, category.myDefaultSubCategoryId(), renderMaterialId),
+      placement: Placement3d.fromJSON({ origin: { x: 0, y: 0 }, angles: {} }),
+    };
+    const objId = sourceDb.elements.insertElement(physicalObjectProps1);
+
+    // create target iModel
+    const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
+
+    // transform
+    const transformer = new AssertOrderAndShiftIdsTransformer([renderMaterialId, textureId], sourceDb, targetDb);
+    await transformer.processAll();
+
+    const objIdInTarget = transformer.context.findTargetElementId(objId);
+    const textureIdInTarget = transformer.context.findTargetElementId(textureId);
+    assert(Id64.isValidId64(textureIdInTarget));
+    const objInTarget = targetDb.elements.getElement<PhysicalObject>({ id: objIdInTarget, wantGeometry: true });
+
+    assert(objInTarget.geom);
+    const materialOfObjIdInTarget = objInTarget.geom.find((g) => g.material?.materialId)?.material?.materialId;
+    assert(materialOfObjIdInTarget);
+    const materialOfObjInTarget = targetDb.elements.getElement<RenderMaterialElement>(materialOfObjIdInTarget);
+    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId).to.equal(textureIdInTarget);
+    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId).to.equal(textureIdInTarget);
+
+    // clean up
+    transformer.dispose();
+    sourceDb.close();
+    targetDb.close();
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
