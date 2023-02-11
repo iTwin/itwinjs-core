@@ -2131,60 +2131,87 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it("should transform 3d elements and their textures in target iModel", async () => {
+  it("should remap textures in target iModel", async () => {
     // create source iModel
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Transform3d-Source" } });
     const categoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
     const category = sourceDb.elements.getElement<SpatialCategory>(categoryId);
     const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
-    const renderMaterialId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterial", {
+
+    const renderMaterialBothImgsId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterialBothImgs", {
       paletteName: "something",
     });
-    const textureId = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "one white pixel");
-    const renderMaterial = sourceDb.elements.getElement<RenderMaterialElement>(renderMaterialId);
-    // update the texture id into the model so that they are processed out of order (material exported before texture)
-    if (renderMaterial.jsonProperties.materialAssets.renderMaterial.Map === undefined)
-      renderMaterial.jsonProperties.materialAssets.renderMaterial.Map = {};
-    if (renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern === undefined)
-      renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern = {};
-    if (renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal === undefined)
-      renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal = {};
-    renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.TextureId = textureId;
-    renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId = textureId;
-    renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId = textureId;
-    renderMaterial.update();
 
-    const physicalObjectProps1: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: sourceModelId,
-      category: categoryId,
-      code: Code.createEmpty(),
-      userLabel: `PhysicalObject`,
-      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, category.myDefaultSubCategoryId(), renderMaterialId),
-      placement: Placement3d.fromJSON({ origin: { x: 0, y: 0 }, angles: {} }),
-    };
-    const objId = sourceDb.elements.insertElement(physicalObjectProps1);
+    const texture1Id = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture1", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "texture 1");
+    const texture2Id = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture2", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "texture 2");
+
+    const renderMaterialBothImgs = sourceDb.elements.getElement<RenderMaterialElement>(renderMaterialBothImgsId);
+    // update the texture id into the model so that they are processed out of order (material exported before texture)
+    if (renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map === undefined)
+      renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map = {};
+    if (renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Pattern === undefined)
+      renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Pattern = {};
+    if (renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Normal === undefined)
+      renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Normal = {};
+    renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.TextureId = texture1Id;
+    renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId = texture1Id;
+    renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId = texture2Id;
+    renderMaterialBothImgs.update();
+
+    const renderMaterialOnlyPatternId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterialOnlyPattern", {
+      paletteName: "something",
+      patternMap: {
+        TextureId: texture1Id, // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+
+    const renderMaterialOnlyNormalId  = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterialOnlyNormal", {
+      paletteName: "something",
+      normalMap: {
+        TextureId: texture2Id, // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+
+    const physObjs = [renderMaterialBothImgsId, renderMaterialOnlyNormalId, renderMaterialOnlyPatternId].map((renderMaterialId) => {
+      const physicalObjectProps1: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: sourceModelId,
+        category: categoryId,
+        code: Code.createEmpty(),
+        userLabel: `PhysicalObject`,
+        geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, category.myDefaultSubCategoryId(), renderMaterialId),
+        placement: Placement3d.fromJSON({ origin: { x: 0, y: 0 }, angles: {} }),
+      };
+      return sourceDb.elements.insertElement(physicalObjectProps1);
+    });
 
     // create target iModel
     const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Target.bim");
     const createTargetDb = () => StandaloneDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
 
     // transform
-    const transformer = new AssertOrderAndShiftIdsTransformer([renderMaterialId, textureId], sourceDb, createTargetDb);
+    const transformer = new AssertOrderAndShiftIdsTransformer([renderMaterialBothImgsId, texture1Id], sourceDb, createTargetDb);
     await transformer.processAll();
 
-    const objIdInTarget = transformer.context.findTargetElementId(objId);
-    const textureIdInTarget = transformer.context.findTargetElementId(textureId);
-    assert(Id64.isValidId64(textureIdInTarget));
-    const objInTarget = transformer.targetDb.elements.getElement<PhysicalObject>({ id: objIdInTarget, wantGeometry: true });
+    const texture1IdInTarget = transformer.context.findTargetElementId(texture1Id);
+    const texture2IdInTarget = transformer.context.findTargetElementId(texture2Id);
+    assert(Id64.isValidId64(texture1IdInTarget));
+    assert(Id64.isValidId64(texture2IdInTarget));
 
-    assert(objInTarget.geom);
-    const materialOfObjIdInTarget = objInTarget.geom.find((g) => g.material?.materialId)?.material?.materialId;
-    assert(materialOfObjIdInTarget);
-    const materialOfObjInTarget = transformer.targetDb.elements.getElement<RenderMaterialElement>(materialOfObjIdInTarget);
-    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId).to.equal(textureIdInTarget);
-    expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId).to.equal(textureIdInTarget);
+    for (const objId of physObjs) {
+      const objInTargetId = transformer.context.findTargetElementId(objId);
+      const objInTarget = transformer.targetDb.elements.getElement<PhysicalObject>({ id: objInTargetId, wantGeometry: true });
+      assert(objInTarget.geom);
+      const materialOfObjInTargetId = objInTarget.geom.find((g) => g.material?.materialId)?.material?.materialId;
+      assert(materialOfObjInTargetId);
+
+      const materialOfObjInTarget = transformer.targetDb.elements.getElement<RenderMaterialElement>(materialOfObjInTargetId);
+      if (materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern)
+        expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId).to.equal(texture1IdInTarget);
+      if (materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal)
+        expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId).to.equal(texture2IdInTarget);
+    }
 
     // clean up
     transformer.dispose();
