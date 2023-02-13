@@ -21,7 +21,7 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 
 ### Registering frontstage
 
-Stage contents are then wrapped by a [StandardFrontstageProvider]($appui-react) class and registered by [ConfigurableUiManager]($appui-react) for further use.
+Stage contents are then provided to a [StandardFrontstageProvider]($appui-react) which is registered by [ConfigurableUiManager]($appui-react) for further use.
 
 ```tsx
 [[include:Example_Register_Viewport_Frontstage]]
