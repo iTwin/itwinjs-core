@@ -48,7 +48,11 @@ export abstract class DevToolsRpcInterface extends RpcInterface { // eslint-disa
   public async stats(_iModelToken: IModelRpcProps, _options: DevToolsStatsOptions): Promise<any> { return this.forward(arguments); }
 
   // Returns JSON object with backend versions (application and iModelJs)
-  public async versions(_iModelToken: IModelRpcProps): Promise<any> { return this.forward(arguments); }
+  public async versions(_iModelToken: IModelRpcProps): Promise<any> {
+    const versions = await this.forward(arguments) || {};
+    versions.availableRpcs = await RpcManager.describeAvailableEndpoints();
+    return versions;
+  }
 
   // Sets a new log level for the specified category and returns the old log level
   public async setLogLevel(_iModelToken: IModelRpcProps, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined> { return this.forward(arguments); }

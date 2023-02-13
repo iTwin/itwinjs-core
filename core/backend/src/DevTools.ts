@@ -8,7 +8,7 @@ import * as process from "process";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
-import { RpcManager } from "@itwin/core-common";
+import { RpcInterfaceEndpoints } from "@itwin/core-common";
 
 // cspell:ignore ppid elap
 
@@ -204,11 +204,11 @@ export class DevTools {
 
   /** Obtains the backend application and iTwin.js Core versions */
   public static async versions() {
-    const availableRpcs = await RpcManager.describeAvailableEndpoints();
+    const availableRpcs: RpcInterfaceEndpoints[] = [];
     return {
       application: IModelHost.applicationVersion,
       iTwinJs: require("../../package.json").version, // eslint-disable-line @typescript-eslint/no-var-requires
-      availableRpcs,
+      availableRpcs, // filled in on the frontend
     };
   }
 }
