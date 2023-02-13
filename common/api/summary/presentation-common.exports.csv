@@ -234,8 +234,6 @@ public;LabelCompositeValueJSON
 deprecated;LabelCompositeValueJSON
 public;LabelDefinition
 public;LabelDefinition
-internal;fromLabelString(label: string): LabelDefinition
-internal;isCompositeDefinition(def: LabelDefinition): def is LabelDefinition &
 public;LabelDefinitionJSON
 deprecated;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
