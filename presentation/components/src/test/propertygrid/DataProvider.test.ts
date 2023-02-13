@@ -310,6 +310,7 @@ describe("PropertyDataProvider", () => {
         it("assigns category renderer", async () => {
           const field = createPrimitiveField({
             category: createTestCategoryDescription({
+              name: "my-category",
               renderer: { name: "test" },
             }),
           });
@@ -793,6 +794,23 @@ describe("PropertyDataProvider", () => {
               }],
             };
             const record = createTestContentItem({ values, displayValues });
+            (provider as any).getContent = async () => new Content(descriptor, [record]);
+            expect(await provider.getData()).to.matchSnapshot();
+          });
+
+          it("merges parent field when child field's category is different and parent is merged", async () => {
+            const category1 = createTestCategoryDescription({ name: "Category1" });
+            const category2 = createTestCategoryDescription({ name: "Category2" });
+            const nestedField1 = createPrimitiveField({ name: "nested-field-1", category: category2 });
+            const field = createTestNestedContentField({ name: "root-field", category: category1, nestedFields: [nestedField1] });
+            const descriptor = createTestContentDescriptor({ categories: [category1, category2], fields: [field] });
+            const values = {
+              [field.name]: undefined,
+            };
+            const displayValues = {
+              [field.name]: "*** Varies ***",
+            };
+            const record = createTestContentItem({ values, displayValues, mergedFieldNames: [field.name] });
             (provider as any).getContent = async () => new Content(descriptor, [record]);
             expect(await provider.getData()).to.matchSnapshot();
           });
