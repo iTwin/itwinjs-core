@@ -7,17 +7,16 @@
  * @module ArraysAndInterfaces
  */
 
-// import { Point2d } from "./Geometry2d";
-import { Point2d, Vector2d } from "./Point2dVector2d";
+import { Point2d, Vector2d, XY } from "./Point2dVector2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { XAndY } from "./XYZProps";
 
 /**
- * abstract base class for access to XYZ data with indexed reference.
- * * This allows algorithms to work with Point2d[] or GrowableXYZ.
- * ** GrowableXYZArray implements these for its data.
- * ** Point2dArrayCarrier carries a (reference to) a Point2d[] and implements the methods with calls on that array reference.
- * * In addition to "point by point" accessors, there abstract members compute commonly useful vector data "between points".
+ * abstract base class for access to XY data with indexed reference.
+ * * This allows algorithms to work with Point2d[] or GrowableXY.
+ *   * GrowableXYArray implements these for its data.
+ *   * Point2dArrayCarrier carries a (reference to) a Point2d[] and implements the methods with calls on that array reference.
+ * * In addition to "point by point" accessors, other abstract members compute commonly useful vector data "between points".
  * * Methods that create vectors among multiple indices allow callers to avoid creating temporaries.
  * @public
  */
@@ -73,7 +72,16 @@ export abstract class IndexedXYCollection {
   public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
 
   /**
-   * read-only property for number of XYZ in the collection.
+   * read-only property for number of XY in the collection.
    */
   public abstract get length(): number;
+
+  /** Compute the linear combination s of the indexed p_i and given scales s_i.
+   * @param _scales array of scales. For best results, scales should have same length as the instance.
+   * @param _result optional pre-allocated object to fill and return
+   * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
+   */
+  public linearCombination(_scales: number[], _result?: Point2d | Vector2d): XY | undefined {
+    return undefined;
+  }
 }

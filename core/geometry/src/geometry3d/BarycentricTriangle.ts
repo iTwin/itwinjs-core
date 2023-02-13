@@ -13,9 +13,10 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
 
 /**
- * Carries data about a point in the plane of a triangle.
- * Each instance carries both world and barycentric coordinates for the point, and provides query services on the latter.
- * A small tolerance (Geometry.smallFraction) is used when classifying the location via barycentric coordinates.
+ * Carries data about a location in the plane of a triangle.
+ * * Each instance carries both world and barycentric coordinates for the point, and provides query services on the latter.
+ * * No tolerance is used when querying barycentric coordinates (e.g., `isInsideOrOn`, `classify`). Use `snapLocalToEdge`
+ * to adjust the barycentric coordinates to a triangle edge if they lie within a parametric tolerance.
  *
  * Properties of the barycentric coordinates (b0, b1, b2) of a point p in the plane of a triangle T with vertices p0, p1, p2:
  * * 1 = b0 + b1 + b2
@@ -29,33 +30,31 @@ import { Ray3d } from "./Ray3d";
 export class TriangleLocationDetail {
   /** The Cartesian coordinates of the point p. */
   public world: Point3d;
-  /** The barycentric coordinates of p with respect to the triangle. */
+  /** The barycentric coordinates of p with respect to the triangle. Assumed to sum to one. */
   public local: Point3d;
   /** Application-specific number */
   public a: number;
-  /** Index of the triangle vertex at the base of the edge closest to p. Valid if `hasEdgeProjection` returns true. */
+  /** Index of the triangle vertex at the base of the edge closest to p. */
   public closestEdgeIndex: number;
-  /** The projection parameter of p onto the triangle edge closest to p. Valid if `hasEdgeProjection` returns true. */
+  /** The parameter along the closest edge of the projection of p. */
   public closestEdgeParam: number;
 
   private constructor() {
     this.world = new Point3d();
     this.local = new Point3d();
     this.a = 0.0;
-    this.closestEdgeIndex = -1;
+    this.closestEdgeIndex = 0;
     this.closestEdgeParam = 0.0;
   }
-
   /** Invalidate this detail. */
   public invalidate() {
     this.world.setZero();
     this.local.setZero();
     this.a = 0.0;
-    this.closestEdgeIndex = -1;
+    this.closestEdgeIndex = 0;
     this.closestEdgeParam = 0.0;
   }
-
-  /** Create an invalid detail with all zeroes.
+  /** Create an invalid detail.
    * @param result optional pre-allocated object to fill and return
    */
   public static create(result?: TriangleLocationDetail): TriangleLocationDetail {
@@ -65,29 +64,43 @@ export class TriangleLocationDetail {
       result.invalidate();
     return result;
   }
-
-  /** Whether the barycentric coordinates sum to 1. */
-  public get isValid(): boolean {
-    return Math.abs(this.local.x + this.local.y + this.local.z - 1.0) <= Geometry.smallFraction;
+  /** Set the instance contents from the other detail.
+   * @param other detail to clone
+   */
+  public clone(other: TriangleLocationDetail) {
+    this.world.setFrom(other.world);
+    this.local.setFrom(other.local);
+    this.a = other.a;
+    this.closestEdgeIndex = other.closestEdgeIndex;
+    this.closestEdgeParam = other.closestEdgeParam;
   }
-
+  /** Whether this detail is invalid. */
+  public get isValid(): boolean {
+    return !this.local.isZero;
+  }
+  /** Adjust the barycentric coordinates of this location to an edge of the triangle if within the given parametric tolerance.
+   * * The world coordinates of the point and its closest edge projection remain unchanged.
+   * @param parameterTolerance barycentric coordinate fractional tolerance
+  */
+  public snapLocalToEdge(parameterTolerance: number = Geometry.smallFraction): void {
+    let numSnapped = 0;
+    let originalSum = 0.0;
+    for (let i = 0; i < 3; i++) {
+      originalSum += this.local.at(i);
+      if (Math.abs(this.local.at(i)) < parameterTolerance) {
+        this.local.setAt(i, 0.0);
+        numSnapped++;
+      }
+    }
+    if (1 === numSnapped || 2 === numSnapped) // anything else is NOOP or invalid
+      this.local.scaleInPlace(1.0 / originalSum);
+  }
   /** Queries the barycentric coordinates to determine whether this instance specifies a location inside or on the triangle.
    * @see classify
    */
   public get isInsideOrOn(): boolean {
-    if (!this.isValid)
-      return false;
-    const min = -Geometry.smallFraction;
-    const max = 1.0 + Geometry.smallFraction;
-    return this.local.x >= min && this.local.y >= min && this.local.z >= min &&
-           this.local.x <= max && this.local.y <= max && this.local.z <= max;
+    return this.isValid && this.local.x >= 0.0 && this.local.y >= 0.0 && this.local.z >= 0.0;
   }
-
-  /** Whether this instance contains closest edge data. */
-  public get hasEdgeProjection(): boolean {
-    return this.isValid && this.closestEdgeIndex >= 0;
-  }
-
   /** Queries this detail to classify the location of this instance with respect to the triangle.
    * @returns location code
    * @see isInsideOrOn
@@ -96,22 +109,20 @@ export class TriangleLocationDetail {
     if (!this.isValid)
       return PolygonLocation.Unknown;
     if (this.isInsideOrOn) {
-      let nZero = 0;
-      if (Math.abs(this.local.x) <= Geometry.smallFraction)
-        ++nZero;
-      if (Math.abs(this.local.y) <= Geometry.smallFraction)
-        ++nZero;
-      if (Math.abs(this.local.z) <= Geometry.smallFraction)
-        ++nZero;
-      if (2 === nZero)
+      let numZero = 0;
+      if (Math.abs(this.local.x) === 0.0)
+        ++numZero;
+      if (Math.abs(this.local.y) === 0.0)
+        ++numZero;
+      if (Math.abs(this.local.z) === 0.0)
+        ++numZero;
+      if (2 === numZero)
         return PolygonLocation.OnPolygonVertex;
-      if (1 === nZero)
+      if (1 === numZero)
         return PolygonLocation.OnPolygonEdgeInterior;
       return PolygonLocation.InsidePolygonProjectsToEdgeInterior;
     }
-    if (this.hasEdgeProjection)
-      return (this.closestEdgeParam === 0.0) ? PolygonLocation.OutsidePolygonProjectsToVertex : PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
-    return PolygonLocation.OutsidePolygon;
+    return (this.closestEdgeParam === 0.0) ? PolygonLocation.OutsidePolygonProjectsToVertex : PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
   }
 }
 
@@ -124,7 +135,7 @@ export class BarycentricTriangle {
   public points: Point3d[];
 
   /** Edge length squared cache, indexed by opposite vertex index */
-  protected s2: (number | undefined)[];
+  protected edgeLength2: number[];
 
   /** Constructor.
    * * Point references are CAPTURED
@@ -134,10 +145,10 @@ export class BarycentricTriangle {
     this.points.push(point0);
     this.points.push(point1);
     this.points.push(point2);
-    this.s2 = [];
-    this.s2.push(undefined);
-    this.s2.push(undefined);
-    this.s2.push(undefined);
+    this.edgeLength2 = [];
+    this.edgeLength2.push(point1.distanceSquared(point2));
+    this.edgeLength2.push(point0.distanceSquared(point2));
+    this.edgeLength2.push(point0.distanceSquared(point1));
   }
 
   /**
@@ -207,11 +218,11 @@ export class BarycentricTriangle {
    * @see fractionToPoint
    */
   public pointToFraction(point: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail {
-    BarycentricTriangle._workVector0 = this.normal(BarycentricTriangle._workVector0);
-    if (undefined === BarycentricTriangle._workVector0)
+    const normal = BarycentricTriangle._workVector0 = this.normal(BarycentricTriangle._workVector0);
+    if (undefined === normal)
       return TriangleLocationDetail.create(result);
-    BarycentricTriangle._workRay = Ray3d.create(point, BarycentricTriangle._workVector0, BarycentricTriangle._workRay);
-    return this.intersectRay3d(BarycentricTriangle._workRay, result); // is free to use workVector0
+    const ray = BarycentricTriangle._workRay = Ray3d.create(point, normal, BarycentricTriangle._workRay);
+    return this.intersectRay3d(ray, result); // is free to use workVector0
   }
 
   /** Convert from opposite-vertex to start-vertex edge indexing. */
@@ -238,7 +249,7 @@ export class BarycentricTriangle {
    * * It is assumed b0 + b1 + b2 = 1.
    * @returns index of vertex/edge i for which b_i < 0 and b_j >= 0 and b_k >= 0, or -1
    */
-  public static isInRegionBeyondEdge(b0: number, b1: number, b2: number): number {
+  private static isInRegionBeyondEdge(b0: number, b1: number, b2: number): number {
     if (b0 < 0 && b1 >= 0 && b2 >= 0)
       return 0;
     if (b0 >= 0 && b1 < 0 && b2 >= 0)
@@ -253,7 +264,7 @@ export class BarycentricTriangle {
    * * It is assumed b0 + b1 + b2 = 1.
    * @returns index of vertex i for which and b_j < 0 and b_k < 0, or -1
    */
-  public static isInRegionBeyondVertex(b0: number, b1: number, b2: number): number {
+  private static isInRegionBeyondVertex(b0: number, b1: number, b2: number): number {
     if (b1 < 0 && b2 < 0)
       return 0;
     if (b0 < 0 && b2 < 0)
@@ -268,7 +279,7 @@ export class BarycentricTriangle {
    * * It is assumed b0 + b1 + b2 = 1.
    * @returns index of vertex i for which b_i = 1 and b_j = b_k = 0, or -1
    */
-  public static isOnVertex(b0: number, b1: number, b2: number): number {
+  private static isOnVertex(b0: number, b1: number, b2: number): number {
     if (b0 === 1 && b1 === 0 && b2 === 0)
       return 0;
     if (b0 === 0 && b1 === 1 && b2 === 0)
@@ -283,7 +294,7 @@ export class BarycentricTriangle {
    * * It is assumed b0 + b1 + b2 = 1.
    * @returns index of vertex/edge i for which b_i = 0 and b_j > 0 and b_k > 0, or -1
    */
-  public static isOnBoundedEdge(b0: number, b1: number, b2: number): number {
+  private static isOnBoundedEdge(b0: number, b1: number, b2: number): number {
     if (b0 === 0 && b1 > 0 && b2 > 0)
       return 0;
     if (b0 > 0 && b1 === 0 && b2 > 0)
@@ -382,7 +393,6 @@ export class BarycentricTriangle {
       closestEdgeParam: edgeParam,
     };
   }
-
   /** Compute the intersection of a line (parameterized as a ray) with the plane of this triangle.
    * @param ray infinite line to intersect, as a ray
    * @param result optional pre-allocated object to fill and return
@@ -435,15 +445,19 @@ export class BarycentricTriangle {
   /** Copy all values from `other`
    */
   public setFrom(other: BarycentricTriangle) {
-    this.points[0].setFromPoint3d(other.points[0]);
-    this.points[1].setFromPoint3d(other.points[1]);
-    this.points[2].setFromPoint3d(other.points[2]);
+    for (let i = 0; i < 3; ++i) {
+      this.points[i].setFromPoint3d(other.points[i]);
+      this.edgeLength2[i] = other.edgeLength2[i];
+    }
   }
-  /** copy contents of (not pointers to) the given points. */
+  /** Copy contents of (not pointers to) the given points. A vertex is zeroed if its corresponding input point is undefined. */
   public set(point0: Point3d | undefined, point1: Point3d | undefined, point2: Point3d | undefined) {
     this.points[0].setFromPoint3d(point0);
     this.points[1].setFromPoint3d(point1);
     this.points[2].setFromPoint3d(point2);
+    this.edgeLength2[0] = this.points[1].distanceSquared(this.points[2]);
+    this.edgeLength2[1] = this.points[0].distanceSquared(this.points[2]);
+    this.edgeLength2[2] = this.points[0].distanceSquared(this.points[1]);
   }
   /**
    * * For `this` and `other` BarycentricTriangles, compute cross products of vectors from point0 to point1 and from point0 to point2.
@@ -515,13 +529,7 @@ export class BarycentricTriangle {
    * @see edgeStartVertexIndexToOppositeVertexIndex
   */
   public edgeLengthSquared(oppositeVertexIndex: number): number {
-    const vi = Geometry.cyclic3dAxis(oppositeVertexIndex);
-    const cached = this.s2[vi];
-    if (undefined !== cached)
-      return cached;
-    const i = BarycentricTriangle.edgeOppositeVertexIndexToStartVertexIndex(vi);
-    const j = Geometry.cyclic3dAxis(i + 1);
-    return this.s2[vi] = this.points[i].distanceSquared(this.points[j]);
+    return this.edgeLength2[Geometry.cyclic3dAxis(oppositeVertexIndex)];
   }
 
   /** Compute dot product of the edge vectors based at the vertex with the given index. */

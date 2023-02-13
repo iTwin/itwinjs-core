@@ -7,7 +7,6 @@
  * @module Polyface
  */
 
-// import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
@@ -23,7 +22,7 @@ import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
+import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
 import { Range3d } from "../geometry3d/Range";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
@@ -43,6 +42,8 @@ import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { RangeLengthData } from "./RangeLengthData";
 import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail } from "./FacetLocationDetail";
+import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 /**
  * Options carrier for cloneWithHolesFilled
  * @public
@@ -1349,6 +1350,55 @@ export class PolyfaceQuery {
     BuildAverageNormalsContext.buildFastAverageNormals(polyface, toleranceAngle);
   }
 
+  private static _workTriangle?: BarycentricTriangle;
+  private static _workTriDetail?: TriangleLocationDetail;
+  private static _workPolyDetail?: PolygonLocationDetail;
+  private static _workFacetDetail3?: TriangularFacetLocationDetail;
+  private static _workFacetDetailC?: ConvexFacetLocationDetail;
+  private static _workFacetDetailNC?: NonConvexFacetLocationDetail;
+
+  /** Search facets for one that intersects the ray.
+   * @param visitor facet iterator
+   * @param ray infinite line to intersect the mesh, parameterized as a ray
+   * @param options options for computing and populating an intersection detail, and an optional callback for accepting one
+   * @return detail for the (accepted) intersection, or undefined if no (accepted) intersection
+  */
+  public static intersectRay3d(visitor: Polyface | PolyfaceVisitor, ray: Ray3d, options?: FacetIntersectOptions): FacetLocationDetail | undefined {
+    if (visitor instanceof Polyface)
+      return PolyfaceQuery.intersectRay3d(visitor.createVisitor(0), ray, options);
+    let detail: FacetLocationDetail;
+    visitor.setNumWrap(0);
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount;  // #vertices = #edges since numWrap is zero
+      const vertices = visitor.point;
+      if (3 === numEdges) {
+        const tri = this._workTriangle = BarycentricTriangle.create(vertices.getPoint3dAtUncheckedPointIndex(0), vertices.getPoint3dAtUncheckedPointIndex(1), vertices.getPoint3dAtUncheckedPointIndex(2), this._workTriangle);
+        const detail3 = this._workTriDetail = tri.intersectRay3d(ray, this._workTriDetail);
+        detail3.snapLocalToEdge(options?.parameterTolerance);
+        detail = this._workFacetDetail3 = TriangularFacetLocationDetail.create(visitor.currentReadIndex(), detail3, this._workFacetDetail3);
+      } else {
+        const detailN = this._workPolyDetail = PolygonOps.intersectRay3d(vertices, ray, options?.distanceTolerance, this._workPolyDetail);
+        if (PolygonOps.isConvex(vertices))
+          detail = this._workFacetDetailC = ConvexFacetLocationDetail.create(visitor.currentReadIndex(), numEdges, detailN, this._workFacetDetailC);
+        else
+          detail = this._workFacetDetailNC = NonConvexFacetLocationDetail.create(visitor.currentReadIndex(), numEdges, detailN, this._workFacetDetailNC);
+      }
+      if (detail.isInsideOrOn) {  // set optional caches, process the intersection
+        if (options?.wantNormal && visitor.normal)
+          detail.getNormal(visitor.normal, vertices);
+        if (options?.wantParam && visitor.param)
+          detail.getParam(visitor.param, vertices);
+        if (options?.wantColor && visitor.color)
+          detail.getColor(visitor.color, vertices);
+        if (options?.wantBarycentricCoordinates)
+          detail.getBarycentricCoordinates(vertices);
+        if (options?.acceptIntersection && !options.acceptIntersection(detail, visitor, options))
+          continue;
+        return detail;
+      }
+    }
+    return undefined; // no intersection
+  }
 }
 
 /** Announce the points on a drape panel.

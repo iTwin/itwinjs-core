@@ -12,7 +12,7 @@ import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYCollection } from "./IndexedXYCollection";
 import { Matrix3d } from "./Matrix3d";
-import { Point2d, Vector2d } from "./Point2dVector2d";
+import { Point2d, Vector2d, XY } from "./Point2dVector2d";
 import { Point3d } from "./Point3dVector3d";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range2d } from "./Range";
@@ -86,7 +86,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
-  public get length() { return this._xyInUse; }
+  public override get length() { return this._xyInUse; }
   public set length(newLength: number) { this.resize(newLength, true); }
 
   /** Return the number of float64 in use. */
@@ -262,7 +262,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xy into strongly typed Point2d */
-  public getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
+  public override getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
     if (this.isIndexValid(pointIndex)) {
       const index = 2 * pointIndex;
       return Point2d.create(this._data[index], this._data[index + 1], result);
@@ -271,7 +271,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xy into strongly typed Vector2d */
-  public getVector2dAtCheckedVectorIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined {
+  public override getVector2dAtCheckedVectorIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined {
     if (this.isIndexValid(vectorIndex)) {
       const index = 2 * vectorIndex;
       return Vector2d.create(this._data[index], this._data[index + 1], result);
@@ -566,7 +566,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute a vector from index origin i to indexed target j  */
-  public vectorIndexIndex(i: number, j: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorIndexIndex(i: number, j: number, result?: Vector2d): Vector2d | undefined {
     if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
     const data = this._data;
@@ -576,7 +576,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute a vector from origin to indexed target j */
-  public vectorXAndYIndex(origin: XAndY, j: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorXAndYIndex(origin: XAndY, j: number, result?: Vector2d): Vector2d | undefined {
     if (this.isIndexValid(j)) {
       const data = this._data;
       j = 2 * j;
@@ -588,7 +588,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute the cross product of vectors from from indexed origin to indexed targets i and j */
-  public crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined {
+  public override crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined {
     if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const i = originIndex * 2;
       const j = targetAIndex * 2;
@@ -602,7 +602,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute the cross product of vectors from from origin to indexed targets i and j */
-  public crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined {
+  public override crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined {
     if (this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const j = targetAIndex * 2;
       const k = targetBIndex * 2;
@@ -693,5 +693,21 @@ export class GrowableXYArray extends IndexedXYCollection {
         return false;
     }
     return true;
+  }
+
+  /** Compute the linear combination s of the indexed p_i and given scales s_i.
+   * @param scales array of scales. For best results, scales should have same length as the instance.
+   * @param result optional pre-allocated object to fill and return
+   * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
+   */
+  public override linearCombination(scales: number[], result?: Point2d | Vector2d): XY {
+    const n = Math.min(this.length, scales.length);
+    let x = 0;
+    let y = 0;
+    for (let i = 0; i < n; ++i) {
+      x += scales[i] * this.getXAtUncheckedPointIndex(i);
+      y += scales[i] * this.getYAtUncheckedPointIndex(i);
+    }
+    return (result instanceof Vector2d) ? Vector2d.create(x, y, result) : Point2d.create(x, y, result);
   }
 }

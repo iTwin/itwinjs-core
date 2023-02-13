@@ -7,9 +7,8 @@
  * @module ArraysAndInterfaces
  */
 
-// import { Point2d } from "./Geometry2d";
 import { Geometry } from "../Geometry";
-import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Range3d } from "./Range";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { XYAndZ } from "./XYZProps";
@@ -39,9 +38,9 @@ class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
 /**
  * abstract base class for read-only access to XYZ data with indexed reference.
  * * This allows algorithms to work with Point3d[] or GrowableXYZ.
- * ** GrowableXYZArray implements these for its data.
- * ** Point3dArrayCarrier carries a (reference to) a Point3d[] and implements the methods with calls on that array reference.
- * * In addition to "point by point" accessors, there abstract members compute commonly useful vector data "between points".
+ *   * GrowableXYZArray implements these for its data.
+ *   * Point3dArrayCarrier carries a (reference to) a Point3d[] and implements the methods with calls on that array reference.
+ * * In addition to "point by point" accessors, other abstract members compute commonly useful vector data "between points".
  * * Methods that create vectors among multiple indices allow callers to avoid creating temporaries.
  * @public
  */
@@ -249,6 +248,22 @@ export abstract class IndexedXYZCollection {
    * * No action if index is out of bounds.
    */
   public abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
+
+  /** Compute the linear combination s of the indexed p_i and given scales s_i.
+   * @param scales array of scales. For best results, scales should have same length as the instance.
+   * @param result optional pre-allocated object to fill and return
+   * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
+  */
+  public linearCombination(scales: number[], result?: Point3d | Vector3d): XYZ {
+    const n = Math.min(this.length, scales.length);
+    const sum = (result instanceof Vector3d) ? Vector3d.createZero(result) : Point3d.createZero(result);
+    for (let i = 0; i < n; ++i) {
+      sum.x += scales[i] * this.getXAtUncheckedPointIndex(i);
+      sum.y += scales[i] * this.getYAtUncheckedPointIndex(i);
+      sum.z += scales[i] * this.getZAtUncheckedPointIndex(i);
+    }
+    return sum;
+  }
 
   /**
    * Interpolate the points at the given indices.
