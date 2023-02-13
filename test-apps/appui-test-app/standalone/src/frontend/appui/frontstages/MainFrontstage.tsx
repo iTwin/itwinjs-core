@@ -15,7 +15,7 @@ import {
   BackstageAppButton,
   BackstageItem,
   BackstageItemUtilities,
-  ConfigurableUiManager, ContentGroup, ContentGroupProps,
+  ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, FrontstageProps, IModelViewportControl,
   SettingsModalFrontstage, StageContentLayout, StageContentLayoutProps,
   StageUsage,
@@ -212,7 +212,7 @@ export class MainFrontstage {
       usage: StageUsage.General,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
     this.registerUiItemProviders();
   }
 

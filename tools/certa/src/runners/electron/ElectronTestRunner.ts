@@ -29,10 +29,9 @@ export class ElectronTestRunner {
   public static async runTests(config: CertaConfig): Promise<void> {
     const { BrowserWindow, app, ipcMain } = require("electron"); // eslint-disable-line @typescript-eslint/naming-convention
 
-    const webPreferences: WebPreferences & { nativeWindowOpen: true } = { // nativeWindowOpen was removed starting Electron 18
+    const webPreferences: WebPreferences = {
       nodeIntegration: true,
       contextIsolation: false,
-      nativeWindowOpen: true,
       sandbox: false,
     };
 

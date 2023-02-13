@@ -98,12 +98,12 @@ export interface FormProps {
  * export class ExampleForm extends React.Component {
  *   public static open() {
  *   const form = new ExampleForm({});
- *   ModalDialogManager.openDialog(form.render());
+ *   UiFramework.dialogs.modal.openDialog(form.render());
  * }
  *
  * protected async handleSubmit(values: FieldValues): Promise<void> {
  *   await this.processFormSubmission(values);
- *   ModalDialogManager.closeDialog();
+ *   UiFramework.dialogs.modal.closeDialog();
  *   const msg = JSON.stringify(values);
  *   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Form Submitted", msg));
  * }
@@ -114,7 +114,7 @@ export interface FormProps {
  * }
  *
  * protected handleCancel() {
- *   ModalDialogManager.closeDialog();
+ *   UiFramework.dialogs.modal.closeDialog();
  * }
  *
  * public render() {

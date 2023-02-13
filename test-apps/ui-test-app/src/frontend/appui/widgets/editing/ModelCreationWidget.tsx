@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 
 const modelNameId = "ui-test-app-modelcreation-modelname";
@@ -50,4 +50,4 @@ export class ModelCreationWidget extends WidgetControl {
     this.reactNode = <ModelCreationComponent />;
   }
 }
-ConfigurableUiManager.registerControl("ModelCreation", ModelCreationWidget);
+UiFramework.controls.register("ModelCreation", ModelCreationWidget);

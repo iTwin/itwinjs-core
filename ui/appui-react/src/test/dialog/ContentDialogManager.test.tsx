@@ -6,10 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { ConfigurableUiManager, ContentDialog, ContentDialogManager, ContentDialogRenderer, DialogChangedEventArgs } from "../../appui-react";
-import TestUtils, { userEvent } from "../TestUtils";
+import { ContentDialog, ContentDialogManager, ContentDialogRenderer, DialogChangedEventArgs } from "../../appui-react";
+import TestUtils, { createStaticInternalPassthroughValidators, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
+import { InternalContentDialogManager } from "../../appui-react/dialog/InternalContentDialogManager";
+/* eslint-disable deprecation/deprecation */
 
 describe("ContentDialogManager", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
@@ -25,7 +27,6 @@ describe("ContentDialogManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework(true);
-    ConfigurableUiManager.initialize();
     await MockRender.App.startup();
 
     ContentDialogManager.onContentDialogChangedEvent.addListener(handleContentDialogChanged);
@@ -217,6 +218,24 @@ describe("ContentDialogManager", () => {
     expect(ContentDialogManager.activeDialog).to.eq(reactNode2);
 
     ContentDialogManager.closeDialog(dialogId2);
+  });
+
+  it("calls Internal static for everything", () => {
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ContentDialogManager, InternalContentDialogManager);
+
+    validateMethod("closeAll");
+    validateMethod(["closeDialog", "close"], "id");
+    validateMethod(["getDialogInfo", "getInfo"], "id");
+    validateMethod(["getDialogZIndex", "getZIndex"], "id");
+    validateMethod("handlePointerDownEvent", {} as any, "id", sinon.spy());
+    validateMethod("initialize");
+    validateMethod(["openDialog", "open"], "", "id", document);
+    validateMethod("update");
+    validateProp(["activeDialog", "active"]);
+    validateProp(["dialogCount", "count"]);
+    validateProp("dialogManager");
+    validateProp("dialogs");
+    validateProp("onContentDialogChangedEvent");
   });
 
 });

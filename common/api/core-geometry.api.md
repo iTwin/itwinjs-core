@@ -1549,10 +1549,10 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 
 // @public
 export class CurveCurve {
-    static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[]): CurveLocationDetailPair[];
+    static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[], tolerance?: number): CurveLocationDetailPair[];
     static closeApproachProjectedXYPairs(geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number): CurveLocationDetailPair[];
-    static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[];
-    static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[];
+    static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
+    static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     // @beta
     static intersectionXYZ(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
 }
@@ -1567,7 +1567,7 @@ export enum CurveCurveApproachType {
 
 // @internal
 export class CurveCurveIntersectXY extends NullGeometryHandler {
-    constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean);
+    constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any;
@@ -3525,7 +3525,7 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
     multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixMatrixInverse(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
-    multiplyMatrixMatrixTranspose(matrixB: Matrix3d, result?: Matrix3d): Matrix3d;
+    multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixTransform(other: Transform, result?: Transform): Transform;
     multiplyMatrixTransposeMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d;
@@ -3537,8 +3537,8 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyXY(x: number, y: number, result?: Vector3d): Vector3d;
     multiplyXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     multiplyXYZtoXYZ(xyz: XYZ, result: XYZ): XYZ;
-    normalizeColumnsInPlace(originalMagnitudes?: Vector3d): boolean;
-    normalizeRowsInPlace(originalMagnitudes?: Vector3d): boolean;
+    normalizeColumnsInPlace(originalRowMagnitudes?: Vector3d): boolean;
+    normalizeRowsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
     static numComputeCache: number;
     static numUseCache: number;
     originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d;
@@ -3555,7 +3555,7 @@ export class Matrix3d implements BeJSONFunctions {
     scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
     setAt(row: number, column: number, value: number): void;
     setColumn(columnIndex: number, value: Vector3d | undefined): void;
-    setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d | undefined): void;
+    setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d): void;
     setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d): void;
     setFrom(other: Matrix3d | undefined): void;
     setFromJSON(json?: Matrix3dProps | Matrix3d): void;
