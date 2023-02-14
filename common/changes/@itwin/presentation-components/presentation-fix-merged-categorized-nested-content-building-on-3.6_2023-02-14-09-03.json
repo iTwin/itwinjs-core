@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Fix failure to load property data when nested properties are placed in root categories different from their parent property category",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

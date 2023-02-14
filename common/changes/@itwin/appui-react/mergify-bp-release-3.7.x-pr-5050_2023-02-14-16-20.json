@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix Popout widget window title",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

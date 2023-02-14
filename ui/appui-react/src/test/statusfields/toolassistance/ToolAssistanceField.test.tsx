@@ -13,8 +13,8 @@ import { LocalStateStorage } from "@itwin/core-react";
 import { FooterPopup } from "@itwin/appui-layout-react";
 import { IconButton, ToggleSwitch } from "@itwin/itwinui-react";
 import {
-  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
+  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, ToolAssistanceField, UiFramework, WidgetDef,
 } from "../../../appui-react";
 import TestUtils, { mount, storageMock } from "../../TestUtils";
 import { render } from "@testing-library/react";
@@ -474,14 +474,14 @@ import { render } from "@testing-library/react";
     it("cursorPrompt should open when tool icon changes", () => {
       const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
-      FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+      UiFramework.frontstages.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
       expect(toolAssistanceField.length).to.eq(1);
       toolAssistanceField.setState({ showPromptAtCursor: true });
 
       // emit before instructions set
-      FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+      UiFramework.frontstages.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
       const spyMethod = sinon.spy();
       CursorPopupManager.onCursorPopupUpdatePositionEvent.addListener(spyMethod);
@@ -492,7 +492,7 @@ import { render } from "@testing-library/react";
       notifications.setToolAssistance(instructions);
 
       // emit after instructions set
-      FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+      UiFramework.frontstages.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
       wrapper.update();
 
