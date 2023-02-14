@@ -89,10 +89,10 @@ export class SelectionScopesManager {
 }
 
 /**
- * Normalizes given scope options and returns [[ComputeSelectionScopeProps]] that can be used for
+ * Normalizes given scope options and returns [[SelectionScopeProps]] that can be used for
  * calculating selection with scope.
  *
- * @internal
+ * @public
  */
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
   if (!scope)

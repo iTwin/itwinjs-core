@@ -105,7 +105,10 @@ function assignOptionalTreeNodeItemFields(
 /**
  * Applies customization from [[Node]] to [[TreeNodeItem]].
  * @public
- * @deprecated in 3.x.
+ * @deprecated in 3.x. This is a temporary function to apply deprecated [[Node]] customization attributes on a [[TreeNodeItem]].
+ * The recommendation is to switch to using a custom customization function that looks at node's [[Node.extendedData]] and applies
+ * [[TreeNodeItem]] customization based on values in extended data.
+ * See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
  */
 export function customizeTreeNodeItem(item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) {
   if (node.imageId) { // eslint-disable-line deprecation/deprecation

@@ -92,7 +92,7 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
-// @internal
+// @public
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps;
 
 // @public
@@ -288,7 +288,6 @@ export class Presentation {
     static initialize(props?: PresentationProps): Promise<void>;
     static get localization(): Localization;
     static get presentation(): PresentationManager;
-    // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
     static get selection(): SelectionManager;
     // @internal (undocumented)
@@ -503,7 +502,7 @@ export interface SelectionHandlerProps {
     rulesetId?: string;
 }
 
-// @internal (undocumented)
+// @public
 export class SelectionHelper {
     static getKeysForSelection(keys: Readonly<Keys>): Key[];
 }
