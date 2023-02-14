@@ -560,8 +560,8 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** This no longer has any effect except emitting a warning
-   * @deprecated in 3.x.
+  /**
+   * @deprecated in 3.x, this no longer has any effect except emitting a warning
    */
   protected skipElement(_sourceElement: Element): void {
     Logger.logWarning(loggerCategory, `Tried to defer/skip an element, which is no longer necessary`);
