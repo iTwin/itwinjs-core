@@ -194,9 +194,10 @@ export abstract class IndexedXYZCollection {
   public distanceSquaredIndexXYAndZ(index0: number, target: XYAndZ): number | undefined {
     if (index0 < 0 || index0 >= this.length)
       return undefined;
-    return this.getXAtUncheckedPointIndex(index0) * target.x +
-           this.getYAtUncheckedPointIndex(index0) * target.y +
-           this.getZAtUncheckedPointIndex(index0) * target.z;
+    return Geometry.hypotenuseSquaredXYZ(
+      target.x - this.getXAtUncheckedPointIndex(index0),
+      target.y - this.getYAtUncheckedPointIndex(index0),
+      target.z - this.getZAtUncheckedPointIndex(index0));
   }
   /**
    * Return distance between indicated points.

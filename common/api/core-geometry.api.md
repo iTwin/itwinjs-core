@@ -441,18 +441,18 @@ export class BarycentricTriangle {
     static createXYZXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, result?: BarycentricTriangle): BarycentricTriangle;
     distanceSquared(a0: number, a1: number, a2: number, b0: number, b1: number, b2: number): number;
     dotProductOfCrossProductsFromOrigin(other: BarycentricTriangle): number;
+    dotProductOfEdgeVectorsAtVertex(baseVertexIndex: number): number;
     edgeLength(oppositeVertexIndex: number): number;
+    protected edgeLength2: number[];
     edgeLengthSquared(oppositeVertexIndex: number): number;
+    static edgeOppositeVertexIndexToStartVertexIndex(edgeIndex: number): number;
+    static edgeStartVertexIndexToOppositeVertexIndex(startVertexIndex: number): number;
     fractionToPoint(b0: number, b1: number, b2: number, result?: Point3d): Point3d;
     incenter(result?: Point3d): Point3d;
     intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     isAlmostEqual(other: BarycentricTriangle): boolean;
-    static isInRegionBeyondEdge(b0: number, b1: number, b2: number): number;
-    static isInRegionBeyondVertex(b0: number, b1: number, b2: number): number;
     static isInsideTriangle(b0: number, b1: number, b2: number): boolean;
-    static isOnBoundedEdge(b0: number, b1: number, b2: number): number;
-    static isOnVertex(b0: number, b1: number, b2: number): number;
     normal(result?: Vector3d): Vector3d | undefined;
     get perimeter(): number;
     points: Point3d[];
@@ -2320,6 +2320,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     isIndexValid(index: number): boolean;
     get length(): number;
     set length(newLength: number);
+    linearCombination(scales: number[], result?: Point2d | Vector2d): XY;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
     multiplyTransformInPlace(transform: Transform): void;
     pop(): void;
@@ -2938,6 +2939,7 @@ export abstract class IndexedXYCollection {
     abstract getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined;
     abstract getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
     abstract get length(): number;
+    linearCombination(_scales: number[], _result?: Point2d | Vector2d): XY | undefined;
     abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
     abstract vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined;
 }
@@ -2966,6 +2968,7 @@ export abstract class IndexedXYZCollection {
     abstract getZAtUncheckedPointIndex(pointIndex: number): number;
     interpolateIndexIndex(index0: number, fraction: number, index1: number, result?: Point3d): Point3d | undefined;
     abstract get length(): number;
+    linearCombination(scales: number[], result?: Point3d | Vector3d): XYZ;
     get points(): Iterable<Point3d>;
     abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     vectorIndexXYAndZ(indexA: number, target: XYAndZ, result?: Vector3d): Vector3d | undefined;
@@ -3799,6 +3802,8 @@ export class NumberArray {
     static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance: number): boolean;
     static isCoordinateInArray(x: number, data: number[] | undefined): boolean;
     static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean;
+    static linearCombination(data: number[], scales: number[]): number;
+    static linearCombinationOfColors(colors: number[], scales: number[]): number;
     static maxAbsArray(values: number[]): number;
     static maxAbsDiff(dataA: number[] | Float64Array, dataB: number[] | Float64Array): number;
     static maxAbsDiffFloat64(dataA: Float64Array, dataB: Float64Array): number;
@@ -4130,6 +4135,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
     isValidIndex(index: number): boolean;
     get length(): number;
+    linearCombination(scales: number[], result?: Point2d | Vector2d): XY;
     vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
     vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined;
 }
@@ -4575,6 +4581,7 @@ export class PolyfaceQuery {
     static fillSimpleHoles(mesh: Polyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
+    static intersectRay3d(visitor: Polyface | PolyfaceVisitor, ray: Ray3d, options?: FacetIntersectOptions): FacetLocationDetail | undefined;
     static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries?: boolean): boolean;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
@@ -4640,11 +4647,11 @@ export enum PolygonLocation {
 // @public
 export class PolygonLocationDetail {
     a: number;
+    clone(other: PolygonLocationDetail): void;
     closestEdgeIndex: number;
     closestEdgeParam: number;
     code: PolygonLocation;
     static create(result?: PolygonLocationDetail): PolygonLocationDetail;
-    get hasEdgeProjection(): boolean;
     invalidate(): void;
     get isInsideOrOn(): boolean;
     get isValid(): boolean;
@@ -4664,9 +4671,11 @@ export class PolygonOps {
     static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
-    static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, distTol?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
-    static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, distTol?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d): number[] | undefined;
+    static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, distTol?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static isConvex(polygon: Point3d[] | IndexedXYZCollection): boolean;
     static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
     static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][];
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
@@ -4674,7 +4683,7 @@ export class PolygonOps {
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
     static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number;
     static sumTriangleAreasXY(points: Point3d[]): number;
-    static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;
+    static testXYPolygonTurningDirections(points: Point2d[] | Point3d[]): number;
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
 }
 
@@ -5823,15 +5832,16 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
 // @public
 export class TriangleLocationDetail {
     a: number;
-    classify(paramTol?: number): PolygonLocation;
+    get classify(): PolygonLocation;
+    clone(other: TriangleLocationDetail): void;
     closestEdgeIndex: number;
     closestEdgeParam: number;
     static create(result?: TriangleLocationDetail): TriangleLocationDetail;
-    get hasEdgeProjection(): boolean;
     invalidate(): void;
-    isInsideOrOn(paramTol?: number): boolean;
-    isValid(paramTol?: number): boolean;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
     local: Point3d;
+    snapLocalToEdge(parameterTolerance?: number): void;
     world: Point3d;
 }
 

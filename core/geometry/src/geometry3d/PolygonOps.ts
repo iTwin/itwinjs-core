@@ -685,7 +685,8 @@ export class PolygonOps {
     return 0;
   }
   /**
-   * @param points polygon vertices, closure point optional
+   * Determine whether the polygon is convex.
+   * @param polygon vertices, closure point optional
    * @returns whether the polygon is convex.
    */
   public static isConvex(polygon: Point3d[] | IndexedXYZCollection): boolean {
@@ -1069,7 +1070,7 @@ export class PolygonOps {
     const i0 = edgeStartVertexIndex % polygon.length;
     const i1 = (i0 + 1) % polygon.length;
     polygon.vectorIndexIndex(i0, i1, edgeOutwardUnitNormal)!.unitPerpendicularXY(edgeOutwardUnitNormal).negate(edgeOutwardUnitNormal);
-    return edgeOutwardUnitNormal.dotProductXYZ(polygon.getXAtUncheckedPointIndex(i0) - point.x, polygon.getYAtUncheckedPointIndex(i1) - point.y);
+    return edgeOutwardUnitNormal.dotProductXYZ(polygon.getXAtUncheckedPointIndex(i0) - point.x, polygon.getYAtUncheckedPointIndex(i0) - point.y);
   }
 
   // cspell:word CAGD
@@ -1079,10 +1080,10 @@ export class PolygonOps {
    * @return barycentric coordinates of the point, or undefined if degenerate polygon. Length same as `polygon.length`.
    * @see BarycentricTriangle.pointToFraction
    */
-  public static computeBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d): number[] | undefined {
+  public static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d): number[] | undefined {
     // cf. "Barycentric Coordinates for Convex Sets", by Warren et al., CAGD (2003)
     if (Array.isArray(polygon))
-      return this.computeBarycentricCoordinates(new Point3dArrayCarrier(polygon), point);
+      return this.convexBarycentricCoordinates(new Point3dArrayCarrier(polygon), point);
     let n = polygon.length;
     if (n > 1 && polygon.getPoint3dAtUncheckedPointIndex(0).isExactEqual(polygon.getPoint3dAtUncheckedPointIndex(n - 1)))
       --n;  // ignore closure point
@@ -1096,12 +1097,12 @@ export class PolygonOps {
     // now we know polygon orientation is ccw, its last edge has positive length, and we can ignore z-coords
     const outwardUnitNormalOfLastEdge = this._vector0;
     const signedProjDistToLastEdge = this.computeEdgeDataXY(polygonXY, n - 1, pointXY, outwardUnitNormalOfLastEdge);
-    let outwardUnitNormalOfPrevEdge = outwardUnitNormalOfLastEdge;
+    const outwardUnitNormalOfPrevEdge = Vector3d.createFrom(outwardUnitNormalOfLastEdge, this._vector1);
     let signedProjDistToPrevEdge = signedProjDistToLastEdge;
     const coords = Array<number>(polygon.length).fill(0); // use original length
     let coordSum = 0.0;
     for (let i = 0; i < n; ++i) {
-      const outwardUnitNormalOfEdge = Vector3d.createFrom(outwardUnitNormalOfLastEdge, this._vector1);
+      const outwardUnitNormalOfEdge = Vector3d.createFrom(outwardUnitNormalOfLastEdge, this._vector2);
       const signedProjDistToEdge = (i < n - 1) ? this.computeEdgeDataXY(polygonXY, i, pointXY, outwardUnitNormalOfEdge) : signedProjDistToLastEdge;
       if (outwardUnitNormalOfEdge.x === 0.0 && outwardUnitNormalOfEdge.y === 0.0)
         continue; // this edge is degenerate, coords[i] remains zero
@@ -1132,7 +1133,7 @@ export class PolygonOps {
       }
       coords[i] = coord;  // unnormalized
       coordSum += coord;
-      outwardUnitNormalOfPrevEdge = outwardUnitNormalOfEdge;
+      outwardUnitNormalOfPrevEdge.setFrom(outwardUnitNormalOfEdge);
       signedProjDistToPrevEdge = signedProjDistToEdge;
     }
     const scale = Geometry.conditionalDivideCoordinate(1.0, coordSum);

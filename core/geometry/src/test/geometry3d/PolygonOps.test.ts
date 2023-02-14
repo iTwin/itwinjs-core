@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { Point3dArrayCarrier } from "../../core-geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -12,8 +13,10 @@ import { ParityRegion } from "../../curve/ParityRegion";
 import { RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range2d } from "../../geometry3d/Range";
+import { Range2d, Range3d } from "../../geometry3d/Range";
 import { SortablePolygon } from "../../geometry3d/SortablePolygon";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
@@ -210,6 +213,45 @@ describe("PolygonOps", () => {
     ck.testUndefined(degenerateB.getAnyInteriorPoint());
     GeometryCoreTestIO.saveGeometry(allGeometry, "SortablePolygon", "LoopToPolygon");
     expect(ck.getNumErrors()).equals(0);
+  });
 
+  it("ConvexBarycentricCoordinates", () => {
+    const ck = new Checker();
+    const polygon = [Point3d.create(-2,-1), Point3d.create(-2,0), Point3d.create(-2,1), Point3d.create(-1,2), Point3d.create(0,2), Point3d.create(2,2), Point3d.create(1,-1), Point3d.create(0,-2)];
+    polygon.push(polygon[0].clone()); // closure point for coverage
+    // create grid of test points
+    const range = Range3d.create(...polygon);
+    const testPts: Point3d[] = [];
+    const delta = 0.1;
+    for (let xCoord = range.low.x; xCoord < range.high.x; xCoord += delta)
+      for (let yCoord = range.low.y; yCoord < range.high.y; yCoord += delta)
+        testPts.push(Point3d.create(xCoord, yCoord));
+    // rotate geometry out of xy-plane
+    const normal = Vector3d.createNormalized(1,-2,3)!;
+    const localToWorld = Matrix3d.createRigidHeadsUp(normal);
+    localToWorld.multiplyVectorArrayInPlace(polygon);
+    localToWorld.multiplyVectorArrayInPlace(testPts);
+
+    ck.testTrue(PolygonOps.isConvex(polygon));
+    const polygonCarrier = new Point3dArrayCarrier(polygon);
+
+    // roundtrip xyz through barycentric conversion
+    const xyz = Point3d.createZero();
+    for (const testPt of testPts) {
+      const b = PolygonOps.convexBarycentricCoordinates(polygon, testPt);
+      ck.testDefined(b, "computed convex barycentric coordinates");
+      if (undefined !== b) {
+        ck.testExactNumber(b.length, polygon.length, "barycentric coordinate length matches polygon length");
+        polygonCarrier.linearCombination(b, xyz);
+        ck.testPoint3d(xyz, testPt, "barycentric roundtrip");
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("IntersectRay3d", () => {
+    const ck = new Checker();
+    
+    expect(ck.getNumErrors()).equals(0);
   });
 });

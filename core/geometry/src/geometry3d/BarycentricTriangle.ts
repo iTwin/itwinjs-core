@@ -105,7 +105,7 @@ export class TriangleLocationDetail {
    * @returns location code
    * @see isInsideOrOn
    */
-  public classify(): PolygonLocation {
+  public get classify(): PolygonLocation {
     if (!this.isValid)
       return PolygonLocation.Unknown;
     if (this.isInsideOrOn) {
@@ -212,8 +212,8 @@ export class BarycentricTriangle {
    * @param point point p to project
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the projection point P = `d.point`:
-   * * `d.isValid()` returns true if and only if `this.normal()` is defined.
-   * * `d.classify()` can be used to determine where P lies with respect to the triangle.
+   * * `d.isValid` returns true if and only if `this.normal()` is defined.
+   * * `d.classify` can be used to determine where P lies with respect to the triangle.
    * * `d.a` is the signed projection distance: P = p + a * `this.normal()`.
    * @see fractionToPoint
    */
@@ -397,8 +397,8 @@ export class BarycentricTriangle {
    * @param ray infinite line to intersect, as a ray
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the line-plane intersection `d.point`:
-   * * `d.isValid()` returns true if and only if the line intersects the plane.
-   * * `d.classify()` can be used to determine where the intersection lies with respect to the triangle.
+   * * `d.isValid` returns true if and only if the line intersects the plane.
+   * * `d.classify` can be used to determine where the intersection lies with respect to the triangle.
    * * `d.a` is the intersection parameter. If `d.a` >= 0, the ray intersects the plane of the triangle.
    * @see pointToFraction
   */
@@ -432,8 +432,8 @@ export class BarycentricTriangle {
    * @param point1 end point of segment on line to intersect
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the line-plane intersection `d.point`:
-   * * `d.isValid()` returns true if and only if the line intersects the plane.
-   * * `d.classify()` can be used to determine where the intersection lies with respect to the triangle.
+   * * `d.isValid` returns true if and only if the line intersects the plane.
+   * * `d.classify` can be used to determine where the intersection lies with respect to the triangle.
    * * `d.a` is the intersection parameter. If `d.a` is in [0,1], the segment intersects the plane of the triangle.
    * @see intersectRay3d
   */

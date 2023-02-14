@@ -329,7 +329,7 @@
         "order": 3
       },
       "cwd": "${workspaceFolder}/core/geometry",
-      "type": "pwa-node",
+      "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
