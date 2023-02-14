@@ -22,7 +22,8 @@
     "build:ci": "",
     "clean": "",
     "lint": "",
-    "test": "mocha \"tests/*.js\"",
+    "before-test": "node tests/fixtures/link.js",
+    "test": "npm run before-test && mocha \"tests/*.js\"",
     "docs": "",
     "cover": "npm -s test"
   },
