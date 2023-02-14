@@ -93,7 +93,7 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -110,15 +110,15 @@ Object {
     },
   },
   "records": Object {
-    "Category1": Array [
+    "Category2": Array [
       PropertyRecord {
         "autoExpand": false,
         "isMerged": true,
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "root-field",
-          "typename": "NestedContentFieldType",
+          "displayLabel": "Simple Field",
+          "name": "nested-field-1",
+          "typename": "string",
         },
         "value": Object {
           "valueFormat": 0,
@@ -1431,7 +1431,7 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -1448,15 +1448,15 @@ Object {
     },
   },
   "records": Object {
-    "Category1": Array [
+    "Category2": Array [
       PropertyRecord {
         "autoExpand": false,
         "isMerged": true,
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "root-field",
-          "typename": "NestedContentFieldType",
+          "displayLabel": "Simple Field",
+          "name": "nested-field-1",
+          "typename": "string",
         },
         "value": Object {
           "valueFormat": 0,

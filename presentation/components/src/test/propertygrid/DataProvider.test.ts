@@ -1358,7 +1358,7 @@ describe("PropertyDataProvider", () => {
               }]);
             });
 
-            it("puts properties field parent record into favorites category if property is merged", async () => {
+            it("puts nested properties field into favorites category when parent field is merged", async () => {
               const parentCategory = createTestCategoryDescription({ name: "parent-category", label: "Parent" });
               const childCategory = createTestCategoryDescription({ name: "child-category", label: "Child", parent: parentCategory });
               const propertiesField = createTestSimpleContentField({ name: "primitive-property", label: "Primitive", category: childCategory });
@@ -1381,17 +1381,21 @@ describe("PropertyDataProvider", () => {
 
               if (provider.isNestedPropertyCategoryGroupingEnabled) {
                 const favoritesCategory = data.categories.find((c) => c.name === FAVORITES_CATEGORY_NAME)!;
-                expect(favoritesCategory.childCategories!.length).to.eq(1);
-                expect(favoritesCategory.childCategories).to.containSubset([{
-                  label: "Parent",
-                }]);
-                expect(data.records[`${FAVORITES_CATEGORY_NAME}-${parentCategory.name}`].length).to.eq(1);
-                expect(data.records[`${FAVORITES_CATEGORY_NAME}-${parentCategory.name}`]).to.containSubset([{
-                  property: { displayLabel: "Nested Content" },
+                expect(favoritesCategory).to.containSubset({
+                  childCategories: [{
+                    label: parentCategory.label,
+                    childCategories: [{
+                      label: childCategory.label,
+                    }],
+                  }],
+                });
+                expect(data.records[`${FAVORITES_CATEGORY_NAME}-${childCategory.name}`].length).to.eq(1);
+                expect(data.records[`${FAVORITES_CATEGORY_NAME}-${childCategory.name}`]).to.containSubset([{
+                  property: { displayLabel: propertiesField.label },
                 }]);
               } else {
                 expect(data.records[FAVORITES_CATEGORY_NAME].length).to.eq(1);
-                expect(data.records[FAVORITES_CATEGORY_NAME][0].property.displayLabel).to.be.eq(nestedContentField.label);
+                expect(data.records[FAVORITES_CATEGORY_NAME][0].property.displayLabel).to.eq(propertiesField.label);
               }
             });
 
