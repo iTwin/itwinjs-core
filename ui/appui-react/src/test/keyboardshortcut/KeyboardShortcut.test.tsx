@@ -6,13 +6,14 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Point } from "@itwin/core-react";
 import {
-  AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
+  AccuDrawKeyboardShortcuts, CommandItemDef, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps, SyncUiEventDispatcher, UiFramework,
 } from "../../appui-react";
 import { CursorInformation } from "../../appui-react/cursor/CursorInformation";
 import { KeyboardShortcutMenu } from "../../appui-react/keyboardshortcut/KeyboardShortcutMenu";
-import TestUtils from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators } from "../TestUtils";
 import { ConditionalBooleanValue, FunctionKey, SpecialKey } from "@itwin/appui-abstract";
-import { SyncUiEventDispatcher } from "../../appui-react/syncui/SyncUiEventDispatcher";
+import { InternalKeyboardShortcutManager } from "../../appui-react/keyboardshortcut/InternalKeyboardShortcut";
+/* eslint-disable deprecation/deprecation */
 
 describe("KeyboardShortcut", () => {
 
@@ -191,7 +192,7 @@ describe("KeyboardShortcut", () => {
 
   describe("KeyboardShortcutManager", () => {
 
-    it("ConfigurableUiManager.loadKeyboardShortcuts should load shortcuts", () => {
+    it("UiFramework.keyboardShortcuts.loadKeyboardShortcuts should load shortcuts", () => {
       const keyboardShortcutList: KeyboardShortcutProps[] = [
         {
           key: "a",
@@ -221,7 +222,7 @@ describe("KeyboardShortcut", () => {
       KeyboardShortcutManager.displayShortcutsMenu();   // No shortcuts to display yet
       expect(menuSpyMethod.calledOnce).to.be.false;
 
-      ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+      UiFramework.keyboardShortcuts.loadShortcuts(keyboardShortcutList);
 
       expect(KeyboardShortcutManager.shortcutContainer.areKeyboardShortcutsAvailable()).to.be.true;
       expect(KeyboardShortcutManager.shortcutContainer.getAvailableKeyboardShortcuts().length).to.eq(4);
@@ -324,6 +325,24 @@ describe("KeyboardShortcut", () => {
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
       document.body.removeChild(buttonElement);
     });
+
+    it("calls Internal static for everything", () => {
+      const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(KeyboardShortcutManager, InternalKeyboardShortcutManager);
+
+      validateMethod(["closeShortcutsMenu", "closeMenu"]);
+      validateMethod(["displayShortcutsMenu", "displayMenu"]);
+      validateMethod("getShortcut", "key");
+      validateMethod("initialize");
+      validateMethod(["loadKeyboardShortcut", "loadShortcut"], {} as any);
+      validateMethod(["loadKeyboardShortcuts", "loadShortcuts"], []);
+      validateMethod("processKey", "key", false, true, false);
+      validateMethod("setFocusToHome");
+      validateProp("cursorX");
+      validateProp("cursorY");
+      validateProp("isFocusOnHome");
+      validateProp("shortcutContainer");
+    });
+
   });
 
   it("should support loading the AccuDraw keyboard shortcuts", async () => {

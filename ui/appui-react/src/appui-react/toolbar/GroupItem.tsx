@@ -16,8 +16,7 @@ import {
   Group as ToolGroupComponent, withDragInteraction,
 } from "@itwin/appui-layout-react";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { ToolActivatedEventArgs } from "../framework/FrameworkFrontstages";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
@@ -27,6 +26,7 @@ import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -167,7 +167,7 @@ interface GroupItemComponentProps extends CommonProps {
 
 interface GroupItemState extends BaseItemState {
   activeItemId: string; // One of group items id.
-  activeToolId: string; // FrontstageManager.activeToolId
+  activeToolId: string; // UiFramework.frontstages.activeToolId
   groupItemDef: GroupItemDef;
   trayId: string;
   backTrays: ReadonlyArray<string>;
@@ -237,15 +237,15 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   public override componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
-    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
-    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
-    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
-    FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
   public override shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState) {
@@ -273,7 +273,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     this.processGroupItemDef(groupItemDef, trayId, trays);
 
     return {
-      activeToolId: FrontstageManager.activeToolId,
+      activeToolId: UiFramework.frontstages.activeToolId,
       groupItemDef,
       isEnabled: groupItemDef.isEnabled, // eslint-disable-line deprecation/deprecation
       isPressed: groupItemDef.isPressed,
@@ -353,7 +353,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
       this.closeGroupButton();
-      KeyboardShortcutManager.setFocusToHome();
+      UiFramework.keyboardShortcuts.setFocusToHome();
     }
   };
 
@@ -431,7 +431,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       isPressed: true,
     });
     this._closeOnPanelOpened = false;
-    FrontstageManager.onToolPanelOpenedEvent.emit();
+    InternalFrontstageManager.onToolPanelOpenedEvent.emit();
     this._closeOnPanelOpened = true;
   };
 
@@ -454,7 +454,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       };
     }, () => {
       this._closeOnPanelOpened = false;
-      !!this.state.isPressed && FrontstageManager.onToolPanelOpenedEvent.emit();
+      !!this.state.isPressed && InternalFrontstageManager.onToolPanelOpenedEvent.emit();
       this._closeOnPanelOpened = true;
     });
   };
