@@ -10,23 +10,7 @@ const ESLintTester = require("eslint").RuleTester;
 const BentleyESLintPlugin = require("../dist");
 const RequireVersionInDeprecationESLintRule =
   BentleyESLintPlugin.rules["require-version-in-deprecation"];
-
-/** allow specifying `only` and `skip` properties for easier debugging */
-function supportSkippedAndOnlyInTests(obj) {
-  const hasOnly =
-    obj.valid.some((test) => Boolean(test.only)) ||
-    obj.invalid.some((test) => Boolean(test.only));
-  const keepTest = (test) => (hasOnly ? test.only : !test.skip);
-  const stripExtraTags = (test) => {
-    delete test.skip;
-    delete test.only;
-    return test;
-  };
-  return {
-    valid: obj.valid.filter(keepTest).map(stripExtraTags),
-    invalid: obj.invalid.filter(keepTest).map(stripExtraTags),
-  };
-}
+const { supportSkippedAndOnlyInTests } = require("./testUtils");
 
 const ruleTester = new ESLintTester({
   parser: require.resolve("@typescript-eslint/parser"),
