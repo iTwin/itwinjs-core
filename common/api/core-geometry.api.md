@@ -3430,10 +3430,12 @@ export class Matrix3d implements BeJSONFunctions {
     columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number): number;
     columnX(result?: Vector3d): Vector3d;
     columnXDotColumnY(): number;
+    columnXDotColumnZ(): number;
     columnXMagnitude(): number;
     columnXMagnitudeSquared(): number;
     columnXYCrossProductMagnitude(): number;
     columnY(result?: Vector3d): Vector3d;
+    columnYDotColumnZ(): number;
     columnYMagnitude(): number;
     columnYMagnitudeSquared(): number;
     columnZ(result?: Vector3d): Vector3d;
