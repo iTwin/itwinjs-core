@@ -60,9 +60,9 @@ describe("BackstageComposer", () => {
 
   it("should close the backstage", async () => {
     const theUserTo = userEvent.setup();
-    const spy = sinon.spy(UiFramework.backstageManager, "close");
+    const spy = sinon.spy(UiFramework.backstage, "close");
     render(<BackstageComposer items={[]} />);
-    UiFramework.backstageManager.open();
+    UiFramework.backstage.open();
 
     await theUserTo.click(screen.getByRole("presentation"));
 

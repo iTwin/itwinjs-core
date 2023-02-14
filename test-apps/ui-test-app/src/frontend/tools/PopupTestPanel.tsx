@@ -5,15 +5,14 @@
 
 import * as React from "react";
 import { DatePickerPopupButton, DatePickerPopupButtonProps } from "@itwin/components-react";
-import { BadgeType } from "@itwin/core-react";
-import { ModalDialogManager, ModelessDialogManager, PopupManager } from "@itwin/appui-react";
+import { PopupManager, UiFramework } from "@itwin/appui-react";
 import { SampleModelessDialog } from "../appui/dialogs/SampleModelessDialog";
 import { TestModalDialog } from "../appui/dialogs/TestModalDialog";
 
 import { SamplePopupContextMenu } from "../appui/frontstages/component-examples/SamplePopupContextMenu";
 import { TableExampleContent } from "../appui/contentviews/TableExampleContent";
 import "./PopupTestPanel.scss";
-import { AbstractToolbarProps, RelativePosition } from "@itwin/appui-abstract";
+import { AbstractToolbarProps, BadgeType, RelativePosition } from "@itwin/appui-abstract";
 import { WeightPickerHost } from "../appui/frontstages/component-examples/ComponentExamplesProvider";
 import { Button } from "@itwin/itwinui-react";
 
@@ -53,11 +52,11 @@ export function PopupTestPanel() {
   }, [closeToolbar]);
 
   const handleOpenModalClick = React.useCallback(() => {
-    ModalDialogManager.openDialog(<TestModalDialog />, "TestModal", divRef.current?.ownerDocument ?? document);
+    UiFramework.dialogs.modal.open(<TestModalDialog />, "TestModal", divRef.current?.ownerDocument ?? document);
   }, []);
 
   const handleOpenModelessClick = React.useCallback(() => {
-    ModelessDialogManager.openDialog(
+    UiFramework.dialogs.modeless.open(
       <SampleModelessDialog movable={true} dialogId={"SampleModeless"} />, "SampleModeless", divRef.current?.ownerDocument ?? document);
   }, []);
 

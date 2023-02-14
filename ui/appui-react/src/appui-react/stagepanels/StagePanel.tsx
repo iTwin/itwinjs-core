@@ -14,13 +14,13 @@ import {
   ZonesManagerWidgetsProps,
 } from "@itwin/appui-layout-react";
 import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneLocation } from "../zones/Zone";
 import { FrameworkStagePanel } from "./FrameworkStagePanel";
 import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePanelState } from "./StagePanelDef";
 import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
+import { UiFramework } from "../UiFramework";
 
 /** Available StagePanel locations.
  * ------------------------------------------------------------------------------------
@@ -161,8 +161,8 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   }
 
   public override componentDidMount() {
-    FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
-    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+    UiFramework.frontstages.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+    UiFramework.frontstages.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
   public override componentDidUpdate(prevProps: StagePanelProps) {
@@ -174,8 +174,8 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   }
 
   public override componentWillUnmount() {
-    FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
-    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+    UiFramework.frontstages.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
+    UiFramework.frontstages.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
   public override render(): React.ReactNode {

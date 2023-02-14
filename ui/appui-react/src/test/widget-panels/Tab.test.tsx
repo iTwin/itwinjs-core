@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
 import {
-  FrontstageDef, FrontstageManager, getBadgeClassName, WidgetDef, WidgetPanelsTab,
+  FrontstageDef, getBadgeClassName, UiFramework, WidgetDef, WidgetPanelsTab,
 } from "../../appui-react";
 
 describe("WidgetPanelsTab", () => {
@@ -18,7 +18,7 @@ describe("WidgetPanelsTab", () => {
 
   it("should render with badge", () => {
     const frontstageDef = new FrontstageDef();
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => frontstageDef);
     const widgetDef = new WidgetDef({ badgeType: BadgeType.New }); // eslint-disable-line deprecation/deprecation
     sinon.stub(frontstageDef, "findWidgetDef").returns(widgetDef);
     const wrapper = shallow(<WidgetPanelsTab />);
