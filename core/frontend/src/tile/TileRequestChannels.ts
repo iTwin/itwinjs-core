@@ -164,6 +164,9 @@ export class TileRequestChannels {
     for (const channel of this)
       channel.statistics.addTo(stats);
 
+    if (stats.totalCompletedRequests > 0)
+      stats.decoding.mean = stats.decoding.total / stats.totalCompletedRequests;
+
     return stats;
   }
 
