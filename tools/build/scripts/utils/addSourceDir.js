@@ -17,15 +17,15 @@ if (process.env.RUSHSTACK_FILE_ERROR_BASE_FOLDER) {
   rootPackageJsonPath = path.resolve("../../../../package.json");
 }
 
-const rootPackageJson = require(rootPackageJsonPath);
+// Check if path to root package.json is valid.
+require(rootPackageJsonPath);
 
 // Appends the directory of the package root to the Typedoc JSON output
 function addSourceDir(file, directory) {
   if (FS.existsSync(file) && FS.statSync(file).isFile()) {
     const contents = FS.readFileSync(file, "utf-8");
-    const packageRoot = directory.substring(
-      directory.indexOf(rootPackageJson.name) + rootPackageJson.name.length + 1
-    );
+    const pathToRootFolder = path.dirname(rootPackageJsonPath);
+    const packageRoot = directory.substring(pathToRootFolder.length + 1);
     const jsonContents = JSON.parse(contents);
     jsonContents["packageRoot"] = packageRoot.endsWith("src")
       ? packageRoot
