@@ -108,7 +108,7 @@
     "@itwin/imodels-client-management": "^2.2.1",
     "@itwin/itwinui-react": "~1.46.0",
     "@itwin/itwinui-css": "0.x",
-    "@itwin/itwinui-icons-react": "^1.8.0",
+    "@itwin/itwinui-icons-react": "^1.15.0",
     "@itwin/map-layers": "workspace:*",
     "@itwin/map-layers-auth": "workspace:*",
     "@itwin/map-layers-formats": "workspace:*",
