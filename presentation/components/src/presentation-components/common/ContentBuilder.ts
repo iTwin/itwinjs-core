@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import {
+  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, StructValue, PropertyValueFormat as UiPropertyValueFormat,
+} from "@itwin/appui-abstract";
 /** @packageDocumentation
  * @module Core
  */
@@ -11,9 +14,6 @@ import {
   ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, RendererDescription, StartArrayProps,
   StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, TypeDescription,
 } from "@itwin/presentation-common";
-import {
-  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, StructValue, PropertyValueFormat as UiPropertyValueFormat,
-} from "@itwin/appui-abstract";
 
 /** @internal */
 export interface FieldRecord {
@@ -182,17 +182,18 @@ export abstract class PropertyRecordsBuilder implements IContentVisitor {
   }
 
   public processMergedValue(props: ProcessMergedValueProps): void {
+    const propertyField = props.requestedField;
     const value: PrimitiveValue = {
       valueFormat: UiPropertyValueFormat.Primitive,
     };
     const record = new PropertyRecord(
       value,
-      createPropertyDescriptionFromFieldInfo(createFieldInfo(props.mergedField, props.parentFieldName)),
+      createPropertyDescriptionFromFieldInfo(createFieldInfo(propertyField, props.parentFieldName)),
     );
     record.isMerged = true;
     record.isReadonly = true;
-    record.autoExpand = props.mergedField.isNestedContentField() && props.mergedField.autoExpand;
-    this.currentPropertiesAppender.append({ record, fieldHierarchy: { field: props.mergedField, childFields: [] } });
+    record.autoExpand = propertyField.isNestedContentField() && propertyField.autoExpand;
+    this.currentPropertiesAppender.append({ record, fieldHierarchy: { field: propertyField, childFields: [] } });
   }
 
   public processPrimitiveValue(props: ProcessPrimitiveValueProps): void {

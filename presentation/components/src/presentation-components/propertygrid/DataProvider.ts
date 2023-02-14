@@ -15,8 +15,7 @@ import { IModelConnection } from "@itwin/core-frontend";
 import {
   addFieldHierarchy, CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
   InstanceKey, NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps,
-  RelationshipMeaning, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy,
-  Value, ValuesMap,
+  RelationshipMeaning, Ruleset, StartArrayProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy, Value, ValuesMap,
 } from "@itwin/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../common/ContentBuilder";
@@ -309,7 +308,6 @@ class PropertyDataBuilder extends PropertyRecordsBuilder {
   private _categoriesCache: PropertyCategoriesCache;
   private _categorizedRecords = new Map<string, FieldHierarchyRecord[]>();
   private _favoriteFieldHierarchies: FieldHierarchy[] = [];
-  private _categoriesStack: CategoryDescription[] = [];
 
   constructor(props: PropertyDataBuilderProps) {
     super();
@@ -325,12 +323,7 @@ class PropertyDataBuilder extends PropertyRecordsBuilder {
   protected createRootPropertiesAppender(): IPropertiesAppender {
     return {
       append: (record: FieldHierarchyRecord): void => {
-        // Note: usually the last category on the stack should be what we want, but in some cases,
-        // when record's parent is merged, we need another category. In any case it's always expected
-        // to be on the stack.
-        const category = this._categoriesStack.find((c) => c.name === record.fieldHierarchy.field.category.name);
-        assert(category !== undefined);
-
+        const category = record.fieldHierarchy.field.category;
         let records = this._categorizedRecords.get(category.name);
         if (!records) {
           records = [];
@@ -485,12 +478,6 @@ class PropertyDataBuilder extends PropertyRecordsBuilder {
     props.hierarchies.push(...this._favoriteFieldHierarchies);
   }
 
-  public override startCategory(props: StartCategoryProps): boolean {
-    this._categoriesStack.push(props.category);
-    return true;
-  }
-  public override finishCategory(): void { this._categoriesStack.pop(); }
-
   public override startStruct(props: StartStructProps): boolean {
     if (this.shouldSkipField(props.hierarchy.field, () => !Object.keys(props.rawValues).length))
       return false;
@@ -538,6 +525,9 @@ class PropertyCategoriesCache {
   constructor(private _enableCategoryNesting: boolean) { }
 
   public initFromDescriptor(descriptor: Descriptor) {
+    descriptor.categories.forEach((category) => {
+      this.cache(category);
+    });
     this.initFromFields(descriptor.fields);
   }
 
