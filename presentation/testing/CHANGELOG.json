@@ -2,6 +2,12 @@
   "name": "@bentley/presentation-testing",
   "entries": [
     {
+      "version": "2.19.51",
+      "tag": "@bentley/presentation-testing_v2.19.51",
+      "date": "Wed, 15 Feb 2023 18:37:37 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.50",
       "tag": "@bentley/presentation-testing_v2.19.50",
       "date": "Wed, 11 Jan 2023 15:59:00 GMT",

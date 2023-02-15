@@ -1,6 +1,11 @@
 # Change Log - @bentley/reality-data-client
 
-This log was last generated on Wed, 11 Jan 2023 15:59:00 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Feb 2023 18:37:38 GMT and should not be manually modified.
+
+## 2.19.51
+Wed, 15 Feb 2023 18:37:38 GMT
+
+_Version update only_
 
 ## 2.19.50
 Wed, 11 Jan 2023 15:59:00 GMT
