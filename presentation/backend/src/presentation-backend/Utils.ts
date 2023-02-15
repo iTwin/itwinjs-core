@@ -19,16 +19,15 @@ const presentation = require("@itwin/presentation-common/lib/cjs/assets/locales/
 export function getLocalizedStringEN(key: string) {
   let result = presentation;
   const [namespace, identifier] = key.split(":", 2);
-  if (namespace === "Presentation") {
-    const keySteps = identifier.split(".");
-    for (const keyStep of keySteps) {
-      if (keyStep in result === false)
-        return key;
-      result = result[keyStep];
-    }
-    return typeof result === "string" ? result : key;
+  if (namespace !== "Presentation")
+    return key;
+  const keySteps = identifier.split(".");
+  for (const keyStep of keySteps) {
+    if (keyStep in result === false)
+      return key;
+    result = result[keyStep];
   }
-  return key;
+  return typeof result === "string" ? result : key;
 }
 
 /** @internal */
