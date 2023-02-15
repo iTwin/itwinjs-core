@@ -76,7 +76,7 @@ export class TileRequestChannelStatistics {
   public decoding: TileContentDecodingStatistics = {
     total: 0,
     mean: 0,
-    max: 0,
+    max: Number.MIN_SAFE_INTEGER,
     min: Number.MAX_SAFE_INTEGER,
   };
 
@@ -94,7 +94,9 @@ export class TileRequestChannelStatistics {
     stats.decoding.total += this.decoding.total;
     stats.decoding.max = Math.max(this.decoding.max, stats.decoding.max);
     stats.decoding.min = Math.min(this.decoding.min, stats.decoding.min);
-    // decoding.mean intentionally not handled here - see TileRequestChannels.statistics
+
+    if (stats.totalCompletedRequests > 0)
+      stats.decoding.mean = (stats.decoding.total + this.decoding.total) / stats.totalCompletedRequests;
   }
 
   /** @internal */
