@@ -21,7 +21,7 @@ jobs:
   - job: Integration_Tests_Full
     strategy:
       matrix:
-        linux_node_18_x:
+        Linux_node_18_x:
           imageName: ubuntu-latest
           nodeVersion: 18.x
         Windows_node_18_x:
