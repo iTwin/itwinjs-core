@@ -43,22 +43,6 @@ jobs:
           platform: Darwin
           name: $(mac_pool)
           node_version: 18.12.0
-
-        "Windows_Node_16":
-          OS: windows-latest
-          platform: Windows_NT
-          name: $(win_pool)
-          node_version: 16.x
-        "Linux_Node_16":
-          OS: ubuntu-latest
-          platform: Linux
-          name: $(linux_pool)
-          node_version: 16.x
-        "MacOS_Node_16":
-          OS: macOS-latest
-          platform: Darwin
-          name: $(mac_pool)
-          node_version: 16.x
       maxParallel: 3
 
     pool:
