@@ -2104,6 +2104,60 @@ describe("IModelTransformer", () => {
     newDb.close();
   });
 
+  it.only("transforms code values with non standard space characters", async () => {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRef.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
+
+    function *range(start: number, exclusiveEnd: number) {
+      for (let i = start; i < exclusiveEnd; ++i)
+        yield i;
+    }
+
+    // doesn't cover all unicode with the White_Space property (excludes most non-Space_Separator white space)
+    // https://262.ecma-international.org/13.0/#table-white-space-code-points
+    const emcaScriptSpaces = `\r\n\t\f\v \u{00a0}\u{1680}${[...range(0x2000, 0x200a)].map((n) => String.fromCodePoint(n)).join("")}\u2028\u2029\u202f\u205f\u3000\ufeff`;
+
+    const spacify = (s: string) => `${emcaScriptSpaces}${s[0]}${emcaScriptSpaces}${s.slice(1)}${emcaScriptSpaces}`;
+
+    const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, spacify("SpatialCategory"), { color: ColorDef.red.toJSON() });
+    const physModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, spacify("PhysicalModel"));
+
+    const physObjectProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physModelId,
+      category: spatialCategId,
+      code: Code.createEmpty(),
+      userLabel: spacify("PhysicalObject"),
+      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 0 }, angles: {} }),
+    };
+    const physObjectId = sourceDb.elements.insertElement(physObjectProps);
+
+    sourceDb.saveChanges();
+
+    expect(sourceDb.elements.getElement(spatialCategId).code.value).to.equal(spacify("SpatialCategory"));
+    expect(sourceDb.elements.getElement(physModelId).code.value).to.equal(spacify("PhysicalModel"));
+    expect(sourceDb.elements.getElement(physObjectId).code.value).to.equal(spacify("PhysicalObject"));
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget1.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processAll();
+
+    const spatialCategoryInTargetId = transformer.context.findTargetElementId(spatialCategId);
+    const physModelInTargetId = transformer.context.findTargetElementId(physModelId);
+    const physObjectInTargetId = transformer.context.findTargetElementId(physObjectId);
+
+    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal(spacify("SpatialCategory"));
+    expect(targetDb.elements.getElement(physModelInTargetId).code.value).to.equal(spacify("PhysicalModel"));
+    expect(targetDb.elements.getElement(physObjectInTargetId).code.value).to.equal(spacify("PhysicalObject"));
+
+    transformer.dispose();
+    sourceDb.close();
+    targetDb.close();
+  });
+
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
   it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
