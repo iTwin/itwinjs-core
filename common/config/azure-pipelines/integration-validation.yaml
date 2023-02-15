@@ -21,16 +21,15 @@ jobs:
   - job: Integration_Tests_Full
     strategy:
       matrix:
-        # Uncomment this once Node 20 is supported
-        # linux_node_18_x:
-        #   imageName: ubuntu-latest
-        #   nodeVersion: 18.x
-        # Windows_node_18_x:
-        #   imageName: windows-latest
-        #   nodeVersion: 18.x
-        # MacOS_node_18_x:
-        #   imageName: macos-latest
-        #   nodeVersion: 18.x
+        linux_node_18_x:
+          imageName: ubuntu-latest
+          nodeVersion: 18.x
+        Windows_node_18_x:
+          imageName: windows-latest
+          nodeVersion: 18.x
+        MacOS_node_18_x:
+          imageName: macos-latest
+          nodeVersion: 18.x
     pool:
       vmImage: $(imageName)
     steps:
