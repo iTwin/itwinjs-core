@@ -5,7 +5,7 @@
   "typings": "lib/cjs/physical-material-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=16.13.0 < 19.0"
+    "node": "^18.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",

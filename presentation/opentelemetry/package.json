@@ -4,7 +4,7 @@
   "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
   "license": "MIT",
   "engines": {
-    "node": ">=16.13.0 < 19.0"
+    "node": "^18.0.0"
   },
   "repository": {
     "type": "git",
