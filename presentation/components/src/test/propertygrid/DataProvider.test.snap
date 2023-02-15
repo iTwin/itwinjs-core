@@ -6,7 +6,7 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "test-category",
+      "name": "my-category",
       "renderer": Object {
         "name": "test",
       },
@@ -26,7 +26,7 @@ Object {
     },
   },
   "records": Object {
-    "test-category": Array [
+    "my-category": Array [
       PropertyRecord {
         "property": Object {
           "displayLabel": "Simple Field",
@@ -78,6 +78,49 @@ Object {
         "value": Object {
           "displayValue": "",
           "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling merges parent field when child field's category is different and parent is merged 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Category2": Array [
+      PropertyRecord {
+        "autoExpand": false,
+        "isMerged": true,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "nested-field-1",
+          "typename": "string",
+        },
+        "value": Object {
           "valueFormat": 0,
         },
       },
@@ -1301,7 +1344,7 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "test-category",
+      "name": "my-category",
       "renderer": Object {
         "name": "test",
       },
@@ -1321,7 +1364,7 @@ Object {
     },
   },
   "records": Object {
-    "test-category": Array [
+    "my-category": Array [
       PropertyRecord {
         "property": Object {
           "displayLabel": "Simple Field",
@@ -1373,6 +1416,49 @@ Object {
         "value": Object {
           "displayValue": "",
           "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with nested categories nested content handling merges parent field when child field's category is different and parent is merged 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Category2": Array [
+      PropertyRecord {
+        "autoExpand": false,
+        "isMerged": true,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "nested-field-1",
+          "typename": "string",
+        },
+        "value": Object {
           "valueFormat": 0,
         },
       },

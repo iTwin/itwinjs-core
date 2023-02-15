@@ -2,6 +2,21 @@
   "name": "@itwin/core-transformer",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/core-transformer_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "handle long named schemas on linux"
+          },
+          {
+            "comment": "do not download unnecessary changesets past the source changeset when processing changesets"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/core-transformer_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",

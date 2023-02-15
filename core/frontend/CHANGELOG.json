@@ -2,6 +2,66 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/core-frontend_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow map-layer requiring authentication to be correctly initialized after a saved view restore."
+          },
+          {
+            "comment": "Map-layers oauth2 requests optimization and improvements"
+          },
+          {
+            "comment": "Added new viewport event (onMapLayerScaleRangeVisibilityChanged); this event is fired, whenever the visibility of a tile tree changes based on the current viewport state."
+          },
+          {
+            "comment": "Remove dependency on xml-js library in core-frontend."
+          },
+          {
+            "comment": "Improved map-layer coordinate systems validation and error reporting."
+          },
+          {
+            "comment": "Send single change event for deletion of selected/hilited elements."
+          },
+          {
+            "comment": "Use new 'ProgressFunction' instead of 'ProgressCallback' when downloading briefcase or changes."
+          },
+          {
+            "comment": "Use EmptyLocalization for localization in tests to increase test performance"
+          },
+          {
+            "comment": "Save the tool settings property before reinitialize the tool when a property change in the tool settings of the MeasureAreaByPointsTool"
+          },
+          {
+            "comment": "Fix greenUp flag for GLTF normal maps (set to true)."
+          },
+          {
+            "comment": "Promote ViewState3d.lookAt and Viewport.queryVisibleFeatures to public."
+          },
+          {
+            "comment": "Deprecate IModelConnection.displayedExtents."
+          },
+          {
+            "comment": "Prevent flickering skybox in synchronized viewports."
+          },
+          {
+            "comment": "Add support for normal maps in iModel tiles."
+          },
+          {
+            "comment": "Avoid creating unnecessary copies of tile trees for context reality models."
+          },
+          {
+            "comment": "Make the contents of a Viewport react more smoothly when the containing div is resized.\""
+          },
+          {
+            "comment": "React to RPC deprecations."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/core-frontend_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",

@@ -9,6 +9,9 @@
 import "./InstanceFilterBuilder.scss";
 import * as React from "react";
 import { ActionMeta } from "react-select";
+import { BehaviorSubject, from, of } from "rxjs";
+import { map } from "rxjs/internal/operators/map";
+import { switchAll } from "rxjs/internal/operators/switchAll";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilter, PropertyFilterBuilder, PropertyFilterBuilderProps } from "@itwin/components-react";
 import { assert } from "@itwin/core-bentley";
@@ -78,7 +81,6 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
         hideSelectedOptions={false}
         closeMenuOnSelect={false}
         isClearable={true}
-        isDisabled={restProps.isDisabled}
       />
     </div>
     <div className="presentation-property-filter-builder">
@@ -152,25 +154,33 @@ function useProperties(propertyInfos: InstanceFilterPropertyInfo[], selectedClas
     [propertyInfos, filteredProperties]
   );
 
+  const classChanges = React.useRef(new BehaviorSubject<ClassInfo[]>([]));
+  React.useEffect(() => {
+    classChanges.current.next(selectedClasses);
+  }, [selectedClasses]);
+
   // filter properties by selected classes
   React.useEffect(() => {
-    if (selectedClasses.length === 0) {
-      setFilteredProperties(undefined);
-      return;
-    }
-
-    setIsFilteringProperties(true);
-    let disposed = false;
-    void (async () => {
-      const newFilteredProperties = await computePropertiesByClasses(propertyInfos, selectedClasses, imodel);
-      // istanbul ignore else
-      if (!disposed) {
-        setFilteredProperties(newFilteredProperties);
-        setIsFilteringProperties(false);
-      }
-    })();
-    return () => { disposed = true; };
-  }, [propertyInfos, selectedClasses, imodel]);
+    const subscription = classChanges.current
+      .pipe(
+        map(
+          (classes) => {
+            if (classes.length === 0)
+              return of(undefined);
+            setIsFilteringProperties(true);
+            return from(computePropertiesByClasses(propertyInfos, classes, imodel));
+          }
+        ),
+        switchAll(),
+      )
+      .subscribe({
+        next: (infos: InstanceFilterPropertyInfo[] | undefined) => {
+          setFilteredProperties(infos);
+          setIsFilteringProperties(false);
+        },
+      });
+    return () => { subscription.unsubscribe(); };
+  }, [imodel, propertyInfos]);
 
   return {
     properties,
