@@ -1,0 +1,15 @@
+{
+  "label": {
+    "notSpecified": "Not specified",
+    "other": "Other",
+    "varies": "Varies",
+    "multipleInstances": "Multiple items"
+  },
+  "field": {
+    "label": "Label"
+  },
+  "selectedItems": {
+    "categoryLabel": "Selected Item(s)",
+    "categoryDescription": "Contains properties of selected item(s)"
+  }
+}
