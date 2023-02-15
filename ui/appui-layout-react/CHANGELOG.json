@@ -2,6 +2,27 @@
   "name": "@itwin/appui-layout-react",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/appui-layout-react_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix a floating widget resize issue."
+          },
+          {
+            "comment": "Fix Grip.scss webpack variables issue."
+          },
+          {
+            "comment": "Updated the side panel handles"
+          },
+          {
+            "comment": "Fix floating widget offset issue."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.5",
       "tag": "@itwin/appui-layout-react_v3.5.5",
       "date": "Thu, 26 Jan 2023 22:53:27 GMT",

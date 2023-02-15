@@ -41,7 +41,7 @@ export function UiSettingsPage(): JSX.Element;
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): JSX.Element; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
- * @deprecated in 3.6.
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported.
  * @beta
  */
 export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean }) {
@@ -287,7 +287,7 @@ export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntr
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
- * @deprecated in 3.6.
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported.
  * @beta
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {

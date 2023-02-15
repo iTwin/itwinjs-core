@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-transformer
 
-This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+- handle long named schemas on linux
+- do not download unnecessary changesets past the source changeset when processing changesets
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT

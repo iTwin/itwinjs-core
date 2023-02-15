@@ -84,7 +84,8 @@ export class InternalChildWindowManager implements FrameworkChildWindows {
   }
 
   // istanbul ignore next
-  private renderChildWindowContents(childWindow: Window, childWindowId: string, content: React.ReactNode) {
+  private renderChildWindowContents(childWindow: Window, childWindowId: string, content: React.ReactNode, title: string) {
+    childWindow.document.title = title;
     const reactConnectionDiv = childWindow.document.getElementById("root");
     if (reactConnectionDiv) {
       // set openChildWindows now so components can use it when they mount
@@ -205,11 +206,10 @@ export class InternalChildWindowManager implements FrameworkChildWindows {
       return false;
     if (0 === url.length) {
       childWindow.document.write(childHtml);
-      this.renderChildWindowContents(childWindow, childWindowId, content);
+      this.renderChildWindowContents(childWindow, childWindowId, content, title);
     } else {
       childWindow.addEventListener("load", () => {
-        childWindow.document.title = title;
-        this.renderChildWindowContents(childWindow, childWindowId, content);
+        this.renderChildWindowContents(childWindow, childWindowId, content, title);
       }, false);
     }
 
