@@ -1,6 +1,6 @@
 # iTwin.js Core Regression Testing Build
 #
-# Tests all supported versions of iTwin.js on 3 main supported platforms; Windows 10, Ubuntu 20.04, and MacOS.
+# Tests all supported versions of iTwin.js on latest versions of 3 main supported platforms; Windows, Ubuntu, and MacOS.
 #
 # Starts with the minimum Node version (currently 18.12.0) and then follows the tip of each subsequent major LTS (even-numbered) version.
 #
