@@ -7,3 +7,4 @@ export * from "./IModelTestUtils";
 export * from "./KnownTestLocations";
 export * from "./RevisionUtility";
 export * from "./TestChangeSetUtility";
+export * from "./imageData";
