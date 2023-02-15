@@ -24,7 +24,7 @@ export interface AzureBlobStorageCredentials {
 
 /**
  * @beta
- * @deprecated in 3.x.
+ * @deprecated in 3.x. Use [[TileStorage]] instead.
  */
 export interface CloudStorageUploadOptions {
   type?: string;
@@ -34,7 +34,7 @@ export interface CloudStorageUploadOptions {
 
 /**
  * @beta
- * @deprecated in 3.x.
+ * @deprecated in 3.x. Use [[TileStorage]] instead.
  */
 export abstract class CloudStorageService {
   public initialize(): void { }
@@ -51,7 +51,7 @@ export abstract class CloudStorageService {
 
 /**
  * @beta
- * @deprecated in 3.x.
+ * @deprecated in 3.x. Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
  */
 export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.BlobServiceClient;
@@ -173,7 +173,7 @@ export class AzureBlobStorage extends CloudStorageService {
 
 /**
  * @beta
- * @deprecated in 3.x.
+ * @deprecated in 3.x. Use [[TileStorage]] instead.
  */
 export class CloudStorageTileUploader {
   private _activeUploads: Map<string, Promise<void>> = new Map();

@@ -1,6 +1,19 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:39 GMT
+
+### Updates
+
+- add optional CodeSpecProperties.scopeSpec.relationship member
+- Added 'schemaLockHeld' to UpgradeOptions
+- Make EmptyLocalization.getLocalizedString more closely emulate what i18next's translation function would return
+- Promote AuthorizationClient and FrustumPlanes to public.
+- Add support for materials with normal maps
+- Marked public RPC types as deprecated in preparation for refactor (or removal) on 5.0.
+- Fix documentation of ExternalSourceAspectProps.jsonProperties. It must be a string.
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
