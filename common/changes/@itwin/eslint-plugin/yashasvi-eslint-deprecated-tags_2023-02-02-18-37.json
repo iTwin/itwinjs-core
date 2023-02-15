@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/eslint-plugin",
+      "comment": "Added a custom ESLint rule that enforces version and description for @deprecated tags. Deprecation tags must match a @deprecated in Major.minor format followed by a brief description of what API to use instead and/or a reason for the deprecation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin"
+}

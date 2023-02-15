@@ -119,7 +119,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 }
 
 /** Properties of [[Toolbar]] component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. [ToolbarProps]($components-react)
  * @beta
  */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
