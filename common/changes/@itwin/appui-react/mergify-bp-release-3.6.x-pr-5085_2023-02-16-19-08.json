@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix react briefMessage in toasts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
