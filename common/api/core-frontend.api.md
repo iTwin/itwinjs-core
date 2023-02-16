@@ -11218,6 +11218,8 @@ export namespace TileAdmin {
         useProjectExtents?: boolean;
     }
     export interface Statistics {
+        // @beta
+        decoding: TileContentDecodingStatistics;
         numActiveRequests: number;
         numActiveTileTreePropsRequests: number;
         numCanceled: number;
@@ -11273,6 +11275,14 @@ export interface TileContent {
     contentRange?: ElementAlignedBox3d;
     graphic?: RenderGraphic;
     isLeaf?: boolean;
+}
+
+// @beta
+export interface TileContentDecodingStatistics {
+    max: number;
+    mean: number;
+    min: number;
+    total: number;
 }
 
 // @public
@@ -11502,7 +11512,7 @@ export class TileRequestChannel {
     process(): void;
     processCancellations(): void;
     // @internal
-    recordCompletion(tile: Tile, content: TileContent): void;
+    recordCompletion(tile: Tile, content: TileContent, elapsedMilliseconds: number): void;
     // @internal
     recordFailure(): void;
     // @internal
@@ -11553,9 +11563,13 @@ export class TileRequestChannels {
 export class TileRequestChannelStatistics {
     // @internal (undocumented)
     addTo(stats: TileRequestChannelStatistics): void;
+    // @beta
+    decoding: TileContentDecodingStatistics;
     numActiveRequests: number;
     numCanceled: number;
     numPendingRequests: number;
+    // @internal (undocumented)
+    recordCompletion(tile: Tile, elapsedMilliseconds: number): void;
     totalAbortedRequests: number;
     totalCacheMisses: number;
     totalCompletedRequests: number;

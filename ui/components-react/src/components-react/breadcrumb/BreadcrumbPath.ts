@@ -13,7 +13,7 @@ import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 
 /** BreadcrumbChangeEvent Event Args class.
  * @beta
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use Breadcrumbs from @itwin/itwinui-react.
  */
 export interface BreadcrumbUpdateEventArgs {
   dataProvider: TreeDataProvider;
@@ -23,13 +23,13 @@ export interface BreadcrumbUpdateEventArgs {
 
 /** BreadcrumbChangeEvent Event class.
  * @beta
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use Breadcrumbs from @itwin/itwinui-react.
  */
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> { }
 
 /** Breadcrumb Path class.
  * @beta
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use Breadcrumbs from @itwin/itwinui-react.
  */
 export class BreadcrumbPath {
   private _dataProvider: TreeDataProvider;

@@ -643,6 +643,7 @@ public;TileAdmin
 internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
+beta;TileContentDecodingStatistics
 public;TiledGraphicsProvider
 public;TiledGraphicsProvider
 internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): void

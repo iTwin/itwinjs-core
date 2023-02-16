@@ -9,6 +9,7 @@
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
+const path = require("path");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -51,6 +52,9 @@ module.exports = {
               type: "string",
               enum: ["public", "beta", "alpha", "internal"]
             }
+          },
+          dontAllowWorkspaceInternal: {
+            type: "boolean"
           }
         }
       }
@@ -59,6 +63,7 @@ module.exports = {
 
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
+    const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -72,10 +77,23 @@ module.exports = {
       return undefined;
     }
 
+    function dirContainsPath(dir, targetPath) {
+      const relative = path.relative(dir, targetPath);
+      return (
+        !!relative && !relative.startsWith("..") && !path.isAbsolute(relative)
+      );
+    }
+
     function isLocalFile(declaration) {
       if (declaration) {
         const fileName = getFileName(declaration.parent);
-        if (fileName && typeof fileName === "string" && !fileName.includes("node_modules"))
+        if (
+          fileName &&
+          typeof fileName === "string" &&
+          !fileName.includes('node_modules') &&
+          (allowWorkspaceInternal ||
+            dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName))
+        )
           return true;
       }
       return false;
