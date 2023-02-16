@@ -96,7 +96,7 @@ export class TileRequestChannelStatistics {
     stats.decoding.min = Math.min(this.decoding.min, stats.decoding.min);
 
     if (stats.totalCompletedRequests > 0)
-      stats.decoding.mean = (stats.decoding.total + this.decoding.total) / stats.totalCompletedRequests;
+      stats.decoding.mean = (stats.decoding.total) / stats.totalCompletedRequests;
   }
 
   /** @internal */

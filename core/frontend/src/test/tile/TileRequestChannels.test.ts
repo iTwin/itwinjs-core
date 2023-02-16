@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TileRequestChannel, TileRequestChannels } from "../../tile/internal";
+import {
+  Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels,
+} from "../../tile/internal";
 
 // Assumes no minification or uglification.
 function expectClassName(obj: Object, name: string): void {
@@ -88,5 +90,35 @@ describe("TileRequestChannels", () => {
     expect(channels.rpcConcurrency).to.equal(concurrency);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(concurrency);
     expect(channels.iModelChannels.rpc.concurrency).to.equal(concurrency);
+  });
+
+  it("records decoding time statistics from multiple channels", () => {
+    const c1 = new TileRequestChannel("1", 1);
+    const c2 = new TileRequestChannel("2", 2);
+    const c3 = new TileRequestChannel("3", 3);
+
+    const channels = new TileRequestChannels(undefined, false);
+    channels.add(c1);
+    channels.add(c2);
+    channels.add(c3);
+
+    const tile = { isEmpty: false, isUndisplayable: false } as unknown as Tile;
+    const content = { };
+
+    const expectStats = (expected: TileContentDecodingStatistics) => {
+      const actual = channels.statistics.decoding;
+      expect(actual.total).to.equal(expected.total);
+      expect(actual.mean).to.equal(expected.mean);
+      expect(actual.min).to.equal(expected.min);
+      expect(actual.max).to.equal(expected.max);
+    };
+
+    expectStats({ total: 0, mean: 0, min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER });
+    c1.recordCompletion(tile, content, 20);
+    expectStats({ total: 20, mean: 20, min: 20, max: 20 });
+    c2.recordCompletion(tile, content, 10);
+    expectStats({ total: 30, mean: 15, min: 10, max: 20 });
+    c3.recordCompletion(tile, content, 30);
+    expectStats({ total: 60, mean: 20, min: 10, max: 30 });
   });
 });
