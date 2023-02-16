@@ -53,7 +53,7 @@ jobs:
         displayName: rush audit
         workingDirectory: ${{ parameters.workingDir }}
 
-      - script: node common/scripts/install-run-rush.js build:ci
+      - script: node common/scripts/install-run-rush.js build:ci --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
         env:
