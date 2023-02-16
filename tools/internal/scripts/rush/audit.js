@@ -41,7 +41,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   const excludedAdvisories = [
     "GHSA-9c47-m6qq-7p4h", // https://github.com/advisories/GHSA-9c47-m6qq-7p4h appui-test-app>@bentley/react-scripts>eslint-config-react-app>eslint-plugin-import>tsconfig-paths>json5
     "GHSA-27h2-hvpr-p74q", // https://github.com/advisories/GHSA-27h2-hvpr-p74q backend-integration-tests>azurite>jsonwebtoken
-    "GHSA-8x6c-cv3v-vp6g", // https://github.com/advisories/GHSA-8x6c-cv3v-vp6g electron>@electron/get>got>cacheable-request
   ];
 
   let shouldFailBuild = false;
