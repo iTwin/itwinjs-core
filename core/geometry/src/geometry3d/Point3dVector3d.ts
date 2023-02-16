@@ -802,9 +802,9 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return a vector defined by start and end points (end - start).
-   * @param start start point for vector
-   * @param end end point for vector
-   * @param result optional result
+   * @param start start point for vector.
+   * @param end end point for vector.
+   * @param result optional result.
    */
   public static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d {
     const zStart = XYZ.accessZ(start, 0.0) as number;
@@ -818,22 +818,22 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return a vector (optionally in preallocated result, otherwise newly created) from [x0,y0,z0] to [x1,y1,z1]
-   * @param x0 start point x coordinate
-   * @param y0 start point y coordinate
-   * @param z0 start point z coordinate
-   * @param x1 end point x coordinate
-   * @param y1 end point y coordinate
-   * @param z1 end point z coordinate
-   * @param result optional result vector
+   * @param x0 start point x coordinate.
+   * @param y0 start point y coordinate.
+   * @param z0 start point z coordinate.
+   * @param x1 end point x coordinate.
+   * @param y1 end point y coordinate.
+   * @param z1 end point z coordinate.
+   * @param result optional result vector.
    */
   public static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d {
     return this.create(x1 - x0, y1 - y0, z1 - z0, result);
   }
   /**
-   * Return a vector which is the input vector rotated around the axis vector.
-   * @param vector initial vector
-   * @param axis axis of rotation
-   * @param angle angle of rotation.  If undefined, 90 degrees is implied
+   * Return a vector which is the input `vector` rotated by `angle` around the `axis` vector.
+   * @param vector initial vector.
+   * @param axis axis of rotation.
+   * @param angle angle of rotation.  If undefined, 90 degrees is implied.
    * @param result optional result vector
    * @returns undefined if axis has no length.
    */
@@ -856,7 +856,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Set (replace) xyz components so they are a vector from point0 to point1
-   * @param point0 start point of computed vector
+   * @param point0 start point of computed vector.
    * @param point1 end point of computed vector.
    */
   public setStartEnd(point0: XYAndZ, point1: XYAndZ) {
