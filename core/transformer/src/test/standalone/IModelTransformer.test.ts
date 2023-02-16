@@ -2105,42 +2105,73 @@ describe("IModelTransformer", () => {
   });
 
   it.only("transforms code values with non standard space characters", async () => {
-    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRef.bim");
-    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CodeValNbspSrc.bim");
+    let sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "CodeValNbspSrc" } });
 
-    function *range(start: number, exclusiveEnd: number) {
-      for (let i = start; i < exclusiveEnd; ++i)
-        yield i;
-    }
+    const nbsp = "\x0a";
 
-    // doesn't cover all unicode with the White_Space property (excludes most non-Space_Separator white space)
-    // https://262.ecma-international.org/13.0/#table-white-space-code-points
-    const emcaScriptSpaces = `\r\n\t\f\v \u{00a0}\u{1680}${[...range(0x2000, 0x200a)].map((n) => String.fromCodePoint(n)).join("")}\u2028\u2029\u202f\u205f\u3000\ufeff`;
-
-    const spacify = (s: string) => `${emcaScriptSpaces}${s[0]}${emcaScriptSpaces}${s.slice(1)}${emcaScriptSpaces}`;
-
-    const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, spacify("SpatialCategory"), { color: ColorDef.red.toJSON() });
-    const physModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, spacify("PhysicalModel"));
+    const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, `SpatialCategory${nbsp}`, {});
+    const physModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, `PhysicalModel${nbsp}`);
 
     const physObjectProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physModelId,
       category: spatialCategId,
-      code: Code.createEmpty(),
-      userLabel: spacify("PhysicalObject"),
+      code: new Code({
+        scope: "0x1",
+        spec: "0x1",
+        value: `PhysicalObject${nbsp}`,
+      }),
+      userLabel: `PhysicalObject${nbsp}`,
       geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
       placement: Placement3d.fromJSON({ origin: { x: 0 }, angles: {} }),
     };
+
     const physObjectId = sourceDb.elements.insertElement(physObjectProps);
 
     sourceDb.saveChanges();
 
-    expect(sourceDb.elements.getElement(spatialCategId).code.value).to.equal(spacify("SpatialCategory"));
-    expect(sourceDb.elements.getElement(physModelId).code.value).to.equal(spacify("PhysicalModel"));
-    expect(sourceDb.elements.getElement(physObjectId).code.value).to.equal(spacify("PhysicalObject"));
+    expect(sourceDb.elements.getElement(spatialCategId).code.value).to.equal("SpatialCategory");
+    expect(sourceDb.elements.getElement(physModelId).code.value).to.equal("PhysicalModel");
+    expect(sourceDb.elements.getElement(physObjectId).code.value).to.equal("PhysicalObject");
 
-    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget1.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
+    const addNonBreakingSpaceToCodeValue = (db: IModelDb, initialCodeValue: string) =>
+      db.withSqliteStatement(
+        `UPDATE bis_Element SET CodeValue='${initialCodeValue}\x0a' WHERE CodeValue='${initialCodeValue}'`,
+        (s) => assert(s.step() === DbResult.BE_SQLITE_DONE)
+      );
+
+    for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"])
+      addNonBreakingSpaceToCodeValue(sourceDb, label);
+
+    const getCodeValRawSqlite = (db: IModelDb, initialCodeValue: string) =>
+      db.withSqliteStatement(
+        `SELECT CodeValue FROM bis_Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
+        (s) => [...s][0].codeValue
+      );
+
+    const getCodeValEcSql = (db: IModelDb, initialCodeValue: string) =>
+      db.withStatement(
+        `SELECT CodeValue FROM bis.Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
+        (s) => [...s][0].codeValue
+      );
+
+    for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"]) {
+      expect(getCodeValRawSqlite(sourceDb, label)).to.equal(`${label}\x0a`);
+      expect(getCodeValEcSql(sourceDb, label)).to.equal(`${label}\x0a`);
+    }
+
+    sourceDb.saveChanges();
+    sourceDb.close();
+    sourceDb = SnapshotDb.openFile(sourceDbFile);
+
+    for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"]) {
+      expect(getCodeValRawSqlite(sourceDb, label)).to.equal(`${label}\x0a`);
+      expect(getCodeValEcSql(sourceDb, label)).to.equal(`${label}\x0a`);
+    }
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CoreNewSchemaRefTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "CodeValNbspTarget" } });
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
     await transformer.processAll();
@@ -2149,9 +2180,9 @@ describe("IModelTransformer", () => {
     const physModelInTargetId = transformer.context.findTargetElementId(physModelId);
     const physObjectInTargetId = transformer.context.findTargetElementId(physObjectId);
 
-    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal(spacify("SpatialCategory"));
-    expect(targetDb.elements.getElement(physModelInTargetId).code.value).to.equal(spacify("PhysicalModel"));
-    expect(targetDb.elements.getElement(physObjectInTargetId).code.value).to.equal(spacify("PhysicalObject"));
+    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal("SpatialCategory");
+    expect(targetDb.elements.getElement(physModelInTargetId).code.value).to.equal("PhysicalModel");
+    expect(targetDb.elements.getElement(physObjectInTargetId).code.value).to.equal("PhysicalObject");
 
     transformer.dispose();
     sourceDb.close();
