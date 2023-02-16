@@ -47,7 +47,7 @@ export type TilePatch = PlanarTilePatch | EllipsoidPatch;
 
 /** Projects points within the rectangular region of a [[MapTile]] into 3d space.
  * @see [[MapTile.getProjection]] to obtain the projection for a [[MapTile]].
- * @beta
+ * @public
  */
 export abstract class MapTileProjection {
   /** The extents of the volume of space associated with the projected [[MapTile]]. */
@@ -126,7 +126,7 @@ const scratchClipPlanes = [ClipPlane.createNormalAndPoint(scratchNormal, scratch
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 
 /** A [[Tile]] belonging to a [[MapTileTree]] representing a rectangular region of a map of the Earth.
- * @beta
+ * @public
  */
 export class MapTile extends RealityTile {
   private static _maxParentHeightDepth = 4;
