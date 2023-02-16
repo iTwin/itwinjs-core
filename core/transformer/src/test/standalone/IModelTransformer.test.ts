@@ -2108,9 +2108,10 @@ describe("IModelTransformer", () => {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CodeValNbspSrc.bim");
     let sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "CodeValNbspSrc" } });
 
-    const nbsp = "\x0a";
+    const nbsp = "\xa0";
 
     const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, `SpatialCategory${nbsp}`, {});
+    const subCategId = Id64.fromUint32Pair(parseInt(spatialCategId, 16) + 1, 0);
     const physModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, `PhysicalModel${nbsp}`);
 
     const physObjectProps: PhysicalElementProps = {
@@ -2132,42 +2133,65 @@ describe("IModelTransformer", () => {
     sourceDb.saveChanges();
 
     expect(sourceDb.elements.getElement(spatialCategId).code.value).to.equal("SpatialCategory");
+    expect(sourceDb.elements.getElement(subCategId).code.value).to.equal("SpatialCategory");
     expect(sourceDb.elements.getElement(physModelId).code.value).to.equal("PhysicalModel");
     expect(sourceDb.elements.getElement(physObjectId).code.value).to.equal("PhysicalObject");
 
     const addNonBreakingSpaceToCodeValue = (db: IModelDb, initialCodeValue: string) =>
       db.withSqliteStatement(
-        `UPDATE bis_Element SET CodeValue='${initialCodeValue}\x0a' WHERE CodeValue='${initialCodeValue}'`,
-        (s) => assert(s.step() === DbResult.BE_SQLITE_DONE)
+        `UPDATE bis_Element SET CodeValue='${initialCodeValue}\xa0' WHERE CodeValue='${initialCodeValue}'`,
+        (s) => {
+          let result: DbResult;
+          while ((result = s.step()) === DbResult.BE_SQLITE_ROW) {}
+          assert(result === DbResult.BE_SQLITE_DONE);
+        }
       );
 
     for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"])
       addNonBreakingSpaceToCodeValue(sourceDb, label);
 
-    const getCodeValRawSqlite = (db: IModelDb, initialCodeValue: string) =>
+    const getCodeValRawSqlite = (db: IModelDb, initialCodeValue: string, expected: string, expectedRows: number) => {
       db.withSqliteStatement(
         `SELECT CodeValue FROM bis_Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
-        (s) => [...s][0].codeValue
+        (stmt) => {
+          let rows = 0;
+          for (const { codeValue } of stmt) {
+            rows++;
+            expect(codeValue).to.equal(expected);
+          }
+          expect(rows).to.equal(expectedRows);
+        }
       );
+    };
 
-    const getCodeValEcSql = (db: IModelDb, initialCodeValue: string) =>
+    const getCodeValEcSql = (db: IModelDb, initialCodeValue: string, expected: string, expectedRows: number) => {
       db.withStatement(
         `SELECT CodeValue FROM bis.Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
-        (s) => [...s][0].codeValue
+        (stmt) => {
+          let rows = 0;
+          for (const { codeValue } of stmt) {
+            rows++;
+            expect(codeValue).to.equal(expected);
+          }
+          expect(rows).to.equal(expectedRows);
+        }
       );
+    };
 
-    for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"]) {
-      expect(getCodeValRawSqlite(sourceDb, label)).to.equal(`${label}\x0a`);
-      expect(getCodeValEcSql(sourceDb, label)).to.equal(`${label}\x0a`);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(sourceDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(sourceDb, label, `${label}\xa0`, count);
     }
 
     sourceDb.saveChanges();
     sourceDb.close();
     sourceDb = SnapshotDb.openFile(sourceDbFile);
 
-    for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"]) {
-      expect(getCodeValRawSqlite(sourceDb, label)).to.equal(`${label}\x0a`);
-      expect(getCodeValEcSql(sourceDb, label)).to.equal(`${label}\x0a`);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(sourceDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(sourceDb, label, `${label}\xa0`, count);
     }
 
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CoreNewSchemaRefTarget.bim");
@@ -2177,12 +2201,20 @@ describe("IModelTransformer", () => {
     await transformer.processAll();
 
     const spatialCategoryInTargetId = transformer.context.findTargetElementId(spatialCategId);
+    const subCategoryInTargetId = transformer.context.findTargetElementId(subCategId);
     const physModelInTargetId = transformer.context.findTargetElementId(physModelId);
     const physObjectInTargetId = transformer.context.findTargetElementId(physObjectId);
 
-    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal("SpatialCategory");
+    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal("SpatialCategory\xa0");
+    expect(targetDb.elements.getElement(subCategoryInTargetId).code.value).to.equal("SpatialCategory");
     expect(targetDb.elements.getElement(physModelInTargetId).code.value).to.equal("PhysicalModel");
     expect(targetDb.elements.getElement(physObjectInTargetId).code.value).to.equal("PhysicalObject");
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(targetDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(targetDb, label, `${label}\xa0`, count);
+    }
 
     transformer.dispose();
     sourceDb.close();
