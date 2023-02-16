@@ -61,9 +61,12 @@ jobs:
 
     - script: node common/scripts/install-run-rush.js install
       displayName: rush install
+      condition: always()
 
     - bash: node common/scripts/install-run-rush.js audit
       displayName: rush audit
+      condition: always()
+
     # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
   #   - ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}:
   #     - bash: 'node common/scripts/install-run-rush version --bump'
