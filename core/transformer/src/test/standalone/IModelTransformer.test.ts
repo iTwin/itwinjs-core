@@ -2205,7 +2205,7 @@ describe("IModelTransformer", () => {
     const physModelInTargetId = transformer.context.findTargetElementId(physModelId);
     const physObjectInTargetId = transformer.context.findTargetElementId(physObjectId);
 
-    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal("SpatialCategory\xa0");
+    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal("SpatialCategory");
     expect(targetDb.elements.getElement(subCategoryInTargetId).code.value).to.equal("SpatialCategory");
     expect(targetDb.elements.getElement(physModelInTargetId).code.value).to.equal("PhysicalModel");
     expect(targetDb.elements.getElement(physObjectInTargetId).code.value).to.equal("PhysicalObject");
