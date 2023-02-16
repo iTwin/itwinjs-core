@@ -792,7 +792,9 @@ export class IModelTransformer extends IModelExportHandler {
     }
     // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing reference so not worth checking)
     if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
-      targetElementProps.code.value = targetElementProps.code.value ?? ""; // act like @see Code
+      // respond the same way to undefined code value as the @see Code class, but don't use that class because is trims
+      // whitespace from the value, and there are iModels out there with untrimmed whitespace that we ought not to trim
+      targetElementProps.code.value = targetElementProps.code.value ?? "";
       targetElementId = this.targetDb.elements.queryElementIdByCode(targetElementProps.code as Required<CodeProps>);
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
