@@ -12,7 +12,7 @@ import { Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
 import {
-  Tile, TileContent, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
+  Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
 } from "../../tile/internal";
 
 async function runMicroTasks(): Promise<void> {
@@ -768,5 +768,27 @@ describe("TileRequestChannel", () => {
     channel1.expectRequests(0, 0);
     channel2.expectRequests(0, 0);
     expect(tiles.map((x) => x.loadStatus)).to.deep.equal([TileLoadStatus.NotFound, TileLoadStatus.Ready, TileLoadStatus.Ready, TileLoadStatus.NotFound]);
+  });
+
+  it("records decoding time statistics", () => {
+    const channel = new TileRequestChannel("test", 100);
+    const tile = { isEmpty: false, isUndisplayable: false } as unknown as Tile;
+    const content = { };
+
+    const expectStats = (expected: TileContentDecodingStatistics) => {
+      const actual = channel.statistics.decoding;
+      expect(actual.total).to.equal(expected.total);
+      expect(actual.mean).to.equal(expected.mean);
+      expect(actual.min).to.equal(expected.min);
+      expect(actual.max).to.equal(expected.max);
+    };
+
+    expectStats({ total: 0, mean: 0, min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER });
+    channel.recordCompletion(tile, content, 20);
+    expectStats({ total: 20, mean: 20, min: 20, max: 20 });
+    channel.recordCompletion(tile, content, 10);
+    expectStats({ total: 30, mean: 15, min: 10, max: 20 });
+    channel.recordCompletion(tile, content, 30);
+    expectStats({ total: 60, mean: 20, min: 10, max: 30 });
   });
 });
