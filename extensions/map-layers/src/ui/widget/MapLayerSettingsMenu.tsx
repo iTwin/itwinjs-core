@@ -31,7 +31,7 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
       let hasRange = false;
       const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (undefined !== indexInDisplayStyle) {
-        hasRange = (undefined !== await activeViewport.displayStyle.getMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay));
+        hasRange = (undefined !== await activeViewport.getMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay));
       }
       setHasRangeData(hasRange);
     }

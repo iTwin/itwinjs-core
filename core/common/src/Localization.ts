@@ -97,6 +97,7 @@ export interface Localization {
   registerNamespace(namespace: string): Promise<void>;
   /** TODO find where/how used
    * @param namespace - the name of the namespace.
+   * @internal
    */
   unregisterNamespace(namespace: string): void;
   /** @internal */

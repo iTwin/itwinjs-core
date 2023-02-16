@@ -6,12 +6,12 @@
  * @module Views
  */
 import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
+import { Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
+  MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -21,10 +21,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
-import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
-import { ScreenViewport } from "./Viewport";
-import { GeometricModelState } from "./ModelState";
+import { getCesiumOSMBuildingsUrl, TileTreeReference } from "./tile/internal";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -553,67 +550,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     this.changeMapLayerProps({ subLayers }, layerIndex, isOverlay);
-  }
-
-  /** Returns the cartographic range of map layer.
-   * @param layerIndex of the map layer.
-   * @param isOverlay true if the map layer is overlay, otherwise layer is background
-   *
-   * @internal
-   */
-  public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
-    const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
-    if (undefined === mapLayerSettings)
-      return undefined;
-
-    if (mapLayerSettings instanceof ModelMapLayerSettings) {
-      const ecefTransform = this.iModel.ecefLocation?.getTransform();
-      if (!ecefTransform)
-        return undefined;
-      const model = this.iModel.models.getLoaded(mapLayerSettings.modelId);
-      if (!model || !(model instanceof GeometricModelState))
-        return undefined;
-
-      const modelRange = await model.queryModelRange();
-      const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
-
-      return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
-    }
-    if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
-      assert(false);
-      return undefined;
-    }
-
-    const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(mapLayerSettings);
-    if (undefined === imageryProvider)
-      return undefined;
-
-    try {
-      await imageryProvider.initialize();
-      return imageryProvider.cartoRange;
-
-    } catch (_error) {
-      return undefined;
-    }
-    return undefined;
-  }
-
-  /** change viewport to include range of map layer.
-   * @param layerIndex
-   * @param isOverlay
-   * @param vp
-   */
-  public async viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean> {
-    const range = await this.getMapLayerRange(layerIndex, isOverlay);
-    if (!range)
-      return false;
-
-    if (range.xLength() > 1.5 * Angle.piRadians)
-      viewGlobalLocation(vp, true, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters, undefined, undefined);
-    else
-      viewGlobalLocation(vp, true, undefined, undefined, range.globalLocation);
-
-    return true;
   }
 
   /* @internal */

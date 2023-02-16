@@ -15,10 +15,10 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
-  isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
-  SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
+  Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
+  ImageMapLayerSettings, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -49,13 +49,14 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, MarginOptions, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GlobalLocation } from "./ViewGlobalLocation";
+import { GlobalLocation, viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
@@ -63,6 +64,7 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
+import { GeometricModelState } from "./ModelState";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -385,6 +387,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * TODO explain what render plan is, hard to find elsewhere in docs.
    * RenderPlan is internal, should it be public if this is going to be public?
    * A render plan holds settings like frustum and display style settings for a particular render scene
+   * @internal
    */
   public invalidateRenderPlan(): void {
     this._renderPlanValid = false;
@@ -841,11 +844,65 @@ export abstract class Viewport implements IDisposable, TileUser {
       return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
 
     return [];
-
   }
 
-  /** @beta
-   * Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
+  /** Returns the cartographic range of a map layer.
+   * @param layerIndex of the map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @beta
+   */
+  public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
+    const mapLayerSettings = this.view.displayStyle.mapLayerAtIndex(layerIndex, isOverlay);
+    if (undefined === mapLayerSettings)
+      return undefined;
+
+    if (mapLayerSettings instanceof ModelMapLayerSettings) {
+      const ecefTransform = this.iModel.ecefLocation?.getTransform();
+      if (!ecefTransform)
+        return undefined;
+      const model = this.iModel.models.getLoaded(mapLayerSettings.modelId);
+      if (!model || !(model instanceof GeometricModelState))
+        return undefined;
+
+      const modelRange = await model.queryModelRange();
+      const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
+
+      return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+    }
+
+    const imageryProvider = this.getMapLayerImageryProvider(layerIndex, isOverlay);
+    if (undefined === imageryProvider)
+      return undefined;
+
+    try {
+      await imageryProvider.initialize();
+      return imageryProvider.cartoRange;
+    } catch (_error) {
+      return undefined;
+    }
+  }
+
+  /** Changes viewport to include range of a map layer.
+   * @param layerIndex of the map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @param vp
+   * @beta
+   */
+  public async viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean> {
+    const range = await this.getMapLayerRange(layerIndex, isOverlay);
+    if (!range)
+      return false;
+
+    if (range.xLength() > 1.5 * Angle.piRadians)
+      viewGlobalLocation(vp, true, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters, undefined, undefined);
+    else
+      viewGlobalLocation(vp, true, undefined, undefined, range.globalLocation);
+
+    return true;
+  }
+
+  /** Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
+   * @beta
    */
   public resetMapLayer(index: number, isOverlay: boolean) { this._mapTiledGraphicsProvider?.resetMapLayer(index, isOverlay); }
 
