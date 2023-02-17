@@ -143,6 +143,22 @@ export class BackgroundMapGeometry {
     }
     return (!this._iModel.noGcsDefined && this.cartesianRange.containsPoint(db)) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
   }
+
+  // public async cartographicsToDbFromGcs(cartographics[]: Cartographic): Promise<Point3d> {
+  //   let db:Point3d;
+  //   if (this.globeMode === GlobeMode.Plane) {
+  //     for (const carto of cartographics) {
+  //       const fraction = Point2d.create(0, 0);
+  //       this._mercatorTilingScheme.cartographicToFraction(carto.latitude, carto.longitude, fraction);
+  //       db = this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, carto.height);
+  //     }
+
+  //   } else {
+  //     db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
+  //   }
+  //   return (!this._iModel.noGcsDefined && this.cartesianRange.containsPoint(db)) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
+  // }
+
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);

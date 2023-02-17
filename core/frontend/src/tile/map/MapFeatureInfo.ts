@@ -8,6 +8,7 @@
 
 import { PropertyDescription, PropertyRecord, PropertyValue } from "@itwin/appui-abstract";
 import { Cartographic } from "@itwin/core-common";
+import { GraphicPrimitive } from "../../render/GraphicPrimitive";
 /** @alpha */
 export class MapFeatureInfoRecord extends PropertyRecord {
   public constructor(value: PropertyValue, property: PropertyDescription) {
@@ -31,5 +32,6 @@ export interface MapLayerFeatureInfo {
 export interface MapSubLayerFeatureInfo {
   subLayerName: string;
   displayFieldName?: string;
+  graphics?: GraphicPrimitive[];
   records?: MapFeatureInfoRecord[];
 }

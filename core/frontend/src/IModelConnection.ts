@@ -12,9 +12,9 @@ import {
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
+  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
+  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, PointWithStatus, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
   RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
@@ -483,6 +483,19 @@ export abstract class IModelConnection extends IModel {
     result = result ? result : Point3d.createZero();
     result.setFromJSON(coordResponse.iModelCoords[0].p);
     return result;
+  }
+
+  public async cartographicsToSpatialsFromGcs(cartographics: Cartographic[]): Promise<IModelCoordinatesResponseProps> {
+    if (!this.isGeoLocated && this.noGcsDefined)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    const geoConverter = this.geoServices.getConverter()!;
+    const geoCoords = new Array(cartographics.length);
+    for (let i = 0; i<cartographics.length; ++i) {
+      geoCoords[i] = Point3d.create(cartographics[i].longitudeDegrees, cartographics[i].latitudeDegrees, cartographics[i].height);
+    }
+
+    return geoConverter.getIModelCoordinatesFromGeoCoordinates(geoCoords);
   }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].

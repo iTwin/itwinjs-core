@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
+  AccuDrawHintBuilder,
   BeButtonEvent,
   EventHandled,
   HitDetail,
@@ -26,12 +27,31 @@ export const getDefaultMapFeatureInfoToolItemDef = (): ToolItemDef =>
   });
 
 export class DefaultMapFeatureInfoTool extends PrimitiveTool {
-  public static readonly onMapHit = new BeEvent<(hit: HitDetail) => void>();
+  public static readonly onMapHit = new BeEvent<(hit: HitDetail|undefined) => void>();
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = "icon-map";
 
   public override requireWriteableTarget(): boolean {
     return false;
+  }
+
+  public setupAndPromptForNextAction(): void {
+    // NOTE: Tool should call IModelApp.notifications.outputPromptByKey or IModelApp.notifications.outputPrompt to tell user what to do.
+    IModelApp.accuSnap.enableSnap(true); // Enable AccuSnap so that linestring can be created by snapping to existing geometry
+
+    const hints = new AccuDrawHintBuilder();
+    hints.sendHints();
+  }
+
+  public override async onMouseMotion(_ev: BeButtonEvent): Promise<void> {
+    // const hit = await IModelApp.locateManager.doLocate(
+    //   new LocateResponse(),
+    //   true,
+    //   ev.point,
+    //   ev.viewport,
+    //   ev.inputSource
+    // );
+    // console.log(`isMapHit: ${hit?.isMapHit} modelId: ${hit?.modelId} sourceId: ${hit?.sourceId} subCategoryId: ${hit?.subCategoryId}`);
   }
 
   public override async onDataButtonDown(
@@ -54,7 +74,7 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
       DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
       return EventHandled.Yes;
     }
-
+    DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
     return EventHandled.No;
   }
 

@@ -6,7 +6,7 @@
 import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+import { ArcGisFeatureGraphicsRenderer, ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 
 /** @internal */
@@ -26,9 +26,9 @@ export abstract class ArcGisFeatureReader  {
     this._layerMetadata = layerMetadata;
   }
 
-  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisFeatureRenderer): void;
+  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisFeatureRenderer): Promise<void>;
 
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[]): void;
+  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], _renderer: ArcGisFeatureGraphicsRenderer): Promise<void>;
 
   protected  toFixedWithoutPadding = (value: number) => {
     return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));

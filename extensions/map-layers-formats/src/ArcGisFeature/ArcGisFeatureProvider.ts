@@ -5,16 +5,17 @@
 
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { Angle, Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
+import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
-import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
-import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
+import { ArcGisFeatureCanvasRenderer, ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisFeaturePBF } from "./ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "./ArcGisFeatureJSON";
 import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
+
 /**
 * @internal
 */
@@ -213,7 +214,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     return "";
   }
 
-  public constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean): ArcGisFeatureUrl | undefined {
+  public constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, resultType: ArcGisFeatureResultType, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean): ArcGisFeatureUrl | undefined {
 
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
     const tileEnvelope = {
@@ -235,7 +236,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     let quantizationParameters: FeatureQueryQuantizationParams|undefined;
     const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
-    if (this._supportsCoordinatesQuantization) {
+    if (resultType === "tile" && this._supportsCoordinatesQuantization) {
       quantizationParameters = {
         mode: "view",
         originPosition: "upperLeft",
@@ -252,7 +253,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         geometryType: "esriGeometryEnvelope",
         returnExceededLimitFeatures: false,
         maxRecordCountFactor: 3,    // This was grabbed from the ESRI web viewer request, not sure where this factor come from
-        resultType: "tile",
+        resultType,
         quantizationParameters,
         outFields,
         returnGeometry,
@@ -270,7 +271,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
     if (!this._querySupported || this.format === undefined)
       return;
 
@@ -281,7 +282,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     };
 
     const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
-      const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, {geom: cartoPoint, type: "esriGeometryPoint"}, outFields, 3 /* tolerance in pixel*/, returnGeometry);
+      const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", {geom: cartoPoint, type: "esriGeometryPoint"}, outFields, 3 /* tolerance in pixel*/, returnGeometry);
 
       if (!infoUrl || infoUrl.url.length === 0) {
         Logger.logError(loggerCategory, `Could not construct feature info query URL`);
@@ -310,20 +311,27 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     try {
-      const responseData = await doFeatureInfoQuery(this.format, "*", false);
+      const returnGeometry = true;
+      // const responseData = await doFeatureInfoQuery(this.format, "*", returnGeometry);
+      const responseData = await doFeatureInfoQuery("JSON", "*", returnGeometry);
       if (!responseData) {
         Logger.logError(loggerCategory, `Could not get feature info data`);
         return;
       }
       if (responseData.exceedTransferLimit) {
-        Logger.logError(loggerCategory, `Could not get feature info : transfert limit exeeded.`);
+        Logger.logError(loggerCategory, `Could not get feature info : transfer limit exceeded.`);
         return;
       }
-      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
-      featureReader.readFeatureInfo(responseData, featureInfos);
+      // const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+      const featureReader = new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+
+      // const renderer = new ArcGisFeatureGraphicsRenderer(hit.viewport.backgroundMapGeometry);
+      // DISABLE reprojection for now.
+      const renderer = new ArcGisFeatureGraphicsRenderer(undefined);
+      await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occured while loading feature info data : ${e}`);
+      Logger.logError(loggerCategory, `Exception occurred while loading feature info data : ${e}`);
       return;
     }
 
@@ -336,7 +344,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     const geomOverride: ArcGisGeometry|undefined = (refineEnvelope ? {geom: refineEnvelope, type: "esriGeometryEnvelope"} : undefined);
-    const tileUrl =  this.constructFeatureUrl(row, column, zoomLevel, this.format, geomOverride);
+    const tileUrl =  this.constructFeatureUrl(row, column, zoomLevel, this.format, "tile", geomOverride);
     if (!tileUrl || tileUrl.url.length === 0) {
       Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);
       return undefined;
@@ -408,7 +416,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         }
       }
 
-      const renderer = new ArcGisFeatureRenderer(ctx, this._symbologyRenderer, transfo);
+      const renderer = new ArcGisFeatureCanvasRenderer(ctx, this._symbologyRenderer, transfo);
       const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
@@ -463,7 +471,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
             Logger.logError(loggerCategory, `Request exceeded transfer limit, could not refine request`);
           }
         } else {
-          featureReader.readAndRender(responseData, renderer);
+          await featureReader.readAndRender(responseData, renderer);
         }
       };
       await renderData();
@@ -484,4 +492,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     return undefined;
   }
+
 }
+

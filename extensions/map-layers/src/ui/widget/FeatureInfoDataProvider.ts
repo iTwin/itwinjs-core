@@ -6,8 +6,9 @@
 import {  PropertyRecord } from "@itwin/appui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
-import { HitDetail } from "@itwin/core-frontend";
+import { GraphicPrimitive, HitDetail } from "@itwin/core-frontend";
 import { MapHitEvent } from "../Interfaces";
+import { MapFeatureInfoDecorator } from "../MapFeatureInfoDecorator";
 // import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from ""
 
 /**
@@ -19,7 +20,9 @@ export enum MapFeatureInfoLoadState {DataLoadStart, DataLoadEnd}
 export declare type MapFeatureInfoLoadListener = (state: MapFeatureInfoLoadState) => void;
 
 export interface MapFeatureInfoDataUpdate {
+  mapHit: HitDetail;
   recordCount: number;
+  graphics?: GraphicPrimitive[];
 }
 export declare type MapFeatureInfoDataUpdatedListener = (data: MapFeatureInfoDataUpdate) => void;
 
@@ -29,12 +32,14 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   public description?: string;
   public categories: PropertyCategory[] = [];
   public records: { [categoryName: string]: PropertyRecord[] } = {};
+  public graphics: GraphicPrimitive[]|undefined;
   public onDataChanged = new PropertyDataChangeEvent();
   public onDataLoadStateChanged = new BeEvent<MapFeatureInfoLoadListener>();
   public onDataUpdated = new BeEvent<MapFeatureInfoDataUpdatedListener>();
   constructor(onMapHit: MapHitEvent) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     this._removeListener = onMapHit.addListener(this._handleMapHit, this);
+
   }
 
   public onUnload() {
@@ -44,6 +49,7 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   private async _handleMapHit(mapHit: HitDetail)  {
     this.records = {};
     this.categories = [];
+    this.graphics = undefined;
     let recordCount = 0;
     if (mapHit?.isMapHit) {
       this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadStart);
@@ -78,6 +84,11 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
 
                 }
               }
+
+              if (subLayerInfo.graphics && !this.graphics) {
+                // we keep only graphics of first feature for now.
+                this.graphics = subLayerInfo.graphics;
+              }
             }
           }
           if (layerCatIdx === -1 && nbRecords>0)
@@ -87,7 +98,7 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
         }
       }
     }
-    this.onDataUpdated.raiseEvent({recordCount});
+    this.onDataUpdated.raiseEvent({mapHit, recordCount, graphics:this.graphics});
     this.onDataChanged.raiseEvent();
   }
 
