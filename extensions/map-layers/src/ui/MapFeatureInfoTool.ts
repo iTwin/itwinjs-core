@@ -4,18 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  AccuDrawHintBuilder,
   BeButtonEvent,
   EventHandled,
   HitDetail,
   IModelApp,
+  LocateFilterStatus,
   LocateResponse,
+  MapLayerTileTreeReference,
+  MapTileTreeReference,
   PrimitiveTool,
+  TileTreeReference,
 } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { ToolItemDef, UiFramework } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { FeatureInfoUiItemsProvider } from "./FeatureInfoUiItemsProvider";
+import { BaseMapLayerSettings } from "@itwin/core-common";
 
 export const getDefaultMapFeatureInfoToolItemDef = (): ToolItemDef =>
   new ToolItemDef({
@@ -30,28 +34,38 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
   public static readonly onMapHit = new BeEvent<(hit: HitDetail|undefined) => void>();
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = "icon-map";
+  private baseMapModelId: string|undefined;
 
   public override requireWriteableTarget(): boolean {
     return false;
   }
 
-  public setupAndPromptForNextAction(): void {
-    // NOTE: Tool should call IModelApp.notifications.outputPromptByKey or IModelApp.notifications.outputPrompt to tell user what to do.
-    IModelApp.accuSnap.enableSnap(true); // Enable AccuSnap so that linestring can be created by snapping to existing geometry
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.initLocateElements();
+    IModelApp.locateManager.options.allowDecorations = true;
 
-    const hints = new AccuDrawHintBuilder();
-    hints.sendHints();
+    if (this.targetView) {
+      const vp = this.targetView;
+      vp.forEachMapTreeRef((mapRef: TileTreeReference) => {
+        if (this.baseMapModelId === undefined && mapRef instanceof MapTileTreeReference) {
+          mapRef.forEachLayerTileTreeRef((layerRef: TileTreeReference) => {
+            if (this.baseMapModelId === undefined && layerRef instanceof MapLayerTileTreeReference) {
+              if (layerRef.layerSettings instanceof BaseMapLayerSettings)
+                this.baseMapModelId = layerRef.treeOwner.tileTree?.modelId;
+            }
+          });
+        }
+      });
+    }
   }
 
-  public override async onMouseMotion(_ev: BeButtonEvent): Promise<void> {
-    // const hit = await IModelApp.locateManager.doLocate(
-    //   new LocateResponse(),
-    //   true,
-    //   ev.point,
-    //   ev.viewport,
-    //   ev.inputSource
-    // );
-    // console.log(`isMapHit: ${hit?.isMapHit} modelId: ${hit?.modelId} sourceId: ${hit?.sourceId} subCategoryId: ${hit?.subCategoryId}`);
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    return hit.sourceId !== undefined ? hit.sourceId : "";
+  }
+
+  public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
+    return hit.isMapHit && hit.sourceId !== this.baseMapModelId ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public override async onDataButtonDown(

@@ -789,6 +789,13 @@ export class MapTileTreeReference extends TileTreeReference {
       this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
   }
 
+  public forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void {
+    for (const layerTree of this._layerTrees) {
+      assert(layerTree instanceof MapLayerTileTreeReference);
+      func(layerTree);
+    }
+  }
+
   public override get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
   public override get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
