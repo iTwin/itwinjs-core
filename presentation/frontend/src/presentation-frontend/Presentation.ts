@@ -127,8 +127,6 @@ export class Presentation {
   /**
    * Registers an additional handler which will be invoked during Presentation library frontend
    * initialization.
-   *
-   * @internal
    */
   public static registerInitializationHandler(handler: () => Promise<() => void>): void {
     initializationHandlers.push(handler);

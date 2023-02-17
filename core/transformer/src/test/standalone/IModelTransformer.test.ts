@@ -27,7 +27,7 @@ import {
   AspectTrackingImporter,
   AspectTrackingTransformer,
   assertIdentityTransformation, AssertOrderTransformer,
-  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  ClassCounter, cmpProfileVersion, FilterByViewTransformer, getProfileVersion, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, runWithCpuProfiler, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -2022,6 +2022,86 @@ describe("IModelTransformer", () => {
     expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
     await noSystemSchemasTransformer.processSchemas();
     noSystemSchemasTransformer.dispose();
+  });
+
+  it("transform iModels with profile upgrade", async () => {
+    const oldDbPath = BackendTestUtils.IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const oldDb = SnapshotDb.openFile(oldDbPath);
+
+    const newDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-New.bim");
+    let newDb = SnapshotDb.createFrom(oldDb, newDbPath);
+    newDb.close();
+    setToStandalone(newDbPath);
+    StandaloneDb.upgradeStandaloneSchemas(newDbPath);
+    newDb = SnapshotDb.openFile(newDbPath);
+
+    const bisCoreVersionInOld = oldDb.querySchemaVersion("BisCore")!;
+    const bisCoreVersionInNew = newDb.querySchemaVersion("BisCore")!;
+    assert(
+      Semver.lt(
+        Schema.toSemverString(bisCoreVersionInOld),
+        Schema.toSemverString(bisCoreVersionInNew)),
+      `The 'old' database with biscore version ${bisCoreVersionInOld} was not less than the 'new' database biscore of ${bisCoreVersionInNew}`
+    );
+
+    const oldDbProfileIsOlder = cmpProfileVersion(getProfileVersion(oldDb), getProfileVersion(newDb)) === -1;
+    assert(
+      oldDbProfileIsOlder,
+      "The 'old' database unexpectedly did not have an older profile version"
+    );
+
+    const sourceDbs = [oldDb, newDb];
+    const targetSeeds = [oldDb, newDb];
+    const doUpgradeVariants = [true, false];
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-Target.bim");
+
+    const expectedFailureCases = [
+      { sourceDb: newDb, targetSeed: oldDb, doUpgrade: false },
+    ] as const;
+
+    /* eslint-disable @typescript-eslint/indent */
+    for (const sourceDb of sourceDbs)
+    for (const targetSeed of targetSeeds)
+    /* eslint-disable @typescript-eslint/indent */
+    for (const doUpgrade of doUpgradeVariants) {
+      if (IModelJsFs.existsSync(targetDbPath))
+        IModelJsFs.unlinkSync(targetDbPath);
+
+      let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
+      targetDb.close();
+      setToStandalone(targetDbPath);
+      if (doUpgrade)
+        StandaloneDb.upgradeStandaloneSchemas(targetDbPath);
+      targetDb = StandaloneDb.openFile(targetDbPath);
+
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      try {
+        await transformer.processSchemas();
+      } catch (err) {
+        const wasExpected = expectedFailureCases.find((c) =>
+          c.sourceDb.pathName === sourceDb.pathName
+          && c.targetSeed.pathName === targetSeed.pathName
+          && c.doUpgrade === doUpgrade
+        );
+        if (!wasExpected) {
+          // eslint-disable-next-line no-console
+          console.log([
+            "Unexpected failure:",
+            `sourceDb: ${sourceDb.pathName}`,
+            `targetSeed: ${targetSeed.pathName}`,
+            `doUpgrade: ${doUpgrade}`,
+          ].join("\n"));
+          throw err;
+        }
+      }
+
+      transformer.dispose();
+      targetDb.close();
+    }
+
+    oldDb.close();
+    newDb.close();
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */

@@ -8,6 +8,7 @@ Table of contents:
 - [Updated minimum requirements](#updated-minimum-requirements)
   - [Node.js](#node-js)
   - [WebGL](#webgl)
+  - [Electron](#electron)
 - [Mesh offset](#mesh-offset)
 
 ## Updated minimum requirements
@@ -16,7 +17,7 @@ A new major release of iTwin.js affords us the opportunity to update our require
 
 ### Node.js
 
-Node 12 reached [end-of-life](https://github.com/nodejs/release#end-of-life-releases) in 2020, and Node 14 will do so shortly. iTwin.js 4.0 requires a minimum of Node 16.13.0, though we recommend using the latest long-term-support version.
+Node 12 reached [end-of-life](https://github.com/nodejs/release#end-of-life-releases) in 2020, and Node 14 as well as Node 16 will do so shortly. iTwin.js 4.0 requires a minimum of Node 18.12.0, though we recommend using the latest long-term-support version.
 
 ### WebGL
 
@@ -25,6 +26,10 @@ Web browsers display 3d graphics using an API called [WebGL](https://en.wikipedi
 Over a year ago, support for WebGL 2 finally became [available in all major browsers](https://www.khronos.org/blog/webgl-2-achieves-pervasive-support-from-all-major-web-browsers). iTwin.js now **requires** WebGL 2 - WebGL 1 is no longer supported. This change will have no effect on most users, other than to improve their graphics performance. However, users of iOS will need to make sure they have upgraded to iOS 15 or newer to take advantage of WebGL 2 (along with the many other benefits of keeping their operating system up to date).
 
 [IModelApp.queryRenderCompatibility]($frontend) will now produce [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility) for a client that does not support WebGL 2.
+
+### Electron
+
+Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports only Electron 23.
 
 ## Mesh offset
 

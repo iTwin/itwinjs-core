@@ -2946,18 +2946,18 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
-// @internal
+// @public
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     constructor(opts: TerrainMeshProviderOptions);
-    // (undocumented)
+    // @internal
     getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
-    // (undocumented)
+    // @internal
     get maxDepth(): number;
-    // (undocumented)
+    // @internal
     readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
-    // (undocumented)
+    // @internal
     requestMeshData(): Promise<TileRequest.Response>;
-    // (undocumented)
+    // @internal
     get tilingScheme(): MapTilingScheme;
 }
 
@@ -4314,7 +4314,6 @@ export interface Hilites {
 
 // @public
 export class HiliteSet {
-    // @internal
     constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
     clear(): void;
     get elements(): Id64.Uint32Set;
@@ -4801,7 +4800,6 @@ export class IModelApp {
     static readonly telemetry: TelemetryManager;
     // @internal (undocumented)
     static get tentativePoint(): TentativePoint;
-    // @beta
     static get terrainProviderRegistry(): TerrainProviderRegistry;
     static get tileAdmin(): TileAdmin;
     static get toolAdmin(): ToolAdmin;
@@ -5670,7 +5668,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     get tileWidth(): number;
 }
 
-// @beta
+// @public
 export class MapCartoRectangle extends Range2d {
     protected constructor(west: number, south: number, east: number, north: number);
     get cartoCenter(): Cartographic;
@@ -6053,7 +6051,7 @@ export interface MapSubLayerFeatureInfo {
     subLayerName: string;
 }
 
-// @beta
+// @public
 export class MapTile extends RealityTile {
     // @internal
     constructor(params: RealityTileParams, mapTree: MapTileTree, quadId: QuadId, patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, cornerRays: Ray3d[] | undefined);
@@ -6225,7 +6223,7 @@ export class MapTileLoader extends RealityTileLoader {
     get terrainProvider(): TerrainMeshProvider;
 }
 
-// @beta
+// @public
 export abstract class MapTileProjection {
     // @alpha (undocumented)
     get ellipsoidPatch(): EllipsoidPatch | undefined;
@@ -6237,7 +6235,7 @@ export abstract class MapTileProjection {
     abstract get transformFromLocal(): Transform;
 }
 
-// @beta
+// @public
 export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
@@ -6406,7 +6404,7 @@ export enum MapTileTreeScaleRangeVisibility {
     Visible = 1
 }
 
-// @beta
+// @public
 export abstract class MapTilingScheme {
     protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean);
     cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d;
@@ -7239,9 +7237,8 @@ export interface NativeAppOpts extends IpcAppOptions {
     nativeApp?: {};
 }
 
-// @internal
+// @public
 export class NoRenderApp {
-    // (undocumented)
     static startup(opts?: IModelAppOptions): Promise<void>;
 }
 
@@ -7975,7 +7972,7 @@ export interface PullChangesOptions {
     progressInterval?: number;
 }
 
-// @beta
+// @public
 export class QuadId {
     constructor(level: number, column: number, row: number);
     bordersNorthPole(mapTilingScheme: MapTilingScheme): boolean;
@@ -8156,7 +8153,7 @@ export interface ReadImageBufferArgs {
     upsideDown?: boolean;
 }
 
-// @beta
+// @public
 export interface ReadMeshArgs {
     data: any;
     isCanceled(): boolean;
@@ -8255,7 +8252,7 @@ export interface RealityMeshGraphicParams {
     readonly tileRectangle: MapCartoRectangle;
 }
 
-// @beta
+// @public
 export interface RealityMeshParams {
     // @alpha
     featureID?: number;
@@ -8267,7 +8264,7 @@ export interface RealityMeshParams {
     uvs: QPoint2dBuffer;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export namespace RealityMeshParams {
     // @internal (undocumented)
     export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined;
@@ -8413,7 +8410,7 @@ export class RealityModelTileUtils {
     static transformFromJson(jTrans: number[] | undefined): Transform;
 }
 
-// @beta
+// @public
 export class RealityTile extends Tile {
     // @internal
     constructor(props: RealityTileParams, tree: RealityTileTree);
@@ -8636,7 +8633,7 @@ export class RealityTileRegion {
     minLongitude: number;
 }
 
-// @beta
+// @public
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
@@ -9384,7 +9381,7 @@ export abstract class RenderTextureDrape implements IDisposable {
     abstract dispose(): void;
 }
 
-// @beta
+// @public
 export interface RequestMeshDataArgs {
     isCanceled(): boolean;
     tile: MapTile;
@@ -10774,7 +10771,7 @@ export class TerrainDisplayOverrides {
     wantSkirts?: boolean;
 }
 
-// @beta
+// @public
 export abstract class TerrainMeshProvider {
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     forceTileLoad(_tile: MapTile): boolean;
@@ -10786,19 +10783,19 @@ export abstract class TerrainMeshProvider {
     abstract get tilingScheme(): MapTilingScheme;
 }
 
-// @beta
+// @public
 export interface TerrainMeshProviderOptions {
     exaggeration: number;
     wantNormals: boolean;
     wantSkirts: boolean;
 }
 
-// @beta
+// @public
 export interface TerrainProvider {
     createTerrainMeshProvider(options: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined>;
 }
 
-// @beta
+// @public
 export class TerrainProviderRegistry {
     // @internal
     constructor();
@@ -11220,6 +11217,8 @@ export namespace TileAdmin {
         useProjectExtents?: boolean;
     }
     export interface Statistics {
+        // @beta
+        decoding: TileContentDecodingStatistics;
         numActiveRequests: number;
         numActiveTileTreePropsRequests: number;
         numCanceled: number;
@@ -11275,6 +11274,14 @@ export interface TileContent {
     contentRange?: ElementAlignedBox3d;
     graphic?: RenderGraphic;
     isLeaf?: boolean;
+}
+
+// @beta
+export interface TileContentDecodingStatistics {
+    max: number;
+    mean: number;
+    min: number;
+    total: number;
 }
 
 // @public
@@ -11504,7 +11511,7 @@ export class TileRequestChannel {
     process(): void;
     processCancellations(): void;
     // @internal
-    recordCompletion(tile: Tile, content: TileContent): void;
+    recordCompletion(tile: Tile, content: TileContent, elapsedMilliseconds: number): void;
     // @internal
     recordFailure(): void;
     // @internal
@@ -11555,9 +11562,13 @@ export class TileRequestChannels {
 export class TileRequestChannelStatistics {
     // @internal (undocumented)
     addTo(stats: TileRequestChannelStatistics): void;
+    // @beta
+    decoding: TileContentDecodingStatistics;
     numActiveRequests: number;
     numCanceled: number;
     numPendingRequests: number;
+    // @internal (undocumented)
+    recordCompletion(tile: Tile, elapsedMilliseconds: number): void;
     totalAbortedRequests: number;
     totalCacheMisses: number;
     totalCompletedRequests: number;

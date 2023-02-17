@@ -965,10 +965,8 @@ export class Field {
     name: string;
     get parent(): NestedContentField | undefined;
     priority: number;
-    // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
     renderer?: RendererDescription;
-    // @internal (undocumented)
     resetParentship(): void;
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
@@ -1609,11 +1607,9 @@ export interface LabelDefinition {
 export namespace LabelDefinition {
     // @deprecated
     export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition;
-    // @internal (undocumented)
     export function fromLabelString(label: string): LabelDefinition;
     const // @internal (undocumented)
     COMPOSITE_DEFINITION_TYPENAME = "composite";
-    // @internal (undocumented)
     export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & {
         rawValue: LabelCompositeValue;
     };
@@ -1766,10 +1762,8 @@ export class NestedContentField extends Field {
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     nestedFields: Field[];
     pathToPrimaryClass: RelationshipPath;
-    // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
     relationshipMeaning: RelationshipMeaning;
-    // @internal (undocumented)
     resetParentship(): void;
     toJSON(): NestedContentFieldJSON;
 }
