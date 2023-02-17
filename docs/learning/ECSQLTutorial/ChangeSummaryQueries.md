@@ -2,7 +2,7 @@
 
 *Change Summaries* are summaries of changes of ECInstances in an *iModel Changeset*. **Please read [Change Summaries](../ChangeSummaries.md) first, before doing this section of the tutorial.**
 
-[!alert text="<img src="./media/wip.svg" style="width:2%;height:2%;"> The console does not support write operations, this functionality has been deprecated. This page is kept for historical and educational purposes" kind="warning"]
+[!alert text="The console does not support write operations, this functionality has been deprecated. This page is kept for historical and educational purposes" kind="danger"]
 
 ## Generate the Change Summaries
 
