@@ -1385,13 +1385,13 @@ export class PolyfaceQuery {
       }
       if (detail.isInsideOrOn) {  // set optional caches, process the intersection
         if (options?.wantNormal && visitor.normal)
-          detail.getNormal(visitor.normal, vertices);
+          detail.getNormal(visitor.normal, vertices, options?.distanceTolerance);
         if (options?.wantParam && visitor.param)
-          detail.getParam(visitor.param, vertices);
+          detail.getParam(visitor.param, vertices, options?.distanceTolerance);
         if (options?.wantColor && visitor.color)
-          detail.getColor(visitor.color, vertices);
+          detail.getColor(visitor.color, vertices, options?.distanceTolerance);
         if (options?.wantBarycentricCoordinates)
-          detail.getBarycentricCoordinates(vertices);
+          detail.getBarycentricCoordinates(vertices, options?.distanceTolerance);
         if (options?.acceptIntersection && !options.acceptIntersection(detail, visitor, options))
           continue;
         return detail;

@@ -84,16 +84,16 @@ export class TriangleLocationDetail {
   */
   public snapLocalToEdge(parameterTolerance: number = Geometry.smallFraction): void {
     let numSnapped = 0;
-    let originalSum = 0.0;
+    let newSum = 0.0;
     for (let i = 0; i < 3; i++) {
-      originalSum += this.local.at(i);
       if (Math.abs(this.local.at(i)) < parameterTolerance) {
         this.local.setAt(i, 0.0);
         numSnapped++;
       }
+      newSum += this.local.at(i);
     }
-    if (1 === numSnapped || 2 === numSnapped) // anything else is NOOP or invalid
-      this.local.scaleInPlace(1.0 / originalSum);
+    if (numSnapped > 0 && numSnapped < 3 && newSum > 0.0)
+      this.local.scaleInPlace(1.0 / newSum);
   }
   /** Queries the barycentric coordinates to determine whether this instance specifies a location inside or on the triangle.
    * @see classify
@@ -242,6 +242,15 @@ export class BarycentricTriangle {
    */
   public static isInsideTriangle(b0: number, b1: number, b2: number): boolean {
     return b0 > 0 && b1 > 0 && b2 > 0;
+  }
+
+  /** Examine a point's barycentric coordinates to determine if it lies inside the triangle or on an edge/vertex.
+   * * No parametric tolerance is used.
+   * * It is assumed b0 + b1 + b2 = 1.
+   * @returns whether the point with barycentric coordinates is inside or on the triangle.
+   */
+  public static isInsideOrOnTriangle(b0: number, b1: number, b2: number): boolean {
+    return b0 >= 0 && b1 >= 0 && b2 >= 0;
   }
 
   /** Examine a point's barycentric coordinates to determine if it lies "outside" an edge of the triangle.

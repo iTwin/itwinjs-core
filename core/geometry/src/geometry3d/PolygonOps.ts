@@ -22,7 +22,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range1d, Range3d } from "./Range";
 import { Ray3d } from "./Ray3d";
 import { SortablePolygon } from "./SortablePolygon";
-import { XAndY } from "./XYZProps";
+import { XAndY, XYAndZ } from "./XYZProps";
 
 /**
  * Carries data about a point in the plane of a polygon.
@@ -996,8 +996,10 @@ export class PolygonOps {
   }
 
   // work objects, allocated as needed
-  private static _workPoint3d?: Point3d;
-  private static _workPoint2d?: Point2d;
+  private static _workXYZ?: Point3d;
+  private static _workXY0?: Point2d;
+  private static _workXY1?: Point2d;
+  private static _workXY2?: Point2d;
   private static _workRay?: Ray3d;
   private static _workMatrix3d?: Matrix3d;
   private static _workPlane?: Plane3dByOriginAndUnitNormal;
@@ -1019,7 +1021,7 @@ export class PolygonOps {
     if (!this.unitNormal(polygon, this._normal))
       return PolygonLocationDetail.create(result); // invalid
     this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0), polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0), this._normal.x, this._normal.y, this._normal.z, this._workPlane)!;
-    const intersectionPoint = Point3d.createZero(this._workPoint3d);
+    const intersectionPoint = Point3d.createZero(this._workXYZ);
     const rayParam = ray.intersectionWithPlane(this._workPlane, intersectionPoint);
     if (undefined === rayParam)
       return PolygonLocationDetail.create(result);
@@ -1045,7 +1047,7 @@ export class PolygonOps {
    * @param polygon points of the polygon, closure point optional
    * @param point0 start point of segment on line to intersect
    * @param point1 end point of segment on line to intersect
-   * @param distTol optional distance tolerance to determine point-vertex and point-edge coincidence.
+   * @param tolerance optional distance tolerance to determine point-vertex and point-edge coincidence.
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the line-plane intersection `d.point`:
    * * `d.isValid()` returns true if and only if the line intersects the plane.
@@ -1054,92 +1056,143 @@ export class PolygonOps {
    * * `d.edgeIndex` and `d.edgeParam` specify the location of the closest point on the polygon to the intersection, within `distTol`.
    * @see intersectRay3d
    */
-  public static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, distTol: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
     this._workRay = Ray3d.createStartEnd(point0, point1, this._workRay);
-    return this.intersectRay3d(polygon, this._workRay, distTol, result);
+    return this.intersectRay3d(polygon, this._workRay, tolerance, result);
   }
 
   /** Compute edge data for the barycentric coordinate computation, ignoring all z-coordinates.
    * @param polygon points of the polygon (without closure point)
-   * @param edgeStartVertexIndex index of start vertex of the edge
+   * @param edgeStartVertexIndex index of start vertex of the edge (unchecked)
    * @param point point to project to the edge
-   * @param edgeOutwardUnitNormal pre-allocated vector to be populated on return with the unit perpendicular to the edge, facing outward
-   * @returns signed projection distance of `point` to the edge
-  */
-  private static computeEdgeDataXY(polygon: IndexedXYZCollection, edgeStartVertexIndex: number, point: Readonly<Point3d>, edgeOutwardUnitNormal: Vector3d): number {
+   * @param edgeOutwardUnitNormal pre-allocated vector to be populated on return with the unit perpendicular to the edge, facing outward, in xy-plane
+   * @param tolerance used to clamp outputs
+   * @param result optional pre-allocated result
+   * @returns x: signed projection distance of `point` to the edge, y: edge parameter of the projection
+   */
+  private static computeEdgeDataXY(polygon: IndexedXYZCollection, edgeStartVertexIndex: number, point: XYAndZ, edgeOutwardUnitNormal: Vector3d, tolerance: number = Geometry.smallMetricDistance, result?: Point2d): Point2d {
     const i0 = edgeStartVertexIndex % polygon.length;
     const i1 = (i0 + 1) % polygon.length;
-    polygon.vectorIndexIndex(i0, i1, edgeOutwardUnitNormal)!.unitPerpendicularXY(edgeOutwardUnitNormal).negate(edgeOutwardUnitNormal);
-    return edgeOutwardUnitNormal.dotProductXYZ(polygon.getXAtUncheckedPointIndex(i0) - point.x, polygon.getYAtUncheckedPointIndex(i0) - point.y);
+    polygon.vectorIndexIndex(i0, i1, edgeOutwardUnitNormal)!.unitPerpendicularXY(edgeOutwardUnitNormal).negate(edgeOutwardUnitNormal);  // z is zero
+    const hypDeltaX = polygon.getXAtUncheckedPointIndex(i0) - point.x;
+    const hypDeltaY = polygon.getYAtUncheckedPointIndex(i0) - point.y;
+    let projDist = Geometry.dotProductXYXY(hypDeltaX, hypDeltaY, edgeOutwardUnitNormal.x, edgeOutwardUnitNormal.y);
+    const edgeDist = Geometry.crossProductXYXY(hypDeltaX, hypDeltaY, edgeOutwardUnitNormal.x, edgeOutwardUnitNormal.y);
+    const edgeLength = Geometry.distanceXYXY(polygon.getXAtUncheckedPointIndex(i0), polygon.getYAtUncheckedPointIndex(i0), polygon.getXAtUncheckedPointIndex(i1), polygon.getYAtUncheckedPointIndex(i1));
+    let edgeParam = Geometry.safeDivideFraction(edgeDist, edgeLength, 0.0);
+    if (Geometry.isSameCoordinate(0.0, projDist, tolerance))
+      projDist = 0.0;
+    if (Geometry.isSameCoordinate(0.0, edgeParam, tolerance))
+      edgeParam = 0.0;
+    else if (Geometry.isSameCoordinate(1.0, edgeParam, tolerance))
+      edgeParam = 1.0;
+    return Point2d.create(projDist, edgeParam, result);
+  }
+
+  /** Compute the barycentric coordinates for a point on either of a pair of adjacent edges of a convex polygon.
+   * @param polygon points of the polygon, assumed to be convex. Assumed to have no closure point.
+   * @param iPrev start index of previous edge
+   * @param prevNormal outward unit normal of previous edge
+   * @param prevProj x = signed distance from point to previous edge; y = edge parameter of this projection in [0,1]
+   * @param i start index of current edge
+   * @param normal outward unit normal of current edge
+   * @param proj x = signed distance from point to current edge; y = edge parameter of this projection in [0,1]
+   * @param coords pre-allocated barycentric coordinate array to return, assumed to have length at least `polygon.length`
+   * @returns barycentric coordinates, or undefined if not on either edge
+   */
+  private static convexBarycentricCoordinatesOnEdge(polygon: IndexedXYZCollection, iPrev: number, prevNormal: Vector3d, prevProj: XAndY, i: number, normal: Vector3d, proj: XAndY, coords: number[]): number[] | undefined {
+    // ignore degenerate edges
+    const pointIsOnPrevEdge = !prevNormal.isZero && (0.0 === prevProj.x) && Geometry.isIn01(prevProj.y);
+    const pointIsOnEdge = !normal.isZero && (0.0 === proj.x) && Geometry.isIn01(proj.y);
+    if (pointIsOnPrevEdge && pointIsOnEdge) { // the point is at vertex i
+      coords.fill(0);
+      coords[i] = 1.0;
+      return coords;
+    }
+    const n = polygon.length;
+    if (pointIsOnPrevEdge) { // the point is on the previous edge
+      coords.fill(0);
+      const i0 = iPrev;
+      const i1 = i;
+      const edgeParam = prevProj.y;
+      coords[i0] = 1.0 - edgeParam;
+      coords[i1] = edgeParam;
+      return coords;
+    }
+    if (pointIsOnEdge) { // the point is on the edge starting at the i_th vertex
+      coords.fill(0);
+      const i0 = i;
+      const i1 = (i + 1) % n;
+      const edgeParam = proj.y;
+      coords[i0] = 1.0 - edgeParam;
+      coords[i1] = edgeParam;
+      return coords;
+    }
+    return undefined;   // not on edge
   }
 
   // cspell:word CAGD
-  /** Compute the barycentric coordinates for a point in the plane of a convex polygon.
-   * @param polygon points of the polygon, which is assumed to be convex. Closure point optional.
-   * @param point point in the plane of the polygon
-   * @return barycentric coordinates of the point, or undefined if degenerate polygon. Length same as `polygon.length`.
+  /** Compute the barycentric coordinates for a point inside a convex polygon.
+   * @param polygon points of the polygon, assumed to be convex. Closure point optional.
+   * @param point point assumed to be inside or on polygon
+   * @param tolerance distance tolerance for point to be considered on a polygon edge
+   * @return barycentric coordinates of the interior point, or undefined if invalid polygon or exterior point. Length is same as `polygon.length`.
    * @see BarycentricTriangle.pointToFraction
    */
-  public static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d): number[] | undefined {
+  public static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d, tolerance: number = Geometry.smallMetricDistance): number[] | undefined {
     // cf. "Barycentric Coordinates for Convex Sets", by Warren et al., CAGD (2003)
     if (Array.isArray(polygon))
       return this.convexBarycentricCoordinates(new Point3dArrayCarrier(polygon), point);
     let n = polygon.length;
-    if (n > 1 && polygon.getPoint3dAtUncheckedPointIndex(0).isExactEqual(polygon.getPoint3dAtUncheckedPointIndex(n - 1)))
-      --n;  // ignore closure point
+    while (n > 1 && polygon.getPoint3dAtUncheckedPointIndex(0).isExactEqual(polygon.getPoint3dAtUncheckedPointIndex(n - 1)))
+      --n;  // ignore closure point(s)
     if (n < 3 || !PolygonOps.unitNormal(polygon, this._normal))
       return undefined;
     const localToWorld = this._workMatrix3d = Matrix3d.createRigidHeadsUp(this._normal, AxisOrder.ZXY, this._workMatrix3d);
     const polygonXY = new GrowableXYZArray(n);
     for (let i = 0; i < n; ++i)
-      polygonXY.push(localToWorld.multiplyInverseXYZAsPoint3d(polygon.getXAtUncheckedPointIndex(i), polygon.getYAtUncheckedPointIndex(i), polygon.getZAtUncheckedPointIndex(i), this._workPoint3d)!);
-    const pointXY = this._workPoint3d = localToWorld.multiplyInverseXYZAsPoint3d(point.x, point.y, point.z, this._workPoint3d)!;
+      polygonXY.push(localToWorld.multiplyInverseXYZAsPoint3d(polygon.getXAtUncheckedPointIndex(i), polygon.getYAtUncheckedPointIndex(i), polygon.getZAtUncheckedPointIndex(i), this._workXYZ)!);
+    const pointXY = this._workXYZ = localToWorld.multiplyInverseXYZAsPoint3d(point.x, point.y, point.z, this._workXYZ)!;
     // now we know polygon orientation is ccw, its last edge has positive length, and we can ignore z-coords
+    let iPrev = n - 1;
     const outwardUnitNormalOfLastEdge = this._vector0;
-    const signedProjDistToLastEdge = this.computeEdgeDataXY(polygonXY, n - 1, pointXY, outwardUnitNormalOfLastEdge);
+    const projToLastEdge = this._workXY0 = this.computeEdgeDataXY(polygonXY, iPrev, pointXY, outwardUnitNormalOfLastEdge, tolerance, this._workXY0);
+    // we can compare to exact zero because computeEdgeDataXY has chopped small distances to zero
+    if (projToLastEdge.x < 0.0)
+      return undefined; // point is outside polygon, or polygon is nonconvex
     const outwardUnitNormalOfPrevEdge = Vector3d.createFrom(outwardUnitNormalOfLastEdge, this._vector1);
-    let signedProjDistToPrevEdge = signedProjDistToLastEdge;
+    const projToPrevEdge = this._workXY1 = Point2d.createFrom(projToLastEdge, this._workXY1);
     const coords = Array<number>(polygon.length).fill(0); // use original length
+    const largestResult = (tolerance > 0.0) ? 1.0 / (tolerance * tolerance) : Geometry.largeCoordinateResult;
     let coordSum = 0.0;
     for (let i = 0; i < n; ++i) {
       const outwardUnitNormalOfEdge = Vector3d.createFrom(outwardUnitNormalOfLastEdge, this._vector2);
-      const signedProjDistToEdge = (i < n - 1) ? this.computeEdgeDataXY(polygonXY, i, pointXY, outwardUnitNormalOfEdge) : signedProjDistToLastEdge;
+      const projToEdge = this._workXY2 = (i < n - 1) ? this.computeEdgeDataXY(polygonXY, i, pointXY, outwardUnitNormalOfEdge, tolerance, this._workXY2) : Point2d.createFrom(projToLastEdge, this._workXY2);
+      if (projToEdge.x < 0.0)
+        return undefined; // point is outside polygon, or polygon is nonconvex
+      if (undefined !== this.convexBarycentricCoordinatesOnEdge(polygonXY, iPrev, outwardUnitNormalOfPrevEdge, projToPrevEdge, i, outwardUnitNormalOfEdge, projToEdge, coords))
+        return coords; // point is on vertex or edge; we are done
       if (outwardUnitNormalOfEdge.x === 0.0 && outwardUnitNormalOfEdge.y === 0.0)
-        continue; // this edge is degenerate, coords[i] remains zero
-      const area = Math.abs(outwardUnitNormalOfPrevEdge.crossProductXY(outwardUnitNormalOfEdge));
-      let coord = Geometry.conditionalDivideCoordinate(area, signedProjDistToPrevEdge * signedProjDistToEdge);
+        continue; // edge is degenerate; coords[i] = 0; keep previous edge data
+      if (0.0 === projToPrevEdge.x || 0.0 === projToEdge.x)
+        continue; // point is on subsequent colinear edge (ASSUMING interior point, convex polygon!); coords[i] = 0; keep previous edge data
+      const areaOfNormalParallelogram = Math.abs(outwardUnitNormalOfPrevEdge.crossProductXY(outwardUnitNormalOfEdge));
+      const coord = Geometry.conditionalDivideCoordinate(areaOfNormalParallelogram, projToPrevEdge.x * projToEdge.x, largestResult);
       if (undefined === coord) {
-        // the point is on an edge, so at least n-2 coords are zero
-        coords.fill(0);
-        if (signedProjDistToPrevEdge === 0.0 && signedProjDistToEdge === 0.0) {
-          // the point is at polygon[i]
-          coords[i] = 1.0;
-        } else {
-          // the point is on an edge adjacent to polygon[i]
-          const onPrevEdge = Math.abs(signedProjDistToPrevEdge) < Math.abs(signedProjDistToEdge);
-          const i0 = onPrevEdge ? (i - 1 + n) % n : i;
-          const i1 = onPrevEdge ? i : (i + 1) % n;
-          // coord is 1 if point is at polygon[i0]; 0 if point is at polygon[i1]. Note: coord is 1 - edgeParam!
-          coord = Geometry.inverseInterpolate01(polygonXY.getXAtUncheckedPointIndex(i1), polygonXY.getXAtUncheckedPointIndex(i0), pointXY.x);
-          if (undefined === coord)
-            coord = Geometry.inverseInterpolate01(polygonXY.getYAtUncheckedPointIndex(i1), polygonXY.getYAtUncheckedPointIndex(i0), pointXY.y);
-          assert(undefined !== coord); // neither edge is degenerate, so coord is always defined
-          if (undefined !== coord) {
-            coords[i0] = coord;
-            coords[i1] = 1.0 - coord;
-          }
-        }
-        return coords;
+        assert(!"unexpectedly small projection distance to an edge");
+        return undefined; // shouldn't happen due to chopping in computeEdgeDataXY: area/(dist*dist) <= 1/tol^2 = largestResult
       }
-      coords[i] = coord;  // unnormalized
+      coords[i] = coord;
       coordSum += coord;
       outwardUnitNormalOfPrevEdge.setFrom(outwardUnitNormalOfEdge);
-      signedProjDistToPrevEdge = signedProjDistToEdge;
+      projToPrevEdge.setFrom(projToEdge);
+      iPrev = i;
     }
     const scale = Geometry.conditionalDivideCoordinate(1.0, coordSum);
-    assert(undefined !== scale);
-    if (undefined === scale)
-      return undefined;   // shouldn't happen
+    if (undefined === scale) {
+      assert(!"unexpected zero barycentric coordinate sum");
+      return undefined;
+    }
     for (let i = 0; i < n; ++i)
       coords[i] *= scale; // normalized
     return coords;
