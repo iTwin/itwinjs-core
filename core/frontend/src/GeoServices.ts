@@ -257,10 +257,19 @@ export class GeoServices {
   }
 }
 
-interface CoordinateConverterOptions {
+/** Options used to create a [[CoordinateConverter]].
+ * @internal exported strictly for tests.
+ */
+export interface CoordinateConverterOptions {
+  /** The iModel for which to perform the conversions. */
   iModel: IModelConnection;
+  /** Asynchronously convert each point. The resultant array should have the same number and order of points as the input. */
   requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+  /** Maximum number of points to include in each request. Default: 300. */
   maxPointsPerRequest?: number;
+  /** Minimum number of frames to wait before dispatching a request, to enable batching.
+   * Default: for IPC apps, 1; for RPC apps, 3.
+   */
   requestInterval?: number;
 }
 
@@ -272,16 +281,28 @@ function cloneXYAndZ(xyz: XYAndZ): XYAndZ {
   return { x: xyz.x, y: xyz.y, z: xyz.z };
 }
 
-class CoordinateConverter {
-  private readonly _cache: Dictionary<XYAndZ, PointWithStatus>;
-  private readonly _pending: SortedArray<XYAndZ>;
-  private readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
-  private readonly _maxPointsPerRequest: number;
-  private readonly _requestInterval: number;
-  private readonly _iModel: IModelConnection;
-  private readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+/** Performs conversion of coordinates from one coordinate system to another.
+ * Uses a cache to avoid repeatedly requesting the same points, and a batching strategy to avoid making many small requests.
+ * The batching and caching works as follows:
+ *  When a conversion is requested via [[convert]], if all the requested points are in the cache, they are returned immediately.
+ *  Otherwise, any points not in the cache are placed onto the queue of pending requests.
+ *  If the queue size exceeds options.maxPointsPerRequest, the request will be dispatched immediately; otherwise, it will be schedule for dispatch in options.requestInterval frames.
+ *  Requests are split into batches of no more than options.maxPointsPerRequest.
+ *  Once the requests complete, the results are loaded into and returned from the cache.
+ *  Currently, the cache is permitted to grow in an unbounded fashion.
+ * A [[GeoConverter]] has a pair of these for converting between iModel coordinates and geographic coordinates.
+ * @internal exported strictly for tests.
+ */
+export class CoordinateConverter {
+  protected readonly _cache: Dictionary<XYAndZ, PointWithStatus>;
+  protected readonly _pending: SortedArray<XYAndZ>;
+  protected readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
+  protected readonly _maxPointsPerRequest: number;
+  protected readonly _requestInterval: number;
+  protected readonly _iModel: IModelConnection;
+  protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 
-  private toXYAndZ(input: XYZProps, output: WritableXYAndZ): XYAndZ {
+  protected toXYAndZ(input: XYZProps, output: WritableXYAndZ): XYAndZ {
     if (Array.isArray(input)) {
       output.x = input[0] ?? 0;
       output.y = input[1] ?? 0;
@@ -296,8 +317,8 @@ class CoordinateConverter {
   }
 
   public constructor(opts: CoordinateConverterOptions) {
-    this._maxPointsPerRequest = opts.maxPointsPerRequest ?? 300;
-    this._requestInterval = opts.requestInterval ?? 1;
+    this._maxPointsPerRequest = Math.max(1, opts.maxPointsPerRequest ?? 300);
+    this._requestInterval = Math.max(1, opts.requestInterval ?? 1);
     this._iModel = opts.iModel;
     this._requestPoints = opts.requestPoints;
 
@@ -305,7 +326,7 @@ class CoordinateConverter {
     this._pending = new SortedArray<XYAndZ>(compareXYAndZ, false, cloneXYAndZ);
   }
 
-  private async dispatch(): Promise<void> {
+  protected async dispatch(): Promise<void> {
     if (this._iModel.isClosed || this._pending.isEmpty)
       return;
 
@@ -314,8 +335,15 @@ class CoordinateConverter {
     for (let i = 0; i < pending.length; i += this._maxPointsPerRequest) {
       const requests = pending.slice(i, i + this._maxPointsPerRequest);
       const promise = this._requestPoints(requests).then((results) => {
+        if (this._iModel.isClosed)
+          return;
+
+        if (results.length !== requests.length)
+          Logger.logError(`${FrontendLoggerCategory.Package}.geoservices`, `requested conversion of ${requests.length} points, but received ${results.length} points`);
+
         for (let j = 0; j < results.length; j++) {
-          this._cache.set(requests[j], results[j]);
+          if (j < requests.length)
+            this._cache.set(requests[j], results[j]);
         }
       }).catch((err) => {
         Logger.logException(`${FrontendLoggerCategory.Package}.geoservices`, err);
@@ -329,7 +357,7 @@ class CoordinateConverter {
 
   // Add any points not present in cache to pending request list.
   // Return the number of points present in cache.
-  private enqueue(points: XYZProps[]): number {
+  protected enqueue(points: XYZProps[]): number {
     let numInCache = 0;
     for (const point of points) {
       const xyz = this.toXYAndZ(point, this._scratchXYZ);
@@ -342,7 +370,7 @@ class CoordinateConverter {
     return numInCache;
   }
 
-  private getFromCache(inputs: XYZProps[]): PointWithStatus[] {
+  protected getFromCache(inputs: XYZProps[]): PointWithStatus[] {
     const outputs: PointWithStatus[] = [];
     for (const input of inputs) {
       const xyz = this.toXYAndZ(input, this._scratchXYZ);
