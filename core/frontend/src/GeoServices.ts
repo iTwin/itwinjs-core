@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // cspell:ignore GCRS
-import { assert, Dictionary, Logger, SortedArray } from "@itwin/core-bentley";
+import {
+  assert, BeEvent, Dictionary, Logger, SortedArray,
+} from "@itwin/core-bentley";
 import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
@@ -277,6 +279,14 @@ function cloneXYAndZ(xyz: XYAndZ): XYAndZ {
   return { x: xyz.x, y: xyz.y, z: xyz.z };
 }
 
+type CoordinateConverterState =
+  // No pending requests.
+  "idle" |
+  // We have scheduled a requestAnimationFrame to dispatch all pending requests.
+  "scheduled" |
+  // We have dispatched all requests that were pending at the most recent requestAnimationFrame callback.
+  "in-flight";
+
 /** Performs conversion of coordinates from one coordinate system to another.
  * ###TODO update this...
  * Uses a cache to avoid repeatedly requesting the same points, and a batching strategy to avoid making many small requests.
@@ -292,7 +302,12 @@ function cloneXYAndZ(xyz: XYAndZ): XYAndZ {
  */
 export class CoordinateConverter {
   protected readonly _cache: Dictionary<XYAndZ, PointWithStatus>;
-  protected readonly _pending: SortedArray<XYAndZ>;
+  protected _state: CoordinateConverterState = "idle";
+  // pending and inflight get swapped each time we dispatch.
+  protected _pending: SortedArray<XYAndZ>;
+  protected _inflight: SortedArray<XYAndZ>;
+  // _onCompleted gets replaced each time we dispatch.
+  protected _onCompleted = new BeEvent<() => void>();
   protected readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
   protected readonly _maxPointsPerRequest: number;
   protected readonly _iModel: IModelConnection;
@@ -319,16 +334,31 @@ export class CoordinateConverter {
 
     this._cache = new Dictionary<XYAndZ, PointWithStatus>(compareXYAndZ, cloneXYAndZ);
     this._pending = new SortedArray<XYAndZ>(compareXYAndZ, false, cloneXYAndZ);
+    this._inflight = new SortedArray<XYAndZ>(compareXYAndZ, false, cloneXYAndZ);
   }
 
   protected async dispatch(): Promise<void> {
-    if (this._iModel.isClosed || this._pending.isEmpty)
+    if (this._iModel.isClosed || this._pending.isEmpty) {
+      this._state = "idle";
+      this._onCompleted.raiseEvent();
       return;
+    }
 
-    const pending = this._pending.extractArray();
+    this._state = "in-flight";
+
+    // Ensure subsequently-enqueued requests listen for the *next* response to be received.
+    const onCompleted = this._onCompleted;
+    this._onCompleted = new BeEvent<() => void>();
+
+    // Pending requests are now in flight. Start a new list of pending requests. It's cheaper just to swap.
+    const inflight = this._pending;
+    this._pending = this._inflight;
+    this._inflight.clear();
+    this._inflight = inflight;
+
     const promises: Array<Promise<void>> = [];
-    for (let i = 0; i < pending.length; i += this._maxPointsPerRequest) {
-      const requests = pending.slice(i, i + this._maxPointsPerRequest);
+    for (let i = 0; i < inflight.length; i += this._maxPointsPerRequest) {
+      const requests = inflight.slice(i, i + this._maxPointsPerRequest).extractArray();
       const promise = this._requestPoints(requests).then((results) => {
         if (this._iModel.isClosed)
           return;
@@ -348,6 +378,12 @@ export class CoordinateConverter {
     }
 
     await Promise.all(promises);
+
+    this._state = "idle";
+    if (!this._pending.isEmpty)
+      this.scheduleDispatch();
+
+    onCompleted.raiseEvent();
   }
 
   // Add any points not present in cache to pending request list.
@@ -358,7 +394,7 @@ export class CoordinateConverter {
       const xyz = this.toXYAndZ(point, this._scratchXYZ);
       if (this._cache.get(xyz))
         ++numInCache;
-      else
+      else if (!this._inflight.contains(xyz))
         this._pending.insert(xyz);
     }
 
@@ -379,6 +415,17 @@ export class CoordinateConverter {
     return outputs;
   }
 
+  protected async scheduleDispatch(): Promise<void> {
+    if ("idle" === this._state) {
+      this._state = "scheduled";
+      requestAnimationFrame(() => this.dispatch());
+    }
+
+    return new Promise((resolve) => {
+      this._onCompleted.addOnce(() => resolve());
+    });
+  }
+
   public async convert(inputs: XYZProps[]): Promise<{ points: PointWithStatus[], fromCache: number }> {
     const fromCache = this.enqueue(inputs);
     assert(fromCache >= 0);
@@ -387,8 +434,7 @@ export class CoordinateConverter {
     if (fromCache === inputs.length)
       return { points: this.getFromCache(inputs), fromCache };
 
-    // ###TODO schedule dispatch instead of calling immediately
-    await this.dispatch();
+    await this.scheduleDispatch();
 
     return { points: this.getFromCache(inputs), fromCache };
   }
