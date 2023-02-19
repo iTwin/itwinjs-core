@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // cspell:ignore GCRS
-import { XYZProps } from "@itwin/core-geometry";
+import { assert, Dictionary, Logger, SortedArray } from "@itwin/core-bentley";
+import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
   IModelReadRpcInterface, PointWithStatus,
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 /** Response to a request to obtain imodel coordinates from cache.
  * @internal
@@ -252,5 +254,119 @@ export class GeoServices {
 
   public getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined {
     return this._iModel.isOpen ? new GeoConverter(this._iModel, datumOrGCRS ? datumOrGCRS : "") : undefined;
+  }
+}
+
+interface CoordinateConverterOptions {
+  iModel: IModelConnection;
+  requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+  maxPointsPerRequest?: number;
+  requestInterval?: number;
+}
+
+function compareXYAndZ(lhs: XYAndZ, rhs: XYAndZ): number {
+  return lhs.x - rhs.x || lhs.y - rhs.y || lhs.z - rhs.z;
+}
+
+function cloneXYAndZ(xyz: XYAndZ): XYAndZ {
+  return { x: xyz.x, y: xyz.y, z: xyz.z };
+}
+
+class CoordinateConverter {
+  private readonly _cache: Dictionary<XYAndZ, PointWithStatus>;
+  private readonly _pending: SortedArray<XYAndZ>;
+  private readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
+  private readonly _maxPointsPerRequest: number;
+  private readonly _requestInterval: number;
+  private readonly _iModel: IModelConnection;
+  private readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+
+  private toXYAndZ(input: XYZProps, output: WritableXYAndZ): XYAndZ {
+    if (Array.isArray(input)) {
+      output.x = input[0] ?? 0;
+      output.y = input[1] ?? 0;
+      output.z = input[2] ?? 0;
+    } else {
+      output.x = input.x ?? 0;
+      output.y = input.y ?? 0;
+      output.z = input.z ?? 0;
+    }
+
+    return output;
+  }
+
+  public constructor(opts: CoordinateConverterOptions) {
+    this._maxPointsPerRequest = opts.maxPointsPerRequest ?? 300;
+    this._requestInterval = opts.requestInterval ?? 1;
+    this._iModel = opts.iModel;
+    this._requestPoints = opts.requestPoints;
+
+    this._cache = new Dictionary<XYAndZ, PointWithStatus>(compareXYAndZ, cloneXYAndZ);
+    this._pending = new SortedArray<XYAndZ>(compareXYAndZ, false, cloneXYAndZ);
+  }
+
+  private async dispatch(): Promise<void> {
+    if (this._iModel.isClosed || this._pending.isEmpty)
+      return;
+
+    const pending = this._pending.extractArray();
+    const promises: Array<Promise<void>> = [];
+    for (let i = 0; i < pending.length; i += this._maxPointsPerRequest) {
+      const requests = pending.slice(i, i + this._maxPointsPerRequest);
+      const promise = this._requestPoints(requests).then((results) => {
+        for (let j = 0; j < results.length; j++) {
+          this._cache.set(requests[j], results[j]);
+        }
+      }).catch((err) => {
+        Logger.logException(`${FrontendLoggerCategory.Package}.geoservices`, err);
+      });
+
+      promises.push(promise);
+    }
+
+    await Promise.all(promises);
+  }
+
+  // Add any points not present in cache to pending request list.
+  // Return the number of points present in cache.
+  private enqueue(points: XYZProps[]): number {
+    let numInCache = 0;
+    for (const point of points) {
+      const xyz = this.toXYAndZ(point, this._scratchXYZ);
+      if (this._cache.get(xyz))
+        ++numInCache;
+      else
+        this._pending.insert(xyz);
+    }
+
+    return numInCache;
+  }
+
+  private getFromCache(inputs: XYZProps[]): PointWithStatus[] {
+    const outputs: PointWithStatus[] = [];
+    for (const input of inputs) {
+      const xyz = this.toXYAndZ(input, this._scratchXYZ);
+      let output = this._cache.get(xyz);
+      if (!output)
+        output = { p: { ...xyz }, s: GeoCoordStatus.CSMapError };
+
+      outputs.push(output);
+    }
+
+    return outputs;
+  }
+
+  public async convert(inputs: XYZProps[]): Promise<{ points: PointWithStatus[], fromCache: number }> {
+    const fromCache = this.enqueue(inputs);
+    assert(fromCache >= 0);
+    assert(fromCache <= inputs.length);
+
+    if (fromCache === inputs.length)
+      return { points: this.getFromCache(inputs), fromCache };
+
+    // ###TODO schedule dispatch instead of calling immediately
+    await this.dispatch();
+
+    return { points: this.getFromCache(inputs), fromCache };
   }
 }
