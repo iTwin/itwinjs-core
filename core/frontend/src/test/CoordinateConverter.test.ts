@@ -356,9 +356,22 @@ describe.only("CoordinateConverter", () => {
     expectConverted(input, output.points);
   });
 
-  it("logs an error if number of points in response doesn't match number of points requested", async () => {
-  });
-
   it("produces an error status for points requested but not returned", async () => {
+    const c = new Converter({
+      iModel,
+      requestPoints: () => Promise.resolve([{ p: [1, 2, 3], s: GeoCoordStatus.Success }]),
+    });
+
+    const results = await c.convert([[2, 2, 2], [1, 1, 1], [3, 3, 3]]);
+    expect(results.points).to.deep.equal([{
+      s: GeoCoordStatus.CSMapError,
+      p: {x: 2, y: 2, z: 2},
+    }, {
+      s: GeoCoordStatus.Success,
+      p: [1, 2, 3],
+    }, {
+      s: GeoCoordStatus.CSMapError,
+      p: {x: 3, y: 3, z: 3},
+    }]);
   });
 });
