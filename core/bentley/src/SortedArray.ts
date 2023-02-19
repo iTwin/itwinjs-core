@@ -193,6 +193,12 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
       func(this._array[i]);
   }
 
+  public slice(start?: number, end?: number): ReadonlySortedArray<T> {
+    const slice = new ReadonlySortedArray<T>(this._compare, this._duplicatePolicy, this._clone);
+    slice._array = this._array.slice(start, end);
+    return slice;
+  }
+
   /**
    * Computes the position at which the specified value should be inserted to maintain sorted order.
    * @param value The value whose position is to be computed.
@@ -335,4 +341,10 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
    * @returns the index of the deleted value, or -1 if no such element exists.
    */
   public remove(value: T): number { return this._remove(value); }
+
+  public override slice(start?: number, end?: number): SortedArray<T> {
+    const slice = new SortedArray<T>(this._compare, this._duplicatePolicy, this._clone);
+    slice._array = this._array.slice(start, end);
+    return slice;
+  }
 }
