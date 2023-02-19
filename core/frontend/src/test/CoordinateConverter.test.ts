@@ -124,15 +124,64 @@ describe.only("CoordinateConverter", () => {
   });
 
   it("defaults omitted components to zero", async () => {
+    const input: XYZProps[] = [
+      { y: 1 },
+      [ 6 ],
+      { x: 3, z: 5 },
+    ];
+
+    const c = new Converter({ iModel, requestPoints });
+    const output = await c.convert(input);
+    expectConverted(input, output.points);
   });
 
   it("caches responses", async () => {
+    const input = [
+      [ 0, 1, 2 ],
+      [ 3, 4, 5 ],
+    ];
+
+    const c = new Converter({ iModel, requestPoints });
+    expect((await c.convert(input)).fromCache).to.equal(0);
+    expect((await c.convert(input)).fromCache).to.equal(2);
   });
 
   it("makes no request if all points are in cache", async () => {
+    let nRequests = 0;
+    const reqPts = (pts: XYAndZ[]) => {
+      ++nRequests;
+      return requestPoints(pts);
+    };
+
+    const c = new Converter({ iModel, requestPoints: reqPts });
+    const input = [ [ 0, 1, 2 ] ];
+    expect(nRequests).to.equal(0);
+    await c.convert(input);
+    expect(nRequests).to.equal(1);
+    await c.convert(input);
+    expect(nRequests).to.equal(1);
+    await c.convert([[3, 4, 5]]);
+    expect(nRequests).to.equal(2);
   });
 
   it("requests only points that are not in cache", async () => {
+    let ptsRequested: XYAndZ[] = [];
+    const c = new Converter({
+      iModel,
+      requestPoints: (pts: XYAndZ[]) => {
+        ptsRequested = pts;
+        return requestPoints(pts);
+      },
+    });
+
+    await c.convert([[0, 0, 0], [1, 1, 1]]);
+    expect(ptsRequested).to.deep.equal([{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}]);
+
+    await c.convert([[1, 1, 1], [2, 2, 2]]);
+    expect(ptsRequested).to.deep.equal([{x: 2, y: 2, z: 2}]);
+  });
+
+  it("requests only points that are not currently in flight", async () => {
   });
 
   it("reports the number of points obtained from the cache", async () => {
