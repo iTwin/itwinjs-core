@@ -338,6 +338,7 @@ export class CoordinateConverter {
   }
 
   protected async dispatch(): Promise<void> {
+    assert(this._state === "scheduled");
     if (this._iModel.isClosed || this._pending.isEmpty) {
       this._state = "idle";
       this._onCompleted.raiseEvent();
@@ -353,7 +354,7 @@ export class CoordinateConverter {
     // Pending requests are now in flight. Start a new list of pending requests. It's cheaper just to swap.
     const inflight = this._pending;
     this._pending = this._inflight;
-    this._inflight.clear();
+    assert(this._pending.isEmpty);
     this._inflight = inflight;
 
     const promises: Array<Promise<void>> = [];
@@ -379,7 +380,10 @@ export class CoordinateConverter {
 
     await Promise.all(promises);
 
+    assert(this._state === "in-flight");
     this._state = "idle";
+    this._inflight.clear();
+
     if (!this._pending.isEmpty)
       this.scheduleDispatch();
 

@@ -34,7 +34,9 @@ class Connection extends BlankConnection {
 class Converter extends CoordinateConverter {
   public get cache() { return this._cache; }
   public get pending() { return this._pending; }
+  public get inflight() { return this._inflight; }
   public get maxPointsPerRequest() { return this._maxPointsPerRequest; }
+  public get state() { return this._state; }
 }
 
 describe.only("CoordinateConverter", () => {
@@ -179,6 +181,50 @@ describe.only("CoordinateConverter", () => {
 
     await c.convert([[1, 1, 1], [2, 2, 2]]);
     expect(ptsRequested).to.deep.equal([{x: 2, y: 2, z: 2}]);
+  });
+
+  async function waitOneFrame(): Promise<void> {
+    return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  }
+
+  async function waitNFrames(n: number): Promise<void> {
+    for (let i = 0; i < n; i++)
+      await waitOneFrame();
+  }
+
+  it("has only one request in flight at a time", async () => {
+    const c = new Converter({
+      iModel,
+      requestPoints: async (pts: XYAndZ[]) => {
+        await waitNFrames(5);
+        return requestPoints(pts);
+      },
+    });
+
+    expect(c.state).to.equal("idle");
+    const p0 = c.convert([[0, 0, 0]]);
+    expect(c.state).to.equal("scheduled");
+    expect(c.pending.length).to.equal(1);
+    expect(c.inflight.length).to.equal(0);
+
+    await waitOneFrame();
+    expect(c.state).to.equal("in-flight");
+    expect(c.inflight.length).to.equal(1);
+    expect(c.pending.length).to.equal(0);
+
+    const p1 = c.convert([[1, 1, 1]]);
+    expect(c.pending.length).to.equal(1);
+
+    await waitOneFrame();
+    expect(c.state).to.equal("in-flight");
+    expect(c.pending.length).to.equal(1);
+
+    const r = await Promise.all([p0, p1]);
+    expect(c.state).to.equal("idle");
+    expect(c.pending.length).to.equal(0);
+    expect(c.inflight.length).to.equal(0);
+    expectConverted([[0, 0, 0]], r[0].points);
+    expectConverted([[1, 1, 1]], r[1].points);
   });
 
   it("requests only points that are not currently in flight", async () => {
