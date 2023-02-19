@@ -194,12 +194,60 @@ describe.only("CoordinateConverter", () => {
   });
 
   it("does not make a request if the iModel is closed", async () => {
+    const imodel = new Connection();
+    let requested = false;
+    const c = new Converter({
+      iModel: imodel,
+      requestPoints: (pts: XYAndZ[]) => {
+        requested = true;
+        return requestPoints(pts);
+      },
+    });
+
+    const p = c.convert([[1, 2, 3]]);
+    expect(requested).to.be.false;
+    await imodel.close();
+    const pts = await p;
+    expect(requested).to.be.false;
+    expect(pts.points.length).to.equal(1);
+    expect(pts.points[0].s).to.equal(GeoCoordStatus.CSMapError);
+  });
+
+  it("batches requests received during the same frame", async () => {
+    const c = new Converter({
+      iModel,
+      requestPoints: (pts: XYAndZ[]) => {
+        expect(pts).to.deep.equal([{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}]);
+        return requestPoints(pts);
+      },
+    });
+
+    const results = await Promise.all([
+      c.convert([[0, 0, 0]]),
+      c.convert([[1, 1, 1]]),
+    ]);
+
+    expect(results.length).to.equal(2);
+    expectConverted([[0, 0, 0]], results[0].points);
+    expectConverted([[1, 1, 1]], results[1].points);
   });
 
   it("splits requests into batches of no more than maxPointsPerRequest", async () => {
-  });
+    let nRequests = 0;
+    const c = new Converter({
+      iModel,
+      maxPointsPerRequest: 2,
+      requestPoints: (pts: XYAndZ[]) => {
+        ++nRequests;
+        expect(pts.length).most(2);
+        return requestPoints(pts);
+      },
+    });
 
-  it("dispatches on the very next frame if the request queue is full", async () => {
+    const input = [[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]];
+    const output = await c.convert(input);
+    expect(nRequests).to.equal(3);
+    expectConverted(input, output.points);
   });
 
   it("logs an error if number of points in response doesn't match number of points requested", async () => {
