@@ -8,8 +8,7 @@ import {
 } from "@itwin/core-bentley";
 import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-  IModelReadRpcInterface, PointWithStatus,
+  GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesResponseProps, IModelReadRpcInterface, PointWithStatus,
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -140,7 +139,7 @@ export class CoordinateConverter {
     this._inflight.clear();
 
     if (!this._pending.isEmpty)
-      this.scheduleDispatch();
+      this.scheduleDispatch(); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     onCompleted.raiseEvent();
   }
@@ -177,7 +176,9 @@ export class CoordinateConverter {
   protected async scheduleDispatch(): Promise<void> {
     if ("idle" === this._state) {
       this._state = "scheduled";
-      requestAnimationFrame(() => this.dispatch());
+      requestAnimationFrame(() => {
+        this.dispatch(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      });
     }
 
     return new Promise((resolve) => {

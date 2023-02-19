@@ -7,7 +7,7 @@ import { Point3d, Range3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation, EmptyLocalization, GeoCoordStatus, PointWithStatus } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { CoordinateConverter, CoordinateConverterOptions } from "../GeoServices";
+import { CoordinateConverter } from "../GeoServices";
 
 class Connection extends BlankConnection {
   private _isClosed = false;
@@ -39,7 +39,7 @@ class Converter extends CoordinateConverter {
   public get state() { return this._state; }
 }
 
-describe.only("CoordinateConverter", () => {
+describe("CoordinateConverter", () => {
   let iModel: Connection;
 
   // A default conversion that produces { x+1, y-1, z }
@@ -50,7 +50,7 @@ describe.only("CoordinateConverter", () => {
         s: GeoCoordStatus.Success,
       };
     }));
-  };
+  }
 
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
@@ -150,7 +150,7 @@ describe.only("CoordinateConverter", () => {
 
   it("makes no request if all points are in cache", async () => {
     let nRequests = 0;
-    const reqPts = (pts: XYAndZ[]) => {
+    const reqPts = async (pts: XYAndZ[]) => {
       ++nRequests;
       return requestPoints(pts);
     };
@@ -170,7 +170,7 @@ describe.only("CoordinateConverter", () => {
     let ptsRequested: XYAndZ[] = [];
     const c = new Converter({
       iModel,
-      requestPoints: (pts: XYAndZ[]) => {
+      requestPoints: async (pts: XYAndZ[]) => {
         ptsRequested = pts;
         return requestPoints(pts);
       },
@@ -304,9 +304,9 @@ describe.only("CoordinateConverter", () => {
     let requested = false;
     const c = new Converter({
       iModel: imodel,
-      requestPoints: (pts: XYAndZ[]) => {
+      requestPoints: async (xyz: XYAndZ[]) => {
         requested = true;
-        return requestPoints(pts);
+        return requestPoints(xyz);
       },
     });
 
@@ -322,7 +322,7 @@ describe.only("CoordinateConverter", () => {
   it("batches requests received during the same frame", async () => {
     const c = new Converter({
       iModel,
-      requestPoints: (pts: XYAndZ[]) => {
+      requestPoints: async (pts: XYAndZ[]) => {
         expect(pts).to.deep.equal([{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}]);
         return requestPoints(pts);
       },
@@ -343,7 +343,7 @@ describe.only("CoordinateConverter", () => {
     const c = new Converter({
       iModel,
       maxPointsPerRequest: 2,
-      requestPoints: (pts: XYAndZ[]) => {
+      requestPoints: async (pts: XYAndZ[]) => {
         ++nRequests;
         expect(pts.length).most(2);
         return requestPoints(pts);
@@ -359,7 +359,7 @@ describe.only("CoordinateConverter", () => {
   it("produces an error status for points requested but not returned", async () => {
     const c = new Converter({
       iModel,
-      requestPoints: () => Promise.resolve([{ p: [1, 2, 3], s: GeoCoordStatus.Success }]),
+      requestPoints: async () => Promise.resolve([{ p: [1, 2, 3], s: GeoCoordStatus.Success }]),
     });
 
     const results = await c.convert([[2, 2, 2], [1, 1, 1], [3, 3, 3]]);
