@@ -228,15 +228,75 @@ describe.only("CoordinateConverter", () => {
   });
 
   it("requests only points that are not currently in flight", async () => {
-  });
+    const ptsRequested: Array<XYAndZ[]> = [];
+    const c = new Converter({
+      iModel,
+      requestPoints: async (pts: XYAndZ[]) => {
+        await waitNFrames(5);
+        ptsRequested.push(pts);
+        return requestPoints(pts);
+      },
+    });
 
-  it("reports the number of points obtained from the cache", async () => {
+    const p0 = c.convert([[0, 0, 0], [1, 1, 1]]);
+    await waitOneFrame();
+    const p1 = c.convert([[1, 1, 1], [2, 2, 2]]);
+    const results = await Promise.all([p0, p1]);
+
+    expect(ptsRequested).to.deep.equal([
+      [{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}],
+      [{x: 2, y: 2, z: 2}],
+    ]);
+
+    expectConverted(ptsRequested[0], results[0].points);
+    expectConverted([[1, 1, 1], [2, 2, 2]], results[1].points);
   });
 
   it("does not request duplicate points", async () => {
+    let ptsRequested: XYAndZ[] = [];
+    const c = new Converter({
+      iModel,
+      requestPoints: async (pts: XYAndZ[]) => {
+        ptsRequested = pts;
+        return requestPoints(pts);
+      },
+    });
+
+    await c.convert([
+      {x: 3, y: 3, z: 3},
+      [1, 1, 1],
+      [0, 0, 0],
+      {x: 2, y: 2, z: 2},
+      {x: 0, y: 0, z: 0},
+      [2, 2, 2],
+      {x: 3, y: 3, z: 3},
+      [0, 0, 0],
+    ]);
+
+    expect(ptsRequested).to.deep.equal([
+      {x: 0, y: 0, z: 0},
+      {x: 1, y: 1, z: 1},
+      {x: 2, y: 2, z: 2},
+      {x: 3, y: 3, z: 3},
+    ]);
   });
 
-  it("produces and logs error upon exception", async () => {
+  it("produces and logs error status upon exception", async () => {
+    const c = new Converter({
+      iModel,
+      requestPoints: async () => {
+        await waitOneFrame();
+        throw new Error("uh-oh");
+      },
+    });
+
+    const result = await c.convert([[1, 2, 3]]);
+    expect(result.points.length).to.equal(1);
+    const p = Point3d.fromJSON(result.points[0].p);
+    expect(result.points[0].s).to.equal(GeoCoordStatus.CSMapError);
+    expect(p.x).to.equal(1);
+    expect(p.y).to.equal(2);
+    expect(p.z).to.equal(3);
   });
 
   it("does not make a request if the iModel is closed", async () => {
