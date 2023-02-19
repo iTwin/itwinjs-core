@@ -42,26 +42,28 @@ type CoordinateConverterState =
   "in-flight";
 
 /** Performs conversion of coordinates from one coordinate system to another.
- * ###TODO update this...
- * Uses a cache to avoid repeatedly requesting the same points, and a batching strategy to avoid making many small requests.
- * The batching and caching works as follows:
- *  When a conversion is requested via [[convert]], if all the requested points are in the cache, they are returned immediately.
- *  Otherwise, any points not in the cache are placed onto the queue of pending requests.
- *  If the queue size exceeds options.maxPointsPerRequest, the request will be dispatched immediately; otherwise, it will be schedule for dispatch in options.requestInterval frames.
- *  Requests are split into batches of no more than options.maxPointsPerRequest.
- *  Once the requests complete, the results are loaded into and returned from the cache.
- *  Currently, the cache is permitted to grow in an unbounded fashion.
  * A [[GeoConverter]] has a pair of these for converting between iModel coordinates and geographic coordinates.
+ * Uses a cache to avoid repeatedly requesting the same points, and a batching strategy to avoid making frequent small requests.
+ * The cache stores every point that was ever converted by [[convert]]. It is currently permitted to grow to unbounded size.
+ * The batching works as follows:
+ *  When a conversion is requested via [[convert]], if all the requested points are in the cache, they are returned immediately.
+ *  Otherwise, any points not in the cache and not in the current in-flight request (if any) are placed onto the queue of pending requests.
+ *  A pending request is scheduled if one hasn't already been scheduled, via requestAnimationFrame.
+ *  In the animation frame callback, the pending requests are split into batches of no more than options.maxPointsPerRequest and dispatched to the backend.
+ *  Once the response is received, the results are loaded into and returned from the cache.
+ *  If more calls to convert occurred while the request was in flight, another request is dispatched.
  * @internal exported strictly for tests.
  */
 export class CoordinateConverter {
   protected readonly _cache: Dictionary<XYAndZ, PointWithStatus>;
   protected _state: CoordinateConverterState = "idle";
-  // pending and inflight get swapped each time we dispatch.
+  // The accumulated set of points to be converted by the next request.
   protected _pending: SortedArray<XYAndZ>;
+  // The set of points that were included in the current in-flight request, if any.
   protected _inflight: SortedArray<XYAndZ>;
-  // _onCompleted gets replaced each time we dispatch.
+  // An event fired when the next request completes.
   protected _onCompleted = new BeEvent<() => void>();
+  // Used for creating cache keys (XYAndZ) from XYZProps without having to allocate temporary objects.
   protected readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
   protected readonly _maxPointsPerRequest: number;
   protected readonly _iModel: IModelConnection;
@@ -105,12 +107,13 @@ export class CoordinateConverter {
     const onCompleted = this._onCompleted;
     this._onCompleted = new BeEvent<() => void>();
 
-    // Pending requests are now in flight. Start a new list of pending requests. It's cheaper just to swap.
+    // Pending requests are now in flight. Start a new list of pending requests. It's cheaper to swap than to allocate new objects.
     const inflight = this._pending;
     this._pending = this._inflight;
     assert(this._pending.isEmpty);
     this._inflight = inflight;
 
+    // Split requests if necessary to avoid requesting more than the maximum allowed number of points.
     const promises: Array<Promise<void>> = [];
     for (let i = 0; i < inflight.length; i += this._maxPointsPerRequest) {
       const requests = inflight.slice(i, i + this._maxPointsPerRequest).extractArray();
@@ -138,9 +141,11 @@ export class CoordinateConverter {
     this._state = "idle";
     this._inflight.clear();
 
+    // If any more pending conversions arrived while awaiting this request, schedule another request.
     if (!this._pending.isEmpty)
       this.scheduleDispatch(); // eslint-disable-line @typescript-eslint/no-floating-promises
 
+    // Resolve promises of all callers who were awaiting this request.
     onCompleted.raiseEvent();
   }
 
@@ -159,6 +164,8 @@ export class CoordinateConverter {
     return numInCache;
   }
 
+  // Obtain converted points from the cache. The assumption is that every point in `inputs` is already present in the cache.
+  // Any point not present will be returned unconverted with an error status.
   protected getFromCache(inputs: XYZProps[]): PointWithStatus[] {
     const outputs: PointWithStatus[] = [];
     for (const input of inputs) {
