@@ -267,10 +267,6 @@ export interface CoordinateConverterOptions {
   requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
   /** Maximum number of points to include in each request. Default: 300. */
   maxPointsPerRequest?: number;
-  /** Minimum number of frames to wait before dispatching a request, to enable batching.
-   * Default: for IPC apps, 1; for RPC apps, 3.
-   */
-  requestInterval?: number;
 }
 
 function compareXYAndZ(lhs: XYAndZ, rhs: XYAndZ): number {
@@ -282,6 +278,7 @@ function cloneXYAndZ(xyz: XYAndZ): XYAndZ {
 }
 
 /** Performs conversion of coordinates from one coordinate system to another.
+ * ###TODO update this...
  * Uses a cache to avoid repeatedly requesting the same points, and a batching strategy to avoid making many small requests.
  * The batching and caching works as follows:
  *  When a conversion is requested via [[convert]], if all the requested points are in the cache, they are returned immediately.
@@ -298,7 +295,6 @@ export class CoordinateConverter {
   protected readonly _pending: SortedArray<XYAndZ>;
   protected readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
   protected readonly _maxPointsPerRequest: number;
-  protected readonly _requestInterval: number;
   protected readonly _iModel: IModelConnection;
   protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 
@@ -318,7 +314,6 @@ export class CoordinateConverter {
 
   public constructor(opts: CoordinateConverterOptions) {
     this._maxPointsPerRequest = Math.max(1, opts.maxPointsPerRequest ?? 300);
-    this._requestInterval = Math.max(1, opts.requestInterval ?? 1);
     this._iModel = opts.iModel;
     this._requestPoints = opts.requestPoints;
 

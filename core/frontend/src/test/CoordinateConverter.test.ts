@@ -35,7 +35,6 @@ class Converter extends CoordinateConverter {
   public get cache() { return this._cache; }
   public get pending() { return this._pending; }
   public get maxPointsPerRequest() { return this._maxPointsPerRequest; }
-  public get requestInterval() { return this._requestInterval; }
 }
 
 describe.only("CoordinateConverter", () => {
@@ -64,7 +63,6 @@ describe.only("CoordinateConverter", () => {
   it("initializes default options", () => {
     const c = new Converter({ iModel, requestPoints });
     expect(c.maxPointsPerRequest).to.equal(300);
-    expect(c.requestInterval).to.equal(1);
     expect(c.pending.isEmpty).to.be.true;
     expect(c.cache.size).to.equal(0);
   });
@@ -74,11 +72,9 @@ describe.only("CoordinateConverter", () => {
       iModel,
       requestPoints,
       maxPointsPerRequest: 123,
-      requestInterval: 456,
     });
 
     expect(c.maxPointsPerRequest).to.equal(123);
-    expect(c.requestInterval).to.equal(456);
   });
 
   it("clamps options to permitted ranges", () => {
@@ -86,21 +82,17 @@ describe.only("CoordinateConverter", () => {
       iModel,
       requestPoints,
       maxPointsPerRequest: 0,
-      requestInterval: 0,
     });
 
     expect(c.maxPointsPerRequest).to.equal(1);
-    expect(c.requestInterval).to.equal(1);
 
     c = new Converter({
       iModel,
       requestPoints,
       maxPointsPerRequest: -5,
-      requestInterval: -1,
     });
 
     expect(c.maxPointsPerRequest).to.equal(1);
-    expect(c.requestInterval).to.equal(1);
   });
 
   function expectConvertedPoint(requested: XYZProps, received: PointWithStatus): void {
@@ -156,9 +148,6 @@ describe.only("CoordinateConverter", () => {
   });
 
   it("splits requests into batches of no more than maxPointsPerRequest", async () => {
-  });
-
-  it("waits requestInterval frames before dispatching request", async () => {
   });
 
   it("dispatches on the very next frame if the request queue is full", async () => {
