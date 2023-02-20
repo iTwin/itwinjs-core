@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { StandardContentLayouts } from "@itwin/appui-abstract";
-import { BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps, IModelViewportControl, StandardFrontstageProps, StandardFrontstageProvider, UiFramework } from "@itwin/appui-react";
+import { BackstageAppButton, ContentGroup, ContentGroupProvider, FrontstageProps, IModelViewportControl, StandardFrontstageProps, StandardFrontstageProvider, UiFramework } from "@itwin/appui-react";
 import React from "react";
 
 // __PUBLISH_EXTRACT_START__ Example_Viewport_Frontstage_Group_Provider_1
