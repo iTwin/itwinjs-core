@@ -42,6 +42,6 @@ export function registerViewportFrontstage(): void {
     cornerButton: <BackstageAppButton />,
     usage: "General",
   };
-  ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
+  UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
 }
 // __PUBLISH_EXTRACT_END__
