@@ -37,7 +37,7 @@
   },
   "peerDependencies": {
     "@itwin/appui-abstract": "workspace:^4.0.0-dev.8",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.20",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.21",
     "@itwin/core-react": "workspace:^4.0.0-dev.8",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
