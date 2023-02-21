@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Batch coordinate reprojection requests to prevent frequent small requests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
