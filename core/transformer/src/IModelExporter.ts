@@ -220,9 +220,20 @@ export class IModelExporter {
   public constructor(sourceDb: IModelDb) {
     this.sourceDb = sourceDb;
     sourceDb.withStatement(
-      "SELECT $,ECInstanceId, ECClassId FROM bis.Element LIMIT 1 OFFSET 4", (stmt) => {
-        for (const row of stmt) {
-          this._elemData.set(row.id, row);
+      "SELECT $ FROM bis.Element", (stmt) => {
+        // TODO: do it in batches
+        for (const {$} of stmt) {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const { ECInstanceId, ECClassId, ...ecProps } = JSON.parse($);
+          // eslint-disable-next-line guard-for-in
+          for (const key in ecProps) {
+            const lowerCamelCaseKey = key[0].toLowerCase() + key.slice(1);
+            ecProps[lowerCamelCaseKey] = ecProps[key];
+            delete ecProps[key];
+          }
+          ecProps.id = ECInstanceId;
+          ecProps.classFullName = ECClassId;
+          this._elemData.set(ecProps.id, ecProps);
         }
       }
     );
