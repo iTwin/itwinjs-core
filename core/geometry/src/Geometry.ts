@@ -97,6 +97,7 @@ export interface TrigValues {
  * Specific implementors are
  * * Plane3dByOriginAndUnitNormal
  * * Point4d (used for homogeneous plane coefficients)
+ * * ClipPlane
  * @public
  */
 export interface PlaneAltitudeEvaluator {

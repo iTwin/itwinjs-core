@@ -754,6 +754,19 @@ export class Vector3d extends XYZ {
       pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
   }
   /**
+   * Return the NORMALIZED cross product of the vectors from origin to pointA and pointB, or undefined
+   *
+   * * the result is a vector
+   * * the result is perpendicular to both vectors, with right hand orientation
+   * * the magnitude of the vector is twice the area of the triangle.
+   */
+  public static createUnitCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d | undefined {
+    const vector = Vector3d.createCrossProduct(pointA.x - origin.x, pointA.y - origin.y, pointA.z - origin.z,
+      pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
+    return vector.normalize();
+  }
+
+  /**
    * Return a vector defined by polar coordinates distance and angle from x axis
    * @param r distance measured from origin
    * @param theta angle from x axis to the vector (in xy plane)
