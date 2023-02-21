@@ -1673,36 +1673,20 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("exhaustive identity transform", async () => {
+  // ECInstanceId and ECClassId will not be in the object if you use node's `JavaScript Debug Terminal` feature, which you
+  // can open via the command palette (use ctrl-shift-P).
+  // If you set `NODE_OPTION=""` in that window, you'll see the error disappear. The options on my system are
+  // NODE_OPTIONS='--require /usr/share/code/resources/app/extensions/ms-vscode.js-debug/src/bootloader.bundle.js'
+  it.only("bad $ query", async () => {
     const seedDb = SnapshotDb.openFile(BackendTestUtils.IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformSource.bim");
-    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
-
-    // previously there was a bug where json display properties of models would not be transformed. This should expose that
-    const [physicalModelId] = sourceDb.queryEntityIds({ from: "BisCore.PhysicalModel", limit: 1 });
-    const physicalModel = sourceDb.models.getModel(physicalModelId);
-    physicalModel.jsonProperties.formatter.fmtFlags.linPrec = 100;
-    physicalModel.update();
-
-    sourceDb.saveChanges();
-
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
-
-    const transformer = new IModelTransformer(sourceDb, targetDb);
-    await transformer.processSchemas();
-    await transformer.processAll();
-
-    targetDb.saveChanges();
-
-    await assertIdentityTransformation(sourceDb, targetDb, transformer, { compareElemGeom: true });
-
-    const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
-    const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);
-    expect(physicalModelInTarget.jsonProperties.formatter.fmtFlags.linPrec).to.equal(100);
-
-    sourceDb.close();
-    targetDb.close();
+    const rows = seedDb.withStatement("SELECT $ FROM bis.Element WHERE ECInstanceId=0xe", (s) => [...s]);
+    assert(rows.length === 1);
+    const data = JSON.parse(rows[0].$);
+    console.log(data);
+    assert("Model" in data);
+    assert("ECInstanceId" in data);
+    assert(data.ECInstanceId !== undefined);
+    seedDb.close();
   });
 
   it("deferred element relationships get exported", async () => {
