@@ -203,12 +203,29 @@ export class IModelExporter {
   /** The set of classes of Relationships that will be excluded (polymorphically) from transformation to the target iModel. */
   private _excludedRelationshipClasses = new Set<typeof Relationship>();
 
+  private _elemData = new Map<Id64String, any>();
+
+  private _getProxyElem(id: Id64String) {
+    const props = this._elemData.get(id);
+    if (props === undefined)
+      throw new IModelError(IModelStatus.NotFound, `Element=${id}`);
+
+    return this.sourceDb.constructEntity<Element>(props);
+  }
+
   /** Construct a new IModelExporter
    * @param sourceDb The source IModelDb
    * @see registerHandler
    */
   public constructor(sourceDb: IModelDb) {
     this.sourceDb = sourceDb;
+    sourceDb.withStatement(
+      "SELECT $,ECInstanceId, ECClassId FROM bis.Element LIMIT 1 OFFSET 4", (stmt) => {
+        for (const row of stmt) {
+          this._elemData.set(row.id, row);
+        }
+      }
+    );
   }
 
   /** Register the handler that will be called by IModelExporter. */
@@ -455,7 +472,7 @@ export class IModelExporter {
     if (model.isTemplate && !this.wantTemplateModels) {
       return;
     }
-    const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
+    const modeledElement = this._getProxyElem(modeledElementId); // { id: modeledElementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
     if (this.shouldExportElement(modeledElement)) {
       await this.exportModelContainer(model);
@@ -602,7 +619,7 @@ export class IModelExporter {
         return this.exportChildElements(elementId);
       }
     }
-    const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
+    const element: Element = this._getProxyElem(elementId); // { id: elementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
     if (this.shouldExportElement(element)) {

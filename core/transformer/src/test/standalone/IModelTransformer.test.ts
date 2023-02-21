@@ -1673,7 +1673,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("exhaustive identity transform", async () => {
+  it.only("exhaustive identity transform", async () => {
     const seedDb = SnapshotDb.openFile(BackendTestUtils.IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformSource.bim");
     const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
