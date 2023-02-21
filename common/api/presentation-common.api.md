@@ -9,12 +9,15 @@ import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
+import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
+import { UnitsProvider } from '@itwin/core-quantity';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public
@@ -368,6 +371,12 @@ export interface ContentModifiersList {
     propertyCategories?: PropertyCategorySpecification[];
     propertyOverrides?: PropertySpecification[];
     relatedProperties?: RelatedPropertiesSpecification[];
+}
+
+// @alpha (undocumented)
+export class ContentPropertyFormatter extends PropertyFormatter {
+    // (undocumented)
+    formatContent(content: Content): Promise<Content>;
 }
 
 // @public
@@ -1026,6 +1035,16 @@ export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable =
 
 // @public
 export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>>;
+
+// @alpha (undocumented)
+export interface FormatOptions {
+    // (undocumented)
+    formatProps: FormatProps;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    persistenceUnitName: string;
+}
 
 // @internal (undocumented)
 export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
@@ -2372,6 +2391,17 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
 export interface PropertyEditorSpecification {
     editorName: string;
     parameters?: PropertyEditorParameters[];
+}
+
+// @alpha (undocumented)
+export class PropertyFormatter {
+    constructor(_unitsProvider: UnitsProvider);
+    // (undocumented)
+    format(value: number, options: FormatOptions): Promise<string>;
+    // (undocumented)
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec>;
+    // (undocumented)
+    getParserSpec(options: FormatOptions): Promise<ParserSpec>;
 }
 
 // @public
