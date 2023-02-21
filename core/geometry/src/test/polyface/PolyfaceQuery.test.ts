@@ -9,7 +9,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
+import { Geometry, PolygonLocation } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
@@ -1130,6 +1130,7 @@ describe("Intersections", () => {
           }
           if (undefined !== loc) {
             ck.testTrue(loc.isInsideOrOn, "intersection is real");
+            ck.testTrue(loc.classify < PolygonLocation.OutsidePolygon, "intersection is real (via classify)");
             ck.testBoolean(options.wantNormal, undefined !== loc.getNormal(), "normal computed as expected");
             ck.testBoolean(options.wantParam, undefined !== loc.getParam(), "uv parameter computed as expected");
             ck.testBoolean(options.wantColor, undefined !== loc.getColor(), "color computed as expected");
@@ -1151,14 +1152,14 @@ describe("Intersections", () => {
     const normals0: Vector3d[] = [];
     const params0: Point2d[] = [];
     const colors0 = [0xB435CA, 0x0CF316, 0xFB2B04, 0xF7EF08];
-    const center = Point3dArray.centroid(vertices0);
+    const centroid = Point3dArray.centroid(vertices0);
     const up = Vector3d.unitZ();
     const strokeOptions = StrokeOptions.createForFacets();
     const builder0 = PolyfaceBuilder.create(strokeOptions);
     builder0.addPolygon(vertices0);
     const mesh0 = builder0.claimPolyface();
     for (let i = 0; i < vertices0.length; ++i) {
-      const normal = Vector3d.createAdd3Scaled(vertices0[i], 1, center, -1, up, 2);
+      const normal = Vector3d.createAdd3Scaled(vertices0[i], 1, centroid, -1, up, 2);
       normals0.push(normal.clone());
       let index = mesh0.addNormal(normal);
       mesh0.addNormalIndex(index);
@@ -1185,6 +1186,7 @@ describe("Intersections", () => {
         ck.testExactNumber(loc.edgeCount, 4, "edge count as expected");
         ck.testTrue(loc.isConvex, "expected convexity");
         ck.testExactNumber(loc.closestEdge.edgeParam, 0.5, "closest edge param is midpoint");
+        ck.testExactNumber(loc.classify, PolygonLocation.OnPolygonEdgeInterior, "expected location code");
         vertices1.push(loc.point.clone());
         ck.testUndefined(loc.getNormal(), "intersect with defaults computes no normal");
         ck.testUndefined(loc.getParam(), "intersect with defaults computes no param");
@@ -1234,6 +1236,22 @@ describe("Intersections", () => {
       mesh1.addColorIndex(index);
     }
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, 6);
+
+    // remaining coverage
+    const intersectOptions = new FacetIntersectOptions();
+    intersectOptions.wantBarycentricCoordinates = true;
+    const loc1 = PolyfaceQuery.intersectRay3d(mesh1, Ray3d.createXYZUVW(centroid.x, centroid.y, -5, 0, 0, 1), intersectOptions);
+    if (ck.testPointer(loc1, "found intersection in new mesh")) {
+      ck.testTrue(loc1.isValid, "intersection isValid");
+      ck.testExactNumber(loc1.classify, PolygonLocation.InsidePolygonProjectsToEdgeInterior, "intersection has expected code");
+      ck.testExactNumber(loc1.closestEdge.edgeParam, 0.5, "intersection projects to edge midpoint");
+      ck.testExactNumber(loc1.a, 5.0, "intersection computed at expected ray parameter");
+      const b1 = loc1.getBarycentricCoordinates();
+      if (ck.testPointer(b1, "intersection returned with barycentric coordinates")) {
+        for (const bCoord of b1)
+          ck.testExactNumber(bCoord, 0.25, "expected barycentric coords at center");
+      }
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dSingleFaceMesh");
     expect(ck.getNumErrors()).equals(0);

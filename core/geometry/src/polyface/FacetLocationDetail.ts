@@ -9,7 +9,7 @@
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
-import { Geometry } from "../Geometry";
+import { Geometry, PolygonLocation } from "../Geometry";
 import { PolyfaceVisitor } from "./Polyface";
 import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -69,6 +69,8 @@ export interface FacetLocationDetail {
   get isConvex(): boolean;
   /** Whether the point is inside or on the facet. */
   get isInsideOrOn(): boolean;
+  /** Get the code that classifies the location of the point with respect to the facet. */
+  get classify(): PolygonLocation;
   /** Clone the instance */
   clone(): FacetLocationDetail;
   /** Set the instance contents from the other detail */
@@ -155,6 +157,10 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
   /** Whether the point is inside or on the polygon. */
   public get isInsideOrOn(): boolean {
     return this._isValid && this._detail.isInsideOrOn;
+  }
+  /** Get the code that classifies the location of the point with respect to the facet. */
+  public get classify(): PolygonLocation {
+    return this._detail.classify;
   }
   /** Clone the instance */
   public clone(): TriangularFacetLocationDetail {
@@ -286,6 +292,10 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
   /** Whether the point is inside or on the polygon. */
   public get isInsideOrOn(): boolean {
     return this._isValid && this._detail.isInsideOrOn;
+  }
+  /** Get the code that classifies the location of the point with respect to the facet. */
+  public get classify(): PolygonLocation {
+    return this._detail.code;
   }
   /** Clone the instance */
   public clone(): NonConvexFacetLocationDetail {
