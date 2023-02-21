@@ -252,6 +252,7 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
   }
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
+  // TODO: conditionally call this if atmospheric scattering enabled
   addAtmosphericScatteringEffect(builder, true);
 
   builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;

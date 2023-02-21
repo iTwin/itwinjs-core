@@ -690,10 +690,13 @@ export const enum VertexShaderComponent {
   // (Optional - does nothing if ComputeBaseColor not specified) Apply feature overrides to vertex color
   // vec4 applyFeatureColor(vec4 baseColor)
   ApplyFeatureColor,
-  // (Optional) Adjust base color for contrast
+  // (Optional - does nothing if ComputeBaseColor not specified)) Adjust base color for contrast
   // vec4 adjustContrast(vec4 baseColor)
   AdjustContrast,
-  // (Optional) Return true if this vertex should be "discarded" (is not visible)
+  // (Optional - does nothing if ComputeBaseColor not specified)) Apply atmospheric scattering effects to base color
+  // vec4 applyAtmosphericScattering(vec4 baseColor)
+  ApplyAtmosphericScattering,
+  // (Optional - does nothing if ComputeBaseColor not specified) Return true if this vertex should be "discarded" (is not visible)
   // bool checkForDiscard()
   // If this returns true, gl_Position will be set to 0; presumably related vertices will also do so, resulting in a degenerate triangle.
   // If this returns true, no further processing will be performed.
@@ -825,6 +828,13 @@ export class VertexShaderBuilder extends ShaderBuilder {
         prelude.addFunction("vec4 adjustContrast(vec4 baseColor)", adjustContrast);
         main.addline("  baseColor = adjustContrast(baseColor);");
       }
+
+      // // TODO: check if this should occur before adjustContrast, etc.
+      // const applyAtmosphericScattering = this.get(VertexShaderComponent.ApplyAtmosphericScattering);
+      // if (applyAtmosphericScattering) {
+      //   prelude.addFunction("vec4 applyAtmosphericScattering(vec4 baseColor)", applyAtmosphericScattering);
+      //   main.addline("  baseColor = applyAtmosphericScattering(baseColor);");
+      // }
 
       main.addline("  v_color = baseColor;");
     }
