@@ -33,6 +33,8 @@ export enum MapLayerSourceStatus {
   InvalidUrl,
   /** Authorization is required to access this map layer source. */
   RequireAuth,
+  /** Map-layer coordinate system is not supported */
+  InvalidCoordinateSystem,
 }
 
 /** JSON representation of a map layer source.

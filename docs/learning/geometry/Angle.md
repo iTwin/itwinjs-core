@@ -10,4 +10,5 @@
 ## Conversion of OrderedRotationAngles to Matrix3d
 ![>](./figs/Angle/OrderedRotationAnglesToMatrix3d.jpg)
 
-
+## Derivation of Axis and Angle from a Rotation Matrix
+![>](./figs/Angle/angleAxisRotationMatrix.jpg)

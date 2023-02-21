@@ -2,6 +2,66 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/core-backend_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add CodeSpecs.updateProperties"
+          },
+          {
+            "comment": "add flag schemaLockHeld"
+          },
+          {
+            "comment": "Added getOriginPropertyName() method to column info."
+          },
+          {
+            "comment": "add allowPreceding as an optional boolean to CheckpointProps interface"
+          },
+          {
+            "comment": "Log a warning when we fail to download a v2 checkpoint, but download a v1 checkpoint successfully."
+          },
+          {
+            "comment": "Promote IModelHost.authorizationClient to public."
+          },
+          {
+            "comment": "Add support for material elements with normal maps"
+          },
+          {
+            "comment": "React to RPC deprecations."
+          },
+          {
+            "comment": "Fix documentation of ExternalSourceAspectProps.jsonProperties. It must be a string."
+          },
+          {
+            "comment": "Element.toJSON should not include undefined values for userLabel or federationGuid"
+          },
+          {
+            "comment": "allow passing a custom schema read context to IModelDb.importSchemas"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.5",
+      "tag": "@itwin/core-backend_v3.5.5",
+      "date": "Thu, 26 Jan 2023 22:53:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.4",
+      "tag": "@itwin/core-backend_v3.5.4",
+      "date": "Wed, 18 Jan 2023 15:27:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.3",
+      "tag": "@itwin/core-backend_v3.5.3",
+      "date": "Fri, 13 Jan 2023 17:23:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.5.2",
       "tag": "@itwin/core-backend_v3.5.2",
       "date": "Wed, 11 Jan 2023 16:46:30 GMT",

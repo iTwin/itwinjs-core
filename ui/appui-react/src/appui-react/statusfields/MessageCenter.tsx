@@ -39,7 +39,7 @@ interface MessageCenterState {
  */
 export interface MessageCenterFieldProps extends StatusFieldProps {
   /** Message center dialog target.
-   * @deprecated Use `MessageManager.registerAnimateOutToElement` to register this ref in the related component.
+   * @deprecated in 3.3. Use `MessageManager.registerAnimateOutToElement` to register this ref in the related component.
   */
   targetRef?: React.Ref<HTMLElement>;
 }

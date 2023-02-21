@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelStateContext } from "../../appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelSideContext, PanelStateContext } from "../../appui-layout-react";
 import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { PanelTargets } from "../../appui-layout-react/target/PanelTargets";
 import { TestNineZoneProvider } from "../Providers";
@@ -21,9 +21,11 @@ function Wrapper({ children, state }: React.PropsWithChildren<WrapperProps>) {
       version: "2",
     }}>
       <TestNineZoneProvider state={state}>
-        <PanelStateContext.Provider value={state.panels.left}>
-          {children}
-        </PanelStateContext.Provider>
+        <PanelSideContext.Provider value="left">
+          <PanelStateContext.Provider value={state.panels.left}>
+            {children}
+          </PanelStateContext.Provider>
+        </PanelSideContext.Provider>
       </TestNineZoneProvider>
     </TargetOptionsContext.Provider>
   );

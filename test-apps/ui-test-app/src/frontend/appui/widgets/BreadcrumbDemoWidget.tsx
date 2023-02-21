@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Breadcrumb, BreadcrumbDetails, BreadcrumbMode, BreadcrumbPath } from "@itwin/components-react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, UiFramework, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { demoMutableTreeDataProvider } from "./demodataproviders/demoTreeDataProvider";
 
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
@@ -51,4 +51,4 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
   }
 }
 
-ConfigurableUiManager.registerControl("BreadcrumbDemoWidget", BreadcrumbDemoWidgetControl);
+UiFramework.controls.register("BreadcrumbDemoWidget", BreadcrumbDemoWidgetControl);

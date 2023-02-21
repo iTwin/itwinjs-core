@@ -162,7 +162,7 @@
   "MapLayers": {
     "Messages": {
       "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'",
-      "FetchTooltipTokenError": "An authentication error occurred while fetching tooltip for layer '{{layerName}}'"
+      "FetchTooltipTokenError": "An authentication error occurred for layer: '{{layerName}}. Please login again.'"
     }
   },
   "TooltipInfo": {

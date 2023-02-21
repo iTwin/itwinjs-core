@@ -2,6 +2,48 @@
   "name": "@itwin/map-layers",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/map-layers_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow map-layer requiring authentication to be correctly initialized after a saved view restore."
+          },
+          {
+            "comment": "Added support for new viewport event (onMapLayerScaleRangeVisibilityChanged)"
+          },
+          {
+            "comment": "Improved map-layer coordinate systems validation and error reporting."
+          },
+          {
+            "comment": "Fix Map Layers widget not updating after an iModel gets geolocated."
+          },
+          {
+            "comment": " Use EmptyLocalization for localization in tests to increase test performance"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.5",
+      "tag": "@itwin/map-layers_v3.5.5",
+      "date": "Thu, 26 Jan 2023 22:53:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.4",
+      "tag": "@itwin/map-layers_v3.5.4",
+      "date": "Wed, 18 Jan 2023 15:27:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.3",
+      "tag": "@itwin/map-layers_v3.5.3",
+      "date": "Fri, 13 Jan 2023 17:23:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.5.2",
       "tag": "@itwin/map-layers_v3.5.2",
       "date": "Wed, 11 Jan 2023 16:46:30 GMT",

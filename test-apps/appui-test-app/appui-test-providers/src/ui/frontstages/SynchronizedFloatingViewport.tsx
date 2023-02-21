@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, BackstageManager, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
-  IModelViewportControl, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  BackstageAppButton, BackstageManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
+  IModelViewportControl, StageUsage, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
   UiFramework,
+  UiItemsManager,
 } from "@itwin/appui-react";
 import {
-  StageUsage, StandardContentLayouts, UiItemsManager,
+  StandardContentLayouts,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { SynchronizedFloatingViewportProvider } from "../providers/SynchronizedFloatingViewportProvider";
@@ -128,7 +129,7 @@ export class SynchronizedFloatingViewportStage {
       usage: StageUsage.General,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(synchronizedFloatingViewportStageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(synchronizedFloatingViewportStageProps));
     this.registerToolProviders(localizationNamespace);
   }
 

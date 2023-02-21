@@ -33,6 +33,9 @@ export class TypeConverterManager {
 
     const instance = new converter();
     TypeConverterManager._converters[fullConverterName] = instance;
+    if (instance.constructor.name === "StringTypeConverter" && !TypeConverterManager._defaultTypeConverter) {
+      TypeConverterManager._defaultTypeConverter = instance;
+    }
   }
 
   public static unregisterConverter(typename: string, converterName?: string): void {
@@ -50,10 +53,6 @@ export class TypeConverterManager {
     if (TypeConverterManager._converters.hasOwnProperty(fullConverterName))
       return TypeConverterManager._converters[fullConverterName];
 
-    if (!TypeConverterManager._defaultTypeConverter) {
-      const { StringTypeConverter } = require("../converters/StringTypeConverter"); // eslint-disable-line @typescript-eslint/no-var-requires
-      TypeConverterManager._defaultTypeConverter = new StringTypeConverter();
-    }
     return TypeConverterManager._defaultTypeConverter;
   }
 }

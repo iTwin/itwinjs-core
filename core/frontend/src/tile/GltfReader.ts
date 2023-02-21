@@ -1411,7 +1411,7 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
-    const material = 0 < materialName.length ? this._materials[materialName] : undefined;
+    const material = 0 < materialName.length ? this._materials[materialName] : { };
     if (!material)
       return undefined;
 
@@ -2089,13 +2089,15 @@ export abstract class GltfReader {
 
     let nMap;
     if (normalMap) {
+      const greenUp = true;
       if (texture) {
         nMap = {
           normalMap,
+          greenUp,
         };
       } else {
         texture = normalMap;
-        nMap = {};
+        nMap = { greenUp };
       }
     }
 

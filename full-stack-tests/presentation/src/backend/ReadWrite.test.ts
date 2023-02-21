@@ -5,25 +5,26 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import { IModelDb, StandaloneDb } from "@itwin/core-backend";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
+import { prepareOutputFilePath } from "../Utils";
 
 describe("ReadWrite", () => {
 
   let manager: PresentationManager;
   let imodel: IModelDb;
-  const testIModelPath = "assets/datasets/ReadWrite.ibim";
 
   function createIModelFromSeed() {
-    if (fs.existsSync(testIModelPath))
-      fs.unlinkSync(testIModelPath);
-    fs.copyFileSync("assets/datasets/Properties_60InstancesWithUrl2.ibim", testIModelPath);
-    return StandaloneDb.openFile(testIModelPath);
+    const imodelPath = prepareOutputFilePath("ReadWrite.bim");
+    fs.copyFileSync("assets/datasets/Properties_60InstancesWithUrl2.ibim", imodelPath);
+    return StandaloneDb.openFile(imodelPath);
   }
 
   before(async () => {
     await initialize();
+    Logger.setLevel("BeSQLite", LogLevel.Info);
   });
 
   after(async () => {
@@ -36,8 +37,9 @@ describe("ReadWrite", () => {
   });
 
   afterEach(async () => {
+    const imodelPath = imodel.pathName;
     imodel.close();
-    fs.unlinkSync(testIModelPath);
+    fs.unlinkSync(imodelPath);
     manager.dispose();
   });
 

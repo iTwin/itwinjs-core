@@ -1,6 +1,34 @@
 # Change Log - @itwin/components-react
 
-This log was last generated on Wed, 11 Jan 2023 16:46:30 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:39 GMT
+
+### Updates
+
+- Use EmptyLocalization for localization in tests to increase test performance
+- API promotion
+- API promotion
+- Fixed rule rendering in 'PropertyFilterBuilder' component to not render symbol '0' with 'IS TRUE' operator.
+- `PropertyFilterBuilder`: Do not show rule group operator if there are less than 2 rules
+- Replace inline require with a top-level import
+- Fixed 'FilteringInput' placeholder text localization
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
 
 ## 3.5.2
 Wed, 11 Jan 2023 16:46:30 GMT

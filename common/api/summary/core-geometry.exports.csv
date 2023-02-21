@@ -132,11 +132,12 @@ public;GrowableBlockedArray
 public;GrowableFloat64Array
 public;GrowableXYArray 
 public;GrowableXYZArray 
-internal;HalfEdge
+internal;HalfEdge 
 internal;HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean
 internal;HalfEdgeGraph
 internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
+internal;HalfEdgeUserData
 public;HasZ = Readonly
 public;HoleFillOptions
 public;IModelJson
@@ -186,6 +187,8 @@ internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NullGeometryHandler 
 public;NumberArray
+public;OffsetMeshOptions
+public;OffsetMeshSelectiveOutputOptions
 public;OffsetOptions
 public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
 internal;Order2Bezier 

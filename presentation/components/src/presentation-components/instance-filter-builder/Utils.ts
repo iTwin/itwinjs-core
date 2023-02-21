@@ -9,13 +9,25 @@
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup } from "@itwin/components-react";
 import {
-  CategoryDescription, ClassInfo, Descriptor, Field, FIELD_NAMES_SEPARATOR, NestedContentField, PropertiesField,
+  CategoryDescription, ClassId, ClassInfo, combineFieldNames, Descriptor, Field, NestedContentField, PropertiesField,
 } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
-import { InstanceFilterPropertyInfo, isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
+import {
+  isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition,
+  PresentationInstanceFilterConditionGroup,
+} from "./Types";
 
-/** @alpha */
+/** @internal */
+export interface InstanceFilterPropertyInfo {
+  sourceClassId: ClassId;
+  field: PropertiesField;
+  propertyDescription: PropertyDescription;
+  className: string;
+  categoryLabel?: string;
+}
+
+/** @internal */
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[] {
   const propertyInfos = new Array<InstanceFilterPropertyInfo>();
   for (const field of descriptor.fields) {
@@ -109,8 +121,8 @@ function getCategoryInfo(category: CategoryDescription, categoryInfo: CategoryIn
 
 function getParentNames(field: Field, name: string): string {
   if (!field.parent)
-    return getPrefixedFieldName(name, field.name);
-  return getParentNames(field.parent, getPrefixedFieldName(name, field.name));
+    return combineFieldNames(name, field.name);
+  return getParentNames(field.parent, combineFieldNames(name, field.name));
 }
 
 function createPropertyInfoFromPropertiesField(field: PropertiesField): InstanceFilterPropertyInfo {
@@ -136,14 +148,10 @@ function createPropertyInfoFromPropertiesField(field: PropertiesField): Instance
   };
 }
 
-/** @alpha */
+/** @internal */
 export const INSTANCE_FILTER_FIELD_SEPARATOR = "#";
 function getCategorizedFieldName(fieldName: string, categoryName?: string) {
   return `${categoryName ?? ""}${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
-}
-
-function getPrefixedFieldName(str: string, prefix: string) {
-  return `${prefix}${FIELD_NAMES_SEPARATOR}${str}`;
 }
 
 function convertPresentationInstanceFilterCondition(filter: PresentationInstanceFilterCondition, descriptor: Descriptor) {
@@ -171,7 +179,7 @@ function convertPresentationInstanceFilterConditionGroup(filter: PresentationIns
   };
 }
 
-/** @alpha */
+/** @internal */
 export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter: PresentationInstanceFilter): PropertyFilter | undefined {
   if (isPresentationInstanceFilterConditionGroup(filter))
     return convertPresentationInstanceFilterConditionGroup(filter, descriptor);

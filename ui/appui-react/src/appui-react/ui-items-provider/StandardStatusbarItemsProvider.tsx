@@ -21,6 +21,8 @@ import { SelectionScopeField } from "../statusfields/SelectionScope";
 import { DefaultStatusbarItems } from "./StandardStatusbarUiItemsProvider";
 import { StatusBarSeparator } from "../statusbar/Separator";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Provide standard statusbar fields for the SimpleStatusbarWidget
  * @public

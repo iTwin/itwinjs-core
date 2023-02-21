@@ -7,7 +7,7 @@
  */
 import { assert } from "@itwin/core-bentley";
 import {
-  applyOptionalPrefix, EditorDescription, EnumerationInfo, Field, FieldHierarchy, IContentVisitor, Item, PropertyValueFormat as PresentationPropertyValueFormat,
+  combineFieldNames, EditorDescription, EnumerationInfo, Field, FieldHierarchy, IContentVisitor, Item, PropertyValueFormat as PresentationPropertyValueFormat,
   ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, RendererDescription, StartArrayProps,
   StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, TypeDescription,
 } from "@itwin/presentation-common";
@@ -33,10 +33,10 @@ export interface FieldInfo {
 }
 
 /** @internal */
-export function createFieldInfo(field: Field, namePrefix?: string) {
+export function createFieldInfo(field: Field, parentFieldName?: string) {
   return {
     type: field.isNestedContentField() ? field.type : { ...field.type, typeName: field.type.typeName.toLowerCase() },
-    name: applyOptionalPrefix(field.name, namePrefix),
+    name: combineFieldNames(field.name, parentFieldName),
     label: field.label,
     editor: field.editor,
     renderer: field.renderer,
@@ -157,7 +157,7 @@ export abstract class PropertyRecordsBuilder implements IContentVisitor {
     this._appendersStack.push(new StructMembersAppender(
       this.currentPropertiesAppender,
       props.hierarchy,
-      { ...createFieldInfo(props.hierarchy.field, props.namePrefix), type: props.valueType },
+      { ...createFieldInfo(props.hierarchy.field, props.parentFieldName), type: props.valueType },
     ));
     return true;
   }
@@ -171,7 +171,7 @@ export abstract class PropertyRecordsBuilder implements IContentVisitor {
     this._appendersStack.push(new ArrayItemsAppender(
       this.currentPropertiesAppender,
       props.hierarchy,
-      { ...createFieldInfo(props.hierarchy.field, props.namePrefix), type: props.valueType },
+      { ...createFieldInfo(props.hierarchy.field, props.parentFieldName), type: props.valueType },
     ));
     return true;
   }
@@ -187,7 +187,7 @@ export abstract class PropertyRecordsBuilder implements IContentVisitor {
     };
     const record = new PropertyRecord(
       value,
-      createPropertyDescriptionFromFieldInfo(createFieldInfo(props.mergedField, props.namePrefix)),
+      createPropertyDescriptionFromFieldInfo(createFieldInfo(props.mergedField, props.parentFieldName)),
     );
     record.isMerged = true;
     record.isReadonly = true;
@@ -204,7 +204,7 @@ export abstract class PropertyRecordsBuilder implements IContentVisitor {
     };
     const record = new PropertyRecord(
       value,
-      createPropertyDescriptionFromFieldInfo({ ...createFieldInfo(props.field, props.namePrefix), type: props.valueType }),
+      createPropertyDescriptionFromFieldInfo({ ...createFieldInfo(props.field, props.parentFieldName), type: props.valueType }),
     );
     applyPropertyRecordAttributes(record, props.field, props.displayValue?.toString(), appender.item?.extendedData);
     appender.append({ record, fieldHierarchy: { field: props.field, childFields: [] } });

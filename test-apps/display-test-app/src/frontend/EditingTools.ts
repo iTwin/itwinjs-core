@@ -60,7 +60,7 @@ export class PlaceLineStringTool extends CreateElementTool {
   protected async startCommand(): Promise<string> {
     if (undefined !== this._startedCmd)
       return this._startedCmd;
-    return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
+    return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: this.iModel.key });
   }
 
   protected override setupAndPromptForNextAction(): void {

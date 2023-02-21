@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import "./ViewSelectorPanel.scss";
-import { ContentViewManager, getListPanel, ListItem, ListItemType, SupportsViewSelectorChange, UiFramework, useActiveViewport, ViewUtilities } from "@itwin/appui-react";
+import { getListPanel, ListItem, ListItemType, SupportsViewSelectorChange, UiFramework, useActiveViewport, ViewUtilities } from "@itwin/appui-react";
 import { IModelApp, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { CustomToolbarItem } from "@itwin/components-react";
 
@@ -123,7 +123,7 @@ function ViewSelectorPanel() {
     if (!enabled)
       return;
 
-    const activeContentControl = ContentViewManager.getActiveContentControl() as unknown as SupportsViewSelectorChange;
+    const activeContentControl = UiFramework.content.getActiveContentControl() as unknown as SupportsViewSelectorChange;
     if (activeContentControl?.supportsViewSelectorChange && item.id) {
       // Load the view state using the viewSpec's ID
       const viewState = await activeImodelConnection?.views.load(item.id);
