@@ -1342,7 +1342,7 @@ export class PolyfaceQuery {
   *   * Compute simple average of those normals
   *   * Index to the averages
   * * For typical meshes, this correctly clusters adjacent normals.
-  * * One cam imagine a vertex with multiple "smooth cone-like" sets of incident facets such that averaging occurs among two nonadjacent cones.  But this does not seem to be a problem in practice.
+  * * One can imagine a vertex with multiple "smooth cone-like" sets of incident facets such that averaging occurs among two nonadjacent cones.  But this does not seem to be a problem in practice.
   * @param polyface polyface to update.
   * @param toleranceAngle averaging is done between normals up to this angle.
   */
@@ -1357,11 +1357,14 @@ export class PolyfaceQuery {
   private static _workFacetDetailC?: ConvexFacetLocationDetail;
   private static _workFacetDetailNC?: NonConvexFacetLocationDetail;
 
-  /** Search facets for one that intersects the ray.
+  /** Search facets for the first one that intersects the infinite line.
+   * * To process all intersections, callers can supply an `options.acceptIntersection` callback that always returns false.
+   * In this case, this method will return undefined, but the callback can filter and collect (a clone of) each FacetLocationDetail found for subsequent processing.
    * @param visitor facet iterator
-   * @param ray infinite line to intersect the mesh, parameterized as a ray
+   * @param ray infinite line to intersect the mesh, parameterized as a ray. A returned intersection for which `detail.a >= 0` means the ray intersects the facet.
    * @param options options for computing and populating an intersection detail, and an optional callback for accepting one
-   * @return detail for the (accepted) intersection, or undefined if no (accepted) intersection
+   * @return detail for the (accepted) intersection with `detail.IsInsideOrOn === true`, or undefined if no (accepted) intersection
+   * @see PolygonOps.intersectRay3d
   */
   public static intersectRay3d(visitor: Polyface | PolyfaceVisitor, ray: Ray3d, options?: FacetIntersectOptions): FacetLocationDetail | undefined {
     if (visitor instanceof Polyface)
@@ -1392,7 +1395,7 @@ export class PolyfaceQuery {
           detail.getColor(visitor.color, vertices, options?.distanceTolerance);
         if (options?.wantBarycentricCoordinates)
           detail.getBarycentricCoordinates(vertices, options?.distanceTolerance);
-        if (options?.acceptIntersection && !options.acceptIntersection(detail, visitor, options))
+        if (options?.acceptIntersection && !options.acceptIntersection(detail, visitor))
           continue;
         return detail;
       }

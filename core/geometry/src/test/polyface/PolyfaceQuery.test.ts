@@ -3,37 +3,43 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
 import { TorusImplicit } from "../../numerics/Polynomials";
+import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
+import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { ChainMergeContext } from "../../topology/ChainMerge";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Transform } from "../../geometry3d/Transform";
-import { Range3d } from "../../geometry3d/Range";
-import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
-import { Arc3d } from "../../curve/Arc3d";
-import { PolyfaceData } from "../../polyface/PolyfaceData";
-import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
-import { ImportedSample } from "../testInputs/ImportedSamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
+import { RotationalSweep } from "../../solid/RotationalSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
-import { RotationalSweep } from "../../solid/RotationalSweep";
+import { ChainMergeContext } from "../../topology/ChainMerge";
+import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ImportedSample } from "../testInputs/ImportedSamples";
+
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -1057,3 +1063,179 @@ function countArraysBySize(data: number[][], target: number): number {
   }
   return result;
 }
+
+describe("Intersections", () => {
+  it("IntersectRay3dClosedConvexMesh", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testPointer(mesh, "created mesh")) {
+      // create grid of unit rays on xy-plane, pointing down
+      const range = Range3d.createFromVariantData(mesh.data.point);
+      const diagonal = range.diagonal().magnitude();
+      range.expandInPlace(diagonal / 3);
+      const testRays: Ray3d[] = [];
+      const delta = 0.1;
+      for (let xCoord = range.low.x; xCoord < range.high.x; xCoord += delta)
+        for (let yCoord = range.low.y; yCoord < range.high.y; yCoord += delta)
+          testRays.push(Ray3d.createXYZUVW(xCoord, yCoord, 0, 0, 0, -1));
+      // transform grid into place
+      const normal = Vector3d.createNormalized(-1, 3, 4)!;
+      const localToWorld = Matrix3d.createRigidHeadsUp(normal);
+      const translate = normal.scaleToLength(diagonal * 3);
+      const localToWorldTransform = Transform.createOriginAndMatrix(translate, localToWorld);
+      for (const ray of testRays)
+        ray.transformInPlace(localToWorldTransform);
+      // fire rays into mesh; some will miss
+      let x0 = 0;
+      const options = new FacetIntersectOptions();
+      options.wantColor = options.wantNormal = options.wantParam = true;
+      for (const filter of ["firstFound", "infiniteLine", "boundedSegment", "boundedRay"]) {
+        let intersects: FacetLocationDetail[] = [];
+        if (filter === "firstFound")
+          options.acceptIntersection = undefined; // default behavior: accept first found intersection with infinite line
+        else
+          options.acceptIntersection = (detail: FacetLocationDetail): boolean => {
+            let collect = false;
+            if (filter === "infiniteLine")
+              collect = true;
+            else if (filter === "boundedSegment")
+              collect = detail.a >= 0.0 && detail.a <= 1.0;
+            else if (filter === "boundedRay")
+              collect = detail.a >= 0.0;
+            if (collect)
+              intersects.push(detail.clone());
+            return false; // keep processing
+          };
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0);
+        for (const ray of testRays) {
+          intersects = [];
+          let loc = PolyfaceQuery.intersectRay3d(mesh, ray, options);
+          if (options.acceptIntersection !== undefined)
+            ck.testUndefined(loc, "callbacks that accept no intersection result in intersectRay3d returning undefined");
+          if (filter === "boundedSegment")
+            ck.testExactNumber(intersects.length, 0, "no intersections expected within ray parameter [0,1]");
+          let segment: LineSegment3d | undefined;
+          if (loc !== undefined) {
+            segment = LineSegment3d.create(ray.origin, loc.point);
+          } else if (intersects.length > 0) {
+            ck.testTrue(intersects.length <= 2, "expect 1 or 2 intersections of this closed convex mesh, if any");
+            if (intersects.length === 2) {
+              intersects.sort((d0: FacetLocationDetail, d1: FacetLocationDetail): number => { return d0.a - d1.a; });
+              loc = intersects[0];  // closer to ray origin
+              segment = LineSegment3d.create(intersects[0].point, intersects[1].point);
+            } else {
+              segment = LineSegment3d.create(ray.origin, intersects[0].point);
+            }
+          }
+          if (undefined !== loc) {
+            ck.testTrue(loc.isInsideOrOn, "intersection is real");
+            ck.testBoolean(options.wantNormal, undefined !== loc.getNormal(), "normal computed as expected");
+            ck.testBoolean(options.wantParam, undefined !== loc.getParam(), "uv parameter computed as expected");
+            ck.testBoolean(options.wantColor, undefined !== loc.getColor(), "color computed as expected");
+            ck.testBoolean(options.wantBarycentricCoordinates || options.wantNormal || options.wantParam || options.wantColor, undefined !== loc.getBarycentricCoordinates(), "barycentric coords computed as expected");
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, segment, x0);
+          }
+        }
+        x0 += diagonal;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dClosedConvexMesh");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("IntersectRay3dSingleFaceMesh", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const vertices0 = [Point3d.create(0,0), Point3d.create(4,0), Point3d.create(4,4), Point3d.create(0,4)];
+    const normals0: Vector3d[] = [];
+    const params0: Point2d[] = [];
+    const colors0 = [0xB435CA, 0x0CF316, 0xFB2B04, 0xF7EF08];
+    const center = Point3dArray.centroid(vertices0);
+    const up = Vector3d.unitZ();
+    const strokeOptions = StrokeOptions.createForFacets();
+    const builder0 = PolyfaceBuilder.create(strokeOptions);
+    builder0.addPolygon(vertices0);
+    const mesh0 = builder0.claimPolyface();
+    for (let i = 0; i < vertices0.length; ++i) {
+      const normal = Vector3d.createAdd3Scaled(vertices0[i], 1, center, -1, up, 2);
+      normals0.push(normal.clone());
+      let index = mesh0.addNormal(normal);
+      mesh0.addNormalIndex(index);
+
+      const param = Point2d.create(vertices0[i].x / 4, vertices0[i].y / 4);
+      params0.push(param.clone());
+      index = mesh0.addParam(param);
+      mesh0.addParamIndex(index);
+
+      index = mesh0.addColor(colors0[i]);
+      mesh0.addColorIndex(index);
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0);
+    // fire rays to midpoints of edges
+    const rays = [Ray3d.createXYZUVW(2,0,5,0,0,-1), Ray3d.createXYZUVW(4,2,5,0,0,-1), Ray3d.createXYZUVW(2,4,5,0,0,-1), Ray3d.createXYZUVW(0,2,5,0,0,-1)];
+    const vertices1: Point3d[] = [];
+    const normals1: Vector3d[] = [];
+    const params1: Point2d[] = [];
+    const colors1: number[] = [];
+    for (const ray of rays) {
+      const loc = PolyfaceQuery.intersectRay3d(mesh0, ray); // no aux data
+      if (ck.testPointer(loc, "found intersection")) {
+        ck.testExactNumber(loc.facetIndex, 0, "intersected expected facet index");
+        ck.testExactNumber(loc.edgeCount, 4, "edge count as expected");
+        ck.testTrue(loc.isConvex, "expected convexity");
+        ck.testExactNumber(loc.closestEdge.edgeParam, 0.5, "closest edge param is midpoint");
+        vertices1.push(loc.point.clone());
+        ck.testUndefined(loc.getNormal(), "intersect with defaults computes no normal");
+        ck.testUndefined(loc.getParam(), "intersect with defaults computes no param");
+        ck.testUndefined(loc.getColor(), "intersect with defaults computes no color");
+        ck.testUndefined(loc.getBarycentricCoordinates(), "intersect with defaults computes no barycentric coords");
+        // compute aux data ex post facto
+        const visitor = mesh0.createVisitor();
+        visitor.moveToReadIndex(loc.facetIndex);
+        let normal = loc.getNormal(visitor.normal);
+        ck.testUndefined(normal, "normal can't be computed without vertices");
+        normal = loc.getNormal(visitor.normal, visitor.point);
+        const b = loc.getBarycentricCoordinates();
+        if (ck.testPointer(b, "barycentric coords cached as side effect of computing aux data")) {
+          ck.testPoint3d(loc.point, visitor.point.linearCombination(b) as Point3d, "roundtrip point through barycentric coords");
+          if (ck.testPointer(normal, "computed normal") && ck.testPointer(visitor.normal, "visitor has normals")) {
+            ck.testVector3d(normal, visitor.normal.linearCombination(b) as Vector3d, "roundtrip normal through barycentric coords");
+            normals1.push(normal);
+          }
+          const param = loc.getParam(visitor.param);
+          if (ck.testPointer(param, "computed param") && ck.testPointer(visitor.param, "visitor has params")) {
+            ck.testPoint2d(param, visitor.param.linearCombination(b) as Point2d, "roundtrip uv parameter through barycentric coords");
+            params1.push(param);
+          }
+          const color = loc.getColor(visitor.color);
+          if (ck.testPointer(color, "computed color") && ck.testPointer(visitor.color, "visitor has colors")) {
+            ck.testExactNumber(color, NumberArray.linearCombinationOfColors(visitor.color, b), "roundtrip color through barycentric coords");
+            colors1.push(color);
+          }
+        }
+      }
+    }
+    // create a new mesh interpolated from the original
+    const builder1 = PolyfaceBuilder.create(strokeOptions);
+    builder1.addPolygon(vertices1);
+    const mesh1 = builder1.claimPolyface();
+    for (let i = 0; i < vertices1.length; ++i) {
+      ck.testPoint3d(vertices1[i], vertices0[i].interpolate(0.5, vertices0[(i + 1) % vertices0.length]), "interpolated point as expected");
+      ck.testVector3d(normals1[i], normals0[i].interpolate(0.5, normals0[(i + 1) % normals0.length]), "interpolated normal as expected");
+      ck.testPoint2d(params1[i], params0[i].interpolate(0.5, params0[(i + 1) % params0.length]), "interpolated uv parameter as expected");
+      for (let j = 0; j < 4; ++j)
+        ck.testExactNumber((colors1[i] >>> (j * 8)) & 0xFF, Math.floor(Geometry.interpolate((colors0[i] >>> (j * 8)) & 0xFF, 0.5, (colors0[(i + 1) % normals0.length] >>> (j * 8)) & 0xFF)), "interpolated color as expected");
+      let index = mesh1.addNormal(normals1[i]);
+      mesh1.addNormalIndex(index);
+      index = mesh1.addParam(params1[i]);
+      mesh1.addParamIndex(index);
+      index = mesh1.addColor(colors1[i]);
+      mesh1.addColorIndex(index);
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, 6);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dSingleFaceMesh");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});

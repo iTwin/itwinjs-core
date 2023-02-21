@@ -4648,10 +4648,10 @@ export enum PolygonLocation {
 // @public
 export class PolygonLocationDetail {
     a: number;
-    clone(other: PolygonLocationDetail): void;
     closestEdgeIndex: number;
     closestEdgeParam: number;
     code: PolygonLocation;
+    copyContents(other: PolygonLocationDetail): void;
     static create(result?: PolygonLocationDetail): PolygonLocationDetail;
     invalidate(): void;
     get isInsideOrOn(): boolean;
@@ -5834,9 +5834,9 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
 export class TriangleLocationDetail {
     a: number;
     get classify(): PolygonLocation;
-    clone(other: TriangleLocationDetail): void;
     closestEdgeIndex: number;
     closestEdgeParam: number;
+    copyContents(other: TriangleLocationDetail): void;
     static create(result?: TriangleLocationDetail): TriangleLocationDetail;
     invalidate(): void;
     get isInsideOrOn(): boolean;

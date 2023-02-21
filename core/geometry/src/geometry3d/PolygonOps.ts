@@ -75,7 +75,7 @@ export class PolygonLocationDetail {
   /** Set the instance contents from the other detail.
    * @param other detail to clone
    */
-  public clone(other: PolygonLocationDetail) {
+  public copyContents(other: PolygonLocationDetail) {
     this.point.setFrom(other.point);
     this.a = other.a;
     this.v.setFrom(other.v);
@@ -92,8 +92,8 @@ export class PolygonLocationDetail {
   /** Whether this instance specifies a location inside or on the polygon. */
   public get isInsideOrOn(): boolean {
     return this.code === PolygonLocation.InsidePolygon ||
-           this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
-           this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior;
+      this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
+      this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior;
   }
 }
 

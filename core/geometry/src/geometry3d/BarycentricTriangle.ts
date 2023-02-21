@@ -67,7 +67,7 @@ export class TriangleLocationDetail {
   /** Set the instance contents from the other detail.
    * @param other detail to clone
    */
-  public clone(other: TriangleLocationDetail) {
+  public copyContents(other: TriangleLocationDetail) {
     this.world.setFrom(other.world);
     this.local.setFrom(other.local);
     this.a = other.a;
@@ -359,7 +359,7 @@ export class BarycentricTriangle {
    * @param b2 barycentric coordinate of p corresponding to v_2
    * @returns closest edge start vertex index i and projection parameter u such that the projection q = v_i + u * (v_j - v_i).
    */
-  public closestPoint(b0: number, b1: number, b2: number): {closestEdgeIndex: number, closestEdgeParam: number} {
+  public closestPoint(b0: number, b1: number, b2: number): { closestEdgeIndex: number, closestEdgeParam: number } {
     const b: number[] = [b0, b1, b2];
     let edgeIndex = -1;  // opposite-vertex index
     let edgeParam = 0.0;
