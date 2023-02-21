@@ -337,6 +337,7 @@ import { WebGLContext } from '@itwin/webgl-compatibility';
 import { WebGLExtensionName } from '@itwin/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@itwin/webgl-compatibility';
 import { WhiteOnWhiteReversalSettings } from '@itwin/core-common';
+import { WritableXYAndZ } from '@itwin/core-geometry';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
 import { XYProps } from '@itwin/core-geometry';
@@ -2043,6 +2044,57 @@ export class ContextShareProvider {
         iTwinId: string | undefined;
     };
     static isProviderUrl(tilesetUrl: string): boolean;
+}
+
+// @internal
+export class CoordinateConverter {
+    constructor(opts: CoordinateConverterOptions);
+    // (undocumented)
+    protected readonly _cache: Dictionary<XYAndZ, PointWithStatus>;
+    // (undocumented)
+    convert(inputs: XYZProps[]): Promise<{
+        points: PointWithStatus[];
+        fromCache: number;
+    }>;
+    // (undocumented)
+    protected dispatch(): Promise<void>;
+    // (undocumented)
+    protected enqueue(points: XYZProps[]): number;
+    // (undocumented)
+    findCached(inputs: XYZProps[]): CachedIModelCoordinatesResponseProps;
+    // (undocumented)
+    protected getFromCache(inputs: XYZProps[]): PointWithStatus[];
+    // (undocumented)
+    protected readonly _iModel: IModelConnection;
+    // (undocumented)
+    protected _inflight: SortedArray<XYAndZ>;
+    // (undocumented)
+    protected readonly _maxPointsPerRequest: number;
+    // (undocumented)
+    protected _onCompleted: BeEvent<() => void>;
+    // (undocumented)
+    protected _pending: SortedArray<XYAndZ>;
+    // (undocumented)
+    protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+    // (undocumented)
+    protected scheduleDispatch(): Promise<void>;
+    // (undocumented)
+    protected readonly _scratchXYZ: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    // (undocumented)
+    protected _state: CoordinateConverterState;
+    // (undocumented)
+    protected toXYAndZ(input: XYZProps, output: WritableXYAndZ): XYAndZ;
+}
+
+// @internal
+export interface CoordinateConverterOptions {
+    iModel: IModelConnection;
+    maxPointsPerRequest?: number;
+    requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 }
 
 // @public (undocumented)
