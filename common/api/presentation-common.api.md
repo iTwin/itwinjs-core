@@ -374,7 +374,7 @@ export interface ContentModifiersList {
 }
 
 // @alpha (undocumented)
-export class ContentPropertyFormatter extends PropertyFormatter {
+export class ContentPropertyValueFormatter extends PropertyValueFormatter {
     // (undocumented)
     formatContent(content: Content): Promise<Content>;
 }
@@ -2393,17 +2393,6 @@ export interface PropertyEditorSpecification {
     parameters?: PropertyEditorParameters[];
 }
 
-// @alpha (undocumented)
-export class PropertyFormatter {
-    constructor(_unitsProvider: UnitsProvider);
-    // (undocumented)
-    format(value: number, options: FormatOptions): Promise<string>;
-    // (undocumented)
-    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec>;
-    // (undocumented)
-    getParserSpec(options: FormatOptions): Promise<ParserSpec>;
-}
-
 // @public
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
@@ -2508,6 +2497,17 @@ export enum PropertyValueFormat {
     Array = "Array",
     Primitive = "Primitive",
     Struct = "Struct"
+}
+
+// @alpha (undocumented)
+export class PropertyValueFormatter {
+    constructor(_unitsProvider: UnitsProvider);
+    // (undocumented)
+    format(value: number, options: FormatOptions): Promise<string>;
+    // (undocumented)
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec>;
+    // (undocumented)
+    getParserSpec(options: FormatOptions): Promise<ParserSpec>;
 }
 
 // @public

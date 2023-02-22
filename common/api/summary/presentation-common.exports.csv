@@ -53,7 +53,7 @@ public;ContentInstancesOfSpecificClassesSpecification
 public;ContentJSON
 public;ContentModifier 
 public;ContentModifiersList
-alpha;ContentPropertyFormatter 
+alpha;ContentPropertyValueFormatter 
 public;ContentRelatedInstancesSpecification 
 public;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions
@@ -337,7 +337,6 @@ public;PropertyEditorParameterTypes
 public;PropertyEditorRangeParameters 
 public;PropertyEditorSliderParameters 
 public;PropertyEditorSpecification
-alpha;PropertyFormatter
 public;PropertyGroup 
 public;PropertyGroupingValue
 deprecated;PropertyGroupingValue
@@ -350,6 +349,7 @@ public;PropertyRangeGroupSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat
+alpha;PropertyValueFormatter
 public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
 public;QuerySpecificationBase
 public;QuerySpecificationTypes

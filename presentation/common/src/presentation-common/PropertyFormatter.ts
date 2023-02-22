@@ -22,7 +22,7 @@ export interface FormatOptions {
 }
 
 /** @alpha */
-export class PropertyFormatter {
+export class PropertyValueFormatter {
   constructor(private _unitsProvider: UnitsProvider) { }
 
   public async format(value: number, options: FormatOptions) {
@@ -46,7 +46,7 @@ export class PropertyFormatter {
 }
 
 /** @alpha */
-export class ContentPropertyFormatter extends PropertyFormatter {
+export class ContentPropertyValueFormatter extends PropertyValueFormatter {
   public async formatContent(content: Content) {
     const descriptor = content.descriptor;
     for (const item of content.contentSet) {

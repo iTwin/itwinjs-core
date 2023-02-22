@@ -8,13 +8,13 @@ import * as moq from "typemoq";
 import { FormatProps, UnitsProvider } from "@itwin/core-quantity";
 import { Content } from "../presentation-common/content/Content";
 import { NestedContentValue } from "../presentation-common/content/Value";
-import { ContentPropertyFormatter, PropertyFormatter } from "../presentation-common/PropertyFormatter";
+import { ContentPropertyValueFormatter, PropertyValueFormatter } from "../presentation-common/PropertyFormatter";
 import {
   createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo,
 } from "./_helpers";
 
-describe("PropertyFormatter", () => {
-  let formatter: PropertyFormatter;
+describe("PropertyValueFormatter", () => {
+  let formatter: PropertyValueFormatter;
   const unitsProviderMock = moq.Mock.ofType<UnitsProvider>();
   const testPersistenceUnitName = "TestSchema:TestUnit";
   const testFormatProps: FormatProps = {
@@ -36,7 +36,7 @@ describe("PropertyFormatter", () => {
       .setup(async (x) => x.getUnitsByFamily("TestPhenomenon"))
       .returns(async () => []);
 
-    formatter = new PropertyFormatter(unitsProviderMock.object);
+    formatter = new PropertyValueFormatter(unitsProviderMock.object);
   });
 
   afterEach(() => {
@@ -71,8 +71,8 @@ describe("PropertyFormatter", () => {
   });
 });
 
-describe("ContentPropertyFormatter", () => {
-  let formatter: ContentPropertyFormatter;
+describe("ContentPropertyValueFormatter", () => {
+  let formatter: ContentPropertyValueFormatter;
   const unitsProviderMock = moq.Mock.ofType<UnitsProvider>();
   const testFormatProps: FormatProps = {
     type: "decimal",
@@ -103,7 +103,7 @@ describe("ContentPropertyFormatter", () => {
         system: "TestSystem",
       }));
 
-    formatter = new ContentPropertyFormatter(unitsProviderMock.object);
+    formatter = new ContentPropertyValueFormatter(unitsProviderMock.object);
   });
 
   afterEach(() => {
