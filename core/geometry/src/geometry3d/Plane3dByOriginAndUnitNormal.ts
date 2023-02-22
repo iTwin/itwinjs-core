@@ -15,6 +15,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
 import { Transform } from "./Transform";
 import { XAndY } from "./XYZProps";
+import { Point3dPoint3d } from "./Point3dPoint3d";
 
 /**
  * A plane defined by
@@ -260,17 +261,27 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   /** Returns true of spacePoint is within distance tolerance of the plane. */
   public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
 
+  /**
+   * Find a point on the plane (via getOriginOnPlaneAltitudeEvaluator) and the project that to planeB.
+   * @param planeA
+   * @param planeB
+   */
+  private static createPoint3dPoint3dBetweenPlanes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Point3dPoint3d {
+    const pointA = Plane3dByOriginAndUnitNormal.getOriginOnPlaneAltitudeEvaluator(planeA);
+    const pointB = Plane3dByOriginAndUnitNormal.projectPointToPlane(planeB, pointA);
+    return Point3dPoint3d.create(pointA, pointB);
+  }
   /** Returns the relationship of 2 planes:
    * * Each plane can be any form that returns normal and altitude evaluations via methods in [[PlaneAltitudeEvaluator]]
    * * Return value has variants for
    *   * If intersecting in a line, a Ray3d on the line of intersection
    *   * If identical planes, a Plane3dByOriginAndUnitNormal with the same normal and distance from origin as planeA
-   *   * If distinct parallel planes: a Vector3d from planeA to planeB
+   *   * If distinct parallel planes: a Point3dPoint3d with a point on planeA and its projection on planeB
    *   * If extraordinary tolerance issues prevent any of those, undefined is returned.
    *      * This might indicate a 000 normal, which is not expected on a valid plane.
    */
   public static intersect2Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator):
-    Ray3d | Plane3dByOriginAndUnitNormal | Vector3d | undefined {
+    Ray3d | Plane3dByOriginAndUnitNormal | Point3dPoint3d | undefined {
     const normalAx = planeA.normalX(), normalAy = planeA.normalY(), normalAz = planeA.normalZ();
     const normalBx = planeB.normalX(), normalBy = planeB.normalY(), normalBz = planeB.normalZ();
     const distanceA = planeA.altitudeXYZ(0, 0, 0), distanceB = planeB.altitudeXYZ(0, 0, 0);
@@ -287,7 +298,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
       if (originA.isAlmostEqualMetric(originB))
         return Plane3dByOriginAndUnitNormal.create(originA, normalA);
       else
-        return Vector3d.createStartEnd(originA, originB);
+        return Plane3dByOriginAndUnitNormal.createPoint3dPoint3dBetweenPlanes(planeA, planeB);
     } else {
       // the cross product vector is directed along the intersection of these two planes.
       // find a single point on that ray by intersecting the 2 planes with a 3rd plane through the origin
@@ -310,12 +321,12 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
    *   * Point3d: (usual case) single point of intersection
    *   * Plane3dByOriginAndUnitNormal: fully coincident 3 planes
    * * All other configurations return as an array of the 3 pairwise intersection among [planeA ^ planeB, planeB ^ planeC, planeC ^ planeA].
-   *   * Each of those 3 pairs can produce coincident planes, vector separating a parallel pair, or a ray of intersection,
+   *   * Each of those 3 pairs can produce coincident planes, a pair of points that project to each other between parallel planes, or a ray of intersection,
    *     as described by [[Plane3dByOriginAndUnitVector.intersect2Planes]]
    * * undefined as a result indicates really bad data like 000 normal vectors.
    */
   public static intersect3Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator, planeC: PlaneAltitudeEvaluator):
-    Point3d | Plane3dByOriginAndUnitNormal | Array<Ray3d | Plane3dByOriginAndUnitNormal | Vector3d | undefined> | undefined {
+    Point3d | Plane3dByOriginAndUnitNormal | Array<Ray3d | Plane3dByOriginAndUnitNormal | Point3dPoint3d | undefined> | undefined {
     const normalAx = planeA.normalX(), normalAy = planeA.normalY(), normalAz = planeA.normalZ();
     const normalBx = planeB.normalX(), normalBy = planeB.normalY(), normalBz = planeB.normalZ();
     const normalCx = planeC.normalX(), normalCy = planeC.normalY(), normalCz = planeC.normalZ();
@@ -334,7 +345,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     const allPlanes = [planeA, planeB, planeC, planeA]; // repeat planeA for easy wraparound indexing
     // The 3 normals are not independent.
     // Find which pairs are parallel, coincident, or intersecting.
-    const result: Array<Ray3d | Plane3dByOriginAndUnitNormal | Vector3d | undefined> = [];
+    const result: Array<Ray3d | Plane3dByOriginAndUnitNormal | Point3dPoint3d | undefined> = [];
     for (let i0 = 0; i0 < 3; i0++) {
       const r = Plane3dByOriginAndUnitNormal.intersect2Planes(allPlanes[i0], allPlanes[i0 + 1]);
       result.push(r);
@@ -393,4 +404,15 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     const d = -plane.altitudeXYZ(0, 0, 0);
     return Point3d.create(d * plane.normalX(), d * plane.normalY(), d * plane.normalZ());
   }
+
+  /**
+   * Project spacePoint to a plane.
+   * @param plane plane for projection.
+   * @returns Closest point to the spacePoint
+   */
+  public static projectPointToPlane(plane: PlaneAltitudeEvaluator, spacePoint: Point3d): Point3d {
+    const d = -plane.altitude(spacePoint);
+    return spacePoint.plusXYZ(d * plane.normalX(), d * plane.normalY(), d * plane.normalZ());
+  }
+
 }

@@ -31,7 +31,7 @@
  *   * Range1d, Range2d, Range3d -- subsets of 1d, 2d, and 3d space bounded by low and high values.
  *   * Ray3d -- a ray defined by origin and direction vector
  *   * Plane3dByOriginAndUnitNormal -- a plane defined by an origin and a single vector which is perpendicular to the plane
- *   * plane3dByOriginAndVectors -- a plane defined by an origin and two vectors in the plane.
+ *   * Plane3dByOriginAndVectors -- a plane defined by an origin and two vectors in the plane.
  * * Angles
  *   * Angle -- a strongly typed angle object whose method names make it clear whether input and outputs are degrees or radians.
  *   * AngleSweep -- an angular interval
@@ -45,6 +45,9 @@
  *   * BilinearPatch -- twisted quadrilateral defined by 4 points
  *   * BarycentricTriangle -- triangle defined by 3 points.
  *   * Constant -- various numeric values exported as readonly constants
+ *   * PolylineOps, PolygonOps -- utility operations that treat arrays of points as polyline or polygons.
+ *   * Point3dPoint3d -- a pair of points packaged conveniently for return values.  Promote this to LineSegment3d for extensive queries.
+ *   * PlaneOps -- utility operations on planes of various types, particularly those that support PlaneAltitudeEvaluator
  */
 // doc:export class CartesianGeometryDoc { }
 /**
@@ -141,9 +144,11 @@ export * from "./geometry3d/Matrix3d";
 export * from "./geometry3d/OrderedRotationAngles";
 export * from "./geometry3d/Plane3dByOriginAndUnitNormal";
 export * from "./geometry3d/Plane3dByOriginAndVectors";
+export * from "./geometry3d/PlaneOps";
 export * from "./geometry3d/Point2dArrayCarrier";
 export * from "./geometry3d/Point2dVector2d";
 export * from "./geometry3d/Point3dVector3d";
+export * from "./geometry3d/Point3dPoint3d";
 export * from "./geometry3d/PointHelpers";
 export * from "./geometry3d/Point3dArrayCarrier";
 export * from "./geometry3d/PolylineOps";

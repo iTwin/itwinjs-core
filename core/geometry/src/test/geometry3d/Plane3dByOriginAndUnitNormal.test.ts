@@ -9,6 +9,7 @@ import { PlaneAltitudeEvaluator } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3dPoint3d } from "../../geometry3d/Point3dPoint3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
@@ -214,10 +215,10 @@ describe("Plane3dByOriginAndUnitNormal", () => {
             const normal0 = Vector3d.create(planes[i].normalX(), planes[i].normalY(), planes[i].normalZ());
             const normal1 = Vector3d.create(planes[i + 1].normalX(), planes[i + 1].normalY(), planes[i + 1].normalZ());
             ck.testTrue(normal0.isParallelTo(normal1, true));
-          } else if (r01 instanceof Vector3d) {
+          } else if (r01 instanceof Point3dPoint3d) {
             const p0 = Plane3dByOriginAndUnitNormal.getOriginOnPlaneAltitudeEvaluator(planes[i]);
             const p1 = Plane3dByOriginAndUnitNormal.getOriginOnPlaneAltitudeEvaluator(planes[i + 1]);
-            ck.testCoordinate(r01.magnitude(), p0.distance(p1), "confirm distance between parallel planes");
+            ck.testCoordinate(r01.pointA.distance(r01.pointB), p0.distance(p1), "confirm distance between parallel planes");
           } else {
             ck.announceError("unexpected type in plane plane pair", r01);
           }

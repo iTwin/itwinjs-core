@@ -11,6 +11,7 @@ import { Clipper } from "../clipping/ClipUtils";
 import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point3dPoint3d } from "../geometry3d/Point3dPoint3d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -119,6 +120,15 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       return result;
     }
     return new LineSegment3d(point0.clone(), point1.clone());
+  }
+
+  /** Create with start and end points given as a Point3dPoint3d */
+  public static createFromPoint3dPoint3d(points: Point3dPoint3d, result?: LineSegment3d): LineSegment3d {
+    if (result) {
+      result.set(points.pointA, points.pointB);  // and this will clone them !!
+      return result;
+    }
+    return new LineSegment3d(points.pointA.clone(), points.pointB.clone());
   }
 
   /** Create with start and end points.  The point contents are CAPTURED into the result */
@@ -332,21 +342,21 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * Returns a (high accuracy) range of the curve between fractional positions
    * * Default implementation returns teh range of the curve from clonePartialCurve
    */
-   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+  public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     // (This is cheap -- don't bother testing for fraction0===fraction1)
-    if (!transform){
+    if (!transform) {
       const range = Range3d.create();
-      range.extendInterpolated (this._point0, fraction0, this._point1);
-      range.extendInterpolated (this._point0, fraction1, this._point1);
+      range.extendInterpolated(this._point0, fraction0, this._point1);
+      range.extendInterpolated(this._point0, fraction1, this._point1);
       return range;
     }
-    const point0 = this.fractionToPoint (fraction0);
-    const point1 = this.fractionToPoint (fraction1);
-    if (transform){
-      transform.multiplyPoint3d (point0, point0);
-      transform.multiplyPoint3d (point1, point1);
+    const point0 = this.fractionToPoint(fraction0);
+    const point1 = this.fractionToPoint(fraction1);
+    if (transform) {
+      transform.multiplyPoint3d(point0, point0);
+      transform.multiplyPoint3d(point1, point1);
     }
-    return Range3d.create (point0, point1);
+    return Range3d.create(point0, point1);
   }
 
   /**
