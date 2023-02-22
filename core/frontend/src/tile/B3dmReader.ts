@@ -12,8 +12,9 @@ import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileR
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
+import { GltfDataType } from "../render/GltfSchema";
 import {
-  BatchedTileIdMap, GltfBufferData, GltfDataType, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
+  BatchedTileIdMap, GltfBufferData, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
 } from "./internal";
 
 /**

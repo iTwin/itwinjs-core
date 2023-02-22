@@ -7,7 +7,8 @@ import { expect } from "chai";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { Gltf, GltfGraphicsReader, GltfId, GltfNode, GltfReaderProps, GltfSampler, GltfWrapMode } from "../../tile/GltfReader";
+import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../render/GltfSchema";
+import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
@@ -96,7 +97,7 @@ describe("GltfReader", () => {
     await IModelApp.shutdown();
   });
 
-  function createReader(gltf: Uint8Array | Gltf): GltfGraphicsReader | undefined {
+  function createReader(gltf: Uint8Array | GltfDocument): GltfGraphicsReader | undefined {
     const props = GltfReaderProps.create(gltf, true);
     return props ? new GltfGraphicsReader(props, { gltf, iModel }) : undefined;
   }
@@ -176,7 +177,7 @@ describe("GltfReader", () => {
   });
 
   it("identifies the scene nodes", () => {
-    const json: Gltf = {
+    const json: GltfDocument = {
       ...minimalJson,
       meshes: [] as any,
       nodes: [
@@ -220,7 +221,7 @@ describe("GltfReader", () => {
   });
 
   it("traverses scene nodes", () => {
-    const json: Gltf = {
+    const json: GltfDocument = {
       ...minimalJson,
       meshes: [] as any,
       nodes: [
@@ -276,7 +277,7 @@ describe("GltfReader", () => {
   });
 
   it("throws during traversal if scene contains cycles", () => {
-    const json: Gltf = {
+    const json: GltfDocument = {
       ...minimalJson,
       meshes: [] as any,
       nodes: {
