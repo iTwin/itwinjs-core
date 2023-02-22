@@ -1070,6 +1070,28 @@ describe("Intersections", () => {
     const allGeometry: GeometryQuery[] = [];
     const mesh = ImportedSample.createPolyhedron62();
     if (ck.testPointer(mesh, "created mesh")) {
+      // fire ray at some known locations from the origin. This symmetric mesh imposes symmetry on the intersections and ray params.
+      const knownPoints = [
+        {vec: Vector3d.create(0.22391898, 0.22391898, 0.94853602), numInts: 8, a: 1.0}, // a vertex
+        {vec: Vector3d.create(0.0, 0.22391898, 0.94853602), numInts: 4, a: 0.97460776}, // an edge
+      ];
+      const opts = new FacetIntersectOptions();
+      let ints: FacetLocationDetail[];
+      opts.acceptIntersection = (detail: FacetLocationDetail): boolean => {
+        ints.push(detail.clone()); return false;
+      };
+      for (const knownPoint of knownPoints) {
+        const ray = Ray3d.create(Point3d.createZero(), knownPoint.vec.normalize()!);
+        for (const paramTol of [Geometry.smallFraction, Geometry.smallFraction * 100]) {
+          ints = [];
+          opts.parameterTolerance = paramTol; // to trigger different snapLocationToEdge branches
+          PolyfaceQuery.intersectRay3d(mesh, ray, opts);
+          if (ck.testExactNumber(ints.length, knownPoint.numInts, "known point intersects expected number of facets")) {
+            for (const detail of ints)
+              ck.testCoordinate(Math.abs(detail.a), knownPoint.a, "known point intersects at expected ray parameters");
+          }
+        }
+      }
       // create grid of unit rays on xy-plane, pointing down
       const range = Range3d.createFromVariantData(mesh.data.point);
       const diagonal = range.diagonal().magnitude();
@@ -1121,7 +1143,7 @@ describe("Intersections", () => {
           } else if (intersects.length > 0) {
             ck.testTrue(intersects.length <= 2, "expect 1 or 2 intersections of this closed convex mesh, if any");
             if (intersects.length === 2) {
-              intersects.sort((d0: FacetLocationDetail, d1: FacetLocationDetail): number => { return d0.a - d1.a; });
+              intersects.sort((d0, d1) => d0.a - d1.a);
               loc = intersects[0];  // closer to ray origin
               segment = LineSegment3d.create(intersects[0].point, intersects[1].point);
             } else {

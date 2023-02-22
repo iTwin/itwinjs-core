@@ -461,6 +461,7 @@ export class BarycentricTriangle {
     pointToFraction(point: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     set(point0: Point3d | undefined, point1: Point3d | undefined, point2: Point3d | undefined): void;
     setFrom(other: BarycentricTriangle): void;
+    snapLocationToEdge(location: TriangleLocationDetail, distanceTolerance?: number, parameterTolerance?: number): boolean;
 }
 
 // @public
@@ -5893,7 +5894,6 @@ export class TriangleLocationDetail {
     get isInsideOrOn(): boolean;
     get isValid(): boolean;
     local: Point3d;
-    snapLocalToEdge(parameterTolerance?: number): void;
     world: Point3d;
 }
 

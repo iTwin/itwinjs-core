@@ -78,23 +78,6 @@ export class TriangleLocationDetail {
   public get isValid(): boolean {
     return !this.local.isZero;
   }
-  /** Adjust the barycentric coordinates of this location to an edge of the triangle if within the given parametric tolerance.
-   * * The world coordinates of the point and its closest edge projection remain unchanged.
-   * @param parameterTolerance barycentric coordinate fractional tolerance
-  */
-  public snapLocalToEdge(parameterTolerance: number = Geometry.smallFraction): void {
-    let numSnapped = 0;
-    let newSum = 0.0;
-    for (let i = 0; i < 3; i++) {
-      if (Math.abs(this.local.at(i)) < parameterTolerance) {
-        this.local.setAt(i, 0.0);
-        numSnapped++;
-      }
-      newSum += this.local.at(i);
-    }
-    if (numSnapped > 0 && numSnapped < 3 && newSum > 0.0)
-      this.local.scaleInPlace(1.0 / newSum);
-  }
   /** Queries the barycentric coordinates to determine whether this instance specifies a location inside or on the triangle.
    * @see classify
    */
@@ -449,6 +432,58 @@ export class BarycentricTriangle {
   public intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail {
     BarycentricTriangle._workRay = Ray3d.createStartEnd(point0, point1, BarycentricTriangle._workRay);
     return this.intersectRay3d(BarycentricTriangle._workRay, result);
+  }
+
+  /** Adjust the location to an edge of the triangle if within either given tolerance.
+   * @param location details of a point in the plane of the triangle, `location.local` and `location.world` possibly updated to lie on a triangle edge
+   * @param distanceTolerance absolute distance tolerance (or zero to ignore)
+   * @param parameterTolerance barycentric coordinate fractional tolerance (or zero to ignore)
+   * @return whether the location was adjusted
+   */
+  public snapLocationToEdge(location: TriangleLocationDetail, distanceTolerance: number = Geometry.smallMetricDistance, parameterTolerance: number = Geometry.smallFraction): boolean {
+    if (!location.isValid)
+      return false;
+    // first try parametric tol to zero barycentric coordinate (no vertices or world distances used!)
+    if (parameterTolerance > 0.0) {
+      let numSnapped = 0;
+      let newSum = 0.0;
+      for (let i = 0; i < 3; i++) {
+        const barycentricDist = Math.abs(location.local.at(i));
+        if (barycentricDist > 0.0 && barycentricDist < parameterTolerance) {
+          location.local.setAt(i, 0.0);
+          numSnapped++;
+        }
+        newSum += location.local.at(i);
+      }
+      if (numSnapped > 0 && newSum > 0.0) {
+        location.local.scaleInPlace(1.0 / newSum);
+        if (1 == numSnapped) {
+          location.closestEdgeIndex = BarycentricTriangle.edgeOppositeVertexIndexToStartVertexIndex(BarycentricTriangle.isOnBoundedEdge(location.local.x, location.local.y, location.local.z));
+          location.closestEdgeParam = 1.0 - location.local.at(location.closestEdgeIndex);
+        } else {  // 2 snapped, at vertex
+          location.closestEdgeIndex = BarycentricTriangle.isOnVertex(location.local.x, location.local.y, location.local.z);
+          location.closestEdgeParam = 0.0;
+        }
+        this.fractionToPoint(location.local.x, location.local.y, location.local.z, location.world);
+        return true;
+      }
+    }
+    // failing that, try distance tol to closest edge projection
+    if (distanceTolerance > 0.0) {
+      const i = location.closestEdgeIndex;
+      const j = (i + 1) % 3;
+      const k = (j + 1) % 3;
+      const edgeProjection = BarycentricTriangle._workPoint = this.points[i].interpolate(location.closestEdgeParam, this.points[j], BarycentricTriangle._workPoint);
+      const dist = location.world.distance(edgeProjection);
+      if (dist > 0.0 && dist < distanceTolerance) {
+        location.local.setAt(i, 1.0 - location.closestEdgeParam);
+        location.local.setAt(j, location.closestEdgeParam);
+        location.local.setAt(k, 0.0);
+        location.world.setFrom(edgeProjection);
+        return true;
+      }
+    }
+    return false;
   }
 
   /** Copy all values from `other`

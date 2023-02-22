@@ -1462,12 +1462,15 @@ export class PolyfaceQuery {
   private static _workFacetDetailNC?: NonConvexFacetLocationDetail;
 
   /** Search facets for the first one that intersects the infinite line.
-   * * To process all intersections, callers can supply an `options.acceptIntersection` callback that always returns false.
-   * In this case, this method will return undefined, but the callback can filter and collect (a clone of) each FacetLocationDetail found for subsequent processing.
+   * * To process _all_ intersections, callers can supply an `options.acceptIntersection` callback that always returns false.
+   * In this case, `intersectRay3d` will return undefined, but the callback will be invoked for each intersection.
+   * * Example callback logic:
+   *    * Accept the first found facet that intersects the half-line specified by the ray: `return detail.a >= 0.0;`
+   *    * Collect all intersections: `myIntersections.push(detail.clone()); return false;` Then after `intersectRay3d` returns, sort along `ray` with `myIntersections.sort((d0, d1) => d0.a - d1.a);`
    * @param visitor facet iterator
-   * @param ray infinite line to intersect the mesh, parameterized as a ray. A returned intersection for which `detail.a >= 0` means the ray intersects the facet.
+   * @param ray infinite line parameterized as a ray. The returned `detail.a` is the intersection parameter on the ray, e.g., zero at `ray.origin` and increasing in `ray.direction`.
    * @param options options for computing and populating an intersection detail, and an optional callback for accepting one
-   * @return detail for the (accepted) intersection with `detail.IsInsideOrOn === true`, or undefined if no (accepted) intersection
+   * @return detail for the (accepted) intersection with `detail.IsInsideOrOn === true`, or `undefined` if no (accepted) intersection
    * @see PolygonOps.intersectRay3d
   */
   public static intersectRay3d(visitor: Polyface | PolyfaceVisitor, ray: Ray3d, options?: FacetIntersectOptions): FacetLocationDetail | undefined {
@@ -1481,7 +1484,7 @@ export class PolyfaceQuery {
       if (3 === numEdges) {
         const tri = this._workTriangle = BarycentricTriangle.create(vertices.getPoint3dAtUncheckedPointIndex(0), vertices.getPoint3dAtUncheckedPointIndex(1), vertices.getPoint3dAtUncheckedPointIndex(2), this._workTriangle);
         const detail3 = this._workTriDetail = tri.intersectRay3d(ray, this._workTriDetail);
-        detail3.snapLocalToEdge(options?.parameterTolerance);
+        tri.snapLocationToEdge(detail3, options?.distanceTolerance, options?.parameterTolerance);
         detail = this._workFacetDetail3 = TriangularFacetLocationDetail.create(visitor.currentReadIndex(), detail3, this._workFacetDetail3);
       } else {
         const detailN = this._workPolyDetail = PolygonOps.intersectRay3d(vertices, ray, options?.distanceTolerance, this._workPolyDetail);
