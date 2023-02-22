@@ -16,7 +16,6 @@ import { ValuesDictionary } from "./Utils";
 
 /** @alpha */
 export interface FormatOptions {
-  name: string;
   formatProps: FormatProps;
   persistenceUnitName: string;
 }
@@ -31,16 +30,16 @@ export class PropertyValueFormatter {
   }
 
   public async getFormatterSpec(options: FormatOptions) {
-    const { name, formatProps, persistenceUnitName } = options;
+    const { formatProps, persistenceUnitName } = options;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON(name, this._unitsProvider, formatProps);
-    return FormatterSpec.create(name, format, this._unitsProvider, persistenceUnit);
+    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    return FormatterSpec.create("", format, this._unitsProvider, persistenceUnit);
   }
 
   public async getParserSpec(options: FormatOptions) {
-    const { name, formatProps, persistenceUnitName } = options;
+    const { formatProps, persistenceUnitName } = options;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON(name, this._unitsProvider, formatProps);
+    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
     return ParserSpec.create(format, this._unitsProvider, persistenceUnit);
   }
 }
@@ -65,7 +64,7 @@ export class ContentPropertyValueFormatter extends PropertyValueFormatter {
       }
       if (this.isFormattable(field) && typeof value === "number") {
         const koq = field.properties[0].property.kindOfQuantity;
-        displayValues[field.name] = await this.format(value, { name: koq.name, persistenceUnitName: koq.persistenceUnit, formatProps: koq.activeFormat });
+        displayValues[field.name] = await this.format(value, { persistenceUnitName: koq.persistenceUnit, formatProps: koq.activeFormat });
         continue;
       }
     }

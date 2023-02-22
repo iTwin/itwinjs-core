@@ -45,7 +45,6 @@ describe("PropertyValueFormatter", () => {
 
   it("creates FormatterSpec", async () => {
     const formatterSpec = await formatter.getFormatterSpec({
-      name: "TestFormat",
       formatProps: testFormatProps,
       persistenceUnitName: testPersistenceUnitName,
     });
@@ -54,7 +53,6 @@ describe("PropertyValueFormatter", () => {
 
   it("creates ParserSpec", async () => {
     const formatterSpec = await formatter.getParserSpec({
-      name: "TestFormat",
       formatProps: testFormatProps,
       persistenceUnitName: testPersistenceUnitName,
     });
@@ -63,7 +61,6 @@ describe("PropertyValueFormatter", () => {
 
   it("formats value", async () => {
     const formatted = await formatter.format(1.5, {
-      name: "TestFormat",
       formatProps: testFormatProps,
       persistenceUnitName: testPersistenceUnitName,
     });
@@ -80,7 +77,7 @@ describe("ContentPropertyValueFormatter", () => {
   };
   const testPersistenceUnitName = "TestSchema:TestUnit";
   const koqField = createTestPropertiesContentField({
-    name: "koqFielName",
+    name: "koqFieldName",
     properties: [{
       property: createTestPropertyInfo({ name: "koqProperty", kindOfQuantity: { label: "Koq Props", name: "koqProp", persistenceUnit: testPersistenceUnitName, activeFormat: testFormatProps } }),
     }],

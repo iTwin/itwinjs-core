@@ -1041,8 +1041,6 @@ export interface FormatOptions {
     // (undocumented)
     formatProps: FormatProps;
     // (undocumented)
-    name: string;
-    // (undocumented)
     persistenceUnitName: string;
 }
 
