@@ -10,14 +10,14 @@ import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { IModel } from "./IModel";
 
 /**
- * The identity of the element defining the scope for a Code value.
- * For input, may either be an ElementId or a FederationGuid. When returned from a query, it will be an ElementId.
+ * The ElementId of the element that defines the scope for a Code value.
+ * @note For insert or update, you may supply the FederationGuid of the scope element and it will be converted to the ElementId of that element.
  * @public
  * @extensions
  */
 export type CodeScopeProps = Id64String | GuidString;
 
-/** The wire format for a Code
+/** The parameters that define a Code
  * @public
  * @extensions
  */
