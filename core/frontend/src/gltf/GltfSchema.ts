@@ -458,11 +458,12 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
   sparse?: unknown; // ###TODO sparse accessors
   extensions?: GltfExtensions & {
     /** Quantized attributes for glTF 1.0. Superceded by KHR_mesh_quantization. */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     WEB3D_quantized_attributes?: {
       decodedMin: number[];
-      decodedMax: number[],
+      decodedMax: number[];
       /** Currently ignored. */
-      decodeMatrix: number[],
+      decodeMatrix: number[];
     };
   };
 }

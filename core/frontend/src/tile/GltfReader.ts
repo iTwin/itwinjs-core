@@ -37,7 +37,7 @@ import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material,
-} from "../render/GltfSchema";
+} from "../gltf/GltfSchema";
 
 /* eslint-disable no-restricted-syntax */
 
