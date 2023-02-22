@@ -457,7 +457,7 @@ export class BarycentricTriangle {
       }
       if (numSnapped > 0 && newSum > 0.0) {
         location.local.scaleInPlace(1.0 / newSum);
-        if (1 == numSnapped) {
+        if (1 === numSnapped) {
           location.closestEdgeIndex = BarycentricTriangle.edgeOppositeVertexIndexToStartVertexIndex(BarycentricTriangle.isOnBoundedEdge(location.local.x, location.local.y, location.local.z));
           location.closestEdgeParam = 1.0 - location.local.at(location.closestEdgeIndex);
         } else {  // 2 snapped, at vertex
