@@ -32,21 +32,21 @@ interface PromisedPage<TItem> extends Page<TItem> {
 /**
  * The default number of rows in a single page requested by [[PresentationTableDataProvider]]
  * @public
- * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
+ * @deprecated in 3.x. Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 
 /**
  * The default number of pages cached by [[PresentationTableDataProvider]]
  * @public
- * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
+ * @deprecated in 3.x. Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
 
 /**
  * Interface for presentation rules-driven table data provider.
  * @public
- * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
+ * @deprecated in 3.x. Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider & {
   /** Get key of ECInstance that's represented by the supplied row */
@@ -56,7 +56,7 @@ export type IPresentationTableDataProvider = ITableDataProvider & IContentDataPr
 /**
  * Initialization properties for [[PresentationTableDataProvider]]
  * @public
- * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
+ * @deprecated in 3.x. Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export interface PresentationTableDataProviderProps extends DiagnosticsProps {
   /** IModel to pull data from */
@@ -84,7 +84,7 @@ export interface PresentationTableDataProviderProps extends DiagnosticsProps {
 /**
  * Presentation Rules-driven table data provider.
  * @public
- * @deprecated Based on [Table]($components-react) component which is deprecated
+ * @deprecated in 3.x. Based on [Table]($components-react) component which is deprecated
  */
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
   private _sortColumnKey: string | undefined;

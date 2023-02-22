@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { EmptyLocalization, IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { IModelApp, NativeApp } from "@itwin/core-frontend";
 import { ElectronApp } from "../../ElectronFrontend";
@@ -15,7 +15,7 @@ describe("ElectronApp tests.", () => {
     assert(!NativeApp.isValid);
     assert(!IModelApp.initialized);
 
-    await ElectronApp.startup();
+    await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
 
     assert(ElectronApp.isValid);
     assert(NativeApp.isValid);
@@ -37,6 +37,7 @@ describe("ElectronApp tests.", () => {
     await ElectronApp.startup({
       iModelApp: {
         rpcInterfaces: [TestRpcInterface],
+        localization: new EmptyLocalization(),
       },
     });
     assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
@@ -53,7 +54,7 @@ describe("ElectronApp tests.", () => {
       PresentationRpcInterface,
     ];
 
-    await ElectronApp.startup();
+    await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
     for (const interfaceDef of defaultInterfaces)
       assert(RpcRegistry.instance.definitionClasses.has(interfaceDef.interfaceName));
 

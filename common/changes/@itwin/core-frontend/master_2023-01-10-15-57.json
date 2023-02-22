@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Use new 'ProgressFunction' instead of 'ProgressCallback' when downloading briefcase or changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

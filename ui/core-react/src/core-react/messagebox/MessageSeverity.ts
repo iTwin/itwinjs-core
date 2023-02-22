@@ -8,7 +8,7 @@
 
 /** Message Severity enum.
   * @public
-  * @deprecated Use [MessageSeverity]($appui-abstract) instead
+  * @deprecated in 3.0. Use [MessageSeverity]($appui-abstract) instead
   */
 export enum MessageSeverity {
   None = 0,

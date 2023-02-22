@@ -31,7 +31,7 @@ import { setRectangleProps } from "../../state/internal/NineZoneStateHelpers";
  * |`4`| 5 |`6`|
  * |`7`|`8`|`9`|
  *
- * @deprecated
+ * @deprecated in 3.0.
  * @beta
  */
 export type WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
@@ -73,7 +73,7 @@ export type ZonesManagerWidgetsProps =
   { readonly [2]: ToolSettingsWidgetManagerProps };
 
 /** Available zone targets.
- * @deprecated
+ * @deprecated in 3.0.
  * @beta
  */
 export enum ZoneTargetType {

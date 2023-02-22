@@ -29,7 +29,7 @@ import { UiComponents } from "../UiComponents";
  * @public
  */
 export interface CustomToolbarItem extends CustomButtonDefinition {
-  /** React node that must result in providing a PopupItem @deprecated use panelContentNode */
+  /** React node that must result in providing a PopupItem @deprecated in 3.x. use panelContentNode */
   buttonNode?: React.ReactNode;
   /** defines the content to display in popup panel */
   panelContentNode?: React.ReactNode;

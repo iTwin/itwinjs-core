@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added new viewport event (onMapLayerScaleRangeVisibilityChanged); this event is fired, whenever the visibility of a tile tree changes based on the current viewport state.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

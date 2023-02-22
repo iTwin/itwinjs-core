@@ -32,7 +32,6 @@ export * from "./EmphasizeElementsProps";
 export * from "./EntityProps";
 export * from "./EntityReference";
 export * from "./Environment";
-export * from "./FeatureGates";
 export * from "./FeatureIndex";
 export * from "./FeatureSymbology";
 export * from "./FeatureTable";

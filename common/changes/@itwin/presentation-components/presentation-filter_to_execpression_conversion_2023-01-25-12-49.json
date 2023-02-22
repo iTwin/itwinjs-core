@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Fixed PresentationInstanceFilter to InstanceFilterDefinition coversion to use operator supported by ECExpressions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

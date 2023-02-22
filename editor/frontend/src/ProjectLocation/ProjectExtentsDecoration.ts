@@ -117,9 +117,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this.init())
       return;
 
-    this._monumentId = this.iModel.transientIds.next;
-    this._northId = this.iModel.transientIds.next;
-    this._clipId = this.iModel.transientIds.next;
+    this._monumentId = this.iModel.transientIds.getNext();
+    this._northId = this.iModel.transientIds.getNext();
+    this._clipId = this.iModel.transientIds.getNext();
 
     this.start();
   }
@@ -193,7 +193,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (numCurrent < numReqControls) {
       const transientIds = this.iModel.transientIds;
       for (let i: number = numCurrent; i < numReqControls; i++)
-        this._controlIds[i] = transientIds.next;
+        this._controlIds[i] = transientIds.getNext();
     } else if (numCurrent > numReqControls) {
       this._controlIds.length = numReqControls;
     }

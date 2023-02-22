@@ -27,7 +27,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
-  NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
+  NativeAppOpts, OnDownloadProgress, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -174,12 +174,6 @@ interface SampleIModelParams {
   iModelId: string;
   viewIds?: string[];
   stageId?: string;
-}
-
-interface ProgressInfo {
-  percent?: number;
-  total?: number;
-  loaded: number;
 }
 
 export class SampleAppIModelApp {
@@ -395,9 +389,11 @@ export class SampleAppIModelApp {
 
     let iModelConnection: IModelConnection | undefined;
     if (ProcessDetector.isMobileAppFrontend) {
-      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-      });
+      const progressCallback: OnDownloadProgress = ({ loaded, total }) => {
+        const percent = (loaded / total).toFixed(2);
+        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
+      };
+      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly, progressCallback }, IModelVersion.latest());
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       SampleAppIModelApp.setIsIModelLocal(true, true);
@@ -488,10 +484,11 @@ export class SampleAppIModelApp {
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-          // eslint-disable-next-line no-console
-          console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-        });
+        const progressCallback: OnDownloadProgress = ({ loaded, total }) => {
+          const percent = (loaded / total).toFixed(2);
+          Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
+        };
+        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly, progressCallback }, IModelVersion.latest());
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {

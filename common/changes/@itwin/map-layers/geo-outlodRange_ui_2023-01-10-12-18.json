@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Added support for new viewport event (onMapLayerScaleRangeVisibilityChanged)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

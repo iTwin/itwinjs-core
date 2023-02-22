@@ -45,7 +45,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   /**
    * Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
    * @beta
-   * @deprecated
+   * @deprecated in 3.x.
    */
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   // eslint-disable-next-line deprecation/deprecation
@@ -54,7 +54,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   }
 
   /** Returns true if an external tile cache is configured on the backend.
-   * @internal @deprecated
+   * @internal @deprecated in 3.x.
    */
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return this.forward(arguments);

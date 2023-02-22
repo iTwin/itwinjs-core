@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Deprecate TransientIdSequence.next property in favor of getNext method.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

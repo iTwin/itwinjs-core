@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes, ContentSpecificationTypes, GroupingSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes,
-  StandardNodeTypes,
-} from "@itwin/presentation-common";
+import { KeySet, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { getFieldByLabel } from "../../Utils";
@@ -37,15 +34,15 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.Content,
+          ruleType: "Content",
           specifications: [
             {
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
               relatedInstances: [{
                 relationshipPath: {
                   relationship: { schemaName: "BisCore", className: "ViewDefinitionUsesDisplayStyle" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                 },
                 alias: "display_style",
                 isRequired: true,
@@ -83,17 +80,17 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [
             {
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "ECDbMeta", classNames: ["ECClassDef"] },
               groupByClass: false,
               groupByLabel: false,
               relatedInstances: [{
                 relationshipPath: {
                   relationship: { schemaName: "ECDbMeta", className: "SchemaOwnsClasses" },
-                  direction: RelationshipDirection.Backward,
+                  direction: "Backward",
                 },
                 alias: "schema",
                 isRequired: true,
@@ -101,7 +98,7 @@ describe("Learning Snippets", () => {
             },
           ],
           customizationRules: [{
-            ruleType: RuleTypes.ExtendedData,
+            ruleType: "ExtendedData",
             items: {
               fullClassName: `schema.Name & "." & this.Name`,
             },
@@ -137,17 +134,17 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [
             {
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "ECDbMeta", classNames: ["ECClassDef"] },
               groupByClass: false,
               groupByLabel: false,
               relatedInstances: [{
                 relationshipPath: {
                   relationship: { schemaName: "ECDbMeta", className: "SchemaOwnsClasses" },
-                  direction: RelationshipDirection.Backward,
+                  direction: "Backward",
                 },
                 alias: "schema",
                 isRequired: true,
@@ -155,10 +152,10 @@ describe("Learning Snippets", () => {
             },
           ],
           customizationRules: [{
-            ruleType: RuleTypes.Grouping,
+            ruleType: "Grouping",
             class: { schemaName: "ECDbMeta", className: "ECSchemaDef" },
             groups: [{
-              specType: GroupingSpecificationTypes.Property,
+              specType: "Property",
               propertyName: "Name",
               createGroupForSingleItem: true,
             }],

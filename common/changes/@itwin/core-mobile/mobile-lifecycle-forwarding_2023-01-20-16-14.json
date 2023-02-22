@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "Fixed bug which prevented mobile lifecycle events from being received on frontend.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile"
+}

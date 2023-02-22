@@ -1,0 +1,13 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-project.schema.json",
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["lib/backend", "lib/common"]
+    },
+    {
+      "operationName": "build:ci",
+      "outputFolderNames": ["lib/backend", "lib/common", "build"]
+    }
+  ]
+}

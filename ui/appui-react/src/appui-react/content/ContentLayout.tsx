@@ -33,6 +33,16 @@ export function ContentWrapper(props: ContentWrapperProps) {
   const [isActive, setIsActive] = React.useState(content === ContentViewManager.getActiveContent());
   const activeFrontstageDef = useActiveFrontstageDef();
 
+  const contentControlKey = (contentControl: React.ReactNode): string | undefined => {
+    let controlId: string | undefined;
+    if (contentControl && (contentControl as React.ReactElement<any>).key) {
+      const key = ((contentControl as React.ReactElement<any>).key as string);
+      // key has format `${contentProps.id}::${this.groupId}` which is stored as unique id
+      controlId = key.split("::", 1)[0];
+    }
+    return controlId;
+  };
+
   // istanbul ignore next
   const [hasMultipleContents, setHasMultipleContents] = React.useState(() =>
     (activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
@@ -45,7 +55,14 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   React.useEffect(() => {
     const handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
-      setIsActive(content === args.activeContent);
+      const contentIsIdentical = content === args.activeContent;
+      if (contentIsIdentical)
+        setIsActive(contentIsIdentical);
+      else {
+        const contentId = contentControlKey(content);
+        const activeContentId = contentControlKey(args.activeContent);
+        setIsActive(contentId === activeContentId);
+      }
       // istanbul ignore next
       setHasMultipleContents((activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
         (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1));
@@ -55,6 +72,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   const handleMouseDown = React.useCallback(() => {
     ContentViewManager.setActiveContent(content);
+    setIsActive(true);
   }, [content]);
 
   React.useEffect(() => {
@@ -477,7 +495,7 @@ export interface ContentLayoutComponentProps extends CommonProps {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   /**
-  * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
+  * @deprecated in 3.3. In upcoming version, widget mode will be removed and footer mode will always be true.
   */
   isInFooterMode?: boolean;
 }

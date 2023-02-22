@@ -46,7 +46,6 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
 
   /**
    * Initialize tree data with the provided tree model.
-   * @beta
    */
   seedTreeModel?: TreeModel;
 }

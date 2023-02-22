@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import * as fs from "fs";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
@@ -12,14 +13,15 @@ import {
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelDb, IModelElementCloneContext, IModelHost, IModelJsFs,
   InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
-  PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
-  SubCategory, Subject,
+  PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RenderMaterialElement, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
+  SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
+import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementAspectProps, ElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, ProfileOptions, QueryRowFormat, RelatedElement, RelationshipProps,
+  ExternalSourceAspectProps, ImageSourceFormat, IModel, IModelError, PhysicalElementProps, Placement3d, ProfileOptions, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
@@ -1103,7 +1105,7 @@ describe("IModelTransformer", () => {
     setToStandalone(targetDbPath);
     // StandaloneDb.upgradeStandaloneSchemas is the suggested method to handle a profile upgrade but that will also upgrade
     // the BisCore schema.  This test is explicitly testing that the BisCore schema will be updated from the source iModel
-    const nativeDb = StandaloneDb.openDgnDb({path: targetDbPath}, OpenMode.ReadWrite, {profile: ProfileOptions.Upgrade});
+    const nativeDb = StandaloneDb.openDgnDb({path: targetDbPath}, OpenMode.ReadWrite, {profile: ProfileOptions.Upgrade, schemaLockHeld: true});
     nativeDb.closeIModel();
     const targetDb = StandaloneDb.openFile(targetDbPath);
 
@@ -1389,20 +1391,36 @@ describe("IModelTransformer", () => {
     ] as const;
   }
 
+  function createEmptyTargetWithIdsStartingAfterSource(sourceDb: IModelDb, createTarget: () => StandaloneDb): StandaloneDb {
+    const nextId = (db: IModelDb) => db.withSqliteStatement("SELECT Val FROM be_Local WHERE Name='bis_elementidsequence'", (s)=>[...s])[0].val;
+    sourceDb.saveChanges(); // save to make sure we get the latest id value
+    const sourceNextId = nextId(sourceDb);
+    const targetDb = createTarget();
+    const pathName = targetDb.pathName;
+    targetDb.withSqliteStatement("UPDATE be_Local SET Val=? WHERE Name='bis_elementidsequence'", (s)=>{
+      s.bindInteger(1, sourceNextId + 1);
+      assert(s.step() === DbResult.BE_SQLITE_DONE);
+    });
+    targetDb.saveChanges();
+    targetDb.close();
+    return StandaloneDb.openFile(pathName);
+  }
+
   /**
-   * A transformer that inserts an element at the beginning to ensure the target doesn't end up with the same ids as the source.
-   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence,
-   * which can happen deterministically in several cases, as well as just copy-paste errors where you accidentally test a
-   * source or target db against itself
+   * A transformer that resets the target's id sequence to ensure the target doesn't end up with the same ids as the source.
+   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence.
    * @note it modifies the target so there are side effects
    */
-  class ShiftElemIdsTransformer extends IModelTransformer {
-    constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
-      super(...args);
-      try {
-        // the choice of element to insert is arbitrary, anything easy works
-        PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "MyShiftElemIdsPhysicalModel");
-      } catch (_err) { } // ignore error in case someone tries to transform the same target multiple times with this
+  class ShiftedIdsEmptyTargetTransformer extends IModelTransformer {
+    constructor(source: IModelDb, createTarget: () => StandaloneDb, options?: IModelTransformOptions) {
+      super(source, createEmptyTargetWithIdsStartingAfterSource(source, createTarget), options);
+    }
+  }
+
+  /** combination of @see AssertOrderTransformer and @see ShiftedIdsEmptyTargetTransformer */
+  class AssertOrderAndShiftIdsTransformer extends AssertOrderTransformer {
+    constructor(order: Id64String[], source: IModelDb, createTarget: () => StandaloneDb, options?: IModelTransformOptions) {
+      super(order, source, createEmptyTargetWithIdsStartingAfterSource(source, createTarget), options);
     }
   }
 
@@ -1414,31 +1432,35 @@ describe("IModelTransformer", () => {
     ] = createIModelWithDanglingReference({ name: "DanglingReferences", path: sourceDbPath });
 
     const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "DanglingReferenceTarget-reject.bim");
-    const targetDbForRejected = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+    const targetDbForRejected = StandaloneDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+    const targetDbForRejectedPath = targetDbForRejected.pathName;
+    targetDbForRejected.close();
 
-    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected);
+    const defaultTransformer = new ShiftedIdsEmptyTargetTransformer(sourceDb, () => StandaloneDb.openFile(targetDbForRejectedPath));
     await expect(defaultTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
+    defaultTransformer.targetDb.close();
 
-    const rejectDanglingReferencesTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected, { danglingReferencesBehavior: "reject" });
+    const rejectDanglingReferencesTransformer = new ShiftedIdsEmptyTargetTransformer(sourceDb, () => StandaloneDb.openFile(targetDbForRejectedPath), { danglingReferencesBehavior: "reject" });
     await expect(rejectDanglingReferencesTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
+    defaultTransformer.targetDb.close();
 
     const runTransform = async (opts: Pick<IModelTransformOptions, "danglingReferencesBehavior">) => {
       const thisTransformTargetPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", `DanglingReferenceTarget-${opts.danglingReferencesBehavior}.bim`);
-      const targetDb = SnapshotDb.createEmpty(thisTransformTargetPath, { rootSubject: sourceDb.rootSubject });
-      const transformer = new ShiftElemIdsTransformer(sourceDb, targetDb, opts);
+      const createTargetDb = () => StandaloneDb.createEmpty(thisTransformTargetPath, { rootSubject: sourceDb.rootSubject });
+      const transformer = new ShiftedIdsEmptyTargetTransformer(sourceDb, createTargetDb, opts);
       await expect(transformer.processAll()).not.to.be.rejected;
-      targetDb.saveChanges();
+      transformer.targetDb.saveChanges();
 
       expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
       const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
       expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
       const displayStyleInTargetId = transformer.context.findTargetElementId(displayStyleId);
-      const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
+      const displayStyleInTarget = transformer.targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
       const physObjsInTarget = physicalObjects.map((physObjInSource) => {
         const physObjInTargetId = transformer.context.findTargetElementId(physObjInSource.id);
@@ -2022,6 +2044,179 @@ describe("IModelTransformer", () => {
     expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
     await noSystemSchemasTransformer.processSchemas();
     noSystemSchemasTransformer.dispose();
+  });
+
+  it("handles long schema names and references to them", async function () {
+    const longSchema1Name = `ThisSchemaIs${"Long".repeat(100)}`;
+    assert(Buffer.from(longSchema1Name).byteLength > 255);
+    const longSchema2Name = `${longSchema1Name}ButEndsDifferently`;
+
+    if (process.platform !== "win32") {
+      // windows has no bound on path segment (file name) length, (it does have a bound on total path length),
+      // so we don't expect this to throw only on Mac/Linux where 255 byte limit is common
+      expect(() => fs.writeFileSync(longSchema1Name, "")).to.throw(/too long/);
+    }
+
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRef.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
+
+    const longSchema1 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchema1Name}" alias="ls" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    const longSchema2 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchema2Name}" alias="ls2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    const reffingSchemaName = "Reffing";
+    const reffingSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${reffingSchemaName}" alias="refg" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="${longSchema1Name}" version="01.00" alias="ls" />
+        <ECSchemaReference name="${longSchema2Name}" version="01.00" alias="ls2" />
+      </ECSchema>
+    `;
+
+    await sourceDb.importSchemaStrings([longSchema1, longSchema2, reffingSchema]);
+    sourceDb.saveChanges();
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRefTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "LongSchemaRefTarget" } });
+
+    const exportedSchemaPaths: string[] = [];
+    let outOfOrderExportedSchemas: string[];
+
+    class TrackSchemaExportsExporter extends IModelExporter {
+      public override async exportSchemas(): Promise<void> {
+        await super.exportSchemas();
+        assert(exportedSchemaPaths.length === 4);
+        // eslint-disable-next-line @typescript-eslint/dot-notation
+        const reffingSchemaFile = path.join(transformer["_schemaExportDir"], `${reffingSchemaName}.ecschema.xml`);
+        assert(exportedSchemaPaths.includes(reffingSchemaFile), `Expected ${reffingSchemaFile} in ${exportedSchemaPaths}`);
+        // make sure the referencing schema is first, so it is imported first, and the schema locator is forced
+        // to look for its references (like the long name schema) that haven't been imported yet
+        outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemaPaths.filter((s) => s !== reffingSchemaFile)];
+      }
+    }
+
+    // using this class instead of sinon.replace provides some gurantees that subclasses can use the onExportSchema result as expected
+    class TrackSchemaExportsTransformer extends IModelTransformer {
+      public constructor(source: IModelDb, target: IModelDb, opts?: IModelTransformOptions) {
+        super(new TrackSchemaExportsExporter(source), target, opts);
+      }
+      public override async onExportSchema(schema: ECSchemaMetaData.Schema) {
+        const exportResult = await super.onExportSchema(schema);
+        assert(exportResult?.schemaPath); // IModelTransformer guarantees that it returns a valid schemaPath, the type is wide for subclasses
+        exportedSchemaPaths.push(exportResult.schemaPath);
+        return exportResult;
+      }
+    }
+
+    const transformer = new TrackSchemaExportsTransformer(sourceDb, targetDb);
+
+    try {
+      // force import references out of order to make sure we hit an issue if schema locator can't find things
+      sinon.replace(IModelJsFs, "readdirSync", () => outOfOrderExportedSchemas.map((s) => path.basename(s)));
+      await transformer.processSchemas();
+      expect(targetDb.querySchemaVersion(longSchema1Name)).not.to.be.undefined;
+      expect(targetDb.querySchemaVersion(longSchema2Name)).not.to.be.undefined;
+    } finally {
+      sourceDb.close();
+      targetDb.close();
+      transformer.dispose();
+      sinon.restore();
+    }
+  });
+
+  it("should remap textures in target iModel", async () => {
+    // create source iModel
+    const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Transform3d-Source" } });
+    const categoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const category = sourceDb.elements.getElement<SpatialCategory>(categoryId);
+    const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
+
+    const renderMaterialBothImgsId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterialBothImgs", {
+      paletteName: "something",
+    });
+
+    const texture1Id = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture1", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "texture 1");
+    const texture2Id = Texture.insertTexture(sourceDb, IModel.dictionaryId, "Texture2", ImageSourceFormat.Png, BackendTestUtils.samplePngTexture.base64, "texture 2");
+
+    const renderMaterialBothImgs = sourceDb.elements.getElement<RenderMaterialElement>(renderMaterialBothImgsId);
+    // update the texture id into the model so that they are processed out of order (material exported before texture)
+    if (renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map === undefined)
+      renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map = {};
+    if (renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Pattern === undefined)
+      renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Pattern = {};
+    if (renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Normal === undefined)
+      renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Normal = {};
+    renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.TextureId = texture1Id;
+    renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId = texture1Id;
+    renderMaterialBothImgs.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId = texture2Id;
+    renderMaterialBothImgs.update();
+
+    const renderMaterialOnlyPatternId = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterialOnlyPattern", {
+      paletteName: "something",
+      patternMap: {
+        TextureId: texture1Id, // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+
+    const renderMaterialOnlyNormalId  = RenderMaterialElement.insert(sourceDb, IModel.dictionaryId, "TextureMaterialOnlyNormal", {
+      paletteName: "something",
+      normalMap: {
+        TextureId: texture2Id, // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+
+    const physObjs = [renderMaterialBothImgsId, renderMaterialOnlyNormalId, renderMaterialOnlyPatternId].map((renderMaterialId) => {
+      const physicalObjectProps1: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: sourceModelId,
+        category: categoryId,
+        code: Code.createEmpty(),
+        userLabel: `PhysicalObject`,
+        geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1), categoryId, category.myDefaultSubCategoryId(), renderMaterialId),
+        placement: Placement3d.fromJSON({ origin: { x: 0, y: 0 }, angles: {} }),
+      };
+      return sourceDb.elements.insertElement(physicalObjectProps1);
+    });
+
+    // create target iModel
+    const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Target.bim");
+    const createTargetDb = () => StandaloneDb.createEmpty(targetDbFile, { rootSubject: { name: "Transform3d-Target" } });
+
+    // transform
+    const transformer = new AssertOrderAndShiftIdsTransformer([renderMaterialBothImgsId, texture1Id], sourceDb, createTargetDb);
+    await transformer.processAll();
+
+    const texture1IdInTarget = transformer.context.findTargetElementId(texture1Id);
+    const texture2IdInTarget = transformer.context.findTargetElementId(texture2Id);
+    assert(Id64.isValidId64(texture1IdInTarget));
+    assert(Id64.isValidId64(texture2IdInTarget));
+
+    for (const objId of physObjs) {
+      const objInTargetId = transformer.context.findTargetElementId(objId);
+      const objInTarget = transformer.targetDb.elements.getElement<PhysicalObject>({ id: objInTargetId, wantGeometry: true });
+      assert(objInTarget.geom);
+      const materialOfObjInTargetId = objInTarget.geom.find((g) => g.material?.materialId)?.material?.materialId;
+      assert(materialOfObjInTargetId);
+
+      const materialOfObjInTarget = transformer.targetDb.elements.getElement<RenderMaterialElement>(materialOfObjInTargetId);
+      if (materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern)
+        expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Pattern.TextureId).to.equal(texture1IdInTarget);
+      if (materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal)
+        expect(materialOfObjInTarget.jsonProperties.materialAssets.renderMaterial.Map.Normal.TextureId).to.equal(texture2IdInTarget);
+    }
+
+    // clean up
+    transformer.dispose();
+    sourceDb.close();
+    transformer.targetDb.close();
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */

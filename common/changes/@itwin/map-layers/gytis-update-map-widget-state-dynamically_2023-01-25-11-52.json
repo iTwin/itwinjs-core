@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Fix Map Layers widget not updating after an iModel gets geolocated.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

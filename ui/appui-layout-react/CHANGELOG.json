@@ -2,6 +2,12 @@
   "name": "@itwin/appui-layout-react",
   "entries": [
     {
+      "version": "3.5.2",
+      "tag": "@itwin/appui-layout-react_v3.5.2",
+      "date": "Wed, 11 Jan 2023 16:46:30 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.5.1",
       "tag": "@itwin/appui-layout-react_v3.5.1",
       "date": "Thu, 15 Dec 2022 16:38:28 GMT",

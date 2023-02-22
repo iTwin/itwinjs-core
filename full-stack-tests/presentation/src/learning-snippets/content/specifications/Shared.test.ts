@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel } from "../../../Utils";
@@ -35,16 +35,16 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [
               {
-                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                specType: "ContentInstancesOfSpecificClasses",
                 classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
               },
               // The following specification is defined second so it's lower in priority. Because it has `onlyIfNotHandled` attribute,
               // it's overriden by the specification above.
               {
-                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                specType: "ContentInstancesOfSpecificClasses",
                 classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
                 onlyIfNotHandled: true,
               },
@@ -77,13 +77,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
               priority: 0,
             }, {
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["DictionaryModel"] },
               priority: 1,
             }],
@@ -112,14 +112,14 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               relatedProperties: [{
                 propertiesSource: {
                   relationship: { schemaName: "BisCore", className: "ViewDefinitionUsesDisplayStyle" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                 },
               }],
             }],
@@ -150,9 +150,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               calculatedProperties: [{
                 label: "Camera view direction",
@@ -184,9 +184,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               propertyCategories: [{
                 id: "camera_category",
@@ -232,9 +232,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
               propertyOverrides: [{ name: "Model", labelOverride: "Container Model" }],
             }],
@@ -270,12 +270,12 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["ModelSelector"], arePolymorphic: true },
               relatedInstances: [{
-                relationshipPath: { relationship: { schemaName: "BisCore", className: "SpatialViewDefinitionUsesModelSelector" }, direction: RelationshipDirection.Backward },
+                relationshipPath: { relationship: { schemaName: "BisCore", className: "SpatialViewDefinitionUsesModelSelector" }, direction: "Backward" },
                 alias: "relatedInstance",
               }],
               instanceFilter: "relatedInstance.Yaw > 0",

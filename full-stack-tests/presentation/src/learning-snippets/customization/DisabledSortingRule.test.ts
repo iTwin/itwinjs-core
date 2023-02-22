@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes, InstanceLabelOverrideValueSpecificationType, Ruleset, RuleTypes, VariableValueTypes,
-} from "@itwin/presentation-common";
+import { Ruleset, VariableValueTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
@@ -38,31 +36,31 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Composite,
+              specType: "Composite",
               separator: " x ",
               parts: [
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "Roll" } },
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "Pitch" } },
+                { spec: { specType: "Property", propertyName: "Roll" } },
+                { spec: { specType: "Property", propertyName: "Pitch" } },
               ],
             }],
           }, {
-            ruleType: RuleTypes.PropertySorting,
+            ruleType: "PropertySorting",
             priority: 1,
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
             propertyName: "Pitch",
           }, {
-            ruleType: RuleTypes.DisabledSorting,
+            ruleType: "DisabledSorting",
             priority: 2,
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
           }],
@@ -90,22 +88,22 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "ViewDefinition" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Property,
+              specType: "Property",
               propertyName: "CodeValue",
             }],
           }, {
-            ruleType: RuleTypes.DisabledSorting,
+            ruleType: "DisabledSorting",
             condition: "TRUE",
           }],
         };
@@ -133,32 +131,32 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "ViewDefinition" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Composite,
+              specType: "Composite",
               separator: " - ",
               parts: [
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.ClassName } },
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "CodeValue" } },
+                { spec: { specType: "ClassName" } },
+                { spec: { specType: "Property", propertyName: "CodeValue" } },
               ],
             }],
           }, {
-            ruleType: RuleTypes.PropertySorting,
+            ruleType: "PropertySorting",
             priority: 1,
             class: { schemaName: "BisCore", className: "ViewDefinition" },
             propertyName: "CodeValue",
             isPolymorphic: true,
           }, {
-            ruleType: RuleTypes.DisabledSorting,
+            ruleType: "DisabledSorting",
             priority: 2,
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
           }],
@@ -185,32 +183,32 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "ViewDefinition" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Composite,
+              specType: "Composite",
               separator: " - ",
               parts: [
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.ClassName } },
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "CodeValue" } },
+                { spec: { specType: "ClassName" } },
+                { spec: { specType: "Property", propertyName: "CodeValue" } },
               ],
             }],
           }, {
-            ruleType: RuleTypes.PropertySorting,
+            ruleType: "PropertySorting",
             priority: 1,
             class: { schemaName: "BisCore", className: "ViewDefinition" },
             propertyName: "CodeValue",
             isPolymorphic: true,
           }, {
-            ruleType: RuleTypes.DisabledSorting,
+            ruleType: "DisabledSorting",
             priority: 2,
             class: { schemaName: "BisCore", className: "ViewDefinition2d" },
             isPolymorphic: true,

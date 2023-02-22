@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -34,9 +34,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               acceptableSchemaName: "BisCore",
             }],
           }],
@@ -64,9 +64,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               acceptableClassNames: ["SpatialViewDefinition"],
             }],
           }],
@@ -94,9 +94,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               acceptableClassNames: ["ViewDefinition"],
               acceptablePolymorphically: true,
             }],

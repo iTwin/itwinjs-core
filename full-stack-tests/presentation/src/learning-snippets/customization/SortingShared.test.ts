@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, InstanceLabelOverrideValueSpecificationType, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
@@ -36,26 +36,26 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Composite,
+              specType: "Composite",
               separator: " x ",
               parts: [
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "Roll" } },
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "Pitch" } },
+                { spec: { specType: "Property", propertyName: "Roll" } },
+                { spec: { specType: "Property", propertyName: "Pitch" } },
               ],
             }],
           }, {
-            ruleType: RuleTypes.PropertySorting,
+            ruleType: "PropertySorting",
             requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
             propertyName: "Pitch",
           }],

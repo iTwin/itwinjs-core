@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Map-layers oauth2 requests optimization and improvements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

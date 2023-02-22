@@ -16,6 +16,8 @@ import { render, waitFor } from "@testing-library/react";
 import { SpatialContainmentTree } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("SpatialContainmentTree", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();

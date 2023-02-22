@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * Label override rules provide advanced ways to override instance labels and descriptions in
@@ -14,11 +14,11 @@ import { RuleBase, RuleTypes } from "../Rule";
  *
  * @see [Label override reference documentation page]($docs/presentation/customization/LabelOverride.md)
  * @public
- * @deprecated Use [[InstanceLabelOverride]] rule instead.
+ * @deprecated in 3.x. Use [[InstanceLabelOverride]] rule instead.
  */
 export interface LabelOverride extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.LabelOverride;
+  ruleType: "LabelOverride";
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition

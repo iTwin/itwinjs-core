@@ -57,8 +57,8 @@ export class PlanarTextureProjection {
     const textureMatrix = Matrix3d.createRows(frustumX, frustumY, frustumZ);
     const textureTransform = Transform.createRefs(Point3d.createZero(), textureMatrix);
     const viewFrustum = viewingSpace.getFrustum().transformBy(textureTransform);
-    const viewPlanes = new FrustumPlanes(viewFrustum);
-    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes!);
+    const viewPlanes = FrustumPlanes.fromFrustum(viewFrustum);
+    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes);
 
     let textureRange = Range3d.createNull();
     const tileToTexture = textureTransform.multiplyTransformTransform(target.location);

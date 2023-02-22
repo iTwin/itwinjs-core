@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
 import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
-import { GeometryClass, RenderSchedule, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
+import { EmptyLocalization, GeometryClass, RenderSchedule, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
 import { LocateResponse, SnapStatus } from "../ElementLocateManager";
@@ -46,7 +46,7 @@ function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
 }
 
 describe("AccuSnap", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   describe("requestSnap", () => {

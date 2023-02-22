@@ -62,6 +62,7 @@
 
 #### Other topics
 - [BIS Schema Units](./guide/other-topics/units.md)
+- [BIS Schema KindOfQuantities](./guide/other-topics/kindOfQuantities.md)
 - [BIS Schema Validation](./guide/other-topics/bis-schema-validation.md)
 
 #### References

@@ -118,6 +118,19 @@ export class CodeSpecs {
     throw new IModelError(IModelStatus.BadArg, "Invalid argument");
   }
 
+  /** Update the Json properties of an existing CodeSpec.
+ * @param codeSpec The codeSpec holding Json properties values to update
+ * @throws if unable to update the codeSpec.
+ */
+  public updateProperties(codeSpec: CodeSpec): void {
+    this._imodel.withPreparedSqliteStatement("UPDATE bis_CodeSpec SET JsonProperties=? WHERE Id=?", (stmt) => {
+      stmt.bindString(1, JSON.stringify(codeSpec.properties));
+      stmt.bindId(2, codeSpec.id);
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        throw new IModelError(IModelStatus.BadArg, "error updating CodeSpec properties");
+    });
+  }
+
   /** Load a CodeSpec from the iModel
    * @param id  The persistent Id of the CodeSpec to load
    */

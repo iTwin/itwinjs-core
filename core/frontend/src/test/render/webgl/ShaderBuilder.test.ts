@@ -10,9 +10,10 @@ import {
   ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
 } from "../../../render/webgl/ShaderBuilder";
 import { System } from "../../../render/webgl/System";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("should convert ShaderVariable to glsl declaration", () => {

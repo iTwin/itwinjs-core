@@ -8,7 +8,6 @@ import * as React from "react";
 import sinon from "sinon";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { EditorContainer, PropertyValueRendererManager } from "@itwin/components-react";
-import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Content, KeySet, LabelDefinition, NavigationPropertyInfo } from "@itwin/presentation-common";
 import {
@@ -19,7 +18,7 @@ import { fireEvent, render as renderRTL, waitFor } from "@testing-library/react"
 import { renderHook } from "@testing-library/react-hooks";
 import { IContentDataProvider } from "../../presentation-components/common/ContentDataProvider";
 import {
-  NavigationPropertyEditorContext, navigationPropertyEditorContext, NavigationPropertyTargetEditor, useNavigationPropertyEditingContext,
+  navigationPropertyEditorContext, NavigationPropertyEditorContextProps, NavigationPropertyTargetEditor, useNavigationPropertyEditingContext,
 } from "../../presentation-components/properties/NavigationPropertyEditor";
 import { createRandomPropertyRecord } from "../_helpers/UiComponents";
 
@@ -32,8 +31,8 @@ function createNavigationPropertyInfo(): NavigationPropertyInfo {
   };
 }
 
-function render(ui: React.ReactElement, context?: Partial<NavigationPropertyEditorContext>) {
-  const contextValue: NavigationPropertyEditorContext = {
+function render(ui: React.ReactElement, context?: Partial<NavigationPropertyEditorContextProps>) {
+  const contextValue: NavigationPropertyEditorContextProps = {
     getNavigationPropertyInfo: context?.getNavigationPropertyInfo ?? (async () => createNavigationPropertyInfo()),
     imodel: context?.imodel ?? {} as IModelConnection,
   };
@@ -53,9 +52,7 @@ describe("<NavigationPropertyEditor />", () => {
   }
 
   beforeEach(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 
@@ -114,9 +111,7 @@ describe("<NavigationPropertyTargetEditor />", () => {
   const testRecord = createRandomPropertyRecord();
 
   beforeEach(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 

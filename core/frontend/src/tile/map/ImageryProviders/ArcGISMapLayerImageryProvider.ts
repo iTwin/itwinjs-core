@@ -8,13 +8,17 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
+  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
+  ArcGisUtilities,
   ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeatureInfo,
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
 import { isArray } from "lodash";
+import { Logger } from "@itwin/core-bentley";
+
+const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
@@ -23,6 +27,8 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
+  private _mapSupported = false;
+  private _tilesOnly = false;
   private _tileMap: ArcGISTileMap|undefined;
 
   public serviceJson: any;
@@ -63,6 +69,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       }
       return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
+      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`);
       return undefined;
     }
   }
@@ -102,85 +109,96 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     }
   }
 
-  private isEpsg3857Compatible(tileInfo: any) {
-    if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
-      return false;
-
-    const zeroLod = tileInfo.lods[0];
-    return zeroLod.level === 0 && Math.abs(zeroLod.resolution - 156543.03392800014) < .001;
-  }
-
   public override async initialize(): Promise<void> {
 
-    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.formatId, this._settings.userName, this._settings.password);
-    if (json === undefined)
+    const metadata = await this.getServiceJson();
+
+    if (metadata?.content === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
+    const json = metadata.content;
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
-        this.status = MapLayerImageryProviderStatus.RequireAuth;
-        this.onStatusChanged.raiseEvent(this);
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+        return;  // By returning (i.e not throwing), we ensure the tileTree get created and current provider is preserved to report status.
       }
     }
 
-    if (json !== undefined) {
-      this.serviceJson = json;
+    this.serviceJson = json;
 
-      if (json.capabilities) {
+    if (json.capabilities) {
+      const capabilities = json.capabilities.split(",");
 
-        this._querySupported = json.capabilities.indexOf("Query") >= 0;
-        this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
-      }
-      if (json.copyrightText)
-        this._copyrightText = json.copyrightText;
+      this._querySupported = capabilities.includes("Query");
+      this._tileMapSupported = capabilities.includes("Tilemap");
+      this._mapSupported = capabilities.includes("Map");
+      this._tilesOnly = capabilities.includes("TilesOnly");
+    }
 
-      if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
-        if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
-          for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
-            ;
+    if (json.copyrightText)
+      this._copyrightText = json.copyrightText;
+
+    this._usesCachedTiles = !!json.tileInfo;
+
+    if (this._usesCachedTiles) {
+      // Only EPSG:3857 is supported with pre-rendered tiles.  Fall back to 'Export' queries if possible otherwise throw.
+      if (!ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)) {
+        if (this._mapSupported && !this._tilesOnly) {
+          this._usesCachedTiles = false;
+        } else {
+          throw new ServerError(IModelStatus.ValidationFailed, "Invalid coordinate system");
         }
+      }
+    }
+
+    if (this._usesCachedTiles) {
+      // Read max LOD
+      if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
+        for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
+          ;
       }
 
       // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
-      if (this._usesCachedTiles && this._tileMapSupported) {
+      if (this._tileMapSupported) {
         this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
       }
+    }
 
-      // Read range using fullextent from service metadata
-      if (json.fullExtent) {
-        if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
-          const range3857 = Range2d.createFrom({
-            low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
-            high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
+    // Read range using fullextent from service metadata
+    if (json.fullExtent) {
+      if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
+        const range3857 = Range2d.createFrom({
+          low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
+          high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
 
-          const west = this.getEPSG4326Lon(range3857.xLow);
-          const south = this.getEPSG4326Lat(range3857.yLow);
-          const east = this.getEPSG4326Lon(range3857.xHigh);
-          const north = this.getEPSG4326Lat(range3857.yHigh);
-          this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
-        }
+        const west = this.getEPSG4326Lon(range3857.xLow);
+        const south = this.getEPSG4326Lat(range3857.yLow);
+        const east = this.getEPSG4326Lon(range3857.xHigh);
+        const north = this.getEPSG4326Lat(range3857.yHigh);
+        this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
       }
+    }
 
-      // Read minLOD if available
-      if (json.minLOD !== undefined) {
-        const minLod = parseInt(json.minLOD, 10);
-        if (!Number.isNaN(minLod)) {
-          this._minDepthFromLod = minLod;
-        }
-      } else if (json.minScale) {
-        // Read min LOD using minScale
-        const minScale = json.minScale;
-        if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
-          for (const lod of json.tileInfo.lods) {
-            if (lod.scale < minScale) {
-              this._minDepthFromLod = lod.level;
-              break;
-            }
+    // Read minLOD if available
+    if (json.minLOD !== undefined) {
+      const minLod = parseInt(json.minLOD, 10);
+      if (!Number.isNaN(minLod)) {
+        this._minDepthFromLod = minLod;
+      }
+    } else if (json.minScale) {
+      // Read min LOD using minScale
+      const minScale = json.minScale;
+      if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
+        for (const lod of json.tileInfo.lods) {
+          if (lod.scale < minScale) {
+            this._minDepthFromLod = lod.level;
+            break;
           }
         }
       }
     }
+
   }
 
   public override addLogoCards(cards: HTMLTableElement): void {

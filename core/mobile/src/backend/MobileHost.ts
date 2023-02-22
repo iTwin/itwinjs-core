@@ -182,12 +182,6 @@ export class MobileHost {
       this.onOrientationChanged.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyOrientationChanged");
       });
-      this.onEnterForeground.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyEnterForeground");
-      });
-      this.onEnterBackground.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyEnterBackground");
-      });
       this.onWillTerminate.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");
       });

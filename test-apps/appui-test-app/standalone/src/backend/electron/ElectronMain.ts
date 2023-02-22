@@ -58,7 +58,7 @@ export async function initializeElectron(opts?: IModelHostOptions) {
   });
 
   // Restore previous window size, position and maximized state
-  const sizeAndPosition = ElectronHost.getWindowSizeSetting(mainWindowName);
+  const sizeAndPosition = ElectronHost.getWindowSizeAndPositionSetting(mainWindowName);
   const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Ui Test App", storeWindowName: mainWindowName });

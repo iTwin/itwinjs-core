@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
@@ -32,14 +32,14 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.Content,
+          ruleType: "Content",
           condition: `SelectedNode.IsOfClass("Element", "BisCore")`,
           specifications: [
             {
-              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              specType: "ContentRelatedInstances",
               relationshipPaths: [{
                 relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                direction: RelationshipDirection.Backward,
+                direction: "Backward",
                 count: 2,
               }],
             },
@@ -67,14 +67,14 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.Content,
+          ruleType: "Content",
           condition: `SelectedNode.IsOfClass("Element", "BisCore")`,
           specifications: [
             {
-              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              specType: "ContentRelatedInstances",
               relationshipPaths: [{
                 relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 count: "*",
               }],
             },
@@ -119,23 +119,23 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.Content,
+          ruleType: "Content",
           condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
           specifications: [
             {
-              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              specType: "ContentRelatedInstances",
               relationshipPaths: [[{
                 relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "GeometricElement3d" },
               }, {
                 relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "GeometricElement3d" },
                 count: "*",
               }, {
                 relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
               }]],
             },
           ],
@@ -166,24 +166,24 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.Content,
+          ruleType: "Content",
           condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
           specifications: [
             {
-              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              specType: "ContentRelatedInstances",
               relationshipPaths: [[{
                 relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "GeometricElement3d" },
                 count: "*",
               }, {
                 relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "SpatialCategory" },
                 count: "*",
               }, {
                 relationship: { schemaName: "BisCore", className: "CategoryOwnsSubCategories" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 count: "*",
               }]],
             },

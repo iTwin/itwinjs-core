@@ -14,7 +14,7 @@ import { CommonProps, Point, Rectangle, RectangleProps, Size, SizeProps } from "
 import { CssProperties } from "../utilities/Css";
 
 /** Properties of [[Tooltip]] component.
- * @deprecated
+ * @deprecated in 3.0.
  * @beta
  */
 export interface TooltipProps extends CommonProps {
@@ -29,13 +29,13 @@ export interface TooltipProps extends CommonProps {
 }
 
 /** Default properties of [[Tooltip]] component.
- * @deprecated
+ * @deprecated in 3.0.
  * @beta
  */
 export type TooltipDefaultProps = Pick<TooltipProps, "position">;
 
 /** Positionable tooltip component.
- * @deprecated
+ * @deprecated in 3.0.
  * @beta
  */
 export class Tooltip extends React.PureComponent<TooltipProps> {

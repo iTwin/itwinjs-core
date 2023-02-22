@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Log a warning when we fail to download a v2 checkpoint, but download a v1 checkpoint successfully.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

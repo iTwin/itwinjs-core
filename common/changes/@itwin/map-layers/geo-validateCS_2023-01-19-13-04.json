@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Improved map-layer coordinate systems validation and error reporting.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

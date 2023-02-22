@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Added dialog for presentation instance filter",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

@@ -14,7 +14,7 @@ parameters:
   - name: outputDir
     type: string
     default: $(Pipeline.Workspace)/tempDocsBuild
-  - name: downloadCurrentBuildArtifacts
+  - name: useCurrentBisDocsArtifact
     type: boolean
     default: false
   - name: shouldPublish
@@ -56,6 +56,9 @@ jobs:
       - script: node common/scripts/install-run-rush.js build:ci
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
+        env:
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_ENABLED: 1
 
       - script: node common/scripts/install-run-rush.js docs
         displayName: rush docs
@@ -66,10 +69,10 @@ jobs:
         parameters:
           workingDir: ${{ parameters.workingDir }}
           stagingDir: ${{ parameters.stagingDir }}
-          downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
+          useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@4.x
+      - script: npm install @bentley/bemetalsmith@4.3.x
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
@@ -81,7 +84,7 @@ jobs:
       - publish: ${{ parameters.stagingDir }}/config/.updated.json
         artifact: .updated.json
         displayName: Publish Pipeline Artifact - .updated.json
-        condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
@@ -89,7 +92,7 @@ jobs:
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - powershell: |
-          $commitMsg = '$(Build.SourceVersionMessage)'
+          $commitMsg = "$(Build.SourceVersionMessage)"
           if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
             Write-Host `'$commitMsg`'` is a version bump
             Write-Host '##vso[build.addbuildtag]iTwinJsDocsRelease'

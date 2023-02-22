@@ -1024,7 +1024,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "extensions", "frontend", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "spdy",

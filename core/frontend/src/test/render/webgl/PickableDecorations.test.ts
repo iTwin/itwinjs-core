@@ -20,7 +20,7 @@ describe("Pickable decorations", () => {
 
     public test(vp: Viewport, type: GraphicType, expectPickable = true): void {
       this._type = type;
-      this._curId = vp.iModel.transientIds.next;
+      this._curId = vp.iModel.transientIds.getNext();
       this._x++;
       this._y++;
 
@@ -31,7 +31,7 @@ describe("Pickable decorations", () => {
     }
 
     public decorate(context: DecorateContext): void {
-      this._curId = context.viewport.iModel.transientIds.next;
+      this._curId = context.viewport.iModel.transientIds.getNext();
       const pt = new Point3d(this._x++, this._y++, 0);
       if (GraphicType.ViewBackground !== this._type && GraphicType.ViewOverlay !== this._type)
         context.viewport.viewToWorld(pt, pt);

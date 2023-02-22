@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { BuffersContainer, VAOContainer, VBOContainer } from "../../../render/webgl/AttributeBuffers";
 import { IModelApp } from "../../../IModelApp";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("BuffersContainer", () => {
   afterEach(async () => {
@@ -13,7 +14,7 @@ describe("BuffersContainer", () => {
   });
 
   it("should use VAO if enabled", async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     const buffers = BuffersContainer.create();
     expect(buffers instanceof VAOContainer).to.be.true;
   });
@@ -24,6 +25,7 @@ describe("BuffersContainer", () => {
         useWebGL2: false,
         disabledExtensions: ["OES_vertex_array_object"],
       },
+      localization: new EmptyLocalization(),
     });
 
     const buffers = BuffersContainer.create();

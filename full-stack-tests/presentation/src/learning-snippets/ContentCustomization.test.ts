@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ContentSpecificationTypes, Field, KeySet, NestedContentField, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
-} from "@itwin/presentation-common";
+import { Field, KeySet, NestedContentField, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
@@ -40,19 +38,19 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
               }],
             }, {
-              ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+              ruleType: "DefaultPropertyCategoryOverride",
               requiredSchemas: [{ name: "BisCore", maxVersion: "1.0.2" }],
               specification: {
                 id: "default",
                 label: "Custom Category OLD",
               },
             }, {
-              ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+              ruleType: "DefaultPropertyCategoryOverride",
               requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
               specification: {
                 id: "default",
@@ -83,19 +81,19 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
               }],
             }, {
-              ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+              ruleType: "DefaultPropertyCategoryOverride",
               priority: 0,
               specification: {
                 id: "default",
                 label: "Low Priority",
               },
             }, {
-              ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+              ruleType: "DefaultPropertyCategoryOverride",
               priority: 9999,
               specification: {
                 id: "default",
@@ -126,12 +124,12 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
               }],
             }, {
-              ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+              ruleType: "DefaultPropertyCategoryOverride",
               specification: {
                 id: "default",
                 label: "Test Category",
@@ -169,9 +167,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyCategories: [{
                   id: "custom-category",
                   label: "Custom",
@@ -208,9 +206,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyCategories: [{
                   id: "custom-category",
                   label: "Custom Category",
@@ -247,9 +245,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyCategories: [{
                   id: "custom-category",
                   label: "Custom Category",
@@ -287,9 +285,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyCategories: [{
                   id: "root-category",
                   label: "Root Category",
@@ -334,9 +332,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "CodeValue",
                   categoryId: "category-a",
@@ -391,9 +389,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "*",
                   categoryId: "custom-category",
@@ -432,9 +430,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "*",
                   categoryId: "custom-category",
@@ -481,9 +479,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "UserLabel",
                   overridesPriority: 1,
@@ -530,9 +528,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "UserLabel",
                   labelOverride: "Custom Label",
@@ -562,9 +560,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyCategories: [{
                   id: "custom-category",
                   label: "Custom Category",
@@ -602,9 +600,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "LastMod",
                   isDisplayed: true,
@@ -635,9 +633,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "UserLabel",
                   isDisplayed: true,
@@ -668,9 +666,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "UserLabel",
                   renderer: {
@@ -707,9 +705,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "UserLabel",
                   editor: {
@@ -746,9 +744,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "UserLabel",
                   isReadOnly: true,
@@ -781,9 +779,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 propertyOverrides: [{
                   name: "UserLabel",
                   priority: 9999,
@@ -817,9 +815,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 calculatedProperties: [{
                   label: "My Calculated Property",
                   value: `123`,
@@ -850,9 +848,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 calculatedProperties: [{
                   label: "Element Volume",
                   value: "(this.BBoxHigh.x - this.BBoxLow.x) * (this.BBoxHigh.y - this.BBoxLow.y) * (this.BBoxHigh.z - this.BBoxLow.z)",
@@ -886,9 +884,9 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 calculatedProperties: [{
                   label: "My Calculated Property",
                   value: `123`,
@@ -925,13 +923,13 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                    direction: RelationshipDirection.Backward,
+                    direction: "Backward",
                   }],
                 }],
               }],
@@ -967,13 +965,13 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                    direction: RelationshipDirection.Forward,
+                    direction: "Forward",
                   }],
                   instanceFilter: `this.CodeValue ~ "Bis%"`,
                 }],
@@ -1014,13 +1012,13 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                    direction: RelationshipDirection.Backward,
+                    direction: "Backward",
                   }],
                   handleTargetClassPolymorphically: true,
                 }],
@@ -1060,16 +1058,16 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: RelationshipDirection.Forward,
+                    direction: "Forward",
                     targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                   }],
-                  relationshipMeaning: RelationshipMeaning.SameInstance,
+                  relationshipMeaning: "SameInstance",
                 }],
               }],
             }],
@@ -1120,13 +1118,13 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: RelationshipDirection.Forward,
+                    direction: "Forward",
                     targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                   }],
                   properties: ["UserLabel", "Description"],
@@ -1162,13 +1160,13 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "SubjectOwnsSubjects" },
-                    direction: RelationshipDirection.Forward,
+                    direction: "Forward",
                   }],
                   autoExpand: true,
                 }],
@@ -1211,25 +1209,25 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: RelationshipDirection.Forward,
+                    direction: "Forward",
                     targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                   }],
                   properties: ["UserLabel"],
                 }],
               }],
             }, {
-              ruleType: RuleTypes.ContentModifier,
+              ruleType: "ContentModifier",
               class: { schemaName: "BisCore", className: "Model" },
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                   targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                 }],
                 skipIfDuplicate: true,
@@ -1262,19 +1260,19 @@ describe("Learning Snippets", () => {
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
-              ruleType: RuleTypes.Content,
+              ruleType: "Content",
               specifications: [{
-                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                specType: "SelectedNodeInstances",
                 relatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: RelationshipDirection.Forward,
+                    direction: "Forward",
                     targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                   }],
                   nestedRelatedProperties: [{
                     propertiesSource: [{
                       relationship: { schemaName: "BisCore", className: "ElementHasLinks" },
-                      direction: RelationshipDirection.Forward,
+                      direction: "Forward",
                       targetClass: { schemaName: "BisCore", className: "RepositoryLink" },
                     }],
                   }],

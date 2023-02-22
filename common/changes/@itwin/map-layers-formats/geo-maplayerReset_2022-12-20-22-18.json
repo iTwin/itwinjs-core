@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "Allow map-layer requiring authentication to be correctly initialized after a saved view restore.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats"
+}

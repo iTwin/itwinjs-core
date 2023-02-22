@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "do not download unnecessary changesets past the source changeset when processing changesets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

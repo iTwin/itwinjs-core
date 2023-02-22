@@ -33,7 +33,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsNull,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS NULL`);
+        expect(expression).to.be.eq(`${propertyAccessor} = NULL`);
       });
 
       it("'IsNotNull'", async () => {
@@ -42,7 +42,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsNotNull,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS NOT NULL`);
+        expect(expression).to.be.eq(`${propertyAccessor} <> NULL`);
       });
 
       it("'IsTrue'", async () => {
@@ -51,7 +51,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsTrue,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS TRUE`);
+        expect(expression).to.be.eq(`${propertyAccessor} = TRUE`);
       });
 
       it("'IsFalse'", async () => {
@@ -60,7 +60,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsFalse,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS FALSE`);
+        expect(expression).to.be.eq(`${propertyAccessor} = FALSE`);
       });
 
       it("'='", async () => {
@@ -204,7 +204,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${propertyAccessor} IS NULL AND ${propertyAccessor} IS NOT NULL)`);
+      expect(expression).to.be.eq(`(${propertyAccessor} = NULL AND ${propertyAccessor} <> NULL)`);
     });
 
     it("'OR' operator", async () => {
@@ -219,7 +219,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${propertyAccessor} IS NULL OR ${propertyAccessor} IS NOT NULL)`);
+      expect(expression).to.be.eq(`(${propertyAccessor} = NULL OR ${propertyAccessor} <> NULL)`);
     });
 
     it("nested condition group", async () => {
@@ -240,7 +240,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${propertyAccessor} IS NULL OR (${propertyAccessor} IS NULL AND ${propertyAccessor} IS NOT NULL))`);
+      expect(expression).to.be.eq(`(${propertyAccessor} = NULL OR (${propertyAccessor} = NULL AND ${propertyAccessor} <> NULL))`);
     });
 
     it("invalid operator", async () => {
@@ -303,7 +303,7 @@ describe("convertToInstanceFilterDefinition", () => {
         operator: PropertyFilterRuleOperator.IsNull,
       };
       const { expression, relatedInstances } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} IS NULL`);
+      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} = NULL`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
           sourceClassName: classBInfo.name,
@@ -328,7 +328,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression, relatedInstances } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${createAlias("C")}.${propertyInfo.name} IS NULL AND ${createAlias("C")}.${propertyInfo.name} IS NOT NULL)`);
+      expect(expression).to.be.eq(`(${createAlias("C")}.${propertyInfo.name} = NULL AND ${createAlias("C")}.${propertyInfo.name} <> NULL)`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
           sourceClassName: classBInfo.name,
@@ -347,7 +347,7 @@ describe("convertToInstanceFilterDefinition", () => {
         operator: PropertyFilterRuleOperator.IsNull,
       };
       const { expression, relatedInstances } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} IS NULL`);
+      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} = NULL`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
           sourceClassName: classAInfo.name,

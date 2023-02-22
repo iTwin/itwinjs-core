@@ -27,6 +27,7 @@ describe("Server-based locks", () => {
     await ExtensiveTestScenario.prepareDb(sourceDb);
     ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.saveChanges();
+    sourceDb.close();
     return dbName;
   };
 

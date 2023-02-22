@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes, InstanceLabelOverrideValueSpecificationType, RelationshipDirection, Ruleset, RuleTypes,
-} from "@itwin/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
@@ -16,7 +14,7 @@ describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   beforeEach(async () => {
-    await initialize();
+    await initialize({ localization: testLocalization });
     imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
@@ -38,22 +36,22 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "Generic", classNames: ["PhysicalObject"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
             class: { schemaName: "Generic", className: "PhysicalObject" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Property,
+              specType: "Property",
               propertySource: {
                 relationship: { schemaName: "BisCore", className: "ElementOwnsMultiAspects" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "ExternalSourceAspect" },
               },
               propertyName: "Identifier",
@@ -82,27 +80,27 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             priority: 1,
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.String,
+              specType: "String",
               value: "Model A",
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             priority: 2,
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.String,
+              specType: "String",
               value: "Model B",
             }],
           }],
@@ -129,28 +127,28 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             priority: 1,
             onlyIfNotHandled: true,
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.String,
+              specType: "String",
               value: "Model A",
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             priority: 2,
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.String,
+              specType: "String",
               value: "",
             }],
           }],
@@ -175,18 +173,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.String,
+              specType: "String",
               value: "Geometric Model Node",
             }],
           }],
@@ -218,22 +216,22 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Composite,
+              specType: "Composite",
               separator: "-",
               parts: [
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.String, value: "ECClass" } },
-                { spec: { specType: InstanceLabelOverrideValueSpecificationType.ClassName } },
+                { spec: { specType: "String", value: "ECClass" } },
+                { spec: { specType: "ClassName" } },
               ],
             }],
           }],
@@ -258,18 +256,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Property,
+              specType: "Property",
               propertyName: "Pitch",
             }],
           }],
@@ -298,21 +296,21 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "ECDbMeta", classNames: ["ECEnumerationDef"] },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "ECDbMeta", className: "ECEnumerationDef" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.Property,
+              specType: "Property",
               propertySource: {
                 relationship: { schemaName: "ECDbMeta", className: "SchemaOwnsEnumerations" },
-                direction: RelationshipDirection.Backward,
+                direction: "Backward",
               },
               propertyName: "Alias",
             }],
@@ -355,18 +353,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.String,
+              specType: "String",
               value: "Model Node",
             }],
           }],
@@ -391,18 +389,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: true,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.ClassName,
+              specType: "ClassName",
               full: true,
             }],
           }],
@@ -427,18 +425,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.ClassLabel,
+              specType: "ClassLabel",
             }],
           }],
         };
@@ -462,18 +460,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.BriefcaseId,
+              specType: "BriefcaseId",
             }],
           }],
         };
@@ -497,18 +495,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricModel3d"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.LocalId,
+              specType: "LocalId",
             }],
           }],
         };
@@ -533,21 +531,21 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "Generic", classNames: ["PhysicalObject"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
           }, {
-            ruleType: RuleTypes.InstanceLabelOverride,
+            ruleType: "InstanceLabelOverride",
             class: { schemaName: "Generic", className: "PhysicalObject" },
             values: [{
-              specType: InstanceLabelOverrideValueSpecificationType.RelatedInstanceLabel,
+              specType: "RelatedInstanceLabel",
               pathToRelatedInstance: {
                 relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: RelationshipDirection.Backward,
+                direction: "Backward",
               },
             }],
           }],

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix greenUp flag for GLTF normal maps (set to true).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

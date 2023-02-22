@@ -9,7 +9,7 @@
 import { mkdirSync } from "fs";
 import { dirname } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { GuidString } from "@itwin/core-bentley";
+import { BriefcaseStatus, GuidString } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 /** Types for using SQLite files stored in cloud containers.
@@ -371,7 +371,7 @@ export namespace CloudSqlite {
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
       if (err.message === "cancelled")
-        err.errorNumber = 131079; // BriefcaseStatus.DownloadCancelled
+        err.errorNumber = BriefcaseStatus.DownloadCancelled;
 
       throw err;
     } finally {

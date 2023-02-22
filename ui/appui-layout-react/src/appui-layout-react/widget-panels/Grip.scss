@@ -6,9 +6,9 @@
 @import "variables";
 
 $line-grip-translate: 1px;
-$full-bar-width: calc($nz-grip-width * 0.5);
-$handle-width: calc($nz-grip-width + 1px);
-$line-grip-width: calc($nz-grip-width - 2px);
+$full-bar-width: calc(#{$nz-grip-width} * 0.5);
+$handle-width: calc(#{$nz-grip-width} + 1px);
+$line-grip-width: calc(#{$nz-grip-width} - 2px);
 
 .nz-widgetPanels-grip {
   background-color: transparent;
@@ -83,7 +83,7 @@ $line-grip-width: calc($nz-grip-width - 2px);
     border-bottom-left-radius: 0;
   }
   .nz-right & {
-    transform: translateX(calc($line-grip-translate * -1));
+    transform: translateX(calc(#{$line-grip-translate} * -1));
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
@@ -93,7 +93,7 @@ $line-grip-width: calc($nz-grip-width - 2px);
     border-top-right-radius: 0;
   }
   .nz-bottom & {
-    transform: translateY(calc($line-grip-translate * -1));
+    transform: translateY(calc(#{$line-grip-translate} * -1));
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Introduce unfilterable nodes and hierarchy levels",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, GroupingSpecificationTypes, Ruleset, RuleTypes, StandardNodeTypes } from "@itwin/presentation-common";
+import { Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -36,17 +36,17 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
               groupByClass: false,
             }],
             customizationRules: [{
-              ruleType: RuleTypes.Grouping,
+              ruleType: "Grouping",
               class: { schemaName: "BisCore", className: "Element" },
               groups: [{
-                specType: GroupingSpecificationTypes.Property,
+                specType: "Property",
                 propertyName: "UserLabel",
                 createGroupForUnspecifiedValues: false,
               }],
@@ -74,17 +74,17 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
               groupByClass: false,
             }],
             customizationRules: [{
-              ruleType: RuleTypes.Grouping,
+              ruleType: "Grouping",
               class: { schemaName: "BisCore", className: "Element" },
               groups: [{
-                specType: GroupingSpecificationTypes.Property,
+                specType: "Property",
                 propertyName: "UserLabel",
                 imageId: "my-icon-identifier",
                 createGroupForSingleItem: true,
@@ -118,17 +118,17 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
               groupByClass: false,
             }],
             customizationRules: [{
-              ruleType: RuleTypes.Grouping,
+              ruleType: "Grouping",
               class: { schemaName: "BisCore", className: "GeometricElement3d" },
               groups: [{
-                specType: GroupingSpecificationTypes.Property,
+                specType: "Property",
                 propertyName: "Yaw",
                 ranges: [{
                   fromValue: "0",

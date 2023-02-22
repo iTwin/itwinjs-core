@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem } from "./render/RenderSystem";
@@ -69,6 +70,7 @@ export class NoRenderApp {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
     opts.noRender = true;
+    opts.localization = opts.localization ?? new EmptyLocalization();
     await IModelApp.startup(opts);
   }
 }

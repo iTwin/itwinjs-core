@@ -29,7 +29,9 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
   readonly tooltip?: string | ConditionalStringValue;
-  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. @deprecated */
+  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false.
+   * @deprecated in 3.0.
+   * */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
   readonly applicationData?: any;
@@ -58,7 +60,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly syncEventIds?: string[];
   /** Function executed to determine the state of the widget.
    *  Used by UI 1.0 widgets ONLY.
-   * @deprecated
+   * @deprecated in 3.3.
   */
   readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
   /** Badge to be overlaid on the widget tab. */
