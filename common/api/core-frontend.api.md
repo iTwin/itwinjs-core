@@ -3703,60 +3703,6 @@ export class GlobeAnimator implements Animator {
 }
 
 // @internal
-export interface Gltf extends GltfProperty {
-    // (undocumented)
-    accessors?: GltfDictionary<GltfAccessor>;
-    animations?: GltfDictionary<any>;
-    asset?: GltfAsset;
-    // (undocumented)
-    buffers?: GltfDictionary<GltfBuffer>;
-    // (undocumented)
-    bufferViews?: GltfDictionary<GltfBufferViewProps>;
-    cameras?: GltfDictionary<any>;
-    // (undocumented)
-    extensions?: GltfExtensions & {
-        CESIUM_RTC?: {
-            center?: number[];
-        };
-        KHR_techniques_webgl?: {
-            techniques?: Array<{
-                uniforms?: {
-                    [key: string]: {
-                        type: GltfDataType;
-                        value?: any;
-                    } | undefined;
-                };
-            }>;
-        };
-    };
-    extensionsRequired?: string[];
-    extensionsUsed?: string[];
-    // (undocumented)
-    images?: GltfDictionary<GltfImage>;
-    // (undocumented)
-    materials?: GltfDictionary<GltfMaterial>;
-    // (undocumented)
-    meshes?: GltfDictionary<GltfMesh>;
-    // (undocumented)
-    nodes?: GltfDictionary<GltfNode>;
-    // (undocumented)
-    samplers?: GltfDictionary<GltfSampler>;
-    scene?: GltfId;
-    // (undocumented)
-    scenes?: GltfDictionary<GltfScene>;
-    skins?: GltfDictionary<any>;
-    techniques?: GltfDictionary<GltfTechnique>;
-    // (undocumented)
-    textures?: GltfDictionary<GltfTexture>;
-}
-
-// @internal
-export type Gltf1Id = string;
-
-// @internal
-export type Gltf2Id = number;
-
-// @internal
 export class GltfBufferData {
     constructor(buffer: GltfDataBuffer, count: number);
     // (undocumented)
@@ -3768,42 +3714,6 @@ export class GltfBufferData {
 
 // @internal (undocumented)
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
-
-// @internal
-export enum GltfDataType {
-    // (undocumented)
-    Float = 5126,
-    // (undocumented)
-    FloatMat3 = 35675,
-    // (undocumented)
-    FloatMat4 = 35676,
-    // (undocumented)
-    FloatVec2 = 35664,
-    // (undocumented)
-    FloatVec3 = 35665,
-    // (undocumented)
-    FloatVec4 = 35666,
-    // (undocumented)
-    IntVec2 = 35667,
-    // (undocumented)
-    IntVec3 = 35668,
-    // (undocumented)
-    Rgb = 6407,
-    // (undocumented)
-    Rgba = 6408,
-    // (undocumented)
-    Sampler2d = 35678,
-    // (undocumented)
-    SignedByte = 5120,
-    // (undocumented)
-    SignedShort = 5122,
-    // (undocumented)
-    UInt32 = 5125,
-    // (undocumented)
-    UnsignedByte = 5121,
-    // (undocumented)
-    UnsignedShort = 5123
-}
 
 // @internal
 export class GltfGraphicsReader extends GltfReader {
@@ -3838,9 +3748,6 @@ export class GltfHeader extends TileHeader {
 }
 
 // @internal
-export type GltfId = Gltf1Id | Gltf2Id;
-
-// @internal
 export class GltfMeshData {
     constructor(props: Mesh);
     // (undocumented)
@@ -3862,9 +3769,6 @@ export class GltfMeshData {
     // (undocumented)
     uvs?: Uint16Array;
 }
-
-// @internal
-export type GltfNode = Gltf1Node | Gltf2Node;
 
 // @internal
 export abstract class GltfReader {
@@ -3894,7 +3798,7 @@ export abstract class GltfReader {
     }, accessorName: string): GltfBufferView | undefined;
     getTextureType(sampler?: GltfSampler): RenderTexture.Type;
     // (undocumented)
-    protected readonly _glTF: Gltf;
+    protected readonly _glTF: GltfDocument;
     // (undocumented)
     protected get _images(): GltfDictionary<GltfImage & {
         resolvedImage?: TextureImageSource;
@@ -4002,9 +3906,9 @@ export class GltfReaderProps {
     readonly baseUrl?: string;
     // (undocumented)
     readonly binaryData?: Uint8Array;
-    static create(source: Uint8Array | Gltf, yAxisUp?: boolean, baseUrl?: string): GltfReaderProps | undefined;
+    static create(source: Uint8Array | GltfDocument, yAxisUp?: boolean, baseUrl?: string): GltfReaderProps | undefined;
     // (undocumented)
-    readonly glTF: Gltf;
+    readonly glTF: GltfDocument;
     // (undocumented)
     readonly version: number;
     // (undocumented)
@@ -4015,24 +3919,6 @@ export class GltfReaderProps {
 export interface GltfReaderResult extends TileContent {
     // (undocumented)
     readStatus: TileReadStatus;
-}
-
-// @internal
-export interface GltfSampler extends GltfChildOfRootProperty {
-    magFilter?: GltfMagFilter;
-    minFilter?: GltfMinFilter;
-    wrapS?: GltfWrapMode;
-    wrapT?: GltfWrapMode;
-}
-
-// @internal
-export enum GltfWrapMode {
-    // (undocumented)
-    ClampToEdge = 33071,
-    // (undocumented)
-    MirroredRepeat = 33648,
-    // (undocumented)
-    Repeat = 10497
 }
 
 // @internal (undocumented)
