@@ -1210,16 +1210,13 @@ export abstract class GltfReader {
       if (GltfDataType.UnsignedShort !== view.type)
         return false;
 
-      const extensions = JsonUtils.asObject(view.accessor.extensions);
-      const quantized = undefined !== extensions ? JsonUtils.asObject(extensions.WEB3D_quantized_attributes) : undefined;
-      if (undefined === quantized)
+      const quantized = view.accessor.extensions?.WEB3D_quantized_attributes;
+      const rangeMin = quantized?.decodedMin;
+      const rangeMax = quantized?.decodedMax;
+      if (!rangeMin || !rangeMax) // required by spec...
         return false;
 
-      const rangeMin = JsonUtils.asArray(quantized.decodedMin);
-      const rangeMax = JsonUtils.asArray(quantized.decodedMax);
-      if (undefined === rangeMin || undefined === rangeMax)
-        return false;
-
+      // ###TODO apply WEB3D_quantized_attributes.decodeMatrix? Have not encountered in the wild; glTF 1.0 only.
       const buffer = view.toBufferData(GltfDataType.UnsignedShort);
       if (undefined === buffer || !(buffer.buffer instanceof Uint16Array))
         return false;
@@ -1355,13 +1352,9 @@ export abstract class GltfReader {
       }
 
       case GltfDataType.UnsignedShort: {
-        const extensions = JsonUtils.asObject(view.accessor.extensions);
-        const quantized = undefined !== extensions ? JsonUtils.asObject(extensions.WEB3D_quantized_attributes) : undefined;
-        if (undefined === quantized)
-          return false;
-
-        const rangeMin = JsonUtils.asArray(quantized.decodedMin);
-        const rangeMax = JsonUtils.asArray(quantized.decodedMax);
+        const quantized = view.accessor.extensions?.WEB3D_quantized_attributes;
+        const rangeMin = quantized?.decodedMin;
+        const rangeMax = quantized?.decodedMax;
         if (undefined === rangeMin || undefined === rangeMax)
           return false;
 

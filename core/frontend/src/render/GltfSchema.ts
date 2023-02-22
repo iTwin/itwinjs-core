@@ -456,6 +456,15 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
   max?: number[];
   min?: number[];
   sparse?: unknown; // ###TODO sparse accessors
+  extensions?: GltfExtensions & {
+    /** Quantized attributes for glTF 1.0. Superceded by KHR_mesh_quantization. */
+    WEB3D_quantized_attributes?: {
+      decodedMin: number[];
+      decodedMax: number[],
+      /** Currently ignored. */
+      decodeMatrix: number[],
+    };
+  };
 }
 
 /** Describes the top-level structure of a glTF asset.
