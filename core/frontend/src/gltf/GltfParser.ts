@@ -119,26 +119,55 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
 }
 
 interface GltfParserOptions {
-  document: schema.GltfDocument,
-    version: number;
-    upAxis: "y" | "z";
-    binary?: Uint8Array;
-    baseUrl?: string;
-    logger: ParseGltfLogger;
-    isCanceled: () => boolean;
+  document: schema.GltfDocument;
+  version: number;
+  upAxis: "y" | "z";
+  binary?: Uint8Array;
+  baseUrl?: string;
+  logger: ParseGltfLogger;
+  isCanceled: () => boolean;
 }
 
+type ParserBuffer = schema.GltfBuffer & { resolvedBuffer?: Uint8Array };
+
 class GltfParser {
-  private readonly _options: GltfParserOptions;
+  private readonly _version: number;
+  private readonly _upAxis: "y" | "z";
+  private readonly _baseUrl?: string
+  private readonly _logger: ParseGltfLogger;
+  private readonly _isCanceled: () => boolean;
+  private readonly _buffers: schema.GltfDictionary<ParserBuffer>;
+  private readonly _nodes: schema.GltfDictionary<schema.GltfNode>;
+  private readonly _sceneNodes: schema.GltfId[];
 
   public constructor(options: GltfParserOptions) {
-    this._options = options;
+    this._version = options.version;
+    this._upAxis = options.upAxis;
+    this._baseUrl = options.baseUrl;
+    this._logger = options.logger;
+    this._isCanceled = options.isCanceled;
+
+    const emptyDict = { };
+    const doc = options.document;
+    this._buffers = doc.buffers ?? emptyDict;
+    this._nodes = doc.nodes ?? emptyDict;
+
+    if (options.binary) {
+      const buffer = this._buffers[this._version === 2 ? 0 : "binary_glTF"];
+      if (buffer && undefined === buffer.uri)
+        buffer.resolvedBuffer = options.binary;
+    }
+
+    let sceneNodes;
+    if (doc.scenes && undefined !== doc.scene)
+      sceneNodes = doc.scenes[doc.scene]?.nodes;
+
+    this._sceneNodes = sceneNodes ?? Object.keys(this._nodes);
   }
 
-  private get isCanceled() { return this._options.isCanceled(); }
-  private get document() { return this._options.document; }
-
   public async parse(): Promise<Gltf.Model | undefined> {
+    // ###TODO_GLTF RTC_CENTER
+    // ###TODO_GLTF pseudo-rtc bias (apply translation to each point at read time, for scalable mesh...)
     return undefined;
   }
 }
