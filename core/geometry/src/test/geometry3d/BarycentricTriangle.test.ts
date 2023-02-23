@@ -78,7 +78,7 @@ describe("BarycentricTriangle", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const vertices: Point3d[] = [Point3d.create(-3,0,0), Point3d.create(6,0,0), Point3d.create(0,2,0)];
+    const vertices: Point3d[] = [Point3d.create(-3, 0, 0), Point3d.create(6, 0, 0), Point3d.create(0, 2, 0)];
     const triangle = BarycentricTriangle.create(vertices[0], vertices[1], vertices[2]);
 
     // coverage for triangle intrinsic queries
@@ -97,17 +97,17 @@ describe("BarycentricTriangle", () => {
     const loc1 = triangle.intersectSegment(Point3d.create(centroid.x, centroid.y, -10), Point3d.create(centroid.x, centroid.y, 10));
     ck.testTrue(loc1.isValid, "found intersection of segment");
     ck.testPoint3d(centroid, loc1.world, "expected world coords of intersection");
-    ck.testPoint3d(Point3d.create(1/3, 1/3, 1/3), loc1.local, "expected barycentric coords of intersection");
+    ck.testPoint3d(Point3d.create(1 / 3, 1 / 3, 1 / 3), loc1.local, "expected barycentric coords of intersection");
     ck.testCoordinate(0.5, loc1.a, "expected segment parameter of intersection");
     ck.testFalse(triangle.intersectSegment(centroid, Point3d.create(centroid.x + 10, centroid.y, centroid.z)).isValid, "parallel segment intersection is invalid");
 
     // degenerate input coverage
     ck.testFalse(BarycentricTriangle.create(vertices[0], vertices[1], vertices[1]).pointToFraction(incenter).isValid, "invert pt on degenerate triangle");
-    ck.testFalse(PolygonOps.closestPoint([], incenter).isValid, "0-pt 'polygon' closest point is invalid");
-    let loc0 = PolygonOps.closestPoint([vertices[0]], incenter);
+    ck.testFalse(PolygonOps.closestPointOnBoundary([], incenter).isValid, "0-pt 'polygon' closest point is invalid");
+    let loc0 = PolygonOps.closestPointOnBoundary([vertices[0]], incenter);
     ck.testTrue(loc0.isValid && loc0.point.isAlmostEqualMetric(vertices[0]) && loc0.code === PolygonLocation.OnPolygonVertex && loc0.closestEdgeIndex === 0 && loc0.closestEdgeParam === 0.0, "1-pt 'polygon' closest point is valid");
-    ck.testTrue(PolygonOps.closestPoint([vertices[0], vertices[1]], incenter).isValid, "2-pt 'polygon' closest point is invalid");
-    loc0 = PolygonOps.closestPoint([vertices[0], vertices[1], vertices[1], vertices[2], vertices[2]], incenter);
+    ck.testTrue(PolygonOps.closestPointOnBoundary([vertices[0], vertices[1]], incenter).isValid, "2-pt 'polygon' closest point is invalid");
+    loc0 = PolygonOps.closestPointOnBoundary([vertices[0], vertices[1], vertices[1], vertices[2], vertices[2]], incenter);
     ck.testTrue(loc0.isValid, "closest point with degenerate edge");
 
     // some special barycentric triples
@@ -116,7 +116,7 @@ describe("BarycentricTriangle", () => {
       [triangle.pointToFraction(centroid)!, true],
       [triangle.pointToFraction(incenter)!, true],
       [triangle.pointToFraction(triangle.circumcenter())!, false],
-      ];
+    ];
     for (const specialPt of barycentricInsideOn) {
       ck.testBoolean(specialPt[0].isInsideOrOn, specialPt[1], "special point containment");
       ck.testExactNumber(specialPt[0].classify, specialPt[1] ? PolygonLocation.InsidePolygonProjectsToEdgeInterior : PolygonLocation.OutsidePolygonProjectsToEdgeInterior, "special point classification");
@@ -135,20 +135,21 @@ describe("BarycentricTriangle", () => {
       const xyz = Point3d.create(diag * Math.cos(angle), diag * Math.sin(angle));
       const loc = triangle.pointToFraction(xyz);
       if (ck.testPoint3d(xyz, loc.world, "circle pt is in plane") &&
-          ck.testPoint3d(xyz, triangle.fractionToPoint(loc.local.x, loc.local.y, loc.local.z), "recover circle pt from barycentric"))
+        ck.testPoint3d(xyz, triangle.fractionToPoint(loc.local.x, loc.local.y, loc.local.z), "recover circle pt from barycentric"))
         circlePoints.push(loc.local);
     }
 
     // test closest point to triangle from some barycentric locations
-    for (const b of [Point3d.create(0.2,0.5,0.3), Point3d.create(0.5,0.1,0.4),  // inside triangle
-                     Point3d.create(1,0,0), Point3d.create(0,1,0), Point3d.create(0,0,1), // at vertices
-                     Point3d.create(0,0.4,0.6), Point3d.create(0.2,0,0.8), Point3d.create(0.3,0.7,0), // inside edges
-                     Point3d.create(0,-4,5), Point3d.create(0,-0.5,1.5), Point3d.create(0,1.5,-0.5), Point3d.create(0,5,-4), // on extended edge 0
-                     Point3d.create(-4,0,5), Point3d.create(-0.5,0,1.5), Point3d.create(1.5,0,-0.5), Point3d.create(5,0,-4), // on extended edge 1
-                     Point3d.create(-4,5,0), Point3d.create(-0.5,1.5,0), Point3d.create(1.5,-0.5,0), Point3d.create(5,-4,0), // on extended edge 2
-                     ...specialPoints,
-                     ...circlePoints,
-                    ]) {
+    for (const b of [
+      Point3d.create(0.2, 0.5, 0.3), Point3d.create(0.5, 0.1, 0.4),  // inside triangle
+      Point3d.create(1, 0, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 1), // at vertices
+      Point3d.create(0, 0.4, 0.6), Point3d.create(0.2, 0, 0.8), Point3d.create(0.3, 0.7, 0), // inside edges
+      Point3d.create(0, -4, 5), Point3d.create(0, -0.5, 1.5), Point3d.create(0, 1.5, -0.5), Point3d.create(0, 5, -4), // on extended edge 0
+      Point3d.create(-4, 0, 5), Point3d.create(-0.5, 0, 1.5), Point3d.create(1.5, 0, -0.5), Point3d.create(5, 0, -4), // on extended edge 1
+      Point3d.create(-4, 5, 0), Point3d.create(-0.5, 1.5, 0), Point3d.create(1.5, -0.5, 0), Point3d.create(5, -4, 0), // on extended edge 2
+      ...specialPoints,
+      ...circlePoints,
+    ]) {
       const pt = triangle.fractionToPoint(b.x, b.y, b.z);
       const data = triangle.closestPoint(b.x, b.y, b.z);
       ck.testTrue(data.closestEdgeIndex >= 0, "found projection");
@@ -163,7 +164,7 @@ describe("BarycentricTriangle", () => {
             const k = Geometry.cyclic3dAxis(j + 1);
             ck.testExactNumber(k, data.closestEdgeIndex, "vertex hit has expected edge index");
             ck.testExactNumber(0.0, data.closestEdgeParam, "vertex hit has expected edge param");
-          } else if (b.at(j) > 0.0 && b.at(j) < 1.0 ) { // inside edge
+          } else if (b.at(j) > 0.0 && b.at(j) < 1.0) { // inside edge
             ck.testExactNumber(triangle.pointToFraction(pt).classify, PolygonLocation.OnPolygonEdgeInterior, "edge classify");
             ck.testExactNumber(j, data.closestEdgeIndex, "edge hit has expected edge index");
             ck.testExactNumber(1 - b.at(j), data.closestEdgeParam, "edge hit has expected edge param");
@@ -171,7 +172,7 @@ describe("BarycentricTriangle", () => {
         }
       }
       // compare PolygonOps v. BarycentricTriangle closest point
-      const loc = PolygonOps.closestPoint(vertices, pt);
+      const loc = PolygonOps.closestPointOnBoundary(vertices, pt);
       if (!triangle.incenter().isAlmostEqual(pt)) { // incenter is equidistant from edges, so it may project to any edge!
         ck.testExactNumber(data.closestEdgeIndex, loc.closestEdgeIndex, "closest edge index same in both algorithms");
         ck.testCoordinate(data.closestEdgeParam, loc.closestEdgeParam, "closest edge param same in both algorithms");

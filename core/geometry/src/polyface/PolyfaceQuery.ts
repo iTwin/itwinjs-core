@@ -1494,13 +1494,13 @@ export class PolyfaceQuery {
           detail = this._workFacetDetailNC = NonConvexFacetLocationDetail.create(visitor.currentReadIndex(), numEdges, detailN, this._workFacetDetailNC);
       }
       if (detail.isInsideOrOn) {  // set optional caches, process the intersection
-        if (options?.wantNormal && visitor.normal)
+        if (options?.needNormal && visitor.normal)
           detail.getNormal(visitor.normal, vertices, options?.distanceTolerance);
-        if (options?.wantParam && visitor.param)
+        if (options?.needParam && visitor.param)
           detail.getParam(visitor.param, vertices, options?.distanceTolerance);
-        if (options?.wantColor && visitor.color)
+        if (options?.needColor && visitor.color)
           detail.getColor(visitor.color, vertices, options?.distanceTolerance);
-        if (options?.wantBarycentricCoordinates)
+        if (options?.needBarycentricCoordinates)
           detail.getBarycentricCoordinates(vertices, options?.distanceTolerance);
         if (options?.acceptIntersection && !options.acceptIntersection(detail, visitor))
           continue;

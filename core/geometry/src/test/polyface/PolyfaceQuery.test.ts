@@ -1072,8 +1072,8 @@ describe("Intersections", () => {
     if (ck.testPointer(mesh, "created mesh")) {
       // fire ray at some known locations from the origin. This symmetric mesh imposes symmetry on the intersections and ray params.
       const knownPoints = [
-        {vec: Vector3d.create(0.22391898, 0.22391898, 0.94853602), numInts: 8, a: 1.0}, // a vertex
-        {vec: Vector3d.create(0.0, 0.22391898, 0.94853602), numInts: 4, a: 0.97460776}, // an edge
+        { vec: Vector3d.create(0.22391898, 0.22391898, 0.94853602), numInts: 8, a: 1.0 }, // a vertex
+        { vec: Vector3d.create(0.0, 0.22391898, 0.94853602), numInts: 4, a: 0.97460776 }, // an edge
       ];
       const opts = new FacetIntersectOptions();
       let ints: FacetLocationDetail[];
@@ -1111,7 +1111,7 @@ describe("Intersections", () => {
       // fire rays into mesh; some will miss
       let x0 = 0;
       const options = new FacetIntersectOptions();
-      options.wantColor = options.wantNormal = options.wantParam = true;
+      options.needColor = options.needNormal = options.needParam = true;
       for (const filter of ["firstFound", "infiniteLine", "boundedSegment", "boundedRay"]) {
         let intersects: FacetLocationDetail[] = [];
         if (filter === "firstFound")
@@ -1153,10 +1153,10 @@ describe("Intersections", () => {
           if (undefined !== loc) {
             ck.testTrue(loc.isInsideOrOn, "intersection is real");
             ck.testTrue(loc.classify < PolygonLocation.OutsidePolygon, "intersection is real (via classify)");
-            ck.testBoolean(options.wantNormal, undefined !== loc.getNormal(), "normal computed as expected");
-            ck.testBoolean(options.wantParam, undefined !== loc.getParam(), "uv parameter computed as expected");
-            ck.testBoolean(options.wantColor, undefined !== loc.getColor(), "color computed as expected");
-            ck.testBoolean(options.wantBarycentricCoordinates || options.wantNormal || options.wantParam || options.wantColor, undefined !== loc.getBarycentricCoordinates(), "barycentric coords computed as expected");
+            ck.testBoolean(options.needNormal, undefined !== loc.getNormal(), "normal computed as expected");
+            ck.testBoolean(options.needParam, undefined !== loc.getParam(), "uv parameter computed as expected");
+            ck.testBoolean(options.needColor, undefined !== loc.getColor(), "color computed as expected");
+            ck.testBoolean(options.needBarycentricCoordinates || options.needNormal || options.needParam || options.needColor, undefined !== loc.getBarycentricCoordinates(), "barycentric coords computed as expected");
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, segment, x0);
           }
         }
@@ -1170,7 +1170,7 @@ describe("Intersections", () => {
   it("IntersectRay3dSingleFaceMesh", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const vertices0 = [Point3d.create(0,0), Point3d.create(4,0), Point3d.create(4,4), Point3d.create(0,4)];
+    const vertices0 = [Point3d.create(0, 0), Point3d.create(4, 0), Point3d.create(4, 4), Point3d.create(0, 4)];
     const normals0: Vector3d[] = [];
     const params0: Point2d[] = [];
     const colors0 = [0xB435CA, 0x0CF316, 0xFB2B04, 0xF7EF08];
@@ -1196,7 +1196,7 @@ describe("Intersections", () => {
     }
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0);
     // fire rays to midpoints of edges
-    const rays = [Ray3d.createXYZUVW(2,0,5,0,0,-1), Ray3d.createXYZUVW(4,2,5,0,0,-1), Ray3d.createXYZUVW(2,4,5,0,0,-1), Ray3d.createXYZUVW(0,2,5,0,0,-1)];
+    const rays = [Ray3d.createXYZUVW(2, 0, 5, 0, 0, -1), Ray3d.createXYZUVW(4, 2, 5, 0, 0, -1), Ray3d.createXYZUVW(2, 4, 5, 0, 0, -1), Ray3d.createXYZUVW(0, 2, 5, 0, 0, -1)];
     const vertices1: Point3d[] = [];
     const normals1: Vector3d[] = [];
     const params1: Point2d[] = [];
@@ -1261,7 +1261,7 @@ describe("Intersections", () => {
 
     // remaining coverage
     const intersectOptions = new FacetIntersectOptions();
-    intersectOptions.wantBarycentricCoordinates = true;
+    intersectOptions.needBarycentricCoordinates = true;
     const loc1 = PolyfaceQuery.intersectRay3d(mesh1, Ray3d.createXYZUVW(centroid.x, centroid.y, -5, 0, 0, 1), intersectOptions);
     if (ck.testPointer(loc1, "found intersection in new mesh")) {
       ck.testTrue(loc1.isValid, "intersection isValid");

@@ -75,7 +75,7 @@ export class PolygonLocationDetail {
   /** Set the instance contents from the other detail.
    * @param other detail to clone
    */
-  public copyContents(other: PolygonLocationDetail) {
+  public copyContentsFrom(other: PolygonLocationDetail) {
     this.point.setFrom(other.point);
     this.a = other.a;
     this.v.setFrom(other.v);
@@ -877,9 +877,9 @@ export class PolygonOps {
    * * `d.a` is the distance from testPoint to the closest point.
    * * `d.v` can be used to classify p (if p and polygon are coplanar): if n is the polygon normal then `d.v.dotProduct(n)` is +/-/0 if and only if p is inside/outside/on the polygon.
   */
-  public static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
     if (!(polygon instanceof IndexedXYZCollection))
-      return this.closestPoint(new Point3dArrayCarrier(polygon), testPoint, tolerance, result);
+      return this.closestPointOnBoundary(new Point3dArrayCarrier(polygon), testPoint, tolerance, result);
 
     const distTol2 = tolerance * tolerance;
 
@@ -1025,7 +1025,7 @@ export class PolygonOps {
     const rayParam = ray.intersectionWithPlane(this._workPlane, intersectionPoint);
     if (undefined === rayParam)
       return PolygonLocationDetail.create(result);
-    result = this.closestPoint(polygon, intersectionPoint, tolerance, result);
+    result = this.closestPointOnBoundary(polygon, intersectionPoint, tolerance, result);
     if (result.isValid) {
       result.point.setFrom(intersectionPoint);
       result.a = rayParam;

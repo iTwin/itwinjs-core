@@ -2323,7 +2323,6 @@ export class GrowableXYArray extends IndexedXYCollection {
     isIndexValid(index: number): boolean;
     get length(): number;
     set length(newLength: number);
-    linearCombination(scales: number[], result?: Point2d | Vector2d): XY;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
     multiplyTransformInPlace(transform: Transform): void;
     pop(): void;
@@ -2966,8 +2965,10 @@ export abstract class IndexedXYCollection {
     abstract crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined;
     abstract getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined;
     abstract getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
+    getXAtUncheckedPointIndex(pointIndex: number): number;
+    getYAtUncheckedPointIndex(pointIndex: number): number;
     abstract get length(): number;
-    linearCombination(_scales: number[], _result?: Point2d | Vector2d): XY | undefined;
+    linearCombination(scales: number[], result?: Point2d | Vector2d): XY;
     abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
     abstract vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined;
 }
@@ -4182,9 +4183,10 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     data: Point2d[];
     getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined;
     getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
+    getXAtUncheckedPointIndex(pointIndex: number): number;
+    getYAtUncheckedPointIndex(pointIndex: number): number;
     isValidIndex(index: number): boolean;
     get length(): number;
-    linearCombination(scales: number[], result?: Point2d | Vector2d): XY;
     vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
     vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined;
 }
@@ -4704,7 +4706,7 @@ export class PolygonLocationDetail {
     closestEdgeIndex: number;
     closestEdgeParam: number;
     code: PolygonLocation;
-    copyContents(other: PolygonLocationDetail): void;
+    copyContentsFrom(other: PolygonLocationDetail): void;
     static create(result?: PolygonLocationDetail): PolygonLocationDetail;
     invalidate(): void;
     get isInsideOrOn(): boolean;
@@ -4725,7 +4727,7 @@ export class PolygonOps {
     static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
-    static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d, tolerance?: number): number[] | undefined;
     static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
@@ -5890,7 +5892,7 @@ export class TriangleLocationDetail {
     get classify(): PolygonLocation;
     closestEdgeIndex: number;
     closestEdgeParam: number;
-    copyContents(other: TriangleLocationDetail): void;
+    copyContentsFrom(other: TriangleLocationDetail): void;
     static create(result?: TriangleLocationDetail): TriangleLocationDetail;
     invalidate(): void;
     get isInsideOrOn(): boolean;

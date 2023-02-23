@@ -12,7 +12,7 @@ import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYCollection } from "./IndexedXYCollection";
 import { Matrix3d } from "./Matrix3d";
-import { Point2d, Vector2d, XY } from "./Point2dVector2d";
+import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d } from "./Point3dVector3d";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range2d } from "./Range";
@@ -237,15 +237,15 @@ export class GrowableXYArray extends IndexedXYCollection {
    * Get x coordinate by point index, with no index checking
    * @param pointIndex index to access
    */
-  public getXAtUncheckedPointIndex(pointIndex: number): number {
+  public override getXAtUncheckedPointIndex(pointIndex: number): number {
     return this._data[2 * pointIndex];
   }
 
   /**
-   * Get y coordinate by index, with no index checking
+   * Get y coordinate by point index, with no index checking
    * @param pointIndex index to access
    */
-  public getYAtUncheckedPointIndex(pointIndex: number): number {
+  public override getYAtUncheckedPointIndex(pointIndex: number): number {
     return this._data[2 * pointIndex + 1];
   }
 
@@ -693,21 +693,5 @@ export class GrowableXYArray extends IndexedXYCollection {
         return false;
     }
     return true;
-  }
-
-  /** Compute the linear combination s of the indexed p_i and given scales s_i.
-   * @param scales array of scales. For best results, scales should have same length as the instance.
-   * @param result optional pre-allocated object to fill and return
-   * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
-   */
-  public override linearCombination(scales: number[], result?: Point2d | Vector2d): XY {
-    const n = Math.min(this.length, scales.length);
-    let x = 0;
-    let y = 0;
-    for (let i = 0; i < n; ++i) {
-      x += scales[i] * this.getXAtUncheckedPointIndex(i);
-      y += scales[i] * this.getYAtUncheckedPointIndex(i);
-    }
-    return (result instanceof Vector2d) ? Vector2d.create(x, y, result) : Point2d.create(x, y, result);
   }
 }

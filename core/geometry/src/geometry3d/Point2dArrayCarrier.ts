@@ -115,19 +115,19 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     return this.data.length;
   }
 
-  /** Compute the linear combination s of the indexed p_i and given scales s_i.
-   * @param scales array of scales. For best results, scales should have same length as the instance.
-   * @param result optional pre-allocated object to fill and return
-   * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
+  /**
+   * Get x coordinate by point index, with no index checking
+   * @param pointIndex index to access
    */
-  public override linearCombination(scales: number[], result?: Point2d | Vector2d): XY {
-    const n = Math.min(this.length, scales.length);
-    let x = 0;
-    let y = 0;
-    for (let i = 0; i < n; ++i) {
-      x += scales[i] * this.data[i].x;
-      y += scales[i] * this.data[i].y;
-    }
-    return (result instanceof Vector2d) ? Vector2d.create(x, y, result) : Point2d.create(x, y, result);
+  public override getXAtUncheckedPointIndex(pointIndex: number): number {
+    return this.data[pointIndex].x;
+  }
+
+  /**
+   * Get y coordinate by point index, with no index checking
+   * @param pointIndex index to access
+   */
+  public override getYAtUncheckedPointIndex(pointIndex: number): number {
+    return this.data[pointIndex].y;
   }
 }

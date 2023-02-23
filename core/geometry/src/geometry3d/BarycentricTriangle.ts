@@ -67,7 +67,7 @@ export class TriangleLocationDetail {
   /** Set the instance contents from the other detail.
    * @param other detail to clone
    */
-  public copyContents(other: TriangleLocationDetail) {
+  public copyContentsFrom(other: TriangleLocationDetail) {
     this.world.setFrom(other.world);
     this.local.setFrom(other.local);
     this.a = other.a;

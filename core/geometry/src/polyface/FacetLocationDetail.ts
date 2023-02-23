@@ -32,13 +32,13 @@ export class FacetIntersectOptions {
   /** fractional tolerance for snapping barycentric coordinates to a triangular facet edge */
   public parameterTolerance: number;
   /** whether to compute the normal at the intersection point */
-  public wantNormal?: boolean;
+  public needNormal?: boolean;
   /** whether to compute the uv parameter at the intersection point */
-  public wantParam?: boolean;
+  public needParam?: boolean;
   /** whether to compute the color at the intersection point */
-  public wantColor?: boolean;
+  public needColor?: boolean;
   /** whether to compute the barycentric coordinates of the point for a convex facet */
-  public wantBarycentricCoordinates?: boolean;
+  public needBarycentricCoordinates?: boolean;
   /** optional callback to accept an intersected facet */
   public acceptIntersection?: FacetIntersectCallback;
   /** constructor with defaults */
@@ -74,7 +74,7 @@ export interface FacetLocationDetail {
   /** Clone the instance */
   clone(): FacetLocationDetail;
   /** Set the instance contents from the other detail */
-  copyContents(other: FacetLocationDetail): void;
+  copyContentsFrom(other: FacetLocationDetail): void;
   /** Get reference to cached normal interpolated from facet data. Inputs may be used to compute the cache. */
   getNormal(facetNormals?: IndexedXYZCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Vector3d | undefined;
   /** Get reference to cached uv parameter interpolated from facet data. Inputs may be used to compute the cache. */
@@ -119,7 +119,7 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
     result.invalidate(false); // detail might be owned by result!
     result._facetIndex = facetIndex;
     if (undefined !== detail)
-      result._detail.copyContents(detail);
+      result._detail.copyContentsFrom(detail);
     return result;
   }
   /** Get the facet index. */
@@ -165,15 +165,15 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
   /** Clone the instance */
   public clone(): TriangularFacetLocationDetail {
     const detail = new TriangularFacetLocationDetail();
-    detail.copyContents(this);
+    detail.copyContentsFrom(this);
     return detail;
   }
   /** Set the instance contents from the other detail.
    * @param other detail to clone
    */
-  public copyContents(other: TriangularFacetLocationDetail) {
+  public copyContentsFrom(other: TriangularFacetLocationDetail) {
     this._facetIndex = other._facetIndex;
-    this._detail.copyContents(other._detail);
+    this._detail.copyContentsFrom(other._detail);
     this._normal = other._normal?.clone();
     this._param = other._param?.clone();
     this._color = other._color;
@@ -254,7 +254,7 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
     result._facetIndex = facetIndex;
     result._edgeCount = edgeCount;
     if (undefined !== detail && result._detail !== detail)
-      result._detail.copyContents(detail);
+      result._detail.copyContentsFrom(detail);
     return result;
   }
   /** Get the facet index. */
@@ -300,16 +300,16 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
   /** Clone the instance */
   public clone(): NonConvexFacetLocationDetail {
     const detail = new NonConvexFacetLocationDetail();
-    detail.copyContents(this);
+    detail.copyContentsFrom(this);
     return detail;
   }
   /** Set the instance contents from the other detail.
    * @param other detail to clone
    */
-  public copyContents(other: NonConvexFacetLocationDetail) {
+  public copyContentsFrom(other: NonConvexFacetLocationDetail) {
     this._facetIndex = other._facetIndex;
     this._edgeCount = other._edgeCount;
-    this._detail.copyContents(other._detail);
+    this._detail.copyContentsFrom(other._detail);
   }
   /** Interpolated data is not defined for a non-convex facet.
    * @returns undefined
@@ -374,14 +374,14 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
   /** Clone the instance */
   public override clone(): ConvexFacetLocationDetail {
     const detail = new ConvexFacetLocationDetail();
-    detail.copyContents(this);
+    detail.copyContentsFrom(this);
     return detail;
   }
   /** Set the instance contents from the other detail.
    * @param other detail to clone
    */
-  public override copyContents(other: ConvexFacetLocationDetail) {
-    super.copyContents(other);
+  public override copyContentsFrom(other: ConvexFacetLocationDetail) {
+    super.copyContentsFrom(other);
     this._normal = other._normal?.clone();
     this._param = other._param?.clone();
     this._color = other._color;
