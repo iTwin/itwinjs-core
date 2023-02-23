@@ -35,7 +35,6 @@ import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { Sphere } from "../../solid/Sphere";
-import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -875,14 +874,11 @@ it("PartialSawToothTriangulation", () => {
     let y0 = 0.0;
     const polygonPoints = fullSawtooth.slice(0, numPoints);
     const loop = Loop.createPolygon(polygonPoints);
-    const sweepContour = SweepContour.createForLinearSweep(loop);
-
     const options = new StrokeOptions();
-    options.needParams = false;
+    options.needNormals = false;
     options.needParams = false;
     const builder = PolyfaceBuilder.create(options);
-
-    sweepContour!.emitFacets(builder, false);
+    builder.addGeometryQuery(loop);
     const polyface = builder.claimPolyface(true);
     if (!ck.testExactNumber(polygonPoints.length - 2, polyface.facetCount, "Triangle count in polygon")) {
       const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
@@ -918,16 +914,16 @@ it("facets from sweep contour with holes", () => {
   let x1 = x0;
 
   const options = new StrokeOptions();
-  options.needParams = false;
+  options.needNormals = false;
   options.needParams = false;
   const builder = PolyfaceBuilder.create(options);
-  builder.addTriangulatedRegion(region);
+  builder.addGeometryQuery(region);
   GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x1, y1);
   for (const e of [1, 0.5]) {
     x1 += step;
     options.maxEdgeLength = e;
     const builder1 = PolyfaceBuilder.create(options);
-    builder1.addTriangulatedRegion(region);
+    builder1.addGeometryQuery(region);
     GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x1, y1);
   }
 
