@@ -376,11 +376,18 @@ export interface Gltf1Material extends GltfChildOfRootProperty {
 
 /** @internal */
 export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
+  // Default [1,1,1,1]
   baseColorFactor?: number[];
   baseColorTexture?: GltfTextureInfo;
+  // Default 1
   metallicFactor?: number;
+  // Default 1
+  roughnessFactor?: number;
   metallicRoughnessTexture?: GltfTextureInfo;
 }
+
+/** @internal */
+export type GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND";
 
 /** @internal */
 export interface Gltf2Material extends GltfChildOfRootProperty {
@@ -389,7 +396,9 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
   occlusionTexture?: unknown;
   emissiveTexture?: GltfTextureInfo;
   emissiveFactor?: number[];
-  alphaMode?: "OPAQUE" | "MASK" | "BLEND";
+  // Default OPAQUE
+  alphaMode?: GltfAlphaMode;
+  // Default 0.5. Ignored unless alphaMode=MASK
   alphaCutoff?: number;
   doubleSided?: boolean;
   extensions?: GltfExtensions & {

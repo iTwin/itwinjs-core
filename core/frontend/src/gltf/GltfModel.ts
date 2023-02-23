@@ -7,6 +7,7 @@
  */
 
 import { Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { GltfAlphaMode, GltfDocument } from "./GltfSchema";
 
 export namespace Gltf {
   export type Buffer = Uint8Array;
@@ -30,11 +31,16 @@ export namespace Gltf {
     quantization?: PositionQuantization;
   }
 
+  export type ColorComponentType = "float" | "u8" | "u16";
+
+  export interface ColorAttribute extends Attribute {
+    componentType: ColorComponentType;
+  }
+
   export type IndexDataType = "u8" | "u16" | "u32";
 
   export interface Indices {
     dataType: IndexDataType;
-    position: PositionAttribute;
     count: number;
     buffer: Buffer;
   }
@@ -49,6 +55,9 @@ export namespace Gltf {
 
   export interface Primitive {
     indices: Indices;
+    attributeCount: number;
+    position: PositionAttribute;
+    color?: ColorAttribute;
   }
 
   export interface TextureUVQuantization {
@@ -67,8 +76,31 @@ export namespace Gltf {
     quantization?: TextureUVQuantization;
   }
 
+  export interface Rgba {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+  }
+
+  export interface MetallicRoughness {
+    baseColorFactor: Rgba;
+    // ###TODO_GLTF baseColorTexture;
+    metallicFactor: number;
+    roughnessFactor: number;
+    // ###TODO_GLTF metallicRoughnessTexture;
+  }
+
+  export interface Material {
+    metallicRoughness: MetallicRoughness;
+    alphaMode: GltfAlphaMode;
+    alphaCutoff: number;
+    doubleSided: boolean;
+  }
+
   export interface TrianglesPrimitive extends Primitive {
     type: "triangles";
+    material: Material;
     normal?: NormalAttribute;
     textureUV?: TextureUVAttribute;
   }
