@@ -7,7 +7,6 @@
  * @module Polyface
  */
 
-// import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
@@ -23,7 +22,7 @@ import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
+import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
 import { Range3d } from "../geometry3d/Range";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
@@ -43,6 +42,8 @@ import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { RangeLengthData } from "./RangeLengthData";
 import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail } from "./FacetLocationDetail";
+import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 /**
  * Options carrier for cloneWithHolesFilled
  * @public
@@ -1341,7 +1342,7 @@ export class PolyfaceQuery {
   *   * Compute simple average of those normals
   *   * Index to the averages
   * * For typical meshes, this correctly clusters adjacent normals.
-  * * One cam imagine a vertex with multiple "smooth cone-like" sets of incident facets such that averaging occurs among two nonadjacent cones.  But this does not seem to be a problem in practice.
+  * * One can imagine a vertex with multiple "smooth cone-like" sets of incident facets such that averaging occurs among two nonadjacent cones.  But this does not seem to be a problem in practice.
   * @param polyface polyface to update.
   * @param toleranceAngle averaging is done between normals up to this angle.
   */
@@ -1349,6 +1350,80 @@ export class PolyfaceQuery {
     BuildAverageNormalsContext.buildFastAverageNormals(polyface, toleranceAngle);
   }
 
+<<<<<<< HEAD
+=======
+  /**
+   * Offset the faces of the mesh.
+   * @param source original mesh
+   * @param signedOffsetDistance distance to offset
+   * @param offsetOptions angle options.  The default options are recommended.
+   * @returns shifted mesh.
+   */
+  public static cloneOffset(source: IndexedPolyface,
+    signedOffsetDistance: number,
+    offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create()): IndexedPolyface {
+    const strokeOptions = StrokeOptions.createForFacets();
+    const offsetBuilder = PolyfaceBuilder.create(strokeOptions);
+    OffsetMeshContext.buildOffsetMeshWithEdgeChamfers(source, offsetBuilder, signedOffsetDistance, offsetOptions);
+    return offsetBuilder.claimPolyface();
+  }
+
+  private static _workTriangle?: BarycentricTriangle;
+  private static _workTriDetail?: TriangleLocationDetail;
+  private static _workPolyDetail?: PolygonLocationDetail;
+  private static _workFacetDetail3?: TriangularFacetLocationDetail;
+  private static _workFacetDetailC?: ConvexFacetLocationDetail;
+  private static _workFacetDetailNC?: NonConvexFacetLocationDetail;
+
+  /** Search facets for the first one that intersects the infinite line.
+   * * To process _all_ intersections, callers can supply an `options.acceptIntersection` callback that always returns false.
+   * In this case, `intersectRay3d` will return undefined, but the callback will be invoked for each intersection.
+   * * Example callback logic:
+   *    * Accept the first found facet that intersects the half-line specified by the ray: `return detail.a >= 0.0;`
+   *    * Collect all intersections: `myIntersections.push(detail.clone()); return false;` Then after `intersectRay3d` returns, sort along `ray` with `myIntersections.sort((d0, d1) => d0.a - d1.a);`
+   * @param visitor facet iterator
+   * @param ray infinite line parameterized as a ray. The returned `detail.a` is the intersection parameter on the ray, e.g., zero at `ray.origin` and increasing in `ray.direction`.
+   * @param options options for computing and populating an intersection detail, and an optional callback for accepting one
+   * @return detail for the (accepted) intersection with `detail.IsInsideOrOn === true`, or `undefined` if no (accepted) intersection
+   * @see PolygonOps.intersectRay3d
+  */
+  public static intersectRay3d(visitor: Polyface | PolyfaceVisitor, ray: Ray3d, options?: FacetIntersectOptions): FacetLocationDetail | undefined {
+    if (visitor instanceof Polyface)
+      return PolyfaceQuery.intersectRay3d(visitor.createVisitor(0), ray, options);
+    let detail: FacetLocationDetail;
+    visitor.setNumWrap(0);
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount;  // #vertices = #edges since numWrap is zero
+      const vertices = visitor.point;
+      if (3 === numEdges) {
+        const tri = this._workTriangle = BarycentricTriangle.create(vertices.getPoint3dAtUncheckedPointIndex(0), vertices.getPoint3dAtUncheckedPointIndex(1), vertices.getPoint3dAtUncheckedPointIndex(2), this._workTriangle);
+        const detail3 = this._workTriDetail = tri.intersectRay3d(ray, this._workTriDetail);
+        tri.snapLocationToEdge(detail3, options?.distanceTolerance, options?.parameterTolerance);
+        detail = this._workFacetDetail3 = TriangularFacetLocationDetail.create(visitor.currentReadIndex(), detail3, this._workFacetDetail3);
+      } else {
+        const detailN = this._workPolyDetail = PolygonOps.intersectRay3d(vertices, ray, options?.distanceTolerance, this._workPolyDetail);
+        if (PolygonOps.isConvex(vertices))
+          detail = this._workFacetDetailC = ConvexFacetLocationDetail.create(visitor.currentReadIndex(), numEdges, detailN, this._workFacetDetailC);
+        else
+          detail = this._workFacetDetailNC = NonConvexFacetLocationDetail.create(visitor.currentReadIndex(), numEdges, detailN, this._workFacetDetailNC);
+      }
+      if (detail.isInsideOrOn) {  // set optional caches, process the intersection
+        if (options?.needNormal && visitor.normal)
+          detail.getNormal(visitor.normal, vertices, options?.distanceTolerance);
+        if (options?.needParam && visitor.param)
+          detail.getParam(visitor.param, vertices, options?.distanceTolerance);
+        if (options?.needColor && visitor.color)
+          detail.getColor(visitor.color, vertices, options?.distanceTolerance);
+        if (options?.needBarycentricCoordinates)
+          detail.getBarycentricCoordinates(vertices, options?.distanceTolerance);
+        if (options?.acceptIntersection && !options.acceptIntersection(detail, visitor))
+          continue;
+        return detail;
+      }
+    }
+    return undefined; // no intersection
+  }
+>>>>>>> 38cb1be0ce (new ray-mesh intersection methods (#5110))
 }
 
 /** Announce the points on a drape panel.
