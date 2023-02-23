@@ -280,16 +280,7 @@ export abstract class RenderSystem implements IDisposable {
   public get maxTextureSize(): number { return 0; }
 
   /** @internal */
-  public get supportsInstancing(): boolean { return true; }
-
-  /** @internal */
   public get supportsCreateImageBitmap(): boolean { return false; }
-
-  /** @internal */
-  public get supportsIndexedEdges(): boolean { return true; }
-
-  /** @internal */
-  public get supportsNonuniformScaledInstancing(): boolean { return true; }
 
   /** @internal */
   public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
@@ -320,7 +311,7 @@ export abstract class RenderSystem implements IDisposable {
    * @param _params A description of the material's properties.
    * @param _imodel The IModelConnection associated with the material.
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
-   * @deprecated Use [[createRenderMaterial]].
+   * @deprecated in 3.x. Use [[createRenderMaterial]].
    */
   // eslint-disable-next-line deprecation/deprecation
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
@@ -625,7 +616,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from an [[ImageBuffer]].
-   * @deprecated Use [[createTexture]].
+   * @deprecated in 3.x. Use [[createTexture]].
    */
   // eslint-disable-next-line deprecation/deprecation
   public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
@@ -641,7 +632,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
-   * @deprecated Use [[createTexture]].
+   * @deprecated in 3.x. Use [[createTexture]].
    */
   // eslint-disable-next-line deprecation/deprecation
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
@@ -657,7 +648,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from an ImageSource.
-   * @deprecated Use RenderSystem.createTextureFromSource.
+   * @deprecated in 3.x. Use RenderSystem.createTextureFromSource.
    */
   // eslint-disable-next-line deprecation/deprecation
   public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
@@ -791,11 +782,6 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     logarithmicDepthBuffer?: boolean;
 
-    /** ###TODO this appears to do nothing. @internal */
-    filterMapTextures?: boolean;
-    /** ###TODO this appears to do nothing. @internal */
-    filterMapDrapeTextures?: boolean;
-
     /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
      * @see [[dpiAwareLOD]] to control whether device pixel ratio affects the level of detail for tile graphics and decorations.
      * @see [[Viewport.cssPixelsToDevicePixels]] to convert CSS pixels to device pixels.
@@ -830,11 +816,10 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     dpiAwareLOD?: boolean;
 
-    /** If true will attempt to create a WebGL2 context, falling back to WebGL1 if WebGL2 is not supported.
-     *
-     * Default value: true
-     *
+    /** Previously, this property dictated whether to attempt to use a WebGL 2 rendering context before falling back to WebGL 1.
+     * WebGL 1 is no longer supported, so this property is now ignored.
      * @public
+     * @deprecated in 4.x. WebGL 1 is no longer supported.
      */
     useWebGL2?: boolean;
 
@@ -875,8 +860,8 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     debugShaders?: boolean;
 
-    /** Initial antialias setting
-     * If > 1, and a WebGL2 context is being used, will turn on antialiasing using that many samples.
+    /** Initial antialias setting.
+     * If antialiasing is supported, a value greater than 1 enables it using that many samples, and a value less than or equal to 1 disables antialiasing.
      * Default value: 1
      * @public
      */

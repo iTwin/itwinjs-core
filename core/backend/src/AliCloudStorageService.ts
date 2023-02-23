@@ -12,7 +12,7 @@ import { CloudStorageService, CloudStorageUploadOptions } from "./CloudStorageBa
 
 /**
  * @beta
- * @deprecated
+ * @deprecated in 3.x.
  */
 export interface AliCloudStorageServiceCredentials {
   region: string;
@@ -43,7 +43,7 @@ declare namespace OSS { // eslint-disable-line no-redeclare
 
 /**
  * @beta
- * @deprecated Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
+ * @deprecated in 3.x. Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
  */
 export class AliCloudStorageService extends CloudStorageService {
   private _client: OSS;

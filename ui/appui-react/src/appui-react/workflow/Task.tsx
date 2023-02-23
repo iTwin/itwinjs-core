@@ -8,14 +8,14 @@
 
 /* eslint-disable deprecation/deprecation */
 
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
+import { UiFramework } from "../UiFramework";
 import { WorkflowManager } from "./Workflow";
 
 /** Properties for a [[Task]]
  * @internal
- * @deprecated
+ * @deprecated in 3.0.
  */
 export interface TaskProps extends ItemProps {
   id: string;
@@ -24,7 +24,7 @@ export interface TaskProps extends ItemProps {
 
 /** List of Task Properties
  * @internal
- * @deprecated
+ * @deprecated in 3.0.
  */
 export interface TaskPropsList {
   tasks: TaskProps[];
@@ -34,7 +34,7 @@ export interface TaskPropsList {
  * A Task is a specific piece of work to accomplish.
  * A Task refers to a Frontstage to activate.
  * @internal
- * @deprecated
+ * @deprecated in 3.0.
  */
 export class Task extends ItemDefBase {
   public taskId: string;
@@ -65,9 +65,9 @@ export class Task extends ItemDefBase {
   }
 
   public async onActivated(): Promise<void> {
-    const frontstage = await FrontstageManager.getFrontstageDef(this.primaryStageId);
+    const frontstage = await UiFramework.frontstages.getFrontstageDef(this.primaryStageId);
     if (frontstage)
-      await FrontstageManager.setActiveFrontstageDef(frontstage);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstage);
   }
 }
 
@@ -75,7 +75,7 @@ export class Task extends ItemDefBase {
 
 /** Task Manager class.
  * @internal
- * @deprecated
+ * @deprecated in 3.0.
  */
 export class TaskManager {
   private static _tasks: Map<string, Task> = new Map<string, Task>();

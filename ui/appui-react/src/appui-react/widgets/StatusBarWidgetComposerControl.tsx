@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StatusBarComposer } from "../statusbar/StatusBarComposer";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
+import { UiFramework } from "../UiFramework";
 
 /**
  * StatusBarWidgetComposerControl provides status bar to specified [[Frontstage]] that allows status bar items to be populated
@@ -34,7 +34,7 @@ export class StatusBarWidgetComposerControl extends StatusBarWidgetControl {
 
   public getReactNode(): React.ReactNode {
     return (
-      <StatusBarComposer key={FrontstageManager.activeFrontstageId} items={[]} />
+      <StatusBarComposer key={UiFramework.frontstages.activeFrontstageId} items={[]} />
     );
   }
 }

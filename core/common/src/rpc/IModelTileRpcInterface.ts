@@ -19,7 +19,7 @@ import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
 import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
 
 /** @public */
-export abstract class IModelTileRpcInterface extends RpcInterface {
+export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   public static getClient(): IModelTileRpcInterface { return RpcManager.getClientForInterface(IModelTileRpcInterface); }
 
   /** The immutable name of the interface. */
@@ -45,23 +45,23 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   /**
    * Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
    * @beta
-   * @deprecated
+   * @deprecated in 3.x.
    */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   // eslint-disable-next-line deprecation/deprecation
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     return this.forward(arguments);
   }
 
   /** Returns true if an external tile cache is configured on the backend.
-   * @internal @deprecated
+   * @internal @deprecated in 3.x.
    */
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return this.forward(arguments);
   }
 
   /** @internal */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
 
   /** Ask the backend to generate content for the specified tile. This function, unlike the deprecated `requestTileContent`, does not check the cloud storage tile cache -

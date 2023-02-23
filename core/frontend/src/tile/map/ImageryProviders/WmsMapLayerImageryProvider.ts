@@ -148,6 +148,9 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     return {support3857: support3857 ?? false, support4326: support4326 ?? false};
   }
 
+  // WMS standard requires 'TRUE' or 'FALSE' (case sensitive) values.
+  public override get transparentBackgroundString(): string { return this._settings.transparentBackground ? "TRUE" : "FALSE"; }
+
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
 

@@ -7,7 +7,8 @@
   "backstage": {
     "customContentFrontstageLabel": "Custom Content",
     "contentLayoutFrontstageLabel": "Content Layout",
-    "widgetApiTestFrontstageLabel": "Exercise Widget Api"
+    "widgetApiTestFrontstageLabel": "Exercise Widget Api",
+    "SynchronizeFloatingViewFrontstageLabel": "Synchronized Floating View"
   },
   "StatusBar": {
     "Units": "Units",

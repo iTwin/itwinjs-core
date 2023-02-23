@@ -9,7 +9,7 @@
 import { IModelDb, IpcHandler } from "@itwin/core-backend";
 import { Logger } from "@itwin/core-bentley";
 import {
-  NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
+  NodeKey, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
   UnsetRulesetVariableParams, UpdateHierarchyStateParams,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
@@ -30,7 +30,7 @@ export class PresentationIpcHandler extends IpcHandler implements PresentationIp
     Presentation.getManager(clientId).vars(rulesetId).unset(variableId);
   }
 
-  public async updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void> {
+  public async updateHierarchyState(params: UpdateHierarchyStateParams<NodeKey>): Promise<void> {
     const { clientId, imodelKey, rulesetId, stateChanges } = params;
     const imodelDb = IModelDb.tryFindByKey(imodelKey);
     if (!imodelDb) {

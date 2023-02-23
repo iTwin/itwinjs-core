@@ -28,8 +28,6 @@ export enum BatteryState {
 export interface MobileNotifications {
   notifyMemoryWarning: () => void;
   notifyOrientationChanged: () => void;
-  notifyEnterForeground: () => void;
-  notifyEnterBackground: () => void;
   notifyWillTerminate: () => void;
   notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
 }

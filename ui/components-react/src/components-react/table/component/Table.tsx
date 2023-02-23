@@ -48,7 +48,7 @@ const TABLE_FILTER_ROW_HEIGHT = 32;
 
 /**
  * Specifies table selection target.
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
  * @public
  */
 export enum TableSelectionTarget {
@@ -84,7 +84,7 @@ interface ScrollState {
 }
 
 /** Properties for the Table React component
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableProps extends CommonProps {
@@ -129,7 +129,7 @@ export interface TableProps extends CommonProps {
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency. */
   settingsStorage?: UiStateStorage;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency.
-   * @deprecated use settingsStorage property */
+   * @deprecated in 3.0. Use settingsStorage property */
   uiStateStorage?: UiStateStorage;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
@@ -159,7 +159,7 @@ export interface TableProps extends CommonProps {
 }
 
 /** Properties for a Table cell
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface CellProps {
@@ -169,7 +169,7 @@ export interface CellProps {
 }
 
 /** Properties for a Table row
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface RowProps {
@@ -193,7 +193,7 @@ interface ReactDataGridColumnEventArgs {
 }
 
 /** Cell/Property Editor state
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableCellEditorState {
@@ -204,7 +204,7 @@ export interface TableCellEditorState {
 }
 
 /** Cell/Property Updated Args
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableCellUpdatedArgs {
@@ -214,7 +214,7 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableCellContextMenuArgs {
@@ -290,7 +290,7 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
 
 /**
  * Table React component that displays rows and columns in a grid along with a header
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this class.
+ * @deprecated in 3.0. Use the Table component in @itwin/itwinui-react instead, which does not use this class.
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {

@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ChildWindowManager, FrontstageManager } from "../../appui-react";
+import { ChildWindowManager, FrontstageManager, OpenChildWindowInfo } from "../../appui-react";
 import { copyStyles } from "../../appui-react/childwindow/CopyStyles";
+import { InternalChildWindowManager } from "../../appui-react/childwindow/InternalChildWindowManager";
 import TestUtils from "../TestUtils";
+/* eslint-disable deprecation/deprecation */
 
 describe("ChildWindowManager", () => {
   before(async () => {
@@ -30,13 +32,15 @@ describe("ChildWindowManager", () => {
 
   it("will find id", () => {
     const manager = new ChildWindowManager();
+    const internal = new InternalChildWindowManager();
+    manager.mockInternal(internal);
     const childWindowInfo = {
       childWindowId: "child",
       window,
       parentWindow: {} as Window,
     };
 
-    sinon.stub(manager, "openChildWindows").get(() => [childWindowInfo]);
+    sinon.stub(internal, "openChildWindows").get(() => [childWindowInfo]);
     expect(manager.closeChildWindow("bogus", false)).to.eql(false);
 
     expect(manager.findChildWindowId(window)).to.be.eql("child");
@@ -47,13 +51,15 @@ describe("ChildWindowManager", () => {
 
   it("will find id and close", () => {
     const manager = new ChildWindowManager();
+    const internal = new InternalChildWindowManager();
+    manager.mockInternal(internal);
     const childWindowInfo = {
       childWindowId: "child",
       window,
       parentWindow: {} as Window,
     };
 
-    sinon.stub(manager, "openChildWindows").get(() => [childWindowInfo]);
+    sinon.stub(internal, "openChildWindows").get(() => [childWindowInfo]);
     expect(manager.findChildWindowId(window)).to.be.eql("child");
     expect(manager.findChildWindow("child")).to.not.be.undefined;
     const closeStub = sinon.stub();
@@ -126,6 +132,43 @@ describe("ChildWindowManager", () => {
     copyStyles(childDoc, mainDoc);
     expect(childDoc.getElementById("__SVG_SPRITE_NODE__")).to.not.be.null;
     expect(mainDoc.styleSheets.length).to.eql(childDoc.styleSheets.length);
+  });
+
+  it("will directly call internal implementation", () => {
+    const manager = new ChildWindowManager();
+    const stubbedResponse: OpenChildWindowInfo[] = [];
+    const internal = new InternalChildWindowManager();
+    sinon.stub(internal, "openChildWindows").get(() => stubbedResponse);
+    sinon.stub(internal);
+    manager.mockInternal(internal);
+
+    expect(manager.openChildWindows).to.eq(internal.openChildWindows);
+
+    // New method names
+    manager.close("childId", true);
+    expect(internal.close).to.have.been.calledOnceWithExactly("childId", true);
+    manager.closeAll();
+    expect(internal.closeAll).to.have.been.calledOnceWithExactly();
+    manager.find("childId");
+    expect(internal.find).to.have.been.calledOnceWithExactly("childId");
+    manager.findId(null);
+    expect(internal.findId).to.have.been.calledOnceWithExactly(null);
+    const location = { height: 1, width: 1, top: 1, left: 1};
+    manager.open("childId", "title", "content", location, true);
+    expect(internal.open).to.have.been.calledOnceWithExactly("childId", "title", "content", location, true);
+
+    // Validate that deprecated method are still pointing to the new ones.
+    sinon.resetHistory();
+    manager.closeChildWindow("childId", true);
+    expect(internal.close).to.have.been.calledOnceWithExactly("childId", true);
+    manager.closeAllChildWindows();
+    expect(internal.closeAll).to.have.been.calledOnceWithExactly();
+    manager.findChildWindow("childId");
+    expect(internal.find).to.have.been.calledOnceWithExactly("childId");
+    manager.findChildWindowId(null);
+    expect(internal.findId).to.have.been.calledOnceWithExactly(null);
+    manager.openChildWindow("childId", "title", "content", location, true);
+    expect(internal.open).to.have.been.calledOnceWithExactly("childId", "title", "content", location, true);
   });
 
 });

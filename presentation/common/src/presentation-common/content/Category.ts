@@ -32,11 +32,10 @@ export interface CategoryDescription {
 export namespace CategoryDescription {
   /** Serialize given category to JSON */
   export function toJSON(category: CategoryDescription): CategoryDescriptionJSON {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { parent, ...rest } = category;
     return {
       ...rest,
-      ...(category.parent ? { parent: category.parent.name } : {}),
+      ...(parent ? { parent: parent.name } : undefined),
     };
   }
 

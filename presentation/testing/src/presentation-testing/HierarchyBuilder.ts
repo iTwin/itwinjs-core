@@ -8,7 +8,7 @@
 import { using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Omit, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
-import { PRESENTATION_TREE_NODE_KEY, PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { PresentationTreeDataProvider, PresentationTreeNodeItem } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TreeNodeItem } from "@itwin/components-react";
 
@@ -86,8 +86,7 @@ export class HierarchyBuilder {
   private async createSubHierarchy(nodes: TreeNodeItem[], dataProvider: PresentationTreeDataProvider) {
     const hierarchy: HierarchyNode[] = [];
     for (const node of nodes) {
-      // istanbul ignore next: for some reason coverage tool thinks the below statement is conditional and one of branches is not covered...
-      const { [PRESENTATION_TREE_NODE_KEY]: key, ...nodeNoKey } = (node as TreeNodeItem & { [PRESENTATION_TREE_NODE_KEY]: any }); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { key: _key, ...nodeNoKey } = (node as PresentationTreeNodeItem);
       const nodeIndex = hierarchy.push(this._nodeMappingFunc(nodeNoKey)) - 1;
       const childNodes = await dataProvider.getNodes(node);
       if (childNodes.length > 0)

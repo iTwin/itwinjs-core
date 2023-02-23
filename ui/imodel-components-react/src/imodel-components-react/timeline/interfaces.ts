@@ -22,7 +22,7 @@ export interface MilestoneRange {
 /**
  * A Milestone event that is to be noted in the timeline.
  * @internal
- * @deprecated
+ * @deprecated in 3.0.
  */
 export interface Milestone {
   /** uniqueId of milestone */

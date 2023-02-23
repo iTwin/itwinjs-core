@@ -9,7 +9,7 @@
 import * as React from "react";
 import { CommonProps, useProximityToMouse, WidgetElementSet, WidgetOpacityContext } from "@itwin/core-react";
 import { ToolsArea } from "@itwin/appui-layout-react";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for the [[ToolbarComposer]] React components
  * @public
@@ -35,7 +35,7 @@ export function ToolWidgetComposer(props: ToolWidgetComposerProps) {
   const handleChildRef = React.useCallback((elementRef: React.RefObject<Element>) => {
     elementSet.add(elementRef);
   }, [elementSet]);
-  const proximityScale = useProximityToMouse(elementSet, UiShowHideManager.snapWidgetOpacity);
+  const proximityScale = useProximityToMouse(elementSet, UiFramework.visibility.snapWidgetOpacity);
 
   return (
     <WidgetOpacityContext.Provider
@@ -49,7 +49,7 @@ export function ToolWidgetComposer(props: ToolWidgetComposerProps) {
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
         {...otherProps}
-        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+        onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
       />
     </WidgetOpacityContext.Provider>
   );

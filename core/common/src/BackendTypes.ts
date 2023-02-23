@@ -16,11 +16,11 @@ Do not add any new types to this file.
 All types here will be removed in 4.0
 */
 
-/** @public @deprecated */
+/** @public @deprecated in 3.x. */
 export type BackendReadable = Readable;
 
-/** @public @deprecated */
+/** @public @deprecated in 3.x. */
 export type BackendWritable = Writable;
 
-/** @internal @deprecated */
+/** @internal @deprecated in 3.x. */
 export type BackendBuffer = Buffer;

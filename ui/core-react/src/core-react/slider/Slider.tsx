@@ -91,7 +91,7 @@ export interface SliderProps extends CommonProps {
 /**
   * Slider React component displays a range slider.
   * @public
-  * @deprecated Use Slider in itwinui-react instead
+  * @deprecated in 3.0. Use Slider in itwinui-react instead
   */
 export function Slider(props: SliderProps) {
   const { className, style, min, max, values, step, mode,

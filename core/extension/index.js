@@ -215,6 +215,7 @@ export const {
 	FillDisplay,
 	FillFlags,
 	FontType,
+	FrustumPlanes,
 	GeoCoordStatus,
 	GeometryClass,
 	GeometryStreamFlags,

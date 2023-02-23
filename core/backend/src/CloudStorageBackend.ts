@@ -24,7 +24,7 @@ export interface AzureBlobStorageCredentials {
 
 /**
  * @beta
- * @deprecated
+ * @deprecated in 3.x.
  */
 export interface CloudStorageUploadOptions {
   type?: string;
@@ -34,7 +34,7 @@ export interface CloudStorageUploadOptions {
 
 /**
  * @beta
- * @deprecated
+ * @deprecated in 3.x.
  */
 export abstract class CloudStorageService {
   public initialize(): void { }
@@ -51,7 +51,7 @@ export abstract class CloudStorageService {
 
 /**
  * @beta
- * @deprecated
+ * @deprecated in 3.x.
  */
 export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.BlobServiceClient;
@@ -173,7 +173,7 @@ export class AzureBlobStorage extends CloudStorageService {
 
 /**
  * @beta
- * @deprecated
+ * @deprecated in 3.x.
  */
 export class CloudStorageTileUploader {
   private _activeUploads: Map<string, Promise<void>> = new Map();

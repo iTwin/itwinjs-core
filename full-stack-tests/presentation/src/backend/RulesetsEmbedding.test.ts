@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
-import path from "path";
 import { IModelDb, StandaloneDb } from "@itwin/core-backend";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
+import { prepareOutputFilePath } from "../Utils";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -32,6 +32,7 @@ describe("RulesEmbedding", () => {
 
   before(async () => {
     await initialize();
+    Logger.setLevel("BeSQLite", LogLevel.Info);
   });
 
   after(async () => {
@@ -39,9 +40,8 @@ describe("RulesEmbedding", () => {
   });
 
   beforeEach(async () => {
-    const iModelPath = path.resolve(__dirname, "RulesetEmbedding.test.bim");
-    fs.existsSync(iModelPath) && fs.unlinkSync(iModelPath);
-    imodel = StandaloneDb.createEmpty(iModelPath, {
+    const imodelPath = prepareOutputFilePath("RulesetEmbedding.bim");
+    imodel = StandaloneDb.createEmpty(imodelPath, {
       rootSubject: {
         name: "presentation-full-stack-tests/RulesetEmbedding",
       },
@@ -54,9 +54,9 @@ describe("RulesEmbedding", () => {
   });
 
   afterEach(async () => {
-    const iModelPath = imodel.pathName;
+    const imodelPath = imodel.pathName;
     imodel.close();
-    fs.unlinkSync(iModelPath);
+    fs.unlinkSync(imodelPath);
   });
 
   it("handles getting rulesets with nothing inserted", async () => {

@@ -7,11 +7,12 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType, WidgetState } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventDispatcher, SyncUiEventId, UiFramework, WidgetChangedEventArgs,
+  ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventDispatcher, SyncUiEventId, UiFramework, WidgetChangedEventArgs,
   WidgetControl, WidgetDef, WidgetProps,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { SvgList } from "@itwin/itwinui-icons-react";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 // cSpell:ignore widgetstate
 
@@ -28,7 +29,7 @@ describe("WidgetDef", () => {
     await TestUtils.initializeUiFramework();
     // need to set to UI 1 so widget state is independent of NineZoneState.
     UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
-    ConfigurableUiManager.registerControl("WidgetDefTest", TestWidget);
+    UiFramework.controls.register("WidgetDefTest", TestWidget);
   });
 
   after(() => {
@@ -208,7 +209,7 @@ describe("WidgetDef", () => {
 
   describe("show", () => {
     it("should emit onWidgetShowEvent", () => {
-      const spy = sinon.spy(FrontstageManager.onWidgetShowEvent, "emit");
+      const spy = sinon.spy(InternalFrontstageManager.onWidgetShowEvent, "emit");
       const widgetDef = new WidgetDef();
       widgetDef.show();
       spy.calledOnceWithExactly(sinon.match({
@@ -219,7 +220,7 @@ describe("WidgetDef", () => {
 
   describe("expand", () => {
     it("should emit onWidgetExpandEvent", () => {
-      const spy = sinon.spy(FrontstageManager.onWidgetExpandEvent, "emit");
+      const spy = sinon.spy(InternalFrontstageManager.onWidgetExpandEvent, "emit");
       const widgetDef = new WidgetDef();
       widgetDef.expand();
       spy.calledOnceWithExactly(sinon.match({
@@ -238,7 +239,7 @@ describe("WidgetDef", () => {
 
     it("should emit onWidgetLabelChangedEvent", () => {
       const spy = sinon.stub<(args: WidgetChangedEventArgs) => void>();
-      FrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
+      InternalFrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
       const sut = new WidgetDef();
       sut.setLabel("test");
 
@@ -250,7 +251,7 @@ describe("WidgetDef", () => {
       const sut = new WidgetDef();
       sut.setLabel("test");
 
-      FrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
+      InternalFrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
       sut.setLabel("test");
 
       spy.notCalled.should.true;

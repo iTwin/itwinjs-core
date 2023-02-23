@@ -74,7 +74,7 @@ export class RenderBuffer implements WebGLDisposable {
 }
 
 /**
- * A RenderBuffer for doing antialiasing (multisampling).  Used by WebGL2 only.
+ * A RenderBuffer for doing antialiasing (multisampling).
  * @internal
  */
 export class RenderBufferMultiSample implements WebGLDisposable {
@@ -95,12 +95,10 @@ export class RenderBufferMultiSample implements WebGLDisposable {
   public getHandle() { return this._glBuffer; }
 
   public static create(width: number, height: number, format: number, numSamples: number) {
-    const gl = System.instance.context as WebGL2RenderingContext;
-
+    const gl = System.instance.context;
     const glBuffer = gl.createRenderbuffer();
-    if (null === glBuffer) {
+    if (null === glBuffer)
       return undefined;
-    }
 
     assert(0 < width && 0 < height);
     RenderBufferMultiSample.bindBuffer(glBuffer);

@@ -8,7 +8,6 @@ import * as sinon from "sinon";
 import { render, screen } from "@testing-library/react";
 import { UnderlinedButton } from "../../core-react/button/UnderlinedButton";
 import userEvent from "@testing-library/user-event";
-import { classesFromElement } from "../TestUtils";
 
 describe("<UnderlinedButton />", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
@@ -27,7 +26,9 @@ describe("<UnderlinedButton />", () => {
         Test text
       </UnderlinedButton>);
 
-    expect(classesFromElement(screen.getByRole("link", {name:title}))).to.include("test-class");
+    const button = screen.getByRole("link");
+    expect(button.className).to.include("test-class");
+    expect(button.title).to.eq(title);
   });
 
   it("handles onClick", async () => {

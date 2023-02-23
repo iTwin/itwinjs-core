@@ -7,8 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../appui-react";
-import { SyncUiEventId } from "../../appui-react/syncui/SyncUiEventDispatcher";
+import { ActionItemButton, BaseItemState, CommandItemDef, SyncUiEventDispatcher, SyncUiEventId, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionItemButton", () => {
@@ -75,7 +74,7 @@ describe("ActionItemButton", () => {
     element.length.should.eq(1);
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
-    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+    expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
   });
 
   it("sync event should trigger stateFunc", () => {

@@ -22,7 +22,7 @@ import { Hilites, Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
-  const maxSize = System.instance.capabilities.maxTextureSize;
+  const maxSize = System.instance.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry * nTables + nExtraRgba;
 
   if (nRgba < maxSize)

@@ -13,19 +13,15 @@ import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@itw
 import { CommonProps } from "@itwin/core-react";
 import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ContentControlActivatedEventArgs } from "../content/ContentControl";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { NavigationAidActivatedEventArgs, NavigationAidControl } from "../navigationaids/NavigationAidControl";
 import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  * @public
- * @deprecated use NavigationWidgetComposer instead
+ * @deprecated in 2.x. Use NavigationWidgetComposer instead
  */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line deprecation/deprecation
   private _navigationAidId: string;
@@ -42,7 +38,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disabl
     this.horizontalPanelAlignment = ToolbarPanelAlignment.End; // eslint-disable-line deprecation/deprecation
     this._navigationAidId = (props.navigationAidId !== undefined) ? props.navigationAidId : "";
 
-    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : /* istanbul ignore next */ "";
+    const activeStageName = UiFramework.frontstages.activeFrontstageDef ? UiFramework.frontstages.activeFrontstageDef.id : /* istanbul ignore next */ "";
     this.widgetBaseName = `[${activeStageName}]NavigationWidget`;
   }
 
@@ -56,15 +52,15 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disabl
 
   public renderCornerItem(): React.ReactNode {
     // istanbul ignore if
-    if (FrontstageManager.isLoading)
+    if (UiFramework.frontstages.isLoading)
       return null;
 
     // istanbul ignore else
     if (!this._navigationAidControl && this._navigationAidId) {
-      const activeContentControl = ContentViewManager.getActiveContentControl();
+      const activeContentControl = UiFramework.content.getActiveContentControl();
       const viewport = activeContentControl ? activeContentControl.viewport : /* istanbul ignore next */ undefined;
 
-      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel, viewport }) as NavigationAidControl;
+      this._navigationAidControl = UiFramework.controls.create(this._navigationAidId, this._navigationAidId, { imodel: this._imodel, viewport }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
         throw new UiError(UiFramework.loggerCategory(this), `renderCornerItem: navigationAidId '${this._navigationAidId}' is registered to a control that is NOT a NavigationAid`);
       }
@@ -99,7 +95,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disabl
 
 /** Properties for the [[NavigationWidget]] React component.
  * @public
- * @deprecated use NavigationWidgetComposer instead
+ * @deprecated in 2.x. Use NavigationWidgetComposer instead
  */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps { // eslint-disable-line deprecation/deprecation
   iModelConnection?: IModelConnection;
@@ -116,7 +112,7 @@ interface NavigationWidgetState {
 
 /** Navigation Widget React component.
  * @public
- * @deprecated use NavigationWidgetComposer instead
+ * @deprecated in 2.x. Use NavigationWidgetComposer instead
  */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // eslint-disable-line deprecation/deprecation
 
@@ -131,31 +127,31 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 
   /** Adds listeners */
   public override componentDidMount() {
-    FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivated);
+    UiFramework.frontstages.onContentControlActivatedEvent.addListener(this._handleContentControlActivated);
     ViewportComponentEvents.onViewClassFullNameChangedEvent.addListener(this._handleViewClassFullNameChange);
   }
 
   /** Removes listeners */
   public override componentWillUnmount() {
-    FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivated);
+    UiFramework.frontstages.onContentControlActivatedEvent.removeListener(this._handleContentControlActivated);
     ViewportComponentEvents.onViewClassFullNameChangedEvent.removeListener(this._handleViewClassFullNameChange);
   }
 
   private _handleContentControlActivated = (args: ContentControlActivatedEventArgs): void => {
     const navigationAidId = args.activeContentControl.navigationAidControl;
     setTimeout(() => {
-      FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
+      UiFramework.frontstages.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
     });
   };
 
   private _handleViewClassFullNameChange = (args: ViewClassFullNameChangedEventArgs): void => {
     setTimeout(() => {
-      const activeContentControl = ContentViewManager.getActiveContentControl();
+      const activeContentControl = UiFramework.content.getActiveContentControl();
 
       // istanbul ignore else
       if (activeContentControl && args.viewport === activeContentControl.viewport) {
         const navigationAidId = activeContentControl.navigationAidControl;
-        FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
+        UiFramework.frontstages.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
       }
     });
   };
@@ -218,11 +214,11 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
   };
 
   public override componentDidMount() {
-    FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
+    UiFramework.frontstages.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
   }
 
   public override componentWillUnmount() {
-    FrontstageManager.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
+    UiFramework.frontstages.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
   }
 
   public override componentDidUpdate(prevProps: Props) {
@@ -239,7 +235,7 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
         horizontalToolbar={this.state.horizontalToolbar}
         verticalToolbar={this.state.verticalToolbar}
         preserveSpace={true}
-        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+        onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
       />
     );
   }

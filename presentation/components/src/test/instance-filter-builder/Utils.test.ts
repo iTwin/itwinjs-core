@@ -2,18 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
+import {
+  PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator,
+} from "@itwin/components-react";
 import { Field } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
-import {
-  convertPresentationFilterToPropertyFilter,
-  createInstanceFilterPropertyInfos, createPresentationInstanceFilter, INSTANCE_FILTER_FIELD_SEPARATOR,
-} from "../../presentation-components/instance-filter-builder/Utils";
 import { PresentationInstanceFilter } from "../../presentation-components/instance-filter-builder/Types";
+import {
+  convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, INSTANCE_FILTER_FIELD_SEPARATOR,
+} from "../../presentation-components/instance-filter-builder/Utils";
 
 function getPropertyDescriptionName(field: Field) {
   return `${INSTANCE_FILTER_FIELD_SEPARATOR}${field.name}`;

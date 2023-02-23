@@ -14,7 +14,6 @@ import * as React from "react";
 import { SettingsTabEntry } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
-import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
 import { IconSpecUtilities, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
@@ -36,13 +35,13 @@ import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react
 export function UiSettingsPage(): JSX.Element;
 
 /**
- * @deprecated Framework version is deprecated, only UI2.0 is supported.
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported.
  * @beta
  */
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): JSX.Element; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
- * @deprecated
+ * @deprecated in 3.6.
  * @beta
  */
 export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean }) {
@@ -83,9 +82,9 @@ export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean
   const [animateToolSettings, setAnimateToolSettings] = React.useState(() => UiFramework.animateToolSettings);
   const [useToolAsToolSettingsLabel, setUseToolAsToolSettingsLabel] = React.useState(() => UiFramework.useToolAsToolSettingsLabel);
   const [widgetOpacity, setWidgetOpacity] = React.useState(() => UiFramework.getWidgetOpacity());
-  const [autoHideUi, setAutoHideUi] = React.useState(() => UiShowHideManager.autoHideUi);
-  const [useProximityOpacity, setUseProximityOpacity] = React.useState(() => UiShowHideManager.useProximityOpacity);
-  const [snapWidgetOpacity, setSnapWidgetOpacity] = React.useState(() => UiShowHideManager.snapWidgetOpacity);
+  const [autoHideUi, setAutoHideUi] = React.useState(() => UiFramework.visibility.autoHideUi);
+  const [useProximityOpacity, setUseProximityOpacity] = React.useState(() => UiFramework.visibility.useProximityOpacity);
+  const [snapWidgetOpacity, setSnapWidgetOpacity] = React.useState(() => UiFramework.visibility.snapWidgetOpacity);
   const [toolbarOpacity, setToolbarOpacity] = React.useState(() => UiFramework.getToolbarOpacity());
 
   React.useEffect(() => {
@@ -99,8 +98,8 @@ export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
         if (UiFramework.getColorTheme() !== theme)
           setTheme(UiFramework.getColorTheme());
-        if (UiShowHideManager.autoHideUi !== autoHideUi)
-          setAutoHideUi(UiShowHideManager.autoHideUi);
+        if (UiFramework.visibility.autoHideUi !== autoHideUi)
+          setAutoHideUi(UiFramework.visibility.autoHideUi);
         if (UiFramework.uiVersion !== uiVersion) // eslint-disable-line deprecation/deprecation
           setUiVersion(UiFramework.uiVersion); // eslint-disable-line deprecation/deprecation
         if (UiFramework.useDragInteraction !== useDragInteraction)
@@ -111,12 +110,12 @@ export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean
           setAutoCollapseUnpinnedPanels(UiFramework.autoCollapseUnpinnedPanels);
         if (UiFramework.getWidgetOpacity() !== widgetOpacity)
           setWidgetOpacity(UiFramework.getWidgetOpacity());
-        if (UiShowHideManager.autoHideUi !== autoHideUi)
-          setAutoHideUi(UiShowHideManager.autoHideUi);
-        if (UiShowHideManager.useProximityOpacity !== useProximityOpacity)
-          setUseProximityOpacity(UiShowHideManager.useProximityOpacity);
-        if (UiShowHideManager.snapWidgetOpacity !== snapWidgetOpacity)
-          setSnapWidgetOpacity(UiShowHideManager.snapWidgetOpacity);
+        if (UiFramework.visibility.autoHideUi !== autoHideUi)
+          setAutoHideUi(UiFramework.visibility.autoHideUi);
+        if (UiFramework.visibility.useProximityOpacity !== useProximityOpacity)
+          setUseProximityOpacity(UiFramework.visibility.useProximityOpacity);
+        if (UiFramework.visibility.snapWidgetOpacity !== snapWidgetOpacity)
+          setSnapWidgetOpacity(UiFramework.visibility.snapWidgetOpacity);
         if (UiFramework.animateToolSettings !== animateToolSettings)
           setAnimateToolSettings(UiFramework.animateToolSettings);
         if (UiFramework.useToolAsToolSettingsLabel !== useToolAsToolSettingsLabel)
@@ -141,15 +140,15 @@ export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean
   }, []);
 
   const onAutoHideChange = React.useCallback(async () => {
-    UiShowHideManager.autoHideUi = !autoHideUi;
+    UiFramework.visibility.autoHideUi = !autoHideUi;
   }, [autoHideUi]);
 
   const onUseProximityOpacityChange = React.useCallback(async () => {
-    UiShowHideManager.useProximityOpacity = !useProximityOpacity;
+    UiFramework.visibility.useProximityOpacity = !useProximityOpacity;
   }, [useProximityOpacity]);
 
   const onSnapWidgetOpacityChange = React.useCallback(async () => {
-    UiShowHideManager.snapWidgetOpacity = !snapWidgetOpacity;
+    UiFramework.visibility.snapWidgetOpacity = !snapWidgetOpacity;
   }, [snapWidgetOpacity]);
 
   const onWidgetIconChange = React.useCallback(async () => {
@@ -282,13 +281,13 @@ function SettingsItem(props: SettingsItemProps) {
 export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
 
 /**
- * @deprecated Framework version is deprecated, only UI2.0 is supported. Use `getUiSettingsManagerEntry(itemPriority)` instead.
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported. Use `getUiSettingsManagerEntry(itemPriority)` instead.
  * @beta
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
- * @deprecated
+ * @deprecated in 3.6.
  * @beta
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {

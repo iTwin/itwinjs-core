@@ -106,9 +106,6 @@ export interface UniformArrayParams extends UniformParams {
  *    - It can include other functions, variables, etc outside of `effectMain`.
  *  - It should omit declarations of uniform and varying variables - these will be generated from those supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
  * The program receives one pre-defined `uniform sampler2D u_diffuse` representing the viewport's rendered image.
- * Because the [[RenderSystem]] uses either WebGL1 or WebGL2 based on the capabilities of the client, the effect shader should be written to compile with either; or, [[ScreenSpaceEffectBuilder.isWebGL2]] should be tested.
- * The [[RenderSystem]] takes care of adjusting the source code for some of these differences, e.g., `varying` (WebGL1) vs `in` and `out` (WebGL2);
- * and `TEXTURE`, `TEXTURE_CUBE`, and `TEXTURE_PROJ` macros are provided to replace `texture2D`, `textureCube`, and `texture2DProj` with their WebGL2 equivalents when applicable.
  * @public
  * @extensions
  */
@@ -194,7 +191,9 @@ export interface ScreenSpaceEffectContext {
  * @extensions
  */
 export interface ScreenSpaceEffectBuilder {
-  /** True if the shader will be used with a WebGL 2 rendering context. */
+  /** True if the shader will be used with a WebGL 2 rendering context.
+   * @deprecated in 4.x. WebGL 1 is no longer supported, so this property is always `true`.
+   */
   readonly isWebGL2: boolean;
 
   /** Add a uniform variable to the shader program. */

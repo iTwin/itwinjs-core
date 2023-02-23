@@ -8,6 +8,7 @@ lib
 build
 /**/test/output
 /generated-docs
+/staging-docs
 /out
 **/DevBuild.txt
 coverage

@@ -11,7 +11,7 @@ import { BeEvent, using } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, DisplayValue, Field, Item, Property, PropertyValueFormat,
+  ArrayTypeDescription, CategoryDescription, combineFieldNames, Content, ContentFlags, DisplayValue, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, Value, ValuesDictionary,
 } from "@itwin/presentation-common";
 import {
@@ -77,11 +77,13 @@ describe("PropertyDataProvider", () => {
       });
     });
 
-    it("sets `includeFieldsWithNoValues` to true", () => {
+    it("[deprecated] sets `includeFieldsWithNoValues` to true", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(provider.includeFieldsWithNoValues).to.be.true;
     });
 
-    it("sets `includeFieldsWithCompositeValues` to true", () => {
+    it("[deprecated] sets `includeFieldsWithCompositeValues` to true", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(provider.includeFieldsWithCompositeValues).to.be.true;
     });
 
@@ -131,11 +133,12 @@ describe("PropertyDataProvider", () => {
 
   });
 
-  describe("includeFieldsWithNoValues", () => {
+  describe("[deprecated] includeFieldsWithNoValues", () => {
 
     it("invalidates cache when setting to different value", () => {
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
+      // eslint-disable-next-line deprecation/deprecation
       provider.includeFieldsWithNoValues = !provider.includeFieldsWithNoValues;
       invalidateCacheMock.verify((x) => x({ content: true }), moq.Times.once());
     });
@@ -143,17 +146,19 @@ describe("PropertyDataProvider", () => {
     it("doesn't invalidate cache when setting to same value", () => {
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
+      // eslint-disable-next-line deprecation/deprecation
       provider.includeFieldsWithNoValues = provider.includeFieldsWithNoValues;
       invalidateCacheMock.verify((x) => x({ content: true }), moq.Times.never());
     });
 
   });
 
-  describe("includeFieldsWithCompositeValues", () => {
+  describe("[deprecated] includeFieldsWithCompositeValues", () => {
 
     it("invalidates cache when setting to different value", () => {
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
+      // eslint-disable-next-line deprecation/deprecation
       provider.includeFieldsWithCompositeValues = !provider.includeFieldsWithCompositeValues;
       invalidateCacheMock.verify((x) => x({ content: true }), moq.Times.once());
     });
@@ -161,6 +166,7 @@ describe("PropertyDataProvider", () => {
     it("doesn't invalidate cache when setting to same value", () => {
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
+      // eslint-disable-next-line deprecation/deprecation
       provider.includeFieldsWithCompositeValues = provider.includeFieldsWithCompositeValues;
       invalidateCacheMock.verify((x) => x({ content: true }), moq.Times.never());
     });
@@ -973,9 +979,10 @@ describe("PropertyDataProvider", () => {
 
         });
 
-        describe("includeFieldsWithNoValues handling", () => {
+        describe("[deprecated] includeFieldsWithNoValues handling", () => {
 
           beforeEach(() => {
+            // eslint-disable-next-line deprecation/deprecation
             provider.includeFieldsWithNoValues = false;
           });
 
@@ -1104,9 +1111,10 @@ describe("PropertyDataProvider", () => {
 
         });
 
-        describe("includeFieldsWithCompositeValues handling", () => {
+        describe("[deprecated] includeFieldsWithCompositeValues handling", () => {
 
           beforeEach(() => {
+            // eslint-disable-next-line deprecation/deprecation
             provider.includeFieldsWithCompositeValues = false;
           });
 
@@ -1603,7 +1611,7 @@ describe("PropertyDataProvider", () => {
           }],
         }, {}, []),
       ]);
-      const record = PropertyRecord.fromString("", applyOptionalPrefix("nested-field", "root-field"));
+      const record = PropertyRecord.fromString("", combineFieldNames("nested-field", "root-field"));
       expect(await provider.getPropertyRecordInstanceKeys(record)).to.deep.eq(instanceKeys);
     });
 

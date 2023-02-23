@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be
@@ -17,7 +17,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  */
 export interface NodeArtifactsRule extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.NodeArtifacts;
+  ruleType: "NodeArtifacts";
 
   /**
    * Specifies an [ECExpression]($docs/presentation/customization/ECExpressions.md#rule-condition) that

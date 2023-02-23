@@ -18,7 +18,7 @@ import { fireEvent, render as renderRTL, waitFor } from "@testing-library/react"
 import { renderHook } from "@testing-library/react-hooks";
 import { IContentDataProvider } from "../../presentation-components/common/ContentDataProvider";
 import {
-  NavigationPropertyEditorContext, navigationPropertyEditorContext, NavigationPropertyTargetEditor, useNavigationPropertyEditingContext,
+  navigationPropertyEditorContext, NavigationPropertyEditorContextProps, NavigationPropertyTargetEditor, useNavigationPropertyEditingContext,
 } from "../../presentation-components/properties/NavigationPropertyEditor";
 import { createRandomPropertyRecord } from "../_helpers/UiComponents";
 
@@ -31,8 +31,8 @@ function createNavigationPropertyInfo(): NavigationPropertyInfo {
   };
 }
 
-function render(ui: React.ReactElement, context?: Partial<NavigationPropertyEditorContext>) {
-  const contextValue: NavigationPropertyEditorContext = {
+function render(ui: React.ReactElement, context?: Partial<NavigationPropertyEditorContextProps>) {
+  const contextValue: NavigationPropertyEditorContextProps = {
     getNavigationPropertyInfo: context?.getNavigationPropertyInfo ?? (async () => createNavigationPropertyInfo()),
     imodel: context?.imodel ?? {} as IModelConnection,
   };

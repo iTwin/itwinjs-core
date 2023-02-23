@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { Presentation } from "@itwin/presentation-frontend";
 import { initializeLocalization, initializePropertyValueRenderers } from "./presentation-components/common/Utils";
-import { PRESENTATION_TREE_NODE_KEY } from "./presentation-components/tree/Utils";
 
 /**
  * @module Core
@@ -73,11 +72,13 @@ export * from "./presentation-components/table/WithUnifiedSelection";
 export * from "./presentation-components/tree/DataProvider";
 export * from "./presentation-components/tree/IPresentationTreeDataProvider";
 export * from "./presentation-components/tree/FilteredDataProvider";
+export * from "./presentation-components/tree/PresentationTreeNodeItem";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
 export * from "./presentation-components/tree/controlled/TreeHooks";
 export * from "./presentation-components/tree/controlled/PresentationTreeNodeRenderer";
-export { PRESENTATION_TREE_NODE_KEY };
+export * from "./presentation-components/tree/controlled/PresentationTreeRenderer";
+export * from "./presentation-components/tree/controlled/UseHierarchyLevelFiltering";
 
 /**
  * @module Viewport
@@ -109,13 +110,10 @@ export * from "./presentation-components/unified-selection/UnifiedSelectionConte
  * @docs-group-description InstancesFilter
  * Utilities for creating filters for filtering presentation data.
  */
-export * from "./presentation-components/instance-filter-builder/InstanceFilterBuilder";
 export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterDialog";
-export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterProperty";
 export * from "./presentation-components/instance-filter-builder/InstanceFilterConverter";
 export * from "./presentation-components/instance-filter-builder/Types";
-export * from "./presentation-components/instance-filter-builder/Utils";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

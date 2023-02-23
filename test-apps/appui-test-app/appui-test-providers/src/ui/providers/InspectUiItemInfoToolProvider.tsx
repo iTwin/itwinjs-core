@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  CommonToolbarItem, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+  CommonToolbarItem,
 } from "@itwin/appui-abstract";
+import { StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsProvider } from "@itwin/appui-react";
 import { InspectUiItemInfoTool } from "../../tools/InspectUiItemInfoTool";
 
 export interface InspectUiItemInfoToolProviderProps {
@@ -35,4 +36,3 @@ export class InspectUiItemInfoToolProvider implements UiItemsProvider {
   }
 
 }
-

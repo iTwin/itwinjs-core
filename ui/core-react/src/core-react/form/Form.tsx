@@ -16,12 +16,12 @@ import { Button } from "@itwin/itwinui-react";
 // cSpell:ignore multilinetextbox
 
 /** The available editors for the fields in a [[Form]].
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
 /** Interface used to define each [[Field]] in a [[Form]]
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 export interface FieldDef {
   /* The label text for the field */
@@ -38,14 +38,14 @@ export interface FieldDef {
 }
 
 /** Key/value pairs for all the field values with key being the field HTML Id.
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 export interface FieldValues {
   [key: string]: any;
 }
 
 /** The state data used by [[Form]] to hold state of each [[Field]] and the result of submit button processing.
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 interface FormState {
   /* The field values */
@@ -67,7 +67,7 @@ export interface FormContextState extends FormState {
 }
 
 /** React context used by Form as a Provider and by the Fields as Consumers and updaters.
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const FormContext = React.createContext<FormContextState | undefined>(undefined);
@@ -98,12 +98,12 @@ export interface FormProps {
  * export class ExampleForm extends React.Component {
  *   public static open() {
  *   const form = new ExampleForm({});
- *   ModalDialogManager.openDialog(form.render());
+ *   UiFramework.dialogs.modal.openDialog(form.render());
  * }
  *
  * protected async handleSubmit(values: FieldValues): Promise<void> {
  *   await this.processFormSubmission(values);
- *   ModalDialogManager.closeDialog();
+ *   UiFramework.dialogs.modal.closeDialog();
  *   const msg = JSON.stringify(values);
  *   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Form Submitted", msg));
  * }
@@ -114,7 +114,7 @@ export interface FormProps {
  * }
  *
  * protected handleCancel() {
- *   ModalDialogManager.closeDialog();
+ *   UiFramework.dialogs.modal.closeDialog();
  * }
  *
  * public render() {

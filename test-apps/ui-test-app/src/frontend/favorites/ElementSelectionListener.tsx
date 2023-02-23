@@ -7,11 +7,11 @@ import { IModelApp } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
 import { FavoritePropertiesDataProvider } from "@itwin/presentation-components";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
-import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState } from "@itwin/appui-abstract";
+import { AbstractToolbarProps, CommonToolbarItem, RelativePosition } from "@itwin/appui-abstract";
 import { FavoritePropertiesRenderer, FavoritePropertyList } from "@itwin/components-react";
 import {
   ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip,
-  FrameworkUiAdmin, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper,
+  FrameworkUiAdmin, SelectionContextToolDefinitions, ToolbarHelper, UiFramework, WidgetState,
 } from "@itwin/appui-react";
 import { ViewsFrontstage } from "../appui/frontstages/ViewsFrontstage";
 import { appendContent } from "./appendContent";
@@ -128,7 +128,7 @@ export class ElementSelectionListener {
       labelKey: "SampleApp:tools.OpenPropertyGrid.flyover",
       tooltipKey: "SampleApp:tools.OpenPropertyGrid.description",
       execute: () => {
-        const widgetDef = FrontstageManager.findWidget(ViewsFrontstage.unifiedSelectionPropertyGridId);
+        const widgetDef = UiFramework.frontstages.findWidget(ViewsFrontstage.unifiedSelectionPropertyGridId);
         if (widgetDef)
           widgetDef.setWidgetState(WidgetState.Open);
       },
