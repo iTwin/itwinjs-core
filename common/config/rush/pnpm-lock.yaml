@@ -1671,7 +1671,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/sinon': ^9.0.0
-      azurite: ^3.18.0
+      azurite: ^3.22.0
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1716,7 +1716,7 @@ importers:
       '@itwin/oidc-signin-tool': 3.6.1
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.6.0
-      azurite: 3.21.0
+      azurite: 3.22.0
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       cpx2: 3.0.2
@@ -10834,8 +10834,8 @@ packages:
       deep-equal: 2.2.0
     dev: true
 
-  /azurite/3.21.0:
-    resolution: {integrity: sha512-FswGZJhuYrs82XViNqOG7Z8RcVW1+0mawWk5kU6L6eQH477YInCIHuPlOwHe1SXCGHhSDb+8KH0BJhoFn6ZG7Q==}
+  /azurite/3.22.0:
+    resolution: {integrity: sha512-Kfh6pQLbBC72NN47QU4o/5tsriQVwnmZ4qLyQd7V9zBJqUuUrxLKkzaKc91LLv1ElEXhxaTVynpWDGTZy/RCkQ==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
@@ -13593,7 +13593,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.51.0_5202dc7c7a8742d503c2ce323ee47e9c
       '@typescript-eslint/experimental-utils': 5.51.0_eslint@8.34.0+typescript@4.4.4
       eslint: 8.34.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -16376,7 +16376,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -21831,7 +21831,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.20.12
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-util: 27.5.1
       json5: 2.2.3
       lodash.memoize: 4.1.2
