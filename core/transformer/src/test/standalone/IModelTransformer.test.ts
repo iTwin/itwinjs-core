@@ -2104,6 +2104,123 @@ describe("IModelTransformer", () => {
     newDb.close();
   });
 
+  it("transforms code values with non standard space characters", async () => {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CodeValNbspSrc.bim");
+    let sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "CodeValNbspSrc" } });
+
+    const nbsp = "\xa0";
+
+    const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, `SpatialCategory${nbsp}`, {});
+    const subCategId = Id64.fromUint32Pair(parseInt(spatialCategId, 16) + 1, 0);
+    const physModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, `PhysicalModel${nbsp}`);
+
+    const physObjectProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physModelId,
+      category: spatialCategId,
+      code: new Code({
+        scope: "0x1",
+        spec: "0x1",
+        value: `PhysicalObject${nbsp}`,
+      }),
+      userLabel: `PhysicalObject${nbsp}`,
+      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 0 }, angles: {} }),
+    };
+
+    const physObjectId = sourceDb.elements.insertElement(physObjectProps);
+
+    sourceDb.saveChanges();
+
+    expect(sourceDb.elements.getElement(spatialCategId).code.value).to.equal("SpatialCategory");
+    expect(sourceDb.elements.getElement(subCategId).code.value).to.equal("SpatialCategory");
+    expect(sourceDb.elements.getElement(physModelId).code.value).to.equal("PhysicalModel");
+    expect(sourceDb.elements.getElement(physObjectId).code.value).to.equal("PhysicalObject");
+
+    const addNonBreakingSpaceToCodeValue = (db: IModelDb, initialCodeValue: string) =>
+      db.withSqliteStatement(
+        `UPDATE bis_Element SET CodeValue='${initialCodeValue}\xa0' WHERE CodeValue='${initialCodeValue}'`,
+        (s) => {
+          let result: DbResult;
+          while ((result = s.step()) === DbResult.BE_SQLITE_ROW) {}
+          assert(result === DbResult.BE_SQLITE_DONE);
+        }
+      );
+
+    for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"])
+      addNonBreakingSpaceToCodeValue(sourceDb, label);
+
+    const getCodeValRawSqlite = (db: IModelDb, initialCodeValue: string, expected: string, expectedRows: number) => {
+      db.withSqliteStatement(
+        `SELECT CodeValue FROM bis_Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
+        (stmt) => {
+          let rows = 0;
+          for (const { codeValue } of stmt) {
+            rows++;
+            expect(codeValue).to.equal(expected);
+          }
+          expect(rows).to.equal(expectedRows);
+        }
+      );
+    };
+
+    const getCodeValEcSql = (db: IModelDb, initialCodeValue: string, expected: string, expectedRows: number) => {
+      db.withStatement(
+        `SELECT CodeValue FROM bis.Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
+        (stmt) => {
+          let rows = 0;
+          for (const { codeValue } of stmt) {
+            rows++;
+            expect(codeValue).to.equal(expected);
+          }
+          expect(rows).to.equal(expectedRows);
+        }
+      );
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(sourceDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(sourceDb, label, `${label}\xa0`, count);
+    }
+
+    sourceDb.saveChanges();
+    sourceDb.close();
+    sourceDb = SnapshotDb.openFile(sourceDbFile);
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(sourceDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(sourceDb, label, `${label}\xa0`, count);
+    }
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CoreNewSchemaRefTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "CodeValNbspTarget" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processAll();
+
+    const spatialCategoryInTargetId = transformer.context.findTargetElementId(spatialCategId);
+    const subCategoryInTargetId = transformer.context.findTargetElementId(subCategId);
+    const physModelInTargetId = transformer.context.findTargetElementId(physModelId);
+    const physObjectInTargetId = transformer.context.findTargetElementId(physObjectId);
+
+    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal("SpatialCategory");
+    expect(targetDb.elements.getElement(subCategoryInTargetId).code.value).to.equal("SpatialCategory");
+    expect(targetDb.elements.getElement(physModelInTargetId).code.value).to.equal("PhysicalModel");
+    expect(targetDb.elements.getElement(physObjectInTargetId).code.value).to.equal("PhysicalObject");
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(targetDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(targetDb, label, `${label}\xa0`, count);
+    }
+
+    transformer.dispose();
+    sourceDb.close();
+    targetDb.close();
+  });
+
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
   it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");

@@ -21,7 +21,7 @@ import {
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
-  ChangeOpCode, Code, CodeSpec, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, EntityReferenceSet,
+  ChangeOpCode, Code, CodeProps, CodeSpec, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, EntityReferenceSet,
   ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel, IModelError, ModelProps,
   Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
@@ -792,7 +792,10 @@ export class IModelTransformer extends IModelExportHandler {
     }
     // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing reference so not worth checking)
     if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
-      targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
+      // respond the same way to undefined code value as the @see Code class, but don't use that class because is trims
+      // whitespace from the value, and there are iModels out there with untrimmed whitespace that we ought not to trim
+      targetElementProps.code.value = targetElementProps.code.value ?? "";
+      targetElementId = this.targetDb.elements.queryElementIdByCode(targetElementProps.code as Required<CodeProps>);
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
         if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
