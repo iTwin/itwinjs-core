@@ -7,9 +7,16 @@
  */
 
 import { ByteStream, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley";
-import { GlbHeader, TileFormat } from "@itwin/core-common";
+import { GlbHeader, ImageSource, TileFormat } from "@itwin/core-common";
+import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import * as schema from "./GltfSchema";
+import {
+  getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl,
+} from "../ImageUtil";
+import { TextureImageSource } from "../render/RenderTexture";
+import {
+  DracoMeshCompression, getGltfNodeMeshIds, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfNode, traverseGltfNodes,
+} from "./GltfSchema";
 import { Gltf } from "./GltfModel";
 
 export interface ParseGltfLogger {
@@ -18,7 +25,8 @@ export interface ParseGltfLogger {
 
 export interface ParseGltfArgs {
   logger?: ParseGltfLogger;
-  gltf: Uint8Array | schema.GltfDocument;
+  gltf: Uint8Array | GltfDocument;
+  useCreateImageBitmap: boolean;
   baseUrl?: string;
   isCanceled?: boolean;
   upAxis?: "y" | "z"; // default "y"
@@ -27,7 +35,7 @@ export interface ParseGltfArgs {
 export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undefined> {
   const source = args.gltf;
   let version: number;
-  let json: schema.GltfDocument;
+  let json: GltfDocument;
   let binary: Uint8Array | undefined;
 
   if (source instanceof Uint8Array) {
@@ -75,7 +83,7 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
   if (version === 2 && !asset)
     return undefined;
 
-  const document: schema.GltfDocument = {
+  const document: GltfDocument = {
     asset,
     scene: JsonUtils.asString(json.scene),
     extensions: JsonUtils.asObject(json.extensions),
@@ -113,22 +121,27 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
     baseUrl: args.baseUrl,
     logger,
     isCanceled: () => args.isCanceled ?? false,
+    imageFromImageSource: (args.useCreateImageBitmap ?
+      (source) => imageBitmapFromImageSource(source) :
+      (source) => imageElementFromImageSource(source)),
   });
 
   return parser.parse();
 }
 
 interface GltfParserOptions {
-  document: schema.GltfDocument;
+  document: GltfDocument;
   version: number;
   upAxis: "y" | "z";
   binary?: Uint8Array;
   baseUrl?: string;
   logger: ParseGltfLogger;
+  imageFromImageSource: (source: ImageSource) => Promise<TextureImageSource>;
   isCanceled: () => boolean;
 }
 
-type ParserBuffer = schema.GltfBuffer & { resolvedBuffer?: Uint8Array };
+type ParserBuffer = GltfBuffer & { resolvedBuffer?: Uint8Array };
+type ParserImage = GltfImage & { resolvedImage?: TextureImageSource };
 
 class GltfParser {
   private readonly _version: number;
@@ -136,9 +149,14 @@ class GltfParser {
   private readonly _baseUrl?: string
   private readonly _logger: ParseGltfLogger;
   private readonly _isCanceled: () => boolean;
-  private readonly _buffers: schema.GltfDictionary<ParserBuffer>;
-  private readonly _nodes: schema.GltfDictionary<schema.GltfNode>;
-  private readonly _sceneNodes: schema.GltfId[];
+  private readonly _buffers: GltfDictionary<ParserBuffer>;
+  private readonly _images: GltfDictionary<ParserImage>;
+  private readonly _nodes: GltfDictionary<GltfNode>;
+  private readonly _meshes: GltfDictionary<GltfMesh>
+  private readonly _sceneNodes: GltfId[];
+  private readonly _bufferViews: GltfDictionary<GltfBufferViewProps>;
+  private readonly _imageFromImageSource: (source: ImageSource) => Promise<TextureImageSource>;
+  private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
 
   public constructor(options: GltfParserOptions) {
     this._version = options.version;
@@ -146,11 +164,15 @@ class GltfParser {
     this._baseUrl = options.baseUrl;
     this._logger = options.logger;
     this._isCanceled = options.isCanceled;
+    this._imageFromImageSource = options.imageFromImageSource;
 
     const emptyDict = { };
     const doc = options.document;
     this._buffers = doc.buffers ?? emptyDict;
+    this._images = doc.images ?? emptyDict;
     this._nodes = doc.nodes ?? emptyDict;
+    this._meshes = doc.meshes ?? emptyDict;
+    this._bufferViews = doc.bufferViews ?? emptyDict;
 
     if (options.binary) {
       const buffer = this._buffers[this._version === 2 ? 0 : "binary_glTF"];
@@ -169,5 +191,140 @@ class GltfParser {
     // ###TODO_GLTF RTC_CENTER
     // ###TODO_GLTF pseudo-rtc bias (apply translation to each point at read time, for scalable mesh...)
     return undefined;
+  }
+
+  private traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode> {
+    return traverseGltfNodes(nodeIds, this._nodes, new Set<GltfId>());
+  }
+
+  private async resolveResources(): Promise<void> {
+    // Load any external images and buffers.
+    await this._resolveResources();
+
+    // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
+    const dracoMeshes: DracoMeshCompression[] = [];
+
+    for (const node of this.traverseNodes(this._sceneNodes)) {
+      for (const meshId of getGltfNodeMeshIds(node)) {
+        const mesh = this._meshes[meshId];
+        if (mesh?.primitives)
+          for (const primitive of mesh.primitives)
+            if (primitive.extensions?.KHR_draco_mesh_compression)
+              dracoMeshes.push(primitive.extensions.KHR_draco_mesh_compression);
+      }
+    }
+
+    if (dracoMeshes.length === 0)
+      return;
+
+    try {
+      const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
+    } catch (err) {
+      Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
+      Logger.logException(FrontendLoggerCategory.Render, err);
+    }
+  }
+
+  private async _resolveResources(): Promise<void> {
+    // ###TODO traverse the scene nodes to find resources referenced by them, instead of resolving everything - some resources may not
+    // be required for the scene.
+    const promises: Array<Promise<void>> = [];
+    try {
+      for (const buffer of gltfDictionaryIterator(this._buffers))
+        if (!buffer.resolvedBuffer)
+          promises.push(this.resolveBuffer(buffer));
+
+      await Promise.all(promises);
+      if (this._isCanceled())
+        return;
+
+      promises.length = 0;
+      for (const image of gltfDictionaryIterator(this._images))
+        if (!image.resolvedImage)
+          promises.push(this.resolveImage(image));
+
+      await Promise.all(promises);
+    } catch (_) {
+      // ###TODO_GLTF log
+    }
+  }
+
+  private resolveUrl(uri: string): string | undefined {
+    try {
+      return new URL(uri, this._baseUrl).toString();
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  private async resolveBuffer(buffer: GltfBuffer & { resolvedBuffer?: Uint8Array }): Promise<void> {
+    if (buffer.resolvedBuffer || undefined === buffer.uri)
+      return;
+
+    try {
+      const url = this.resolveUrl(buffer.uri);
+      const response = url ? await fetch(url) : undefined;
+      if (this._isCanceled())
+        return;
+
+      const data = await response?.arrayBuffer();
+      if (this._isCanceled())
+        return;
+
+      if (data)
+        buffer.resolvedBuffer = new Uint8Array(data);
+    } catch (_) {
+      //
+    }
+  }
+
+  private async resolveImage(image: GltfImage & { resolvedImage?: TextureImageSource }): Promise<void> {
+    if (image.resolvedImage)
+      return;
+
+    interface BufferViewSource { bufferView?: GltfId, mimeType?: string }
+    const bvSrc: BufferViewSource | undefined = undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
+    if (undefined !== bvSrc?.bufferView) {
+      const format = undefined !== bvSrc.mimeType ? getImageSourceFormatForMimeType(bvSrc.mimeType) : undefined;
+      const bufferView = this._bufferViews[bvSrc.bufferView];
+      if (undefined === format || !bufferView || !bufferView.byteLength || bufferView.byteLength < 0)
+        return;
+
+      const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
+      if (!bufferData)
+        return;
+
+      const offset = bufferView.byteOffset ?? 0;
+      const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
+      try {
+        const imageSource = new ImageSource(bytes, format);
+        image.resolvedImage = await this._imageFromImageSource(imageSource);
+      } catch (_) {
+        //
+      }
+
+      return;
+    }
+
+    const url = undefined !== image.uri ? this.resolveUrl(image.uri) : undefined;
+    if (undefined !== url)
+      image.resolvedImage = await tryImageElementFromUrl(url);
+  }
+
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+    const bv = this._bufferViews[ext.bufferView];
+    if (!bv || !bv.byteLength)
+      return;
+
+    let buf = this._buffers[bv.buffer]?.resolvedBuffer;
+    if (!buf)
+      return;
+
+    const offset = bv.byteOffset ?? 0;
+    buf = buf.subarray(offset, offset + bv.byteLength);
+    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+    if (mesh)
+      this._dracoMeshes.set(ext, mesh);
   }
 }
