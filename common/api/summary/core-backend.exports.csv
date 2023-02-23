@@ -310,6 +310,7 @@ public;Relationship
 public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
+public;RenderMaterialElementParams 
 public;RenderMaterialOwnsRenderMaterials 
 public;RenderTimeline 
 public;RepositoryLink 

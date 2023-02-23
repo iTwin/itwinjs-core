@@ -241,6 +241,32 @@ describe("SmallNumbers", () => {
 });
 
 describe("MiscAngles", () => {
+  it("orientedAngleBetweenVectorsXYZ", () => {
+    const ck = new Checker();
+    for (const degrees of [179, 181, 0, 45, 90, 130, 179, 181, 270, 359, -10, -45, -90, -100, -179]) {
+      const theta = Angle.createDegrees(degrees);
+      const vectorU = Vector3d.create(1, 0, 0);
+      const vectorV = Vector3d.create(theta.cos(), theta.sin(), 0);
+      const vectorW = Vector3d.create(0, 0, 1);
+      const radians = Angle.degreesToRadians(degrees);
+      const radiansPositive = radians > 0 ? radians : Angle.adjustRadians0To2Pi(radians);
+      const alphaTrue = Angle.orientedRadiansBetweenVectorsXYZ(
+        vectorU.x, vectorU.y, vectorU.z,
+        vectorV.x, vectorV.y, vectorV.z,
+        vectorW.x, vectorW.y, vectorW.z,
+        true
+      );
+      const alphaFalse = Angle.orientedRadiansBetweenVectorsXYZ(
+        vectorU.x, vectorU.y, vectorU.z,
+        vectorV.x, vectorV.y, vectorV.z,
+        vectorW.x, vectorW.y, vectorW.z,
+        false
+      );
+      ck.testCoordinate(alphaTrue, radiansPositive, { degrees, adjust: true });
+      ck.testCoordinate(alphaFalse, degrees <= 180.0 ? radians : Angle.adjustRadiansMinusPiPlusPi(radians), { degrees, adjust: false });
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("InverseInterpolate", () => {
     const ck = new Checker();
     const xA = 3.5;
@@ -881,5 +907,14 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc0, arc0full, uSeg0, vSeg0, perpSeg, arc1, uSeg1, vSeg1]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SquareEllipseAxes");
     expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Angle.radiansBetweenVectorsXYZ", () => {
+  it("Angle.radiansBetweenVectorsXYZ", () => {
+    const radians = Angle.radiansBetweenVectorsXYZ(1 / 2, Math.sqrt(3) / 2, 0, -1 / 2, Math.sqrt(3) / 2, 0);
+    const angle = Angle.createRadians(radians);
+    const expectedRadian: number = 60;
+    expect(Geometry.isAlmostEqualOptional(angle.degrees, expectedRadian, Geometry.smallAngleRadians)).equal(true);
   });
 });

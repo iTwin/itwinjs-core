@@ -6,11 +6,14 @@
  * @module CartesianGeometry
  */
 // cspell:word CWXY
+// cspell:word arctan
+// cspell:word Rodrigues
 
 import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
+// cspell:word CCWXY
 
 /**
  *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.
@@ -902,7 +905,7 @@ export class Vector3d extends XYZ {
     return { v: this.safeDivideOrNull(magnitude, result), mag: magnitude };
   }
   /**
-   * Return a unit vector parallel with this.  Return undefined if this.magnitude is near zero.
+   * Return a unit vector parallel with this. Return undefined if this.magnitude is near zero.
    * @param result optional result.
    */
   public normalize(result?: Vector3d): Vector3d | undefined {
@@ -939,6 +942,8 @@ export class Vector3d extends XYZ {
    * * It's returning the signed projection magnitude divided by the target magnitude.
    * * To find the projection vector, scale the target vector by the value that this function is returning.
    * * math details can be found at docs/learning/geometry/PointVector.md
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnVector
+   * and https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
    * @param target the target vector
    * @param defaultFraction the returned value in case magnitude square of target vector is very small
    * */
@@ -1347,6 +1352,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return the cross product of this vector and vectorB.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CrossProduct
    * @param vectorB second vector of cross product
    * @param result optional preallocated result.
    */
@@ -1423,17 +1429,16 @@ export class Vector3d extends XYZ {
     else
       return theta;
   }
-  /**
- * Return the (strongly-typed) angle from this vector to vectorB, measured
- * in their containing plane whose normal lies in the same half-space as vectorW.
- * * The returned angle is between -180 and 180 degrees.
- * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
- * this function returns `angleTo(vectorB)`; otherwise, it returns `-angleTo(vectorB)`.
- * * `vectorW` does not have to be perpendicular to the plane.
- * * Use `planarAngleTo` to measure the angle between vectors that are projected to another plane.
- * @param vectorB target vector.
- * @param vectorW determines the side of the plane in which the returned angle is measured
- */
+  /** Return the (strongly-typed) angle from this vector to vectorB, measured
+   * in their containing plane whose normal lies in the same half-space as vectorW.
+   * * The returned angle is between -180 and 180 degrees.
+   * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
+   * this function returns `angleTo(vectorB)`; otherwise, it returns `-angleTo(vectorB)`.
+   * * `vectorW` does not have to be perpendicular to the plane.
+   * * Use `planarAngleTo` to measure the angle between vectors that are projected to another plane.
+   * @param vectorB target vector.
+   * @param vectorW determines the side of the plane in which the returned angle is measured
+   */
   public signedAngleTo(vectorB: Vector3d, vectorW: Vector3d): Angle {
     return Angle.createRadians(this.signedRadiansTo(vectorB, vectorW));
   }

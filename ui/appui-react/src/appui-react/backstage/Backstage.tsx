@@ -17,20 +17,20 @@ import { BackstageManager } from "./BackstageManager";
 
 /** [[BackstageEvent]] arguments.
  * @public
- * @deprecated Use [[BackstageComposer]] instead.
+ * @deprecated in 3.6. Use [[BackstageComposer]] instead.
  */
 export interface BackstageEventArgs {
   isVisible: boolean;
 }
 
 /** Backstage Event class.
- * @deprecated Use [[BackstageManager.onToggled]] instead.
+ * @deprecated in 3.6. Use [[BackstageManager.onToggled]] instead.
  * @public
  */
 export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[Backstage]] React component.
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.6. Props of a deprecated component.
  * @public
  */
 export interface BackstageProps extends CommonProps {
@@ -48,7 +48,7 @@ interface BackstageState {
 }
 
 /** Backstage React component.
- * @deprecated Use [[BackstageComposer]] instead.
+ * @deprecated in 3.6. Use [[BackstageComposer]] instead.
  * @public
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation
@@ -58,12 +58,12 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   /** Shows the Backstage */
   public static show(): void {
-    UiFramework.backstageManager.open();
+    UiFramework.backstage.open();
   }
 
   /** Hides the Backstage */
   public static hide(): void {
-    UiFramework.backstageManager.close();
+    UiFramework.backstage.close();
   }
 
   /** Get CommandItemDef that will toggle display of Backstage and allow iconSpec to be overridden */
@@ -84,7 +84,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
     this.setIsOpen(!!this.props.isVisible);
     this.state = {
-      isVisible: UiFramework.backstageManager.isOpen,
+      isVisible: UiFramework.backstage.isOpen,
     };
   }
 
@@ -107,9 +107,9 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   private setIsOpen(isOpen: boolean) {
     if (isOpen) {
-      UiFramework.backstageManager.open();
+      UiFramework.backstage.open();
     } else {
-      UiFramework.backstageManager.close();
+      UiFramework.backstage.close();
     }
   }
 

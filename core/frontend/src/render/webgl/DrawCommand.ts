@@ -214,7 +214,7 @@ export class PrimitiveCommand {
     if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
       isThematic = IsThematic.No;
 
-    const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
+    const wiremesh = target.currentViewFlags.wiremesh && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
     const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { createTestCategoryDescription, createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
-import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
+import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Utils";
 
 /**
  * Stubs global 'requestAnimationFrame' and 'cancelAnimationFrame' functions.

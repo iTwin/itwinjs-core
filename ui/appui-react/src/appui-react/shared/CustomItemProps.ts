@@ -13,7 +13,7 @@ import { ItemProps } from "./ItemProps";
  */
 export interface CustomItemProps extends ItemProps {
   customId?: string;
-  // @deprecated Use popupPanelNode
+  // @deprecated in 3.0. Use popupPanelNode
   reactElement?: React.ReactNode;
   popupPanelNode?: React.ReactNode;
 }

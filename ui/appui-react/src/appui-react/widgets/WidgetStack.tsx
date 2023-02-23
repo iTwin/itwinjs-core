@@ -14,7 +14,7 @@ import {
   TabSeparator, VerticalAnchor, VerticalAnchorHelpers, WidgetZoneId,
 } from "@itwin/appui-layout-react";
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { UiFramework } from "../UiFramework";
 
 // cSpell:ignore Timedout
 
@@ -77,7 +77,7 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
         isDragged={!!this.props.draggedWidget}
         isFloating={this.props.isFloating}
         isOpen={!!this.props.openWidgetId}
-        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+        onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
         onResize={this.props.isInStagePanel ? undefined : this._handleOnWidgetResize}
         ref={this._widgetStack}
         style={this.props.style}

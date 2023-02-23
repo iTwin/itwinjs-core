@@ -65,7 +65,7 @@ Rare exceptions may be made to this policy when a breaking API change is require
 
 Most public APIs are intended to remain stable indefinitely, but occasionally a breaking change is required to fix a bug, introduce new functionality, or address performance problems. The deprecation policy ensures that such changes are introduced deliberately and predictably to help users plan ahead.
 
-Before a "public" API can be removed it must first be marked as "deprecated" in version `N` of the package. It must remain stable for the duration of version `N+1`. Finally, in version `N+2` it *may* be removed. This means that, for example, an API deprecated in version 4.1 of a package cannot be removed until version 6.0 at the earliest.
+Before a "public" API can be removed it must first be marked as "deprecated" in version `N` of the package. It must remain stable for the duration of version `N+1`. Finally, in version `N+2` it _may_ be removed. This means that, for example, an API deprecated in version 4.1 of a package cannot be removed until version 6.0 at the earliest.
 
 ## Package support policy
 
@@ -80,12 +80,15 @@ Very rarely, a critical security issue may arise that cannot reasonably be addre
 
 ## Version support status
 
-| Major Version | Status     | Release    | Active Start | Maintenance Start | End-of-life |
-|---------------|------------|------------|--------------|-|------------|
-| 1.x           | **End of life** | 2019-06-03 | 2020-05-07 | n/a | 2020-11-01 |
-| 2.x           | **Maintenance** | 2020-05-07 | 2022-01-24 | 2022-12-31 | 2023-3-31 |
-| 3.x           | **Current** | 2022-01-24 | **_2023-3-31_** | **_2023-9-30_** | **_2024-3-31_** |
-| 4.x           | **Future** | **_2023-3-31_** | - | - | - |
+| Major Version | Status          | Release         | Active Start    | Maintenance Start | End-of-life     |
+| ------------- | --------------- | --------------- | --------------- | ----------------- | --------------- |
+| 1.x           | **End of life** | 2019-06-03      | 2020-05-07      | n/a               | 2020-11-01      |
+| 2.x           | **Maintenance** | 2020-05-07      | 2022-01-24      | 2022-12-31        | 2023-3-31       |
+| 3.x           | **Current**     | 2022-01-24      | **_2023-3-31_** | **_2023-9-30_**   | **_2024-3-31_** |
+| 4.x           | **Future**      | **_2023-3-31_** | -               | -                 | -               |
 
 _Dates are subject to change._
 
+## Supported Platforms
+
+Each major version of iTwin.js supports a different set of platform versions, please refer to [Supported Platforms](./SupportedPlatforms.md).

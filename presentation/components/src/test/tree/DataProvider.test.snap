@@ -93,7 +93,11 @@ Array [
 exports[`TreeDataProvider getNodes returns presentation manager result 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "description": "Aut et tempore voluptatum rerum unde autem nulla.",
+    "hasChildren": true,
+    "icon": "Dobra",
+    "id": "d1ea9e80-e8b1-4710-a1b1-7fa1c654a1f8/4a55713b-f10a-423a-a6e0-c54b1b677e78",
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "payment",
@@ -111,10 +115,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "description": "Aut et tempore voluptatum rerum unde autem nulla.",
-    "hasChildren": true,
-    "icon": "Dobra",
-    "id": "d1ea9e80-e8b1-4710-a1b1-7fa1c654a1f8/4a55713b-f10a-423a-a6e0-c54b1b677e78",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -130,7 +130,13 @@ Array [
     "parentId": "62a2f68d-cb37-4531-995a-ac9b559e9ef8",
   },
   Object {
-    "__presentation-components/key": Object {
+    "autoExpand": true,
+    "description": "Quia nihil molestias delectus necessitatibus reiciendis consequatur.",
+    "hasChildren": true,
+    "id": "b8a8c076-222c-4b3c-9c60-4ee0adecf300/ea29ec34-9504-448a-93b5-6ec63a5c5450",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "optical",
@@ -148,12 +154,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "autoExpand": true,
-    "description": "Quia nihil molestias delectus necessitatibus reiciendis consequatur.",
-    "hasChildren": true,
-    "id": "b8a8c076-222c-4b3c-9c60-4ee0adecf300/ea29ec34-9504-448a-93b5-6ec63a5c5450",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",

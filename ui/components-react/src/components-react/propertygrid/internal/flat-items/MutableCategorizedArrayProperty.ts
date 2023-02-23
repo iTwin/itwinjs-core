@@ -12,7 +12,7 @@ import { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
  * Mutable wrapper object for PropertyRecord with array valueFormat which provides methods for working with and managing record children hierarchies.
- * @beta
+ * @public
  */
 export class MutableCategorizedArrayProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
   private _renderLabel: boolean;

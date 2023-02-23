@@ -13,7 +13,7 @@ import {
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -26,7 +26,7 @@ import {
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
@@ -325,19 +325,22 @@ describe("iModel", () => {
       pattern_weight: 0.5,
       TextureId: "test_textureid",
     };
-    /* eslint-enable @typescript-eslint/naming-convention */
 
-    const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
-    renderMaterialParams.description = testDescription;
-    renderMaterialParams.color = color;
-    renderMaterialParams.specularColor = specularColor;
-    renderMaterialParams.finish = finish;
-    renderMaterialParams.transmit = transmit;
-    renderMaterialParams.diffuse = diffuse;
-    renderMaterialParams.specular = specular;
-    renderMaterialParams.reflect = reflect;
-    renderMaterialParams.reflectColor = reflectColor;
-    renderMaterialParams.patternMap = textureMapProps;
+    /* eslint-enable @typescript-eslint/naming-convention */
+    const renderMaterialParams: RenderMaterialElementParams = {
+      paletteName: testPaletteName,
+      description: testDescription,
+      color,
+      specularColor,
+      finish,
+      transmit,
+      diffuse,
+      specular,
+      reflect,
+      reflectColor,
+      patternMap: textureMapProps,
+    };
+
     const renderMaterialId = RenderMaterialElement.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
     const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
@@ -1219,7 +1222,6 @@ describe("iModel", () => {
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subCategory).scopeType, CodeScopeSpec.Type.ParentElement);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.viewDefinition).scopeType, CodeScopeSpec.Type.Model);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subject).scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.isTrue(imodel2.codeSpecs.getByName(BisCodeSpec.spatialCategory).isManagedWithIModel);
   });
 
   it("should create and insert CodeSpecs", () => {
@@ -1229,7 +1231,6 @@ describe("iModel", () => {
     assert.deepEqual(codeSpecId, codeSpec.id);
     assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
     const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
@@ -1248,13 +1249,11 @@ describe("iModel", () => {
 
     const codeSpec4 = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
-    codeSpec4.isManagedWithIModel = false;
     const codeSpec4Id = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
     assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const copyOfCodeSpec4 = testImodel.codeSpecs.getById(codeSpec4Id);
-    assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
     assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
@@ -1278,14 +1277,12 @@ describe("iModel", () => {
     if (true) {
       const iModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
       const codeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      codeSpec.isManagedWithIModel = false;
       const codeSpecId = iModelDb.codeSpecs.insert(codeSpec);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.id, codeSpecId);
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.saveChanges();
       iModelDb.close();
     }
@@ -1298,7 +1295,6 @@ describe("iModel", () => {
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.close();
     }
   });
@@ -2570,17 +2566,11 @@ describe("iModel", () => {
     expect((elProps as any).isPrivate).undefined;
     expect((elProps as any).isInstanceOfEntity).undefined;
 
-    // update UserLabel to undefined
-    element.userLabel = undefined;
-    element.update();
-    element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.userLabel, undefined); // NOTE: userLabel is cleared when userLabel is specified as undefined
-
-    // update UserLabel to ""
+    // remove userlabel by setting it to the blank string
     element.userLabel = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.userLabel); // NOTE: userLabel is also cleared when the empty string is specified
+    assert.isUndefined(element.userLabel); // NOTE: userLabel is cleared when the empty string is specified
   });
 
   it("should update FederationGuid", () => {
@@ -2616,17 +2606,22 @@ describe("iModel", () => {
     assert.equal(element.federationGuid, federationGuid);
     assert.isTrue(element.isPrivate);
 
-    // update FederationGuid to undefined
-    element.federationGuid = undefined;
-    element.update();
+    // remove federationGuid by setting it to undefined in ElementProps
+    const elProps = element.toJSON();
+    elProps.federationGuid = undefined;
+    imodel1.elements.updateElement(elProps);
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
 
-    // update FederationGuid to ""
-    element.federationGuid = "";
-    element.update();
-    element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.federationGuid);
+    // ensure that update doesn't change federationGuid from an element immediately after insert (toJSON should remove undefined value)
+    const subject5 = Subject.create(imodel1, IModel.rootSubjectId, "Subject5");
+    const s5Id = subject5.insert();
+    const s5pre = imodel1.elements.getElement<Subject>(s5Id);
+    subject5.description = "new descr";
+    subject5.update();
+    const s5post = imodel1.elements.getElement<Subject>(s5Id);
+    expect(s5pre.federationGuid).equal(s5post.federationGuid);
+    expect(s5post.description).equal(subject5.description);
   });
 
   it("should support partial update", () => {
@@ -2675,7 +2670,6 @@ describe("iModel", () => {
     // Element.FederationGuid is a custom-handled property
     assert.equal(subject1.federationGuid, federationGuid1);
     assert.equal(subject2.federationGuid, federationGuid2);
-    assert.isUndefined(subject3.federationGuid);
     assert.isUndefined(subject4.federationGuid);
 
     // test partial update of Description (auto-handled)
@@ -2683,7 +2677,7 @@ describe("iModel", () => {
       id: subject1.id,
       classFullName: subject1.classFullName,
       description: "Description1-Updated",
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     assert.equal(subject1.description, "Description1-Updated"); // should have been updated
     assert.isDefined(subject1.model);
@@ -2697,7 +2691,7 @@ describe("iModel", () => {
       id: subject2.id,
       classFullName: subject2.classFullName,
       userLabel: "UserLabel2-Updated",
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     assert.isDefined(subject2.model);
     assert.isDefined(subject2.parent);
@@ -2711,7 +2705,6 @@ describe("iModel", () => {
     subject2.description = "";
     subject3.description = "Description3";
     subject4.description = "Description4";
-    subject1.userLabel = undefined;
     subject2.userLabel = "";
     subject3.userLabel = "UserLabel3";
     subject4.userLabel = "UserLabel4";
@@ -2731,31 +2724,31 @@ describe("iModel", () => {
     assert.equal(subject4.description, "Description4");
 
     // Element.UserLabel is a custom-handled property
-    assert.isUndefined(subject1.userLabel);
     assert.isUndefined(subject2.userLabel); // NOTE: different behavior between auto-handled and custom-handled
     assert.equal(subject3.userLabel, "UserLabel3");
     assert.equal(subject4.userLabel, "UserLabel4");
 
     // test partial update of Description to undefined
+    const s3Fed = subject3.federationGuid;
     imodel1.elements.updateElement({
       id: subject3.id,
       classFullName: subject3.classFullName,
       description: undefined,
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
     assert.isUndefined(subject3.description); // should have been updated
     assert.isDefined(subject3.model);
     assert.isDefined(subject3.parent);
     assert.equal(subject3.code.value, "Subject3"); // should not have changed
     assert.equal(subject3.userLabel, "UserLabel3"); // should not have changed
-    assert.isUndefined(subject3.federationGuid); // should not have changed
+    assert.equal(subject3.federationGuid, s3Fed); // should not have changed
 
     // test partial update of UserLabel to undefined
     imodel1.elements.updateElement({
       id: subject4.id,
       classFullName: subject4.classFullName,
       userLabel: undefined,
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
     assert.isDefined(subject4.model);
     assert.isDefined(subject4.parent);
@@ -2763,5 +2756,6 @@ describe("iModel", () => {
     assert.equal(subject4.code.value, "Subject4"); // should not have changed
     assert.equal(subject4.description, "Description4"); // should not have changed
     assert.isUndefined(subject4.federationGuid); // should not have changed
+
   });
 });

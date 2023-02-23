@@ -4,16 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { PropertyRecord, PropertyValueFormat, StructValue } from "@itwin/appui-abstract";
 import { Id64 } from "@itwin/core-bentley";
 import { ModelProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
-} from "@itwin/presentation-common";
+import { SortDirection } from "@itwin/core-react";
+import { ContentSpecificationTypes, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationTableDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat, StructValue } from "@itwin/appui-abstract";
-import { SortDirection } from "@itwin/core-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {
@@ -267,7 +265,7 @@ describe("TableDataProvider", async () => {
       provider.filterExpression = `${columns[0].key} = "Properties_60InstancesWithUrl2"`;
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
-      const rowKey = InstanceKey.fromJSON(JSON.parse(row.key));
+      const rowKey = JSON.parse(row.key);
       expect(rowKey.id).to.eq(Id64.fromString(instances.physicalModel.id!));
     });
 

@@ -11,7 +11,6 @@ import { IModelApp, Tool } from "@itwin/core-frontend";
 import { ConditionalStringValue, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@itwin/core-react";
 import { getToolbarItemProps, Item } from "@itwin/appui-layout-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemProps } from "../shared/ItemProps";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
@@ -20,13 +19,13 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Properties for the [[ToolButton]] React Component.
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface ToolButtonProps extends ToolItemProps, CommonProps { }
 
 /** Tool Button React Component.
- * @deprecated Use [CommonToolbarItem]($appui-abstract) instead.
+ * @deprecated in 3.5. Use [CommonToolbarItem]($appui-abstract) instead.
  * @public
  */
 export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> { // eslint-disable-line deprecation/deprecation
@@ -61,7 +60,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
     // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
     if (args.eventIds.has(SyncUiEventId.ToolActivated)) {
-      newState.isActive = this.props.toolId === FrontstageManager.activeToolId;
+      newState.isActive = this.props.toolId === UiFramework.frontstages.activeToolId;
       refreshState = true;
     }
 

@@ -27,7 +27,7 @@ import {
   AspectTrackingImporter,
   AspectTrackingTransformer,
   assertIdentityTransformation, AssertOrderTransformer,
-  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  ClassCounter, cmpProfileVersion, FilterByViewTransformer, getProfileVersion, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, runWithCpuProfiler, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -2022,6 +2022,203 @@ describe("IModelTransformer", () => {
     expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
     await noSystemSchemasTransformer.processSchemas();
     noSystemSchemasTransformer.dispose();
+  });
+
+  it("transform iModels with profile upgrade", async () => {
+    const oldDbPath = BackendTestUtils.IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const oldDb = SnapshotDb.openFile(oldDbPath);
+
+    const newDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-New.bim");
+    let newDb = SnapshotDb.createFrom(oldDb, newDbPath);
+    newDb.close();
+    setToStandalone(newDbPath);
+    StandaloneDb.upgradeStandaloneSchemas(newDbPath);
+    newDb = SnapshotDb.openFile(newDbPath);
+
+    const bisCoreVersionInOld = oldDb.querySchemaVersion("BisCore")!;
+    const bisCoreVersionInNew = newDb.querySchemaVersion("BisCore")!;
+    assert(
+      Semver.lt(
+        Schema.toSemverString(bisCoreVersionInOld),
+        Schema.toSemverString(bisCoreVersionInNew)),
+      `The 'old' database with biscore version ${bisCoreVersionInOld} was not less than the 'new' database biscore of ${bisCoreVersionInNew}`
+    );
+
+    const oldDbProfileIsOlder = cmpProfileVersion(getProfileVersion(oldDb), getProfileVersion(newDb)) === -1;
+    assert(
+      oldDbProfileIsOlder,
+      "The 'old' database unexpectedly did not have an older profile version"
+    );
+
+    const sourceDbs = [oldDb, newDb];
+    const targetSeeds = [oldDb, newDb];
+    const doUpgradeVariants = [true, false];
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTests-Target.bim");
+
+    const expectedFailureCases = [
+      { sourceDb: newDb, targetSeed: oldDb, doUpgrade: false },
+    ] as const;
+
+    /* eslint-disable @typescript-eslint/indent */
+    for (const sourceDb of sourceDbs)
+    for (const targetSeed of targetSeeds)
+    /* eslint-disable @typescript-eslint/indent */
+    for (const doUpgrade of doUpgradeVariants) {
+      if (IModelJsFs.existsSync(targetDbPath))
+        IModelJsFs.unlinkSync(targetDbPath);
+
+      let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
+      targetDb.close();
+      setToStandalone(targetDbPath);
+      if (doUpgrade)
+        StandaloneDb.upgradeStandaloneSchemas(targetDbPath);
+      targetDb = StandaloneDb.openFile(targetDbPath);
+
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      try {
+        await transformer.processSchemas();
+      } catch (err) {
+        const wasExpected = expectedFailureCases.find((c) =>
+          c.sourceDb.pathName === sourceDb.pathName
+          && c.targetSeed.pathName === targetSeed.pathName
+          && c.doUpgrade === doUpgrade
+        );
+        if (!wasExpected) {
+          // eslint-disable-next-line no-console
+          console.log([
+            "Unexpected failure:",
+            `sourceDb: ${sourceDb.pathName}`,
+            `targetSeed: ${targetSeed.pathName}`,
+            `doUpgrade: ${doUpgrade}`,
+          ].join("\n"));
+          throw err;
+        }
+      }
+
+      transformer.dispose();
+      targetDb.close();
+    }
+
+    oldDb.close();
+    newDb.close();
+  });
+
+  it("transforms code values with non standard space characters", async () => {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CodeValNbspSrc.bim");
+    let sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "CodeValNbspSrc" } });
+
+    const nbsp = "\xa0";
+
+    const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, `SpatialCategory${nbsp}`, {});
+    const subCategId = Id64.fromUint32Pair(parseInt(spatialCategId, 16) + 1, 0);
+    const physModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, `PhysicalModel${nbsp}`);
+
+    const physObjectProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physModelId,
+      category: spatialCategId,
+      code: new Code({
+        scope: "0x1",
+        spec: "0x1",
+        value: `PhysicalObject${nbsp}`,
+      }),
+      userLabel: `PhysicalObject${nbsp}`,
+      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 0 }, angles: {} }),
+    };
+
+    const physObjectId = sourceDb.elements.insertElement(physObjectProps);
+
+    sourceDb.saveChanges();
+
+    expect(sourceDb.elements.getElement(spatialCategId).code.value).to.equal("SpatialCategory");
+    expect(sourceDb.elements.getElement(subCategId).code.value).to.equal("SpatialCategory");
+    expect(sourceDb.elements.getElement(physModelId).code.value).to.equal("PhysicalModel");
+    expect(sourceDb.elements.getElement(physObjectId).code.value).to.equal("PhysicalObject");
+
+    const addNonBreakingSpaceToCodeValue = (db: IModelDb, initialCodeValue: string) =>
+      db.withSqliteStatement(
+        `UPDATE bis_Element SET CodeValue='${initialCodeValue}\xa0' WHERE CodeValue='${initialCodeValue}'`,
+        (s) => {
+          let result: DbResult;
+          while ((result = s.step()) === DbResult.BE_SQLITE_ROW) {}
+          assert(result === DbResult.BE_SQLITE_DONE);
+        }
+      );
+
+    for (const label of ["SpatialCategory", "PhysicalModel", "PhysicalObject"])
+      addNonBreakingSpaceToCodeValue(sourceDb, label);
+
+    const getCodeValRawSqlite = (db: IModelDb, initialCodeValue: string, expected: string, expectedRows: number) => {
+      db.withSqliteStatement(
+        `SELECT CodeValue FROM bis_Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
+        (stmt) => {
+          let rows = 0;
+          for (const { codeValue } of stmt) {
+            rows++;
+            expect(codeValue).to.equal(expected);
+          }
+          expect(rows).to.equal(expectedRows);
+        }
+      );
+    };
+
+    const getCodeValEcSql = (db: IModelDb, initialCodeValue: string, expected: string, expectedRows: number) => {
+      db.withStatement(
+        `SELECT CodeValue FROM bis.Element WHERE CodeValue LIKE'${initialCodeValue}%'`,
+        (stmt) => {
+          let rows = 0;
+          for (const { codeValue } of stmt) {
+            rows++;
+            expect(codeValue).to.equal(expected);
+          }
+          expect(rows).to.equal(expectedRows);
+        }
+      );
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(sourceDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(sourceDb, label, `${label}\xa0`, count);
+    }
+
+    sourceDb.saveChanges();
+    sourceDb.close();
+    sourceDb = SnapshotDb.openFile(sourceDbFile);
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(sourceDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(sourceDb, label, `${label}\xa0`, count);
+    }
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CoreNewSchemaRefTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "CodeValNbspTarget" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processAll();
+
+    const spatialCategoryInTargetId = transformer.context.findTargetElementId(spatialCategId);
+    const subCategoryInTargetId = transformer.context.findTargetElementId(subCategId);
+    const physModelInTargetId = transformer.context.findTargetElementId(physModelId);
+    const physObjectInTargetId = transformer.context.findTargetElementId(physObjectId);
+
+    expect(targetDb.elements.getElement(spatialCategoryInTargetId).code.value).to.equal("SpatialCategory");
+    expect(targetDb.elements.getElement(subCategoryInTargetId).code.value).to.equal("SpatialCategory");
+    expect(targetDb.elements.getElement(physModelInTargetId).code.value).to.equal("PhysicalModel");
+    expect(targetDb.elements.getElement(physObjectInTargetId).code.value).to.equal("PhysicalObject");
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    for (const [label, count] of [["SpatialCategory",2], ["PhysicalModel",1], ["PhysicalObject",1]] as const) {
+      getCodeValRawSqlite(targetDb, label, `${label}\xa0`, count);
+      getCodeValEcSql(targetDb, label, `${label}\xa0`, count);
+    }
+
+    transformer.dispose();
+    sourceDb.close();
+    targetDb.close();
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */

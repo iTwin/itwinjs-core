@@ -12,9 +12,9 @@ import { CommonDivProps, CommonProps, Div } from "@itwin/core-react";
 import { Footer } from "@itwin/appui-layout-react";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
 import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
+import { UiFramework } from "../UiFramework";
 
 // cspell:ignore safearea
 
@@ -32,7 +32,7 @@ interface StatusBarState {
 export interface StatusBarProps extends CommonProps {
   widgetControl?: StatusBarWidgetControl;
   /** Indicates whether the StatusBar is in footer mode
-   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+   * @deprecated in 3.3. In upcoming version, widget mode will be removed. Consider this parameter to always be true.
   */
   isInFooterMode?: boolean;
 }
@@ -91,7 +91,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
               messages={this.getFooterMessages()}
               // eslint-disable-next-line deprecation/deprecation
               isInFooterMode={this.props.isInFooterMode ?? true}
-              onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+              onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
               safeAreaInsets={safeAreaInsets}
               style={this.props.style}
             >

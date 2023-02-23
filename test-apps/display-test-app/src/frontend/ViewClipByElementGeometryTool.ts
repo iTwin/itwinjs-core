@@ -25,7 +25,6 @@ interface Settings extends ElementMeshOptions {
   decomposition: DecompositionOptions;
   /** An offset in meters by which to expand or contract the surfaces of the clipping polyfaces.
    * This is useful primarily for expanding the clipped volume slightly so that the element(s) from which the clip was produced are not clipped out.
-   * ###TODO Awaiting an API that will apply the offset - unused for now.
    */
   offset?: number;
 }
@@ -95,6 +94,7 @@ class ConvexDecomposer {
 
 // For demo purposes, settings are global and the only way to change them is to edit the code below.
 const settings: Settings = {
+  offset: 0.025,
   computeConvexHulls: true,
   chordTolerance: 0.1,
   decomposition: {
@@ -160,6 +160,12 @@ export class ViewClipByElementGeometryTool extends ViewClipTool {
         // Obtain polyfaces for this element.
         const meshData = await viewport.iModel.generateElementMeshes({ ...settings, source });
         let polyfaces = readElementMeshes(meshData);
+
+        // Offset if specified - typically used to expand the element envelope slightly.
+        // ###TODO cloneOffset should return IndexedPolyface, not Polyface?
+        const offset = settings.offset;
+        if (offset)
+          polyfaces = polyfaces.map((pf) => PolyfaceQuery.cloneOffset(pf, offset));
 
         // Convert to convex hulls unless otherwise specified.
         if (decomposer)

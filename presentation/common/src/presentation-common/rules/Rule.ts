@@ -18,8 +18,11 @@ import { RequiredSchemaSpecification } from "./SchemasSpecification";
  * @public
  */
 export interface RuleBase {
-  /** Used for serializing to JSON. */
-  ruleType: RuleTypes;
+  /**
+   * Used for serializing to JSON.
+   * @see RuleTypes
+   */
+  ruleType: `${RuleTypes}`;
 
   /**
    * Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are
@@ -37,7 +40,6 @@ export interface RuleBase {
 
   /**
    * A list of [ECSchema requirements]($docs/presentation/RequiredSchemaSpecification.md) that need to be met for the rule to be used.
-   * @beta
    */
   requiredSchemas?: RequiredSchemaSpecification[];
 }
@@ -52,7 +54,7 @@ export declare type Rule = CustomizationRule | NavigationRule | ContentRule | Co
  * Container of a [[condition]] property. Used for rules that support conditions. Not
  * meant to be used directly, see [[Rule]].
  *
- * @deprecated This interface is not used anymore. All interfaces that used to extend it, have the [[condition]]
+ * @deprecated in 3.x. This interface is not used anymore. All interfaces that used to extend it, have the [[condition]]
  * attribute of their own.
  * @public
  */

@@ -9,16 +9,14 @@
 import * as React from "react";
 import { CommonProps, Icon } from "@itwin/core-react";
 import { AppButton, Direction, Tools as NZ_ToolsWidget } from "@itwin/appui-layout-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CommandItemDef } from "../shared/CommandItemDef";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { UiFramework } from "../UiFramework";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  * @public
- * @deprecated use [[ToolWidgetComposer]] instead
+ * @deprecated in 3.6. Use [[ToolWidgetComposer]] instead
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line deprecation/deprecation
   private _appButton: CommandItemDef | undefined;
@@ -33,7 +31,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line
     this.widgetType = WidgetType.Tool;
     this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Right; // eslint-disable-line deprecation/deprecation
 
-    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : /* istanbul ignore next */"";
+    const activeStageName = UiFramework.frontstages.activeFrontstageDef ? UiFramework.frontstages.activeFrontstageDef.id : /* istanbul ignore next */"";
     this.widgetBaseName = `[${activeStageName}]ToolWidget`;
   }
 
@@ -64,7 +62,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line
 
 /** Properties for the [[ToolWidget]] React component.
  * @public
- * @deprecated use [[ToolWidgetComposer]] instead
+ * @deprecated in 3.6. Use [[ToolWidgetComposer]] instead
  */
 export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps { // eslint-disable-line deprecation/deprecation
   button?: React.ReactNode;
@@ -81,7 +79,7 @@ interface ToolWidgetState {
 
 /** ToolWidget React component.
  * @public
- * @deprecated use [[ToolWidgetComposer]] instead
+ * @deprecated in 3.6. Use [[ToolWidgetComposer]] instead
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> { // eslint-disable-line deprecation/deprecation
 
@@ -161,7 +159,7 @@ class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
         horizontalToolbar={this.state.horizontalToolbar}
         verticalToolbar={this.state.verticalToolbar}
         preserveSpace={true}
-        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+        onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
       />
     );
   }

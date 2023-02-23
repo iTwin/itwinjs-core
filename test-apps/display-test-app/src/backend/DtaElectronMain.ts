@@ -27,7 +27,7 @@ const getWindowSize = (winSize?: string) => {
     }
   }
 
-  return ElectronHost.getWindowSizeSetting(mainWindowName);
+  return ElectronHost.getWindowSizeAndPositionSetting(mainWindowName);
 };
 
 class DtaHandler extends IpcHandler implements DtaIpcInterface {

@@ -27,8 +27,8 @@ class TestEditTool1 extends PrimitiveTool {
 
   public testIpc = makeEditToolIpc<TestCommandIpc>();
 
-  public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
-    cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);
+  public async go(commandId: string, str1: string, str2: string, obj1: TestCmdOjb1) {
+    cmdStr = await EditTools.startCommand<string>({ commandId, iModelKey: iModel.key }, cmdArg);
     testOut = await this.testIpc.testMethod1(str1, str2, obj1);
   }
 }
@@ -36,11 +36,17 @@ class TestEditTool1 extends PrimitiveTool {
 if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
 
+    let busyCalls = 0;
     before(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       const namespace = "TestApp";
       await IModelApp.localization.registerNamespace(namespace);
       IModelApp.tools.register(TestEditTool1, namespace);
+      EditTools.busyRetry = async (attempt: number, msg: string) => {
+        expect(attempt).equals(busyCalls++);
+        expect(msg).equals("edit command is busy");
+        return 0;
+      };
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     });
@@ -48,6 +54,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
     after(async () => {
       await iModel.close();
       await TestUtility.shutdownFrontend();
+      EditTools.busyRetry = undefined;
     });
 
     it("should start edit commands", async () => {
@@ -73,6 +80,12 @@ if (!ProcessDetector.isMobileAppFrontend) {
       assert.equal(testOut.num, -10);
       assert.equal(testOut.str, "defabc");
       assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -32]);
+      expect(busyCalls).equal(4);
+
+      busyCalls = 0;
+      await EditTools.startCommand({ commandId: "", iModelKey: "" });
+      expect(busyCalls).equal(4);
+
     });
 
   });

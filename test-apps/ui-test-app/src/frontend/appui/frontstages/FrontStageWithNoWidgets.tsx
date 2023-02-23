@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, CoreTools, FrontstageProps,
-  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  BackstageAppButton, ContentGroup, ContentGroupProvider, CoreTools, FrontstageProps,
+  IModelViewportControl, StageUsage, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
   UiFramework,
 } from "@itwin/appui-react";
-import { ContentLayoutProps, StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class NoWidgetContentGroupProvider extends ContentGroupProvider {
   public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
@@ -65,7 +65,7 @@ export class FrontstageWithNoWidgets {
     };
 
     FrontstageWithNoWidgets.registerToolProviders();
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(nowWidgetStageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(nowWidgetStageProps));
   }
 
   private static registerToolProviders() {

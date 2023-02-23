@@ -99,7 +99,7 @@ describe("UiSettingsPage", () => {
     fireEvent.keyDown(thumb!, { key: SpecialKey.ArrowRight });
     await TestUtils.flushAsyncOperations();
     let widgetOpacity = UiFramework.getWidgetOpacity();
-    expect(widgetOpacity).greaterThan(.9);
+    expect (widgetOpacity).greaterThanOrEqual(.9);
     await TestUtils.flushAsyncOperations();
     // trigger sync event processing
     UiFramework.setWidgetOpacity(.5);

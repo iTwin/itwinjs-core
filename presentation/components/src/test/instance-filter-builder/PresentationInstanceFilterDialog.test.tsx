@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
+import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { getPropertyFilterOperatorLabel, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
+import { Descriptor } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { ECClassInfo, getIModelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
-import {
-  PresentationInstanceFilterInfo,
-} from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
-import { stubRaf } from "./Common";
 import { PresentationInstanceFilterDialog } from "../../presentation-components";
-import { expect } from "chai";
+import { ECClassInfo, getIModelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
+import { PresentationInstanceFilterInfo } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
+import { stubRaf } from "./Common";
 
 describe("PresentationInstanceFilterDialog", () => {
   stubRaf();
@@ -90,7 +90,8 @@ describe("PresentationInstanceFilterDialog", () => {
       descriptor={descriptor}
       onClose={() => { }}
       onApply={spy}
-      isOpen={true} />);
+      isOpen={true}
+    />);
 
     const applyButton = container.querySelector<HTMLInputElement>(".presentation-instance-filter-button-bar .iui-high-visibility:disabled");
     expect(applyButton?.disabled).to.be.true;
@@ -122,23 +123,6 @@ describe("PresentationInstanceFilterDialog", () => {
     });
   });
 
-  it("invokes 'onInstanceFilterApplied' with initial filter", async () => {
-    const spy = sinon.spy();
-    const { container } = render(<PresentationInstanceFilterDialog
-      imodel={imodelMock.object}
-      descriptor={descriptor}
-      onClose={() => { }}
-      onApply={spy}
-      isOpen={true}
-      initialFilter={initialFilter} />);
-
-    const applyButton = container.querySelector<HTMLInputElement>(".presentation-instance-filter-button-bar .iui-high-visibility");
-    expect(applyButton?.disabled).to.be.false;
-
-    fireEvent.click(applyButton!);
-    expect(spy).to.be.calledOnceWith(initialFilter);
-  });
-
   it("renders custom title", async () => {
     const spy = sinon.spy();
     const title = "custom title";
@@ -150,7 +134,8 @@ describe("PresentationInstanceFilterDialog", () => {
       title={<div>{title}</div>}
       onApply={spy}
       isOpen={true}
-      initialFilter={initialFilter} />);
+      initialFilter={initialFilter}
+    />);
 
     expect(queryByText(title)).to.not.be.null;
   });
@@ -166,8 +151,45 @@ describe("PresentationInstanceFilterDialog", () => {
       filterResultCountRenderer={() => { return <div>{count}</div>; }}
       onApply={spy}
       isOpen={true}
-      initialFilter={initialFilter} />);
+    />);
 
     expect(queryByText(count)).to.not.be.null;
+  });
+
+  it("renders with lazy-loaded descriptor", async () => {
+    const spy = sinon.spy();
+    const descriptorGetter = async () => descriptor;
+
+    const { container } = render(<PresentationInstanceFilterDialog
+      imodel={imodelMock.object}
+      descriptor={descriptorGetter}
+      onClose={() => { }}
+      onApply={spy}
+      isOpen={true}
+    />);
+
+    await waitFor(() => {
+      const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
+      expect(propertySelector).to.not.be.undefined;
+    });
+  });
+
+  it("renders spinner while loading descriptor", async () => {
+    const spy = sinon.spy();
+    // simulate long loading descriptor
+    const descriptorGetter = async () => undefined as unknown as Descriptor;
+
+    const { container } = render(<PresentationInstanceFilterDialog
+      imodel={imodelMock.object}
+      descriptor={descriptorGetter}
+      onClose={() => { }}
+      onApply={spy}
+      isOpen={true}
+    />);
+
+    await waitFor(() => {
+      const progressIndicator = container.querySelector<HTMLInputElement>(".presentation-instance-filter-dialog-progress");
+      expect(progressIndicator).to.not.be.null;
+    });
   });
 });

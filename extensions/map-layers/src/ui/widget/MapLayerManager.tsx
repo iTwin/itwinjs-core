@@ -10,7 +10,7 @@
 import { assert, BentleyError } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
-  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerScaleRangeVisibility, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
@@ -62,13 +62,15 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
   const layers = new Array<StyleMapLayerSettings>();
 
   const displayStyleLayers = (getBackgroundMap ? displayStyle.backgroundMapLayers : displayStyle.overlayMapLayers);
-  for (let layerIdx = 0; layerIdx < displayStyleLayers.length; layerIdx++) {
-    const layerSettings = displayStyleLayers[layerIdx];
+  for (let layerIndex = 0; layerIndex < displayStyleLayers.length; layerIndex++) {
+    const layerSettings = displayStyleLayers[layerIndex];
     const isOverlay = !getBackgroundMap;
-    const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
+    const layerProvider = viewport.getMapLayerImageryProvider(layerIndex, isOverlay);
+    const treeVisibility = viewport.getMapLayerScaleRangeVisibility(layerIndex, isOverlay);
     const popSubLayers = populateSubLayers && (layerSettings instanceof ImageMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
+      treeVisibility,
       name: layerSettings.name,
       source: layerSettings.source,
       transparency: layerSettings.transparency,
@@ -76,6 +78,7 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
       subLayers: popSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
       showSubLayers: false,
       isOverlay,
+      layerIndex,
       provider: layerProvider,
     });
   }
@@ -117,6 +120,11 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     return false;
   });
 
+  React.useEffect(() => {
+    const updateBackgroundMapVisible = () => setBackgroundMapVisible(activeViewport.viewFlags.backgroundMap);
+    return activeViewport.onDisplayStyleChanged.addListener(updateBackgroundMapVisible);
+  }, [activeViewport]);
+
   // 'isMounted' is used to prevent any async operation once the hook has been
   // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
   const isMounted = React.useRef(false);
@@ -146,6 +154,33 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     };
 
   }, [activeViewport, loadMapLayerSettingsFromViewport]);
+
+  React.useEffect(() => {
+    const handleScaleRangeVisibilityChanged = (layerIndexes: MapLayerScaleRangeVisibility[]) => {
+      const updateLayers = (array: StyleMapLayerSettings[] | undefined) => {
+        if (array === undefined)
+          return undefined;
+
+        return array.map((curStyledLayer) => {
+          const foundScaleRangeVisibility = layerIndexes.find((layerIdx)=> layerIdx.index === curStyledLayer.layerIndex && layerIdx.isOverlay === curStyledLayer.isOverlay);
+          if (undefined === foundScaleRangeVisibility)
+            return curStyledLayer;
+          else
+            return {...curStyledLayer, treeVisibility:foundScaleRangeVisibility.visibility};
+        });
+
+      };
+      setBackgroundMapLayers(updateLayers(backgroundMapLayers));
+      setOverlayMapLayers(updateLayers(overlayMapLayers));
+
+    };
+    activeViewport.onMapLayerScaleRangeVisibilityChanged.addListener(handleScaleRangeVisibilityChanged);
+
+    return () => {
+      activeViewport.onMapLayerScaleRangeVisibilityChanged.removeListener(handleScaleRangeVisibilityChanged);
+    };
+
+  }, [activeViewport, backgroundMapLayers, loadMapLayerSettingsFromViewport, overlayMapLayers]);
 
   // Setup onMapImageryChanged events listening.
 

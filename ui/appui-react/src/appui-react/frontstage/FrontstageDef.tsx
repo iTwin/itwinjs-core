@@ -21,8 +21,6 @@ import {
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
-import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { ContentViewManager } from "../content/ContentViewManager";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { StagePanelDef, StagePanelState, toPanelSide } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
@@ -31,20 +29,20 @@ import { WidgetDef } from "../widgets/WidgetDef";
 import { Zone, ZoneLocation, ZoneProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Frontstage, FrontstageProps } from "./Frontstage";
-import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
-import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
+import { ChildWindowLocationProps } from "../framework/FrameworkChildWindows";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { FrameworkStateReducer, SavedWidgets } from "../widget-panels/Frontstage";
 import { assert, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
-import { ContentDialogManager } from "../dialog/ContentDialogManager";
 import { FrontstageConfig } from "./FrontstageConfig";
 import { Widget } from "../widgets/Widget";
 import { WidgetConfig } from "../widgets/WidgetConfig";
 import { StagePanel, StagePanelProps, StagePanelZonesProps } from "../stagepanels/StagePanel";
 import { StagePanelConfig } from "../stagepanels/StagePanelConfig";
 import { WidgetProps } from "../widgets/WidgetProps";
+import { InternalFrontstageManager } from "./InternalFrontstageManager";
+import { InternalContentDialogManager } from "../dialog/InternalContentDialogManager";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -96,33 +94,33 @@ export class FrontstageDef {
   private _savedWidgetDefs?: SavedWidgets;
 
   public get id(): string { return this._id; }
-  /** @deprecated */
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.*/
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
-  /** @deprecated */
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.*/
   public get defaultContentId(): string { return this._defaultContentId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
-  /** @deprecated */
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.*/
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
   public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
   public get floatingContentControls() { return this._floatingContentControls; }
 
-  /** @deprecated Use [[FrontstageDef.contentManipulation]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.contentManipulation]] instead. */
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
-  /** @deprecated Use [[FrontstageDef.toolSettings]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.toolSettings]] instead. */
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
-  /** @deprecated Use [[FrontstageDef.viewNavigation]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.viewNavigation]] instead. */
   public get topRight(): ZoneDef | undefined { return this._topRight; }
-  /** @deprecated Use [[FrontstageDef.leftPanel]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.leftPanel]] instead. */
   public get centerLeft(): ZoneDef | undefined { return this._centerLeft; }
-  /** @deprecated Use [[FrontstageDef.rightPanel]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.rightPanel]] instead. */
   public get centerRight(): ZoneDef | undefined { return this._centerRight; }
-  /** @deprecated Use [[FrontstageDef.leftPanel]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.leftPanel]] instead. */
   public get bottomLeft(): ZoneDef | undefined { return this._bottomLeft; }
-  /** @deprecated Use [[FrontstageDef.statusBar]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.statusBar]] instead. */
   public get bottomCenter(): ZoneDef | undefined { return this._bottomCenter; }
-  /** @deprecated Use [[FrontstageDef.rightPanel]] instead. */
+  /** @deprecated in 3.6. Use [[FrontstageDef.rightPanel]] instead. */
   public get bottomRight(): ZoneDef | undefined { return this._bottomRight; }
 
   /** @beta */
@@ -137,7 +135,7 @@ export class FrontstageDef {
   /** @beta */
   public get topPanel(): StagePanelDef | undefined { return this._topPanel; }
   /** @beta
-   * @deprecated Only topPanel is supported in UI 2.0 */
+   * @deprecated in 3.0. Only topPanel is supported in UI 2.0 */
   public get topMostPanel(): StagePanelDef | undefined { return this._topMostPanel; }
   /** @beta */
   public get leftPanel(): StagePanelDef | undefined { return this._leftPanel; }
@@ -146,7 +144,7 @@ export class FrontstageDef {
   /** @beta */
   public get bottomPanel(): StagePanelDef | undefined { return this._bottomPanel; }
   /** @beta
-   * @deprecated Only bottomPanel is supported in UI 2.0  */
+   * @deprecated in 3.0. Only bottomPanel is supported in UI 2.0  */
   public get bottomMostPanel(): StagePanelDef | undefined { return this._bottomMostPanel; }
 
   public get contentLayoutDef(): ContentLayoutDef | undefined { return this._contentLayoutDef; }
@@ -230,14 +228,14 @@ export class FrontstageDef {
         newWidgetStateMap.forEach((stateValue, widgetDef) => {
           const originalState = originalWidgetStateMap.get(widgetDef);
           if (originalState !== stateValue) {
-            FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef, widgetState: stateValue });
+            UiFramework.frontstages.onWidgetStateChangedEvent.emit({ widgetDef, widgetState: stateValue });
             widgetDef.onWidgetStateChanged();
           }
         });
         newPanelStateMap.forEach((stateValue, panelDef) => {
           const originalState = originalPanelStateMap.get(panelDef);
           if (originalState !== stateValue) {
-            FrontstageManager.onPanelStateChangedEvent.emit({
+            UiFramework.frontstages.onPanelStateChangedEvent.emit({
               panelDef,
               panelState: stateValue,
             });
@@ -263,7 +261,7 @@ export class FrontstageDef {
 
     // istanbul ignore next - don't trigger any side effects until stage "isReady"
     if (!(this._isStageClosing || this._isApplicationClosing) || this.isReady) {
-      FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
+      InternalFrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
         frontstageDef: this,
         state,
       });
@@ -316,8 +314,8 @@ export class FrontstageDef {
     if (!this._contentGroup)
       throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group not defined`);
 
-    this._contentLayoutDef = ContentLayoutManager.getLayoutForGroup(this._contentGroup);
-    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
+    this._contentLayoutDef = UiFramework.content.layouts.getForGroup(this._contentGroup);
+    UiFramework.frontstages.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
     this._timeTracker.startTiming();
     await this._onActivated();
@@ -346,10 +344,10 @@ export class FrontstageDef {
     this._timeTracker.stopTiming();
 
     this._isStageClosing = true; // this keeps widgets in child windows from automatically re-docking
-    UiFramework.childWindowManager.closeAllChildWindows();
+    UiFramework.childWindows.closeAll();
 
     if (this._floatingContentControls) {
-      ContentDialogManager.closeAll();
+      InternalContentDialogManager.closeAll();
       this._floatingContentControls = undefined;
     }
 
@@ -407,7 +405,7 @@ export class FrontstageDef {
   }
 
   /** Starts the default tool for the Frontstage.
-   * @deprecated
+   * @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0.
    */
   public startDefaultTool(): void {
     // Start the default tool
@@ -443,7 +441,7 @@ export class FrontstageDef {
     }
 
     if (contentControl) {
-      ContentViewManager.setActiveContent(contentControl.reactNode, true);
+      UiFramework.content.setActive(contentControl.reactNode, true);
       if (contentControl.viewport) {
         const status = await IModelApp.viewManager.setSelectedView(contentControl.viewport);
         activated = status === BentleyStatus.SUCCESS;
@@ -458,7 +456,7 @@ export class FrontstageDef {
     if (oldContent)
       oldContent.onDeactivated();
     newContent.onActivated();
-    FrontstageManager.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
+    UiFramework.frontstages.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
   }
 
   /** Sets the active view content control based on the selected viewport. */
@@ -466,7 +464,7 @@ export class FrontstageDef {
     const contentControl = this.contentControls.find((control: ContentControl) => control.viewport === viewport);
     // istanbul ignore else
     if (contentControl) {
-      ContentViewManager.setActiveContent(contentControl.reactNode, true);
+      UiFramework.content.setActive(contentControl.reactNode, true);
       return true;
     }
 
@@ -475,7 +473,7 @@ export class FrontstageDef {
   }
 
   /** Gets a [[ZoneDef]] based on a given zone id.
-   * @deprecated UI1.0 is deprecated.
+   * @deprecated in 3.6. UI1.0 is deprecated.
    */
   public getZoneDef(zoneId: number): ZoneDef | undefined {
     let zoneDef;
@@ -516,7 +514,7 @@ export class FrontstageDef {
   }
 
   /** Gets a list of [[ZoneDef]]s.
-   * @deprecated UI1.0 is deprecated.
+   * @deprecated in 3.6. UI1.0 is deprecated.
    */
   public get zoneDefs(): ZoneDef[] {
     const zones = [1, 2, 3, 4, 6, 7, 8, 9];
@@ -636,7 +634,7 @@ export class FrontstageDef {
       this._floatingContentControls = new Array<ContentControl>();
 
     this._floatingContentControls.push(contentControl);
-    ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+    UiFramework.content.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
   }
 
   public dropFloatingContentControl(contentControl?: ContentControl) {
@@ -648,7 +646,7 @@ export class FrontstageDef {
     // istanbul ignore else
     if (index > -1) {
       this._floatingContentControls.splice(index, 1);
-      ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+      UiFramework.content.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
     }
   }
 
@@ -739,7 +737,7 @@ export class FrontstageDef {
     for (const widgetDef of this.widgetDefs) {
       widgetDef.setWidgetState(widgetDef.defaultState);
     }
-    FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
+    InternalFrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 
   /** Used only in UI 2.0 to determine WidgetState from NinezoneState
@@ -837,7 +835,7 @@ export class FrontstageDef {
         if (state) {
           this.nineZoneState = state;
           setTimeout(() => {
-            popoutWidgetContainerId && UiFramework.childWindowManager.closeChildWindow(popoutWidgetContainerId, true);
+            popoutWidgetContainerId && UiFramework.childWindows.close(popoutWidgetContainerId, true);
           }, 600);
         }
       }
@@ -909,7 +907,7 @@ export class FrontstageDef {
       left: bounds.left,
       top: bounds.top,
     };
-    UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+    UiFramework.childWindows.open(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
   }
 
   /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
@@ -963,7 +961,7 @@ export class FrontstageDef {
         left: bounds.left,
         top: bounds.top,
       };
-      UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+      UiFramework.childWindows.open(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
     });
   }
 
@@ -1004,7 +1002,7 @@ export class FrontstageDef {
   }
 
   /** Method used to possibly change a Popout Widget back to a docked widget if the user was the one closing the popout's child
-   * window (i.e. UiFramework.childWindowManager.isClosingChildWindow === false).
+   * window.
    *  @internal
    */
   public dockPopoutWidgetContainer(widgetContainerId: string) {
@@ -1037,7 +1035,7 @@ export class FrontstageDef {
         const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
         state && (this.nineZoneState = state);
         if (isPopoutTabLocation(location)) {
-          UiFramework.childWindowManager.closeChildWindow(location.widgetId, true);
+          UiFramework.childWindows.close(location.widgetId, true);
         }
       }
     }

@@ -133,7 +133,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
 
 /** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
  * The tiles within the tree are instances of [[RealityTile]]s.
- * @beta
+ * @public
  */
 export class RealityTileTree extends TileTree {
   /** @internal */
@@ -402,6 +402,12 @@ export class RealityTileTree extends TileTree {
   /** @internal */
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
 
+  /** Scan the list of currently selected reality tiles, and fire the viewport's 'onMapLayerScaleRangeVisibilityChanged ' event
+   * if any scale range visibility change is detected for one more map-layer definition.
+   * @internal
+   */
+  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
+
   /** @internal */
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
     this._lastSelected = BeTimePoint.now();
@@ -452,6 +458,8 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
+    this.reportTileVisibility(args, selected);
+
     IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;
   }
@@ -487,7 +495,7 @@ export class RealityTileTree extends TileTree {
       depthMap.set(depth, found === undefined ? 1 : found + 1);
     }
 
-    depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
+    depthMap.forEach((value, key ) => depthString += `${key}(x${value}), `);
     // eslint-disable-next-line no-console
     console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
   }

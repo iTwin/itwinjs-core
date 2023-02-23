@@ -11,6 +11,8 @@ import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 import { DefaultNavigationTools } from "./StandardNavigationToolsUiItemsProvider";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Provide standard tools for the ViewNavigationWidgetComposer.
  * @public

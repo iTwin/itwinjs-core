@@ -6,7 +6,7 @@
 import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
 import {
-  NodeKey, NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
+  NodeKey, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
   UnsetRulesetVariableParams, UpdateHierarchyStateParams,
 } from "@itwin/presentation-common";
 
@@ -40,13 +40,9 @@ export class IpcRequestsHandler {
   }
 
   public async updateHierarchyState(params: Omit<UpdateHierarchyStateParams<NodeKey>, "clientId">) {
-    const jsonParams: UpdateHierarchyStateParams<NodeKeyJSON> = {
+    const jsonParams: UpdateHierarchyStateParams<NodeKey> = {
       ...params,
       clientId: this.clientId,
-      stateChanges: params.stateChanges.map((sc) => ({
-        ...sc,
-        ...(sc.nodeKey ? { nodeKey: NodeKey.toJSON(sc.nodeKey) } : undefined),
-      })),
     };
     return this.call("updateHierarchyState", jsonParams);
   }

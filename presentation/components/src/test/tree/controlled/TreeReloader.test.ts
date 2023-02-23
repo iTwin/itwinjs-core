@@ -2,18 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import { Observable } from "rxjs/internal/Observable";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem, MutableTreeModel, TreeModelNodeInput, TreeModelSource } from "@itwin/components-react";
+import { DelayLoadedTreeNodeItem, MutableTreeModel, TreeModelNodeInput, TreeModelSource, UiComponents } from "@itwin/components-react";
+import { EmptyLocalization } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 import { reloadTree } from "../../../presentation-components/tree/controlled/TreeReloader";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
 
 describe("reloadTree", () => {
   let dataProvider: IPresentationTreeDataProvider;
+
+  before(async () => {
+    await UiComponents.initialize(new EmptyLocalization());
+  });
+
+  after(() => {
+    UiComponents.terminate();
+  });
 
   beforeEach(() => {
     dataProvider = {

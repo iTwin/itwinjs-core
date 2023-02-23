@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HierarchyLevel fromJSON creates valid HierarchyLevel from JSON 1`] = `
+Object {
+  "nodes": Array [
+    Object {
+      "key": Object {
+        "pathFromRoot": Array [],
+        "type": "test-node",
+        "version": 0,
+      },
+      "label": Object {
+        "displayValue": "test label",
+        "rawValue": "test label",
+        "typeName": "string",
+      },
+    },
+  ],
+  "supportsFiltering": true,
+}
+`;

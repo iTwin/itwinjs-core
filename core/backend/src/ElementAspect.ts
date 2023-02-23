@@ -192,7 +192,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /** @deprecated findAllBySource */
+  /** @deprecated in 3.x. findAllBySource */
   public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     let elementId: Id64String | undefined;

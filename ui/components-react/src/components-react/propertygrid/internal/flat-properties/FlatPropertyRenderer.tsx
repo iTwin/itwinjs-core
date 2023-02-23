@@ -27,14 +27,11 @@ export interface FlatPropertyRendererProps extends SharedRendererProps {
   propertyValueRendererManager?: PropertyValueRendererManager;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-  /** Indicates property is being edited
-   * @beta */
+  /** Indicates property is being edited */
   isEditing?: boolean;
-  /** Called when property edit is committed.
-   * @beta */
+  /** Called when property edit is committed. */
   onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
-  /** Called when property edit is cancelled.
-   * @beta */
+  /** Called when property edit is cancelled. */
   onEditCancel?: () => void;
   /** Whether property value is displayed in expanded state. */
   isExpanded: boolean;

@@ -21,7 +21,7 @@ import {
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
-  ChangeOpCode, Code, CodeSpec, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, EntityReferenceSet,
+  ChangeOpCode, Code, CodeProps, CodeSpec, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, EntityReferenceSet,
   ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel, IModelError, ModelProps,
   Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
@@ -124,7 +124,7 @@ export interface IModelTransformOptions {
    *       reference depending on your use case.
    * @default "reject"
    * @beta
-   * @deprecated use [[danglingReferencesBehavior]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   * @deprecated in 3.x. use [[danglingReferencesBehavior]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
 
@@ -448,7 +448,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
    * @note This method is called from all `process*` functions and should never need to be called directly.
-   * @deprecated call [[initialize]] instead, it does the same thing among other initialization
+   * @deprecated in 3.x. call [[initialize]] instead, it does the same thing among other initialization
    * @note Passing an [[InitFromExternalSourceAspectsArgs]] is required when processing changes, to remap any elements that may have been deleted.
    *       You must await the returned promise as well in this case. The synchronous behavior has not changed but is deprecated and won't process everything.
    */
@@ -472,18 +472,25 @@ export class IModelTransformer extends IModelExportHandler {
 
     try {
       const startChangesetId = args.startChangesetId ?? this.sourceDb.changeset.id;
-      const firstChangesetIndex = (
-        await IModelHost.hubAccess.queryChangeset({
-          iModelId: this.sourceDb.iModelId,
-          changeset: { id: startChangesetId },
-          accessToken: args.accessToken,
-        })
-      ).index;
+      const endChangesetId = this.sourceDb.changeset.id;
+      const [firstChangesetIndex, endChangesetIndex] = await Promise.all(
+        [startChangesetId, endChangesetId]
+          .map(async (id) =>
+            IModelHost.hubAccess
+              .queryChangeset({
+                iModelId: this.sourceDb.iModelId,
+                changeset: { id },
+                accessToken: args.accessToken,
+              })
+              .then((changeset) => changeset.index)
+          )
+      );
+
       const changesetIds = await ChangeSummaryManager.createChangeSummaries({
         accessToken: args.accessToken,
         iModelId: this.sourceDb.iModelId,
         iTwinId: this.sourceDb.iTwinId,
-        range: { first: firstChangesetIndex },
+        range: { first: firstChangesetIndex, end: endChangesetIndex },
       });
 
       ChangeSummaryManager.attachChangeCache(this.sourceDb);
@@ -553,8 +560,8 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** This no longer has any effect except emitting a warning
-   * @deprecated
+  /**
+   * @deprecated in 3.x, this no longer has any effect except emitting a warning
    */
   protected skipElement(_sourceElement: Element): void {
     Logger.logWarning(loggerCategory, `Tried to defer/skip an element, which is no longer necessary`);
@@ -785,7 +792,10 @@ export class IModelTransformer extends IModelExportHandler {
     }
     // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing reference so not worth checking)
     if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
-      targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
+      // respond the same way to undefined code value as the @see Code class, but don't use that class because is trims
+      // whitespace from the value, and there are iModels out there with untrimmed whitespace that we ought not to trim
+      targetElementProps.code.value = targetElementProps.code.value ?? "";
+      targetElementId = this.targetDb.elements.queryElementIdByCode(targetElementProps.code as Required<CodeProps>);
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
         if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
@@ -946,7 +956,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Import elements that were deferred in a prior pass.
-   * @deprecated This method is no longer necessary since the transformer no longer needs to defer elements
+   * @deprecated in 3.x. This method is no longer necessary since the transformer no longer needs to defer elements
    */
   public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
 

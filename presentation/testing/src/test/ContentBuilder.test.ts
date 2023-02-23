@@ -10,9 +10,8 @@ import { ArrayValue, PrimitiveValue, StructValue } from "@itwin/appui-abstract";
 import { BeEvent, Guid, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet,
-  PrimitiveTypeDescription, PropertyValueFormat, RegisteredRuleset, Ruleset, StructTypeDescription, TypeDescription, Value, ValuesDictionary,
-  ValuesMap,
+  ArrayTypeDescription, CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValuesMap, Field, Item, KeySet,
+  PrimitiveTypeDescription, PropertyValueFormat, RegisteredRuleset, Ruleset, StructTypeDescription, TypeDescription, ValuesMap,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
@@ -41,25 +40,36 @@ class EmptyDataProvider implements IContentBuilderDataProvider {
   }
 }
 
-function createItem(values: ValuesDictionary<Value>) {
-  const displayValues: ValuesDictionary<DisplayValue> = {};
-  for (const key in values) {
-    if (values.hasOwnProperty(key)) {
+interface ItemValues {
+  rawValues: ValuesMap;
+  displayValues: DisplayValuesMap;
+}
+
+function createItemValues(rawValuesArr: ValuesMap[]): ItemValues[] {
+  return rawValuesArr.map((rawValues) => ({
+    rawValues,
+    displayValues: {},
+  }));
+}
+
+function createItem({ rawValues, displayValues }: ItemValues) {
+  for (const key in rawValues) {
+    if (rawValues.hasOwnProperty(key) && !displayValues.hasOwnProperty(key)) {
       displayValues[key] = "";
     }
   }
   return new Item(
-    Object.keys(values).map((key) => ({ className: "testClass", id: key })),
+    Object.keys(rawValues).map((key) => ({ className: "testClass", id: key })),
     "Test class",
     "",
     undefined,
-    values,
+    rawValues,
     displayValues,
     [],
   );
 }
 
-async function getContent(items: Array<ValuesDictionary<Value>>, descriptor: Descriptor) {
+async function getContent(items: ItemValues[], descriptor: Descriptor) {
   return new Content(descriptor, items.map(createItem));
 }
 
@@ -115,7 +125,7 @@ class DataProvider extends EmptyDataProvider {
     { title: "Circle", radius: 13 },
   ];
   public override getContentSetSize = async () => this.values.length;
-  public override getContent = async () => getContent(this.values, this.descriptor);
+  public override getContent = async () => getContent(createItemValues(this.values), this.descriptor);
 }
 
 async function getEmptyContent(props: { descriptor: Readonly<Descriptor> }) {
@@ -230,15 +240,15 @@ describe("ContentBuilder", () => {
 
     it("rounds raw numeric values to supplied decimal precision", async () => {
       const testValues = [
-        { name: "not-set", value: undefined, type: createDoubleTypeDescription() },
-        { name: "int", value: 1, type: createIntTypeDescription() },
-        { name: "doubleLowPrecision", value: 1.9, type: createDoubleTypeDescription() },
-        { name: "doubleRoundedDown", value: 1.234, type: createDoubleTypeDescription() },
-        { name: "doubleRoundedUp", value: 4.567, type: createDoubleTypeDescription() },
-        { name: "doublesArray", value: [1.234, 4.567, 7.890], type: createArrayTypeDescription(createDoubleTypeDescription()) },
-        { name: "doublesStruct", value: { a: 1.234 }, type: createStructTypeDescription({ a: createDoubleTypeDescription() }) },
-        { name: "point2d", value: [1.456, 4.789], type: createPoint2dTypeDescription() },
-        { name: "point3d", value: { x: 1.234, y: 4.567, z: 7.890 }, type: createPoint3dTypeDescription() },
+        { name: "not-set", value: undefined, displayValue: "", type: createDoubleTypeDescription() },
+        { name: "int", value: 1, displayValue: "1.0", type: createIntTypeDescription() },
+        { name: "doubleLowPrecision", value: 1.9, displayValue: "1.9", type: createDoubleTypeDescription() },
+        { name: "doubleRoundedDown", value: 1.234, displayValue: "1.2", type: createDoubleTypeDescription() },
+        { name: "doubleRoundedUp", value: 4.567, displayValue: "4.6", type: createDoubleTypeDescription() },
+        { name: "doublesArray", value: [1.234, 4.567, 7.890], displayValue: ["1.2", "4.6", "7.9"], type: createArrayTypeDescription(createDoubleTypeDescription()) },
+        { name: "doublesStruct", value: { a: 1.234 }, displayValue: { a: "1.2" }, type: createStructTypeDescription({ a: createDoubleTypeDescription() }) },
+        { name: "point2d", value: [1.456, 4.789], displayValue: ["1.5", "4.8"], type: createPoint2dTypeDescription() },
+        { name: "point3d", value: { x: 1.234, y: 4.567, z: 7.890 }, displayValue: { x: "1.2", y: "4.6", z: "7.9" }, type: createPoint3dTypeDescription() },
       ];
       const category = createCategoryDescription();
       const descriptor = new Descriptor({
@@ -250,9 +260,13 @@ describe("ContentBuilder", () => {
       });
       class TestDataProvider extends EmptyDataProvider {
         public readonly descriptor = descriptor;
-        public readonly values = [testValues.reduce((map, v) => ({ ...map, [v.name]: v.value }), {} as ValuesMap)];
-        public override getContentSetSize = async () => this.values.length;
-        public override getContent = async () => getContent(this.values, this.descriptor);
+        public readonly items = [testValues.reduce((item, v) => {
+          item.rawValues[v.name] = v.value;
+          item.displayValues[v.name] = v.displayValue;
+          return item;
+        }, { rawValues: {}, displayValues: {} } as ItemValues)];
+        public override getContentSetSize = async () => this.items.length;
+        public override getContent = async () => getContent(this.items, this.descriptor);
       }
       const dataProvider = new TestDataProvider();
       const builder = new ContentBuilder({ imodel: imodelMock.object, dataProvider, decimalPrecision: 2 });
@@ -270,7 +284,7 @@ describe("ContentBuilder", () => {
     });
   });
 
-  describe("createContentForAllClasses", () => {
+  describe("[deprecated] createContentForAllClasses", () => {
     const testInstances: TestInstance[] = [
       {
         className: "Class1",
@@ -298,6 +312,7 @@ describe("ContentBuilder", () => {
         dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
       });
 
+      // eslint-disable-next-line deprecation/deprecation
       const content = await builder.createContentForAllInstances("1");
 
       expect(content.length).to.equal(2);
@@ -312,7 +327,7 @@ describe("ContentBuilder", () => {
     });
   });
 
-  describe("createContentForInstancePerClass", () => {
+  describe("[deprecated] createContentForInstancePerClass", () => {
     context("test instances have ids", () => {
       const testInstances: TestInstance[] = [
         {
@@ -338,6 +353,7 @@ describe("ContentBuilder", () => {
           dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
         });
 
+        // eslint-disable-next-line deprecation/deprecation
         const content = await builder.createContentForInstancePerClass("1");
 
         expect(content.length).to.equal(2);
@@ -362,6 +378,7 @@ describe("ContentBuilder", () => {
           dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
         });
 
+        // eslint-disable-next-line deprecation/deprecation
         await expect(builder.createContentForInstancePerClass("1")).to.be.rejectedWith("Test error");
       });
     });
@@ -382,6 +399,7 @@ describe("ContentBuilder", () => {
           dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
         });
 
+        // eslint-disable-next-line deprecation/deprecation
         const content = await builder.createContentForInstancePerClass("1");
 
         expect(content).to.be.empty;
