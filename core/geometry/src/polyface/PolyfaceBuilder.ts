@@ -15,11 +15,13 @@ import { CurveFactory } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
 import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { AxisOrder, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -38,6 +40,7 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { UVSurfaceOps } from "../geometry3d/UVSurfaceOps";
+import { XAndY } from "../geometry3d/XYZProps";
 import { Box } from "../solid/Box";
 import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
@@ -50,12 +53,10 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
-import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
-import { XAndY } from "../geometry3d/XYZProps";
-import { PolyfaceQuery } from "./PolyfaceQuery";
-import { Angle } from "../geometry3d/Angle";
-import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
+import { PolyfaceQuery } from "./PolyfaceQuery";
 
 /* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/prefer-for-of */
 /**
@@ -1141,7 +1142,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addTriangulatedRegion(region: AnyRegion) {
     const contour = SweepContour.createForLinearSweep(region);
     if (contour)
-      contour.emitFacets(this, true, undefined);
+      contour.emitFacets(this, this.reversedFlag, undefined);
   }
 
   /**
@@ -1553,6 +1554,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public override handleRotationalSweep(g: RotationalSweep): any { return this.addRotationalSweep(g); }
   /** Double dispatch handler for RuledSweep */
   public override handleRuledSweep(g: RuledSweep): any { return this.addRuledSweep(g); }
+  /** Double dispatch handler for Loop */
+  public override handleLoop(g: Loop): any { return this.addTriangulatedRegion(g); }
+  /** Double dispatch handler for ParityRegion */
+  public override handleParityRegion(g: ParityRegion): any { return this.addTriangulatedRegion(g); }
   /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandler(this)` */
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 

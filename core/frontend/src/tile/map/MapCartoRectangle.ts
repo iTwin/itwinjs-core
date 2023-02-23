@@ -20,7 +20,7 @@ const scratchPoint2d = Point2d.createZero();
  * The `y` components of the `low` and `high` points refer to the southern and northern latitudes, respectively.
  * Longitudes are stored in radians in the range [-pi, pi].
  * Latitudes are stored in radians in the range [-pi/2, pi/2].
- * @beta
+ * @public
  */
 export class MapCartoRectangle extends Range2d {
   /** Construct a new rectangle with angles specified in radians.

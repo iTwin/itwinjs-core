@@ -100,6 +100,8 @@ internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
 internal;ContextShareProvider
+internal;CoordinateConverter
+internal;CoordinateConverterOptions
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -154,7 +156,7 @@ public;ElementLocateManager
 public;ElementPicker
 alpha;class ElementSetTool 
 public;ElementState 
-internal;EllipsoidTerrainProvider 
+public;EllipsoidTerrainProvider 
 public;EmphasizeElements 
 beta;EngineeringLengthDescription 
 public;EntityState 
@@ -349,7 +351,7 @@ internal;LRUTileList
 internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
-beta;MapCartoRectangle 
+public;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
@@ -374,14 +376,14 @@ public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
-beta;MapTile 
+public;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
-beta;class MapTileProjection
-beta;MapTileTree 
+public;class MapTileProjection
+public;MapTileTree 
 internal;MapTileTreeReference 
 beta;MapTileTreeScaleRangeVisibility
-beta;class MapTilingScheme
+public;class MapTilingScheme
 public;MarginOptions
 public;MarginPercent
 public;Marker 
@@ -474,7 +476,7 @@ public;class PrimitiveTool
 internal;PrimitiveVisibility
 alpha;PublisherProductInfo
 public;PullChangesOptions
-beta;QuadId
+public;QuadId
 public;QuantityFormatOverridesChangedArgs
 public;QuantityFormatsChangedArgs
 public;QuantityFormatter 
@@ -493,7 +495,7 @@ public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId:
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
-beta;ReadMeshArgs
+public;ReadMeshArgs
 internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
 alpha;RealityDataError 
@@ -507,8 +509,8 @@ alpha;fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promi
 alpha;RealityDataSourceProvider
 alpha;RealityDataSourceProviderRegistry
 internal;RealityMeshGraphicParams
-beta;RealityMeshParams
-beta;RealityMeshParams
+public;RealityMeshParams
+public;RealityMeshParams
 internal;fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined
 alpha;toPolyface(params: RealityMeshParams, options?:
 beta;RealityMeshParamsBuilder
@@ -517,14 +519,14 @@ internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
-beta;RealityTile 
+public;RealityTile 
 internal;RealityTileContent 
 internal;RealityTileDrawArgs 
 alpha;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
-beta;RealityTileTree 
+public;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
 alpha;RemoteExtensionProvider 
@@ -551,7 +553,7 @@ internal;class RenderTarget
 internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
-beta;RequestMeshDataArgs
+public;RequestMeshDataArgs
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
 alpha;ResolveManifestFunc = () => Promise
@@ -620,10 +622,10 @@ internal;class Target
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
-beta;class TerrainMeshProvider
-beta;TerrainMeshProviderOptions
-beta;TerrainProvider
-beta;TerrainProviderRegistry
+public;class TerrainMeshProvider
+public;TerrainMeshProviderOptions
+public;TerrainProvider
+public;TerrainProviderRegistry
 internal;TerrainTexture
 internal;TerrainTileContent 
 public;TextInputFormatPropEditorSpec 
@@ -643,6 +645,7 @@ public;TileAdmin
 internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
+beta;TileContentDecodingStatistics
 public;TiledGraphicsProvider
 public;TiledGraphicsProvider
 internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): void

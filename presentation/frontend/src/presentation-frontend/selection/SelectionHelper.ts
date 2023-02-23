@@ -8,7 +8,10 @@
 
 import { Key, Keys, NodeKey } from "@itwin/presentation-common";
 
-/** @internal */
+/**
+ * Helper class for working with selection.
+ * @public
+ */
 export class SelectionHelper {
 
   // istanbul ignore next

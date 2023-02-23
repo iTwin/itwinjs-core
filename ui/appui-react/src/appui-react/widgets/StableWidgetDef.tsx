@@ -13,7 +13,7 @@ function isGenerated(value: WidgetDef["id"]) {
 }
 
 /** Proxy will return `stableId` if target [[WidgetDef]] id is auto-generated.
- * @internal @deprecated in 3.0.
+ * @internal @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export function createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef {
   return new Proxy(widgetDef, {

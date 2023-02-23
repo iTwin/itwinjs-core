@@ -15,7 +15,7 @@ import {
 } from "../internal";
 
 /** Options supplied to [[TerrainProvider.createTerrainMeshProvider]] to construct a [[TerrainMeshProvider]].
- * @beta
+ * @public
  */
 export interface TerrainMeshProviderOptions {
   /** A scale factor to be applied to the height of the terrain meshes.
@@ -39,7 +39,7 @@ export interface TerrainMeshProviderOptions {
 }
 
 /** Arguments supplied to [[TerrainMeshProvider.requestMeshData]].
- * @beta
+ * @public
  */
 export interface RequestMeshDataArgs {
   /** The tile for which the terrain mesh is being requested. */
@@ -49,7 +49,7 @@ export interface RequestMeshDataArgs {
 }
 
 /** Arguments supplied to [[TerrainMeshProvider.readMesh]].
- * @beta
+ * @public
  */
 export interface ReadMeshArgs {
   /** The mesh data obtained from [[TerrainMeshProvider.requestMeshData]]. */
@@ -64,7 +64,12 @@ export interface ReadMeshArgs {
  * Each mesh represents the terrain within a rectangular region of the Earth associated with a [[MapTile]].
  * The display system drapes background map imagery onto these meshes.
  * `TerrainMeshProvider`s are obtained from [[TerrainProvider]]s.
- * @beta
+ * @note A terrain mesh provider is expected to produce terrain for all areas of the globe. If it lacks terrain data for an area of the globe,
+ * it might choose to fall back to producing smooth terrain using an [[EllipsoidTerrainProvider]].
+ * @see [[EllipsoidTerrainProvider]] for an example implementation that provides smooth terrain meshes.
+ * @see [BingTerrainMeshProvider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/BingTerrainProvider.ts) for an example
+ * implementation that produces 3d terrain meshes from elevations provided by [[BingElevationProvider]].
+ * @public
  */
 export abstract class TerrainMeshProvider {
   /** Obtain a representation of the terrain for a specific [[MapTile]]. The result will subsequently be supplied to [[readMesh]] to produce the mesh.
