@@ -4510,6 +4510,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     handleBox(g: Box): any;
     handleCone(g: Cone): any;
     handleLinearSweep(g: LinearSweep): any;
+    handleLoop(g: Loop): any;
+    handleParityRegion(g: ParityRegion): any;
     handleRotationalSweep(g: RotationalSweep): any;
     handleRuledSweep(g: RuledSweep): any;
     handleSphere(g: Sphere): any;

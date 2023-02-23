@@ -6,7 +6,6 @@
  * @module iTwinServiceClients
  */
 import * as deepAssign from "deep-assign";
-import * as _ from "lodash";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
