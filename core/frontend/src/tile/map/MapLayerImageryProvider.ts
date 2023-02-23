@@ -146,7 +146,7 @@ export abstract class MapLayerImageryProvider {
    *  @internal */
   public setStatus(status: MapLayerImageryProviderStatus) {
     if (this._status !== status) {
-      this.onStatusUpdated (status);
+      this.onStatusUpdated(status);
       this._status = status;
       this.onStatusChanged.raiseEvent(this);
     }
@@ -155,9 +155,7 @@ export abstract class MapLayerImageryProvider {
   /** Method called whenever the status changes, giving the opportunity to sub-classes to have a custom behavior.
    *  @internal
    * */
-  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus){
-
-  }
+  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) {}
 
   /** @internal */
   protected setRequestAuthorization(headers: Headers){

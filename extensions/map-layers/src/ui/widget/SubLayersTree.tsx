@@ -154,7 +154,6 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     if (displayStyle && vp) {
       const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.source, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: true }, -1, indexInDisplayStyle, mapLayer.isOverlay);
-      vp.invalidateRenderPlan();
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer) {
         if (updatedMapLayer instanceof ImageMapLayerSettings) {
@@ -177,7 +176,6 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
         const treeVisibility = vp.getMapLayerScaleRangeVisibility(indexInDisplayStyle, mapLayer.isOverlay);
         setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, indexInDisplayStyle, treeVisibility));
       }
-      vp.invalidateRenderPlan();
     }
   }, [mapLayer]);
 
@@ -371,6 +369,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
           });
         });
 
+        // Called in displayStyle.changeMapSubLayerProps(), does it need to be called again after the cascadeState?
         if (vp)
           vp.invalidateRenderPlan();
       },

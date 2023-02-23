@@ -67,10 +67,6 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
         if (Math.abs(styleTransparencyValue - newTransparency) > 0.01) {
           // update the display style
           displayStyle.changeMapLayerProps({ transparency: newTransparency }, indexInDisplayStyle, mapLayerSettings.isOverlay);
-          activeViewport.invalidateRenderPlan();
-
-          // force UI to update
-          // loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
         }
       }
     }

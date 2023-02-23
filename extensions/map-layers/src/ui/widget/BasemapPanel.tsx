@@ -64,7 +64,6 @@ export function BasemapPanel(props: BasemapPanelProps) {
   const handleBasemapTransparencyChange = React.useCallback((transparency: number) => {
     if (activeViewport) {
       activeViewport.displayStyle.changeBaseMapTransparency(transparency);
-      activeViewport.invalidateRenderPlan();
       setBaseMapTransparencyValue(transparency);
     }
   }, [activeViewport]);
@@ -110,7 +109,6 @@ export function BasemapPanel(props: BasemapPanelProps) {
       // change color and make sure previously set transparency is not lost.
       const curTransparency = activeViewport.displayStyle.backgroundMapBase instanceof ColorDef ? activeViewport.displayStyle.backgroundMapBase.getTransparency() : 0;
       activeViewport.displayStyle.backgroundMapBase = bgColorDef.withTransparency(curTransparency);
-      activeViewport.invalidateRenderPlan();
       setSelectedBaseMap(bgColorDef.toJSON());
     }
   }, [activeViewport]);
@@ -135,13 +133,11 @@ export function BasemapPanel(props: BasemapPanelProps) {
         } else {
           activeViewport.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON(baseProps);
         }
-        activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(baseProps);
       } else {
         const bgColorDef = ColorDef.fromJSON(bgColor);
         const curTransparency = activeViewport.displayStyle.backgroundMapBase instanceof ColorDef ? activeViewport.displayStyle.backgroundMapBase.getTransparency() : 0;
         activeViewport.displayStyle.backgroundMapBase = bgColorDef.withTransparency(curTransparency);
-        activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(bgColorDef.toJSON());
       }
     }
@@ -153,7 +149,6 @@ export function BasemapPanel(props: BasemapPanelProps) {
       // BaseMap visibility is only support when backgroundBase is an instance of BaseMapLayerSettings (i.e not a color)...
       if (activeViewport.displayStyle.backgroundMapBase instanceof BaseMapLayerSettings) {
         activeViewport.displayStyle.backgroundMapBase = activeViewport.displayStyle.backgroundMapBase.clone({ visible: newState });
-        activeViewport.invalidateRenderPlan();
       }
       setBaseMapVisible(newState);
     }
@@ -166,7 +161,7 @@ export function BasemapPanel(props: BasemapPanelProps) {
   return (
     <>
       <div className="map-manager-base-item" >
-        <Button size="small" styleType="borderless"  title={toggleVisibility} onClick={handleVisibilityChange} disabled={props.disabled || !activeViewport || !(activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings)}>
+        <Button size="small" styleType="borderless" title={toggleVisibility} onClick={handleVisibilityChange} disabled={props.disabled || !activeViewport || !(activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings)}>
           <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </Button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
@@ -181,7 +176,7 @@ export function BasemapPanel(props: BasemapPanelProps) {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />
         }
-        <TransparencyPopupButton disabled={props.disabled} transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange}/>
+        <TransparencyPopupButton disabled={props.disabled} transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
       </div>
     </>
   );

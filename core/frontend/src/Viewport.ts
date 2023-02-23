@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
-  ImageMapLayerSettings, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
   Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -384,9 +384,8 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** Mark the viewport's render plan as invalid, so that the next call to [[renderFrame]] will recreate it.
-   * TODO explain what render plan is, hard to find elsewhere in docs.
-   * RenderPlan is internal, should it be public if this is going to be public?
-   * A render plan holds settings like frustum and display style settings for a particular render scene
+   * This method is not typically invoked directly - the scene is automatically invalidated in response to events.
+   * @see [[RenderPlan]]
    * @internal
    */
   public invalidateRenderPlan(): void {

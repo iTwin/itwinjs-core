@@ -90,7 +90,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
 
   const handleModalUrlDialogOk = React.useCallback((action: LayerAction) => {
     if (LayerAction.Attached === action) {
-    // close popup and refresh UI
+      // close popup and refresh UI
       onLayerAttached();
     }
 
@@ -126,9 +126,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
                 const settings = mapLayerSettings.toLayerSettings(subLayers);
 
                 if (settings) {
-                  activeViewport.displayStyle.attachMapLayer({settings, isOverlay});
-
-                  activeViewport.invalidateRenderPlan();
+                  activeViewport.displayStyle.attachMapLayer({ settings, isOverlay });
 
                   const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: settings.name, sourceUrl: settings.url });
                   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -147,7 +145,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
                     activeViewport={activeViewport}
                     isOverlay={isOverlay}
                     layerRequiringCredentials={mapLayerSettings.toJSON()}
-                    onOkResult={()=>handleModalUrlDialogOk(LayerAction.Attached)}
+                    onOkResult={() => handleModalUrlDialogOk(LayerAction.Attached)}
                     onCancelResult={handleModalUrlDialogCancel}
                     mapTypesOptions={mapTypesOptions} />
                 );
@@ -198,7 +196,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
     UiFramework.dialogs.modal.open(<MapUrlDialog
       activeViewport={activeViewport}
       isOverlay={isOverlay}
-      onOkResult={()=>handleModalUrlDialogOk(LayerAction.Attached)}
+      onOkResult={() => handleModalUrlDialogOk(LayerAction.Attached)}
       onCancelResult={handleModalUrlDialogCancel}
       mapTypesOptions={mapTypesOptions} />);
     if (onHandleOutsideClick) {
@@ -291,7 +289,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
       activeViewport={activeViewport}
       isOverlay={isOverlay}
       mapLayerSourceToEdit={matchingSource}
-      onOkResult={()=>handleModalUrlDialogOk(LayerAction.Edited)}
+      onOkResult={() => handleModalUrlDialogOk(LayerAction.Edited)}
       onCancelResult={handleModalUrlDialogCancel}
       mapTypesOptions={mapTypesOptions} />);
 
@@ -483,7 +481,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
           <AttachLayerPanel
             isOverlay={props.isOverlay}
             onLayerAttached={handleLayerAttached}
-            onHandleOutsideClick={setHandleOutsideClick}/>
+            onHandleOutsideClick={setHandleOutsideClick} />
         </div>
       </UiCore.Popup >
     </>

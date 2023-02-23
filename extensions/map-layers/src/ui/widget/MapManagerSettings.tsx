@@ -68,12 +68,10 @@ export function MapManagerSettings() {
 
   const updateTerrainSettings = React.useCallback((props: TerrainProps) => {
     activeViewport!.changeBackgroundMapProps({ terrainSettings: props });
-    activeViewport!.invalidateRenderPlan();
   }, [activeViewport]);
 
   const updateBackgroundMap = React.useCallback((props: BackgroundMapProps) => {
     activeViewport!.changeBackgroundMapProps(props);
-    activeViewport!.invalidateRenderPlan();
   }, [activeViewport]);
 
   const [heightOriginMode, setHeightOriginMode] = React.useState(() => getHeightOriginModeKey(terrainSettings.heightOriginMode));
@@ -99,8 +97,6 @@ export function MapManagerSettings() {
     if (option === MapMaskingOption.None) {
       activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } });
     }
-
-    activeViewport!.invalidateRenderPlan();
   }, [activeViewport, maskTransparency]);
 
   const [masking, setMasking] = React.useState(() => getMapMaskingFromBackgroundMapSetting(backgroundMapSettings));
@@ -132,14 +128,12 @@ export function MapManagerSettings() {
   const handleAlphaChange = React.useCallback((values: readonly number[]) => {
     const newTransparency = values[0] / 100;
     activeViewport!.changeBackgroundMapProps({ transparency: newTransparency });
-    activeViewport!.invalidateRenderPlan();
     setTransparency(newTransparency);
   }, [activeViewport]);
 
   const handleMaskTransparencyChange = React.useCallback((values: readonly number[]) => {
     const newTransparency = values[0] / 100;
     activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: newTransparency } });
-    activeViewport!.invalidateRenderPlan();
     setMaskTransparency(newTransparency);
   }, [activeViewport]);
 

@@ -8,7 +8,8 @@ import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { UiFramework } from "@itwin/appui-react";
 import { Button, Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
-import { IModelApp, MapLayerAccessClient, MapLayerSource,
+import {
+  IModelApp, MapLayerAccessClient, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Dialog, Icon, useCrossOriginPopup } from "@itwin/core-react";
@@ -101,9 +102,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [userNameLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.Username"));
   const [userNameRequiredLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
-  const [oauthProcessSucceeded, setOAuthProcessSucceeded] = React.useState<undefined|boolean>(undefined);
+  const [oauthProcessSucceeded, setOAuthProcessSucceeded] = React.useState<undefined | boolean>(undefined);
   const [showOauthPopup, setShowOauthPopup] = React.useState(false);
-  const [externalLoginUrl, setExternalLoginUrl] = React.useState<string|undefined>();
+  const [externalLoginUrl, setExternalLoginUrl] = React.useState<string | undefined>();
   const [onOauthProcessEnd] = React.useState(new BeEvent());
   const [accessClient, setAccessClient] = React.useState<MapLayerAccessClient | undefined>();
   const [isAccessClientInitialized, setAccessClientInitialized] = React.useState(false);
@@ -121,7 +122,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, []);
 
   const [isSettingsStorageAvailable] = React.useState(MapLayersUI.iTwinConfig && props?.activeViewport?.iModel?.iTwinId);
-  const [hasImodelContext] = React.useState (
+  const [hasImodelContext] = React.useState(
     props?.activeViewport?.iModel?.iTwinId !== undefined
     && props.activeViewport.iModel.iTwinId !== Guid.empty
     && props?.activeViewport?.iModel?.iModelId !== undefined
@@ -174,7 +175,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [oauthProcessSucceeded]);
 
   // return true if authorization is needed
-  const updateAuthState = React.useCallback(async (source: MapLayerSource, sourceValidation: MapLayerSourceValidation)  => {
+  const updateAuthState = React.useCallback(async (source: MapLayerSource, sourceValidation: MapLayerSourceValidation) => {
     const sourceRequireAuth = (sourceValidation.status === MapLayerSourceStatus.RequireAuth);
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
     if (sourceRequireAuth) {
@@ -188,7 +189,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             setExternalLoginUrl(loginUrl);
           }
 
-        } catch (_error){
+        } catch (_error) {
 
         }
       }
@@ -206,7 +207,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   const updateAttachedLayer = React.useCallback(async (source: MapLayerSource, validation: MapLayerSourceValidation) => {
     const vp = props?.activeViewport;
-    if (vp === undefined || source === undefined || layerRequiringCredentialsIdx === undefined)   {
+    if (vp === undefined || source === undefined || layerRequiringCredentialsIdx === undefined) {
       const error = MapLayersUI.localization.getLocalizedString("mapLayers:Messages.MapLayerAttachMissingViewOrSource");
       const msg = MapLayersUI.localization.getLocalizedString("mapLayers:Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
@@ -214,6 +215,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
 
     // Layer is already attached,
+    // This calls invalidateRenderPlan()
     vp.displayStyle.changeMapLayerProps({
       subLayers: validation.subLayers,
     }, layerRequiringCredentialsIdx, isOverlay);
@@ -224,6 +226,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const provider = vp.getMapLayerImageryProvider(layerRequiringCredentialsIdx, isOverlay);
     provider?.resetStatus();
     vp.resetMapLayer(layerRequiringCredentialsIdx, isOverlay);
+
+    // But does it need to be called again after this?
+    // Can't find any calls to invalidateRenderPlan() in vp.resetMapLayer()
     vp.invalidateRenderPlan();
 
     // This handler will close the layer source handler, and therefore the MapUrl dialog.
@@ -245,15 +250,15 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
     // Update service settings if storage is available and we are not prompting user for credentials
     if (!settingsStorageDisabled && !props.layerRequiringCredentials) {
-    	const storeOnIModel = (hasImodelContext ? "Model" === settingsStorage : undefined);
+      const storeOnIModel = (hasImodelContext ? "Model" === settingsStorage : undefined);
       if (vp.iModel.iTwinId && !(await MapLayerPreferences.storeSource(source, vp.iModel.iTwinId, vp.iModel.iModelId, storeOnIModel))) {
         const msgError = MapLayersUI.localization.getLocalizedString("mapLayers:Messages.MapLayerPreferencesStoreFailed");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
-	  }
+      }
     }
     const settings = source.toLayerSettings(validation.subLayers);
     if (settings) {
-      vp.displayStyle.attachMapLayer({settings, isOverlay});
+      vp.displayStyle.attachMapLayer({ settings, isOverlay });
 
       const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -262,8 +267,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     }
-
-    vp.invalidateRenderPlan();
 
     // This handler will close the layer source handler, and therefore the MapUrl dialog.
     // don't call it if the dialog needs to remains open.
@@ -279,12 +282,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       const validation = await source.validateSource(true);
 
       if (validation.status === MapLayerSourceStatus.Valid) {
-        if (layerRequiringCredentialsIdx === undefined ) {
+        if (layerRequiringCredentialsIdx === undefined) {
           return await doAttach(source, validation);
         } else {
           return await updateAttachedLayer(source, validation);
         }
-      } else if (validation.status === MapLayerSourceStatus.InvalidCoordinateSystem){
+      } else if (validation.status === MapLayerSourceStatus.InvalidCoordinateSystem) {
         const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCoordinateSystem");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
         return true;
@@ -298,7 +301,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           return true;
         }
       }
-      return false;
+
     } catch (error) {
       const msg = MapLayersUI.localization.getLocalizedString("mapLayers:Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
@@ -325,12 +328,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       source = MapLayerSource.fromJSON({
         url: mapUrl,
         name: mapName,
-        formatId: mapType});
+        formatId: mapType
+      });
 
       // Set credentials separately since they are not part of JSON
       if (source) {
-        source.userName = userName||undefined;  // When there is no value, empty string is always returned, in this case force it to undefined,
-        source.password = password||undefined;
+        source.userName = userName || undefined;  // When there is no value, empty string is always returned, in this case force it to undefined,
+        source.password = password || undefined;
       }
 
     }
@@ -395,7 +399,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [createSource, props.mapLayerSourceToEdit, props.activeViewport, onOkResult, mapUrl, isSettingsStorageAvailable, attemptAttachSource]);
 
   React.useEffect(() => {
-    const handleOAuthProcessEnd = (success: boolean, _state: any ) => {
+    const handleOAuthProcessEnd = (success: boolean, _state: any) => {
       onOauthProcessEnd.raiseEvent(success, _state);
     };
 
@@ -439,7 +443,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           const source = MapLayerSource.fromJSON({
             url: props.layerRequiringCredentials.url,
             name: props.layerRequiringCredentials.name,
-            formatId: props.layerRequiringCredentials.formatId});
+            formatId: props.layerRequiringCredentials.formatId
+          });
 
           if (source !== undefined) {
             setLayerAttachPending(true);
@@ -449,7 +454,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             }
             await updateAuthState(source, validation);
           }
-        } catch (_error) {}
+        } catch (_error) { }
       }
     })();
 
@@ -484,7 +489,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // onOauthProcessEnd events handler
   React.useEffect(() => {
-    const handleOauthProcess = (success: boolean, _state: any ) => {
+    const handleOauthProcess = (success: boolean, _state: any) => {
       setLayerAuthPending(false);
       if (success) {
         setOAuthProcessSucceeded(true);
@@ -524,7 +529,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   // Utility function to get warning message section
   function renderWarningMessage(): React.ReactNode {
     let node: React.ReactNode;
-    let warningMessage: string|undefined;
+    let warningMessage: string | undefined;
 
     // Get the proper warning message
     if (showOauthPopup) {
@@ -533,9 +538,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       warningMessage = externalLoginFailedMsg;
     } else if (oauthProcessSucceeded === true) {
       warningMessage = externalLoginSucceededMsg;
-    }else if (invalidCredentialsProvided) {
+    } else if (invalidCredentialsProvided) {
       warningMessage = invalidCredentialsLabel;
-    } else if (serverRequireCredentials && (!userName || !password))  {
+    } else if (serverRequireCredentials && (!userName || !password)) {
       warningMessage = missingCredentialsLabel;
     }
 
@@ -548,7 +553,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
 
     if (warningMessage !== undefined) {
-      return(
+      return (
         <div className="map-layer-source-warnMessage">
           <Icon className="map-layer-source-warnMessage-icon" iconSpec="icon-status-warning" />
           <span className="map-layer-source-warnMessage-label">{warningMessage}</span >
@@ -577,8 +582,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         onEscape={handleCancel}
         minHeight={120}
         maxWidth={600}
-        titleStyle={{paddingLeft: "10px"}}
-        footerStyle={{paddingBottom: "10px", paddingRight: "10px"}}
+        titleStyle={{ paddingLeft: "10px" }}
+        footerStyle={{ paddingBottom: "10px", paddingRight: "10px" }}
         trapFocus={false}
       >
         <div className="map-layer-url-dialog-content">
@@ -591,12 +596,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               mapTypesOptions={mapTypesOptions}
             />
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input className="map-layer-source-input"  placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
+            <Input className="map-layer-source-input" placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
             <span className="map-layer-source-label">{urlLabel}</span>
             <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} value={mapUrl} />
             {serverRequireCredentials
-             && externalLoginUrl === undefined  // external login is handled in popup
-             && props.mapLayerSourceToEdit === undefined &&
+              && externalLoginUrl === undefined  // external login is handled in popup
+              && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
                 <LabeledInput className="map-layer-source-input"
@@ -613,7 +618,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
                   displayStyle="inline"
                   type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
-                  status={(!password && serverRequireCredentials) || invalidCredentialsProvided? "warning" : undefined}
+                  status={(!password && serverRequireCredentials) || invalidCredentialsProvided ? "warning" : undefined}
                   disabled={layerAttachPending || layerAuthPending}
                   onChange={onPasswordChange}
                   onKeyPress={handleOnKeyDown}
@@ -625,19 +630,19 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
             {/* Store settings options, not shown when editing a layer */}
             {isSettingsStorageAvailable &&
-            <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
-              {hasImodelContext &&
-              <div>
-                <Radio disabled={settingsStorageDisabled}
-                  name="settingsStorage" value="iTwin"
-                  label={iTwinSettingsLabel} checked={settingsStorage === "iTwin"}
-                  onChange={onRadioChange} />
-                <Radio disabled={settingsStorageDisabled}
-                  name="settingsStorage" value="Model"
-                  label={modelSettingsLabel} checked={settingsStorage === "Model"}
-                  onChange={onRadioChange} />
-              </div> }
-            </div>}
+              <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
+                {hasImodelContext &&
+                  <div>
+                    <Radio disabled={settingsStorageDisabled}
+                      name="settingsStorage" value="iTwin"
+                      label={iTwinSettingsLabel} checked={settingsStorage === "iTwin"}
+                      onChange={onRadioChange} />
+                    <Radio disabled={settingsStorageDisabled}
+                      name="settingsStorage" value="Model"
+                      label={modelSettingsLabel} checked={settingsStorage === "Model"}
+                      onChange={onRadioChange} />
+                  </div>}
+              </div>}
           </div>
         </div>
 
