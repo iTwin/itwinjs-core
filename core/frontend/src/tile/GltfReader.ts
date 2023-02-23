@@ -37,6 +37,7 @@ import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material,
+  traverseGltfNodes,
 } from "../gltf/GltfSchema";
 
 /* eslint-disable no-restricted-syntax */
@@ -381,23 +382,6 @@ export interface GltfReaderArgs {
   vertexTableRequired?: boolean;
 }
 
-function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>, traversed: Set<GltfId>): Iterable<GltfNode> {
-  for (const id of ids) {
-    if (traversed.has(id))
-      throw new Error("Cycle detected while traversing glTF nodes");
-
-    const node = nodes[id];
-    if (!node)
-      continue;
-
-    traversed.add(id);
-    yield node;
-    if (node.children)
-      for (const child of traverseNodes(node.children, nodes, traversed))
-        yield child;
-  }
-}
-
 interface TextureKey {
   readonly id: GltfId;
   readonly isTransparent: boolean;
@@ -472,7 +456,7 @@ export abstract class GltfReader {
    * @throws Error if a node appears more than once during traversal
    */
   public traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode> {
-    return traverseNodes(nodeIds, this._nodes, new Set<GltfId>());
+    return traverseGltfNodes(nodeIds, this._nodes, new Set<GltfId>());
   }
 
   /** Traverse the nodes specified by their scene, recursing into their child nodes.

@@ -245,6 +245,24 @@ export function getGltfNodeMeshIds(node: GltfNode): GltfId[] {
   return [];
 }
 
+/** @internal */
+export function * traverseGltfNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>, traversed: Set<GltfId>): Iterable<GltfNode> {
+  for (const id of ids) {
+    if (traversed.has(id))
+      throw new Error("Cycle detected while traversing glTF nodes");
+
+    const node = nodes[id];
+    if (!node)
+      continue;
+
+    traversed.add(id);
+    yield node;
+    if (node.children)
+      for (const child of traverseGltfNodes(node.children, nodes, traversed))
+        yield child;
+  }
+}
+
 /** Describes a scene graph that composes any number of [[GltfNode]]s to produce a rendering of the [[GltfDocument]] asset.
  * An asset may define any number of scenes; the default scene is specified by [[Gltf.scene]].
  * @internal

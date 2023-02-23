@@ -115,6 +115,7 @@ export namespace Gltf {
   }
 
   export interface Model {
+    /** Transform from model coordinates to world coordinates. */
     transform?: Transform;
     nodes: Node[];
   }
