@@ -109,14 +109,14 @@ export namespace Gltf {
 
   export interface Node {
     /** Transform from this node's local coordinate system to its parent node's coordinate system (or the model's coordinate system, if no parent node). */
-    transform?: Transform;
+    toParent?: Transform;
     /** The primitives drawn by this node. For glTF 2.0, there is exactly one primitive per node; glTF 1.0 permits any number of primitives per node. */
     primitives: AnyPrimitive[];
   }
 
   export interface Model {
     /** Transform from model coordinates to world coordinates. */
-    transform?: Transform;
+    toWorld?: Transform;
     nodes: Node[];
   }
 }

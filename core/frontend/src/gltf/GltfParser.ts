@@ -15,7 +15,7 @@ import {
 } from "../ImageUtil";
 import { TextureImageSource } from "../render/RenderTexture";
 import {
-  DracoMeshCompression, getGltfNodeMeshIds, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfNode, traverseGltfNodes,
+  DracoMeshCompression, getGltfNodeMeshIds, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, traverseGltfNodes,
 } from "./GltfSchema";
 import { Gltf } from "./GltfModel";
 
@@ -26,7 +26,7 @@ export interface ParseGltfLogger {
 export interface ParseGltfArgs {
   logger?: ParseGltfLogger;
   gltf: Uint8Array | GltfDocument;
-  useCreateImageBitmap: boolean;
+  noCreateImageBitmap?: boolean;
   baseUrl?: string;
   isCanceled?: boolean;
   upAxis?: "y" | "z"; // default "y"
@@ -121,9 +121,9 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
     baseUrl: args.baseUrl,
     logger,
     isCanceled: () => args.isCanceled ?? false,
-    imageFromImageSource: (args.useCreateImageBitmap ?
-      (source) => imageBitmapFromImageSource(source) :
-      (source) => imageElementFromImageSource(source)),
+    imageFromImageSource: (args.noCreateImageBitmap ?
+      (source) => imageElementFromImageSource(source) :
+      (source) => imageBitmapFromImageSource(source)),
   });
 
   return parser.parse();
@@ -190,6 +190,66 @@ class GltfParser {
   public async parse(): Promise<Gltf.Model | undefined> {
     // ###TODO_GLTF RTC_CENTER
     // ###TODO_GLTF pseudo-rtc bias (apply translation to each point at read time, for scalable mesh...)
+
+    await this.resolveResources();
+    if (this._isCanceled())
+      return undefined;
+
+    // ###TODO_GLTF compute content range (maybe do so elsewhere?)
+    // I think spec says POSITION must specify min and max?
+
+    const nodes: Gltf.Node[] = [];
+    for (const nodeKey of this._sceneNodes) {
+      const node = this._nodes[nodeKey];
+      if (node)
+        nodes.push(this.parseNode(node));
+    }
+
+    const toWorld = undefined;
+    return {
+      toWorld,
+      nodes,
+    };
+  }
+
+  private parseNode(node: GltfNode): Gltf.Node {
+    const primitives = [];
+    for (const meshId of getGltfNodeMeshIds(node)) {
+      const mesh = this._meshes[meshId];
+      if (!mesh)
+        continue;
+
+      const parsedPrimitives = this.parsePrimitives(mesh);
+      for (const primitive of parsedPrimitives)
+        primitives.push(primitive);
+    }
+
+    const toParent = undefined; // ###TODO_GLTF transform
+    return {
+      primitives,
+      toParent,
+    };
+  }
+
+  private parsePrimitives(mesh: GltfMesh): Gltf.AnyPrimitive[] {
+    const primitives: Gltf.AnyPrimitive[] = [];
+    if (!mesh.primitives)
+      return primitives;
+
+    for (const primitive of mesh.primitives) {
+      const parsedPrimitive = this.parsePrimitive(primitive);
+      if (parsedPrimitive)
+        primitives.push(parsedPrimitive);
+    }
+
+    return primitives;
+  }
+
+  private parsePrimitive(primitive: GltfMeshPrimitive): Gltf.AnyPrimitive | undefined {
+    // ###TODO_GLTF support all primitive types.
+    const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
+    if (meshMode !== GltfMeshMode.Triangles)
+      return undefined;
     return undefined;
   }
 
