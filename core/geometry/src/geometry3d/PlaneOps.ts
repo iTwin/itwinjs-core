@@ -24,7 +24,7 @@ export class PlaneOps {
    * @param planeB
    */
   private static createPoint3dPoint3dBetweenPlanes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Point3dPoint3d {
-    const pointA = PlaneOps.getOriginOnPlaneAltitudeEvaluator(planeA);
+    const pointA = PlaneOps.closestPointToOrigin(planeA);
     const pointB = PlaneOps.projectPointToPlane(planeB, pointA);
     return Point3dPoint3d.create(pointA, pointB);
   }
@@ -104,7 +104,7 @@ export class PlaneOps {
     // Find which pairs are parallel, coincident, or intersecting.
     const result: Array<Ray3d | Plane3dByOriginAndUnitNormal | Point3dPoint3d | undefined> = [];
     for (let i0 = 0; i0 < 3; i0++) {
-      const r = Plane3dByOriginAndUnitNormal.intersect2Planes(allPlanes[i0], allPlanes[i0 + 1]);
+      const r = PlaneOps.intersect2Planes(allPlanes[i0], allPlanes[i0 + 1]);
       result.push(r);
       if (r === undefined)
         numUndefined++;
@@ -157,19 +157,37 @@ export class PlaneOps {
    * @param plane plane to evaluate
    * @returns Closest point to the origin
    */
-  public static getOriginOnPlaneAltitudeEvaluator(plane: PlaneAltitudeEvaluator): Point3d {
+  public static closestPointToOrigin(plane: PlaneAltitudeEvaluator): Point3d {
     const d = -plane.altitudeXYZ(0, 0, 0);
     return Point3d.create(d * plane.normalX(), d * plane.normalY(), d * plane.normalZ());
   }
 
   /**
-   * Project spacePoint to a plane.
+   * Project spacePoint to the plane.
    * @param plane plane for projection.
    * @returns Closest point to the spacePoint
    */
   public static projectPointToPlane(plane: PlaneAltitudeEvaluator, spacePoint: Point3d): Point3d {
     const d = -plane.altitude(spacePoint);
     return spacePoint.plusXYZ(d * plane.normalX(), d * plane.normalY(), d * plane.normalZ());
+  }
+  /**
+     * Return the intersection of the unbounded ray with a plane.
+     * Stores the point of intersection in the result point given as a parameter,
+     * and returns the parameter along the ray where the intersection occurs.
+     * Returns undefined if the ray and plane are parallel or coplanar.
+     */
+  public static intersectRayPlane(plane: PlaneAltitudeEvaluator, ray: Ray3d): Point3d | Ray3d | undefined {
+    const altitude = plane.altitude(ray.origin);
+    const velocity = plane.velocity(ray.direction);
+    const division = Geometry.conditionalDivideFraction(-altitude, velocity);
+    if (undefined === division) {
+      // The ray is parallel or in the plane.
+      if (Geometry.isSmallMetricDistance(altitude))
+        return ray.clone();
+      return undefined;
+    } else
+      return ray.fractionToPoint(division);
   }
 
 }

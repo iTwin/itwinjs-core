@@ -9,11 +9,11 @@ import { PlaneAltitudeEvaluator } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { PlaneOps } from "../../geometry3d/PlaneOps";
 import { Point3dPoint3d } from "../../geometry3d/Point3dPoint3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
-import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
 
 /** Exercise two planes expected to be parallel. */
@@ -151,20 +151,20 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     const planeB2 = Plane3dByOriginAndUnitNormal.create(originAB2, normalB)!;
     // this is unrelated normal.
     const planeC = Plane3dByOriginAndUnitNormal.create(originAB2, normalC)!;
-    ck.testExactNumber(1, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA1, planeA1));
-    ck.testExactNumber(-1, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA1, planeB1));
-    ck.testExactNumber(1, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA2, planeA2));
-    ck.testExactNumber(-1, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA2, planeB2));
+    ck.testExactNumber(1, PlaneOps.classifyIfParallelPlanes(planeA1, planeA1));
+    ck.testExactNumber(-1, PlaneOps.classifyIfParallelPlanes(planeA1, planeB1));
+    ck.testExactNumber(1, PlaneOps.classifyIfParallelPlanes(planeA2, planeA2));
+    ck.testExactNumber(-1, PlaneOps.classifyIfParallelPlanes(planeA2, planeB2));
 
-    ck.testExactNumber(2, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA1, planeA2));
-    ck.testExactNumber(-2, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA1, planeB2));
-    ck.testExactNumber(-2, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeB1, planeA2));
-    ck.testExactNumber(2, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeB1, planeB2));
+    ck.testExactNumber(2, PlaneOps.classifyIfParallelPlanes(planeA1, planeA2));
+    ck.testExactNumber(-2, PlaneOps.classifyIfParallelPlanes(planeA1, planeB2));
+    ck.testExactNumber(-2, PlaneOps.classifyIfParallelPlanes(planeB1, planeA2));
+    ck.testExactNumber(2, PlaneOps.classifyIfParallelPlanes(planeB1, planeB2));
 
-    ck.testExactNumber(0, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA1, planeC));
-    ck.testExactNumber(0, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeB1, planeC));
-    ck.testExactNumber(0, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeA2, planeC));
-    ck.testExactNumber(0, Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planeB2, planeC));
+    ck.testExactNumber(0, PlaneOps.classifyIfParallelPlanes(planeA1, planeC));
+    ck.testExactNumber(0, PlaneOps.classifyIfParallelPlanes(planeB1, planeC));
+    ck.testExactNumber(0, PlaneOps.classifyIfParallelPlanes(planeA2, planeC));
+    ck.testExactNumber(0, PlaneOps.classifyIfParallelPlanes(planeB2, planeC));
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -185,7 +185,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     // test when 3 planes are known to generate 3-part return
     const test3WayIntersection = (plane0: PlaneAltitudeEvaluator, plane1: PlaneAltitudeEvaluator, plane2: PlaneAltitudeEvaluator) => {
       const planes: PlaneAltitudeEvaluator[] = [plane0, plane1, plane2, plane0];    // wrap to simplify loop indexing
-      const result = Plane3dByOriginAndUnitNormal.intersect3Planes(plane0, plane1, plane2);
+      const result = PlaneOps.intersect3Planes(plane0, plane1, plane2);
       if (result instanceof Point3d) {
         for (const p of planes) {
           ck.testCoordinate(0, p.altitude(result), "Simple intersection on plane");
@@ -193,11 +193,11 @@ describe("Plane3dByOriginAndUnitNormal", () => {
       } else if (result === undefined) {
         // The three planes are distinct parallel
         for (const i of [0, 1, 2])
-          ck.testExactNumber(2, Math.abs(Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm disjoint planes");
+          ck.testExactNumber(2, Math.abs(PlaneOps.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm disjoint planes");
       } else if (result instanceof Plane3dByOriginAndUnitNormal) {
         // The three planes are identical
         for (const i of [0, 1, 2])
-          ck.testExactNumber(1, Math.abs(Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm identical planes");
+          ck.testExactNumber(1, Math.abs(PlaneOps.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm identical planes");
       } else if (ck.testTrue(Array.isArray(result), "Expect array result", result)
         && Array.isArray(result)
         && ck.testExactNumber(3, result.length, "3 pairs")) {
@@ -210,14 +210,14 @@ describe("Plane3dByOriginAndUnitNormal", () => {
             }
           } else if (r01 instanceof Plane3dByOriginAndUnitNormal) {
             // plane must match both planes
-            ck.testExactNumber(1, Math.abs(Plane3dByOriginAndUnitNormal.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm identical planes");
+            ck.testExactNumber(1, Math.abs(PlaneOps.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm identical planes");
           } else if (r01 === undefined) {
             const normal0 = Vector3d.create(planes[i].normalX(), planes[i].normalY(), planes[i].normalZ());
             const normal1 = Vector3d.create(planes[i + 1].normalX(), planes[i + 1].normalY(), planes[i + 1].normalZ());
             ck.testTrue(normal0.isParallelTo(normal1, true));
           } else if (r01 instanceof Point3dPoint3d) {
-            const p0 = Plane3dByOriginAndUnitNormal.getOriginOnPlaneAltitudeEvaluator(planes[i]);
-            const p1 = Plane3dByOriginAndUnitNormal.getOriginOnPlaneAltitudeEvaluator(planes[i + 1]);
+            const p0 = PlaneOps.closestPointToOrigin(planes[i]);
+            const p1 = PlaneOps.closestPointToOrigin(planes[i + 1]);
             ck.testCoordinate(r01.pointA.distance(r01.pointB), p0.distance(p1), "confirm distance between parallel planes");
           } else {
             ck.announceError("unexpected type in plane plane pair", r01);
