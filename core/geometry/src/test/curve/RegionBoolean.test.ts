@@ -689,7 +689,7 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 }, // 0.0001 has 2 neg area loops!
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
     ];
     for (const testCase of testCases) {
