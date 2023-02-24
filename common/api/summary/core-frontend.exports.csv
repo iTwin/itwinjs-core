@@ -100,6 +100,8 @@ internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
 internal;ContextShareProvider
+internal;CoordinateConverter
+internal;CoordinateConverterOptions
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
