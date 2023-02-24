@@ -136,7 +136,7 @@ See [Analytical Models and Elements](../other-perspectives/analysis-models-and-e
 
 The top of a definition hierarchy starts with a `DefinitionModel` that models a `DefinitionPartition`.
 This allows `DefinitionElements` to be organized by how they relate to the parent `Subject` of the `DefinitionPartition`.
-The can be multiple `DefinitionPartition` Elements and corresponding `DefinitionModel` Models so that definitions (instances of `DefinitionElement`) can be organized by source, discipline, or other criteria.
+There can be multiple `DefinitionContainer` Elements and corresponding `DefinitionModel` sub-models so that definitions (instances of `DefinitionElement`) can be organized by source, discipline, or other criteria.
 Each `DefinitionPartition` is identified by its [Code](../references/glossary.md#code).
 
 See [Organizing Repository-global Definition Elements](./organizing-definition-elements.md) for details on the expected organization of repository-global definition elements in the *DictionaryModel*.
