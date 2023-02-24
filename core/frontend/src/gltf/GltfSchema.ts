@@ -91,6 +91,10 @@ export interface GltfDictionary<T extends GltfChildOfRootProperty> {
   [key: GltfId]: T | undefined;
 }
 
+export type GltfStringMap<T> = {
+  [key: string]: T | undefined;
+}
+
 /** Iterate the contents of a [[GltfDictionary]].
  * @internal
  */
@@ -110,9 +114,7 @@ export function * gltfDictionaryIterator<T extends GltfChildOfRootProperty>(dict
 /** Optional extensions applied to a [[GltfProperty]] to enable behavior not defined in the core specification.
  * @internal
  */
-export interface GltfExtensions {
-  [key: string]: unknown | undefined;
-}
+export type GltfExtensions = GltfStringMap<unknown>;
 
 /** The base interface provided by most objects in a glTF asset, permitting additional data to be associated with the object.
  * @internal
@@ -134,13 +136,13 @@ export interface GltfChildOfRootProperty extends GltfProperty {
 export interface DracoMeshCompression {
   bufferView: GltfId;
   // TEXCOORD_0, POSITION, etc
-  attributes: { [k: string]: number | undefined };
+  attributes: GltfStringMap<number>;
 }
 
 /** A unit of geometry belonging to a [[GltfMesh]]. @internal */
 export interface GltfMeshPrimitive extends GltfProperty {
   /** Maps the name of each mesh attribute semantic to the Id of the [[GltfAccessor]] providing the attribute's data. */
-  attributes: { [k: string]: GltfId | undefined };
+  attributes: GltfStringMap<GltfId>;
   /** The Id of the [[GltfAccessor]] providing the vertex indices. */
   indices?: GltfId;
   /** The Id of the [[GltfMaterial]] to apply to the primitive when rendering. */
@@ -148,7 +150,7 @@ export interface GltfMeshPrimitive extends GltfProperty {
   /** The primitive topology type. */
   mode?: GltfMeshMode;
   /** Morph targets - currently unsupported. */
-  targets?: { [k: string]: GltfId | undefined };
+  targets?: GltfStringMap<GltfId>;
   extensions?: GltfExtensions & {
     /** The [CESIUM_primitive_outline](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/CESIUM_primitive_outline) extension
      * describes how to draw outline edges for a triangle mesh.

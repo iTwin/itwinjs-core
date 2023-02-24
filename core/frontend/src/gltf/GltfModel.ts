@@ -30,8 +30,6 @@ export namespace Gltf {
     // Unquantized if quantization is defined.
     decodedMin: XYAndZ;
     decodedMax: XYAndZ;
-    // The number of positions. All other attributes have the same count as this.
-    count: number;
   }
 
   export interface ColorAttribute extends Attribute {
@@ -48,6 +46,7 @@ export namespace Gltf {
 
   export interface Primitive {
     indices: Indices;
+    attributeCount: number;
     position: PositionAttribute;
     color?: ColorAttribute;
   }
