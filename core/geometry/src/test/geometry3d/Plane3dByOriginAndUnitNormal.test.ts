@@ -10,7 +10,6 @@ import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { PlaneOps } from "../../geometry3d/PlaneOps";
-import { Point3dPoint3d } from "../../geometry3d/Point3dPoint3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
@@ -45,7 +44,6 @@ function testParallelPair(ck: Checker,
   ck.testCoordinate(0, plane0.velocity(triad.multiplyXY(3, 4)), "in plane vector has zero velocity");
   const v = 23.4;
   ck.testCoordinate(v, plane0.velocity(triad.multiplyXYZ(3, 4, v)), "in plane vector has zero velocity");
-
 }
 
 describe("Plane3dByOriginAndUnitNormal", () => {
@@ -136,7 +134,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     ck.testTrue(planeP.isAlmostEqual(planeB), "createXYAngle into result");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("ParallelPlanes", () => {
+  it("ParallelPlanes", () => {
     const ck = new Checker();
     const normalA = Vector3d.create(0.3, 0.4, 0.5).normalize()!;
     const normalB = normalA.scale(-1.0);
@@ -168,7 +166,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("PPPIntersection", () => {
+  it("PPPIntersection", () => {
     const ck = new Checker();
     const originA = Point3d.create(1, 2, 2.23);
     const normalA = Vector3d.create(0.3, 0.4, 0.5).normalize()!;
@@ -186,39 +184,45 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     const test3WayIntersection = (plane0: PlaneAltitudeEvaluator, plane1: PlaneAltitudeEvaluator, plane2: PlaneAltitudeEvaluator) => {
       const planes: PlaneAltitudeEvaluator[] = [plane0, plane1, plane2, plane0];    // wrap to simplify loop indexing
       const result = PlaneOps.intersect3Planes(plane0, plane1, plane2);
-      if (result instanceof Point3d) {
+
+      const numResultFragment = countDefined([result.point, result.plane, result.ray]);
+      if (!ck.testTrue(numResultFragment < 2, "Disallow multiple result items from PlanePlanePlane")) {
+        // bad -- skip further tests
+      } if (result.point !== undefined) {
         for (const p of planes) {
-          ck.testCoordinate(0, p.altitude(result), "Simple intersection on plane");
+          ck.testCoordinate(0, p.altitude(result.point), "Simple intersection on plane");
         }
-      } else if (result === undefined) {
-        // The three planes are distinct parallel
-        for (const i of [0, 1, 2])
-          ck.testExactNumber(2, Math.abs(PlaneOps.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm disjoint planes");
-      } else if (result instanceof Plane3dByOriginAndUnitNormal) {
+      } else if (result.plane !== undefined) {
         // The three planes are identical
         for (const i of [0, 1, 2])
           ck.testExactNumber(1, Math.abs(PlaneOps.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm identical planes");
-      } else if (ck.testTrue(Array.isArray(result), "Expect array result", result)
-        && Array.isArray(result)
-        && ck.testExactNumber(3, result.length, "3 pairs")) {
+      } else if (result.ray !== undefined) {
+        for (let i = 0; i < 3; i++) {
+          const normal = PlaneOps.planeNormal(planes[i]);
+          ck.testCoordinate(0, planes[i].altitude(result.ray.origin), "ray on plane 0");
+          ck.testPerpendicular(result.ray.direction, normal, "intersection in plane");
+        }
+      } else if (ck.testTrue(Array.isArray(result.pairwiseDetail), "Expect array result", result)
+        && Array.isArray(result.pairwiseDetail)
+        && ck.testExactNumber(3, result.pairwiseDetail.length, "3 pairs")) {
         for (const i of [0, 1, 2]) {
-          const r01 = result[i];
-          if (r01 instanceof Ray3d) {
+          const r01 = result.pairwiseDetail[i];
+          if (r01.ray instanceof Ray3d) {
             for (const p of [planes[i], planes[i + 1]]) {
-              ck.testCoordinate(0, p.altitude(r01.origin), "ray on plane 0");
-              ck.testPerpendicular(r01.direction, Vector3d.create(p.normalX(), p.normalY(), p.normalZ()), "intersection in plane");
+              ck.testCoordinate(0, p.altitude(r01.ray.origin), "ray on plane 0");
+              ck.testPerpendicular(r01.ray.direction, Vector3d.create(p.normalX(), p.normalY(), p.normalZ()), "intersection in plane");
             }
-          } else if (r01 instanceof Plane3dByOriginAndUnitNormal) {
+          } else if (r01.plane !== undefined) {
             // plane must match both planes
             ck.testExactNumber(1, Math.abs(PlaneOps.classifyIfParallelPlanes(planes[i], planes[i + 1])), "confirm identical planes");
           } else if (r01 === undefined) {
             const normal0 = Vector3d.create(planes[i].normalX(), planes[i].normalY(), planes[i].normalZ());
             const normal1 = Vector3d.create(planes[i + 1].normalX(), planes[i + 1].normalY(), planes[i + 1].normalZ());
             ck.testTrue(normal0.isParallelTo(normal1, true));
-          } else if (r01 instanceof Point3dPoint3d) {
+          } else if (r01.separatorSegment !== undefined) {
             const p0 = PlaneOps.closestPointToOrigin(planes[i]);
             const p1 = PlaneOps.closestPointToOrigin(planes[i + 1]);
-            ck.testCoordinate(r01.pointA.distance(r01.pointB), p0.distance(p1), "confirm distance between parallel planes");
+            ck.testCoordinate(r01.separatorSegment.pointA.distance(r01.separatorSegment.pointB), p0.distance(p1), "confirm distance between parallel planes");
           } else {
             ck.announceError("unexpected type in plane plane pair", r01);
           }
@@ -243,3 +247,10 @@ describe("Plane3dByOriginAndUnitNormal", () => {
   });
 
 });
+function countDefined(items: Array<object | undefined>): number {
+  let n = 0;
+  for (const item of items)
+    if (item !== undefined)
+      n++;
+  return n;
+}

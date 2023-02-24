@@ -54,10 +54,26 @@ export class Ray3d implements BeJSONFunctions {
     }
     return new Ray3d(Point3d.createZero(), Vector3d.createZero());
   }
-  /** Test for nearly equal rays. */
+
+  /** Test for nearly equal Ray3d objects.
+   * * This tests for near equality of origin and direction -- i.e. member-by-member comparison.
+   * * Use [[isAlmostEqualPointSet]] to allow origins to be anywhere along the common ray and to have to allow the directions to be scaled or opposing.
+  */
   public isAlmostEqual(other: Ray3d): boolean {
     return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
   }
+
+  /** Test for nearly equal rays, allowing origin float and direction scaling.
+   * * Use [[isAlmostEqual]] to require member-by-member comparison.
+  */
+  public isAlmostEqualPointSet(other: Ray3d): boolean {
+    if (!this.direction.isParallelTo(other.direction, true))
+      return false;
+    // In exact math, it is not possible for one origin to be on the other ray but not vice versa.  But we'll test both ways.
+    const otherPointOnThis = this.projectPointToRay(other.origin);
+    return this.origin.isAlmostEqualMetric(otherPointOnThis);
+  }
+
   /** Create a ray from origin and direction. */
   public static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d {
     if (result) {

@@ -6,13 +6,60 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator, Point3dPoint3d } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Angle } from "./Angle";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { Point3dPoint3d } from "./Point3dPoint3d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
+/**
+ * Plane3dPlane3dIntersectionCases has one optional member
+ * for each possible configuration of 2 planes.
+ * The return value of [[PlaneOps.intersect2Planes]] will have at most one of these defined.
+ * @public
+ */
+export interface Plane3dPlane3dIntersectionCases {
+  /** The planes have simple intersection in a Ray */
+  ray?: Ray3d;
+  /** The planes are coincident. */
+  plane?: Plane3dByOriginAndUnitNormal;
+  /** The planes are parallel.  The separatorSegment has one point on each of the two planes.  */
+  separatorSegment?: Point3dPoint3d;
+}
+
+/**
+ * Plane3dPlane3dPlane3dIntersectionCases has optional member for each possible configuration of 3 planes.
+ * * The return value of [[PlaneOps.intersect3Planes]] will have at most one of {point, ray, plane} defined.
+ * * In cases other than the single point, the pairwiseDetail member is present and contains the 3 pairwise relations among planes
+ * @public
+ */
+export interface Plane3dPlane3dPlane3dIntersectionCases {
+  /** Single point of intersection.
+   * * When this is defined, no other members are defined.
+   */
+  point?: Point3d;
+  /** The planes have simple intersection in a Ray */
+  ray?: Ray3d;
+  /** The planes are coincident. */
+  plane?: Plane3dByOriginAndUnitNormal;
+  /** The planes are parallel.  The separatorSegment has one point on each of the two planes.  */
+  separatorSegment?: Point3dPoint3d;
+  /** If the intersection is anything other than either (a) single point or (b) fully coincident planes, the details array will contain the 3 pairwise configurations
+   * among planeA, planeB, planeC:
+   *   * pairwiseDetail[0] is the intersection of planeA and planeB
+   *   * pairwiseDetail[1] is the intersection of planeB and planeC
+   *   * pairwiseDetail[2] is the intersection of planeC and planeA
+   * * Some specific configurations to note are:
+   *   * When the three planes are parallel but not a single plane, each of the three pairwiseDetail members will be a Point3dPoint3d pair.  Note that in
+   *         this case there are no points common to all three planes and the point, ray, and plane members are all undefined.
+   *   * When two planes are coincident and the third intersects, the entry for the coincident pair is the coincident plane, and the other two are
+   *      the intersection ray.
+   *   * When all three intersect in a ray but with no pairwise coincident plane, the ray is repeated 3 times.
+   *   * When the pairwise intersections are all rays that are parallel, all three rays are present.
+   */
+  pairwiseDetail?: Plane3dPlane3dIntersectionCases[];
+}
+
 /**
  * Class of STATIC methods to operate on planes of varying underlying representations.
  * @public
@@ -26,19 +73,19 @@ export class PlaneOps {
   private static createPoint3dPoint3dBetweenPlanes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Point3dPoint3d {
     const pointA = PlaneOps.closestPointToOrigin(planeA);
     const pointB = PlaneOps.projectPointToPlane(planeB, pointA);
-    return Point3dPoint3d.create(pointA, pointB);
+    return { pointA, pointB };
   }
+
   /** Returns the relationship of 2 planes:
    * * Each plane can be any form that returns normal and altitude evaluations via methods in [[PlaneAltitudeEvaluator]]
    * * Return value has variants for
    *   * If intersecting in a line, a Ray3d on the line of intersection
    *   * If identical planes, a Plane3dByOriginAndUnitNormal with the same normal and distance from origin as planeA
    *   * If distinct parallel planes: a Point3dPoint3d with a point on planeA and its projection on planeB
-   *   * If extraordinary tolerance issues prevent any of those, undefined is returned.
+   *   * If extraordinary tolerance issues prevent any of those, the returned object has all undefined members.
    *      * This might indicate a 000 normal, which is not expected on a valid plane.
    */
-  public static intersect2Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator):
-    Ray3d | Plane3dByOriginAndUnitNormal | Point3dPoint3d | undefined {
+  public static intersect2Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Plane3dPlane3dIntersectionCases {
     const normalAx = planeA.normalX(), normalAy = planeA.normalY(), normalAz = planeA.normalZ();
     const normalBx = planeB.normalX(), normalBy = planeB.normalY(), normalBz = planeB.normalZ();
     const distanceA = planeA.altitudeXYZ(0, 0, 0), distanceB = planeB.altitudeXYZ(0, 0, 0);
@@ -53,9 +100,9 @@ export class PlaneOps {
       const originA = Point3d.createScale(normalA, -distanceA);
       const originB = Point3d.createScale(normalB, -distanceB1);
       if (originA.isAlmostEqualMetric(originB))
-        return Plane3dByOriginAndUnitNormal.create(originA, normalA);
+        return { plane: Plane3dByOriginAndUnitNormal.create(originA, normalA) };
       else
-        return PlaneOps.createPoint3dPoint3dBetweenPlanes(planeA, planeB);
+        return { separatorSegment: PlaneOps.createPoint3dPoint3dBetweenPlanes(planeA, planeB) };
     } else {
       // the cross product vector is directed along the intersection of these two planes.
       // find a single point on that ray by intersecting the 2 planes with a 3rd plane through the origin
@@ -66,9 +113,9 @@ export class PlaneOps {
         -distanceA, -distanceB, 0.0);
       // remark: Since the cross product had nonzero length, the linear system should always has a solution.
       if (vectorToPoint !== undefined)
-        return Ray3d.createXYZUVW(vectorToPoint.x, vectorToPoint.y, vectorToPoint.z, crossProduct.x, crossProduct.y, crossProduct.z);
+        return { ray: Ray3d.createXYZUVW(vectorToPoint.x, vectorToPoint.y, vectorToPoint.z, crossProduct.x, crossProduct.y, crossProduct.z) };
       // uh oh.  What can this mean? All exact-arithmetic cases are covered.
-      return undefined;
+      return {};
     }
   }
 
@@ -82,8 +129,9 @@ export class PlaneOps {
    *     as described by [[Plane3dByOriginAndUnitVector.intersect2Planes]]
    * * undefined as a result indicates really bad data like 000 normal vectors.
    */
-  public static intersect3Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator, planeC: PlaneAltitudeEvaluator):
-    Point3d | Plane3dByOriginAndUnitNormal | Array<Ray3d | Plane3dByOriginAndUnitNormal | Point3dPoint3d | undefined> | undefined {
+  public static intersect3Planes(planeA: PlaneAltitudeEvaluator,
+    planeB: PlaneAltitudeEvaluator,
+    planeC: PlaneAltitudeEvaluator): Plane3dPlane3dPlane3dIntersectionCases {
     const normalAx = planeA.normalX(), normalAy = planeA.normalY(), normalAz = planeA.normalZ();
     const normalBx = planeB.normalX(), normalBy = planeB.normalY(), normalBz = planeB.normalZ();
     const normalCx = planeC.normalX(), normalCy = planeC.normalY(), normalCz = planeC.normalZ();
@@ -96,29 +144,50 @@ export class PlaneOps {
       -distanceA, -distanceB, -distanceC);
     // UGH -- SmallSystem returned a vector, have to restructure as a point . . .
     if (simpleIntersection !== undefined)
-      return Point3d.create(simpleIntersection.x, simpleIntersection.y, simpleIntersection.z);
+      return { point: Point3d.create(simpleIntersection.x, simpleIntersection.y, simpleIntersection.z) };
     let numPlanes = 0;
-    let numUndefined = 0;
     const allPlanes = [planeA, planeB, planeC, planeA]; // repeat planeA for easy wraparound indexing
     // The 3 normals are not independent.
     // Find which pairs are parallel, coincident, or intersecting.
-    const result: Array<Ray3d | Plane3dByOriginAndUnitNormal | Point3dPoint3d | undefined> = [];
+    const pairwiseDetail: Array<Plane3dPlane3dPlane3dIntersectionCases> = [];
     for (let i0 = 0; i0 < 3; i0++) {
       const r = PlaneOps.intersect2Planes(allPlanes[i0], allPlanes[i0 + 1]);
-      result.push(r);
-      if (r === undefined)
-        numUndefined++;
-      else if (r instanceof Plane3dByOriginAndUnitNormal)
+      pairwiseDetail.push(r);
+      if (r.plane !== undefined)
         numPlanes++;
     }
-    // Each of the 3 combinations was pushed.
+    // Each of the 3 pairwiseDetail combinations was pushed.
     // If the were all planes, it's true intersection of just one plane
     if (numPlanes === 3) {
-      return result[0] as Plane3dByOriginAndUnitNormal;
+      return { plane: pairwiseDetail[0].plane };
     }
-    if (numUndefined === 3)
-      return undefined;
-    return result;
+
+    return {
+      ray: this.extractSingleRayFromPlanePlanePlaneDetails(pairwiseDetail), pairwiseDetail,
+    };
+  }
+  // If all three pairwiseDetail entries are the same ray, return (a clone of) it.  Otherwise return undefined.
+  private static extractSingleRayFromPlanePlanePlaneDetails(pairwiseDetail: Plane3dPlane3dIntersectionCases[]): Ray3d | undefined {
+    let numCoincident = 0;
+    let numParallel = 0;
+    const allRays = [];
+    for (const detail of pairwiseDetail) {
+      if (detail.ray) {
+        allRays.push(detail.ray);
+      }
+      if (detail.plane)
+        numCoincident++;
+      if (detail.separatorSegment)
+        numParallel++;
+    }
+
+    if (numCoincident === 1 && allRays.length === 2) {
+      if (allRays[0].isAlmostEqualPointSet(allRays[1]))
+        return allRays[0].clone();
+    } else if (numParallel === 1 && allRays.length === 1) {
+      return allRays[0];
+    }
+    return undefined;
   }
   /**
    * Using the altitude and normal data, determine if planeA and planeB have a parallel or coplanar relationship:
@@ -160,6 +229,15 @@ export class PlaneOps {
   public static closestPointToOrigin(plane: PlaneAltitudeEvaluator): Point3d {
     const d = -plane.altitudeXYZ(0, 0, 0);
     return Point3d.create(d * plane.normalX(), d * plane.normalY(), d * plane.normalZ());
+  }
+
+  /**
+   * On a plane that provides normal component evaluations, assemble the components into a vector
+   * @param plane plane to evaluate
+   * @returns vector normal to the plane
+   */
+  public static planeNormal(plane: PlaneAltitudeEvaluator): Vector3d {
+    return Vector3d.create(plane.normalX(), plane.normalY(), plane.normalZ());
   }
 
   /**

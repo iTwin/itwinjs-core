@@ -1030,6 +1030,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     static createNormalAndDistance(normal: Vector3d, distance: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPoint(normal: Vector3d, point: Point3d, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number, originX: number, originY: number, originZ: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
+    static createPerpendicularToSegment(pointA: Point3d, pointB: Point3d, pointBInside?: boolean): ClipPlane | undefined;
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
     get distance(): number;
     dotProductPlaneNormalPoint(point: Point3d): number;
@@ -3204,6 +3205,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static create(point0: Point3d, point1: Point3d, result?: LineSegment3d): LineSegment3d;
     static createCapture(point0: Point3d, point1: Point3d): LineSegment3d;
+    static createFromPoint3dPoint3d(points: Point3dPoint3d, result?: LineSegment3d): LineSegment3d;
     static createXYXY(x0: number, y0: number, x1: number, y1: number, z?: number, result?: LineSegment3d): LineSegment3d;
     static createXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d): LineSegment3d;
     curveLength(): number;
@@ -4083,6 +4085,22 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
 }
 
 // @public
+export interface Plane3dPlane3dIntersectionCases {
+    plane?: Plane3dByOriginAndUnitNormal;
+    ray?: Ray3d;
+    separatorSegment?: Point3dPoint3d;
+}
+
+// @public
+export interface Plane3dPlane3dPlane3dIntersectionCases {
+    pairwiseDetail?: Plane3dPlane3dIntersectionCases[];
+    plane?: Plane3dByOriginAndUnitNormal;
+    point?: Point3d;
+    ray?: Ray3d;
+    separatorSegment?: Point3dPoint3d;
+}
+
+// @public
 export interface PlaneAltitudeEvaluator {
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
@@ -4109,6 +4127,17 @@ export class PlaneByOriginAndVectors4d {
     setOriginAndVectorsXYZW(x0: number, y0: number, z0: number, w0: number, ux: number, uy: number, uz: number, uw: number, vx: number, vy: number, vz: number, vw: number): PlaneByOriginAndVectors4d;
     vectorU: Point4d;
     vectorV: Point4d;
+}
+
+// @public
+export class PlaneOps {
+    static classifyIfParallelPlanes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): 0 | 1 | -1 | 2 | -2;
+    static closestPointToOrigin(plane: PlaneAltitudeEvaluator): Point3d;
+    static intersect2Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Plane3dPlane3dIntersectionCases;
+    static intersect3Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator, planeC: PlaneAltitudeEvaluator): Plane3dPlane3dPlane3dIntersectionCases;
+    static intersectRayPlane(plane: PlaneAltitudeEvaluator, ray: Ray3d): Point3d | Ray3d | undefined;
+    static planeNormal(plane: PlaneAltitudeEvaluator): Vector3d;
+    static projectPointToPlane(plane: PlaneAltitudeEvaluator, spacePoint: Point3d): Point3d;
 }
 
 // @public
@@ -4259,6 +4288,14 @@ export class Point3dArrayPolygonOps {
     static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance?: number): void;
     static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
     static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]): void;
+}
+
+// @public
+export interface Point3dPoint3d {
+    // (undocumented)
+    pointA: Point3d;
+    // (undocumented)
+    pointB: Point3d;
 }
 
 // @public
@@ -5041,6 +5078,7 @@ export class Ray3d implements BeJSONFunctions {
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
     intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
     isAlmostEqual(other: Ray3d): boolean;
+    isAlmostEqualPointSet(other: Ray3d): boolean;
     origin: Point3d;
     perpendicularPartOfVectorToTarget(targetPoint: XYAndZ, result?: Vector3d): Vector3d;
     pointToFraction(spacePoint: Point3d): number;
@@ -6041,6 +6079,7 @@ export class Vector3d extends XYZ {
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
     static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d;
     static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d;
+    static createUnitCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d | undefined;
     static createZero(result?: Vector3d): Vector3d;
     crossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d;
     crossProductMagnitude(vectorB: XYAndZ): number;
@@ -6211,6 +6250,7 @@ export class XYZ implements XYAndZ {
     indexOfMaxAbs(): number;
     isAlmostEqual(other: Readonly<XYAndZ>, tol?: number): boolean;
     isAlmostEqualMetric(other: XYAndZ): boolean;
+    isAlmostEqualPointPlusScaledVector(other: XYAndZ, vector: XYAndZ, scale: number, tol?: number): boolean;
     isAlmostEqualXY(other: XAndY, tol?: number): boolean;
     isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean;
     get isAlmostZero(): boolean;

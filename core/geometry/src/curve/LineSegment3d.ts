@@ -8,10 +8,9 @@
  */
 
 import { Clipper } from "../clipping/ClipUtils";
-import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator, Point3dPoint3d } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3dPoint3d } from "../geometry3d/Point3dPoint3d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";

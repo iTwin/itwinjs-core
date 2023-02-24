@@ -205,8 +205,11 @@ public;PathFragment
 public;PerpParallelOptions
 public;Plane3dByOriginAndUnitNormal 
 public;Plane3dByOriginAndVectors 
+public;Plane3dPlane3dIntersectionCases
+public;Plane3dPlane3dPlane3dIntersectionCases
 public;PlaneAltitudeEvaluator
 public;PlaneByOriginAndVectors4d
+public;PlaneOps
 public;Point2d 
 public;Point2dArray
 public;Point2dArrayCarrier 
@@ -214,6 +217,7 @@ public;Point3d
 public;Point3dArray
 public;Point3dArrayCarrier 
 public;Point3dArrayPolygonOps
+public;Point3dPoint3d
 public;Point4d 
 public;Point4dArray
 public;Point4dProps = number[]

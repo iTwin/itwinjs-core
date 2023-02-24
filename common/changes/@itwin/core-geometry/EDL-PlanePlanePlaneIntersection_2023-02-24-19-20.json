@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "New class PlaneOps with finicky details for intersecting 2 and 3 planes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

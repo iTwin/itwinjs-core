@@ -240,7 +240,7 @@ describe("Ray3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("IntersectWithPlane", () => {
+  it("IntersectWithPlane", () => {
     const ck = new Checker();
     const plane = Plane3dByOriginAndUnitNormal.createXYZUVW(1, 3, 2, 5, 2, 9)!;
     const rayA = Ray3d.createXYZUVW(5, 4, 2, 1, 3, 2);

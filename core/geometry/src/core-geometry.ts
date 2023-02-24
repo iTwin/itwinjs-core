@@ -148,7 +148,6 @@ export * from "./geometry3d/PlaneOps";
 export * from "./geometry3d/Point2dArrayCarrier";
 export * from "./geometry3d/Point2dVector2d";
 export * from "./geometry3d/Point3dVector3d";
-export * from "./geometry3d/Point3dPoint3d";
 export * from "./geometry3d/PointHelpers";
 export * from "./geometry3d/Point3dArrayCarrier";
 export * from "./geometry3d/PolylineOps";

@@ -14,7 +14,16 @@ import { XAndY } from "./geometry3d/XYZProps";
 import { Point4d } from "./geometry4d/Point4d";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
-
+/**
+ * The Point3dPoint3d class carries a pair of points labeled pointA and pointB.
+ * * This is intended as a convenient way to carry the points around, NOT as formal heavyweight line segment.
+ * * Use LineSegment3d.createFromPoint3dPoint3d to promote (copies of) points to LineSegment3d.
+ * @public
+ */
+export interface Point3dPoint3d {
+  pointA: Point3d;
+  pointB: Point3d;
+}
 /** Enumeration of the 6 possible orderings of XYZ axis order
  *
  * * **Note:** There are 3 axis order with right hand system (XYZ = 0, YZX = 1, ZXY = 2) and 3 axis order with

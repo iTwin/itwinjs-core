@@ -169,6 +169,15 @@ export class XYZ implements XYAndZ {
       && Geometry.isSameCoordinate(this.y, y, tol)
       && Geometry.isSameCoordinate(this.z, z, tol);
   }
+  /** Return true if this and {other + vector*scale} have equal x,y,z parts within Geometry.smallMetricDistance.
+   * * this method is useful in testing "point on ray" without explicitly constructing the projection point
+  */
+  public isAlmostEqualPointPlusScaledVector(other: XYAndZ, vector: XYAndZ, scale: number, tol?: number): boolean {
+    return Geometry.isSameCoordinate(this.x, other.x + vector.x * scale, tol)
+      && Geometry.isSameCoordinate(this.y, other.y + vector.y * scale, tol)
+      && Geometry.isSameCoordinate(this.z, other.z + vector.z * scale, tol);
+  }
+
   /** Return true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqualXY(other: XAndY, tol?: number): boolean {
     return Geometry.isSameCoordinate(this.x, other.x, tol)
