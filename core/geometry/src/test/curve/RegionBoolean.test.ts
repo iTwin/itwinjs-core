@@ -654,7 +654,7 @@ describe("RegionBoolean", () => {
   });
 
   // cspell:word laurynas
-  it.only("BridgeEdgesAndDegenerateLoops", () => {
+  it("BridgeEdgesAndDegenerateLoops", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -663,6 +663,7 @@ describe("RegionBoolean", () => {
     interface TestInput {
       jsonFilePath: string;
       expectedNumComponents: number;
+      tolerance?: number;
     }
     // try various combinations of the loops in the original test case, which contains:
     // * null faces,
@@ -671,30 +672,35 @@ describe("RegionBoolean", () => {
     // * almost-equal vertices,
     // * holes, and
     // * polygons with vertices of degree > 2
+    // * nearly-intersecting edges larger than default tol
     const testCases: TestInput[] = [
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion4.imjs", expectedNumComponents: 2},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion5.imjs", expectedNumComponents: 2},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion6.imjs", expectedNumComponents: 2},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion7.imjs", expectedNumComponents: 3},
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion8.imjs", expectedNumComponents: 2},
-      // {jsonFilePath: "./src/test/testInputs/curve/disconnectedRegions.imjs", expectedNumComponents: 2},
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion4.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion5.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion6.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion7.imjs", expectedNumComponents: 3 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion8.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/disconnectedRegions.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoops.imjs", expectedNumComponents: 1 },
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasLoops2.imjs", expectedNumComponents: 1},  // fully simplified (DNR)
-      // {jsonFilePath: "./src/test/testInputs/curve/laurynasLoops3.imjs", expectedNumComponents: 1},  // two spikes removed (DNR)
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoops.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
     ];
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
       if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
-        const merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union);
+        const merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
         if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
           x0 += (xDelta = 1.5 * merged.range().xLength());
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
-          if (ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion")) {
+          if (ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion")) { // note that merged preserves the constituents of the union!
             const signedLoops = RegionOps.constructAllXYRegionLoops(merged);
             if (ck.testExactNumber(testCase.expectedNumComponents, signedLoops.length, "UnionRegion has expected number of connected components.")) {
               x0 += xDelta;
