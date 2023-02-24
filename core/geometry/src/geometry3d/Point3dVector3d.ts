@@ -253,7 +253,7 @@ export class XYZ implements XYAndZ {
   public setAt(index: number, value: number): void {
     if (index < 0.5)
       this.x = value;
-    if (index > 1.5)
+    else if (index > 1.5)
       this.z = value;
     else
       this.y = value;
@@ -942,6 +942,8 @@ export class Vector3d extends XYZ {
    * * It's returning the signed projection magnitude divided by the target magnitude.
    * * To find the projection vector, scale the target vector by the value that this function is returning.
    * * math details can be found at docs/learning/geometry/PointVector.md
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnVector
+   * and https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
    * @param target the target vector
    * @param defaultFraction the returned value in case magnitude square of target vector is very small
    * */
@@ -989,7 +991,7 @@ export class Vector3d extends XYZ {
     return result;
   }
   /**
-   * Return a vector which is in the xy plane, perpendicular ot the xy part of this vector, and of unit length.
+   * Return a vector which is in the xy plane, perpendicular to the xy part of this vector, and of unit length.
    * * If the xy part is 00, the return is the rotated (but not normalized) xy parts of this vector.
    * @param result optional preallocated result.
    */
@@ -1350,6 +1352,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return the cross product of this vector and vectorB.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CrossProduct
    * @param vectorB second vector of cross product
    * @param result optional preallocated result.
    */

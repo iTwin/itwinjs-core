@@ -18,24 +18,36 @@ const scratchPoint = Point3d.createZero();
 const scratchEllipsoid = Ellipsoid.create(Transform.createIdentity());
 const scratchZeroRange = Range1d.createXX(0, 0);
 
-/** Terrain provider that produces geometry that represents a smooth ellipsoid without any height perturbations.
+/** A terrain mesh provider that produces geometry that represents a smooth ellipsoid without any height perturbations.
  * The area within the project extents are represented as planar tiles and other tiles are facetted approximations
  * of the WGS84 ellipsoid.
- * @see [[TerrainMeshProvider]]
- * @internal
+ * This is the terrain provider used when the background map is enabled but 3d terrain is disabled.
+ * @public
  */
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
   private _tilingScheme = new WebMercatorTilingScheme();
   private readonly _wantSkirts: boolean;
 
+  /** Construct a new terrain provider.
+   * @note [[TerrainMeshProviderOptions.wantNormals]] is ignored - no normals are produced.
+   */
   public constructor(opts: TerrainMeshProviderOptions) {
     super();
     this._wantSkirts = opts.wantSkirts;
   }
 
+  /** @internal override */
   public get maxDepth(): number { return 22; }
-  public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return scratchZeroRange; }
-  public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
+
+  /** @internal override */
+  public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined {
+    return scratchZeroRange;
+  }
+
+  /** @internal override */
+  public override get tilingScheme(): MapTilingScheme {
+    return this._tilingScheme;
+  }
 
   private createSkirtlessPlanarMesh(tile: MapTile): RealityMeshParams {
     const projection = tile.getProjection();
@@ -94,6 +106,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     return builder.finish();
   }
 
+  /** @internal override */
   public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
     const tile = args.tile;
     if (tile.isPlanar)
@@ -174,6 +187,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     return builder.finish();
   }
 
+  /** @internal override */
   public override async requestMeshData(): Promise<TileRequest.Response> {
     return "";
   }

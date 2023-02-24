@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "allow tolerance to be specified for curve-curve xy intersection",
+      "comment": "implement PolyfaceBuilder.addGeometryQuery for Loops and ParityRegions",
       "type": "none"
     }
   ],
