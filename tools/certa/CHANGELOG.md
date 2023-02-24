@@ -9,6 +9,11 @@ Wed, 08 Feb 2023 14:58:39 GMT
 
 - Add support for Electron 22.
 
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
 
@@ -585,7 +590,7 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Fix occasional hang in Electron when a timeout occurs loading the app
-- Upgraded electron version. 
+- Upgraded electron version.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT

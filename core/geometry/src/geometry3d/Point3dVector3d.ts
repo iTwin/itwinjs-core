@@ -253,7 +253,7 @@ export class XYZ implements XYAndZ {
   public setAt(index: number, value: number): void {
     if (index < 0.5)
       this.x = value;
-    if (index > 1.5)
+    else if (index > 1.5)
       this.z = value;
     else
       this.y = value;
@@ -991,7 +991,7 @@ export class Vector3d extends XYZ {
     return result;
   }
   /**
-   * Return a vector which is in the xy plane, perpendicular ot the xy part of this vector, and of unit length.
+   * Return a vector which is in the xy plane, perpendicular to the xy part of this vector, and of unit length.
    * * If the xy part is 00, the return is the rotated (but not normalized) xy parts of this vector.
    * @param result optional preallocated result.
    */
