@@ -12,9 +12,6 @@ import { GltfAlphaMode, GltfDocument } from "./GltfSchema";
 export namespace Gltf {
   export type Buffer = Uint8Array;
 
-  // If not "float", the positions are quantized or normalized.
-  export type PositionComponentType = "float" | "u8" | "i8";
-
   export interface PositionQuantization {
     origin: XYAndZ;
     scale: XYAndZ;
@@ -27,29 +24,20 @@ export namespace Gltf {
   }
 
   export interface PositionAttribute extends Attribute {
-    componentType: PositionComponentType;
+    // If not "float", the positions are quantized or normalized.
+    componentType: "float" | "u8" | "i8";
     quantization?: PositionQuantization;
   }
 
-  export type ColorComponentType = "float" | "u8" | "u16";
-
   export interface ColorAttribute extends Attribute {
-    componentType: ColorComponentType;
+    componentType: "float" | "u8" | "u16";
   }
 
-  export type IndexDataType = "u8" | "u16" | "u32";
-
   export interface Indices {
-    dataType: IndexDataType;
+    dataType: "u8" | "u16" | "u32";
     count: number;
     buffer: Buffer;
   }
-
-  // If not "float", the components are quantized or normalized.
-  export type TextureUVComponentType = "float" | "u8" | "u16" | "i8" | "i16";
-
-  // If not "float", the components are normalized.
-  export type NormalComponentType = "float" | "i8" | "i16";
 
   export type PrimitiveType = "triangles";
 
@@ -68,11 +56,13 @@ export namespace Gltf {
   }
 
   export interface NormalAttribute extends Attribute {
-    componentType: NormalComponentType;
+    // If not "float", the components are normalized.
+    componentType: "float" | "i8" | "i16";
   }
 
   export interface TextureUVAttribute extends Attribute {
-    componentType: TextureUVComponentType;
+    // If not "float", the components are quantized or normalized.
+    componentType: "float" | "u8" | "u16" | "i8" | "i16";
     quantization?: TextureUVQuantization;
   }
 

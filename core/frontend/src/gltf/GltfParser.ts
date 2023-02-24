@@ -268,11 +268,18 @@ class GltfParser {
   }
 
   private parsePrimitive(primitive: GltfMeshPrimitive): Gltf.AnyPrimitive | undefined {
-    // ###TODO_GLTF support all primitive types.
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
-    if (meshMode !== GltfMeshMode.Triangles)
-      return undefined;
-    return undefined;
+    switch (meshMode) {
+      case GltfMeshMode.TriangleStrip:
+        return this.parseTrianglesPrimitive(primitive);
+      default:
+        // ###TODO_GLTF Make parser support all primitive types. Consumer can choose to do whatever with them.
+        return undefined;
+    }
+  }
+
+  private parseTrianglesPrimitive(_primitive: GltfMeshPrimitive): Gltf.TrianglesPrimitive | undefined {
+    return undefined; // ###TODO_GLTF
   }
 
   private traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode> {
