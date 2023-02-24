@@ -1350,24 +1350,6 @@ export class PolyfaceQuery {
     BuildAverageNormalsContext.buildFastAverageNormals(polyface, toleranceAngle);
   }
 
-<<<<<<< HEAD
-=======
-  /**
-   * Offset the faces of the mesh.
-   * @param source original mesh
-   * @param signedOffsetDistance distance to offset
-   * @param offsetOptions angle options.  The default options are recommended.
-   * @returns shifted mesh.
-   */
-  public static cloneOffset(source: IndexedPolyface,
-    signedOffsetDistance: number,
-    offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create()): IndexedPolyface {
-    const strokeOptions = StrokeOptions.createForFacets();
-    const offsetBuilder = PolyfaceBuilder.create(strokeOptions);
-    OffsetMeshContext.buildOffsetMeshWithEdgeChamfers(source, offsetBuilder, signedOffsetDistance, offsetOptions);
-    return offsetBuilder.claimPolyface();
-  }
-
   private static _workTriangle?: BarycentricTriangle;
   private static _workTriDetail?: TriangleLocationDetail;
   private static _workPolyDetail?: PolygonLocationDetail;
@@ -1423,7 +1405,6 @@ export class PolyfaceQuery {
     }
     return undefined; // no intersection
   }
->>>>>>> 38cb1be0ce (new ray-mesh intersection methods (#5110))
 }
 
 /** Announce the points on a drape panel.
