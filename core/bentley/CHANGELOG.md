@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+This log was last generated on Fri, 24 Feb 2023 16:02:47 GMT and should not be manually modified.
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+### Updates
+
+- Add SortedArray.slice.
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
