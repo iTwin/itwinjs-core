@@ -96,6 +96,8 @@ export namespace Gltf {
     alphaMode: GltfAlphaMode;
     alphaCutoff: number;
     doubleSided: boolean;
+    // NB: a  mesh have normals defined but still be intended to be rendered without lighting.
+    unlit: boolean;
   }
 
   export interface TrianglesPrimitive extends Primitive {

@@ -7,6 +7,7 @@
  */
 
 import { ByteStream, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley";
+import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import { GlbHeader, ImageSource, TileFormat } from "@itwin/core-common";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -190,6 +191,7 @@ class GltfParser {
   public async parse(): Promise<Gltf.Model | undefined> {
     // ###TODO_GLTF RTC_CENTER
     // ###TODO_GLTF pseudo-rtc bias (apply translation to each point at read time, for scalable mesh...)
+    const toWorld = undefined;
 
     await this.resolveResources();
     if (this._isCanceled())
@@ -205,7 +207,6 @@ class GltfParser {
         nodes.push(this.parseNode(node));
     }
 
-    const toWorld = undefined;
     return {
       toWorld,
       nodes,
@@ -224,7 +225,28 @@ class GltfParser {
         primitives.push(primitive);
     }
 
-    const toParent = undefined; // ###TODO_GLTF transform
+    let toParent;
+    if (node.matrix) {
+      const origin = Point3d.create(node.matrix[12], node.matrix[13], node.matrix[14]);
+      const matrix = Matrix3d.createRowValues(
+        node.matrix[0], node.matrix[4], node.matrix[8],
+        node.matrix[1], node.matrix[5], node.matrix[9],
+        node.matrix[2], node.matrix[6], node.matrix[10],
+      );
+
+      toParent = Transform.createOriginAndMatrix(origin, matrix);
+    } else if (node.rotation || node.scale || node.translation) {
+      // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
+      // first the scale is applied to the vertices, then the rotation, and then the translation.
+      const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
+      const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
+      rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
+      const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
+
+      toParent = scale.multiplyTransformTransform(rot);
+      trans.multiplyTransformTransform(toParent, toParent);
+    }
+
     return {
       primitives,
       toParent,
