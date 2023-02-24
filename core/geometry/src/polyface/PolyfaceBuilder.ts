@@ -161,27 +161,27 @@ class FacetSector {
  *    * `builder.addGeometryQuery(g: GeometryQuery)`
  *    * `builder.addCone(cone: Cone)`
  *    * `builder.addTorusPipe(surface: TorusPipe)`
- *    * `builder.addLinearSweepLineStrings(surface: LinearSweep)`
+ *    * `builder.addLinearSweepLineStringsXYZOnly(surface: LinearSweep)`
  *    * `builder.addRotationalSweep(surface: RotationalSweep)`
  *    * `builder.addLinearSweep(surface: LinearSweep)`
  *    * `builder.addRuledSweep(surface: RuledSweep)`
  *    * `builder.addSphere(sphere: Sphere)`
  *    * `builder.addBox(box: Box)`
  *    * `builder.addIndexedPolyface(polyface)`
- *  *  Extract with `builder.claimPolyface (true)`
+ *  *  Extract with `builder.claimPolyface(true)`
  *
  * * Simple construction for ephemeral constructive data:
  *
  *  * Create a builder with `builder = PolyfaceBuilder.create()`
  *  * Add from fragmentary data:
- *    * `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
- *    * `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
- *    * `builder.addBetweenStroked (curveA, curveB)`
- *    * `builder.addLinearSweepLineStrings (contour, vector)`
- *    * `builder.addPolygon (points, numPointsToUse)`
- *    * `builder.addTransformedUnitBox (transform)`
- *    * `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
- *    * `builder.addTrianglesInUncheckedPolygon (linestring, toggle)`
+ *    * `builder.addBetweenLineStringsWithStoredIndices(linestringA  linestringB)`
+ *    * `builder.addBetweenLineStringsWithRuleEdgeNormals(linestringA, vA, linestringB, vB, addClosure)`
+ *    * `builder.addBetweenTransformedLineStrings(curves, transformA, transformB, addClosure)`
+ *    * `builder.addLinearSweepLineStringsXYZOnly(contour, vector)`
+ *    * `builder.addPolygon(points, numPointsToUse)`
+ *    * `builder.addTransformedUnitBox(transform)`
+ *    * `builder.addTriangleFan(conePoint, linestring, toggleOrientation)`
+ *    * `builder.addTrianglesInUncheckedConvexPolygon(linestring, toggle)`
  *    * `builder.addUVGridBody(surface,numU, numV, createFanInCaps)`
  *    * `builder.addGraph(Graph, acceptFaceFunction)`
  *  *  Extract with `builder.claimPolyface(true)`
@@ -190,10 +190,10 @@ class FacetSector {
  *  * Create a builder with `builder = PolyfaceBuilder.create()`
  *  * Add GeometryQuery objects
  *    * `builder.addPoint(point)`
- *    * `builder.findOrAddPointInLineString (linestring, index)`
+ *    * `builder.findOrAddPointInLineString(linestring, index)`
  *    * `builder.addPointXYZ(x,y,z)`
- *    * `builder.addTriangleFacet (points)`
- *    * `builder.addQuadFacet (points)`
+ *    * `builder.addTriangleFacet(points)`
+ *    * `builder.addQuadFacet(points)`
   * @public
  */
 export class PolyfaceBuilder extends NullGeometryHandler {
