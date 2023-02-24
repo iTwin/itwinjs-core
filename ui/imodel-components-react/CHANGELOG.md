@@ -3,38 +3,51 @@
 This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
 
 ## 3.6.0
+
 Wed, 08 Feb 2023 14:58:40 GMT
 
 ### Updates
 
 - Use EmptyLocalization for localization in tests to increase test performance
 
+## 3.5.6
+
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
 ## 3.5.5
+
 Thu, 26 Jan 2023 22:53:27 GMT
 
 _Version update only_
 
 ## 3.5.4
+
 Wed, 18 Jan 2023 15:27:15 GMT
 
 _Version update only_
 
 ## 3.5.3
+
 Fri, 13 Jan 2023 17:23:07 GMT
 
 _Version update only_
 
 ## 3.5.2
+
 Wed, 11 Jan 2023 16:46:30 GMT
 
 _Version update only_
 
 ## 3.5.1
+
 Thu, 15 Dec 2022 16:38:29 GMT
 
 _Version update only_
 
 ## 3.5.0
+
 Wed, 07 Dec 2022 19:12:37 GMT
 
 ### Updates
@@ -42,41 +55,49 @@ Wed, 07 Dec 2022 19:12:37 GMT
 - Unpin classnames package
 
 ## 3.4.7
+
 Wed, 30 Nov 2022 14:28:19 GMT
 
 _Version update only_
 
 ## 3.4.6
+
 Tue, 22 Nov 2022 14:24:19 GMT
 
 _Version update only_
 
 ## 3.4.5
+
 Thu, 17 Nov 2022 21:32:50 GMT
 
 _Version update only_
 
 ## 3.4.4
+
 Thu, 10 Nov 2022 19:32:17 GMT
 
 _Version update only_
 
 ## 3.4.3
+
 Fri, 28 Oct 2022 13:34:58 GMT
 
 _Version update only_
 
 ## 3.4.2
+
 Mon, 24 Oct 2022 13:23:45 GMT
 
 _Version update only_
 
 ## 3.4.1
+
 Mon, 17 Oct 2022 20:06:51 GMT
 
 _Version update only_
 
 ## 3.4.0
+
 Thu, 13 Oct 2022 20:24:47 GMT
 
 ### Updates
@@ -85,31 +106,37 @@ Thu, 13 Oct 2022 20:24:47 GMT
 - Fix/Remove skipped tests
 
 ## 3.3.5
+
 Tue, 27 Sep 2022 11:50:59 GMT
 
 _Version update only_
 
 ## 3.3.4
+
 Thu, 08 Sep 2022 19:00:05 GMT
 
 _Version update only_
 
 ## 3.3.3
+
 Tue, 06 Sep 2022 20:54:19 GMT
 
 _Version update only_
 
 ## 3.3.2
+
 Thu, 01 Sep 2022 14:37:22 GMT
 
 _Version update only_
 
 ## 3.3.1
+
 Fri, 26 Aug 2022 15:40:02 GMT
 
 _Version update only_
 
 ## 3.3.0
+
 Thu, 18 Aug 2022 19:08:02 GMT
 
 ### Updates
@@ -121,46 +148,55 @@ Thu, 18 Aug 2022 19:08:02 GMT
 - Update iTwinUI-react to 1.38.1
 
 ## 3.2.9
+
 Fri, 26 Aug 2022 14:21:40 GMT
 
 _Version update only_
 
 ## 3.2.8
+
 Tue, 09 Aug 2022 15:52:41 GMT
 
 _Version update only_
 
 ## 3.2.7
+
 Mon, 01 Aug 2022 13:36:56 GMT
 
 _Version update only_
 
 ## 3.2.6
+
 Fri, 15 Jul 2022 19:04:43 GMT
 
 _Version update only_
 
 ## 3.2.5
+
 Wed, 13 Jul 2022 15:45:53 GMT
 
 _Version update only_
 
 ## 3.2.4
+
 Tue, 21 Jun 2022 18:06:33 GMT
 
 _Version update only_
 
 ## 3.2.3
+
 Fri, 17 Jun 2022 15:18:39 GMT
 
 _Version update only_
 
 ## 3.2.2
+
 Fri, 10 Jun 2022 16:11:37 GMT
 
 _Version update only_
 
 ## 3.2.1
+
 Tue, 07 Jun 2022 15:02:56 GMT
 
 ### Updates
@@ -168,28 +204,33 @@ Tue, 07 Jun 2022 15:02:56 GMT
 - Remove fix height from ColorPicker dialog.
 
 ## 3.2.0
+
 Fri, 20 May 2022 13:10:54 GMT
 
 ### Updates
 
-- Fix for losing viewport content after clicking PW link 
+- Fix for losing viewport content after clicking PW link
 
 ## 3.1.3
+
 Fri, 15 Apr 2022 13:49:25 GMT
 
 _Version update only_
 
 ## 3.1.2
+
 Wed, 06 Apr 2022 22:27:56 GMT
 
 _Version update only_
 
 ## 3.1.1
+
 Thu, 31 Mar 2022 15:55:48 GMT
 
 _Version update only_
 
 ## 3.1.0
+
 Tue, 29 Mar 2022 20:53:47 GMT
 
 ### Updates
@@ -203,16 +244,19 @@ Tue, 29 Mar 2022 20:53:47 GMT
 - Update to latest itwinui-react.
 
 ## 3.0.3
+
 Fri, 25 Mar 2022 15:10:02 GMT
 
 _Version update only_
 
 ## 3.0.2
+
 Thu, 10 Mar 2022 21:18:13 GMT
 
 _Version update only_
 
 ## 3.0.1
+
 Thu, 24 Feb 2022 15:26:55 GMT
 
 ### Updates
@@ -220,6 +264,7 @@ Thu, 24 Feb 2022 15:26:55 GMT
 - Avoid processing stale viewstates that reference closed imodels.
 
 ## 3.0.0
+
 Mon, 24 Jan 2022 14:00:52 GMT
 
 ### Updates
@@ -234,7 +279,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - tool.run and tool.parseAndRun are now async methods
 - Deprecate obsolete code.
 - Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
--  update immer to fix security warning
+- update immer to fix security warning
 - Deprecate and promote apis
 - Deprecate obsolete APIs. Publish beta APIs from last release.
 - Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
@@ -253,4 +298,3 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Update to latest types/react package
 - Update ViewportComponent to function component that properly processes async method to get viewstate.
 - Lock down and update version numbers so docs will build.
-
