@@ -13,6 +13,11 @@ Wed, 08 Feb 2023 14:58:40 GMT
 - Fix Map Layers widget not updating after an iModel gets geolocated.
 -  Use EmptyLocalization for localization in tests to increase test performance
 
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:28 GMT
 
@@ -43,7 +48,7 @@ Wed, 07 Dec 2022 19:12:37 GMT
 
 ### Updates
 
-- MapLayers widget's preferences UI now support edit,delete buttons without having an iModel ID. Also fix an issue with edit. 
+- MapLayers widget's preferences UI now support edit,delete buttons without having an iModel ID. Also fix an issue with edit.
 - Unpin classnames package
 
 ## 3.4.7
@@ -521,7 +526,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
 
-- Fix 'npm run cover' that would never complete. 
+- Fix 'npm run cover' that would never complete.
 - Exposed the map masking option in the map layers settings UI.
 - Move map tile trees to Viewport to handle synching correctly
 - Update to latest classnames package
@@ -596,7 +601,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
 
-- Restored base layer visibility button in map manager. 
+- Restored base layer visibility button in map manager.
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
 
@@ -621,7 +626,7 @@ Thu, 18 Feb 2021 22:10:13 GMT
 ### Updates
 
 - Provide default props to map-layers widget when used as an extension.
-- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. 
+- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted.
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT
