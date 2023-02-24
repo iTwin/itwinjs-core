@@ -1,6 +1,11 @@
 # Change Log - @itwin/editor-frontend
 
-This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+This log was last generated on Fri, 24 Feb 2023 22:00:48 GMT and should not be manually modified.
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:40 GMT
@@ -242,7 +247,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Replace usage of I18N with generic Localization interface.
 - remove ClientRequestContext.current
 - Update to use new tool setting helper methods.
-- New solid modeling ipc interface
+- New solid modeling ipc interface  
 - More solid modeling functionality.
 - Add tool settings for solid modeling tools.
 - New tools to sweep/spin faces and delete faces/imprinted edges.

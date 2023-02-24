@@ -2,6 +2,21 @@
   "name": "@itwin/appui-react",
   "entries": [
     {
+      "version": "3.6.1",
+      "tag": "@itwin/appui-react_v3.6.1",
+      "date": "Fri, 24 Feb 2023 22:00:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix react briefMessage in toasts"
+          },
+          {
+            "comment": "Fix `@itwin/itwinui-icons-react` dependency version"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.6.0",
       "tag": "@itwin/appui-react_v3.6.0",
       "date": "Wed, 08 Feb 2023 14:58:39 GMT",
