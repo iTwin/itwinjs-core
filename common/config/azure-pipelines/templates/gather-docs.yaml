@@ -94,13 +94,13 @@ steps:
   #       branchName: refs/heads/master
   #       artifactName: Presentation Docs
   #       targetPath: $(Pipeline.Workspace)/Presentation Docs
-
-  - task: CopyFiles@2
-    displayName: Copy Presentation Docs to staging
-    inputs:
-      SourceFolder: $(Pipeline.Workspace)/Presentation Docs
-      TargetFolder: ${{ parameters.stagingDir }}
-      OverWrite: true
+  #
+  # - task: CopyFiles@2
+  #   displayName: Copy Presentation Docs to staging
+  #   inputs:
+  #     SourceFolder: $(Pipeline.Workspace)/Presentation Docs
+  #     TargetFolder: ${{ parameters.stagingDir }}
+  #     OverWrite: true
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2
