@@ -54,7 +54,7 @@ export class PolyfaceData {
   public normalIndex: number[] | undefined;
   /** Coordinates of uv parameters, packed as numbers in a contiguous array. */
   public param?: GrowableXYArray;
-  /** Indics of params at facet vertices. */
+  /** Indices of params at facet vertices. */
   public paramIndex: number[] | undefined;
   /** Color values.  These are carried around as simple numbers, but are probably
    * required (by display systems) map exactly to 32 bit integers.
