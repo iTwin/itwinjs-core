@@ -239,7 +239,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - tool.run and tool.parseAndRun are now async methods
 - Deprecate obsolete code.
 - Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
-- update immer to fix security warning
+-  update immer to fix security warning
 - Deprecate and promote apis
 - Deprecate obsolete APIs. Publish beta APIs from last release.
 - Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
@@ -258,3 +258,4 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Update to latest types/react package
 - Update ViewportComponent to function component that properly processes async method to get viewstate.
 - Lock down and update version numbers so docs will build.
+

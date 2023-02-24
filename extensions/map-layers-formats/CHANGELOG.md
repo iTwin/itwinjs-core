@@ -47,3 +47,4 @@ Wed, 07 Dec 2022 19:12:37 GMT
 
 - Improved ArcGIS feature for support servers older than version 11
 - Enabled min LOD for ArcGisFeature format.
+

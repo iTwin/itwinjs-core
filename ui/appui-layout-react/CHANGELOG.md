@@ -971,7 +971,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Using center of Messages indicator as target. Added CSS classname overrides to StatusBarComposer for sections. UI 2.0 color tweaks.
 - Ui 2.0 - Blur the toolbar item background
 - update styling of widget panel background color
-- Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
+-  Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
 - Upgrade to Rush 5.23.2
 - Fixed Safari browser issues
 - Update StatusBarComposer to support Overflow panel.
@@ -1422,3 +1422,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

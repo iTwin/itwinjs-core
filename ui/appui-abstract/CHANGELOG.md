@@ -897,7 +897,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Update GroupButton definition to use ReadonlyArray for child items.
 - Documentation fixes
 - Slider component tooltipBelow prop & tooltip styling
-- Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
+-  Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
 - Upgrade to Rush 5.23.2
 - Rename CustomDefinition to CustomButtonDefinition,
 - Learning docs for UiAdmin & UiItemsArbiter
@@ -980,3 +980,4 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract.
 - Added initial ui-abstract package setup
 - Added UiAdmin with support for displaying Menus and Toolbars at a location
+

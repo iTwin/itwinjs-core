@@ -714,7 +714,7 @@ Wed, 02 Sep 2020 17:42:23 GMT
 
 ### Updates
 
-- Do not import * from i18next to allow for consumers to use esModuleInterop <https://github.com/i18next/i18next/issues/1177>
+- Do not import * from i18next to allow for consumers to use esModuleInterop https://github.com/i18next/i18next/issues/1177
 
 ## 2.5.4
 Fri, 28 Aug 2020 15:34:15 GMT
@@ -1101,3 +1101,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

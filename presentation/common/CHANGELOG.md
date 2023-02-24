@@ -884,7 +884,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 ### Updates
 
 - geometry clip containment
-- Add ability to request distinct values in pages using field descriptors
+-  Add ability to request distinct values in pages using field descriptors
 - Deprecate `LoggingNamespaces` enum in favor of package-specific enums.
 - Add support for nested property categories
 
@@ -1286,3 +1286,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

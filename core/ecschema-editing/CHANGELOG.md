@@ -401,3 +401,4 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - ECSchema validation and editing APIs moved from the ecschema-metadata package to the  ecschema-editing package.
 - Added ability to increment minor version number via the schema editing API.
+

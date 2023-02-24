@@ -250,7 +250,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - remove ChangeSetApplyOption
 - remove ClientRequestContext.current
 - Switching to consume new Projects-Client
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - added JSONSchema
 
 ## 2.19.28
@@ -1237,3 +1237,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

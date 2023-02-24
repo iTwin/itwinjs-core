@@ -7,7 +7,7 @@ Wed, 08 Feb 2023 14:58:40 GMT
 
 ### Updates
 
-- Use EmptyLocalization for localization in tests to increase test performance
+-  Use EmptyLocalization for localization in tests to increase test performance
 - Added support for initial filter to presentation instance filter builder
 - API promotions
 - Correctly render 'NavigationPropertyEditor' when it is used in dialog
@@ -248,7 +248,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Fixed SameInstance nested properties bug when merged cells with multiple nested content items were not created properly.
 - Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress.
 - Replace usage of I18N with generic Localization interface.
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Removed deprecated `DEPRECATED_controlledTreeWithFilteringSupport` and `DEPRECATED_controlledTreeWithVisibleNodes`.
 - Remove `immer` dependency.
 - Ignore lint errors for deprecated Table component.
@@ -590,7 +590,7 @@ Fri, 02 Apr 2021 13:18:42 GMT
 - Added expanded nodes tracking in trees using usePresentationTreeNodeLoader with enabled hierarchy auto update
 - Changed `PresentationManager` to **not** set link information on created `PropertyRecords`. Default behavior should be handled by UI components. Custom behavior can be injected by overriding data providers that return the records.
 - Always set `PropertyDescription.typename` to lowercase when creating content.
-- Handle partial hierarchy updates without loosing tree state.
+-  Handle partial hierarchy updates without loosing tree state.
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -1115,7 +1115,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Add DataProvidersFactory API for creating presentation data providers targeted towards specific use cases
 - (breaking) Change PresentationTableDataProvider's constructor to accept a props object instead of multiple arguments
 - Make all content data providers IDisposable. **Important:** providers must be disposed after use.
-- Changed the way `0` selection level is handled in unified selection tables. Previously we used to reload table data when selection changed with level below boundary __or level `0`__. Now the **underlined** part is removed and we only reload data if selection changes with level below boundary (set through props).
+- Changed the way `0` selection level is handled in unified selection tables. Previously we used to reload table data when selection changed with level below boundary __or level `0`__. Now the __underlined__ part is removed and we only reload data if selection changes with level below boundary (set through props).
 - RPC Interface changes to optimize getting first page of nodes/content
 - Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings.
 - Upgrade to TypeScript 3.2.2
@@ -1320,3 +1320,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

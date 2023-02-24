@@ -1031,7 +1031,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Made React functional component specifications consistent across UI packages
 - Slider component tooltipBelow prop & tooltip styling
 - Added API in MessageManager to display either a Toast or Sticky message using React components.
-- Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
+-  Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
 - Revert back to using svg-sprite-loader and sprite resourceQuery.
 - Upgrade to Rush 5.23.2
 - Fixed Safari browser issues
@@ -1542,3 +1542,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

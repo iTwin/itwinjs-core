@@ -84,3 +84,4 @@ Thu, 13 Oct 2022 20:24:47 GMT
 
 - Updated Node types declaration to support latest v16
 - The package contains functions for making interop between OpenTelemetry and iTwin.js Presentation types easier.
+

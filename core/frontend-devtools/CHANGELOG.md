@@ -228,7 +228,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Fix typo.
 - Add support for inverting planar clip mask (inside vs outside)
 - Replace usage of I18N with generic Localization interface.
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - tool.run and tool.parseAndRun are now async methods
 - Add `fdt bgcolor` keyin for changing the viewport's background color.
 - Replace `fdt toggle wiremesh` keyin with `fdt wiremesh` that produces real wiremesh.
@@ -1026,3 +1026,4 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Added total number of dispatched tile requests and of cache misses to tile statistics tracker.
 - Include number of tile trees in memory tracker panel.
 - Update to TypeScript 3.5
+

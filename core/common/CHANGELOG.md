@@ -327,7 +327,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - rework locks
 - Fix for IModel._ecefTrans not being updated when setting IModel._ecefLocation.
 - Deprecate RenderTexture.Params
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment.
 - FeatureAppearance transparency override by default ignores render mode and transparency view flag.
 - Adding WebEditServer (test scenarios only for now)
@@ -1660,3 +1660,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

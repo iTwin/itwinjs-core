@@ -268,7 +268,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Clean up deprecated FilteringInput and PropertyGrid props
 - Make `width` and `height` props required for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`
 - Update CustomNumberEditor resetting of bad values.
-- update immer to fix security warning
+-  update immer to fix security warning
 - Deprecated Breadcrumb component
 - Deprecate and promote apis
 - Deprecate Table component.
@@ -895,7 +895,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 - Update boolean type editors to allow component to be disabled.
 - Add support for a DatePicker control.
 - Update editor to use fixed focus trap.
-- Added Table cell editor activation via keyboard when using row selection. Added Tree cell editor activation via keyboard.
+-  Added Table cell editor activation via keyboard when using row selection. Added Tree cell editor activation via keyboard.
 - Fixed react-axe initialization. Improved ui-components test coverage.
 - Table cell editing via keyboard
 - Add multiline text property support to property grid.
@@ -1730,3 +1730,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

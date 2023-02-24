@@ -226,7 +226,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - rename to @itwin/build-tools
 - Support for Node 16
 - Remove TSLint support and .eslintrc.js file - please use `@itwin/eslint-plugin` instead
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Support for TypeDoc v0.22.7. Fix various broken docs links.
 - Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
 
@@ -926,7 +926,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 
 ### Updates
 
-- Add the deprecation tslint rule as a warning. <https://palantir.github.io/tslint/rules/deprecation/>
+- Add the deprecation tslint rule as a warning. https://palantir.github.io/tslint/rules/deprecation/
 - Closing STDIN no longer kills child processes created using simpleSpawn
 
 ## 1.1.0
@@ -934,7 +934,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 
 ### Updates
 
-- Added _test_ to list of excluded dirs during docs script
+- Added *test* to list of excluded dirs during docs script
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -1175,3 +1175,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

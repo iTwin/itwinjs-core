@@ -11,7 +11,7 @@ Wed, 08 Feb 2023 14:58:40 GMT
 - Added support for new viewport event (onMapLayerScaleRangeVisibilityChanged)
 - Improved map-layer coordinate systems validation and error reporting.
 - Fix Map Layers widget not updating after an iModel gets geolocated.
-- Use EmptyLocalization for localization in tests to increase test performance
+-  Use EmptyLocalization for localization in tests to increase test performance
 
 ## 3.5.6
 Fri, 24 Feb 2023 16:02:47 GMT
@@ -256,7 +256,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - rename to @itwin/map-layers
 - remove ClientRequestContext and its subclasses
 - Replace usage of I18N with generic Localization interface.
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Ignore lint warning for deprecated class
 - Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
 - Update to latest itwinui-react
@@ -465,7 +465,7 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 ### Updates
 
-- Allow saved map-layer definition to be edited.
+-  Allow saved map-layer definition to be edited.
 - Made MaplayerSource independent from MapLayerProps.
 - MapManagerSettings UI Refresh. Added tests.
 - Fixed typo in activeViewport.view.isSpatialView: it should be invoked as a method and not a property.
@@ -861,3 +861,4 @@ Tue, 28 Jul 2020 16:26:24 GMT
 ### Updates
 
 - Add map-layer extension that can also be used as a package. Adds 'Map Layers' widget.
+

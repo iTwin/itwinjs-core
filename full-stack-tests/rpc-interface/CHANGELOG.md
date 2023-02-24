@@ -223,7 +223,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Upgrade target to ES2019
 - fix ecsql row format
 - rename contextId -> iTwinId
-- Swap old @bentley/reality-data-client with new @itwin/relaity-data-client, Update DisplayTestApp and add two new utility function and update API
+-  Swap old @bentley/reality-data-client with new @itwin/relaity-data-client, Update DisplayTestApp and add two new utility function and update API
 - use new @itwin package names
 - rename to @itwin/rpcinterface-full-stack-tests
 - remove ClientRequestContext and its subclasses
@@ -231,7 +231,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Added a test for `PresentationRpcInterface.getContentSources` RPC
 - Bumped dotenv and removed deprecated @types/dotenv
 - Replaced ContextRegistry with generalized ITwinAccess interface
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Removed references to the deleted config-loader package
 
 ## 2.19.28
@@ -909,3 +909,4 @@ _Version update only_
 Thu, 09 Jan 2020 06:01:07 GMT
 
 _Initial release_
+

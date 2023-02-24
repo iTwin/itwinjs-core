@@ -448,7 +448,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - rename IModelReadRpcInterface.openForRead to getConnectionProps
 - Simplify RenderTexture creation APIs.
 - Avoid skipping tool dynamics frame when new graphic is still pending.
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Altered to use abstract Reality Data interface
 - Rework and correct child availability of tiled imagery formats.  Added EPSG:4326 support for WMTS.
 - Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment.
@@ -2653,3 +2653,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

@@ -331,7 +331,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Remove UserInfo completely
 - Update snapshots
 - Replaced ContextRegistry with generalized ITwinAccess interface
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Removed references to the deleted config-loader package
 - tool.run and tool.parseAndRun are now async methods
 - Support for TypeDoc v0.22.7. Fix various broken docs links.
@@ -773,7 +773,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 
 - Add functions to clear the Hide/Isolate for Models and Categories
 - Upgrade react-resize-detector to avoid lodash security vulnerability
-- Fix solar timeline component so that sunTime is properly set for project location.
+-  Fix solar timeline component so that sunTime is properly set for project location.
 - Document uiSettings in ToolAssistanceField
 - Fix stateFunction for clear hide/isolate/emphasize tool that is used in UI 1.0.
 - Updated to use TypeScript 4.1
@@ -1235,7 +1235,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Added API in MessageManager to display either a Toast or Sticky message using React components.
 - react to new clients packages from imodeljs-clients
 - Remove comment text shown in render function.
-- Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
+-  Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
 - For consistency add reactNode getters/setters and deprecate use of reactElement.
 - Revert back to using svg-sprite-loader and sprite resourceQuery.
 - Upgrade to Rush 5.23.2
@@ -1962,3 +1962,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

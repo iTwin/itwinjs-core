@@ -703,3 +703,4 @@ Thu, 17 Sep 2020 13:16:12 GMT
 
 - Moved ESLint configuration to a plugin
 - add new client for general telemetry events in frontend and backend
+

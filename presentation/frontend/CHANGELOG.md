@@ -7,7 +7,7 @@ Wed, 08 Feb 2023 14:58:40 GMT
 
 ### Updates
 
-- Use EmptyLocalization for localization in tests to increase test performance
+-  Use EmptyLocalization for localization in tests to increase test performance
 - API promotions
 - Add APIs to get hierarchy level descriptor
 
@@ -237,7 +237,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Changed uses of `PresentationUnitSystem` to `UnitSystemKey`.
 - Replace usage of I18N with generic Localization interface.
 - Switching to consume new Projects-Client
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -832,7 +832,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 ### Updates
 
 - geometry clip containment
-- Add ability to request distinct values in pages using field descriptors
+-  Add ability to request distinct values in pages using field descriptors
 - Expose logger categories similar to how it's done in core
 
 ## 2.2.1
@@ -1000,7 +1000,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Put sourcemap in npm package.
 - Fix marshaling class instances through RPC by removing use of Readonly
 - Add APIs to retrieve instance labels
-- Do _not_ use selection scopes when fence selecting or selection scope is set to "element"
+- Do *not* use selection scopes when fence selecting or selection scope is set to "element"
 - `SelectionScopesManager` now stores the active selection scope
 - `SelectionManager` now has ability to sync itself with `IModelConnection.selectionSet`
 - Allow sending content descriptor overrides instead of descriptor when requesting content. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content.
@@ -1213,3 +1213,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+

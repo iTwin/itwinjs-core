@@ -893,3 +893,4 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Hypermodeling keyins to filter display by type and to ignore category (because MicroStation does).
 - Make hypermodeling toolIds more likely to remain unique by including plugin name.
 - Added popup toolbar when cursor stops over marker or marker is tapped.
+

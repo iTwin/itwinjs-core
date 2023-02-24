@@ -842,3 +842,4 @@ Tue, 07 Jan 2020 19:44:01 GMT
 ### Updates
 
 - New package to contain EC Schema locaters previously located in ecschema-metadata
+

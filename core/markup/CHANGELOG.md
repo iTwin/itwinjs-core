@@ -938,3 +938,4 @@ Mon, 13 May 2019 15:52:05 GMT
 - Don't use ctrl+f for bring to front shortcut
 - Can now sub-class Markup SelectTool, test code to start redline tools from key event moved to display-test-app. Added place markup symbol tool.
 - Upgrade TypeDoc dependency to 0.14.2
+

@@ -906,3 +906,4 @@ Mon, 13 May 2019 15:52:05 GMT
 
 - Moved IModelJsExpressServer class into a new package (@itwin/express-server).
 - Upgrade TypeDoc dependency to 0.14.2
+

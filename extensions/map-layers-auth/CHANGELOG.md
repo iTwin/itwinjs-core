@@ -169,3 +169,4 @@ Fri, 20 May 2022 13:10:54 GMT
 ### Updates
 
 - New package containing various implementation of authentication methods
+

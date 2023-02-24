@@ -130,7 +130,7 @@ Thu, 13 Oct 2022 20:24:47 GMT
 - add PropertyStore interface
 - delete definition models
 - IModelDb.Elements.queryParent
-- deleteElementTree and deleteElementSubTrees
+-  deleteElementTree and deleteElementSubTrees
 - add doc for CloudCache.setLogMask
 - added @beta CloudSqlite
 - generate correct date format in local hub changesets
@@ -177,7 +177,7 @@ Thu, 18 Aug 2022 19:08:02 GMT
 - upgrade mocha to version 10.0.0
 - Update links to BIS documentation.
 - vacuum is now an instance method
-- enable loading gcs data from workspace at <https://geocoord-workspace.itwinjs.org/>
+- enable loading gcs data from workspace at https://geocoord-workspace.itwinjs.org/
 - Progress API for downloading changesets.
 - IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance
 - added computeSchemaChecksum function to IModelHost
@@ -341,7 +341,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Bumped dotenv and removed deprecated @types/dotenv
 - Replaced ContextRegistry with generalized ITwinAccess interface
 - Switching to consume new Projects-Client
-- Renamed an iModel's parent container to iTwin
+-  Renamed an iModel's parent container to iTwin
 - Removed references to the deleted config-loader package
 - split imodel-transformer out of imodel-backend package
 - remove use of "any" types in SqliteStatement
@@ -1294,7 +1294,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - IModelTransformer now processes RepositoryLinks
 - Update minimum Node version to 10.16.0
 - test
-- Logging fixes, separated open/download of briefcases a little more.
+-  Logging fixes, separated open/download of briefcases a little more.
 - Fix issue when initialize briefcase cache from disk and cache folder does not exist
 - openBriefcase RPC method now find the cached briefcase before opening it.
 - Introduce the BriefcaseIModelDb class, make IModelDb abstract.
@@ -1955,3 +1955,4 @@ Fri, 12 Oct 2018 23:00:10 GMT
 ### Updates
 
 - Initial release
+
