@@ -1,6 +1,11 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+This log was last generated on Fri, 24 Feb 2023 22:00:48 GMT and should not be manually modified.
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:40 GMT
@@ -1054,7 +1059,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

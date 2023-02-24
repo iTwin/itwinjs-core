@@ -2,6 +2,12 @@
   "name": "@itwin/editor-frontend",
   "entries": [
     {
+      "version": "3.6.1",
+      "tag": "@itwin/editor-frontend_v3.6.1",
+      "date": "Fri, 24 Feb 2023 22:00:48 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.6.0",
       "tag": "@itwin/editor-frontend_v3.6.0",
       "date": "Wed, 08 Feb 2023 14:58:40 GMT",
