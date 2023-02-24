@@ -11,6 +11,11 @@ Wed, 08 Feb 2023 14:58:40 GMT
 - Fix for mobile app lifcycle crash
 - React to RPC deprecations.
 
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
 

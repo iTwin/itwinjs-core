@@ -230,6 +230,8 @@ public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
 public;PolygonClipper
+public;PolygonLocation
+public;PolygonLocationDetail
 public;PolygonOps
 internal;PolygonWireOffsetContext
 public;PolylineOps
@@ -281,6 +283,7 @@ public;TorusPipe
 public;Transform 
 public;TransformProps = number[][] | number[] |
 public;class TransitionSpiral3d 
+public;TriangleLocationDetail
 internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial

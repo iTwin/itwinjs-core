@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "implement PolyfaceBuilder.addGeometryQuery for Loops and ParityRegions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
