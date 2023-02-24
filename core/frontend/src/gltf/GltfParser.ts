@@ -347,7 +347,7 @@ class GltfParser {
     }
   }
 
-  private async resolveBuffer(buffer: GltfBuffer & { resolvedBuffer?: Uint8Array }): Promise<void> {
+  private async resolveBuffer(buffer: ParserBuffer): Promise<void> {
     if (buffer.resolvedBuffer || undefined === buffer.uri)
       return;
 
@@ -368,7 +368,7 @@ class GltfParser {
     }
   }
 
-  private async resolveImage(image: GltfImage & { resolvedImage?: TextureImageSource }): Promise<void> {
+  private async resolveImage(image: ParserImage): Promise<void> {
     if (image.resolvedImage)
       return;
 

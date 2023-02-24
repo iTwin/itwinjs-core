@@ -15,22 +15,27 @@ export namespace Gltf {
   export interface PositionQuantization {
     origin: XYAndZ;
     scale: XYAndZ;
-    decodedMin: XYAndZ;
-    decodedMax: XYAndZ;
   }
 
   export interface Attribute {
     buffer: Buffer;
+    // Default zero.
+    byteStride?: number;
   }
 
   export interface PositionAttribute extends Attribute {
-    // If not "float", the positions are quantized or normalized.
-    componentType: "float" | "u8" | "i8";
+    // If not "f32", the positions are quantized or normalized.
+    componentType: "f32" | "u8" | "i8" | "u16" | "i16";
     quantization?: PositionQuantization;
+    // Unquantized if quantization is defined.
+    decodedMin: XYAndZ;
+    decodedMax: XYAndZ;
+    // The number of positions. All other attributes have the same count as this.
+    count: number;
   }
 
   export interface ColorAttribute extends Attribute {
-    componentType: "float" | "u8" | "u16";
+    componentType: "f32" | "u8" | "u16";
   }
 
   export interface Indices {
@@ -43,7 +48,6 @@ export namespace Gltf {
 
   export interface Primitive {
     indices: Indices;
-    attributeCount: number;
     position: PositionAttribute;
     color?: ColorAttribute;
   }
@@ -51,18 +55,16 @@ export namespace Gltf {
   export interface TextureUVQuantization {
     origin: XAndY;
     scale: XAndY;
-    decodedMin: XAndY;
-    decodedMax: XAndY;
   }
 
   export interface NormalAttribute extends Attribute {
-    // If not "float", the components are normalized.
-    componentType: "float" | "i8" | "i16";
+    // Always normalized.
+    componentType: "f32" | "i8" | "i16";
   }
 
   export interface TextureUVAttribute extends Attribute {
-    // If not "float", the components are quantized or normalized.
-    componentType: "float" | "u8" | "u16" | "i8" | "i16";
+    // If not "f32", the components are quantized or normalized.
+    componentType: "f32" | "u8" | "u16" | "i8" | "i16";
     quantization?: TextureUVQuantization;
   }
 
