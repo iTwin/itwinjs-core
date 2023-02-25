@@ -10,7 +10,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.6.7
+      '@bentley/imodeljs-native': 3.6.8
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -56,7 +56,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.13.0
-      '@bentley/imodeljs-native': 3.6.7
+      '@bentley/imodeljs-native': 3.6.8
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -7088,8 +7088,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.6.7:
-    resolution: {integrity: sha512-piXvfjXclY3erUhIheekbtXSIfZGxA4PL44Rz5Wkmfnd1e3l27HPOn4Ba+iljXWACy99HPK8joQBf6LQjCSSeQ==}
+  /@bentley/imodeljs-native/3.6.8:
+    resolution: {integrity: sha512-gASHl7XdAqMXW36YtdTmdG9E994eoE7Bno6sWfUarZv/bVDbsC+3BGa/n3DvzAvlvDKPcIpSilODwuBYkFwOHA==}
     requiresBuild: true
     dev: false
 
@@ -7123,7 +7123,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.21.0
-      '@itwin/core-webpack-tools': 3.5.6_webpack@5.75.0
+      '@itwin/core-webpack-tools': 3.6.0_webpack@5.75.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.10_a358053c186fea2b80718c8305c5e43e
       '@svgr/webpack': 6.5.1
       babel-jest: 27.5.1_@babel+core@7.21.0
@@ -7226,7 +7226,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.21.0
-      '@itwin/core-webpack-tools': 3.5.6_webpack@5.75.0
+      '@itwin/core-webpack-tools': 3.6.0_webpack@5.75.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.10_a358053c186fea2b80718c8305c5e43e
       '@svgr/webpack': 6.5.1
       babel-jest: 27.5.1_@babel+core@7.21.0
@@ -7328,7 +7328,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.21.0
-      '@itwin/core-webpack-tools': 3.5.6_webpack@5.75.0
+      '@itwin/core-webpack-tools': 3.6.0_webpack@5.75.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.10_a358053c186fea2b80718c8305c5e43e
       '@svgr/webpack': 6.5.1
       babel-jest: 27.5.1_@babel+core@7.21.0
@@ -7785,11 +7785,11 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.5.6:
-    resolution: {integrity: sha512-5RJJDG4ZDt88IurTk3wCLib9dacTKEU+M+YzmH7RTLnBQt/m7kf9P20ZOHCVToX6sZL6OzmoFsfIsPY1j2IMPA==}
+  /@itwin/certa/3.6.0:
+    resolution: {integrity: sha512-YrRKmOqheGPOWNDKtV7bm7iwpt5DKp8tpad3wu+4nyXWRSQ7U1npY93JDkXGWPs3TVmsNz4Y7uOoAyJHHHvyuA==}
     hasBin: true
     peerDependencies:
-      electron: '>=14.0.0 <18.0.0'
+      electron: '>=14.0.0 <18.0.0 || >=22.0.0 <23.0.0'
     peerDependenciesMeta:
       electron:
         optional: true
@@ -7801,7 +7801,6 @@ packages:
       mocha: 10.2.0
       puppeteer: 15.5.0
       source-map-support: 0.5.21
-      uuid: 7.0.3
       yargs: 17.7.1
     transitivePeerDependencies:
       - bufferutil
@@ -7809,11 +7808,11 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.5.6_electron@22.3.1:
-    resolution: {integrity: sha512-5RJJDG4ZDt88IurTk3wCLib9dacTKEU+M+YzmH7RTLnBQt/m7kf9P20ZOHCVToX6sZL6OzmoFsfIsPY1j2IMPA==}
+  /@itwin/certa/3.6.0_electron@22.3.1:
+    resolution: {integrity: sha512-YrRKmOqheGPOWNDKtV7bm7iwpt5DKp8tpad3wu+4nyXWRSQ7U1npY93JDkXGWPs3TVmsNz4Y7uOoAyJHHHvyuA==}
     hasBin: true
     peerDependencies:
-      electron: '>=14.0.0 <18.0.0'
+      electron: '>=14.0.0 <18.0.0 || >=22.0.0 <23.0.0'
     peerDependenciesMeta:
       electron:
         optional: true
@@ -7826,7 +7825,6 @@ packages:
       mocha: 10.2.0
       puppeteer: 15.5.0
       source-map-support: 0.5.21
-      uuid: 7.0.3
       yargs: 17.7.1
     transitivePeerDependencies:
       - bufferutil
@@ -7842,8 +7840,8 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/core-webpack-tools/3.5.6_webpack@5.75.0:
-    resolution: {integrity: sha512-kW/fB9V6N18OER/xJHuoCSu1AB+bBYXT75P8mwF84ZGDIoZN2Dy3BEeSWJTJCohbLSlthnTC/cJhIsxTdj7FmA==}
+  /@itwin/core-webpack-tools/3.6.0_webpack@5.75.0:
+    resolution: {integrity: sha512-cdvbk7fGAyUYAHBnzCS2b4LMayXqtEZZXmtUJSqZt2HRX5ldMJaSK+7kJ88EIqtlVupvi1Rx3DE6pQIb/3O4hA==}
     peerDependencies:
       webpack: ^5.64.4
     dependencies:
@@ -8027,7 +8025,7 @@ packages:
   /@itwin/oidc-signin-tool/3.6.1:
     resolution: {integrity: sha512-4M391FMMwPuRVZSC8DAtLlWlWMDwAVigI8ZY5gvPkHTOOHSAKPxFxZD/zXsySJ3Rn+tFNpP6DctU6OVxrYolRQ==}
     dependencies:
-      '@itwin/certa': 3.5.6
+      '@itwin/certa': 3.6.0
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -8043,7 +8041,7 @@ packages:
   /@itwin/oidc-signin-tool/3.6.1_electron@22.3.1:
     resolution: {integrity: sha512-4M391FMMwPuRVZSC8DAtLlWlWMDwAVigI8ZY5gvPkHTOOHSAKPxFxZD/zXsySJ3Rn+tFNpP6DctU6OVxrYolRQ==}
     dependencies:
-      '@itwin/certa': 3.5.6_electron@22.3.1
+      '@itwin/certa': 3.6.0_electron@22.3.1
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -11352,7 +11350,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001457
-      electron-to-chromium: 1.4.311
+      electron-to-chromium: 1.4.310
     dev: true
 
   /browserslist/4.21.5:
@@ -11361,7 +11359,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001457
-      electron-to-chromium: 1.4.311
+      electron-to-chromium: 1.4.310
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10_browserslist@4.21.5
 
@@ -12937,8 +12935,8 @@ packages:
       jake: 10.8.5
     dev: true
 
-  /electron-to-chromium/1.4.311:
-    resolution: {integrity: sha512-RoDlZufvrtr2Nx3Yx5MB8jX3aHIxm8nRWPJm3yVvyHmyKaRvn90RjzB6hNnt0AkhS3IInJdyRfQb4mWhPvUjVw==}
+  /electron-to-chromium/1.4.310:
+    resolution: {integrity: sha512-/xlATgfwkm5uDDwLw5nt/MNEf7c1oazLURMZLy39vOioGYyYzLWIDT8fZMJak6qTiAJ7udFTy7JG7ziyjNutiA==}
 
   /electron/22.3.1:
     resolution: {integrity: sha512-iDltL9j12bINK3aOp8ZoGq4NFBFjJhw1AYHelbWj93XUCAIT4fdA+PRsq0aaTHg3bthLLlLRvIZVgNsZPqWcqg==}
@@ -22255,10 +22253,6 @@ packages:
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
     hasBin: true
     dev: false
-
-  /uuid/7.0.3:
-    resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
-    hasBin: true
 
   /uuid/8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
