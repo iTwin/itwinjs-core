@@ -16,7 +16,7 @@ import {
 } from "../ImageUtil";
 import { TextureImageSource } from "../render/RenderTexture";
 import {
-  DracoMeshCompression, getGltfNodeMeshIds, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, traverseGltfNodes,
+  DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, traverseGltfNodes,
 } from "./GltfSchema";
 import { Gltf } from "./GltfModel";
 
@@ -153,7 +153,8 @@ class GltfParser {
   private readonly _buffers: GltfDictionary<ParserBuffer>;
   private readonly _images: GltfDictionary<ParserImage>;
   private readonly _nodes: GltfDictionary<GltfNode>;
-  private readonly _meshes: GltfDictionary<GltfMesh>
+  private readonly _meshes: GltfDictionary<GltfMesh>;
+  private readonly _accessors: GltfDictionary<GltfAccessor>;
   private readonly _sceneNodes: GltfId[];
   private readonly _bufferViews: GltfDictionary<GltfBufferViewProps>;
   private readonly _imageFromImageSource: (source: ImageSource) => Promise<TextureImageSource>;
@@ -174,6 +175,7 @@ class GltfParser {
     this._nodes = doc.nodes ?? emptyDict;
     this._meshes = doc.meshes ?? emptyDict;
     this._bufferViews = doc.bufferViews ?? emptyDict;
+    this._accessors = doc.accessors ?? emptyDict;
 
     if (options.binary) {
       const buffer = this._buffers[this._version === 2 ? 0 : "binary_glTF"];
@@ -278,7 +280,12 @@ class GltfParser {
     }
   }
 
-  private parseTrianglesPrimitive(_primitive: GltfMeshPrimitive): Gltf.TrianglesPrimitive | undefined {
+  private parseTrianglesPrimitive(primitive: GltfMeshPrimitive): Gltf.TrianglesPrimitive | undefined {
+    const posId = primitive.attributes["POSITION"];
+    const pos = undefined !== posId ? this._accessors[posId] : undefined;
+    if (!pos)
+      return undefined;
+
     return undefined; // ###TODO_GLTF
   }
 
