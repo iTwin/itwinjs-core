@@ -141,7 +141,7 @@ interface GltfParserOptions {
   isCanceled: () => boolean;
 }
 
-type ParserBuffer = GltfBuffer & { resolvedBuffer?: Uint8Array };
+type ParserBuffer = GltfBuffer & { resolvedBuffer?: Gltf.Buffer };
 type ParserImage = GltfImage & { resolvedImage?: TextureImageSource };
 
 class GltfParser {
@@ -180,7 +180,7 @@ class GltfParser {
     if (options.binary) {
       const buffer = this._buffers[this._version === 2 ? 0 : "binary_glTF"];
       if (buffer && undefined === buffer.uri)
-        buffer.resolvedBuffer = options.binary;
+        buffer.resolvedBuffer = { data: options.binary };
     }
 
     let sceneNodes;
@@ -369,7 +369,7 @@ class GltfParser {
         return;
 
       if (data)
-        buffer.resolvedBuffer = new Uint8Array(data);
+        buffer.resolvedBuffer = { data: new Uint8Array(data) };
     } catch (_) {
       //
     }
@@ -387,7 +387,7 @@ class GltfParser {
       if (undefined === format || !bufferView || !bufferView.byteLength || bufferView.byteLength < 0)
         return;
 
-      const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
+      const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer?.data;
       if (!bufferData)
         return;
 
@@ -413,7 +413,7 @@ class GltfParser {
     if (!bv || !bv.byteLength)
       return;
 
-    let buf = this._buffers[bv.buffer]?.resolvedBuffer;
+    let buf = this._buffers[bv.buffer]?.resolvedBuffer?.data;
     if (!buf)
       return;
 

@@ -10,7 +10,12 @@ import { Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { GltfAlphaMode, GltfDocument } from "./GltfSchema";
 
 export namespace Gltf {
-  export type Buffer = Uint8Array;
+  // A view into (usually a subset of) a GltfBuffer, used for vertex attributes and indices.
+  // Attributes may be interleaved in which case they share the same Buffer object and the stride is specified on each Attribute.
+  // The same Buffer object may also be used by more than one set of attributes or indices.
+  export interface Buffer {
+    data: Uint8Array;
+  }
 
   export interface PositionQuantization {
     origin: XYAndZ;
