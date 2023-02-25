@@ -43,7 +43,7 @@ export class NumberArray {
   /** return the sum of values in an array,   The summation is done with correction terms which
    * improves last-bit numeric accuracy.
    */
-  public static preciseSum(data: number[]) {
+  public static preciseSum(data: number[]): number {
     const n = data.length;
     if (n === 0)
       return 0.0;
@@ -60,7 +60,7 @@ export class NumberArray {
     return sum;
   }
   /** Return true if arrays have identical counts and equal entries (using `!==` comparison) */
-  public static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined) {
+  public static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
         return false;
@@ -75,7 +75,7 @@ export class NumberArray {
   public static isAlmostEqual(
     dataA: number[] | Float64Array | undefined,
     dataB: number[] | Float64Array | undefined,
-    tolerance: number) {
+    tolerance: number): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
         return false;
@@ -87,7 +87,7 @@ export class NumberArray {
   }
 
   /** return the sum of numbers in an array.  Note that "PreciseSum" may be more accurate. */
-  public static sum(data: number[] | Float64Array) {
+  public static sum(data: number[] | Float64Array): number {
     let sum = 0;
     for (const x of data) { sum += x; }
     return sum;
@@ -100,7 +100,7 @@ export class NumberArray {
     return false;
   }
   /** Return the max absolute value in a array of numbers. */
-  public static maxAbsArray(values: number[]) {
+  public static maxAbsArray(values: number[]): number {
     const arrLen = values.length;
     if (arrLen === 0) {
       return 0.0;
@@ -115,7 +115,7 @@ export class NumberArray {
     return a;
   }
   /** return the max absolute value of a pair of numbers */
-  public static maxAbsTwo(a1: number, a2: number) {
+  public static maxAbsTwo(a1: number, a2: number): number {
     a1 = Math.abs(a1);
     a2 = Math.abs(a2);
     return (a1 > a2) ? a1 : a2;
@@ -189,7 +189,41 @@ export class NumberArray {
     return result;
   }
 
+  /** Compute the linear combination s of the numbers and scales.
+   * @param data array of numbers d_i.
+   * @param scales array of scales s_i. For best results, `scales` should have the same length as `data`.
+   * @return s = sum(d_i * s_i), where i ranges from 0 to min(data.length, scales.length).
+   */
+  public static linearCombination(data: number[], scales: number[]): number {
+    const numTerms = Math.min(data.length, scales.length);
+    let sum = 0;
+    for (let i = 0; i < numTerms; ++i)
+      sum += scales[i] * data[i];
+    return sum;
+  }
+
+  /** Compute the linear combination s of the colors and scales.
+   * * The result is another color if the scales are in [0,1] and sum to 1.
+   * @param colors array of colors c_i (rgba in first four bytes).
+   * @param scales array of scales s_i. For best results, `scales` should have the same length as `colors`.
+   * @return s = sum(c_i * s_i), where i ranges from 0 to min(colors.length, scales.length).
+   */
+  public static linearCombinationOfColors(colors: number[], scales: number[]): number {
+    const numTerms = Math.min(colors.length, scales.length);
+    const bytes = [0,0,0,0];
+    // compute a convex combination of each byte
+    for (let iByte = 0, shiftBits = 0; iByte < 4; ++iByte, shiftBits += 8) {
+      for (let iTerm = 0; iTerm < numTerms; ++iTerm) {
+        const fraction = Geometry.clamp(scales[iTerm], 0, 1);  // chop slop
+        const colorComponent = (colors[iTerm] >>> shiftBits) & 0xFF;
+        bytes[iByte] += fraction * colorComponent;
+      }
+      bytes[iByte] = (Math.floor(bytes[iByte]) & 0xFF) << shiftBits;
+    }
+    return bytes[0] | bytes[1] | bytes[2] | bytes[3];
+  }
 }
+
 /**
  * The `Point2dArray` class contains static methods that act on arrays of 2d points.
  * @public
@@ -236,7 +270,7 @@ export class Point2dArray {
 }
 
 /**
- * The `Vector3ddArray` class contains static methods that act on arrays of 2d vectors.
+ * The `Vector3dArray` class contains static methods that act on arrays of 3d vectors.
  * @public
  */
 export class Vector3dArray {
