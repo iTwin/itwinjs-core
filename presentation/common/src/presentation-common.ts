@@ -23,6 +23,7 @@ export * from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
 export * from "./presentation-common/LocalizationHelper";
 export * from "./presentation-common/InstanceFilterDefinition";
+export * from "./presentation-common/PropertyFormatter";
 
 /**
  * @module RPC

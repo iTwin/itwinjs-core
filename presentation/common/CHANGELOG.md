@@ -15,6 +15,11 @@ Wed, 08 Feb 2023 14:58:40 GMT
 - Introduce unfilterable nodes and hierarchy levels
 - React to RPC deprecations.
 
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:28 GMT
 
@@ -239,7 +244,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Optimize `KeySetJSON` size by compressing instance IDs.
 - Remove `PresentationRpcInterface.loadHierarchy`.
 - The `condition` attribute should be defined on both `ChildNodeRule` and `RootNodeRule`.
-- Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories. 
+- Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories.
 - Removed `PresentationUnitSystem`  in favor of `UnitSystemKey` from `@itwin/core-quantity`.
 - remove ClientRequestContext.current
 
