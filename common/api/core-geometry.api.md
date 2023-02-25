@@ -4169,7 +4169,7 @@ export class PlaneOps {
     static closestPointToOrigin(plane: PlaneAltitudeEvaluator): Point3d;
     static intersect2Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Plane3dPlane3dIntersectionCases;
     static intersect3Planes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator, planeC: PlaneAltitudeEvaluator): Plane3dPlane3dPlane3dIntersectionCases;
-    static intersectRayPlane(plane: PlaneAltitudeEvaluator, ray: Ray3d): Point3d | Ray3d | undefined;
+    static intersectRayPlane(ray: Ray3d, plane: PlaneAltitudeEvaluator): Ray3dPlane3dIntersectionCases;
     static planeNormal(plane: PlaneAltitudeEvaluator): Vector3d;
     static projectPointToPlane(plane: PlaneAltitudeEvaluator, spacePoint: Point3d): Point3d;
 }
@@ -5163,6 +5163,13 @@ export class Ray3d implements BeJSONFunctions {
     transformInPlace(transform: Transform): void;
     tryNormalizeInPlaceWithAreaWeight(a: number): boolean;
     trySetDirectionMagnitudeInPlace(magnitude?: number): boolean;
+}
+
+// @public
+export interface Ray3dPlane3dIntersectionCases {
+    point?: Point3d;
+    ray?: Ray3d;
+    separatorSegment?: Point3dPoint3d;
 }
 
 // @public

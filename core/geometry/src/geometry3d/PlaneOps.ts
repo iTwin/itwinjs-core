@@ -59,6 +59,23 @@ export interface Plane3dPlane3dPlane3dIntersectionCases {
    */
   pairwiseDetail?: Plane3dPlane3dIntersectionCases[];
 }
+/**
+ * Plane3dRay3dIntersectionCases is has members to fully describe the relationship of a plane and ray.
+ * * The return from [[PlaneOps.intersectRayPlane]] will have one and only one if the three members
+ *     {point,ray, separatorSegment} present.
+ * @public
+ */
+export interface Ray3dPlane3dIntersectionCases {
+  /** For the case where the ray cuts cleanly through the plane, single point of intersection */
+  point?: Point3d;
+  /** For the case where the ray is completely within the plane, a clone of the input ray. */
+  ray?: Ray3d;
+  /** For the case of the ray parallel and non-intersecting, pair of (distinct) points,
+   *   * pointA on the ray
+   *   * pointB on the plane
+   *   * projection of pointA to the plane is pointB, and projection of pointB to the ray is pointA. */
+  separatorSegment?: Point3dPoint3d;
+}
 
 /**
  * Class of STATIC methods to operate on planes of varying underlying representations.
@@ -250,22 +267,22 @@ export class PlaneOps {
     return spacePoint.plusXYZ(d * plane.normalX(), d * plane.normalY(), d * plane.normalZ());
   }
   /**
-     * Return the intersection of the unbounded ray with a plane.
+     * Return the intersection of the unbounded ray with plane.
      * Stores the point of intersection in the result point given as a parameter,
      * and returns the parameter along the ray where the intersection occurs.
      * Returns undefined if the ray and plane are parallel or coplanar.
      */
-  public static intersectRayPlane(plane: PlaneAltitudeEvaluator, ray: Ray3d): Point3d | Ray3d | undefined {
+  public static intersectRayPlane(ray: Ray3d, plane: PlaneAltitudeEvaluator): Ray3dPlane3dIntersectionCases {
     const altitude = plane.altitude(ray.origin);
     const velocity = plane.velocity(ray.direction);
     const division = Geometry.conditionalDivideFraction(-altitude, velocity);
     if (undefined === division) {
       // The ray is parallel or in the plane.
       if (Geometry.isSmallMetricDistance(altitude))
-        return ray.clone();
-      return undefined;
+        return { ray: ray.clone() };
+      const pointOnPlane = PlaneOps.projectPointToPlane(plane, ray.origin);
+      return { separatorSegment: { pointA: ray.origin.clone(), pointB: pointOnPlane } };
     } else
-      return ray.fractionToPoint(division);
+      return { point: ray.fractionToPoint(division) };
   }
-
 }

@@ -248,6 +248,7 @@ public;Range3dProps =
 public;class RangeBase
 internal;Ray2d
 public;Ray3d 
+public;Ray3dPlane3dIntersectionCases
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 

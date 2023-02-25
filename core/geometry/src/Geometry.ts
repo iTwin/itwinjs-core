@@ -740,7 +740,7 @@ export class Geometry {
    * but if the ratio would exceed Geometry.largeFractionResult, return undefined.
    */
   public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
-    if (Math.abs(denominator) * Geometry.largeFractionResult > Math.abs(numerator))
+    if (Math.abs(denominator) * Geometry.largeFractionResult > (1 + Math.abs(numerator)))
       return numerator / denominator;
     return undefined;
   }
