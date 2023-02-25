@@ -3379,7 +3379,7 @@ importers:
       express-ws: 5.0.2_express@4.18.2
       fs-extra: 8.1.0
       internal-tools: link:../../tools/internal
-      node-simctl: 7.1.11
+      node-simctl: 7.1.12
       npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.75.0
       rimraf: 3.0.2
@@ -7119,7 +7119,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.21.0
-      '@itwin/core-webpack-tools': 3.6.0_webpack@5.75.0
+      '@itwin/core-webpack-tools': 3.6.1_webpack@5.75.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.10_a358053c186fea2b80718c8305c5e43e
       '@svgr/webpack': 6.5.1
       babel-jest: 27.5.1_@babel+core@7.21.0
@@ -7222,7 +7222,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.21.0
-      '@itwin/core-webpack-tools': 3.6.0_webpack@5.75.0
+      '@itwin/core-webpack-tools': 3.6.1_webpack@5.75.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.10_a358053c186fea2b80718c8305c5e43e
       '@svgr/webpack': 6.5.1
       babel-jest: 27.5.1_@babel+core@7.21.0
@@ -7324,7 +7324,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.21.0
-      '@itwin/core-webpack-tools': 3.6.0_webpack@5.75.0
+      '@itwin/core-webpack-tools': 3.6.1_webpack@5.75.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.10_a358053c186fea2b80718c8305c5e43e
       '@svgr/webpack': 6.5.1
       babel-jest: 27.5.1_@babel+core@7.21.0
@@ -7781,8 +7781,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.6.0:
-    resolution: {integrity: sha512-YrRKmOqheGPOWNDKtV7bm7iwpt5DKp8tpad3wu+4nyXWRSQ7U1npY93JDkXGWPs3TVmsNz4Y7uOoAyJHHHvyuA==}
+  /@itwin/certa/3.6.1:
+    resolution: {integrity: sha512-wONUbvpuSRgMH3DCJcuh931hXyUMOkyiQYKYeCZ7sqpfMCSME6IvPlzUSR/metNEzgijB91aY6Qg4tDclRUaKg==}
     hasBin: true
     peerDependencies:
       electron: '>=14.0.0 <18.0.0 || >=22.0.0 <23.0.0'
@@ -7804,8 +7804,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.6.0_electron@23.1.1:
-    resolution: {integrity: sha512-YrRKmOqheGPOWNDKtV7bm7iwpt5DKp8tpad3wu+4nyXWRSQ7U1npY93JDkXGWPs3TVmsNz4Y7uOoAyJHHHvyuA==}
+  /@itwin/certa/3.6.1_electron@23.1.1:
+    resolution: {integrity: sha512-wONUbvpuSRgMH3DCJcuh931hXyUMOkyiQYKYeCZ7sqpfMCSME6IvPlzUSR/metNEzgijB91aY6Qg4tDclRUaKg==}
     hasBin: true
     peerDependencies:
       electron: '>=14.0.0 <18.0.0 || >=22.0.0 <23.0.0'
@@ -7836,8 +7836,8 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/core-webpack-tools/3.6.0_webpack@5.75.0:
-    resolution: {integrity: sha512-cdvbk7fGAyUYAHBnzCS2b4LMayXqtEZZXmtUJSqZt2HRX5ldMJaSK+7kJ88EIqtlVupvi1Rx3DE6pQIb/3O4hA==}
+  /@itwin/core-webpack-tools/3.6.1_webpack@5.75.0:
+    resolution: {integrity: sha512-Y3E7bphRaWRWL3gzF/Hg+NOVyvobxlVQl0wBzs6oP/JKKJV6auMqyG2nIZ5rfKtysjxHZeaG+G/2CD3BZex6fw==}
     peerDependencies:
       webpack: ^5.64.4
     dependencies:
@@ -8021,7 +8021,7 @@ packages:
   /@itwin/oidc-signin-tool/3.6.1:
     resolution: {integrity: sha512-4M391FMMwPuRVZSC8DAtLlWlWMDwAVigI8ZY5gvPkHTOOHSAKPxFxZD/zXsySJ3Rn+tFNpP6DctU6OVxrYolRQ==}
     dependencies:
-      '@itwin/certa': 3.6.0
+      '@itwin/certa': 3.6.1
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -8037,7 +8037,7 @@ packages:
   /@itwin/oidc-signin-tool/3.6.1_electron@23.1.1:
     resolution: {integrity: sha512-4M391FMMwPuRVZSC8DAtLlWlWMDwAVigI8ZY5gvPkHTOOHSAKPxFxZD/zXsySJ3Rn+tFNpP6DctU6OVxrYolRQ==}
     dependencies:
-      '@itwin/certa': 3.6.0_electron@23.1.1
+      '@itwin/certa': 3.6.1_electron@23.1.1
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -11346,7 +11346,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001457
-      electron-to-chromium: 1.4.310
+      electron-to-chromium: 1.4.311
     dev: true
 
   /browserslist/4.21.5:
@@ -11355,7 +11355,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001457
-      electron-to-chromium: 1.4.310
+      electron-to-chromium: 1.4.311
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10_browserslist@4.21.5
 
@@ -12931,8 +12931,8 @@ packages:
       jake: 10.8.5
     dev: true
 
-  /electron-to-chromium/1.4.310:
-    resolution: {integrity: sha512-/xlATgfwkm5uDDwLw5nt/MNEf7c1oazLURMZLy39vOioGYyYzLWIDT8fZMJak6qTiAJ7udFTy7JG7ziyjNutiA==}
+  /electron-to-chromium/1.4.311:
+    resolution: {integrity: sha512-RoDlZufvrtr2Nx3Yx5MB8jX3aHIxm8nRWPJm3yVvyHmyKaRvn90RjzB6hNnt0AkhS3IInJdyRfQb4mWhPvUjVw==}
 
   /electron/23.1.1:
     resolution: {integrity: sha512-junV1NzPx5T8Mx9+o8fMWK1Q5WOtG5vggiM09PGYg/6zTcGDL3DjGVHeUa/97gx7ErXL37DrFnxNg6+ePWprDg==}
@@ -13447,7 +13447,7 @@ packages:
       glob: 7.2.3
       is-glob: 4.0.3
       resolve: 1.22.1
-      tsconfig-paths: 3.14.1
+      tsconfig-paths: 3.14.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -13530,7 +13530,7 @@ packages:
       pkg-up: 2.0.0
       read-pkg-up: 3.0.0
       resolve: 1.22.1
-      tsconfig-paths: 3.14.1
+      tsconfig-paths: 3.14.2
 
   /eslint-plugin-import/2.27.5_eslint@8.34.0:
     resolution: {integrity: sha512-LmEt3GVofgiGuiE+ORpnvP+kAm3h6MLZJ4Q5HCyHADofsb4VzXFsRiWj3c0OFiV+3DWFh0qg3v9gcPlfc3zRow==}
@@ -13553,7 +13553,7 @@ packages:
       object.values: 1.1.6
       resolve: 1.22.1
       semver: 6.3.0
-      tsconfig-paths: 3.14.1
+      tsconfig-paths: 3.14.2
     dev: true
 
   /eslint-plugin-jam3/0.2.3:
@@ -17449,8 +17449,8 @@ packages:
       yargs-parser: 20.2.4
       yargs-unparser: 2.0.0
 
-  /moment-timezone/0.5.40:
-    resolution: {integrity: sha512-tWfmNkRYmBkPJz5mr9GVDn9vRlVZOTe6yqY92rFxiOdWXbjaR0+9LwQnZGGuNR63X456NqmEkbskte8tWL5ePg==}
+  /moment-timezone/0.5.41:
+    resolution: {integrity: sha512-e0jGNZDOHfBXJGz8vR/sIMXvBIGJJcqFjmlg9lmE+5KX1U7/RZNMswfD8nKnNCnQdKTIj50IaRKwl1fvMLyyRg==}
     dependencies:
       moment: 2.29.4
     dev: false
@@ -17684,8 +17684,8 @@ packages:
   /node-releases/2.0.10:
     resolution: {integrity: sha512-5GFldHPXVG/YZmFzJvKK2zDSzPKhEp0+ZR5SVaoSag9fsL5YgHbUHDfnG5494ISANDcK4KwPXAx2xqVEydmd7w==}
 
-  /node-simctl/7.1.11:
-    resolution: {integrity: sha512-6Dc/2Rr1FDh5sbtOv0oyT9uiefIJPra8Y5fOU2djkIpHg0zItuSlnaITQT+vuBcQgMoEOaRIBIKn8J0bQgyB+Q==}
+  /node-simctl/7.1.12:
+    resolution: {integrity: sha512-3ClkuoXei3lRe+z1PK+uhLM7bvhblInO2+yb/F+quXVOj4ke2jUyVhWpkGQxS9O2MG2XPV3rJNlgu0hFl7r9Bg==}
     engines: {node: '>=14', npm: '>=8'}
     dependencies:
       '@babel/runtime': 7.21.0
@@ -19448,7 +19448,6 @@ packages:
   /puppeteer/15.5.0:
     resolution: {integrity: sha512-+vZPU8iBSdCx1Kn5hHas80fyo0TiVyMeqLGv/1dygX2HKhAZjO9YThadbRTCoTYq0yWw+w/CysldPsEekDtjDQ==}
     engines: {node: '>=14.1.0'}
-    deprecated: < 19.2.0 is no longer supported
     requiresBuild: true
     dependencies:
       cross-fetch: 3.1.5
@@ -20590,7 +20589,7 @@ packages:
       inflection: 1.13.4
       lodash: 4.17.21
       moment: 2.29.4
-      moment-timezone: 0.5.40
+      moment-timezone: 0.5.41
       mysql2: 2.3.3
       pg-connection-string: 2.5.0
       retry-as-promised: 7.0.4
@@ -21891,8 +21890,8 @@ packages:
       yn: 3.1.1
     dev: true
 
-  /tsconfig-paths/3.14.1:
-    resolution: {integrity: sha512-fxDhWnFSLt3VuTwtvJt5fpwxBHg5AdKWMsgcPOOIilyjymcYVZoCQF8fvFRezCNfblEXmi+PcM1eYHeOAgXCOQ==}
+  /tsconfig-paths/3.14.2:
+    resolution: {integrity: sha512-o/9iXgCYc5L/JxCHPe3Hvh8Q/2xm5Z+p18PESBU6Ff33695QnCHBEjcytY2q19ua7Mbl/DavtBOLq+oG0RCL+g==}
     dependencies:
       '@types/json5': 0.0.29
       json5: 1.0.2
