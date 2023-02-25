@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added PropertyFormatter for formatting property values in Content",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

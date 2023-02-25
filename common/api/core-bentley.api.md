@@ -1450,6 +1450,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
         equal: boolean;
     };
     protected _remove(value: T): number;
+    slice(start?: number, end?: number): ReadonlySortedArray<T>;
 }
 
 // @alpha
@@ -1502,6 +1503,7 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     extractArray(): T[];
     insert(value: T, onInsert?: (value: T) => any): number;
     remove(value: T): number;
+    slice(start?: number, end?: number): SortedArray<T>;
 }
 
 // @alpha

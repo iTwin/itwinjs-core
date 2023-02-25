@@ -329,7 +329,7 @@
         "order": 3
       },
       "cwd": "${workspaceFolder}/core/geometry",
-      "type": "pwa-node",
+      "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -1571,6 +1571,21 @@
       "program": "${workspaceFolder}/tools/eslint-plugin/node_modules/mocha/bin/_mocha",
       "args": [
         "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js",
+        "--timeout 50000" // for easier debugging
+      ],
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "eslint rule test @itwin/require-version-in-deprecation",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/eslint-plugin",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/eslint-plugin/node_modules/mocha/bin/_mocha",
+      "args": [
+        "${workspaceFolder}/tools/eslint-plugin/tests/require-version-in-deprecation.js",
         "--timeout 50000" // for easier debugging
       ],
       "console": "integratedTerminal",

@@ -38,7 +38,7 @@
   },
   "peerDependencies": {
     "@itwin/appui-abstract": "workspace:^4.0.0-dev.8",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.11",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.25",
     "@itwin/core-react": "workspace:^4.0.0-dev.8",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
@@ -70,7 +70,7 @@
     "@types/linkify-it": "~2.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.11.5",
+    "@types/node": "^18.11.5",
     "@types/react": "^17.0.37",
     "@types/react-data-grid": "4.0.2",
     "@types/react-dom": "^17.0.0",

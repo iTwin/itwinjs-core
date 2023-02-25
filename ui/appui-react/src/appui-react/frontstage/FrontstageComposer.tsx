@@ -28,8 +28,8 @@ import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 import { InternalFrontstageManager } from "./InternalFrontstageManager";
 
 /** Interface defining callbacks for widget changes
- * @deprecated in 3.0.
  * @public
+ * @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export interface WidgetChangeHandler {
   // eslint-disable-next-line deprecation/deprecation
@@ -62,7 +62,7 @@ export interface StagePanelChangeHandler {
 }
 
 /** Interface defining callbacks for ZoneDropTarget changes
- * @deprecated in 3.0.
+ * @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  * @public
  */
 export interface TargetChangeHandler {
@@ -131,7 +131,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 ];
 
 /** FrontstageComposer React component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use [StandardFrontstageProvider]($appui-react) instead
  * @public
  */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
