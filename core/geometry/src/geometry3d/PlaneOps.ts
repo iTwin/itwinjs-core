@@ -203,6 +203,10 @@ export class PlaneOps {
         return allRays[0].clone();
     } else if (numParallel === 1 && allRays.length === 1) {
       return allRays[0];
+    } else if (allRays.length === 3) {
+      if (allRays[0].isAlmostEqualPointSet(allRays[1]) && allRays[0].isAlmostEqualPointSet(allRays[2])) {
+        return allRays[0];
+      }
     }
     return undefined;
   }

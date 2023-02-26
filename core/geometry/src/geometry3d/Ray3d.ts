@@ -71,7 +71,7 @@ export class Ray3d implements BeJSONFunctions {
       return false;
     // In exact math, it is not possible for one origin to be on the other ray but not vice versa.  But we'll test both ways.
     const otherPointOnThis = this.projectPointToRay(other.origin);
-    return this.origin.isAlmostEqualMetric(otherPointOnThis);
+    return other.origin.isAlmostEqualMetric(otherPointOnThis);
   }
 
   /** Create a ray from origin and direction. */

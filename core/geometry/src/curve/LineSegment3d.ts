@@ -357,7 +357,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return Range3d.create(point0, point1);
   }
-
+  // cspell:word CCWXY
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
