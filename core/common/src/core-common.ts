@@ -87,6 +87,7 @@ export * from "./ConcurrentQuery";
 export * from "./ECSqlReader";
 export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
+export * from "./OrientedBoundingBox";
 export * from "./PlanProjectionSettings";
 export * from "./BackendTypes";
 export * from "./QPoint";

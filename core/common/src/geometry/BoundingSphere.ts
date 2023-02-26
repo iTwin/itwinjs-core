@@ -6,7 +6,9 @@
  * @module Geometry
  */
 
-import { Point3d, Transform } from "@itwin/core-geometry";
+import { Point3d, Transform, XYAndZ } from "@itwin/core-geometry";
+
+const scratchDistanceSquared = new Point3d();
 
 /** Describes a spherical volume of space as an approximation of the shape of some more complex geometric entity fully contained within that volume.
  * When performing tests for intersection or containment, the approximation can be used as a first, quick check.
@@ -46,5 +48,13 @@ export class BoundingSphere {
   /** Apply the specified transform to this bounding sphere. */
   public transformInPlace(transform: Transform): void {
     this.transformBy(transform, this);
+  }
+
+  /** Computes the distance from the given point to the closest point on the surface of the bounding sphere, or zero if the point is on or inside the sphere.
+   */
+  public distanceToPoint(point: XYAndZ): number {
+    const diff = this.center.minus(point, scratchDistanceSquared);
+    const dist = diff.magnitude() - this.radius;
+    return dist <= 0 ? 0 : dist;
   }
 }
