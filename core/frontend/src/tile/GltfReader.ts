@@ -968,27 +968,30 @@ export abstract class GltfReader {
 
     const mesh = new GltfMeshData(meshPrimitive);
 
-    // We don't have real colormap - just load material color.  This will be used if non-Bentley
-    // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
-    // uv parameters to pick the colors out of the color map texture.
-    meshPrimitive.colorMap.insert(displayParams.fillColor.tbgr);   // White...
+    // ###TODO_GLTF: There can be more than one color attribute; COLOR_0 might not be the one we want.
+    if (!this.readColors(mesh, primitive.attributes, "COLOR_0")) {
+      // We don't have real colormap - just load material color.  This will be used if non-Bentley
+      // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
+      // uv parameters to pick the colors out of the color map texture.
+      meshPrimitive.colorMap.insert(displayParams.fillColor.tbgr);   // White...
+      // _COLORINDEX is an ancient holdover from glTF 1.0 and Bimium...unlikely to actually encounter it in the wild.
+      const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
+      if (undefined !== colorIndices && material) {
+        let texStep;
+        if (isGltf1Material(material))
+          texStep = material.values?.texStep;
+        else
+          texStep = material.extensions?.KHR_techniques_webgl?.values?.u_texStep;
 
-    const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
-    if (undefined !== colorIndices && material) {
-      let texStep;
-      if (isGltf1Material(material))
-        texStep = material.values?.texStep;
-      else
-        texStep = material.extensions?.KHR_techniques_webgl?.values?.u_texStep;
+        if (texStep) {
+          const uvParams = [];
+          for (let i = 0; i < colorIndices.count; i++)
+            uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
 
-      if (texStep) {
-        const uvParams = [];
-        for (let i = 0; i < colorIndices.count; i++)
-          uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
-
-        const paramList = QPoint2dList.fromPoints(uvParams);
-        mesh.uvs = paramList.toTypedArray();
-        mesh.uvQParams = paramList.params;
+          const paramList = QPoint2dList.fromPoints(uvParams);
+          mesh.uvs = paramList.toTypedArray();
+          mesh.uvQParams = paramList.params;
+        }
       }
     }
 
@@ -1305,6 +1308,31 @@ export abstract class GltfReader {
       default:
         return false;
     }
+  }
+
+  protected readColors(mesh: GltfMeshData, attribute: { [k: string]: any }, accessorName: string): boolean {
+    const view = this.getBufferView(attribute, accessorName);
+    if (!view || (GltfDataType.Float !== view.type && GltfDataType.UnsignedByte !== view.type && GltfDataType.SignedByte !== view.type))
+      return false;
+
+    const data = view.toBufferData(view.type);
+    if (!data)
+      return false;
+
+    const hasAlpha = "VEC4" === view.accessor.type;
+    const factor = view.type === GltfDataType.Float ? 255 : 1;
+    const rgbt = new Uint8Array(4);
+    const color = new Uint32Array(rgbt.buffer);
+    for (let i = 0; i < data.count; i++) {
+      const index = view.stride * i;
+      rgbt[0] = data.buffer[index] * factor;
+      rgbt[1] = data.buffer[index + 1] * factor;
+      rgbt[2] = data.buffer[index + 2] * factor;
+      rgbt[3] = hasAlpha ? (255 - data.buffer[index + 3] * factor) : 0;
+      mesh.primitive.colors.push(mesh.primitive.colorMap.insert(color[0]));
+    }
+
+    return true;
   }
 
   private readUVParams(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
