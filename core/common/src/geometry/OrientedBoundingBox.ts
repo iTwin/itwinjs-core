@@ -6,7 +6,18 @@
  * @module Geometry
  */
 
-import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Vector3d, Transform } from "@itwin/core-geometry";
+
+const scratchOffset = new Point3d();
+const scratchU = new Vector3d();
+const scratchV = new Vector3d();
+const scratchW = new Vector3d();
+const scratchValidAxis2 = new Vector3d();
+const scratchValidAxis3 = new Vector3d();
+const scratchPPrime = new Point3d();
+const unitX = Vector3d.unitX();
+const unitY = Vector3d.unitY();
+const unitZ = Vector3d.unitZ();
 
 export class OrientedBoundingBox {
   public center: Point3d;
@@ -28,5 +39,131 @@ export class OrientedBoundingBox {
     transform.multiplyPoint3d(result.center, result.center);
     transform.matrix.multiplyMatrixMatrix(result.halfAxes, result.halfAxes);
     return result;
+  }
+
+  public distanceToPoint(point: Point3d): number {
+    const offset = point.minus(this.center, scratchOffset);
+    const halfAxes = this.halfAxes;
+    let u = halfAxes.getColumn(0, scratchU);
+    let v = halfAxes.getColumn(1, scratchV);
+    let w = halfAxes.getColumn(2, scratchW);
+    const uHalf = u.magnitude();
+    const vHalf = v.magnitude();
+    const wHalf = w.magnitude();
+
+    let numberOfDegenerateAxes = 0;
+    if (uHalf > 0)
+      u.scaleInPlace(1 / uHalf);
+    else
+      ++numberOfDegenerateAxes;
+
+    const vValid = vHalf > 0;
+    if (vValid)
+      v.scaleInPlace(1 / vHalf);
+    else
+      ++numberOfDegenerateAxes;
+
+    const wValid = wHalf > 0;
+    if (wValid)
+      w.scaleInPlace(1 / wHalf);
+    else
+      ++numberOfDegenerateAxes;
+
+    let validAxis1;
+    let validAxis2;
+    let validAxis3;
+    switch (numberOfDegenerateAxes) {
+      case 1: {
+        let degenerateAxis = u;
+        validAxis1 = v;
+        validAxis2 = w;
+        if (!vValid) {
+          degenerateAxis = v;
+          validAxis1 = u;
+        } else if (!wValid) {
+          degenerateAxis = w;
+          validAxis2 = u;
+        }
+
+        validAxis3 = validAxis1.crossProduct(validAxis2, scratchValidAxis3);
+        if (degenerateAxis === u)
+          u = validAxis3;
+        else if (degenerateAxis === v)
+          v = validAxis3;
+        else if (degenerateAxis === w)
+          w = validAxis3;
+
+        break;
+      }
+      case 2: {
+        validAxis1 = u;
+        if (vValid)
+          validAxis1 = v;
+        else if (wValid)
+          validAxis1 = w;
+
+        let crossVector = unitY;
+        if (!crossVector.isAlmostEqual(validAxis1, 0.001))
+          crossVector = unitX;
+
+        validAxis2 = validAxis1.crossProduct(crossVector, scratchValidAxis2);
+        validAxis2.normalizeInPlace();
+        validAxis3 = validAxis1.crossProduct(validAxis2, scratchValidAxis3);
+        validAxis3.normalizeInPlace();
+
+        if (validAxis1 === u) {
+          v = validAxis2;
+          w = validAxis3;
+        } else if (validAxis1 === v) {
+          w = validAxis2;
+          u = validAxis3;
+        } else if (validAxis1 === w) {
+          u = validAxis2;
+          v = validAxis3;
+        }
+
+        break;
+      }
+      case 3: {
+        u = unitX;
+        v = unitY;
+        w = unitZ;
+        break;
+      }
+    }
+
+    const pPrime = scratchPPrime;
+    pPrime.x = Vector3d.dotProductAsXYAndZ(offset, u);
+    pPrime.y = Vector3d.dotProductAsXYAndZ(offset, v);
+    pPrime.z = Vector3d.dotProductAsXYAndZ(offset, w);
+
+    let distanceSquared = 0.0;
+    let d;
+
+    if (pPrime.x < -uHalf) {
+      d = pPrime.x + uHalf;
+      distanceSquared += d * d;
+    } else if (pPrime.x > uHalf) {
+      d = pPrime.x - uHalf;
+      distanceSquared += d * d;
+    }
+
+    if (pPrime.y < -vHalf) {
+      d = pPrime.y + vHalf;
+      distanceSquared += d * d;
+    } else if (pPrime.y > vHalf) {
+      d = pPrime.y - vHalf;
+      distanceSquared += d * d;
+    }
+
+    if (pPrime.z < -wHalf) {
+      d = pPrime.z + wHalf;
+      distanceSquared += d * d;
+    } else if (pPrime.z > wHalf) {
+      d = pPrime.z - wHalf;
+      distanceSquared += d * d;
+    }
+
+    return Math.sqrt(distanceSquared);
   }
 }
