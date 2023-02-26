@@ -127,8 +127,8 @@ export interface Plane3dPlane3dPlane3dIntersectionCases {
 | | pairwiseDetail[1] | Plane3dPlane3dIntersectionDetail | computed by  PlaneOps.intersect2Planes(planeB, planeC) |
 | | pairwiseDetail[2] | Plane3dPlane3dIntersectionDetail | computed by  PlaneOps.intersect2Planes(planeC, planeA) |
 | | | | Note that a single ray intersection has 2 cases, indicated by interrogating the pairwiseDetailArray: |
-| | | |  (1) 2 planes are coincident and the third cuts them both (in the same line for each)![>](./figs/PlaneOps/ppp2Rays.png)
-| | | |  (2) the 3 planes pass through the single intersection line distinctly -- like 3 radial planes from a common axis ![>](./figs/PlaneOps/PPP6Wings.png)|
+| | | |  (1) 2 planes are coincident and the third cuts them both (in the same line for each)![>](./figs/PlaneOps/PPP2Coincident.png)
+| | | |  (2) the 3 planes pass through the single intersection line distinctly -- like 3 radial planes from a common axis  ![>](./figs/PlaneOps/PPP6Wings.png)|
 | 3 parallel planes | | | ![>](./figs/PlaneOps/PPP3Parallel.png) [point], [ray] and [plane] are all undefined. |
 | | pairwiseDetail | Plane3dPlane3dIntersection[3] | each of the three entries gives a segment joining the respective plane pair. |
 | 2 distinct parallel planes  and a transverse plane | | | ![>](./figs/PlaneOps/PPP2Rays.png) (point), [ray] and [plane] are all undefined. |
