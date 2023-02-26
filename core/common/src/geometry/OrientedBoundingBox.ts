@@ -34,11 +34,19 @@ export class OrientedBoundingBox {
     return result ?? new OrientedBoundingBox(center, halfAxes);
   }
 
-  public transform(transform: Transform, result?: OrientedBoundingBox): OrientedBoundingBox {
+  public transformBy(transform: Transform, result?: OrientedBoundingBox): OrientedBoundingBox {
     result = this.clone(result);
     transform.multiplyPoint3d(result.center, result.center);
     transform.matrix.multiplyMatrixMatrix(result.halfAxes, result.halfAxes);
     return result;
+  }
+
+  public transformInPlace(transform: Transform): OrientedBoundingBox {
+    return this.transformBy(transform, this);
+  }
+
+  public isAlmostEqual(other: OrientedBoundingBox): boolean {
+    return this.center.isAlmostEqual(other.center) && this.halfAxes.isAlmostEqual(other.halfAxes);
   }
 
   public distanceToPoint(point: Point3d): number {

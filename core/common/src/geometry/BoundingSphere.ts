@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Point3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import { Geometry, Point3d, Transform, XYAndZ } from "@itwin/core-geometry";
 
 const scratchDistanceSquared = new Point3d();
 
@@ -24,7 +24,7 @@ export class BoundingSphere {
   /** Create a new bounding sphere with the specified center and radius. */
   constructor(center: Point3d = Point3d.createZero(), radius = 0) {
     this.center = center;
-    this.radius = radius;
+    this.radius = Math.max(0, radius);
   }
 
   /** Change the center and radius of the sphere. */
@@ -56,5 +56,9 @@ export class BoundingSphere {
     const diff = this.center.minus(point, scratchDistanceSquared);
     const dist = diff.magnitude() - this.radius;
     return dist <= 0 ? 0 : dist;
+  }
+
+  public isAlmostEqual(other: BoundingSphere): boolean {
+    return this.center.isAlmostEqual(other.center) && Geometry.isSameCoordinate(this.radius, other.radius);
   }
 }
