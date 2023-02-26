@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { BoundingSphere } from "../geometry/BoundingSphere";
 
-describe.only("BoundingSphere", () => {
+describe("BoundingSphere", () => {
   it("ensures non-negative radius", () => {
     const sphere = new BoundingSphere(undefined, -1);
     expect(sphere.radius).to.equal(0);
@@ -31,7 +31,7 @@ describe.only("BoundingSphere", () => {
     expectTransformed(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1)), 1, 0, -2, 3);
   });
 
-  it("computes closest point", () => {
+  it("computes distance to closest point", () => {
     const sphere = new BoundingSphere(new Point3d(-1, 0, 2), 3);
     const expectDistance = (x: number, y: number, z: number, expectedDistance: number) => {
       expect(sphere.distanceToPoint(Point3d.fromJSON([x, y, z]))).to.equal(expectedDistance);
