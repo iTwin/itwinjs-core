@@ -63,6 +63,11 @@ export class ChangedInstanceOps {
     updateIds: Set<string>;
 }
 
+// @beta
+export interface ExportSchemaResult {
+    schemaPath?: string;
+}
+
 // @internal
 export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean;
 
@@ -152,7 +157,7 @@ export abstract class IModelExportHandler {
     onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
     onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
-    onExportSchema(_schema: Schema): Promise<void>;
+    onExportSchema(_schema: Schema): Promise<void | ExportSchemaResult>;
     onProgress(): Promise<void>;
     // @internal
     preExportElement(_element: Element_2): Promise<void>;
@@ -264,7 +269,7 @@ export class IModelTransformer extends IModelExportHandler {
     onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     onExportModel(sourceModel: Model): void;
     onExportRelationship(sourceRelationship: Relationship): void;
-    onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
+    onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void | ExportSchemaResult>;
     onTransformElement(sourceElement: Element_2): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;

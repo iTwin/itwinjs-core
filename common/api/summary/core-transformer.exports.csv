@@ -2,16 +2,17 @@ sep=;
 Release Tag;API Item
 beta;ChangedInstanceIds
 beta;ChangedInstanceOps
+beta;ExportSchemaResult
 internal;hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set
 beta;IModelExporter
 internal;IModelExporterState
 beta;class IModelExportHandler
-beta;IModelImporter 
+beta;IModelImporter
 internal;IModelImporterState
 beta;IModelImportOptions
-beta;IModelTransformer 
+beta;IModelTransformer
 beta;IModelTransformOptions
 beta;InitFromExternalSourceAspectsArgs
 beta;OptimizeGeometryOptions
-beta;TemplateModelCloner 
+beta;TemplateModelCloner
 public;TransformerLoggerCategory
