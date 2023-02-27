@@ -243,8 +243,8 @@ export class Geometry {
     return (Math.abs(a) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / a;
   }
   /**
-   * Boolean test for metric coordinate near-equality. If tolerance is not passed, `Geometry.smallMetricDistance`
-   * is used as tolerance.
+   * Boolean test for metric coordinate near-equality (i.e., if x and y are almost equal). If tolerance is not passed,
+   * `Geometry.smallMetricDistance` is used as tolerance.
    */
   public static isSameCoordinate(x: number, y: number, tol?: number): boolean {
     if (tol)
@@ -440,7 +440,8 @@ export class Geometry {
     if (c > q) q = c;
     return q;
   }
-  /** Examine the value (particularly sign) of x.
+  /**
+   * Examine the value (particularly sign) of x.
    * * If x is negative, return outNegative.
    * * If x is true zero, return outZero
    * * If x is positive, return outPositive

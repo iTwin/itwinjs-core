@@ -3481,7 +3481,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowZ(vector: XYZ): number;
     dotRowZXYZ(x: number, y: number, z: number): number;
     factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
-    factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean;
+    factorPerpendicularColumns(matrixVD: Matrix3d, matrixU: Matrix3d): boolean;
     factorRigidWithSignedScale(): {
         rigidAxes: Matrix3d;
         scale: number;
@@ -3514,6 +3514,7 @@ export class Matrix3d implements BeJSONFunctions {
     isRigid(allowMirror?: boolean): boolean;
     get isSignedPermutation(): boolean;
     isSingular(): boolean;
+    isSymmetric(): boolean;
     get isUpperTriangular(): boolean;
     get isXY(): boolean;
     makeRigid(axisOrder?: AxisOrder): boolean;
