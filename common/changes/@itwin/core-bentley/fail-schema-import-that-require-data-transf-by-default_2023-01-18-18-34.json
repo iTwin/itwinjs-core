@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-bentley",
-      "comment": "Add SortedArray.slice.",
+      "comment": "Added DataTransformRequired flag to DbResult enum.",
       "type": "none"
     }
   ],
