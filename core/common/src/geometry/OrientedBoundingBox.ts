@@ -9,6 +9,7 @@
 import {
   Matrix3d, Point3d, Vector3d, Transform, XYAndZ,
 } from "@itwin/core-geometry";
+import { BoundingSphere } from "./BoundingSphere";
 
 const scratchOffset = new Point3d();
 const scratchU = new Vector3d();
@@ -49,6 +50,23 @@ export class OrientedBoundingBox {
 
   public isAlmostEqual(other: OrientedBoundingBox): boolean {
     return this.center.isAlmostEqual(other.center) && this.halfAxes.isAlmostEqual(other.halfAxes);
+  }
+
+  public computeBoundingSphere(result?: BoundingSphere): BoundingSphere {
+    if (result)
+      this.center.clone(result.center);
+    else
+      result = new BoundingSphere(this.center.clone());
+
+    result = result ?? new BoundingSphere();
+    const u = this.halfAxes.getColumn(0, scratchU);
+    const v = this.halfAxes.getColumn(1, scratchV);
+    const w = this.halfAxes.getColumn(2, scratchW);
+    u.plus(v, u);
+    u.plus(w, u);
+
+    result.radius = u.magnitude();
+    return result;
   }
 
   public distanceSquaredToPoint(point: XYAndZ): number {
