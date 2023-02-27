@@ -6,7 +6,9 @@
  * @module Geometry
  */
 
-import { Matrix3d, Point3d, Vector3d, Transform } from "@itwin/core-geometry";
+import {
+  Matrix3d, Point3d, Vector3d, Transform, XYAndZ,
+} from "@itwin/core-geometry";
 
 const scratchOffset = new Point3d();
 const scratchU = new Vector3d();
@@ -49,8 +51,8 @@ export class OrientedBoundingBox {
     return this.center.isAlmostEqual(other.center) && this.halfAxes.isAlmostEqual(other.halfAxes);
   }
 
-  public distanceToPoint(point: Point3d): number {
-    const offset = point.minus(this.center, scratchOffset);
+  public distanceSquaredToPoint(point: XYAndZ): number {
+    const offset = Point3d.create(point.x - this.center.x, point.y - this.center.y, point.z - this.center.z);
     const halfAxes = this.halfAxes;
     let u = halfAxes.getColumn(0, scratchU);
     let v = halfAxes.getColumn(1, scratchV);
@@ -172,6 +174,10 @@ export class OrientedBoundingBox {
       distanceSquared += d * d;
     }
 
-    return Math.sqrt(distanceSquared);
+    return distanceSquared;
+  }
+
+  public distanceToPoint(point: XYAndZ): number {
+    return Math.sqrt(this.distanceSquaredToPoint(point));
   }
 }

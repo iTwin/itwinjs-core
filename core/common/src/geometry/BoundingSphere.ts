@@ -58,6 +58,11 @@ export class BoundingSphere {
     return dist <= 0 ? 0 : dist;
   }
 
+  public distanceSquaredToPoint(point: XYAndZ): number {
+    const distance = this.distanceToPoint(point);
+    return distance * distance;
+  }
+
   public isAlmostEqual(other: BoundingSphere): boolean {
     return this.center.isAlmostEqual(other.center) && Geometry.isSameCoordinate(this.radius, other.radius);
   }
