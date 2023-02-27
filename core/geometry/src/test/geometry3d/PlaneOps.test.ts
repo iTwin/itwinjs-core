@@ -14,7 +14,7 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Sphere } from "../../solid/Sphere";
-describe.only("PlaneOps", () => {
+describe("PlaneOps", () => {
 
   it("RayPlaneIntersection", () => {
     const ck = new Checker();
