@@ -1423,20 +1423,6 @@ export class Vector3d extends XYZ {
     else
       return theta;
   }
-<<<<<<< HEAD
-  /**
- * Return the (strongly typed Angle) angle from this vector to vectorB, measured in the plane containing both,
- * with vectorW indicating which side to view to control sign of the angle.
- * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180 degrees
- * * (positive PI radians), not closed on the negative side.
- * * The returned angle is "in the plane containing the two vectors"
- * * `vectorW` distinguishes between the sides of the plane, but does not have to be perpendicular.
- * * The returned angle has the same sign as vectorW dot product (thisVector cross vectorB)
- * * Use planarRadiansTo to measure the angle between vectors that are projected to another plane.
- * @param vectorB target vector.
- * @param vectorW distinguishes between the sides of the plane.
- */
-=======
   /** Return the (strongly-typed) angle from this vector to vectorB, measured
    * in their containing plane whose normal lies in the same half-space as vectorW.
    * * The returned angle is between -180 and 180 degrees.
@@ -1447,7 +1433,6 @@ export class Vector3d extends XYZ {
    * @param vectorB target vector.
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
->>>>>>> 750c3329dd (add tolerance to RegionOps.regionBooleanXY (#5137))
   public signedAngleTo(vectorB: Vector3d, vectorW: Vector3d): Angle {
     return Angle.createRadians(this.signedRadiansTo(vectorB, vectorW));
   }
