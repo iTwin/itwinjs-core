@@ -886,7 +886,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     const startTimeLabel = renderedComponent.getByTestId("test-start-time");
     expect(startTimeLabel).not.to.be.null;
-    expect(startTimeLabel.innerHTML).to.equal("07:00:00 PM");
+    expect(startTimeLabel.innerHTML.replace("\u202f", " ")).to.equal("07:00:00 PM");
   });
 
   it("should mark today's date on the timeline", () => {

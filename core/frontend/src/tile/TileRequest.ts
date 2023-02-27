@@ -177,6 +177,7 @@ export class TileRequest {
     }
 
     try {
+      const start = Date.now();
       if (!content) {
         assert(undefined !== data);
         content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
@@ -187,7 +188,7 @@ export class TileRequest {
       this._state = TileRequest.State.Completed;
       this.tile.setContent(content);
       this.notifyAndClear();
-      this.channel.recordCompletion(this.tile, content);
+      this.channel.recordCompletion(this.tile, content, Date.now() - start);
     } catch (_err) {
       this.setFailed();
     }

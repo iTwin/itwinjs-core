@@ -76,8 +76,8 @@ export class CheckpointConnection extends IModelConnection {
     Logger.logTrace(loggerCategory, `IModelConnection.open`, iModelToken);
     const startTime = Date.now();
 
-    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
-      if (type !== RpcRequestEvent.PendingUpdateReceived)
+    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => { // eslint-disable-line deprecation/deprecation
+      if (type !== RpcRequestEvent.PendingUpdateReceived) // eslint-disable-line deprecation/deprecation
         return;
       if (!(openForReadOperation && request.operation === openForReadOperation))
         return;
@@ -109,7 +109,7 @@ export class CheckpointConnection extends IModelConnection {
     return openResponse;
   }
 
-  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => {
+  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => { // eslint-disable-line deprecation/deprecation
     if (!response.hasOwnProperty("isIModelNotFoundResponse"))
       return;
 

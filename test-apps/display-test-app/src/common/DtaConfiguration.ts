@@ -20,8 +20,6 @@ export interface DtaBooleanConfiguration {
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
-  filterMapTextures?: boolean;  // default OFF
-  filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   dpiAwareViewports?: boolean; // default ON
   dpiAwareLOD?: boolean; // default OFF
   disableEdges?: boolean; // default OFF
@@ -182,12 +180,6 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
-
-  if (undefined !== process.env.IMJS_ENABLE_MAP_TEXTURE_FILTER)
-    configuration.filterMapTextures = true;
-
-  if (undefined !== process.env.IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER)
-    configuration.filterMapDrapeTextures = false;
 
   if (undefined !== process.env.IMJS_PRESERVE_SHADER_SOURCE_CODE)
     configuration.preserveShaderSourceCode = true;

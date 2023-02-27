@@ -45,9 +45,9 @@ beta;BreadcrumbUpdateEvent
 deprecated;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
 deprecated;BreadcrumbUpdateEventArgs
-beta;CategorizedPropertyItem 
-beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
-beta;CategoryRecordsDict
+public;CategorizedPropertyItem 
+public;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
+public;CategoryRecordsDict
 public;CellItem
 deprecated;CellItem
 public;CellProps
@@ -139,9 +139,9 @@ public;FilterOperator
 deprecated;FilterOperator
 public;FilterRenderer
 deprecated;FilterRenderer
-beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
-beta;FlatGridItemBase
-beta;FlatGridItemType
+public;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
+public;FlatGridItemBase
+public;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
 public;from
@@ -151,7 +151,7 @@ internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: Prop
 internal;getPropertyRecordAsString(label: PropertyRecord): string
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 internal;getVisibleDescendants(model: TreeModel, parentNode: TreeModelNode | TreeModelRootNode, result?: Array
-beta;GridCategoryItem 
+public;GridCategoryItem 
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
@@ -176,21 +176,21 @@ public;ImageCheckBoxPropertyEditor
 public;ImageFileFormat = "png" | "jpg" | "jpge"
 public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
-beta;IMutableCategorizedPropertyItem 
-beta;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
-beta;IMutableFlatPropertyGridItem
-beta;IMutableGridCategoryItem 
-beta;IMutableGridItemFactory
-beta;IMutablePropertyGridModel
+public;IMutableCategorizedPropertyItem 
+public;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
+public;IMutableFlatPropertyGridItem
+public;IMutableGridCategoryItem 
+public;IMutableGridItemFactory
+public;IMutablePropertyGridModel
 internal;InputSwitchComponent 
 internal;InputSwitchProps
 alpha;IntlFormatter 
 public;IntTypeConverter 
 public;IPropertyDataFilterer
 public;IPropertyDataProvider
-beta;IPropertyGridEventHandler
-beta;IPropertyGridModel
-beta;IPropertyGridModelSource
+public;IPropertyGridEventHandler
+public;IPropertyGridModel
+public;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
 beta;isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup
@@ -211,8 +211,8 @@ public;ITreeNodeLoader
 public;ITreeNodeLoaderWithProvider
 public;LabelPropertyDataFilterer 
 public;LessGreaterOperatorProcessor
-alpha;LinksRenderer(props: LinksRendererProps): JSX.Element
-alpha;LinksRendererProps
+public;LinksRenderer(props: LinksRendererProps): JSX.Element
+public;LinksRendererProps
 public;LoadedBinaryImage 
 public;LoadedImage
 public;LoadedNodeHierarchy
@@ -221,15 +221,15 @@ public;MergedPropertyValueRenderer
 internal;MultilineTextPropertyValueRenderer 
 internal;MultilineTextRenderer: React_2.FC
 internal;MultiSelectionHandler
-beta;MutableCategorizedArrayProperty 
-beta;MutableCategorizedPrimitiveProperty 
-beta;class MutableCategorizedProperty 
-beta;MutableCategorizedStructProperty 
+public;MutableCategorizedArrayProperty 
+public;MutableCategorizedPrimitiveProperty 
+public;class MutableCategorizedProperty 
+public;MutableCategorizedStructProperty 
 public;MutableCheckBoxInfo 
-beta;class MutableFlatPropertyGridItem 
-beta;MutableGridCategory 
-beta;MutableGridItemFactory 
-beta;MutablePropertyGridModel 
+public;class MutableFlatPropertyGridItem 
+public;MutableGridCategory 
+public;MutableGridItemFactory 
+public;MutablePropertyGridModel 
 public;MutableTableDataProvider 
 deprecated;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
@@ -281,9 +281,9 @@ public;PropertyCategoryBlock
 public;PropertyCategoryBlockProps 
 public;class PropertyCategoryDataFiltererBase 
 public;PropertyCategoryLabelFilterer 
-beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React_2.ComponentType
-beta;PropertyCategoryRendererManager
-beta;PropertyCategoryRendererProps
+public;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React_2.ComponentType
+public;PropertyCategoryRendererManager
+public;PropertyCategoryRendererProps
 public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
@@ -305,19 +305,21 @@ beta;PropertyFilterRuleGroup
 beta;PropertyFilterRuleGroupOperator
 beta;PropertyFilterRuleOperator
 public;PropertyGrid 
+deprecated;PropertyGrid 
 public;PropertyGridCategory
 deprecated;PropertyGridCategory
 internal;PropertyGridCommons
 public;PropertyGridContextMenuArgs
-beta;PropertyGridEventHandler
+public;PropertyGridEventHandler
 internal;PropertyGridEventsRelatedProps = Pick
 internal;PropertyGridEventsRelatedPropsSupplier 
 internal;PropertyGridEventsRelatedPropsSupplierProps = Pick
 internal;PropertyGridInternalContext
-beta;PropertyGridModelChangeEvent 
-beta;PropertyGridModelChangeListener = () => void
-beta;PropertyGridModelSource 
+public;PropertyGridModelChangeEvent 
+public;PropertyGridModelChangeListener = () => void
+public;PropertyGridModelSource 
 public;PropertyGridProps 
+deprecated;PropertyGridProps 
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
 public;PropertyList 
@@ -333,7 +335,7 @@ public;PropertyView
 public;PropertyViewProps 
 public;ReactDataGridColumn 
 deprecated;ReactDataGridColumn 
-beta;RenderedItemsRange
+public;RenderedItemsRange
 public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React_2.ReactNode) | undefined) => React_2.ReactNode
 public;ResultSelector 
 public;ResultSelectorProps 
@@ -502,12 +504,12 @@ public;UiComponents
 public;Unsubscribable
 public;UrlPropertyValueRenderer 
 public;useAsyncValue: 
-alpha;useDebouncedAsyncValue
+beta;useDebouncedAsyncValue
 public;usePagedTreeNodeLoader
 public;usePropertyData(props:
-beta;usePropertyGridEventHandler(props:
-beta;usePropertyGridModel(props:
-beta;usePropertyGridModelSource(props:
+public;usePropertyGridEventHandler(props:
+public;usePropertyGridModel(props:
+public;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
 public;useToolbarPopupAutoHideContext(): boolean
 public;useToolbarPopupContext(): ToolbarPopupContextProps
@@ -517,11 +519,11 @@ public;useTreeEventsHandler
 public;useTreeModel(modelSource: TreeModelSource): TreeModel
 public;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
 public;useTreeNodeLoader
-beta;VirtualizedPropertyGrid 
-beta;VirtualizedPropertyGridContext
-beta;VirtualizedPropertyGridProps 
-beta;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
-beta;VirtualizedPropertyGridWithDataProviderProps 
+public;VirtualizedPropertyGrid 
+public;VirtualizedPropertyGridContext
+public;VirtualizedPropertyGridProps 
+public;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
+public;VirtualizedPropertyGridWithDataProviderProps 
 public;VisibleTreeNodes 
 public;withContextStyle: (node: React_2.ReactNode, context?: PropertyValueRendererContext | undefined) => React_2.ReactNode
 public;withLinks: (stringValue: string, links?: LinkElementsInfo | undefined, highlight?: ((text: string) => React_2.ReactNode) | undefined) => React_2.ReactNode

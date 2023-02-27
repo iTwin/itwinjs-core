@@ -1,6 +1,39 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 11 Jan 2023 16:46:30 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+- API promotions
+- Deprecate a number of `{api_name}JSON` interfaces in favor of sibling `{api_name}` interface
+- Take `InstanceFilterDefinition` instead of pure string ECExpression for hierarchy level filter
+- Allow specifying enum values in presentation rules as strings
+- Add APIs to get hierarchy level descriptor
+- Introduce unfilterable nodes and hierarchy levels
+- React to RPC deprecations.
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:28 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
 
 ## 3.5.2
 Wed, 11 Jan 2023 16:46:30 GMT
@@ -211,7 +244,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Optimize `KeySetJSON` size by compressing instance IDs.
 - Remove `PresentationRpcInterface.loadHierarchy`.
 - The `condition` attribute should be defined on both `ChildNodeRule` and `RootNodeRule`.
-- Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories. 
+- Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories.
 - Removed `PresentationUnitSystem`  in favor of `UnitSystemKey` from `@itwin/core-quantity`.
 - remove ClientRequestContext.current
 

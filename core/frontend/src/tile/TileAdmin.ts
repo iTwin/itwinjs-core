@@ -17,7 +17,7 @@ import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
+  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
   TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
 import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
@@ -331,9 +331,9 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get enableInstancing() { return this._enableInstancing; }
   /** @internal */
-  public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
+  public get enableIndexedEdges() { return this._enableIndexedEdges; }
   /** @internal */
   public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
   public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
@@ -953,7 +953,7 @@ export class TileAdmin {
 
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
-    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
   }
 }
 
@@ -991,6 +991,10 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     numActiveTileTreePropsRequests: number;
     /** The number of pending IModelTileTreeProps requests. */
     numPendingTileTreePropsRequests: number;
+    /** See [[TileContentDecodingStatistics]].
+     * @beta
+     */
+    decoding: TileContentDecodingStatistics;
   }
 
   /** Describes the configuration of the [[TileAdmin]].

@@ -1,0 +1,8 @@
+{
+  "name": "workspace-pkg-2",
+  "version": "1.0.0",
+  "description": "workspace package 2",
+  "main": "local.ts",
+  "typings": "local.ts",
+  "license": "MIT"
+}

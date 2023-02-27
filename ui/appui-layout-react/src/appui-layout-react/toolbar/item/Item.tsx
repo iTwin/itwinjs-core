@@ -14,7 +14,7 @@ import { CommonProps, Size, SizeProps } from "@itwin/core-react";
 import { ToolbarItem, ToolbarItemProps } from "../Toolbar";
 
 /** Properties of [[Item]] component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use [ToolbarButtonItemProps]($components-react) instead.
  * @beta
  */
 export interface ItemProps extends CommonProps {
@@ -87,7 +87,7 @@ class ActualItem extends React.PureComponent<ItemProps> implements ToolbarItem {
 }
 
 /** Toolbar item component. Used in [[Toolbar]] component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use [ToolbarButtonItem]($components-react) instead.
  * @beta
  */
 export class Item extends React.PureComponent<ItemProps> {

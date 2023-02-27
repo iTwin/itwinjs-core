@@ -7,14 +7,12 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
-import { Box } from "../../solid/Box";
 import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { IndexedPolyface, PolyfaceQuery } from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -23,8 +21,11 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
+import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { RuledSweep } from "../../solid/RuledSweep";
@@ -35,6 +36,7 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 
 /* eslint-disable no-console */
 let outputFolderPath = "./src/test/output";
@@ -252,6 +254,38 @@ describe("Solids", () => {
     const radii = Point3d.create(1, 3, 4);
     const ellipsoid = Sphere.createEllipsoid(Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)), AngleSweep.create(), false);
     testGeometryQueryRoundTrip(ck, ellipsoid);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  // add uv and average normals to convex mesh centered at origin
+  it("CartesianToSpherical", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testPointer(mesh, "created mesh")) {
+      const vertex = Point3d.createZero();
+      let radius = 0.0;
+      for (let i = 0; i < mesh.data.pointCount; ++i) {
+        const mag = mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex).magnitude();
+        if (radius < mag)
+          radius = mag;
+      }
+      mesh.data.param?.clear();
+      for (let i = 0; i < mesh.data.pointCount; ++i) {
+        mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex);
+        if (vertex.isZero) continue;
+        vertex.scaleInPlace(radius / vertex.magnitude()); // push vertex out radially onto sphere
+        let theta = Math.atan2(vertex.y, vertex.x);
+        if (theta < 0.0)
+          theta += 2 * Math.PI; // theta in [0,2pi]
+        const phi = Math.asin(vertex.z / radius); // phi in [-pi/2,pi/2]
+        mesh.addParamUV(theta, phi);
+      }
+      mesh.data.paramIndex = mesh.data.pointIndex.slice(); // param indices are same as vertex indices
+      PolyfaceQuery.buildAverageNormals(mesh, Angle.createDegrees(35));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "CartesianToSpherical");
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -9,12 +9,13 @@ import * as moq from "typemoq";
 import { render } from "@testing-library/react";
 import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
-  CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, IModelViewportControl, IModelViewportControlOptions,
-  NavigationWidget, SupportsViewSelectorChange, Widget, Zone,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ContentGroup,
+  CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, IModelViewportControlOptions,
+  NavigationWidget, SupportsViewSelectorChange, UiFramework, Widget, Zone,
 } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 const mySessionStorage = storageMock();
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
@@ -32,9 +33,8 @@ describe("IModelViewportControl", () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
 
-    ConfigurableUiManager.initialize();
-    FrontstageManager.isInitialized = false;
-    FrontstageManager.initialize();
+    InternalFrontstageManager.isInitialized = false;
+    InternalFrontstageManager.initialize();
   });
 
   after(async () => {
@@ -112,20 +112,20 @@ describe("IModelViewportControl", () => {
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
 
-    FrontstageManager.clearFrontstageProviders();
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    UiFramework.frontstages.clearFrontstageProviders();
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
   });
 
   it("Overridden IModelViewportControl should deferNodeInitialization", async () => {
     const frontstageProvider = new Frontstage1();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(Frontstage1.stageId);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.exist;
+      expect(UiFramework.content.layouts.activeLayout).to.exist;
 
-      const contentControl = ContentViewManager.getActiveContentControl();
+      const contentControl = UiFramework.content.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;
       expect(contentControl instanceof TestViewportContentControl).to.be.true;
 

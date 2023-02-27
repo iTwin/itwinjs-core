@@ -55,10 +55,7 @@ export interface ControlledTreeProps extends CommonProps {
   spinnerRenderer?: () => React.ReactElement;
   /** Custom renderer to be used when there is no data to show in tree. */
   noDataRenderer?: () => React.ReactElement;
-  /**
-   * Callback that is invoked when rendered items range changes.
-   * @beta
-   */
+  /** Callback that is invoked when rendered items range changes. */
   onItemsRendered?: (items: RenderedItemsRange) => void;
   /** Width of the tree renderer. */
   width: number;

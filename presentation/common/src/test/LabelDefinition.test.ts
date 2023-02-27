@@ -70,6 +70,24 @@ describe("LabelDefinition", () => {
 
   });
 
+  describe("isCompositeDefinition", () => {
+
+    it("returns correct values", () => {
+      const stringDefinition = LabelDefinition.fromLabelString("Test String");
+      const compositeDefinition: LabelDefinition = {
+        typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME,
+        displayValue: "Composite-Value",
+        rawValue: {
+          separator: "-",
+          values: [LabelDefinition.fromLabelString("Composite"), LabelDefinition.fromLabelString("Value")],
+        },
+      };
+      expect(LabelDefinition.isCompositeDefinition(stringDefinition)).to.be.false;
+      expect(LabelDefinition.isCompositeDefinition(compositeDefinition)).to.be.true;
+    });
+
+  });
+
 });
 
 describe("LabelCompositeValue", () => {

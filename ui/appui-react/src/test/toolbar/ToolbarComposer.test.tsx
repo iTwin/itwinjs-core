@@ -11,8 +11,9 @@ import {
 } from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
 import {
-  CommandItemDef, ConfigurableUiManager, CustomItemDef, FrameworkVersion, Frontstage, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupItemDef,
-  SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
+  CommandItemDef, CustomItemDef, FrameworkVersion, Frontstage, FrontstageActivatedEventArgs, FrontstageDef, FrontstageProps, FrontstageProvider, GroupItemDef,
+  SyncUiEventDispatcher,
+  ToolbarComposer, ToolbarHelper, ToolItemDef,
 } from "../../appui-react";
 import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
 import TestUtils from "../TestUtils";
@@ -174,10 +175,10 @@ describe("<ToolbarComposer  />", async () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
-    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
-    const frontstageDef = await FrontstageManager.getFrontstageDef("Test1");
+    UiFramework.frontstages.addFrontstageProvider(new Frontstage1());
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef("Test1");
     expect(frontstageDef).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
   });
 
   after(async () => {
@@ -438,7 +439,7 @@ describe("<ToolbarComposer  />", async () => {
       const newStageDef = new FrontstageDef();
       await newStageDef.initializeFromProps(newProps);
 
-      FrontstageManager.onFrontstageActivatedEvent.emit({ deactivatedFrontstageDef: oldStageDef, activatedFrontstageDef: newStageDef } as FrontstageActivatedEventArgs);
+      UiFramework.frontstages.onFrontstageActivatedEvent.emit({ deactivatedFrontstageDef: oldStageDef, activatedFrontstageDef: newStageDef } as FrontstageActivatedEventArgs);
 
       expect(await waitFor(() => renderedComponent.queryByTitle("addon-tool-1"))).to.exist;
 
@@ -465,12 +466,12 @@ describe("<ToolbarComposer  />", async () => {
       expect(buttonElement).to.exist;
       expect(buttonElement?.classList.contains("nz-active")).to.be.false;
 
-      FrontstageManager.onToolActivatedEvent.emit({ toolId: "test.tool2_b" });
+      UiFramework.frontstages.onToolActivatedEvent.emit({ toolId: "test.tool2_b" });
       buttonElement = await waitFor(() => renderedComponent.queryByTitle("Tool_2B"));
       expect(buttonElement).to.exist;
       expect(buttonElement?.classList.contains("nz-active")).to.be.true;
 
-      FrontstageManager.onToolActivatedEvent.emit({ toolId: "tool-added-to-group" });
+      UiFramework.frontstages.onToolActivatedEvent.emit({ toolId: "tool-added-to-group" });
     });
 
     it("should update items from an external provider's visibility properly", () => {

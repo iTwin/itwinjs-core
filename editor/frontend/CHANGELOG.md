@@ -1,6 +1,34 @@
 # Change Log - @itwin/editor-frontend
 
-This log was last generated on Wed, 11 Jan 2023 16:46:30 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+- add EditTools.busyRetry
+- Added RegionBooleanTool to unite, subtract, or intersect planar regions.
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
 
 ## 3.5.2
 Wed, 11 Jan 2023 16:46:30 GMT
@@ -214,7 +242,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Replace usage of I18N with generic Localization interface.
 - remove ClientRequestContext.current
 - Update to use new tool setting helper methods.
-- New solid modeling ipc interface  
+- New solid modeling ipc interface
 - More solid modeling functionality.
 - Add tool settings for solid modeling tools.
 - New tools to sweep/spin faces and delete faces/imprinted edges.

@@ -24,6 +24,7 @@ export function useAllowedWidgetTarget(widgetId: WidgetState["id"]) {
   let allowedTarget: boolean = false;
   let side: PanelSide | undefined;
 
+  // istanbul ignore if
   if (!widgetLocation || isPopoutWidgetLocation(widgetLocation))  {
     allowedTarget = false;
     side = undefined;

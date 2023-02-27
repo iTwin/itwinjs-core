@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { UiFramework, useSpecificWidgetDef } from "@itwin/appui-react";
-import { WidgetState } from "@itwin/appui-abstract";
+import { UiFramework, useSpecificWidgetDef, WidgetState } from "@itwin/appui-react";
 import { Centered } from "@itwin/core-react";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 import * as React from "react";

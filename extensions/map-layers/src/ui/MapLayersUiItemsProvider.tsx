@@ -10,7 +10,7 @@ import { UiFramework } from "@itwin/appui-react";
 import { MapLayerOptions } from "./Interfaces";
 import { MapLayersUI } from "../mapLayers";
 
-export class MapLayersUiItemsProvider implements UiItemsProvider {
+export class MapLayersUiItemsProvider implements UiItemsProvider { // eslint-disable-line deprecation/deprecation
   public readonly id = "MapLayersUiItemsProvider";
   private _mapLayerOptions?: MapLayerOptions;
 
@@ -24,7 +24,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
 
   // eslint-disable-next-line deprecation/deprecation
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: AbstractWidgetProps[] = []; // eslint-disable-line deprecation/deprecation
 
     // eslint-disable-next-line deprecation/deprecation
     if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.CenterRight) ||

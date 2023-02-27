@@ -7,7 +7,7 @@
  */
 
 /** Enum for AppUi 1 `Zone` locations that can have widgets added to them at run-time via [[UiItemsProvider]].
- * @public @deprecated in 3.0.
+ * @public @deprecated in 3.0. UI 1.0 support will be removed in AppUi 4.0.
  */
 export enum AbstractZoneLocation {
   CenterLeft = 4,
@@ -17,18 +17,22 @@ export enum AbstractZoneLocation {
 }
 
 /** Available Stage Panel locations.
+ * @deprecated in 3.6. Use [StagePanelLocation]($appui-react) instead.
  * @public
  */
 export enum StagePanelLocation {
   Top = 101,
+  /** @deprecated in 3.6 UI 1.0 support will be removed in AppUi 4.0. */
   TopMost,
   Left,
   Right,
   Bottom,
+  /** @deprecated in 3.6 UI 1.0 support will be removed in AppUi 4.0. */
   BottomMost,
 }
 
 /** Enum for Stage Panel Sections
+ * @deprecated in 3.6. Use [StagePanelSection]($appui-react) instead.
  * @public
  */
 export enum StagePanelSection {
