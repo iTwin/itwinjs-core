@@ -153,6 +153,7 @@ export * from "./tile/GltfTileIO";
 export * from "./tile/I3dmTileIO";
 export * from "./tile/IModelTileIO";
 export * from "./tile/PntsTileIO";
+export * from "./tile/TileBoundingVolume";
 export * from "./tile/TileIO";
 export * from "./tile/TileMetadata";
 export * from "./WhiteOnWhiteReversalSettings";
