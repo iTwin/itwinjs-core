@@ -254,13 +254,14 @@ export class RegionOps {
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
+   * @param mergeTolerance absolute distance tolerance for merging loops
    * @alpha
    */
-  public static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType): AnyRegion | undefined {
+  public static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance: number = Geometry.smallMetricDistance): AnyRegion | undefined {
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
-    context.annotateAndMergeCurvesInGraph();
+    context.annotateAndMergeCurvesInGraph(mergeTolerance);
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range);
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
