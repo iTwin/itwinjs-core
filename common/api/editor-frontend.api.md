@@ -98,7 +98,7 @@ export enum ArcMethod {
     StartMidEnd = 2
 }
 
-// @alpha
+// @internal
 export const basicManipulationIpc: PickAsyncMethods<BasicManipulationCommandIpc>;
 
 // @alpha (undocumented)
@@ -1196,25 +1196,29 @@ export class DynamicGraphicsProvider {
     readonly prefix: string;
 }
 
-// @alpha
-export interface EditorOptions {
-    registerAllTools?: true | undefined;
-    registerBasicManipulationTools?: true | undefined;
-    registerProjectLocationTools?: true | undefined;
-    registerSketchTools?: true | undefined;
-    registerSolidModelingTools?: true | undefined;
-    registerUndoRedoTools?: true | undefined;
+// @beta (undocumented)
+export namespace EditTools {
+    export type BusyRetry = (attempt: number, msg: string) => Promise<number | undefined>;
+    // (undocumented)
+    export interface StartArgs {
+        // (undocumented)
+        commandId: string;
+        // (undocumented)
+        iModelKey: string;
+    }
 }
 
-// @alpha
+// @beta
 export class EditTools {
-    static initialize(options?: EditorOptions): Promise<void>;
     // (undocumented)
-    static namespace: string;
+    static busyRetry?: EditTools.BusyRetry;
+    static initialize(): Promise<void>;
     // (undocumented)
-    static startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T>;
+    static readonly namespace = "Editor";
     // (undocumented)
-    static tools: string;
+    static startCommand<T>(startArg: EditTools.StartArgs, ...cmdArgs: any[]): Promise<T>;
+    // (undocumented)
+    static readonly tools = "Editor:tools.";
     // @internal (undocumented)
     static translate(prompt: string): string;
 }
@@ -1690,7 +1694,7 @@ export class LoftProfilesTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K>;
 
 // @alpha
@@ -2508,7 +2512,7 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
-// @alpha
+// @internal
 export const solidModelingIpc: PickAsyncMethods<SolidModelingCommandIpc>;
 
 // @alpha

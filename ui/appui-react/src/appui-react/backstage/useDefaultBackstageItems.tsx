@@ -12,7 +12,7 @@ import { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager } from 
 /** Hook that returns items from [[BackstageItemsManager]].
  * @internal
  */
-export const useDefaultBackstageItems = (manager: BackstageItemsManager): readonly BackstageItem[] => {
+export const useDefaultBackstageItems = (manager: BackstageItemsManager): readonly BackstageItem[] => { // eslint-disable-line deprecation/deprecation
   const [items, setItems] = React.useState(manager.items);
   const isInitialMount = React.useRef(true);
   React.useEffect(() => {

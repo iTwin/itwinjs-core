@@ -285,7 +285,7 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
   expandsTo?: Direction;
   /** Describes to which direction the overflow popup panels are expanded. Defaults to: [[Direction.Right]] */
   overflowExpandsTo?: Direction;
-  /** definitions for items of the toolbar. i.e. [[CommonToolbarItem]]. Items are expected to be already sorted by group and item. */
+  /** Definitions for items of the toolbar. Items are expected to be already sorted by group and item. */
   items: CommonToolbarItem[];
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;

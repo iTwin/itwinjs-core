@@ -9,7 +9,6 @@
 import { assert } from "@itwin/core-bentley";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { System } from "../System";
 import { addEyeSpace } from "./Common";
 import { addModelViewMatrix } from "./Vertex";
 
@@ -35,23 +34,6 @@ float unpackFloat(vec4 v) {
 }
 `;
 
-// ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
-const unpackClipPlane = `
-vec4 getClipPlane(int index) {
-  float y = (float(index) + 0.5) / float(u_clipParams[2]);
-  float sx = 0.25;
-  vec2 tc = vec2(0.125, y);
-  float nx = unpackFloat(TEXTURE(s_clipSampler, tc));
-  tc.x += sx;
-  float ny = unpackFloat(TEXTURE(s_clipSampler, tc));
-  tc.x += sx;
-  float nz = unpackFloat(TEXTURE(s_clipSampler, tc));
-  tc.x += sx;
-  float dist = unpackFloat(TEXTURE(s_clipSampler, tc));
-  return vec4(nx, ny, nz, dist);
-}
-`;
-
 const calcClipPlaneDist = `
 float calcClipPlaneDist(vec3 camPos, vec4 plane) {
   return dot(vec4(camPos, 1.0), plane);
@@ -64,15 +46,7 @@ const applyClipPlanesPrelude = `
   bool clippedByCurrentPlaneSet = false;
 `;
 
-const applyClipPlanesLoopWebGL1 = `
-  for (int i = 0; i < MAX_CLIPPING_PLANES; i++) {
-    if (i < u_clipParams[0])
-      continue;
-    else if (i >= u_clipParams[1])
-      break;
-`;
-
-const applyClipPlanesLoopWebGL2 = `
+const applyClipPlanesLoop = `
   for (int i = u_clipParams[0]; i < u_clipParams[1]; i++) {
 `;
 
@@ -110,13 +84,12 @@ const applyClipPlanesPostlude = `
   return false;
 `;
 
-const applyClipPlanesWebGL1 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL1 + applyClipPlanesPostlude;
-const applyClipPlanesWebGL2 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL2 + applyClipPlanesPostlude;
+const applyClipPlanes = applyClipPlanesPrelude + applyClipPlanesLoop + applyClipPlanesPostlude;
 
 const clipParams = new Int32Array(3);
 
 /** @internal */
-export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
+export function addClipping(prog: ProgramBuilder) {
   const frag = prog.frag;
   const vert = prog.vert;
 
@@ -153,12 +126,7 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
 
   addModelViewMatrix(vert);
 
-  if (System.instance.capabilities.supportsTextureFloat) {
-    frag.addFunction(getClipPlaneFloat);
-  } else {
-    frag.addFunction(unpackFloat);
-    frag.addFunction(unpackClipPlane);
-  }
+  frag.addFunction(getClipPlaneFloat);
 
   frag.addFunction(calcClipPlaneDist);
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
@@ -170,5 +138,5 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
     });
   }, VariablePrecision.High);
 
-  frag.set(FragmentShaderComponent.ApplyClipping, isWebGL2 ? applyClipPlanesWebGL2 : applyClipPlanesWebGL1);
+  frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
 }

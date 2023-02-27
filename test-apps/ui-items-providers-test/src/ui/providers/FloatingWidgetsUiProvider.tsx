@@ -3,12 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import {
-  AbstractWidgetProps,
-  StagePanelLocation, StagePanelSection,
-  StageUsage,
-  UiItemsManager, UiItemsProvider, WidgetState,
-} from "@itwin/appui-abstract";
+import { CommonWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { ViewAttributesWidgetComponent } from "../widgets/ViewAttributesWidget";
 
 /**
@@ -27,10 +22,10 @@ export class FloatingWidgetsUiProvider implements UiItemsProvider {
   }
 
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation,
-    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
+    section?: StagePanelSection): ReadonlyArray<CommonWidgetProps> {
+    const widgets: CommonWidgetProps[] = [];
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Left && section === StagePanelSection.Start) {
-      const widget: AbstractWidgetProps = {
+      const widget: CommonWidgetProps = {
         id: "ui-item-provider-test:ViewAttributesWidget",
         label: "View Attributes",
         icon: "icon-window-settings",

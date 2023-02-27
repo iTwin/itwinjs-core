@@ -8,8 +8,12 @@ import { EditCommand } from "@itwin/editor-backend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
 
 export abstract class TestCommand extends EditCommand implements TestCommandIpc {
+  public count = 4;
   public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }
   public abstract testMethod1(str1: string, str2: string, obj1: TestCmdOjb1): Promise<TestCmdResult>;
+  public override async requestFinish(): Promise<string> {
+    return --this.count >= 0 ? "edit command is busy" : "done";
+  }
 }
 
 export class TestEditCommand1 extends TestCommand {

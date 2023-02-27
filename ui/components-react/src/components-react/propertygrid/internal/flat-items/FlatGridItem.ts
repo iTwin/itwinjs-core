@@ -12,7 +12,7 @@ import { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
  * Base immutable data structure defining common methods and properties for categories and categorized properties
- * @beta
+ * @public
  */
 export interface FlatGridItemBase {
   readonly isExpanded: boolean;
@@ -33,7 +33,7 @@ export interface FlatGridItemBase {
 
 /**
  * Data structure which describes methods and properties present on immutable [[GridCategoryItem]]
- * @beta
+ * @public
  */
 export interface GridCategoryItem extends FlatGridItemBase {
   readonly type: FlatGridItemType.Category;
@@ -48,7 +48,7 @@ export interface GridCategoryItem extends FlatGridItemBase {
 
 /**
  * Data structure which describes methods and properties present on immutable [[CategorizedPropertyItem]] objects
- * @beta
+ * @public
  */
 export interface CategorizedPropertyItem extends FlatGridItemBase {
   readonly type: CategorizedPropertyTypes;
@@ -61,6 +61,6 @@ export interface CategorizedPropertyItem extends FlatGridItemBase {
 
 /**
  * Type which describes immutable [[GridCategoryItem]] or [[CategorizedPropertyItem]]
- * @beta
+ * @public
  */
 export type FlatGridItem = CategorizedPropertyItem | GridCategoryItem;

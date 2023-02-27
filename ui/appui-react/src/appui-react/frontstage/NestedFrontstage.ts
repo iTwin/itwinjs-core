@@ -7,7 +7,7 @@
  */
 
 import { CommandItemDef } from "../shared/CommandItemDef";
-import { FrontstageManager } from "./FrontstageManager";
+import { UiFramework } from "../UiFramework";
 
 /**
  * Nested Frontstage related classes and commands
@@ -21,7 +21,7 @@ export class NestedFrontstage {
       iconSpec: "icon-progress-backward",
       labelKey: "UiFramework:commands.backToPreviousFrontstage",
       execute: async () => {
-        await FrontstageManager.closeNestedFrontstage();
+        await UiFramework.frontstages.closeNestedFrontstage();
       },
     });
   }

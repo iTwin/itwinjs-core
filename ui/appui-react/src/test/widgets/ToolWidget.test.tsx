@@ -11,8 +11,8 @@ import { WidgetState } from "@itwin/appui-abstract";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
 import {
-  ActionItemButton, AnyWidgetProps, CommandItemDef, CoreTools, FrontstageManager, GroupButton, GroupItemDef, ItemList, ToolbarDragInteractionContext,
-  ToolButton, ToolWidget, ToolWidgetDef,
+  ActionItemButton, AnyWidgetProps, CommandItemDef, CoreTools, GroupButton, GroupItemDef, ItemList, ToolbarDragInteractionContext,
+  ToolButton, ToolWidget, ToolWidgetDef, UiFramework,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -167,7 +167,7 @@ describe("ToolWidget", () => {
         />,
       );
 
-      FrontstageManager.onToolActivatedEvent.emit({ toolId: "tool1" });
+      UiFramework.frontstages.onToolActivatedEvent.emit({ toolId: "tool1" });
       wrapper.update();
     });
   });

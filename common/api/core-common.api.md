@@ -1703,6 +1703,7 @@ export namespace ContextRealityModelProps {
 // @public
 export class ContextRealityModels {
     constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+    constructor(args: ContextRealityModelsArgs);
     add(props: ContextRealityModelProps): ContextRealityModel;
     clear(): void;
     delete(model: ContextRealityModel): boolean;
@@ -1712,12 +1713,22 @@ export class ContextRealityModels {
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
+    populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
     update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
 }
 
 // @public
+export interface ContextRealityModelsArgs {
+    container: ContextRealityModelsContainer;
+    createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    deferPopulating?: boolean;
+}
+
+// @public
 export interface ContextRealityModelsContainer {
+    // @internal
+    container?: never;
     contextRealityModels?: ContextRealityModelProps[];
 }
 
@@ -2228,6 +2239,8 @@ export class DisplayStyleSettings {
 // @public
 export interface DisplayStyleSettingsOptions {
     createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    // @internal
+    deferContextRealityModels?: boolean;
 }
 
 // @public
@@ -4284,7 +4297,7 @@ export enum HSVConstants {
 // @internal (undocumented)
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
-// @public
+// @public @deprecated
 export interface HttpServerRequest extends BackendReadable {
     // (undocumented)
     aborted: boolean;
@@ -4336,7 +4349,7 @@ export interface HttpServerRequest extends BackendReadable {
     url?: string;
 }
 
-// @public
+// @public @deprecated
 export interface HttpServerResponse extends BackendWritable {
     // (undocumented)
     send(body?: any): HttpServerResponse;
@@ -5852,7 +5865,7 @@ export interface OpenAPIEncoding {
     style?: string;
 }
 
-// @public
+// @public @deprecated
 export interface OpenAPIInfo {
     // (undocumented)
     title: string;
@@ -7711,7 +7724,7 @@ export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
     new (): RpcConfiguration;
 };
 
-// @public
+// @public @deprecated
 export enum RpcContentType {
     // (undocumented)
     Binary = 2,
@@ -7775,7 +7788,7 @@ export class RpcDirectRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
 }
 
-// @public
+// @public @deprecated
 export enum RpcEndpoint {
     // (undocumented)
     Backend = 1,
@@ -7997,7 +8010,7 @@ export abstract class RpcProtocol {
     transferChunkThreshold: number;
 }
 
-// @public
+// @public @deprecated
 export enum RpcProtocolEvent {
     // (undocumented)
     BackendErrorOccurred = 11,
@@ -8220,7 +8233,7 @@ export interface RpcRequestContext {
     serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 }
 
-// @public
+// @public @deprecated
 export enum RpcRequestEvent {
     // (undocumented)
     PendingUpdateReceived = 1,
@@ -8257,7 +8270,7 @@ export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfig
 // @internal
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
-// @public
+// @public @deprecated
 export enum RpcRequestStatus {
     // (undocumented)
     BadGateway = 10,
@@ -8291,7 +8304,7 @@ export enum RpcRequestStatus {
     Unknown = 0
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export namespace RpcRequestStatus {
     // (undocumented)
     export function isTransientError(status: RpcRequestStatus): boolean;

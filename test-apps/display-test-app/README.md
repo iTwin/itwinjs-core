@@ -154,10 +154,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* IMJS_ENABLE_MAP_TEXTURE_FILTER
-  * If defined, the anisotropic filtering will be used for (planar) map tiles.
-* IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER
-  * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
 * IMJS_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
 * IMJS_DEVICE_PIXEL_RATIO_OVERRIDE

@@ -37,7 +37,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Rush build
-        run: node common/scripts/install-run-rush.js build -v -p max
+        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
 
       - name: Rush extract-api
         run: node common/scripts/install-run-rush.js extract-api

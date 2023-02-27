@@ -34,8 +34,8 @@ export interface PropertyData {
   records: { [categoryName: string]: PropertyRecord[] };
 
   /**
-   * Should state of existing property data in the component be  re-used for this property data
-   * @alpha
+   * Should state of existing property data in the component be re-used for this property data
+   * @beta
    */
   reusePropertyDataState?: boolean;
 }

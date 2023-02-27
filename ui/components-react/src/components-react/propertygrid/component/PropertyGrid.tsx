@@ -23,6 +23,7 @@ import { PropertyList, PropertyListProps } from "./PropertyList";
 
 /** Properties for [[PropertyGrid]] React component
  * @public
+ * @deprecated in 3.x. Use [[VirtualizedPropertyGrid]] instead.
  */
 export interface PropertyGridProps extends CommonPropertyGridProps {
   /** Property data provider */
@@ -61,15 +62,16 @@ interface PropertyGridState {
 
 /** PropertyGrid React component.
  * @public
+ * @deprecated in 3.x. Use [[VirtualizedPropertyGrid]] instead.
  */
-export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
+export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> { // eslint-disable-line deprecation/deprecation
   private _dataChangesListenerDisposeFunc?: DisposeFunc;
   private _isMounted = false;
   private _isInDataRequest = false;
   private _hasPendingDataRequest = false;
 
   /** @internal */
-  constructor(props: PropertyGridProps) {
+  constructor(props: PropertyGridProps) { // eslint-disable-line deprecation/deprecation
     super(props);
     this.state = {
       categories: [],
@@ -97,7 +99,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this._isMounted = false;
   }
 
-  public override componentDidUpdate(prevProps: PropertyGridProps) {
+  public override componentDidUpdate(prevProps: PropertyGridProps) { // eslint-disable-line deprecation/deprecation
     if (this.props.dataProvider !== prevProps.dataProvider) {
       // istanbul ignore else
       if (this._dataChangesListenerDisposeFunc)

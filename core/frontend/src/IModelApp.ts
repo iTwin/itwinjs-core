@@ -229,9 +229,7 @@ export class IModelApp {
    * @internal
    */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
-  /** The [[TerrainProviderRegistry]] for this session.
-   * @beta
-   */
+  /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
    * @alpha
@@ -334,12 +332,10 @@ export class IModelApp {
    * Obtain WebGL rendering compatibility information for the client system.  This information describes whether the client meets the
    * minimum rendering capabilities.  It also describes whether the system lacks any optional capabilities that could improve quality
    * and/or performance.
+   * @note As of 4.x, iTwin.js requires WebGL 2. If the client does not support WebGL 2, the `status` field of the returned compatibility info will be [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility).
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
-    if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
-      return queryRenderCompatibility(true, System.createContext);
-    else
-      return queryRenderCompatibility(System.instance.options.useWebGL2, System.createContext);
+    return queryRenderCompatibility(true, System.createContext);
   }
 
   /**
@@ -560,9 +556,9 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => { // eslint-disable-line deprecation/deprecation
       const id = _request.id;
-      const serialized: SerializedRpcActivity = {
+      const serialized: SerializedRpcActivity = { // eslint-disable-line deprecation/deprecation
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,

@@ -11,7 +11,6 @@ import {
   ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
 } from "@itwin/core-geometry";
 import { RenderClipVolume } from "../RenderClipVolume";
-import { System } from "./System";
 
 const scratch = {
   normal: new Vector3d(),
@@ -62,10 +61,7 @@ class ClipPlanesBuffer {
     this._clips = clips;
     this.numRows = numRows;
 
-    if (System.instance.capabilities.supportsTextureFloat)
-      this._append = (value: number) => this.appendFloat(value);
-    else
-      this._append = (value: number) => this.appendEncodedFloat(value);
+    this._append = (value: number) => this.appendFloat(value);
   }
 
   private appendFloat(value: number): void {
