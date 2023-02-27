@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import { RequireAtLeastOne } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { BoundingSphere } from "../geometry/BoundingSphere";
-import { OrientedBoundingBox } from "../geometry/OrientedBoundingBox";
+import { BoundingSphere, OrientedBoundingBox } from "@itwin/core-common";
 
 export type TileBoundingVolumeProps = RequireAtLeastOne<{
   box?: [centerX: number, centerY: number, centerZ: number,
