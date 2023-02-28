@@ -205,10 +205,7 @@ export class Field {
     });
   }
 
-  /**
-   * Deserialize a [[Field]] from compressed JSON.
-   * @public
-   */
+  /** Deserialize a [[Field]] from compressed JSON. */
   public static fromCompressedJSON(json: FieldJSON<string> | undefined, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]): Field | undefined {
     if (!json)
       return undefined;
@@ -232,12 +229,12 @@ export class Field {
     return category;
   }
 
-  /** @internal */
+  /** Resets field's parent. */
   public resetParentship(): void {
     this._parent = undefined;
   }
 
-  /** @internal */
+  /** Sets provided [[NestedContentField]] as parent of this field. */
   public rebuildParentship(parentField?: NestedContentField): void {
     this._parent = parentField;
   }
@@ -494,10 +491,7 @@ export class NestedContentField extends Field {
     });
   }
 
-  /**
-   * Deserialize a [[NestedContentField]] from compressed JSON.
-   * @public
-   */
+  /** Deserialize a [[NestedContentField]] from compressed JSON. */
   public static override fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]) {
     assert(classesMap.hasOwnProperty(json.contentClassInfo));
     const field = Object.create(NestedContentField.prototype);
@@ -520,14 +514,17 @@ export class NestedContentField extends Field {
     };
   }
 
-  /** @internal */
+  /** Resets parent of this field and all nested fields. */
   public override resetParentship(): void {
     super.resetParentship();
     for (const nestedField of this.nestedFields)
       nestedField.resetParentship();
   }
 
-  /** @internal */
+  /**
+   * Sets provided [[NestedContentField]] as parent of this fields and recursively updates
+   * all nested fields parents.
+   */
   public override rebuildParentship(parentField?: NestedContentField): void {
     super.rebuildParentship(parentField);
     for (const nestedField of this.nestedFields)

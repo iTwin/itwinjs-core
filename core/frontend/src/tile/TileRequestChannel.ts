@@ -19,6 +19,23 @@ class TileRequestQueue extends PriorityQueue<TileRequest> {
   }
 }
 
+/** As part of a [[TileRequestChannelStatistics]], summarizes cumulative time spent decoding tile content.
+ * For each Tile, the time elapsed between receiving the raw tile content (e.g., over the network) and converting it to a [[TileContent]] via [[Tile.readContent]]
+ * is recorded.
+ * All times are reported in milliseconds.
+ * @beta
+ */
+export interface TileContentDecodingStatistics {
+  /** The total number of milliseconds spent decoding content. */
+  total: number;
+  /** The mean (average) number of milliseconds spent decoding content. */
+  mean: number;
+  /** The longest amount of time, in milliseconds, spent decoding any single tile's content. */
+  max: number;
+  /** The shortest amount of time, in milliseconds, spent decoding any single tile's content. */
+  min: number;
+}
+
 /** Statistics regarding the current and cumulative state of one or more [[TileRequestChannel]]s. Useful for monitoring performance and diagnosing problems.
  * @see [[TileRequestChannel.statistics]] for a specific channel's statistics.
  * @see [[TileRequestChannels.statistics]] for statistics from all channels.
@@ -53,6 +70,15 @@ export class TileRequestChannelStatistics {
   public totalDispatchedRequests = 0;
   /** The total number of tiles for which content requests were dispatched and then canceled on the backend before completion. */
   public totalAbortedRequests = 0;
+  /** Statistics summarizing time spent decoding tile content.
+   * @beta
+   */
+  public decoding: TileContentDecodingStatistics = {
+    total: 0,
+    mean: 0,
+    max: Number.MIN_SAFE_INTEGER,
+    min: Number.MAX_SAFE_INTEGER,
+  };
 
   /** @internal */
   public addTo(stats: TileRequestChannelStatistics): void {
@@ -60,11 +86,31 @@ export class TileRequestChannelStatistics {
       const key = propName as keyof TileRequestChannelStatistics;
       const val = this[key];
       if (typeof val === "number") {
-        // This type guard ought to suffice but doesn't.
         assert(typeof stats[key] === "number");
         (stats[key] as number) += val;
       }
     }
+
+    stats.decoding.total += this.decoding.total;
+    stats.decoding.max = Math.max(this.decoding.max, stats.decoding.max);
+    stats.decoding.min = Math.min(this.decoding.min, stats.decoding.min);
+
+    if (stats.totalCompletedRequests > 0)
+      stats.decoding.mean = (stats.decoding.total) / stats.totalCompletedRequests;
+  }
+
+  /** @internal */
+  public recordCompletion(tile: Tile, elapsedMilliseconds: number): void {
+    ++this.totalCompletedRequests;
+    if (tile.isEmpty)
+      ++this.totalEmptyTiles;
+    else if (!tile.isDisplayable)
+      ++this.totalUndisplayableTiles;
+
+    this.decoding.total += elapsedMilliseconds;
+    this.decoding.mean = this.decoding.total / this.totalCompletedRequests;
+    this.decoding.max = Math.max(this.decoding.max, elapsedMilliseconds);
+    this.decoding.min = Math.min(this.decoding.min, elapsedMilliseconds);
   }
 }
 
@@ -156,12 +202,8 @@ export class TileRequestChannel {
   /** Invoked by [[TileRequest]] after a request completes.
    * @internal
    */
-  public recordCompletion(tile: Tile, content: TileContent): void {
-    ++this._statistics.totalCompletedRequests;
-    if (tile.isEmpty)
-      ++this._statistics.totalEmptyTiles;
-    else if (!tile.isDisplayable)
-      ++this._statistics.totalUndisplayableTiles;
+  public recordCompletion(tile: Tile, content: TileContent, elapsedMilliseconds: number): void {
+    this._statistics.recordCompletion(tile, elapsedMilliseconds);
 
     if (this.contentCallback)
       this.contentCallback(tile, content);

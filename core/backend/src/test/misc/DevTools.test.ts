@@ -78,10 +78,11 @@ describe("DevTools", () => {
     assert.equal(actualNewLevel, expectedNewLevel);
   });
 
-  it("Get the backend versions", () => {
-    const versions = DevTools.versions();
+  it("Get the backend versions", async () => {
+    const versions = await DevTools.versions();
     assert.isDefined(versions.application);
     assert.isDefined(versions.iTwinJs);
+    assert.isDefined(versions.availableRpcs);
   });
 }
 );

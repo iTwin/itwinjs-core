@@ -19,7 +19,7 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 | iTwin.js - Node Support | iTwin.js 1.x | iTwin.js 2.x | iTwin.js 3.x | iTwin.js 4.x |
 | ----------------------- | ------------ | ------------ | ------------ | ------------ |
 | Node 18                 | ❌           | ❌           | ✅ (>= 3.5) | ✅          |
-| Node 16 (>=16.13)       | ❌           | ❌           | ✅          | ✅          |
+| Node 16 (>=16.13)       | ❌           | ❌           | ✅          | ❌          |
 | Node 14 (>=14.17)       | ❌           | ✅ (>= 2.13) | ✅          | ❌          |
 | Node 12 (>=12.22)       | ✅           | ✅           | ✅          | ❌          |
 | Node 10                 | ❌           | ❌           | ❌          | ❌          |
@@ -49,7 +49,7 @@ iTwin.js strives to support as many modern browsers as possible, though it requi
 
 ## Electron
 
-- Windows
+To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 4.0, Electron 23 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
 
 ## Mobile Native
 

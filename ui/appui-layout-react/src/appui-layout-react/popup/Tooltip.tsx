@@ -14,7 +14,7 @@ import { CommonProps, Point, Rectangle, RectangleProps, Size, SizeProps } from "
 import { CssProperties } from "../utilities/Css";
 
 /** Properties of [[Tooltip]] component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use TooltipProps in @itwin/itwinui-react instead
  * @beta
  */
 export interface TooltipProps extends CommonProps {
@@ -29,13 +29,13 @@ export interface TooltipProps extends CommonProps {
 }
 
 /** Default properties of [[Tooltip]] component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Obsolete.
  * @beta
  */
 export type TooltipDefaultProps = Pick<TooltipProps, "position">;
 
 /** Positionable tooltip component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Use Tooltip in @itwin/itwinui-react instead
  * @beta
  */
 export class Tooltip extends React.PureComponent<TooltipProps> {

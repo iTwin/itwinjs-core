@@ -50,7 +50,7 @@ const additiveRefinementDepthLimit = 20;
 const scratchFrustum = new Frustum();
 
 /** A [[Tile]] within a [[RealityTileTree]], representing part of a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
- * @beta
+ * @public
  */
 export class RealityTile extends Tile {
   /** @internal */

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "4.0.0-dev.8",
+  "version": "4.0.0-dev.30",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -58,7 +58,7 @@
     "@types/chai": "4.3.1",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.11.5",
+    "@types/node": "^18.11.5",
     "@types/react": "^17.0.37",
     "@types/react-beautiful-dnd": "^12.1.2",
     "@types/sinon": "^9.0.0",
@@ -90,11 +90,11 @@
     "react-beautiful-dnd": "^13.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.8",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.8",
-    "@itwin/core-common": "workspace:^4.0.0-dev.8",
-    "@itwin/core-frontend": "workspace:^4.0.0-dev.8",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.8",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.30",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.30",
+    "@itwin/core-common": "workspace:^4.0.0-dev.30",
+    "@itwin/core-frontend": "workspace:^4.0.0-dev.30",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.30",
     "@itwin/appui-abstract": "workspace:^4.0.0-dev.8",
     "@itwin/components-react": "workspace:^4.0.0-dev.8",
     "@itwin/core-react": "workspace:^4.0.0-dev.8",

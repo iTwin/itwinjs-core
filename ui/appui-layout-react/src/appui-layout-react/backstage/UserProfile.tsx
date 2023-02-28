@@ -13,7 +13,7 @@ import { CommonProps } from "@itwin/core-react";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 
 /** Properties of [[UserProfile]] component.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Removed from design.
  * @beta
  */
 export interface UserProfileProps extends CommonProps {
@@ -30,7 +30,7 @@ export interface UserProfileProps extends CommonProps {
 }
 
 /** User profile component used in [[Backstage]] header.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. Removed from design.
  * @beta
  */
 export class UserProfile extends React.PureComponent<UserProfileProps> {

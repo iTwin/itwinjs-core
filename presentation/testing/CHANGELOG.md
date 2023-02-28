@@ -1,6 +1,20 @@
 # Change Log - @itwin/presentation-testing
 
-This log was last generated on Thu, 26 Jan 2023 22:53:28 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+- Use EmptyLocalization for localization in tests to increase test performance
+- Deprecate `ContentBuilder` methods: `createContentForAllInstances` and `createContentForInstancePerClass`.
+- Added reference docs generation
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
 
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:28 GMT

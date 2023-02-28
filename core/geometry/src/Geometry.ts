@@ -134,6 +134,31 @@ export interface PlaneAltitudeEvaluator {
   /** x part of normal vector */
   normalZ(): number;
 }
+
+/** Enumeration of possible locations of a point in the plane of a polygon.
+ * @public
+ */
+export enum PolygonLocation {
+  /** No location specified. */
+  Unknown = 0,
+  /** Point is at a vertex. */
+  OnPolygonVertex = 1,
+  /** Point is on an edge (but not a vertex). */
+  OnPolygonEdgeInterior = 2,
+  /** Point is strictly inside the polygon with unknown projection. */
+  InsidePolygon = 3,
+  /** Point is strictly inside the polygon and projects to a vertex. */
+  InsidePolygonProjectsToVertex = 4,
+  /** Point is strictly inside the polygon and projects to an edge (but not a vertex). */
+  InsidePolygonProjectsToEdgeInterior = 5,
+  /** Point is strictly outside the polygon with unknown projection. */
+  OutsidePolygon = 6,
+  /** Point is strictly outside the polygon and projects to a vertex. */
+  OutsidePolygonProjectsToVertex = 7,
+  /** Point is strictly outside the polygon and projects to an edge (but not a vertex). */
+  OutsidePolygonProjectsToEdgeInterior = 8,
+}
+
 /**
  * Interface for `toJSON` and `setFromJSON` methods
  * @public

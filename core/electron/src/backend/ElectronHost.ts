@@ -129,7 +129,7 @@ export class ElectronHost {
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
-    const webPreferences: WebPreferences & { nativeWindowOpen: true } = { // nativeWindowOpen was removed starting Electron 18
+    const webPreferences: WebPreferences = {
       ...options?.webPreferences,
 
       // These web preference variables should not be overriden by the ElectronHostWindowOptions
@@ -138,7 +138,6 @@ export class ElectronHost {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      nativeWindowOpen: true,
       nodeIntegrationInWorker: false,
       nodeIntegrationInSubFrames: false,
     };

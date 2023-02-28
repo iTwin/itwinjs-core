@@ -6,7 +6,6 @@ import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
 import { IModelApp } from "../../IModelApp";
-import _ from "lodash";
 
 /** @packageDocumentation
  * @module Tiles

@@ -37,7 +37,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined {
+  public override getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Point2d.create(source.x, source.y, result);
@@ -50,7 +50,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined {
+  public override getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Vector2d.create(source.x, source.y, result);
@@ -64,7 +64,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
       return Vector2d.createStartEnd(this.data[indexA], this.data[indexB], result);
     return undefined;
@@ -76,7 +76,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated vector.
    * @returns undefined if index is out of bounds
    */
-  public vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined {
     if (this.isValidIndex(indexB))
       return Vector2d.createStartEnd(origin, this.data[indexB], result);
     return undefined;
@@ -90,7 +90,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined {
+  public override crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
       return XY.crossProductToPoints(origin, this.data[indexA], this.data[indexB]);
     return undefined;
@@ -103,7 +103,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
  * @param result caller-allocated vector.
  * @returns return true if indexA, indexB both valid
  */
-  public crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number): number | undefined {
+  public override crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number): number | undefined {
     if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
       return XY.crossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB]);
     return undefined;
@@ -111,7 +111,23 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
   /**
    * read-only property for number of XYZ in the collection.
    */
-  public get length(): number {
+  public override get length(): number {
     return this.data.length;
+  }
+
+  /**
+   * Get x coordinate by point index, with no index checking
+   * @param pointIndex index to access
+   */
+  public override getXAtUncheckedPointIndex(pointIndex: number): number {
+    return this.data[pointIndex].x;
+  }
+
+  /**
+   * Get y coordinate by point index, with no index checking
+   * @param pointIndex index to access
+   */
+  public override getYAtUncheckedPointIndex(pointIndex: number): number {
+    return this.data[pointIndex].y;
   }
 }

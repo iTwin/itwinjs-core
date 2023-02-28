@@ -68,7 +68,7 @@ export enum MapTileTreeScaleRangeVisibility {
  *
  * The map or globe may be smooth, or feature 3d geometry supplied by a [[TerrainProvider]].
  * The terrain displayed in a [[Viewport]] is determined by its [TerrainSettings]($common).
- * @beta
+ * @public
  */
 
 export class MapTileTree extends RealityTileTree {

@@ -350,14 +350,19 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public modelSelectorId: Id64String;
 
   /** @internal */
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
+  public constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
     if (!Id64.isValid(this.modelSelectorId))
       throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
   }
 
-  /** @internal */
+  /** Construct a SpatialViewDefinition from its JSON representation. */
+  public static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb) {
+    return new SpatialViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  }
+
+  /** Convert this view to its JSON representation. */
   public override toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
@@ -372,6 +377,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "modelSelectorId"];
+
   /** @alpha */
   public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     ...super.requiredReferenceKeyTypeMap,
@@ -381,7 +387,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
   /**
-   * Create an SpatialViewDefinition with camera.
+   * Create a SpatialViewDefinition with the camera turned on.
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the view
@@ -391,7 +397,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @param range Defines the view origin and extents
    * @param standardView Optionally defines the view's rotation
    * @param cameraAngle Camera angle in radians.
-   * @returns The newly constructed OrthographicViewDefinition element
+   * @returns The newly constructed SpatialViewDefinition element
    * @throws [[IModelError]] if there is a problem creating the view
    */
   public static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): SpatialViewDefinition {
@@ -417,20 +423,13 @@ export class SpatialViewDefinition extends ViewDefinition3d {
       cameraOn: true,
       camera: { lens: { radians: cameraAngle }, focusDist: cameraDistance, eye: cameraLocation },
     };
+
     return new SpatialViewDefinition(viewDefinitionProps, iModelDb);
   }
   /**
-   * Insert an SpatialViewDefinition with camera On
-   * @param iModelDb Insert into this iModel
-   * @param definitionModelId Insert the new OrthographicViewDefinition into this DefinitionModel
-   * @param name The name/CodeValue of the view
-   * @param modelSelectorId The [[ModelSelector]] that this view should use
-   * @param categorySelectorId The [[CategorySelector]] that this view should use
-   * @param displayStyleId The [[DisplayStyle3d]] that this view should use
-   * @param range Defines the view origin and extents
-   * @param standardView Optionally defines the view's rotation
-   * @param cameraAngle Camera angle in radians.
-   * @returns The Id of the newly inserted OrthographicViewDefinition element
+   * Insert an SpatialViewDefinition with the camera turned on.
+   * @see [[createWithCamera]] for details.
+   * @returns The Id of the newly inserted SpatialViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
    */
   public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
@@ -480,6 +479,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     };
     return new OrthographicViewDefinition(viewDefinitionProps, iModelDb);
   }
+
   /**
    * Insert an OrthographicViewDefinition
    * @param iModelDb Insert into this iModel
@@ -497,6 +497,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     const viewDefinition = this.create(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
     return iModelDb.elements.insertElement(viewDefinition.toJSON());
   }
+
   /** Set a new viewed range without changing the rotation or any other properties. */
   public setRange(range: Range3d): void {
     const rotation = this.angles.toMatrix3d();

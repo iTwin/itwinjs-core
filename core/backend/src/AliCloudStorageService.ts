@@ -12,7 +12,7 @@ import { CloudStorageService, CloudStorageUploadOptions } from "./CloudStorageBa
 
 /**
  * @beta
- * @deprecated in 3.x.
+ * @deprecated in 3.x. Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
  */
 export interface AliCloudStorageServiceCredentials {
   region: string;
