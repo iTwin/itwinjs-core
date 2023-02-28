@@ -40,6 +40,7 @@ export * from "./Frustum";
 export * from "./GeoCoordinateServices";
 export * from "./geometry/AdditionalTransform";
 export * from "./geometry/AreaPattern";
+export * from "./geometry/BoundingRegion";
 export * from "./geometry/BoundingSphere";
 export * from "./geometry/Cartographic";
 export * from "./geometry/CartographicRectangle";
