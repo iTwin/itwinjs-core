@@ -250,7 +250,7 @@ export namespace CloudSqlite {
      * Abandon any local changes in this container. If the write lock is currently held, it is released.
      * This function fails with BE_SQLITE_BUSY if one or more clients have open read or write transactions
      * on any database in the container.
-     * @note This function does nothing if the CloudContainer is not connected to a CloudCache. @see connect
+     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
      */
     abandonChanges(): void;
 
@@ -280,7 +280,7 @@ export namespace CloudSqlite {
      * Poll cloud storage for changes from other processes. *No changes* made by other processes are visible to
      * this CloudContainer unless/until this method is called.
      * @note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
-     * @note This function does nothing if the CloudContainer is not connected to a CloudCache. @see connect
+     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
      */
     checkForChanges(): void;
 
