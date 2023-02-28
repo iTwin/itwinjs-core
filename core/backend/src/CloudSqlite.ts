@@ -282,7 +282,7 @@ export namespace CloudSqlite {
      * Poll cloud storage for changes from other processes. *No changes* made by other processes are visible to
      * this CloudContainer unless/until this method is called.
      * @note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
-     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     checkForChanges(): void;
 
@@ -311,13 +311,13 @@ export namespace CloudSqlite {
      * @note CloudSqlite uses copy-on-write semantics for this operation. That is, this method merely makes a
      * new entry in the manifest with the new name that *shares* all of its blocks with the original database.
      * If either database subsequently changes, the only modified blocks are not shared.
-     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     copyDatabase(dbName: string, toAlias: string): Promise<void>;
 
     /** Remove a database from this CloudContainer.
      * @see cleanDeletedBlocks
-     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     deleteDatabase(dbName: string): Promise<void>;
 
