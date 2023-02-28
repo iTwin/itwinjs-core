@@ -236,6 +236,7 @@ export namespace CloudSqlite {
      * Release the write lock if it is currently held.
      * @note if there are local changes that have not been uploaded, they are automatically uploaded before the write lock is released.
      * @note if the write lock is not held, this method does nothing.
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     releaseWriteLock(): void;
 
@@ -243,6 +244,7 @@ export namespace CloudSqlite {
      * Destroy any currently valid write lock from this or any other process. This is obviously very dangerous and defeats the purpose of write locking.
      * This method exists only for administrator tools to clear a failed process without waiting for the expiration period. It can also be useful for tests.
      * For this to succeed, all of the conditions of `acquireWriteLock` must be true other than #4.
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     clearWriteLock(): void;
 
@@ -250,7 +252,7 @@ export namespace CloudSqlite {
      * Abandon any local changes in this container. If the write lock is currently held, it is released.
      * This function fails with BE_SQLITE_BUSY if one or more clients have open read or write transactions
      * on any database in the container.
-     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     abandonChanges(): void;
 
@@ -272,7 +274,7 @@ export namespace CloudSqlite {
 
     /**
      * Permanently Detach and Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container.
-     * @note This function does nothing if the CloudContainer is not connected to a CloudCache. @see connect
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     detach(): void;
 
@@ -289,7 +291,7 @@ export namespace CloudSqlite {
      * @note this is called automatically from `releaseWriteLock` before the write lock is released. It is only necessary to call this directly if you
      * wish to upload changes while the write lock is still held.
      * @see hasLocalChanges
-     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     uploadChanges(): Promise<void>;
 
@@ -321,12 +323,14 @@ export namespace CloudSqlite {
 
     /** Get the list of database names in this CloudContainer.
      * @param globArg if present, filter the results with SQLite [GLOB](https://www.sqlite.org/lang_expr.html#glob) operator.
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     queryDatabases(globArg?: string): string[];
 
     /**
      * Get the status of a specific database in this CloudContainer.
      * @param dbName the name of the database of interest
+     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     queryDatabase(dbName: string): CloudSqlite.CachedDbProps | undefined;
 
@@ -422,6 +426,7 @@ export namespace CloudSqlite {
     * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
     * @param container the CloudContainer for which the lock is to be acquired
     * @param busyHandler if present, function called when the write lock is currently held by another user.
+    * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
     */
   export async function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler) {
     if (container.hasWriteLock)
