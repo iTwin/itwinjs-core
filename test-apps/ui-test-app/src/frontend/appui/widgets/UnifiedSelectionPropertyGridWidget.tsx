@@ -16,7 +16,7 @@ import {
 import {
   ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver,
 } from "@itwin/core-react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, FrameworkVersionSwitch, UiFramework, WidgetControl } from "@itwin/appui-react";
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -198,7 +198,7 @@ function createDataProvider(imodel: IModelConnection): PresentationPropertyDataP
   return provider;
 }
 
-ConfigurableUiManager.registerControl("UnifiedSelectionPropertyGridDemoWidget", UnifiedSelectionPropertyGridWidgetControl);
+UiFramework.controls.register("UnifiedSelectionPropertyGridDemoWidget", UnifiedSelectionPropertyGridWidgetControl);
 
 interface FavoriteActionButtonProps {
   field: Field;

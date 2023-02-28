@@ -151,7 +151,6 @@ export class SubCategoriesCache {
     const map = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
     for (const id of subCategoryIds) {
       const appearance = this._appearances.get(id);
-      assert(undefined !== appearance);
       if (appearance)
         map.set(id, { id, categoryId, appearance });
     }

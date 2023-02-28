@@ -14,7 +14,6 @@ import { AppButton } from "@itwin/appui-layout-react";
 import { BackstageManager } from "../backstage/BackstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /**
  * Properties for the [[BackstageAppButton]] React component
@@ -62,7 +61,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
 
   let buttonProximityScale: number | undefined;
 
-  if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) { // eslint-disable-line deprecation/deprecation
+  if ("1" !== useFrameworkVersion() && UiFramework.visibility.useProximityOpacity && !UiFramework.isMobile()) { // eslint-disable-line deprecation/deprecation
     buttonProximityScale = proximityScale;
   }
 

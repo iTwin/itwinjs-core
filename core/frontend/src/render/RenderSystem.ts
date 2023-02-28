@@ -280,16 +280,7 @@ export abstract class RenderSystem implements IDisposable {
   public get maxTextureSize(): number { return 0; }
 
   /** @internal */
-  public get supportsInstancing(): boolean { return true; }
-
-  /** @internal */
   public get supportsCreateImageBitmap(): boolean { return false; }
-
-  /** @internal */
-  public get supportsIndexedEdges(): boolean { return true; }
-
-  /** @internal */
-  public get supportsNonuniformScaledInstancing(): boolean { return true; }
 
   /** @internal */
   public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
@@ -791,11 +782,6 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     logarithmicDepthBuffer?: boolean;
 
-    /** ###TODO this appears to do nothing. @internal */
-    filterMapTextures?: boolean;
-    /** ###TODO this appears to do nothing. @internal */
-    filterMapDrapeTextures?: boolean;
-
     /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
      * @see [[dpiAwareLOD]] to control whether device pixel ratio affects the level of detail for tile graphics and decorations.
      * @see [[Viewport.cssPixelsToDevicePixels]] to convert CSS pixels to device pixels.
@@ -830,11 +816,10 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     dpiAwareLOD?: boolean;
 
-    /** If true will attempt to create a WebGL2 context, falling back to WebGL1 if WebGL2 is not supported.
-     *
-     * Default value: true
-     *
+    /** Previously, this property dictated whether to attempt to use a WebGL 2 rendering context before falling back to WebGL 1.
+     * WebGL 1 is no longer supported, so this property is now ignored.
      * @public
+     * @deprecated in 4.x. WebGL 1 is no longer supported.
      */
     useWebGL2?: boolean;
 
@@ -875,8 +860,8 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     debugShaders?: boolean;
 
-    /** Initial antialias setting
-     * If > 1, and a WebGL2 context is being used, will turn on antialiasing using that many samples.
+    /** Initial antialias setting.
+     * If antialiasing is supported, a value greater than 1 enables it using that many samples, and a value less than or equal to 1 disables antialiasing.
      * Default value: 1
      * @public
      */

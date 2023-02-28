@@ -6,7 +6,7 @@
  * @module Tools
  */
 import { IModelApp, Tool } from "@itwin/core-frontend";
-import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
+import { UiFramework } from "../UiFramework";
 
 /**
  * Immediate tool that will focus into the Tool Settings widget.
@@ -16,7 +16,7 @@ export class FocusToolSettings extends Tool {
   public static override toolId = "FocusToolSettings";
 
   public override async run(): Promise<boolean> {
-    return ToolSettingsManager.focusIntoToolSettings();
+    return UiFramework.toolSettings.focusIntoToolSettings();
   }
 }
 

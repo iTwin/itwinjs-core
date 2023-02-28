@@ -13,8 +13,8 @@ import { ItemField } from "@itwin/core-frontend";
 import { CommonProps, Icon, IconSpec, useRefs } from "@itwin/core-react";
 import { isLetter, SpecialKey } from "@itwin/appui-abstract";
 import { Input } from "@itwin/itwinui-react";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for [[AccuDrawInputField]] component
  * @beta
@@ -120,7 +120,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
 
       if (isLetter(e.key)) {
         e.preventDefault();
-        KeyboardShortcutManager.processKey(e.key);
+        UiFramework.keyboardShortcuts.processKey(e.key);
         return;
       }
     }, [onEscPressed, onEnterPressed]);

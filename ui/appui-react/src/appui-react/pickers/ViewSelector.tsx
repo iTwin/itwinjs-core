@@ -11,7 +11,6 @@ import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, ViewState } from "@itwin/core-frontend";
 import { UiEvent } from "@itwin/appui-abstract";
 import { SupportsViewSelectorChange } from "../content/ContentControl";
-import { ContentViewManager } from "../content/ContentViewManager";
 import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
@@ -267,7 +266,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   // enable/disable the models
   // istanbul ignore next
   private _setEnabled = async (item: ListItem, _enabled: boolean) => {
-    const activeContentControl = ContentViewManager.getActiveContentControl() as unknown as SupportsViewSelectorChange;
+    const activeContentControl = UiFramework.content.getActiveContentControl() as unknown as SupportsViewSelectorChange;
     if (!activeContentControl || !activeContentControl.supportsViewSelectorChange) {
       Logger.logError(UiFramework.loggerCategory(this), `No active ContentControl for ViewSelector change`);
       return;

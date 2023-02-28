@@ -14,7 +14,7 @@ import { Toolbar } from "../toolbar/Toolbar";
 import { ToolbarWidgetProps, WidgetDef } from "./WidgetDef";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
- * @deprecated in 3.0.
+ * @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  * @public
  */
 export class ToolbarWidgetDefBase extends WidgetDef {

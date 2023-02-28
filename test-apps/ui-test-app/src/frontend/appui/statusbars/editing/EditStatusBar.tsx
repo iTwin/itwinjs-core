@@ -5,9 +5,9 @@
 import "./EditStatusBar.scss";
 import * as React from "react";
 import {
-  ActivityCenterField, AnyStatusBarItem, ClearEmphasisStatusField, ConfigurableUiManager, MessageCenterField, SectionsStatusField, SelectionInfoField,
+  ActivityCenterField, AnyStatusBarItem, ClearEmphasisStatusField, MessageCenterField, SectionsStatusField, SelectionInfoField,
   SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItemUtilities, StatusBarSection, StatusBarSeparator, StatusBarWidgetControl, StatusBarWidgetControlArgs,
-  TileLoadingIndicator, ToolAssistanceField, ViewAttributesStatusField,
+  TileLoadingIndicator, ToolAssistanceField, UiFramework, ViewAttributesStatusField,
 } from "@itwin/appui-react";
 import { DisplayStyleField } from "../../statusfields/DisplayStyleField";
 import { PushPullStatusField } from "../../statusfields/editing/PushPullStatusField";
@@ -45,4 +45,4 @@ export class EditStatusBarWidgetControl extends StatusBarWidgetControl {
   }
 }
 
-ConfigurableUiManager.registerControl("EditStatusBar", EditStatusBarWidgetControl);
+UiFramework.controls.register("EditStatusBar", EditStatusBarWidgetControl);

@@ -6,7 +6,7 @@
 import {
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { BackstageItem, BackstageItemUtilities, CommandItemDef, CommonWidgetProps, ModelessDialogManager, StagePanelLocation, StagePanelSection, StageUsage, StateManager, SyncUiEventDispatcher, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState } from "@itwin/appui-react";
+import { BackstageItem, BackstageItemUtilities, CommandItemDef, CommonWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, StateManager, SyncUiEventDispatcher, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiFramework, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import * as React from "react";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
@@ -88,7 +88,7 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
         iconSpec: <SvgWindowAdd />,
         labelKey: "SampleApp:buttons.sampleModelessDialog",
         execute: () => {
-          ModelessDialogManager.openDialog(
+          UiFramework.dialogs.modeless.open(
             <SampleModelessDialog
               opened={true}
               dialogId={dialogId}

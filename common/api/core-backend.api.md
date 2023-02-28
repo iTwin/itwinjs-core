@@ -182,6 +182,7 @@ import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
+import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -958,15 +959,15 @@ export namespace CodeService {
         readonly guid: CodeGuid;
         readonly json?: SettingObject;
         readonly origin: CodeOriginName;
-        readonly scope: ScopeGuid;
-        readonly spec: CodeSpecName;
+        readonly scopeGuid: ScopeGuid;
+        readonly specName: CodeSpecName;
         readonly state?: CodeState;
         readonly value: CodeValue;
     }
     export interface CodeFilter extends ValueFilter {
         readonly origin?: CodeOriginName;
-        readonly scope?: ScopeGuid;
-        readonly spec?: CodeSpecName;
+        readonly scopeGuid?: ScopeGuid;
+        readonly specName?: CodeSpecName;
     }
     export type CodeGuid = GuidString;
     export interface CodeGuidStateJson {
@@ -1044,9 +1045,9 @@ export namespace CodeService {
     }
     export interface ScopeAndSpec {
         // (undocumented)
-        readonly scope: ScopeGuid;
+        readonly scopeGuid: ScopeGuid;
         // (undocumented)
-        readonly spec: CodeSpecName;
+        readonly specName: CodeSpecName;
     }
     export type ScopeGuid = GuidString;
     export interface ScopeSpecAndValue extends ScopeAndSpec {
@@ -1221,10 +1222,11 @@ export class DevTools {
     static ping(): boolean;
     static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined;
     static stats(): DevToolsStats;
-    static versions(): {
+    static versions(): Promise<{
         application: string;
         iTwinJs: any;
-    };
+        availableRpcs: RpcInterfaceEndpoints[];
+    }>;
 }
 
 // @internal
@@ -2793,7 +2795,7 @@ export abstract class IModelDb extends IModel {
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
-    importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;
+    importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
@@ -4416,6 +4418,12 @@ export class Schema {
     static get schemaName(): string;
     // @beta
     static toSemverString(paddedVersion: string): string;
+}
+
+// @public
+export interface SchemaImportOptions {
+    // @internal
+    ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
 // @internal (undocumented)

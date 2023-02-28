@@ -3,10 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -19,8 +23,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { BuildingCodeOffsetOps } from "./BuildingCodeOffsetOps";
 
 /* eslint-disable no-console */
@@ -509,4 +511,34 @@ describe("Arc3d", () => {
     ck.checkpoint("Arc3d.CreateCenterNormalRadius");
     expect(ck.getNumErrors()).equals(0);
   });
+  // compare arc properties as CurvePrimitive and in equivalent 2-arc CurveChainWithDistanceIndex
+  it("CurvatureTest", () => {
+    const ck = new Checker();
+    const radius = 100.0;
+    const curvature = 1.0 / radius;
+    const circle = Arc3d.createXY(Point3d.createZero(), 100.0);
+    // two arcs of unequal sweep that join to cover the full circle
+    const arc1 = Arc3d.createXY(Point3d.createZero(), 100.0, AngleSweep.createStartEndDegrees(0, 90));
+    const arc2 = Arc3d.createXY(Point3d.createZero(), 100.0, AngleSweep.createStartEndDegrees(90, 360));
+    const path = new Path();
+    path.children.push(arc1);
+    path.children.push(arc2);
+    const indexed = CurveChainWithDistanceIndex.createCapture(path);
+
+    for (const fraction of [0.0, 0.125]) {
+      const circleCurvature = circle.fractionToCurvature(fraction)!;
+      const circleDerivatives = circle.fractionToPointAnd2Derivatives(0.0)!;
+      ck.testCoordinate(circleCurvature, curvature, "curvature from full circle");
+      assert.isTrue(Geometry.isAlmostEqualNumber(circleCurvature, curvature));
+
+      const pathCurvature = indexed.fractionToCurvature(fraction)!;
+      ck.testCoordinate(pathCurvature, curvature, "curvature from arcs in path");
+      const pathDerivatives = indexed.fractionToPointAnd2Derivatives(0.0)!;
+      ck.testPoint3d(circleDerivatives.origin, pathDerivatives.origin, "point");
+      ck.testVector3d(circleDerivatives.vectorU, pathDerivatives.vectorU, "vectorU");
+      ck.testVector3d(circleDerivatives.vectorV, pathDerivatives.vectorV, "vectorV");
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
