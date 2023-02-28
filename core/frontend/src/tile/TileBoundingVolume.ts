@@ -7,7 +7,7 @@
  */
 
 import { RequireAtLeastOne } from "@itwin/core-bentley";
-import { Matrix3d, Point3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { BoundingSphere, OrientedBoundingBox } from "@itwin/core-common";
 
 export type TileBoundingVolumeProps = RequireAtLeastOne<{
@@ -25,6 +25,7 @@ export interface TileBoundingVolume {
 
   distanceSquaredToPoint(point: XYAndZ): number;
   distanceToPoint(point: XYAndZ): number;
+  transformInPlace(transform: Transform): void;
 }
 
 export namespace TileBoundingVolume {
@@ -64,15 +65,23 @@ class TileBoundingSphere implements TileBoundingVolume {
   public distanceToPoint(point: XYAndZ): number {
     return this.sphere.distanceToPoint(point);
   }
+
+  public transformInPlace(transform: Transform): void {
+    this.sphere.transformInPlace(transform);
+  }
 }
 
 class TileOBB implements TileBoundingVolume {
-  public readonly sphere: BoundingSphere;
+  private _sphere: BoundingSphere;
   private readonly _obb: OrientedBoundingBox;
 
   public constructor(obb: OrientedBoundingBox) {
     this._obb = obb;
-    this.sphere = obb.computeBoundingSphere();
+    this._sphere = obb.computeBoundingSphere();
+  }
+
+  public get sphere(): BoundingSphere {
+    return this._sphere;
   }
 
   public distanceSquaredToPoint(point: XYAndZ): number {
@@ -81,5 +90,10 @@ class TileOBB implements TileBoundingVolume {
 
   public distanceToPoint(point: XYAndZ): number {
     return this._obb.distanceToPoint(point);
+  }
+
+  public transformInPlace(transform: Transform): void {
+    this._obb.transformInPlace(transform);
+    this._sphere = this._obb.computeBoundingSphere();
   }
 }
