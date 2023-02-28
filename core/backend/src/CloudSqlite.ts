@@ -265,11 +265,13 @@ export namespace CloudSqlite {
     /**
      * Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container. Leaves the container attached to the
      * CloudCache so it is available for future sessions.
+     * @note This function does nothing if the CloudContainer is not connected to a CloudCache. @see connect
      */
     disconnect(): void;
 
     /**
      * Permanently Detach and Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container.
+     * @note This function does nothing if the CloudContainer is not connected to a CloudCache. @see connect
      */
     detach(): void;
 
@@ -285,6 +287,7 @@ export namespace CloudSqlite {
      * @note this is called automatically from `releaseWriteLock` before the write lock is released. It is only necessary to call this directly if you
      * wish to upload changes while the write lock is still held.
      * @see hasLocalChanges
+     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
      */
     uploadChanges(): Promise<void>;
 
@@ -304,6 +307,7 @@ export namespace CloudSqlite {
      * @note CloudSqlite uses copy-on-write semantics for this operation. That is, this method merely makes a
      * new entry in the manifest with the new name that *shares* all of its blocks with the original database.
      * If either database subsequently changes, the only modified blocks are not shared.
+     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
      */
     copyDatabase(dbName: string, toAlias: string): Promise<void>;
 
