@@ -313,6 +313,7 @@ export namespace CloudSqlite {
 
     /** Remove a database from this CloudContainer.
      * @see cleanDeletedBlocks
+     * @note this function requires the CloudContainer to be connected to a CloudCache. @see connect
      */
     deleteDatabase(dbName: string): Promise<void>;
 
