@@ -177,6 +177,13 @@ export class IModelExporter {
   private _progressCounter: number = 0;
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
+  /**
+   * Retrieve the cached entity change information.
+   * @note This will only be initialized after [IModelExporter.exportChanges] is invoked.
+  */
+  public get sourceDbChanges(): ChangedInstanceIds | undefined {
+    return this._sourceDbChanges;
+  }
   /** The handler called by this IModelExporter. */
   private _handler: IModelExportHandler | undefined;
   /** The handler called by this IModelExporter. */
@@ -816,10 +823,15 @@ export interface IModelExporterState {
   additionalState?: any;
 }
 
-class ChangedInstanceOps {
+/** Class for holding change information.
+ * @beta
+*/
+export class ChangedInstanceOps {
   public insertIds = new Set<Id64String>();
   public updateIds = new Set<Id64String>();
   public deleteIds = new Set<Id64String>();
+
+  /** Initializes the object from IModelJsNative.ChangedInstanceOpsProps. */
   public addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void {
     if (undefined !== val) {
       if ((undefined !== val.insert) && (Array.isArray(val.insert)))
@@ -834,7 +846,11 @@ class ChangedInstanceOps {
   }
 }
 
-class ChangedInstanceIds {
+/**
+ * Class for discovering modified elements between 2 versions of an iModel.
+ * @beta
+ */
+export class ChangedInstanceIds {
   public codeSpec = new ChangedInstanceOps();
   public model = new ChangedInstanceOps();
   public element = new ChangedInstanceOps();
@@ -843,6 +859,13 @@ class ChangedInstanceIds {
   public font = new ChangedInstanceOps();
   private constructor() { }
 
+  /**
+   * Initializes a new ChangedInstanceIds object with information taken from a range of changesets.
+   * @param accessToken Access token.
+   * @param iModel IModel briefcase whose changesets will be queried.
+   * @param firstChangesetId Changeset id.
+   * @note Modified element information will be taken from a range of changesets. First changeset in a range will be the 'firstChangesetId', the last will be whichever changeset the 'iModel' briefcase is currently opened on.
+   */
   public static async initialize(accessToken: AccessToken | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
     const iModelId = iModel.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, accessToken })).index;
