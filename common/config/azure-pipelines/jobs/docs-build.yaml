@@ -14,9 +14,6 @@ parameters:
   - name: outputDir
     type: string
     default: $(Pipeline.Workspace)/tempDocsBuild
-  - name: useCurrentAppUIDocsArtifact
-    type: boolean
-    default: false
   - name: useCurrentBisDocsArtifact
     type: boolean
     default: false
@@ -75,7 +72,6 @@ jobs:
         parameters:
           workingDir: ${{ parameters.workingDir }}
           stagingDir: ${{ parameters.stagingDir }}
-          useCurrentAppUIDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
           useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
           useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
