@@ -8,17 +8,7 @@
 
 import { RequireAtLeastOne } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { BoundingSphere, OrientedBoundingBox } from "@itwin/core-common";
-
-export type TileBoundingVolumeProps = RequireAtLeastOne<{
-  box?: [centerX: number, centerY: number, centerZ: number,
-    uX: number, uY: number, uZ: number,
-    vX: number, vY: number, vZ: number,
-    wX: number, wY: number, wZ: number,
-  ];
-  sphere?: [centerX: number, centerY: number, centerZ: number, radius: number];
-  region?: [west: number, south: number, east: number, north: number, minHeight: number, maxHeight: number];
-}>;
+import { BoundingSphere, OrientedBoundingBox, TileBoundingVolumeProps } from "@itwin/core-common";
 
 export interface TileBoundingVolume {
   readonly sphere: Readonly<BoundingSphere>;
