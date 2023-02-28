@@ -358,9 +358,11 @@ export class RealityTile extends Tile {
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
     if (undefined !== this._geometricError) {
-      const radius = args.getTileRadius(this);
-      const center = args.getTileCenter(this);
-      const pixelSize = args.computePixelSizeInMetersAtClosestPoint(center, radius);
+      let pixelSize;
+      if (this.boundingBox)
+        pixelSize = args.computePixelSizeInMetersAtClosestPointOnBoundingBox(this.boundingBox);
+      else
+        pixelSize = args.computePixelSizeInMetersAtClosestPoint(args.getTileCenter(this), args.getTileRadius(this));
 
       const sse = this._geometricError / pixelSize;
       return args.maximumScreenSpaceError / sse;

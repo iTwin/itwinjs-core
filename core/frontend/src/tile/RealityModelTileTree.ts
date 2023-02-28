@@ -362,7 +362,8 @@ class RealityModelTileProps implements RealityTileParams {
     }
 
     this.maximumSize = (this.noContentButTerminateOnSelection || hasContents) ? RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError) : 0;
-    if (args.usesGeometricError)
+    const forceGeometricError = true;
+    if (args.usesGeometricError || forceGeometricError)
       this.geometricError = json.geometricError;
   }
 }
