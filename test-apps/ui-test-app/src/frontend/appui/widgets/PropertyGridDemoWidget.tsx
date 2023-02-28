@@ -6,7 +6,7 @@ import * as React from "react";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@itwin/components-react";
 import { Orientation } from "@itwin/core-react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, ContentControl, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { HorizontalAnchor, WidgetContent } from "@itwin/appui-layout-react";
 
 class SamplePropertyRecord extends PropertyRecord {
@@ -124,13 +124,13 @@ class VerticalPropertyGridWidget extends React.Component {
 
   public override render() {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={true}
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={true} // eslint-disable-line deprecation/deprecation
         isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
     );
   }
 }
 
-ConfigurableUiManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
+UiFramework.controls.register("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
 
 export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   private _ref = React.createRef<WidgetContent>(); // eslint-disable-line deprecation/deprecation
@@ -194,13 +194,13 @@ class HorizontalPropertyGridWidget extends React.Component<{ style?: React.CSSPr
 
   public override render() {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal}
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} // eslint-disable-line deprecation/deprecation
         isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} style={this.props.style} />
     );
   }
 }
 
-ConfigurableUiManager.registerControl("HorizontalPropertyGridDemoWidget", HorizontalPropertyGridWidgetControl);
+UiFramework.controls.register("HorizontalPropertyGridDemoWidget", HorizontalPropertyGridWidgetControl);
 
 export class HorizontalPropertyGridContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -239,10 +239,10 @@ class HorizontalPropertyGridContent extends React.Component {
 
   public override render(): React.ReactNode {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} isPropertySelectionEnabled={true}
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} isPropertySelectionEnabled={true} // eslint-disable-line deprecation/deprecation
         isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
     );
   }
 }
 
-ConfigurableUiManager.registerControl("HorizontalPropertyGridDemoContent", HorizontalPropertyGridContentControl);
+UiFramework.controls.register("HorizontalPropertyGridDemoContent", HorizontalPropertyGridContentControl);

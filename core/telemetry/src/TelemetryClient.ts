@@ -1,3 +1,4 @@
+
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -56,7 +57,7 @@ export class TelemetryEvent {
 
 /** @alpha */
 export interface TelemetryClient {
-  postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
+  postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>; // eslint-disable-line deprecation/deprecation
 }
 
 /** @alpha */
@@ -67,7 +68,7 @@ export class TelemetryManager {
     this._clients = new Set<TelemetryClient>(clients);
   }
 
-  public async postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void> {
+  public async postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void> { // eslint-disable-line deprecation/deprecation
     const postPerClient = async (subClient: TelemetryClient) => {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);

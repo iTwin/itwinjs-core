@@ -13,8 +13,6 @@ import { getInstancesCount, SelectionScope } from "@itwin/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 // cSpell:ignore configurableui
 import { Backstage } from "../backstage/Backstage";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { WorkflowManager } from "../workflow/Workflow";
@@ -38,7 +36,7 @@ export enum SyncUiEventId {
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
   /** Backstage has been closed.
-   * @deprecated in 1.x. Use BackstageEvent instead
+   * @deprecated in 3.7. Use BackstageEvent instead
    */
   BackstageCloseEvent = "backstagecloseevent",
   /** Backstage has been closed. */
@@ -60,12 +58,12 @@ export enum SyncUiEventId {
   /** An InteractiveTool has been activated via the ToolAdmin. */
   ToolActivated = "toolactivated",
   /** A Task has been activated.
-   * @deprecated in 3.0. */
+   * @deprecated in 3.0. Task is obsolete. */
   TaskActivated = "taskactivated",
   /** The state of a Widget has changed. */
   WidgetStateChanged = "widgetstatechanged",
   /** A Workflow has been activated.
-   * @deprecated in 3.0. */
+   * @deprecated in 3.0. Workflow is obsolete. */
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
@@ -83,12 +81,12 @@ export enum SyncUiEventId {
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
- * @public @deprecated in 3.0. Use UiSyncEventArgs in appui-abstract instead
+ * @public @deprecated in 3.7, use UiSyncEventArgs in appui-abstract instead
  */
 export type SyncUiEventArgs = UiSyncEventArgs;
 
 /** SyncUi Event class.
- * @public @deprecated in 3.0. Use UiSyncEvent in appui-abstract instead
+ * @public @deprecated in 3.7, use UiSyncEvent in appui-abstract instead
  */
 export type SyncUiEvent = UiSyncEvent;
 
@@ -162,35 +160,35 @@ export class SyncUiEventDispatcher {
     // clear any registered listeners - this should only be encountered in unit test scenarios
     this._unregisterListenerFuncs.forEach((unregisterListenerFunc) => unregisterListenerFunc());
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onContentControlActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onContentLayoutActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentLayoutActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onFrontstageActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageActivating);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageReadyEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onFrontstageReadyEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageReady);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onModalFrontstageChangedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ModalFrontstageChanged);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onNavigationAidActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.NavigationAidActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onToolActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onToolActivatedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ToolActivated);
     }));
 
-    this._unregisterListenerFuncs.push(FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.frontstages.onWidgetStateChangedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     }));
 
@@ -206,7 +204,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated); // eslint-disable-line deprecation/deprecation
     }));
 
-    this._unregisterListenerFuncs.push(ContentViewManager.onActiveContentChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(UiFramework.content.onActiveContentChangedEvent.addListener(() => {
       SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
     }));
 
@@ -292,7 +290,7 @@ export class SyncUiEventDispatcher {
           UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope);
         }
       }
-    } catch {}
+    } catch { }
 
   }
 

@@ -7,189 +7,59 @@
  */
 
 import * as React from "react";
-import { UiEvent } from "@itwin/appui-abstract";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl } from "./ContentControl";
-import { ContentLayoutManager } from "./ContentLayoutManager";
-import { IModelApp } from "@itwin/core-frontend";
-import { ContentGroup } from "./ContentGroup";
-import { Logger } from "@itwin/core-bentley";
-import { UiFramework } from "../UiFramework";
-
-/** [[MouseDownChangedEvent]] Args interface.
- * @public
- */
-export interface MouseDownChangedEventArgs {
-  /** Indicates whether the mouse is down */
-  mouseDown: boolean;
-}
-
-/** Mouse Down Changed Event class.
- * @public
- */
-export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> { }
-
-/** [[ActiveContentChangedEvent]] Args interface.
- * @public
- */
-export interface ActiveContentChangedEventArgs {
-  /** React node of the old content */
-  oldContent?: React.ReactNode;
-  /** React node of the newly active content */
-  activeContent?: React.ReactNode;
-}
-
-/** Active Content Changed Event class.
- * @public
- */
-export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEventArgs> { }
+import { InternalContentViewManager as internal } from "./InternalContentViewManager";
 
 /** Content View Manager class.
  * @public
+ * @deprecated in 3.7. Use `UiFramework.content` property
  */
 export class ContentViewManager {
-  private static _mouseDown: boolean = false;
-  private static _activeContent?: React.ReactNode;
-
-  /** Gets the [[MouseDownChangedEvent]] */
-  public static readonly onMouseDownChangedEvent = new MouseDownChangedEvent();
+  public static get onMouseDownChangedEvent() { return internal.onMouseDownChangedEvent; }
 
   /** Determines if the mouse is down in a content view */
   public static get isMouseDown(): boolean {
-    return this._mouseDown;
+    return internal.isMouseDown;
   }
 
   /** Sets the mouse down status for a content view */
   public static setMouseDown(mouseDown: boolean): void {
-    this._mouseDown = mouseDown;
-    this.onMouseDownChangedEvent.emit({ mouseDown });
+    return internal.setMouseDown(mouseDown);
   }
 
   /** Gets the [[ActiveContentChangedEvent]] */
-  public static readonly onActiveContentChangedEvent = new ActiveContentChangedEvent();
+  public static get onActiveContentChangedEvent() { return internal.onActiveContentChangedEvent; }
 
   /** Fires when floating contents are added or removed */
 
-  public static readonly onAvailableContentChangedEvent = new UiEvent<{ contentId: string }>();
+  public static get onAvailableContentChangedEvent() { return internal.onAvailableContentChangedEvent; }
 
   /** Gets the active content as a React.ReactNode. */
   public static getActiveContent(): React.ReactNode | undefined {
-    return this._activeContent;
-  }
-
-  private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined, logIfNotFound = false) {
-    if (floatingControls?.length) {
-      // if we find a React node that matches exactly, return its containing control
-      let control = floatingControls.find((contentControl) => contentControl.reactNode === content);
-      if (control)
-        return control;
-
-      // if we don't find a React node that matches exactly, rely on the id specified by the creator
-      let controlId: string;
-      if (content && (content as React.ReactElement<any>).key) {
-        const key = ((content as React.ReactElement<any>).key as string);
-        // key has format `${contentProps.id}::${this.groupId}` which is stored as unique id
-        controlId = key.split("::", 1)[0];
-      }
-      floatingControls.forEach ((contentControl: ContentControl) => {
-        const node = contentControl.reactNode;
-        const key = ((node as React.ReactElement<any>).key as string);
-        const nodeId = key && key.split("::", 1)[0];
-        if (nodeId === controlId)
-          control = contentControl;
-      });
-      if (control)
-        return control;
-    }
-
-    // if it's not a floating control, look through the content area views
-    // istanbul ignore else
-    if (activeContentGroup) {
-      const activeContentControl = activeContentGroup.getControlFromElement(content);
-      if (activeContentControl)
-        return activeContentControl;
-    }
-
-    if (logIfNotFound)
-      Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
-
-    return undefined;
+    return internal.getActive();
   }
 
   /** Return the active ContentControl. */
   public static getActiveContentControl(): ContentControl | undefined {
-    let activeContentControl: ContentControl | undefined;
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-
-    // istanbul ignore else
-    if (this._activeContent && activeFrontstageDef) {
-      const activeContentGroup = activeFrontstageDef.contentGroup;
-      activeContentControl = this.getControlFromElement(this._activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
-    }
-
-    return activeContentControl;
+    return internal.getActiveContentControl();
   }
 
   public static addFloatingContentControl(contentControl?: ContentControl) {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    // istanbul ignore else
-    if (activeFrontstageDef && contentControl) {
-      activeFrontstageDef.addFloatingContentControl(contentControl);
-    }
+    return internal.addFloatingContentControl(contentControl);
   }
 
   public static dropFloatingContentControl(contentControl?: ContentControl) {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    // istanbul ignore else
-    if (activeFrontstageDef && contentControl)
-      activeFrontstageDef.dropFloatingContentControl(contentControl);
+    return internal.dropFloatingContentControl(contentControl);
   }
 
   /** Sets the active [[ContentControl]] */
   public static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing = false): void {
-    // istanbul ignore else
-    if (this._activeContent !== activeContent || forceEventProcessing) {
-      const oldContent = this._activeContent;
-      this._activeContent = activeContent;
-
-      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-
-      // istanbul ignore else
-      if (activeFrontstageDef) {
-        const activeContentGroup = activeFrontstageDef.contentGroup;
-
-        // istanbul ignore else
-        const oldContentControl = this.getControlFromElement(oldContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
-        const activeContentControl = this.getControlFromElement(activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls, true);
-
-        // Only call setActiveView if going to or coming from a non-viewport ContentControl
-        // istanbul ignore else
-        if (activeContentControl) {
-          // istanbul ignore next
-          const doSetActiveView =
-            forceEventProcessing || (!activeContentControl.viewport ||
-              (/* istanbul ignore next */ oldContentControl && /* istanbul ignore next */ !oldContentControl.viewport));
-
-          // istanbul ignore else
-          if (doSetActiveView) {
-            activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
-            this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
-          } else {
-            if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
-            }
-          }
-        }
-      }
-    }
+    return internal.setActive(activeContent, forceEventProcessing);
   }
 
   /** Refreshes the active [[ContentControl]] */
   public static refreshActiveContent(activeContent: React.ReactNode) {
-    ContentLayoutManager.refreshActiveLayout();
-    this.setActiveContent(activeContent, true);
+    return internal.refreshActive(activeContent);
   }
 
   /**
@@ -197,9 +67,7 @@ export class ContentViewManager {
    * @param content ContentControl to check
    */
   public static isContentSheetView(content: ContentControl | undefined): boolean {
-    if (!content || !content.viewport)
-      return false;
-    return (ViewUtilities.isSheetView(content.viewport));
+    return internal.isContentSheetView(content);
   }
 
   /**
@@ -207,9 +75,7 @@ export class ContentViewManager {
    * @param content ContentControl to check
    */
   public static isContentDrawingView(content: ContentControl | undefined): boolean {
-    if (!content || !content.viewport)
-      return false;
-    return (ViewUtilities.isDrawingView(content.viewport));
+    return internal.isContentDrawingView(content);
   }
 
   /**
@@ -217,9 +83,7 @@ export class ContentViewManager {
    * @param content ContentControl to check
    */
   public static isContentSpatialView(content: ContentControl | undefined): boolean {
-    if (!content || !content.viewport)
-      return false;
-    return (ViewUtilities.isSpatialView(content.viewport));
+    return internal.isContentSpatialView(content);
   }
 
   /**
@@ -227,9 +91,7 @@ export class ContentViewManager {
    * @param content ContentControl to check
    */
   public static isContentOrthographicView(content: ContentControl | undefined): boolean {
-    if (!content || !content.viewport)
-      return false;
-    return (ViewUtilities.isOrthographicView(content.viewport));
+    return internal.isContentOrthographicView(content);
   }
 
   /**
@@ -237,9 +99,7 @@ export class ContentViewManager {
    * @param content ContentControl to check
    */
   public static isContent3dView(content: ContentControl | undefined): boolean {
-    if (!content || !content.viewport)
-      return false;
-    return (ViewUtilities.is3dView(content.viewport));
+    return internal.isContent3dView(content);
   }
 
   /**
@@ -247,8 +107,6 @@ export class ContentViewManager {
    * @param content ContentControl to check
    */
   public static contentSupportsCamera(content: ContentControl | undefined): boolean {
-    if (!content || !content.viewport)
-      return false;
-    return (ViewUtilities.viewSupportsCamera(content.viewport));
+    return internal.contentSupportsCamera(content);
   }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/eslint-plugin"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin",
+  "email": "aruniverse@users.noreply.github.com"
+}

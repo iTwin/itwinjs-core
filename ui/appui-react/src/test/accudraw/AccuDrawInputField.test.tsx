@@ -8,11 +8,11 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { AccuDrawInputField } from "../../appui-react/accudraw/AccuDrawInputField";
-import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
 import { TestUtils } from "../TestUtils";
 import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
+import { UiFramework } from "../../appui-react";
 
 // cspell:ignore uiadmin
 
@@ -108,8 +108,8 @@ describe("AccuDrawInputField", () => {
     spyEnter.calledOnce.should.be.true;
   });
 
-  it("should call KeyboardShortcutManager.processKey on a letter", () => {
-    const spyMethod = sinon.spy(KeyboardShortcutManager, "processKey");
+  it("should call UiFramework.keyboardShortcuts.processKey on a letter", () => {
+    const spyMethod = sinon.spy(UiFramework.keyboardShortcuts, "processKey");
     const spyChanged = sinon.spy();
     const wrapper = render(<AccuDrawInputField isLocked={false} field={ItemField.X_Item} id="x" onValueChanged={spyChanged} />);
     const input = wrapper.container.querySelector("input");
@@ -118,7 +118,7 @@ describe("AccuDrawInputField", () => {
     spyMethod.calledOnce.should.be.true;
     fireEvent.keyDown(input!, { key: "1" });
     spyMethod.calledTwice.should.not.be.true;
-    (KeyboardShortcutManager.processKey as any).restore();
+    (UiFramework.keyboardShortcuts.processKey as any).restore();
   });
 
   it("should update value when calling onFieldValueChange", () => {

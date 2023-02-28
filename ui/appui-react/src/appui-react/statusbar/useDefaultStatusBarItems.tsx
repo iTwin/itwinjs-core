@@ -12,7 +12,7 @@ import { CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager }
 /** Hook that returns items from [[StatusBarItemsManager]].
  * @public
  */
-export const useDefaultStatusBarItems = (manager: StatusBarItemsManager): readonly CommonStatusBarItem[] => {
+export const useDefaultStatusBarItems = (manager: StatusBarItemsManager): readonly CommonStatusBarItem[] => { // eslint-disable-line deprecation/deprecation
   const [items, setItems] = React.useState(manager.items);
   const isInitialMount = React.useRef(true);
   React.useEffect(() => {

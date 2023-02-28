@@ -12,10 +12,9 @@ import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent, ViewStateProp } from "@itwin/imodel-components-react";
 import { FloatingViewportContentControl } from "./ViewportContentControl";
-import { ContentViewManager } from "./ContentViewManager";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentWrapper } from "./ContentLayout";
 import { useRefs } from "@itwin/core-react";
+import { UiFramework } from "../UiFramework";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const FloatingViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -55,11 +54,11 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
   React.useEffect(() => {
     if (!contentControl.current) {
       contentControl.current = new FloatingViewportContentControl(contentId, contentId, null);
-      ContentViewManager.addFloatingContentControl(contentControl.current);
+      UiFramework.content.addFloatingContentControl(contentControl.current);
     }
     return () => {
       if (contentControl.current) {
-        ContentViewManager.dropFloatingContentControl(contentControl.current);
+        UiFramework.content.dropFloatingContentControl(contentControl.current);
         contentControl.current = undefined;
       }
     };
@@ -98,7 +97,7 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
   React.useEffect(() => {
     const onViewClose = (vp: ScreenViewport) => {
       if (contentControl.current?.viewport === vp) {
-        ContentViewManager.dropFloatingContentControl(contentControl.current);
+        UiFramework.content.dropFloatingContentControl(contentControl.current);
         contentControl.current = undefined;
       }
     };
@@ -106,7 +105,7 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
   }, []);
 
   return (
-    <div onMouseMove={UiShowHideManager.handleContentMouseMove} className="uifw-dialog-imodel-content" style={{ height: "100%", position: "relative" }}>
+    <div onMouseMove={UiFramework.visibility.handleContentMouseMove} className="uifw-dialog-imodel-content" style={{ height: "100%", position: "relative" }}>
       <ContentWrapper content={viewPortControl} style={{ height: "100%", position: "relative" }} />
     </div>
   );

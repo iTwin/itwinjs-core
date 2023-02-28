@@ -16,7 +16,6 @@ import { CoincidentGeometryQuery } from "../geometry3d/CoincidentGeometryOps";
 import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Matrix3d } from "../geometry3d/Matrix3d";
-// import { Arc3d } from "./Arc3d";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
@@ -27,7 +26,6 @@ import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../numerics/Newton";
-// import { LineString3d } from "./LineString3d";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
 import { Arc3d } from "./Arc3d";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
@@ -108,8 +106,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
    * @param extendA flag to enable using extension of geometryA.
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.
    * @param extendB flag for extension of geometryB.
+   * @param tolerance optional distance tolerance for coincidence
    */
-  public constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean) {
+  public constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance: number = Geometry.smallMetricDistance) {
     super();
     // this.geometryA = _geometryA;
     this._extendA = extendA;
@@ -122,7 +121,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       if (!this._worldToLocalAffine)
         this._worldToLocalPerspective = worldToLocal.clone();
     }
-    this._coincidentGeometryContext = CoincidentGeometryQuery.create();
+    this._coincidentGeometryContext = CoincidentGeometryQuery.create(tolerance);
     this.reinitialize();
   }
   /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
@@ -142,12 +141,14 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       return false;
     return true;
   }
-  // Test the fraction by strict parameter, but allow physical (metric) test at ends.
-  private acceptFractionOnLine(extend0: boolean, fraction: number, extend1: boolean, pointA: Point3d, pointB: Point3d) {
+  /** Test the fraction by strict parameter, but allow toleranced distance test at ends.
+   * @param tolerance optional distance tolerance to check proximity to start/end point
+   */
+  private acceptFractionOnLine(extend0: boolean, fraction: number, extend1: boolean, pointA: Point3d, pointB: Point3d, tolerance: number = Geometry.smallMetricDistance) {
     if (!extend0 && fraction < 0) {
-      return Geometry.isSmallMetricDistance(fraction * pointA.distanceXY(pointB));
+      return Geometry.isDistanceWithinTol(fraction * pointA.distanceXY(pointB), tolerance);
     } else if (!extend1 && fraction > 1.0)
-      return Geometry.isSmallMetricDistance((fraction - 1.0) * pointA.distanceXY(pointB));
+      return Geometry.isDistanceWithinTol((fraction - 1.0) * pointA.distanceXY(pointB), tolerance);
     return true;
   }
   /**
@@ -273,8 +274,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
       pointA0, pointA1,
       pointB0, pointB1, uv)) {
-      if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1)
-        && this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1)) {
+      if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance)
+        && this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1, this._coincidentGeometryContext.tolerance)) {
         this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
       }
     }

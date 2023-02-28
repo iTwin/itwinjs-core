@@ -272,7 +272,7 @@ export class IModelTransformer extends IModelExportHandler {
     shouldExportElement(_sourceElement: Element_2): boolean;
     shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
-    // @deprecated
+    // @deprecated (undocumented)
     protected skipElement(_sourceElement: Element_2): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;

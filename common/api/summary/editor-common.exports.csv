@@ -13,10 +13,10 @@ alpha;CutDirectionMode
 alpha;CutProps
 alpha;DeleteSubEntityProps
 alpha;EdgeParameterRangeProps
-alpha;EditCommandIpc
+beta;EditCommandIpc
 alpha;editorBuiltInCmdIds:
-internal;editorChannel = "editor"
-alpha;EditorIpc
+beta;EditorIpc
+internal;editorIpcStrings:
 alpha;ElementGeometryCacheFilter
 alpha;ElementGeometryResultOptions
 alpha;ElementGeometryResultProps

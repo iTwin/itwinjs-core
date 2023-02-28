@@ -15,6 +15,8 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
 
+/* eslint-disable deprecation/deprecation */
+
 /** An RPC operation control response.
  * @public
  */

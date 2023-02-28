@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Common
+ */
 
 import { useEffect, useMemo, useState } from "react";
 import { publish } from "rxjs/internal/operators/publish";
@@ -15,7 +18,7 @@ import { scheduleSubscription, SubscriptionScheduler } from "./SubscriptionSched
  * The first promise will always be executed.
  * Any promises following the first while it is executing will be scheduled (and unscheduled), leaving only the last promise to be resolved.
  * Once the first promise finishes resolving, the last passed promise starts resolving.
- * @alpha
+ * @beta
  */
 export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (() => Promise<TReturn>)) {
   const scheduler = useMemo(() => new SubscriptionScheduler<TReturn>(), []); // eslint-disable-line react-hooks/exhaustive-deps

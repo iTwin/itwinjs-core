@@ -12,10 +12,10 @@ import * as React from "react";
 import { PopupItem } from "@itwin/components-react";
 import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@itwin/core-react";
 import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@itwin/appui-layout-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
 import { UiFramework } from "../UiFramework";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
@@ -259,13 +259,13 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
   /** @internal */
   public override componentDidMount() {
     this._isMounted = true;
-    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   /** @internal */
   public override componentWillUnmount() {
     this._isMounted = false;
-    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   /** Renders ListPickerBase */
@@ -396,7 +396,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
         lastOpenedPicker = this;
 
         this._closeOnPanelOpened = false;
-        expanded && FrontstageManager.onToolPanelOpenedEvent.emit();
+        expanded && InternalFrontstageManager.onToolPanelOpenedEvent.emit();
         this._closeOnPanelOpened = true;
       }
 
