@@ -11,7 +11,7 @@ import {
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, OrientedBoundingBox, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, SpatialClassifiers, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -186,14 +186,22 @@ export class RealityTileRegion {
   }
 }
 
+export interface RealityTileBounds {
+  range: Range3d;
+  corners?: Point3d[];
+  region?: RealityTileRegion;
+  obb?: OrientedBoundingBox;
+}
+
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): RealityTileBounds | undefined {
     if (undefined === boundingVolume)
       return undefined;
 
     let corners: Point3d[] | undefined;
     let range: Range3d | undefined;
+    let obb: OrientedBoundingBox | undefined;
     if (undefined !== boundingVolume.box) {
       const box: number[] = boundingVolume.box;
       const center = Point3d.create(box[0], box[1], box[2]);
@@ -208,7 +216,17 @@ export class RealityModelTileUtils {
           }
         }
       }
+
       range = Range3d.createArray(corners);
+
+      obb = new OrientedBoundingBox(
+        Point3d.create(box[0], box[1], box[2]),
+        Matrix3d.createColumns(
+          Vector3d.create(box[3], box[4], box[5]),
+          Vector3d.create(box[6], box[7], box[8]),
+          Vector3d.create(box[9], box[10], box[11])
+        )
+      );
     } else if (Array.isArray(boundingVolume.sphere)) {
       const sphere: number[] = boundingVolume.sphere;
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
@@ -219,9 +237,10 @@ export class RealityModelTileUtils {
       const regionRange = region.getRange();
       return { range: regionRange.range, corners: regionRange.corners, region };
     }
-    return range ? { range, corners } : undefined;
 
+    return range ? { range, corners, obb } : undefined;
   }
+
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
     const minToleranceRatio = true === IModelApp.renderSystem.isMobile ? IModelApp.tileAdmin.mobileRealityTileMinToleranceRatio : 1.0;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
 
@@ -230,6 +249,7 @@ export class RealityModelTileUtils {
 
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
+
   public static transformFromJson(jTrans: number[] | undefined): Transform {
     return (jTrans === undefined) ? Transform.createIdentity() : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
   }
@@ -303,6 +323,7 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly rangeCorners?: Point3d[];
   public readonly region?: RealityTileRegion;
   public readonly geometricError?: number;
+  public readonly boundingBox?: OrientedBoundingBox;
 
   constructor(args: {
     json: any;
@@ -322,7 +343,8 @@ class RealityModelTileProps implements RealityTileParams {
     if (boundingVolume) {
       this.range = boundingVolume.range;
       this.rangeCorners = boundingVolume.corners;
-      this.region = boundingVolume?.region;
+      this.region = boundingVolume.region;
+      this.boundingBox = boundingVolume.obb;
     } else {
       this.range = Range3d.createNull();
       assert(false, "Unbounded tile");

@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@itwin/core-bentley";
 import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, OrientedBoundingBox, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -193,6 +193,28 @@ export class TileDrawArgs {
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
+    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+  }
+
+  public computePixelSizeInMetersAtClosestPointOnBoundingBox(tileObb: OrientedBoundingBox): number {
+    const worldObb = tileObb.transformBy(this.location);
+    let closestPoint = worldObb.center;
+    if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
+      const distanceToCamera = worldObb.distanceToPoint(this.context.viewport.view.camera.eye);
+      if (undefined !== distanceToCamera) {
+        const eyeToCenter = this.context.viewport.view.camera.eye.unitVectorTo(worldObb.center);
+        if (eyeToCenter) {
+          eyeToCenter.scaleInPlace(distanceToCamera);
+          closestPoint = this.context.viewport.view.camera.eye.plus(eyeToCenter);
+        }
+      } else {
+        // Camera is inside of or on bounding volume.
+        closestPoint = this._nearFrontCenter;
+      }
+    }
+
+    const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(closestPoint);
+    const viewPt2 = new Point3d(viewPt.x + 1, viewPt.y, viewPt.z);
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }
 
