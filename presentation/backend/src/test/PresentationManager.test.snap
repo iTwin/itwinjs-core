@@ -315,7 +315,7 @@ Object {
   "descriptor": Object {
     "categories": Array [
       Object {
-        "description": "General",
+        "description": "Test category description",
         "expand": false,
         "label": "Not specified",
         "name": "test-category",

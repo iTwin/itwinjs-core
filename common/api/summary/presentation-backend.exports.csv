@@ -7,7 +7,7 @@ internal;combineDiagnosticsOptions(...options: Array
 public;ContentCacheConfig
 public;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
-internal;getLocalizedStringEN(key: string): any
+internal;getLocalizedStringEN(key: string): string
 public;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 public;HierarchyCacheConfigBase
 public;HierarchyCacheMode

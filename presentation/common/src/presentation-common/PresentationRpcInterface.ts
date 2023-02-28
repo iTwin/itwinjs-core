@@ -177,7 +177,7 @@ export class PresentationRpcInterface extends RpcInterface { // eslint-disable-l
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.3.0";
+  public static interfaceVersion = "4.0.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
