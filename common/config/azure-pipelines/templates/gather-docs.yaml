@@ -37,7 +37,7 @@ steps:
       inputs:
         buildType: specific
         project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-        pipeline: 8594
+        pipeline: 8594 # iTwin AppUI/AppUI Docs CI
         buildVersionToDownload: latestFromBranch
         branchName: refs/heads/master
         artifactName: AppUI Docs
@@ -62,7 +62,7 @@ steps:
       inputs:
         buildType: specific
         project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-        pipeline: 6075
+        pipeline: 6075 # BIS/Generate-Schema-Markdown-(GitHub)
         buildVersionToDownload: latestFromBranch
         branchName: refs/heads/master
         artifactName: Bis Docs
