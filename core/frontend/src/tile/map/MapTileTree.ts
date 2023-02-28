@@ -24,7 +24,7 @@ import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
 import { SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
-  BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
+  BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference, getTileFractionRange,
   GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerTileTreeReference, MapTile,
   MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
@@ -321,7 +321,7 @@ export class MapTileTree extends RealityTileTree {
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
     } else {
-      const mercatorFractionRange = rectangle.getTileFractionRange(this._mercatorTilingScheme);
+      const mercatorFractionRange = getTileFractionRange(rectangle, this._mercatorTilingScheme);
       rays.push(Ray3d.createCapture(this._mercatorFractionToDb.multiplyXYZ(mercatorFractionRange.low.x, mercatorFractionRange.high.y), scratchZNormal));
       rays.push(Ray3d.createCapture(this._mercatorFractionToDb.multiplyXYZ(mercatorFractionRange.high.x, mercatorFractionRange.high.y), scratchZNormal));
       rays.push(Ray3d.createCapture(this._mercatorFractionToDb.multiplyXYZ(mercatorFractionRange.low.x, mercatorFractionRange.low.y), scratchZNormal));

@@ -42,6 +42,7 @@ export * from "./geometry/AdditionalTransform";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/BoundingSphere";
 export * from "./geometry/Cartographic";
+export * from "./geometry/CartographicRectangle";
 export * from "./geometry/CoordinateReferenceSystem";
 export * from "./geometry/ElementGeometry";
 export * from "./geometry/FrustumPlanes";

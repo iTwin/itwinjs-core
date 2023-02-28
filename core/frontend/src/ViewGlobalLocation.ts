@@ -7,24 +7,13 @@
  */
 
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { Cartographic, GlobeMode } from "@itwin/core-common";
+import { Cartographic, GlobalLocation as CommonGlobalLocation, GlobalLocationArea as CommonGlobalLocationArea, GlobeMode } from "@itwin/core-common";
 import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 
-/** Describes a rectangular area of the earth using cartographic data structures.
- * @public
- * @extensions
- */
-export interface GlobalLocationArea { southwest: Cartographic, northeast: Cartographic }
-
-/** Describes a location on the earth using cartographic data structures.
- * The viewed area of the location can be optionally specified.
- * The center of the location is specified with the center position.
- * @public
- * @extensions
- */
-export interface GlobalLocation { center: Cartographic, area?: GlobalLocationArea }
+export type GlobalLocation = CommonGlobalLocation;
+export type GlobalLocationArea = CommonGlobalLocationArea;
 
 /** @internal */
 export class ViewGlobalLocationConstants {
