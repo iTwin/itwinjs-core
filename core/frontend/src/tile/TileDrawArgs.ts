@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { BoundingSphere, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, OrientedBoundingBox, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -198,11 +198,10 @@ export class TileDrawArgs {
 
   public computePixelSizeInMetersAtClosestPointOnBoundingVolume(tileBoundingVolume: OrientedBoundingBox/* | BoundingSphere*/): number {
     const worldBoundingVolume = tileBoundingVolume.transformBy(this.location);
-    let closestPoint = worldBoundingVolume.center;
-    if (this.context.viewport.view.is3d() && this.context.viewport.view.isCameraOn) {
+    let closestPoint: XYAndZ = worldBoundingVolume.center;
+    if (this.context.viewport.view.is3d() && this._nearFrontCenter) {
       const pointOnBoundingVolume = worldBoundingVolume.closestPointOnSurface(this.context.viewport.view.camera.eye);
-      if (pointOnBoundingVolume)
-        closestPoint = pointOnBoundingVolume;
+      closestPoint = pointOnBoundingVolume ?? this._nearFrontCenter;
     }
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(closestPoint);
