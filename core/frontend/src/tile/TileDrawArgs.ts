@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@itwin/core-bentley";
 import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, OrientedBoundingBox, ViewFlagOverrides } from "@itwin/core-common";
+import { BoundingSphere, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, OrientedBoundingBox, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -196,24 +196,18 @@ export class TileDrawArgs {
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }
 
-  public computePixelSizeInMetersAtClosestPointOnBoundingBox(tileObb: OrientedBoundingBox): number {
-    const worldObb = tileObb.transformBy(this.location);
-    let closestPoint = worldObb.center;
-    if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
-      const distanceToCamera = worldObb.distanceToPoint(this.context.viewport.view.camera.eye);
-      if (undefined !== distanceToCamera) {
-        const eyeToCenter = this.context.viewport.view.camera.eye.unitVectorTo(worldObb.center);
-        if (eyeToCenter) {
-          eyeToCenter.scaleInPlace(distanceToCamera);
-          closestPoint = this.context.viewport.view.camera.eye.plus(eyeToCenter);
-        }
-      } else {
-        // Camera is inside of or on bounding volume.
-        closestPoint = this._nearFrontCenter;
-      }
+  public computePixelSizeInMetersAtClosestPointOnBoundingVolume(tileBoundingVolume: OrientedBoundingBox | BoundingSphere): number {
+    let viewPt = new Point3d(0, 0, 0);
+    if (this.context.viewport.view.is3d() && this._nearFrontCenter) { // only defined if camera is on
+      // ###TODO avoid allocation when transforming
+      const worldBoundingVolume = tileBoundingVolume.transformBy(this.location);
+      const distance = worldBoundingVolume.distanceToPoint(this.context.viewport.view.camera.eye);
+      if (distance > 0)
+        viewPt.z = -distance;
+      else
+        viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(this._nearFrontCenter);
     }
 
-    const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(closestPoint);
     const viewPt2 = new Point3d(viewPt.x + 1, viewPt.y, viewPt.z);
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }

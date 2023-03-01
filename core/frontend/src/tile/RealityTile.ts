@@ -360,7 +360,7 @@ export class RealityTile extends Tile {
     if (undefined !== this._geometricError) {
       let pixelSize;
       if (this.boundingBox)
-        pixelSize = args.computePixelSizeInMetersAtClosestPointOnBoundingBox(this.boundingBox);
+        pixelSize = args.computePixelSizeInMetersAtClosestPointOnBoundingVolume(this.boundingBox);
       else
         pixelSize = args.computePixelSizeInMetersAtClosestPoint(args.getTileCenter(this), args.getTileRadius(this));
 
