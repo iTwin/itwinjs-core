@@ -199,7 +199,7 @@ export class OrientedBoundingBox {
     return Math.sqrt(this.distanceSquaredToPoint(point));
   }
 
-  public closestPointOnSurface(point: XYAndZ): XYAndZ | undefined {
+  public closestPointOnSurface(point: XYAndZ): Point3d | undefined {
     let outside = false;
     const closestPoint = this.center.clone();
     const dir = new Vector3d(point.x, point.y, point.z);
