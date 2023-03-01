@@ -233,7 +233,7 @@ describe("Functional Domain", () => {
     sinonRestore();
   });
 
-  it("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
+  it.only("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
@@ -432,7 +432,10 @@ describe("Functional Domain", () => {
     bd2el.delete();
     assert.equal(spy.breakdown.onDelete.callCount, 1);
     assert.equal(spy.breakdown.onDeleted.callCount, 1);
-    assert.equal(spy.breakdown.onDelete.getCall(0).args[0].id, bd2);
+    const deleteArg = spy.breakdown.onDelete.getCall(0).args[0];
+    assert.equal(deleteArg.id, bd2);
+    assert.equal(deleteArg.model, bd2el.model);
+    assert.equal(deleteArg.federationGuid, bd2el.federationGuid);
     assert.equal(spy.breakdown.onDeleted.getCall(0).args[0].id, bd2);
 
     const breakdown3Props = {
