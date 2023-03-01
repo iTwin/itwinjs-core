@@ -419,7 +419,7 @@ export namespace CloudSqlite {
     * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
     * @param container the CloudContainer for which the lock is to be acquired
     * @param busyHandler if present, function called when the write lock is currently held by another user.
-    * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
+    * @throws if [[container]] is not connected to a CloudCache.
     */
   export async function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler) {
     if (container.hasWriteLock)
