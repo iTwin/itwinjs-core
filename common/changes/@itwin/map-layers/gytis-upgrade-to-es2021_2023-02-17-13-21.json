@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Upgrade TypeScript compile target to es2021.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}
