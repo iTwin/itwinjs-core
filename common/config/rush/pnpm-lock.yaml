@@ -2275,6 +2275,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
       '@types/chai': 4.3.1
@@ -2318,6 +2319,7 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../common
       '@types/chai': 4.3.1
@@ -2357,6 +2359,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -2392,6 +2395,7 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
@@ -2558,6 +2562,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
       '@types/chai': 4.3.1
@@ -2594,6 +2599,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../common
       '@types/chai': 4.3.1
