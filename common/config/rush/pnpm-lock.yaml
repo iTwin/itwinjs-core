@@ -2268,12 +2268,6 @@ importers:
       webpack: 5.75.0_webpack-cli@4.10.0
       webpack-cli: 4.10.0_webpack@5.75.0
 
-  ../../full-stack-tests/ui:
-    specifiers:
-      '@playwright/test': ^1.24.1
-    devDependencies:
-      '@playwright/test': 1.31.1
-
   ../../presentation/backend:
     specifiers:
       '@itwin/build-tools': workspace:*
@@ -2363,6 +2357,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -2398,6 +2393,7 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
@@ -2748,425 +2744,6 @@ importers:
       typescript: 4.4.4
     devDependencies:
       cpx2: 3.0.2
-
-  ../../test-apps/appui-test-app/appui-test-providers:
-    specifiers:
-      '@bentley/icons-generic': ^1.0.15
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/appui-layout-react': workspace:*
-      '@itwin/appui-react': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/components-react': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/core-quantity': workspace:*
-      '@itwin/core-react': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/imodel-components-react': workspace:*
-      '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.46.0
-      '@itwin/presentation-common': workspace:*
-      '@itwin/presentation-components': workspace:*
-      '@itwin/presentation-frontend': workspace:*
-      '@reduxjs/toolkit': ^1.5.0
-      '@types/react': ^17.0.37
-      '@types/react-redux': ^7.1.18
-      '@types/react-select': 3.0.26
-      classnames: ^2.3.1
-      cpx2: ^3.0.0
-      eslint: ^7.11.0
-      react: ^17.0.0
-      react-dom: ^17.0.0
-      react-redux: ^7.2.2
-      react-select: 3.2.0
-      rimraf: ^3.0.2
-      typescript: ~4.4.0
-    dependencies:
-      '@bentley/icons-generic': 1.0.34
-      '@itwin/appui-abstract': link:../../../ui/appui-abstract
-      '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
-      '@itwin/appui-react': link:../../../ui/appui-react
-      '@itwin/components-react': link:../../../ui/components-react
-      '@itwin/core-bentley': link:../../../core/bentley
-      '@itwin/core-common': link:../../../core/common
-      '@itwin/core-frontend': link:../../../core/frontend
-      '@itwin/core-geometry': link:../../../core/geometry
-      '@itwin/core-quantity': link:../../../core/quantity
-      '@itwin/core-react': link:../../../ui/core-react
-      '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
-      '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/presentation-common': link:../../../presentation/common
-      '@itwin/presentation-components': link:../../../presentation/components
-      '@itwin/presentation-frontend': link:../../../presentation/frontend
-      '@reduxjs/toolkit': 1.9.3_react-redux@7.2.9+react@17.0.2
-      classnames: 2.3.2
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.9_react-dom@17.0.2+react@17.0.2
-      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
-    devDependencies:
-      '@itwin/build-tools': link:../../../tools/build
-      '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
-      '@types/react': 17.0.53
-      '@types/react-redux': 7.1.25
-      '@types/react-select': 3.0.26
-      cpx2: 3.0.2
-      eslint: 7.32.0
-      rimraf: 3.0.2
-      typescript: 4.4.4
-
-  ../../test-apps/appui-test-app/connected:
-    specifiers:
-      '@axe-core/react': 4.3.1
-      '@bentley/icons-generic': ^1.0.15
-      '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/react-scripts': ^5.0.0
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/appui-layout-react': workspace:*
-      '@itwin/appui-react': workspace:*
-      '@itwin/appui-test-providers': workspace:*
-      '@itwin/browser-authorization': ^0.5.1
-      '@itwin/build-tools': workspace:*
-      '@itwin/components-react': workspace:*
-      '@itwin/core-backend': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-electron': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/core-markup': workspace:*
-      '@itwin/core-mobile': workspace:*
-      '@itwin/core-quantity': workspace:*
-      '@itwin/core-react': workspace:*
-      '@itwin/core-webpack-tools': workspace:*
-      '@itwin/ecschema-metadata': workspace:*
-      '@itwin/ecschema-rpcinterface-common': workspace:*
-      '@itwin/ecschema-rpcinterface-impl': workspace:*
-      '@itwin/editor-backend': workspace:*
-      '@itwin/editor-common': workspace:*
-      '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.8.5
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/express-server': workspace:*
-      '@itwin/frontend-devtools': workspace:*
-      '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodel-browser-react': 0.12.2
-      '@itwin/imodel-components-react': workspace:*
-      '@itwin/imodels-access-backend': ^2.2.1
-      '@itwin/imodels-access-frontend': ^2.2.1
-      '@itwin/imodels-client-authoring': ^2.2.1
-      '@itwin/imodels-client-management': ^2.2.1
-      '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.46.0
-      '@itwin/map-layers': workspace:*
-      '@itwin/map-layers-auth': workspace:*
-      '@itwin/map-layers-formats': workspace:*
-      '@itwin/presentation-backend': workspace:*
-      '@itwin/presentation-common': workspace:*
-      '@itwin/presentation-components': workspace:*
-      '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.6.0
-      '@itwin/reality-data-client': 0.9.0
-      '@types/lorem-ipsum': ^1.0.2
-      '@types/node': ^18.11.5
-      '@types/react': ^17.0.37
-      '@types/react-dom': ^17.0.0
-      '@types/react-redux': ^7.1.18
-      '@types/react-router-dom': ^5.1.7
-      '@types/react-select': 3.0.26
-      '@types/react-table': ^7.0.18
-      '@types/semver': 7.3.10
-      classnames: ^2.3.1
-      cpx2: ^3.0.0
-      cross-env: ^5.1.4
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      electron: ^23.0.0
-      eslint: ^7.11.0
-      fs-extra: ^8.1.0
-      internal-tools: workspace:*
-      lorem-ipsum: ^2.0.3
-      npm-run-all: ^4.1.5
-      null-loader: ^4.0.1
-      react: ^17.0.0
-      react-beautiful-dnd: ^13.0.0
-      react-dom: ^17.0.0
-      react-redux: ^7.2.2
-      react-resize-detector: ^6.7.6
-      react-router-dom: ^5.2.0
-      react-select: 3.2.0
-      react-table: ^7.1.0
-      redux: ^4.1.0
-      rimraf: ^3.0.2
-      semver: ^7.3.5
-      typescript: ~4.4.0
-      webpack: ^5.64.4
-    dependencies:
-      '@bentley/icons-generic': 1.0.34
-      '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/appui-abstract': link:../../../ui/appui-abstract
-      '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
-      '@itwin/appui-react': link:../../../ui/appui-react
-      '@itwin/appui-test-providers': link:../appui-test-providers
-      '@itwin/browser-authorization': 0.5.1
-      '@itwin/components-react': link:../../../ui/components-react
-      '@itwin/core-backend': link:../../../core/backend
-      '@itwin/core-bentley': link:../../../core/bentley
-      '@itwin/core-common': link:../../../core/common
-      '@itwin/core-electron': link:../../../core/electron
-      '@itwin/core-frontend': link:../../../core/frontend
-      '@itwin/core-geometry': link:../../../core/geometry
-      '@itwin/core-markup': link:../../../core/markup
-      '@itwin/core-mobile': link:../../../core/mobile
-      '@itwin/core-quantity': link:../../../core/quantity
-      '@itwin/core-react': link:../../../ui/core-react
-      '@itwin/ecschema-metadata': link:../../../core/ecschema-metadata
-      '@itwin/ecschema-rpcinterface-common': link:../../../core/ecschema-rpc/common
-      '@itwin/ecschema-rpcinterface-impl': link:../../../core/ecschema-rpc/impl
-      '@itwin/editor-backend': link:../../../editor/backend
-      '@itwin/editor-common': link:../../../editor/common
-      '@itwin/editor-frontend': link:../../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@23.1.1
-      '@itwin/express-server': link:../../../core/express-server
-      '@itwin/frontend-devtools': link:../../../core/frontend-devtools
-      '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
-      '@itwin/imodel-browser-react': 0.12.2_react-dom@17.0.2+react@17.0.2
-      '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
-      '@itwin/imodels-access-backend': 2.3.0
-      '@itwin/imodels-access-frontend': 2.3.0
-      '@itwin/imodels-client-authoring': 2.3.0
-      '@itwin/imodels-client-management': 2.3.0
-      '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/map-layers': link:../../../extensions/map-layers
-      '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
-      '@itwin/map-layers-formats': link:../../../extensions/map-layers-formats
-      '@itwin/presentation-backend': link:../../../presentation/backend
-      '@itwin/presentation-common': link:../../../presentation/common
-      '@itwin/presentation-components': link:../../../presentation/components
-      '@itwin/presentation-frontend': link:../../../presentation/frontend
-      '@itwin/reality-data-client': 0.9.0
-      classnames: 2.3.2
-      lorem-ipsum: 2.0.8
-      react: 17.0.2
-      react-beautiful-dnd: 13.1.1_react-dom@17.0.2+react@17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.9_react-dom@17.0.2+react@17.0.2
-      react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
-      react-router-dom: 5.3.4_react@17.0.2
-      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
-      react-table: 7.8.0_react@17.0.2
-      redux: 4.2.1
-      semver: 7.3.8
-    devDependencies:
-      '@axe-core/react': 4.3.1
-      '@bentley/react-scripts': 5.0.4_react@17.0.2+typescript@4.4.4
-      '@itwin/build-tools': link:../../../tools/build
-      '@itwin/core-webpack-tools': link:../../../tools/webpack-core
-      '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
-      '@itwin/projects-client': 0.6.0
-      '@types/lorem-ipsum': 1.0.2
-      '@types/node': 18.14.1
-      '@types/react': 17.0.53
-      '@types/react-dom': 17.0.19
-      '@types/react-redux': 7.1.25
-      '@types/react-router-dom': 5.3.3
-      '@types/react-select': 3.0.26
-      '@types/react-table': 7.7.14
-      '@types/semver': 7.3.10
-      cpx2: 3.0.2
-      cross-env: 5.2.1
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      electron: 23.1.1
-      eslint: 7.32.0
-      fs-extra: 8.1.0
-      internal-tools: link:../../../tools/internal
-      npm-run-all: 4.1.5
-      null-loader: 4.0.1_webpack@5.75.0
-      rimraf: 3.0.2
-      typescript: 4.4.4
-      webpack: 5.75.0
-
-  ../../test-apps/appui-test-app/standalone:
-    specifiers:
-      '@axe-core/react': 4.3.1
-      '@bentley/icons-generic': ^1.0.15
-      '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/react-scripts': ^5.0.0
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/appui-layout-react': workspace:*
-      '@itwin/appui-react': workspace:*
-      '@itwin/appui-test-providers': workspace:*
-      '@itwin/browser-authorization': ^0.5.1
-      '@itwin/build-tools': workspace:*
-      '@itwin/components-react': workspace:*
-      '@itwin/core-backend': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-electron': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/core-markup': workspace:*
-      '@itwin/core-mobile': workspace:*
-      '@itwin/core-quantity': workspace:*
-      '@itwin/core-react': workspace:*
-      '@itwin/core-webpack-tools': workspace:*
-      '@itwin/ecschema-metadata': workspace:*
-      '@itwin/ecschema-rpcinterface-common': workspace:*
-      '@itwin/ecschema-rpcinterface-impl': workspace:*
-      '@itwin/editor-backend': workspace:*
-      '@itwin/editor-common': workspace:*
-      '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.8.5
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/express-server': workspace:*
-      '@itwin/frontend-devtools': workspace:*
-      '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodel-components-react': workspace:*
-      '@itwin/imodels-access-backend': ^2.2.1
-      '@itwin/imodels-access-frontend': ^2.2.1
-      '@itwin/imodels-client-authoring': ^2.2.1
-      '@itwin/imodels-client-management': ^2.2.1
-      '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.46.0
-      '@itwin/map-layers': workspace:*
-      '@itwin/map-layers-auth': workspace:*
-      '@itwin/map-layers-formats': workspace:*
-      '@itwin/presentation-backend': workspace:*
-      '@itwin/presentation-common': workspace:*
-      '@itwin/presentation-components': workspace:*
-      '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.6.0
-      '@itwin/reality-data-client': 0.9.0
-      '@types/lorem-ipsum': ^1.0.2
-      '@types/node': ^18.11.5
-      '@types/react': ^17.0.37
-      '@types/react-dom': ^17.0.0
-      '@types/react-redux': ^7.1.18
-      '@types/react-router-dom': ^5.1.7
-      '@types/react-select': 3.0.26
-      '@types/react-table': ^7.0.18
-      '@types/semver': 7.3.10
-      classnames: ^2.3.1
-      cpx2: ^3.0.0
-      cross-env: ^5.1.4
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      electron: ^23.0.0
-      eslint: ^7.11.0
-      fs-extra: ^8.1.0
-      internal-tools: workspace:*
-      lorem-ipsum: ^2.0.3
-      npm-run-all: ^4.1.5
-      null-loader: ^4.0.1
-      react: ^17.0.0
-      react-beautiful-dnd: ^13.0.0
-      react-dom: ^17.0.0
-      react-redux: ^7.2.2
-      react-resize-detector: ^6.7.6
-      react-router-dom: ^5.2.0
-      react-select: 3.2.0
-      react-table: ^7.1.0
-      redux: ^4.1.0
-      rimraf: ^3.0.2
-      semver: ^7.3.5
-      typescript: ~4.4.0
-      webpack: ^5.64.4
-    dependencies:
-      '@bentley/icons-generic': 1.0.34
-      '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/appui-abstract': link:../../../ui/appui-abstract
-      '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
-      '@itwin/appui-react': link:../../../ui/appui-react
-      '@itwin/appui-test-providers': link:../appui-test-providers
-      '@itwin/browser-authorization': 0.5.1
-      '@itwin/components-react': link:../../../ui/components-react
-      '@itwin/core-backend': link:../../../core/backend
-      '@itwin/core-bentley': link:../../../core/bentley
-      '@itwin/core-common': link:../../../core/common
-      '@itwin/core-electron': link:../../../core/electron
-      '@itwin/core-frontend': link:../../../core/frontend
-      '@itwin/core-geometry': link:../../../core/geometry
-      '@itwin/core-markup': link:../../../core/markup
-      '@itwin/core-mobile': link:../../../core/mobile
-      '@itwin/core-quantity': link:../../../core/quantity
-      '@itwin/core-react': link:../../../ui/core-react
-      '@itwin/ecschema-metadata': link:../../../core/ecschema-metadata
-      '@itwin/ecschema-rpcinterface-common': link:../../../core/ecschema-rpc/common
-      '@itwin/ecschema-rpcinterface-impl': link:../../../core/ecschema-rpc/impl
-      '@itwin/editor-backend': link:../../../editor/backend
-      '@itwin/editor-common': link:../../../editor/common
-      '@itwin/editor-frontend': link:../../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@23.1.1
-      '@itwin/express-server': link:../../../core/express-server
-      '@itwin/frontend-devtools': link:../../../core/frontend-devtools
-      '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
-      '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
-      '@itwin/imodels-access-backend': 2.3.0
-      '@itwin/imodels-access-frontend': 2.3.0
-      '@itwin/imodels-client-authoring': 2.3.0
-      '@itwin/imodels-client-management': 2.3.0
-      '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/map-layers': link:../../../extensions/map-layers
-      '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
-      '@itwin/map-layers-formats': link:../../../extensions/map-layers-formats
-      '@itwin/presentation-backend': link:../../../presentation/backend
-      '@itwin/presentation-common': link:../../../presentation/common
-      '@itwin/presentation-components': link:../../../presentation/components
-      '@itwin/presentation-frontend': link:../../../presentation/frontend
-      '@itwin/reality-data-client': 0.9.0
-      classnames: 2.3.2
-      lorem-ipsum: 2.0.8
-      react: 17.0.2
-      react-beautiful-dnd: 13.1.1_react-dom@17.0.2+react@17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.9_react-dom@17.0.2+react@17.0.2
-      react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
-      react-router-dom: 5.3.4_react@17.0.2
-      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
-      react-table: 7.8.0_react@17.0.2
-      redux: 4.2.1
-      semver: 7.3.8
-    devDependencies:
-      '@axe-core/react': 4.3.1
-      '@bentley/react-scripts': 5.0.4_react@17.0.2+typescript@4.4.4
-      '@itwin/build-tools': link:../../../tools/build
-      '@itwin/core-webpack-tools': link:../../../tools/webpack-core
-      '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
-      '@itwin/projects-client': 0.6.0
-      '@types/lorem-ipsum': 1.0.2
-      '@types/node': 18.14.1
-      '@types/react': 17.0.53
-      '@types/react-dom': 17.0.19
-      '@types/react-redux': 7.1.25
-      '@types/react-router-dom': 5.3.3
-      '@types/react-select': 3.0.26
-      '@types/react-table': 7.7.14
-      '@types/semver': 7.3.10
-      cpx2: 3.0.2
-      cross-env: 5.2.1
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      electron: 23.1.1
-      eslint: 7.32.0
-      fs-extra: 8.1.0
-      internal-tools: link:../../../tools/internal
-      npm-run-all: 4.1.5
-      null-loader: 4.0.1_webpack@5.75.0
-      rimraf: 3.0.2
-      typescript: 4.4.4
-      webpack: 5.75.0
 
   ../../test-apps/display-performance-test-app:
     specifiers:
@@ -3706,236 +3283,6 @@ importers:
       rimraf: 3.0.2
       symlink-dir: 4.0.3
       typescript: 4.4.4
-
-  ../../test-apps/ui-items-providers-test:
-    specifiers:
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/appui-layout-react': workspace:*
-      '@itwin/appui-react': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/components-react': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/core-quantity': workspace:*
-      '@itwin/core-react': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.46.0
-      '@itwin/presentation-common': workspace:*
-      '@itwin/presentation-components': workspace:*
-      '@itwin/presentation-frontend': workspace:*
-      '@reduxjs/toolkit': ^1.5.0
-      '@types/react': ^17.0.37
-      classnames: ^2.3.1
-      cpx2: ^3.0.0
-      eslint: ^7.11.0
-      react: ^17.0.0
-      react-dom: ^17.0.0
-      react-redux: ^7.2.2
-      rimraf: ^3.0.2
-      typescript: ~4.4.0
-    dependencies:
-      '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/appui-layout-react': link:../../ui/appui-layout-react
-      '@itwin/appui-react': link:../../ui/appui-react
-      '@itwin/components-react': link:../../ui/components-react
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': link:../../core/common
-      '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../../ui/core-react
-      '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/presentation-common': link:../../presentation/common
-      '@itwin/presentation-components': link:../../presentation/components
-      '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@reduxjs/toolkit': 1.9.3_react-redux@7.2.9+react@17.0.2
-      classnames: 2.3.2
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.9_react-dom@17.0.2+react@17.0.2
-    devDependencies:
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/react': 17.0.53
-      cpx2: 3.0.2
-      eslint: 7.32.0
-      rimraf: 3.0.2
-      typescript: 4.4.4
-
-  ../../test-apps/ui-test-app:
-    specifiers:
-      '@axe-core/react': 4.3.1
-      '@bentley/icons-generic': ^1.0.15
-      '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/react-scripts': ^5.0.0
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/appui-layout-react': workspace:*
-      '@itwin/appui-react': workspace:*
-      '@itwin/browser-authorization': ^0.5.1
-      '@itwin/build-tools': workspace:*
-      '@itwin/components-react': workspace:*
-      '@itwin/core-backend': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-electron': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/core-markup': workspace:*
-      '@itwin/core-mobile': workspace:*
-      '@itwin/core-quantity': workspace:*
-      '@itwin/core-react': workspace:*
-      '@itwin/core-webpack-tools': workspace:*
-      '@itwin/ecschema-metadata': workspace:*
-      '@itwin/ecschema-rpcinterface-common': workspace:*
-      '@itwin/ecschema-rpcinterface-impl': workspace:*
-      '@itwin/editor-backend': workspace:*
-      '@itwin/editor-common': workspace:*
-      '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.8.5
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/express-server': workspace:*
-      '@itwin/frontend-devtools': workspace:*
-      '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodel-components-react': workspace:*
-      '@itwin/imodels-access-backend': ^2.2.1
-      '@itwin/imodels-access-frontend': ^2.2.1
-      '@itwin/imodels-client-authoring': ^2.2.1
-      '@itwin/imodels-client-management': ^2.2.1
-      '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.46.0
-      '@itwin/map-layers': workspace:*
-      '@itwin/map-layers-auth': workspace:*
-      '@itwin/map-layers-formats': workspace:*
-      '@itwin/presentation-backend': workspace:*
-      '@itwin/presentation-common': workspace:*
-      '@itwin/presentation-components': workspace:*
-      '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.6.0
-      '@itwin/reality-data-client': 0.9.0
-      '@itwin/ui-items-providers-test': workspace:*
-      '@types/lorem-ipsum': ^1.0.2
-      '@types/node': ^18.11.5
-      '@types/react': ^17.0.37
-      '@types/react-dom': ^17.0.0
-      '@types/react-redux': ^7.1.18
-      '@types/react-router-dom': ^5.1.7
-      '@types/react-table': ^7.0.18
-      '@types/semver': 7.3.10
-      classnames: ^2.3.1
-      cpx2: ^3.0.0
-      cross-env: ^5.1.4
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      electron: ^23.0.0
-      eslint: ^7.11.0
-      fs-extra: ^8.1.0
-      internal-tools: workspace:*
-      lorem-ipsum: ^2.0.3
-      npm-run-all: ^4.1.5
-      null-loader: ^4.0.1
-      react: ^17.0.0
-      react-beautiful-dnd: ^13.0.0
-      react-dom: ^17.0.0
-      react-redux: ^7.2.2
-      react-resize-detector: ^6.7.6
-      react-router-dom: ^5.2.0
-      react-table: ^7.1.0
-      redux: ^4.1.0
-      rimraf: ^3.0.2
-      semver: ^7.3.5
-      typescript: ~4.4.0
-      webpack: ^5.64.4
-    dependencies:
-      '@bentley/icons-generic': 1.0.34
-      '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/appui-layout-react': link:../../ui/appui-layout-react
-      '@itwin/appui-react': link:../../ui/appui-react
-      '@itwin/browser-authorization': 0.5.1
-      '@itwin/components-react': link:../../ui/components-react
-      '@itwin/core-backend': link:../../core/backend
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': link:../../core/common
-      '@itwin/core-electron': link:../../core/electron
-      '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/core-markup': link:../../core/markup
-      '@itwin/core-mobile': link:../../core/mobile
-      '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../../ui/core-react
-      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
-      '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
-      '@itwin/editor-backend': link:../../editor/backend
-      '@itwin/editor-common': link:../../editor/common
-      '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@23.1.1
-      '@itwin/express-server': link:../../core/express-server
-      '@itwin/frontend-devtools': link:../../core/frontend-devtools
-      '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodel-components-react': link:../../ui/imodel-components-react
-      '@itwin/imodels-access-backend': 2.3.0
-      '@itwin/imodels-access-frontend': 2.3.0
-      '@itwin/imodels-client-authoring': 2.3.0
-      '@itwin/imodels-client-management': 2.3.0
-      '@itwin/itwinui-css': 0.63.1
-      '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/map-layers': link:../../extensions/map-layers
-      '@itwin/map-layers-auth': link:../../extensions/map-layers-auth
-      '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
-      '@itwin/presentation-backend': link:../../presentation/backend
-      '@itwin/presentation-common': link:../../presentation/common
-      '@itwin/presentation-components': link:../../presentation/components
-      '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@itwin/reality-data-client': 0.9.0
-      '@itwin/ui-items-providers-test': link:../ui-items-providers-test
-      classnames: 2.3.2
-      lorem-ipsum: 2.0.8
-      react: 17.0.2
-      react-beautiful-dnd: 13.1.1_react-dom@17.0.2+react@17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.9_react-dom@17.0.2+react@17.0.2
-      react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
-      react-router-dom: 5.3.4_react@17.0.2
-      react-table: 7.8.0_react@17.0.2
-      redux: 4.2.1
-      semver: 7.3.8
-    devDependencies:
-      '@axe-core/react': 4.3.1
-      '@bentley/react-scripts': 5.0.4_react@17.0.2+typescript@4.4.4
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/core-webpack-tools': link:../../tools/webpack-core
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/projects-client': 0.6.0
-      '@types/lorem-ipsum': 1.0.2
-      '@types/node': 18.14.1
-      '@types/react': 17.0.53
-      '@types/react-dom': 17.0.19
-      '@types/react-redux': 7.1.25
-      '@types/react-router-dom': 5.3.3
-      '@types/react-table': 7.7.14
-      '@types/semver': 7.3.10
-      cpx2: 3.0.2
-      cross-env: 5.2.1
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      electron: 23.1.1
-      eslint: 7.32.0
-      fs-extra: 8.1.0
-      internal-tools: link:../../tools/internal
-      npm-run-all: 4.1.5
-      null-loader: 4.0.1_webpack@5.75.0
-      rimraf: 3.0.2
-      typescript: 4.4.4
-      webpack: 5.75.0
 
   ../../tools/backend-webpack:
     specifiers:
@@ -5043,13 +4390,6 @@ packages:
       json-schema: 0.4.0
       jsonpointer: 5.0.1
       leven: 3.1.0
-    dev: true
-
-  /@axe-core/react/4.3.1:
-    resolution: {integrity: sha512-7sgMZbwtSv+DvrnzZLMTfmLGQcTWgIrB6O3NQBP7rKXA61fxt3LNX5Tk6BEs1R+ZKFqoedA5+sNHA5OpgiOz3g==}
-    dependencies:
-      axe-core: 4.6.3
-      requestidlecallback: 0.3.0
     dev: true
 
   /@azure/abort-controller/1.1.0:
@@ -7868,20 +7208,6 @@ packages:
       - debug
     dev: false
 
-  /@itwin/imodel-browser-react/0.12.2_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-iHdwpBsHPQHbl58k2z85UAUoKrF4qbXBsYHVMVZL0lQUeZSA20j3HsBGt++uxlUBT87j7OKXfHtFv4Wwuhj0wA==}
-    peerDependencies:
-      react: ^16.13.0 || ^17.0.2 || 17
-      react-dom: ^16.13.0 || ^17.0.2 || 17
-    dependencies:
-      '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.46.0_react-dom@17.0.2+react@17.0.2
-      classnames: 2.3.2
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      react-intersection-observer: 8.34.0_react@17.0.2
-    dev: false
-
   /@itwin/imodels-access-backend/2.3.0:
     resolution: {integrity: sha512-g2Bygiu6Is/Xa6OWUxXN/BZwGU2M4izFl8fdgL1cFWxhoWSYL169bN3V4zvRTUJIqtsNaTyOeRu2mjkRgHY9KQ==}
     dependencies:
@@ -8596,17 +7922,6 @@ packages:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
     engines: {node: '>=10.13.0'}
 
-  /@playwright/test/1.31.1:
-    resolution: {integrity: sha512-IsytVZ+0QLDh1Hj83XatGp/GsI1CDJWbyDaBGbainsh0p2zC7F4toUocqowmjS6sQff2NGT3D9WbDj/3K2CJiA==}
-    engines: {node: '>=14'}
-    hasBin: true
-    dependencies:
-      '@types/node': 18.14.1
-      playwright-core: 1.31.1
-    optionalDependencies:
-      fsevents: 2.3.2
-    dev: true
-
   /@pmmmwh/react-refresh-webpack-plugin/0.5.10_a358053c186fea2b80718c8305c5e43e:
     resolution: {integrity: sha512-j0Ya0hCFZPd4x40qLzbhGsh9TMtdb+CJQiso+WxLOPNasohq9cc5SNUcwsZaRH6++Xh91Xkm/xHCkuIiIu0LUA==}
     engines: {node: '>= 10.13'}
@@ -8677,25 +7992,6 @@ packages:
 
   /@react-dnd/shallowequal/2.0.0:
     resolution: {integrity: sha512-Pc/AFTdwZwEKJxFJvlxrSmGe/di+aAOBn60sremrpLo6VI/6cmiUYNNwlI5KNYttg7uypzA3ILPMPgxB2GYZEg==}
-
-  /@reduxjs/toolkit/1.9.3_react-redux@7.2.9+react@17.0.2:
-    resolution: {integrity: sha512-GU2TNBQVofL09VGmuSioNPQIu6Ml0YLf4EJhgj0AvBadRlCGzUWet8372LjvO4fqKZF2vH1xU0htAa7BrK9pZg==}
-    peerDependencies:
-      react: ^16.9.0 || ^17.0.0 || ^18 || 17
-      react-redux: ^7.2.1 || ^8.0.2
-    peerDependenciesMeta:
-      react:
-        optional: true
-      react-redux:
-        optional: true
-    dependencies:
-      immer: 9.0.19
-      react: 17.0.2
-      react-redux: 7.2.9_react-dom@17.0.2+react@17.0.2
-      redux: 4.2.1
-      redux-thunk: 2.4.2_redux@4.2.1
-      reselect: 4.1.7
-    dev: false
 
   /@rollup/plugin-babel/5.3.1_@babel+core@7.21.0+rollup@2.79.1:
     resolution: {integrity: sha512-WFfdLWU/xVWKeRQnKmIAQULUI7Il0gZnBIH/ZFO069wYIfPu+8zrfp/KMW0atmELoRDq8FbiP3VCss9MhCut7Q==}
@@ -9290,7 +8586,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.14.1
+      '@types/node': 18.11.5
     dev: false
 
   /@types/debug/4.1.7:
@@ -9412,10 +8708,6 @@ packages:
       '@types/node': 18.14.1
     dev: true
 
-  /@types/history/4.7.11:
-    resolution: {integrity: sha512-qjDJRrmvBMiTx+jyLxvLfJU7UznFuokDv4f3WRuriHKERccVpFU+8XMQUAbDzoiJCsmexxRExQeMwwCdamSKDA==}
-    dev: true
-
   /@types/hoist-non-react-statics/3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
@@ -9502,10 +8794,6 @@ packages:
     resolution: {integrity: sha512-nEipOLYyZJ4RKHCg7tlR37ewFy91oggmip2MBzPdVQ8QhTFqjcRhE8R0t4tfpDnSlxGWHoEGJl0UCC4kYhqoiw==}
     dev: true
 
-  /@types/lorem-ipsum/1.0.2:
-    resolution: {integrity: sha512-oqAlvIjthe5nCa7L3cWKxPPVD7iPkV0Qa5u4aSXGLjRP9QO/gQnxIxn5Wg+2nIYxiMxpN8I0UAIv4QAgj9M2iQ==}
-    dev: true
-
   /@types/mime/3.0.1:
     resolution: {integrity: sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==}
 
@@ -9538,6 +8826,10 @@ packages:
 
   /@types/node/16.18.12:
     resolution: {integrity: sha512-vzLe5NaNMjIE3mcddFVGlAXN1LEWueUsMsOJWaT6wWMJGyljHAWHznqfnKUQWGzu7TLPrGvWdNAsvQYW+C0xtw==}
+
+  /@types/node/18.11.5:
+    resolution: {integrity: sha512-3JRwhbjI+cHLAkUorhf8RnqUbFXajvzX4q6fMn5JwkgtuwfYtRQYI3u4V92vI6NJuTsbBQWWh3RZjFsuevyMGQ==}
+    dev: false
 
   /@types/node/18.14.1:
     resolution: {integrity: sha512-QH+37Qds3E0eDlReeboBxfHbX9omAcBCXEzswCu6jySP642jiM3cYSIkU/REqwhCUqXdonHFuBfJDiAJxMNhaQ==}
@@ -9598,21 +8890,6 @@ packages:
       '@types/react': 17.0.53
       hoist-non-react-statics: 3.3.2
       redux: 4.2.1
-
-  /@types/react-router-dom/5.3.3:
-    resolution: {integrity: sha512-kpqnYK4wcdm5UaWI3fLcELopqLrHgLqNsdpHauzlQktfkHL3npOSwtj1Uz9oKBAzs7lFtVkV8j83voAz2D8fhw==}
-    dependencies:
-      '@types/history': 4.7.11
-      '@types/react': 17.0.53
-      '@types/react-router': 5.1.20
-    dev: true
-
-  /@types/react-router/5.1.20:
-    resolution: {integrity: sha512-jGjmu/ZqS7FjSH6owMcD5qpq19+1RS9DeVRqfl1FeBMxTDQAGwlMWOcs52NDoXaNKyG3d1cYQFMs9rCrb88o9Q==}
-    dependencies:
-      '@types/history': 4.7.11
-      '@types/react': 17.0.53
-    dev: true
 
   /@types/react-select/3.0.26:
     resolution: {integrity: sha512-rAaiD0SFkBi3PUwp1DrJV04CobPl2LuZXF+kv6MKw8kaeGo82xTOZzjM8DDi4lrdkqGbInZiE2QO9nIJm3bqgw==}
@@ -11898,7 +11175,9 @@ packages:
   /commander/9.5.0:
     resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==}
     engines: {node: ^12.20.0 || >=14}
+    requiresBuild: true
     dev: false
+    optional: true
 
   /comment-parser/1.1.5:
     resolution: {integrity: sha512-RePCE4leIhBlmrqiYTvaqEeGYg7qpSl4etaIabKtdOQVi+mSTIBBklGUwIr79GXYnl3LpMwmDw4KeR2stNc6FA==}
@@ -14936,17 +14215,6 @@ packages:
     resolution: {integrity: sha512-BXUKIkUuh6cmmxzi5OIbUJxrG8OAk2MqoL1DtO3Wo9D2faJg2ph5ntyuQeLqaHJmzER6H5tllCDA9ZnNe9BVGg==}
     dev: false
 
-  /history/4.10.1:
-    resolution: {integrity: sha512-36nwAD620w12kuzPAsyINPWJqlNbij+hpK1k9XRloDtym8mxzGYl2c17LnV6IAGB2Dmg4tEa7G7DlawS0+qjew==}
-    dependencies:
-      '@babel/runtime': 7.21.0
-      loose-envify: 1.4.0
-      resolve-pathname: 3.0.0
-      tiny-invariant: 1.3.1
-      tiny-warning: 1.0.3
-      value-equal: 1.0.1
-    dev: false
-
   /hmac-drbg/1.0.1:
     resolution: {integrity: sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg==}
     dependencies:
@@ -15254,6 +14522,7 @@ packages:
 
   /immer/9.0.19:
     resolution: {integrity: sha512-eY+Y0qcsB4TZKwgQzLaE/lqYMlKhv5J9dyd2RhhtGhNo2njPXDqU9XPfcNfa3MIDsdtZt5KlkIsirlo4dHsWdQ==}
+    dev: true
 
   /immer/9.0.6:
     resolution: {integrity: sha512-G95ivKpy+EvVAnAab4fVa4YGYn24J1SpEktnJX7JJ45Bd7xqME/SCplFzYFmTbrkwZbQ4xJK1xMTUYBkN6pWsQ==}
@@ -17074,14 +16343,6 @@ packages:
     dependencies:
       js-tokens: 4.0.0
 
-  /lorem-ipsum/2.0.8:
-    resolution: {integrity: sha512-5RIwHuCb979RASgCJH0VKERn9cQo/+NcAi2BMe9ddj+gp7hujl6BI+qdOG4nVsLDpwWEJwTVYXNKP6BGgbcoGA==}
-    engines: {node: '>= 8.x', npm: '>= 5.x'}
-    hasBin: true
-    dependencies:
-      commander: 9.5.0
-    dev: false
-
   /loupe/2.3.6:
     resolution: {integrity: sha512-RaPMZKiMy8/JruncMU5Bt6na1eftNoo++R4Y+N2FrxkDVTrGvcyzFTsaGif4QTeKESheMGegbhw6iUAq+5A8zA==}
     dependencies:
@@ -18365,12 +17626,6 @@ packages:
 
   /platform/1.3.6:
     resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
-    dev: true
-
-  /playwright-core/1.31.1:
-    resolution: {integrity: sha512-JTyX4kV3/LXsvpHkLzL2I36aCdml4zeE35x+G5aPc4bkLsiRiQshU5lWeVpHFAuC8xAcbI6FDcw/8z3q2xtJSQ==}
-    engines: {node: '>=14'}
-    hasBin: true
     dev: true
 
   /posix-character-classes/0.1.1:
@@ -19749,14 +19004,6 @@ packages:
       react: 17.0.2
     dev: false
 
-  /react-intersection-observer/8.34.0_react@17.0.2:
-    resolution: {integrity: sha512-TYKh52Zc0Uptp5/b4N91XydfSGKubEhgZRtcg1rhTKABXijc4Sdr1uTp5lJ8TN27jwUsdXxjHXtHa0kPj704sw==}
-    peerDependencies:
-      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || 17
-    dependencies:
-      react: 17.0.2
-    dev: false
-
   /react-is-mounted-hook/1.1.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-yjq3Tj34CiFcdVOS/h6JerWLOLdJqEGKMNpTHc4kWebzz2YtIpgqMRrqxdmQhewM1KJREojdAV2tsNvBsUWyhA==}
     peerDependencies:
@@ -19814,38 +19061,6 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       resize-observer-polyfill: 1.5.1
-    dev: false
-
-  /react-router-dom/5.3.4_react@17.0.2:
-    resolution: {integrity: sha512-m4EqFMHv/Ih4kpcBCONHbkT68KoAeHN4p3lAGoNryfHi0dMy0kCzEZakiKRsvg5wHZ/JLrLW8o8KomWiz/qbYQ==}
-    peerDependencies:
-      react: '>=15 || 17'
-    dependencies:
-      '@babel/runtime': 7.21.0
-      history: 4.10.1
-      loose-envify: 1.4.0
-      prop-types: 15.8.1
-      react: 17.0.2
-      react-router: 5.3.4_react@17.0.2
-      tiny-invariant: 1.3.1
-      tiny-warning: 1.0.3
-    dev: false
-
-  /react-router/5.3.4_react@17.0.2:
-    resolution: {integrity: sha512-Ys9K+ppnJah3QuaRiLxk+jDWOR1MekYQrlytiXxC1RyfbdsZkS5pvKAzCCr031xHixZwpnsYNT5xysdFHQaYsA==}
-    peerDependencies:
-      react: '>=15 || 17'
-    dependencies:
-      '@babel/runtime': 7.21.0
-      history: 4.10.1
-      hoist-non-react-statics: 3.3.2
-      loose-envify: 1.4.0
-      path-to-regexp: 1.8.0
-      prop-types: 15.8.1
-      react: 17.0.2
-      react-is: 16.13.1
-      tiny-invariant: 1.3.1
-      tiny-warning: 1.0.3
     dev: false
 
   /react-select-async-paginate/0.5.3_c0582c9c36ad2eb92f1bac26b7fcc797:
@@ -20014,14 +19229,6 @@ packages:
       minimatch: 3.1.2
     dev: true
 
-  /redux-thunk/2.4.2_redux@4.2.1:
-    resolution: {integrity: sha512-+P3TjtnP0k/FEjcBL5FZpoovtvrTNT/UXd4/sluaSyrURlSlhLSzEdfsTBW7WsKB6yPvgd7q/iZPICFjW4o57Q==}
-    peerDependencies:
-      redux: ^4
-    dependencies:
-      redux: 4.2.1
-    dev: false
-
   /redux/4.2.1:
     resolution: {integrity: sha512-LAUYz4lc+Do8/g7aeRa8JkyDErK6ekstQaqWQrNRW//MY1TvCEpMtpTWvlQ+FPbWCx+Xixu/6SHt5N0HR+SB4w==}
     dependencies:
@@ -20137,10 +19344,6 @@ packages:
     engines: {node: '>=0.10'}
     dev: true
 
-  /requestidlecallback/0.3.0:
-    resolution: {integrity: sha512-TWHFkT7S9p7IxLC5A1hYmAYQx2Eb9w1skrXmQ+dS1URyvR8tenMLl4lHbqEOUnpEYxNKpkVMXUgknVpBZWXXfQ==}
-    dev: true
-
   /require-dir/1.2.0:
     resolution: {integrity: sha512-LY85DTSu+heYgDqq/mK+7zFHWkttVNRXC9NKcKGyuGLdlsfbjEPrIEYdCVrx6hqnJb+xSu3Lzaoo8VnmOhhjNA==}
     dev: false
@@ -20163,10 +19366,6 @@ packages:
 
   /requires-port/1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
-
-  /reselect/4.1.7:
-    resolution: {integrity: sha512-Zu1xbUt3/OPwsXL46hvOOoQrap2azE7ZQbokq61BQfiXvhewsKDwhMeZjTX9sX0nvw1t/U5Audyn1I9P/m9z0A==}
-    dev: false
 
   /resize-observer-polyfill/1.5.1:
     resolution: {integrity: sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==}
@@ -20194,10 +19393,6 @@ packages:
   /resolve-from/5.0.0:
     resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
     engines: {node: '>=8'}
-
-  /resolve-pathname/3.0.0:
-    resolution: {integrity: sha512-C7rARubxI8bXFNB/hqcp/4iUeIXJhJZvFPFPiSPRnhU5UPxzMFIl+2E6yY6c4k9giDJAhtV+enfA+G89N6Csng==}
-    dev: false
 
   /resolve-url-loader/4.0.0:
     resolution: {integrity: sha512-05VEMczVREcbtT7Bz+C+96eUO5HDNvdthIiMB34t7FcF8ehcu4wC0sSgPUubs3XW2Q3CNLJk/BJrCU9wVRymiA==}
@@ -21629,10 +20824,6 @@ packages:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
     dev: false
 
-  /tiny-warning/1.0.3:
-    resolution: {integrity: sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==}
-    dev: false
-
   /tippy.js/6.3.7:
     resolution: {integrity: sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==}
     dependencies:
@@ -22283,10 +21474,6 @@ packages:
   /validator/13.9.0:
     resolution: {integrity: sha512-B+dGG8U3fdtM0/aNK4/X8CXq/EcxU2WPrPEkJGslb47qyHsxmbggTWK0yEA4qnYVNF+nxNlN88o14hIcPmSIEA==}
     engines: {node: '>= 0.10'}
-    dev: false
-
-  /value-equal/1.0.1:
-    resolution: {integrity: sha512-NOJ6JZCAWr0zlxZt+xqCHNTEKOsrks2HQd4MqhP1qy4z1SkbEP467eNx6TgDKXMvUOb+OENfJCZwM+16n7fRfw==}
     dev: false
 
   /vary/1.1.2:

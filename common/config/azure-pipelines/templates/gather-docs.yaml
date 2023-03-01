@@ -28,6 +28,31 @@ steps:
     displayName: Copy Reference files to Staging
     workingDirectory: ${{ parameters.workingDir }}
 
+  # Download AppUI Docs artifact
+  - ${{ if eq(parameters.useCurrentAppUIDocsArtifact, true) }}:
+    - download: current
+      artifact: AppUI Docs
+      displayName: Download AppUI Docs Artifact
+
+  - ${{ else }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download AppUI Docs Artifact
+      inputs:
+        buildType: specific
+        project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+        pipeline: 8594 # iTwin AppUI/AppUI Docs CI
+        buildVersionToDownload: latestFromBranch
+        branchName: refs/heads/master
+        artifactName: AppUI Docs
+        targetPath: $(Pipeline.Workspace)/AppUI Docs
+
+  - task: CopyFiles@2
+    displayName: Copy AppUI Docs to staging
+    inputs:
+      SourceFolder: $(Pipeline.Workspace)/AppUI Docs
+      TargetFolder: ${{ parameters.stagingDir }}
+      OverWrite: true
+
   # Download BIS Docs artifact
   - ${{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
     - download: current
