@@ -1,0 +1,161 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+"use strict";
+
+const path = require("path");
+const ESLintTester = require("eslint").RuleTester;
+const BentleyESLintPlugin = require("../dist");
+const RequireVersionInDeprecationESLintRule =
+  BentleyESLintPlugin.rules["require-version-in-deprecation"];
+const { supportSkippedAndOnlyInTests } = require("./testUtils");
+
+const ruleTester = new ESLintTester({
+  parser: require.resolve("@typescript-eslint/parser"),
+  parserOptions: {
+    ecmaVersion: 6,
+  },
+});
+
+ruleTester.run(
+  "require-version-in-deprecation",
+  RequireVersionInDeprecationESLintRule,
+  supportSkippedAndOnlyInTests({
+    valid: [
+      {
+        code: `/**
+      * @beta
+      * @deprecated in 3.x. Use XYZ instead, see https://www.google.com/ for more details.
+      */`
+      },
+      {
+        code: `/**
+        * @deprecated in 3.x, use XYZ instead
+        * @beta
+        */`
+      },
+      {
+        code: `// @deprecated in 3.6 Use XYZ instead.`
+      },
+      {
+        code: `/* @deprecated in 12.x. Use xyz instead. */`
+      },
+      {
+        code: `// @deprecated in 2.19, use xyz instead
+        function canWeUseFunctions() {}`
+      },
+      {
+        code: `// @deprecated in 3.6. Use xyz instead.
+        class canWeUseAClass {};`
+      },
+      {
+        code: `/* @deprecated in 2.x, Use XYZ instead */
+        let canWeUseArrowFunction = () => {};`
+      },
+      {
+        code: `/**
+        * @deprecated in 3.x. Please use XYZ.
+        */
+        export interface canWeUseInterface {}`
+      },
+      {
+        code: `/* @deprecated in 2.x. Use xyz instead. */
+        namespace canWeUseNamespaces {}`
+      },
+      {
+        code: `// @deprecated in 3.6. Use XYZ instead.
+        export enum canWeUseEnum {}`
+      },
+      {
+        code: `
+        interface BackendHubAccess {
+          /**
+           * download a v1 checkpoint
+           * @deprecated in 3.x. Here's a description.
+           * @internal
+           */
+          downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+        }
+        `,
+      },
+      {
+        code: `// @deprecated in 2.x. Use [[InternalDocRef]] instead`
+      },
+      {
+        code: `/** @deprecated in 3.x. Use [ExternalDocRef]($package) instead */`
+      },
+    ],
+    invalid: [
+      {
+        code: `/**
+        * @beta
+        * @deprecated
+        */`,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `// @deprecated`,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `// @deprecated in 3.x.`,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `/* @deprecated */`,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `/* @deprecated in 2.6.*/
+        function shouldFailSinceNoSentence() {}`,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `// @deprecated in 3.x
+        let shouldFailSinceNoSentenceGiven = () => {};`,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `// @deprecated
+        class shouldFailSinceNoVersionOrSentenceGiven {};`,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `/** @deprecated in 3.6.
+        * I am giving the description here.
+        */
+         `,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `
+          /** @deprecated in 3.6. Ok.*/
+          function descriptionTooShort() {}
+        `,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `
+          /** @deprecated in 3.6.                                                        */
+          function whitespaceIsNotADescription() {}
+        `,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+      {
+        code: `
+        interface BackendHubAccess {
+          /**
+           * download a v1 checkpoint
+           * @deprecated in 3.x.
+           * @internal
+           */
+          downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+        }
+        `,
+        errors: [{ messageId: "requireVersionAndSentence" }],
+      },
+    ],
+  })
+);

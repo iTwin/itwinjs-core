@@ -8,13 +8,13 @@
 
 import * as React from "react";
 import { FloatingWidget as FloatingWidgetComponent } from "@itwin/appui-layout-react";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { UiFramework } from "../UiFramework";
 
 /** @internal */
 export function FloatingWidget() {
   return (
     <FloatingWidgetComponent
-      onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+      onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
     />
   );
 }

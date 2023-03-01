@@ -87,23 +87,23 @@ export interface NodeJSON {
   // eslint-disable-next-line deprecation/deprecation
   labelDefinition: LabelDefinitionJSON;
   description?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   imageId?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   foreColor?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   backColor?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   fontStyle?: string;
   hasChildren?: boolean;
   isSelectionDisabled?: boolean;
   isEditable?: boolean;
   isExpanded?: boolean;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   isCheckboxVisible?: boolean;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   isChecked?: boolean;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   isCheckboxEnabled?: boolean;
   /** @beta */
   supportsFiltering?: boolean;

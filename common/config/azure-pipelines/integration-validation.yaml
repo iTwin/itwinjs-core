@@ -21,33 +21,15 @@ jobs:
   - job: Integration_Tests_Full
     strategy:
       matrix:
-        Linux_node_12_x:
+        Linux_node_18_x:
           imageName: ubuntu-latest
-          nodeVersion: 12.x
-        Linux_node_14_x:
-          imageName: ubuntu-latest
-          nodeVersion: 14.x
-        linux_node_16_x:
-          imageName: ubuntu-latest
-          nodeVersion: 16.x
-        Windows_node_12_x:
+          nodeVersion: 18.x
+        Windows_node_18_x:
           imageName: windows-latest
-          nodeVersion: 12.x
-        Windows_node_14_x:
-          imageName: windows-latest
-          nodeVersion: 14.x
-        Windows_node_16_x:
-          imageName: windows-latest
-          nodeVersion: 16.x
-        MacOS_node_12_x:
+          nodeVersion: 18.x
+        MacOS_node_18_x:
           imageName: macos-latest
-          nodeVersion: 12.x
-        MacOS_node_14_x:
-          imageName: macos-latest
-          nodeVersion: 14.x
-        MacOS_node_16_x:
-          imageName: macos-latest
-          nodeVersion: 16.x
+          nodeVersion: 18.x
     pool:
       vmImage: $(imageName)
     steps:

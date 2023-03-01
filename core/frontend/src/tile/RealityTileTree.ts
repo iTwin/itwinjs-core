@@ -133,7 +133,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
 
 /** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
  * The tiles within the tree are instances of [[RealityTile]]s.
- * @beta
+ * @public
  */
 export class RealityTileTree extends TileTree {
   /** @internal */
@@ -458,8 +458,7 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
-    if (context.missing.length === 0)
-      this.reportTileVisibility(args, selected);
+    this.reportTileVisibility(args, selected);
 
     IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;

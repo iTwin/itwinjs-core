@@ -166,7 +166,7 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
 }
 
 /**
- * @deprecated in 3.x.
+ * @deprecated in 3.x. Use [[DownloadRequest]].
  * @internal
  */
 export type CheckpointArg = DownloadRequest;
@@ -215,8 +215,8 @@ export interface BackendHubAccess {
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
 
   /**
-   * download a v1 checkpoint
-   * @deprecated in 3.x.
+   * Download a v1 checkpoint
+   * @deprecated in 3.x. V1 checkpoints are deprecated. Download V2 checkpoint using [[V2CheckpointManager.downloadCheckpoint]].
    * @internal
    */
   downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line deprecation/deprecation

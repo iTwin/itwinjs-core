@@ -11,10 +11,16 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
+import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range2d } from "../../geometry3d/Range";
+import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { SortablePolygon } from "../../geometry3d/SortablePolygon";
+import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -210,6 +216,96 @@ describe("PolygonOps", () => {
     ck.testUndefined(degenerateB.getAnyInteriorPoint());
     GeometryCoreTestIO.saveGeometry(allGeometry, "SortablePolygon", "LoopToPolygon");
     expect(ck.getNumErrors()).equals(0);
+  });
 
+  function testPolygonRayIntersection(ck: Checker, allGeometry: GeometryQuery[], polygon: Point3d[], x0?: number) {
+    // create grid of test rays with known polygon plane intersections
+    const range = Range3d.create(...polygon);
+    range.expandInPlace(1.0);
+    const testPts: Point3d[] = [];
+    const testSegments: LineSegment3d[] = [];
+    const delta = 0.1;
+    const deltaV = Vector3d.createNormalized(1, -1, -5)!;
+    for (let xCoord = range.low.x; xCoord < range.high.x; xCoord += delta) {
+      for (let yCoord = range.low.y; yCoord < range.high.y; yCoord += delta) {
+        const testPt = Point3d.create(xCoord, yCoord);
+        testPts.push(testPt);
+        const startPt = Point3d.createAdd2Scaled(testPt, 1.0, deltaV, -Geometry.hypotenuseSquaredXY(xCoord, yCoord));
+        const endPt = Point3d.createAdd2Scaled(startPt, 1.0, deltaV, 1.0);  // segment parameter is arc length
+        testSegments.push(LineSegment3d.create(startPt, endPt));
+      }
+    }
+
+    // rotate geometry out of xy-plane
+    const normal = Vector3d.createNormalized(1, -2, -3)!;
+    const localToWorld = Matrix3d.createRigidHeadsUp(normal);
+    localToWorld.multiplyVectorArrayInPlace(polygon);
+    localToWorld.multiplyVectorArrayInPlace(testPts);
+    const localToWorldTransform = Transform.createOriginAndMatrix(undefined, localToWorld);
+    for (const seg of testSegments)
+      seg.tryTransformInPlace(localToWorldTransform);
+
+    const polygonCarrier = new Point3dArrayCarrier(polygon);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(polygon), x0);
+    const isConvex = PolygonOps.isConvex(polygon);
+    const xyz = Point3d.createZero();
+
+    for (let i = 0; i < testPts.length; ++i) {
+      const loc = PolygonOps.intersectSegment(polygon, testSegments[i].point0Ref, testSegments[i].point1Ref);
+      if (ck.testTrue(loc.isValid, "found ray intersection")) {
+        ck.testPoint3d(testPts[i], loc.point, "intersection point as expected");
+        ck.testCoordinate(testPts[i].distance(testSegments[i].point0Ref), loc.a, "intersection parameter along ray as expected");
+        if (ck.testTrue(loc.closestEdgeIndex >= 0 && loc.closestEdgeIndex < polygon.length && loc.closestEdgeParam >= 0.0 && loc.closestEdgeParam <= 1.0, "found edge projection")) {
+          const projPt = polygonCarrier.interpolateIndexIndex(loc.closestEdgeIndex, loc.closestEdgeParam, (loc.closestEdgeIndex + 1) % polygon.length)!;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create([testPts[i], projPt]), x0);
+        }
+        if (isConvex) {
+          const b = PolygonOps.convexBarycentricCoordinates(polygon, testPts[i]);
+          ck.testBoolean(loc.isInsideOrOn, undefined !== b, "barycentric coords exist iff point inside convex polygon");
+          if (undefined !== b) {
+            ck.testExactNumber(b.length, polygon.length, "barycentric coordinate length matches polygon length");
+            polygonCarrier.linearCombination(b, xyz);
+            ck.testPoint3d(xyz, testPts[i], "barycentric roundtrip");
+            let coordSum = 0.0;
+            let num01 = 0;
+            for (const coord of b) {
+              if (coord >= 0.0 && coord <= 1.0)
+                ++num01;
+              coordSum += coord;
+            }
+            ck.testCoordinateWithToleranceFactor(1.0, coordSum, Geometry.smallMetricDistance, "barycentric coords sum to 1");
+            ck.testExactNumber(num01, b.length, "testPt insideOn => all barycentric coords in [0,1]");
+          }
+        }
+      }
+    }
+  }
+
+  it("intersectRay3d", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const xDelta = 5;
+
+    const convexPolygon = [Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 1), Point3d.create(-1, 2), Point3d.create(0, 2), Point3d.create(1, 2), Point3d.create(2, 2), Point3d.create(1, -1), Point3d.create(0, -2)];
+    convexPolygon.push(convexPolygon[0].clone()); // closure point for coverage and display
+    testPolygonRayIntersection(ck, allGeometry, convexPolygon);
+
+    const convexPolygonWithDegenerateEdges = [Point3d.create(-2, -1), Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 0), Point3d.create(-2, 1), Point3d.create(-1, 2), Point3d.create(0, 2), Point3d.create(2, 2), Point3d.create(1, -1), Point3d.create(0, -2)];
+    testPolygonRayIntersection(ck, allGeometry, convexPolygonWithDegenerateEdges);
+
+    const nonConvexPolygon = [Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 1), Point3d.create(-1, 2), Point3d.create(0, 2), Point3d.create(2, 2), Point3d.create(1, 1), Point3d.create(1, -1), Point3d.create(0, -2), Point3d.create(-1, 0)];
+    testPolygonRayIntersection(ck, allGeometry, nonConvexPolygon, xDelta);
+
+    const degeneratePolygon = [Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 1)];
+    const ray = Ray3d.create(Point3d.create(0,0,5), Vector3d.create(0,0,-1));
+    ck.testUndefined(PolygonOps.convexBarycentricCoordinates(degeneratePolygon, Point3d.createZero()));
+    ck.testFalse(PolygonOps.intersectRay3d(degeneratePolygon, ray).isValid, "degenerate polygon intersection is invalid");
+
+    const triangle = [Point3d.create(-2, -1), Point3d.create(0, 2), Point3d.create(1, 0)];
+    const parallelRay = Ray3d.create(Point3d.create(0,0,5), Vector3d.create(1,1));
+    ck.testFalse(PolygonOps.intersectRay3d(triangle, parallelRay).isValid, "parallel ray intersection is invalid");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "intersectRay3d");
+    expect(ck.getNumErrors()).equals(0);
   });
 });

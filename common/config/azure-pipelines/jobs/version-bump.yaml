@@ -56,6 +56,12 @@ jobs:
         git config --local user.name imodeljs-admin
       displayName: Setup Git
 
+    - script: node common/scripts/install-run-rush.js install
+      displayName: rush install
+
+    - bash: node common/scripts/install-run-rush.js audit
+      displayName: rush audit
+
     # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
     - ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}:
       - bash: 'node common/scripts/install-run-rush version --bump'
@@ -176,9 +182,9 @@ jobs:
       steps:
       - checkout: self
       - task: NodeTool@0
-        displayName: 'Use Node 12.x'
+        displayName: 'Use Node 18.x'
         inputs:
-          versionSpec: 12.x
+          versionSpec: 18.x
           checkLatest: true
 
       - bash: |

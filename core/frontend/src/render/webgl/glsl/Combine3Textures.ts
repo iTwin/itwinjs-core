@@ -6,7 +6,6 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { Combine3TexturesGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
@@ -26,7 +25,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCombine3TexturesProgram(context: WebGLContext): ShaderProgram {
+export function createCombine3TexturesProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

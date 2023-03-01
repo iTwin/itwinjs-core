@@ -21,7 +21,7 @@ export interface ItemJSON {
   // TODO: rename to `label`
   // eslint-disable-next-line deprecation/deprecation
   labelDefinition: LabelDefinitionJSON;
-  /** @deprecated in 3.x. */
+  /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   imageId: string;
   classInfo?: ClassInfo;
   // eslint-disable-next-line deprecation/deprecation

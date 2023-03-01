@@ -443,4 +443,16 @@ describe("CurveCurveXY", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("intersectXY-with-tolerance", () => {
+    const ck = new Checker();
+    const geomA = LineSegment3d.createXYXY(-4,4,-4,-4);
+    const geomB = LineSegment3d.createXYXY(-4,4,-4.0001,-4);
+    const intersectionsTight = CurveCurve.allIntersectionsAmongPrimitivesXY([geomA, geomB]);
+    if (ck.testExactNumber(1, intersectionsTight.length, "found 1 intersection with default (tight) tol"))
+      ck.testTrue(intersectionsTight[0].detailA.isIsolated && intersectionsTight[0].detailB.isIsolated, "tight tol intersection is isolated point");
+    const intersectionsLoose = CurveCurve.allIntersectionsAmongPrimitivesXY([geomA, geomB], 0.001);
+    if (ck.testExactNumber(1, intersectionsLoose.length, "found 1 intersection with loose tol"))
+      ck.testTrue(intersectionsLoose[0].detailA.hasFraction1 && intersectionsLoose[0].detailB.hasFraction1, "loose tol intersection is an interval");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
