@@ -186,7 +186,10 @@ export namespace CloudSqlite {
     destroy(): void;
   }
 
-  /** A CloudSqlite container that may be connected to a CloudCache. */
+  /** A CloudSqlite container that may be connected to a CloudCache.
+   * @note All methods and accessors of this interface (other than `initializeContainer`) require that the `connect` method be successfully called first.
+   * Otherwise they will throw an exception or return meaningless values.
+   */
   export interface CloudContainer {
     readonly cache?: CloudCache;
     /** The ContainerId. */
@@ -216,12 +219,21 @@ export namespace CloudSqlite {
     initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize?: number }): void;
 
     /**
+     * Connect this CloudContainer to a CloudCache for reading or writing its manifest, write lock, and databases.
+     * @note A CloudCache is a local directory holding copies of information from the cloud. Its content is persistent across sessions,
+     * but this method must be called each session to (re)establish the connection to the cache. If the CloudCache was previously populated,
+     * this method may be called and will succeed *even when offline* or without a valid `accessToken`.
+     * @note all operations that access the contents of databases or the manifest require this method be successfully called (i.e. `isConnected === true`).
+     */
+    connect(cache: CloudCache): void;
+
+    /**
      * Attempt to acquire the write lock for this CloudContainer. For this to succeed:
      * 1. it must be connected to a `CloudCache`
      * 2. this CloudContainer must have been constructed with `writeable: true`
      * 3. the `accessToken` must authorize write access
      * 4. no other process may be holding an unexpired write lock
-     * @throws exception if any of the above conditions fail
+     * @throws if any of the above conditions fail
      * @note Write locks *expire* after the duration specified in the `durationSeconds` property of the constructor argument, in case a process
      * crashes or otherwise fails to release the lock. Calling `acquireWriteLock` with the lock already held resets the lock duration from the current time,
      * so long running processes should call this method periodically to ensure their lock doesn't expire (they should also make sure their accessToken is refreshed
@@ -236,7 +248,6 @@ export namespace CloudSqlite {
      * Release the write lock if it is currently held.
      * @note if there are local changes that have not been uploaded, they are automatically uploaded before the write lock is released.
      * @note if the write lock is not held, this method does nothing.
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     releaseWriteLock(): void;
 
@@ -244,7 +255,6 @@ export namespace CloudSqlite {
      * Destroy any currently valid write lock from this or any other process. This is obviously very dangerous and defeats the purpose of write locking.
      * This method exists only for administrator tools to clear a failed process without waiting for the expiration period. It can also be useful for tests.
      * For this to succeed, all of the conditions of `acquireWriteLock` must be true other than #4.
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     clearWriteLock(): void;
 
@@ -252,29 +262,18 @@ export namespace CloudSqlite {
      * Abandon any local changes in this container. If the write lock is currently held, it is released.
      * This function fails with BE_SQLITE_BUSY if one or more clients have open read or write transactions
      * on any database in the container.
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     abandonChanges(): void;
 
     /**
-     * Connect this CloudContainer to a CloudCache for reading or writing its manifest, write lock, and databases.
-     * @note A CloudCache is a local directory holding copies of information from the cloud. Its content is persistent across sessions,
-     * but this method must be called each session to (re)establish the connection to the cache. If the CloudCache was previously populated,
-     * this method may be called and will succeed *even when offline* or without a valid `accessToken`.
-     * @note all operations that access the contents of databases or the manifest require this method be called (`isConnected === true`).
-     */
-    connect(cache: CloudCache): void;
-
-    /**
      * Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container. Leaves the container attached to the
      * CloudCache so it is available for future sessions.
-     * @note This function does nothing if the CloudContainer is not connected to a CloudCache. @see connect
+     * @note This function does nothing (and does not throw) if the CloudContainer is not connected to a CloudCache.
      */
     disconnect(): void;
 
     /**
      * Permanently Detach and Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container.
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     detach(): void;
 
@@ -282,7 +281,6 @@ export namespace CloudSqlite {
      * Poll cloud storage for changes from other processes. *No changes* made by other processes are visible to
      * this CloudContainer unless/until this method is called.
      * @note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     checkForChanges(): void;
 
@@ -291,7 +289,6 @@ export namespace CloudSqlite {
      * @note this is called automatically from `releaseWriteLock` before the write lock is released. It is only necessary to call this directly if you
      * wish to upload changes while the write lock is still held.
      * @see hasLocalChanges
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     uploadChanges(): Promise<void>;
 
@@ -311,26 +308,22 @@ export namespace CloudSqlite {
      * @note CloudSqlite uses copy-on-write semantics for this operation. That is, this method merely makes a
      * new entry in the manifest with the new name that *shares* all of its blocks with the original database.
      * If either database subsequently changes, the only modified blocks are not shared.
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     copyDatabase(dbName: string, toAlias: string): Promise<void>;
 
     /** Remove a database from this CloudContainer.
      * @see cleanDeletedBlocks
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     deleteDatabase(dbName: string): Promise<void>;
 
     /** Get the list of database names in this CloudContainer.
      * @param globArg if present, filter the results with SQLite [GLOB](https://www.sqlite.org/lang_expr.html#glob) operator.
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     queryDatabases(globArg?: string): string[];
 
     /**
      * Get the status of a specific database in this CloudContainer.
      * @param dbName the name of the database of interest
-     * @throws error if the CloudContainer is not connected to a CloudCache. @see connect
      */
     queryDatabase(dbName: string): CloudSqlite.CachedDbProps | undefined;
 
