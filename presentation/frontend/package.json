@@ -45,7 +45,6 @@
     "@itwin/core-common": "workspace:^4.0.0-dev.31",
     "@itwin/core-frontend": "workspace:^4.0.0-dev.31",
     "@itwin/core-quantity": "workspace:^4.0.0-dev.31",
-    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.31",
     "@itwin/presentation-common": "workspace:^4.0.0-dev.31"
   },
   "devDependencies": {
@@ -55,7 +54,6 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",

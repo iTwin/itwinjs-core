@@ -43,7 +43,6 @@
     "@itwin/core-bentley": "workspace:^4.0.0-dev.31",
     "@itwin/core-common": "workspace:^4.0.0-dev.31",
     "@itwin/core-quantity": "workspace:^4.0.0-dev.31",
-    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.31",
     "@itwin/presentation-common": "workspace:^4.0.0-dev.31"
   },
   "devDependencies": {
@@ -52,7 +51,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
