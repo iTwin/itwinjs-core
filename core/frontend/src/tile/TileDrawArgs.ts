@@ -200,12 +200,11 @@ export class TileDrawArgs {
     let viewPt = new Point3d(0, 0, 0);
     if (this.context.viewport.view.is3d() && this._nearFrontCenter) { // only defined if camera is on
       // ###TODO avoid allocation when transforming
+      viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(this._nearFrontCenter);
       const worldBoundingVolume = tileBoundingVolume.transformBy(this.location);
       const distance = worldBoundingVolume.distanceToPoint(this.context.viewport.view.camera.eye);
       if (distance > 0)
         viewPt.z = -distance;
-      else
-        viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(this._nearFrontCenter);
     }
 
     const viewPt2 = new Point3d(viewPt.x + 1, viewPt.y, viewPt.z);
