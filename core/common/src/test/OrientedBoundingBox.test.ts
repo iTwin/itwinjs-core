@@ -58,4 +58,44 @@ describe("OrientedBoundingBox", () => {
     expectDistance(-3, 3, 0, Math.sqrt(2));
     expectDistance(-3, 3, 6, Math.sqrt(3));
   });
+
+  it("finds closest point on surface", () => {
+    const obb = new OrientedBoundingBox(Point3d.fromJSON([-1, 0, 2]), Matrix3d.fromJSON([1, 0, 0, 0, 2, 0, 0, 0, 3]));
+    const expectClosestPoint = (x: number, y: number, z: number, expected: [number, number, number] | undefined) => {
+      const actual = obb.closestPointOnSurface({ x, y, z });
+      if (undefined === expected) {
+        expect(actual).to.be.undefined;
+        return;
+      }
+
+      expect(actual).not.to.be.undefined;
+      expect(actual!.x).to.equal(expected[0]);
+      expect(actual!.y).to.equal(expected[1]);
+      expect(actual!.z).to.equal(expected[2]);
+    };
+
+    expectClosestPoint(-3, 0, 2, [-2, 0, 2]);
+    expectClosestPoint(-2, 0, 2, [-2, 0, 2]);
+    expectClosestPoint(-0.5, 0, 2, undefined);
+    expectClosestPoint(0, 0, 2, [0, 0, 2]);
+    expectClosestPoint(5, 0, 2, [0, 0, 2]);
+
+    expectClosestPoint(-1, 1, 2, undefined);
+    expectClosestPoint(-1, 2, 2, [-1, 2, 2]);
+    expectClosestPoint(-1, 4, 2, [-1, 2, 2]);
+    expectClosestPoint(-1, -1, 2, undefined);
+    expectClosestPoint(-1, -2, 2, [-1, -2, 2]);
+    expectClosestPoint(-1, -3, 2, [-1, -2, 2]);
+
+    expectClosestPoint(-1, 0, 4, undefined);
+    expectClosestPoint(-1, 0, 5, [-1, 0, 5]);
+    expectClosestPoint(-1, 0, 100, [-1, 0, 5]);
+    expectClosestPoint(-1, 0, -1, [-1, 0, -1]);
+    expectClosestPoint(-1, 0, -123, [-1, 0, -1]);
+
+    expectClosestPoint(-1, 0, 2, undefined);
+    expectClosestPoint(-1.5, 1, 0, undefined);
+    expectClosestPoint(-1.5, 1, -4, [-1.5, 1, -1]);
+    expectClosestPoint(1, 4, 2, [0, 2, 2]);
+  });
 });

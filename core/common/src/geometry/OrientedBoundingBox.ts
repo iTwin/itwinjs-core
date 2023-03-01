@@ -198,4 +198,30 @@ export class OrientedBoundingBox {
   public distanceToPoint(point: XYAndZ): number {
     return Math.sqrt(this.distanceSquaredToPoint(point));
   }
+
+  public closestPointOnSurface(point: XYAndZ): XYAndZ | undefined {
+    let outside = false;
+    const closestPoint = this.center.clone();
+    const dir = new Vector3d(point.x, point.y, point.z);
+    dir.minus(this.center, dir);
+
+    for (let columnIndex = 0; columnIndex < 3; columnIndex++) {
+      const column = this.halfAxes.getColumn(columnIndex).normalizeWithLength();
+      const axis = column.v;
+      if (!axis)
+        continue;
+
+      const halfLength = column.mag;
+      let distance = dir.dotProduct(axis);
+      if (Math.abs(distance) >= halfLength) {
+        outside = true;
+        distance = distance > 0 ? halfLength : -halfLength;
+      }
+
+      axis.scaleInPlace(distance);
+      closestPoint.plus(axis, closestPoint);
+    }
+
+    return outside ? closestPoint : undefined;
+  }
 }
