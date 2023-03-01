@@ -196,7 +196,7 @@ export class TileDrawArgs {
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }
 
-  public computePixelSizeInMetersAtClosestPointOnBoundingVolume(tileBoundingVolume: OrientedBoundingBox/* | BoundingSphere*/): number {
+  public computePixelSizeInMetersAtClosestPointOnBoundingVolume(tileBoundingVolume: OrientedBoundingBox | BoundingSphere): number {
     const worldBoundingVolume = tileBoundingVolume.transformBy(this.location);
     let closestPoint: XYAndZ = worldBoundingVolume.center;
     if (this.context.viewport.view.is3d() && this._nearFrontCenter) {

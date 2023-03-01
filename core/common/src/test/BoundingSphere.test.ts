@@ -52,4 +52,33 @@ describe("BoundingSphere", () => {
     expectDistance(-1, 0, 6, 1);
     expectDistance(-1, 0, -2, 1);
   });
+
+  it("computes closest point on sphere", () => {
+    const sphere = new BoundingSphere(new Point3d(-1, 0, 2), 3);
+    const expectClosestPoint = (x: number, y: number, z: number, expected: [number, number, number] | undefined) => {
+      const actual = sphere.closestPointOnSurface({ x, y, z });
+      if (undefined === expected) {
+        expect(actual).to.be.undefined;
+        return;
+      }
+
+      expect(actual).not.to.be.undefined;
+      expect(actual!.x).to.equal(expected[0]);
+      expect(actual!.y).to.equal(expected[1]);
+      expect(actual!.z).to.equal(expected[2]);
+    };
+
+    expectClosestPoint(-1, 0, 2, undefined);
+    expectClosestPoint(0, 1, 3, undefined);
+
+    expectClosestPoint(-4, 0, 2, [-4, 0, 2]);
+    expectClosestPoint(-5, 0, 2, [-4, 0, 2]);
+    expectClosestPoint(2, 0, 2, [2, 0, 2]);
+    expectClosestPoint(100, 0, 2, [2, 0, 2]);
+
+    expectClosestPoint(-1, 3, 2, [-1 ,3, 2]);
+    expectClosestPoint(-1, 3.5, 2, [-1, 3, 2]);
+    expectClosestPoint(-1, -3, 2, [-1, -3, 2]);
+    expectClosestPoint(-1, -20, 2, [-1, -3, 2]);
+  });
 });

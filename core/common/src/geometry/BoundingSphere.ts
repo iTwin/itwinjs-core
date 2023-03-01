@@ -6,7 +6,9 @@
  * @module Geometry
  */
 
-import { Geometry, Point3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import {
+  Geometry, Point3d, Transform, Vector3d, XYAndZ,
+} from "@itwin/core-geometry";
 
 const scratchDistanceSquared = new Point3d();
 
@@ -61,6 +63,17 @@ export class BoundingSphere {
   public distanceSquaredToPoint(point: XYAndZ): number {
     const distance = this.distanceToPoint(point);
     return distance * distance;
+  }
+
+  public closestPointOnSurface(point: XYAndZ): Point3d | undefined {
+    const dir = Vector3d.createStartEnd(this.center, point);
+    if (dir.magnitudeSquared() < this.radius * this.radius)
+      return undefined;
+
+    dir.normalizeInPlace();
+    dir.scaleInPlace(this.radius);
+    dir.plus(this.center, dir);
+    return new Point3d(dir.x, dir.y, dir.z);
   }
 
   public isAlmostEqual(other: BoundingSphere): boolean {
