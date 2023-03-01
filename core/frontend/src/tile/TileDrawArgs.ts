@@ -274,7 +274,7 @@ export class TileDrawArgs {
     this.hiddenLineSettings = params.hiddenLineSettings;
     this.animationTransformNodeId = params.animationTransformNodeId;
     this.boundingRange = params.boundingRange;
-    this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
+    this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 2; // 16 is Cesium's default.
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)

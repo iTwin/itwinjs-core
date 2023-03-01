@@ -358,18 +358,12 @@ export class RealityTile extends Tile {
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
     if (undefined !== this._geometricError) {
-      if (this.boundingBox && args.context.viewport.view.is3d() && args.context.viewport.view.isCameraOn) {
-        const height = args.context.viewport.viewRect.height;
-        const sseDenom = 2 * Math.tan(0.5 * args.context.viewport.view.camera.getLensAngle().radians);
-        const worldBB = this.boundingBox.transformBy(args.location);
-        const distance = Math.max(1e-7, worldBB.distanceToPoint(args.context.viewport.view.camera.eye));
-        const sse = (this._geometricError * height) / (distance * sseDenom);
-        return args.maximumScreenSpaceError / sse;
-      } else {
-        const pixelSize = args.computePixelSizeInMetersAtClosestPoint(args.getTileCenter(this), args.getTileRadius(this));
-        const sse = this._geometricError / pixelSize;
-        return args.maximumScreenSpaceError / sse;
-      }
+      const pixelSize = this.boundingBox
+        ? args.computePixelSizeInMetersAtClosestPointOnBoundingVolume(this.boundingBox)
+        : args.computePixelSizeInMetersAtClosestPoint(args.getTileCenter(this), args.getTileRadius(this));
+
+      const sse = this._geometricError / pixelSize;
+      return args.maximumScreenSpaceError / sse;
     }
 
     return this.maximumSize / args.getPixelSize(this);
