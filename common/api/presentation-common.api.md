@@ -17,7 +17,7 @@ import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
 import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
-import { UnitsProvider } from '@itwin/core-quantity';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public
@@ -374,7 +374,8 @@ export interface ContentModifiersList {
 }
 
 // @alpha (undocumented)
-export class ContentPropertyValueFormatter extends PropertyValueFormatter {
+export class ContentPropertyValueFormatter {
+    constructor(_propertyValueFormatter: PropertyValueFormatter, _unitSystem: UnitSystemKey);
     // (undocumented)
     formatContent(content: Content): Promise<Content>;
 }
@@ -1039,9 +1040,9 @@ export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptio
 // @alpha (undocumented)
 export interface FormatOptions {
     // (undocumented)
-    formatProps: FormatProps;
+    koqName: string;
     // (undocumented)
-    persistenceUnitName: string;
+    unitSystem: UnitSystemKey;
 }
 
 // @internal (undocumented)
@@ -2499,13 +2500,13 @@ export enum PropertyValueFormat {
 
 // @alpha (undocumented)
 export class PropertyValueFormatter {
-    constructor(_unitsProvider: UnitsProvider);
+    constructor(_schemaContext: SchemaContext);
     // (undocumented)
-    format(value: number, options: FormatOptions): Promise<string>;
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
     // (undocumented)
-    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec>;
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec | undefined>;
     // (undocumented)
-    getParserSpec(options: FormatOptions): Promise<ParserSpec>;
+    getParserSpec(options: FormatOptions): Promise<ParserSpec | undefined>;
 }
 
 // @public
