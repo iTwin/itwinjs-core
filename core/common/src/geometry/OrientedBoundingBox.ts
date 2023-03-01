@@ -199,14 +199,14 @@ export class OrientedBoundingBox {
     return Math.sqrt(this.distanceSquaredToPoint(point));
   }
 
-  public closestPointOnSurface(point: XYAndZ): Point3d | undefined {
+  public closestPointOnSurface(point: XYAndZ, result?: Point3d): Point3d | undefined {
     let outside = false;
-    const closestPoint = this.center.clone();
-    const dir = new Vector3d(point.x, point.y, point.z);
+    const closestPoint = this.center.clone(result);
+    const dir = Vector3d.create(point.x, point.y, point.z, scratchU);
     dir.minus(this.center, dir);
 
     for (let columnIndex = 0; columnIndex < 3; columnIndex++) {
-      const column = this.halfAxes.getColumn(columnIndex).normalizeWithLength();
+      const column = this.halfAxes.getColumn(columnIndex, scratchV).normalizeWithLength(scratchV);
       const axis = column.v;
       if (!axis)
         continue;

@@ -11,6 +11,7 @@ import {
 } from "@itwin/core-geometry";
 
 const scratchDistanceSquared = new Point3d();
+const scratchDir = new Vector3d();
 
 /** Describes a spherical volume of space as an approximation of the shape of some more complex geometric entity fully contained within that volume.
  * When performing tests for intersection or containment, the approximation can be used as a first, quick check.
@@ -65,15 +66,15 @@ export class BoundingSphere {
     return distance * distance;
   }
 
-  public closestPointOnSurface(point: XYAndZ): Point3d | undefined {
-    const dir = Vector3d.createStartEnd(this.center, point);
+  public closestPointOnSurface(point: XYAndZ, result?: Point3d): Point3d | undefined {
+    const dir = Vector3d.createStartEnd(this.center, point, scratchDir);
     if (dir.magnitudeSquared() < this.radius * this.radius)
       return undefined;
 
     dir.normalizeInPlace();
     dir.scaleInPlace(this.radius);
     dir.plus(this.center, dir);
-    return new Point3d(dir.x, dir.y, dir.z);
+    return Point3d.create(dir.x, dir.y, dir.z, result);
   }
 
   public isAlmostEqual(other: BoundingSphere): boolean {
