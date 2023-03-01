@@ -50,10 +50,10 @@ describe("PropertyValueFormatter", () => {
       expect(formatterSpec).to.be.undefined;
     });
 
-    it("returns undefined if KOQ does not have formats", async () => {
+    it("returns undefined if KOQ does not have matching formats", async () => {
       const formatterSpec = await formatter.getFormatterSpec({
         koqName: "TestSchema:TestKOQNoPresentationUnit",
-        unitSystem: "metric",
+        unitSystem: "imperial",
       });
       expect(formatterSpec).to.be.undefined;
     });
@@ -84,10 +84,10 @@ describe("PropertyValueFormatter", () => {
       expect(parserSpec).to.be.undefined;
     });
 
-    it("returns undefined if KOQ does not have formats", async () => {
+    it("returns undefined if KOQ does not have matching formats", async () => {
       const parserSpec = await formatter.getParserSpec({
         koqName: "TestSchema:TestKOQNoPresentationUnit",
-        unitSystem: "metric",
+        unitSystem: "imperial",
       });
       expect(parserSpec).to.be.undefined;
     });
@@ -132,6 +132,14 @@ describe("PropertyValueFormatter", () => {
         unitSystem: "imperial",
       });
       expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
+    });
+
+    it("formats value using persistence unit format if it matches unit system", async () => {
+      const formatted = await formatter.format(1.5, {
+        koqName: "TestSchema:TestKOQNoPresentationUnit",
+        unitSystem: "metric",
+      });
+      expect(formatted).to.be.eq(`1.5 ${metricUnit.label}`);
     });
 
     it("returns `undefined` if format is not found", async () => {
