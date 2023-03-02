@@ -148,7 +148,7 @@
     },
     {
       "packageName": "@itwin/frontend-tiles",
-      "projectFolder": "core/frontend-tiles",
+      "projectFolder": "extensions/frontend-tiles",
       "reviewCategory": "frontend",
       "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
