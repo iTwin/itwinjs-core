@@ -131,7 +131,8 @@ header nav {
 }
 
 
-#main-nav a {
+#main-nav a,
+#main-nav select {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: var(--white);
@@ -139,10 +140,35 @@ header nav {
   margin-right: var(--space-unit);
 }
 
-#main-nav a:hover {
+#main-nav a:hover,
+#main-nav select:hover {
   color: #fff;
   text-decoration: none;
 }
+
+.select-wrapper {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.select-wrapper select {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+  border: none;
+  background-color: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  padding: 10px;
+}
+
+.select-wrapper select option {
+  background-color: #32b1d1;
+}
+
 
 header #search-component {
   justify-self: flex-end;
