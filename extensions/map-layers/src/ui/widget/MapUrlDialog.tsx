@@ -328,7 +328,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       source = MapLayerSource.fromJSON({
         url: mapUrl,
         name: mapName,
-        formatId: mapType
+        formatId: mapType,
       });
 
       // Set credentials separately since they are not part of JSON
@@ -443,7 +443,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           const source = MapLayerSource.fromJSON({
             url: props.layerRequiringCredentials.url,
             name: props.layerRequiringCredentials.name,
-            formatId: props.layerRequiringCredentials.formatId
+            formatId: props.layerRequiringCredentials.formatId,
           });
 
           if (source !== undefined) {

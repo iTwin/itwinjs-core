@@ -16,8 +16,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { getJson, RequestBasicCredentials } from "../../request/Request";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
-/**
- * Values for return codes from [[MapLayerSource.validateSource]]
+/** Values for return codes from [[MapLayerSource.validateSource]]
  * @public
  */
 export enum MapLayerSourceStatus {
@@ -38,7 +37,7 @@ export enum MapLayerSourceStatus {
 }
 
 /** JSON representation of a map layer source.
- *  * @see [ImageryMapLayerFormatId]($common)
+ * @see [ImageryMapLayerFormatId]($common)
  * @public
  */
 interface MapLayerSourceProps {
@@ -54,7 +53,7 @@ interface MapLayerSourceProps {
   baseMap?: boolean;
 }
 
-/** A source for map layers.  These may be catalogued for convenient use by users or applications.
+/** A source for map layers. These may be catalogued for convenient use by users or applications.
  * @public
  */
 export class MapLayerSource {
