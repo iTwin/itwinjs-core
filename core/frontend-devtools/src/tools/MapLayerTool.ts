@@ -407,7 +407,7 @@ export class MapLayerZoomTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.viewMapLayerRange(layerIndex, false, vp).then(() => { }).catch(() => { });
+    vp.viewMapLayerRange(layerIndex, false, vp).then(() => { }).catch(() => { });
 
     return true;
   }

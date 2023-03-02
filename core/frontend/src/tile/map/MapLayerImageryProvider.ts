@@ -26,7 +26,7 @@ export enum MapLayerImageryProviderStatus {
 }
 
 /** Base class for map layer imagery providers.
- * TODO more explanation
+ * Map layer imagery providers request tiles from their URLs and provide images and other tile data.
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
