@@ -32,7 +32,7 @@ Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string,
       return version;
     }
   }
-  throw new Error(`Could not find runtime: major version: ${majorVersion} platform: ${platform}`);
+  return undefined;
 };
 
 function runProgram(program: string, args: string[] = [], cwd: string | undefined = undefined) {
@@ -84,7 +84,11 @@ async function main() {
     // try to create a simulator
     const sdk = await simctl.getLatestRuntimeVersion(desiredRuntime);
     if (!sdk) {
-      log(`No runtimes for iOS ${desiredRuntime} found.`);
+      log(`ERROR: No runtimes for iOS ${desiredRuntime} found.`);
+      if (isAppleCpu) {
+        log("Note: Ignoring this error on Apple Silicon until a better solution is found.");
+        process.exitCode = 0;
+      }
       return;
     }
     log(`Creating simulator: ${desiredDevice} sdk: ${sdk}`);

@@ -59,7 +59,7 @@ try {
 
   folderList.forEach(folder => {
     fse.copySync(path.resolve(basePath, "generated-docs", folder), referencePath);
-  })
+  });
 
   console.log("Copying finished successfully");
 } catch (err) {

@@ -14,6 +14,9 @@ parameters:
   - name: outputDir
     type: string
     default: $(Pipeline.Workspace)/tempDocsBuild
+  - name: useCurrentAppUIDocsArtifact
+    type: boolean
+    default: false
   - name: useCurrentBisDocsArtifact
     type: boolean
     default: false
@@ -69,7 +72,13 @@ jobs:
         parameters:
           workingDir: ${{ parameters.workingDir }}
           stagingDir: ${{ parameters.stagingDir }}
+          useCurrentAppUIDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
           useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
+
+      # Publish artifact for debugging
+      - publish: ${{ parameters.stagingDir }}
+        artifact: PreBuild
+        displayName: Published staged docs for debugging
 
       # Currently BeMetalsmith is an internal only tool
       - script: npm install @bentley/bemetalsmith@4.3.x --legacy-peer-deps
