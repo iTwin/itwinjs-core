@@ -70,9 +70,9 @@ export class MapTileLoader extends RealityTileLoader {
     const projection = tile.getProjection(tile.heightRange);
     const terrainGeometry = system.createTerrainMesh(mesh, projection.transformFromLocal, true);
 
-
     return {
       contentRange: projection.transformFromLocal.multiplyRange(projection.localRange),
+      terrain: {mesh, renderGeometry: terrainGeometry},
     };
   }
 
