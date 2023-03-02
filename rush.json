@@ -147,6 +147,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/frontend-tiles",
+      "projectFolder": "core/frontend-tiles",
+      "reviewCategory": "frontend",
+      "shouldPublish": false,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@itwin/webgl-compatibility",
       "projectFolder": "core/webgl-compatibility",
       "reviewCategory": "frontend",
