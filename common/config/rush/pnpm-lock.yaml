@@ -3312,6 +3312,7 @@ importers:
       '@itwin/electron-authorization': ^0.8.5
       '@itwin/eslint-plugin': workspace:*
       '@itwin/frontend-devtools': workspace:*
+      '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': ^2.2.1
       '@itwin/imodels-access-frontend': ^2.2.1
@@ -3372,6 +3373,7 @@ importers:
       '@itwin/editor-frontend': link:../../editor/frontend
       '@itwin/electron-authorization': 0.8.5_electron@23.0.0
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
+      '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.3.0
       '@itwin/imodels-access-frontend': 2.3.0

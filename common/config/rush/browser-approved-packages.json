@@ -251,6 +251,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/frontend-tiles",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/hypermodeling-frontend",
       "allowedCategories": [ "internal" ]
     },

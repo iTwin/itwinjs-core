@@ -3,6 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SpatialTileTreeReferences } from "@itwin/core-frontend";
+import { SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 
-export const createSpatialTileTreeReferences = SpatialTileTreeReferences.create;
+const impl = SpatialTileTreeReferences.create;
+
+export function createSpatialTileTreeReferences(view: SpatialViewState): SpatialTileTreeReferences {
+  console.log("hi");
+  return impl(view);
+}
