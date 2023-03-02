@@ -49,16 +49,23 @@ steps:
   - task: CopyFiles@2
     displayName: Copy AppUI Docs to staging
     inputs:
-      SourceFolder: $(Pipeline.Workspace)/AppUI Docs/extract
-      TargetFolder: ${{ parameters.stagingDir }}/extract
+      SourceFolder: $(Pipeline.Workspace)/AppUI Docs
+      TargetFolder: ${{ parameters.stagingDir }}
       OverWrite: true
 
-  - task: CopyFiles@2
-    displayName: Copy AppUI Docs to staging
-    inputs:
-      SourceFolder: $(Pipeline.Workspace)/AppUI Docs/ui
-      TargetFolder: ${{ parameters.stagingDir }}/reference
-      OverWrite: true
+  # - task: CopyFiles@2
+  #   displayName: Copy AppUI Docs to staging
+  #   inputs:
+  #     SourceFolder: $(Pipeline.Workspace)/AppUI Docs/extract
+  #     TargetFolder: ${{ parameters.stagingDir }}/extract
+  #     OverWrite: true
+
+  # - task: CopyFiles@2
+  #   displayName: Copy AppUI Docs to staging
+  #   inputs:
+  #     SourceFolder: $(Pipeline.Workspace)/AppUI Docs/ui
+  #     TargetFolder: ${{ parameters.stagingDir }}/reference
+  #     OverWrite: true
 
   # Download BIS Docs artifact
   - ${{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
