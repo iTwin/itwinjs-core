@@ -72,6 +72,18 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
    * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
+
+  /**
+   * A limit to how many instances at most should be loaded for a hierarchy level. If the limit is exceeded,
+   * the request fails with [[PresentationError]] having [[PresentationStatus.ResultSetTooLarge]] error number.
+   *
+   * Specifying the limit is useful when creating unlimited size result sets is not meaningful - this allows the library
+   * to return early as soon as the limit is reached, instead of creating a very large result that's possibly too large to
+   * be useful to be displayed to end users.
+   *
+   * @beta
+   */
+  sizeLimit?: number;
 }
 
 /**

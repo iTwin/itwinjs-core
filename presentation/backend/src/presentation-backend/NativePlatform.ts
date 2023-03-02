@@ -110,9 +110,10 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
       this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
     }
-    private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
+    private getErrorStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
+        case IModelJsNative.ECPresentationStatus.ResultSetTooLarge: return PresentationStatus.ResultSetTooLarge;
         case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
         default: return PresentationStatus.Error;
       }
@@ -139,12 +140,12 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     private handleResult<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
       if (response.error)
-        throw new PresentationError(this.getStatus(response.error.status), response.error.message);
+        throw new PresentationError(this.getErrorStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
       if (response.error)
-        throw new PresentationError(this.getStatus(response.error.status), response.error.message);
+        throw new PresentationError(this.getErrorStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
     public dispose() {
