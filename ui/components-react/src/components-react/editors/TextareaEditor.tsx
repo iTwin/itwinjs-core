@@ -199,7 +199,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
 }
 
 /** Textarea Property Editor registered for the "text" and "string" type names and "multi-line" editor name.
- * It uses the [[Textarea]] React component.
+ * It uses the [[TextareaEditor]] React component.
  * @public
  */
 export class TextareaPropertyEditor extends PropertyEditorBase {

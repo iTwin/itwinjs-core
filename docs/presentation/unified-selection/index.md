@@ -39,7 +39,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 
 ## Selection handling
 
-The `@itwin/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($components-react), [Table]($components-react), [Property Grid]($components-react:PropertyGrid) and [ViewportComponent]($imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
+The `@itwin/presentation-components` package delivers helper APIs for hooking three primary components into unified selection: [ControlledTree]($components-react), [Property Grid]($components-react:PropertyGrid) and [ViewportComponent]($imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
 ### Tree
 
@@ -51,18 +51,6 @@ The rules for interacting with unified selection are very simple in this case:
 - when a node is selected, we add *ECInstance* represented by the node to unified selection storage
 
 In short, this is similar to how *Component A* works in the [selection levels example](#selection-levels).
-
-### Table
-
-Table is a component that displays data in a table layout. In the context of [EC](../../bis/ec/index.md) it's used to display *ECInstance* properties - one column per property, one row per ECInstance.
-
-The rules for interacting with unified selection are:
-
-- when unified selection changes at the 0th level, we load properties for selected *ECInstances*.
-- when unified selection changes at the 1st level, we highlight rows that represent selected *ECInstances*.
-- when a row is selected, we add the *ECInstance* it represents to unified selection at the 1st level.
-
-In short, this is similar to how *Component B* works in the [selection levels example](#selection-levels).
 
 ### Property grid
 
@@ -123,9 +111,6 @@ For each type of component described in [selection handling section](#selection-
 - Tree
   - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($components-react) that can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.
 
-- Table
-  - [tableWithUnifiedSelection]($presentation-components) HOC takes a [Table]($components-react) component as input and returns a component with injected handling for unified selection as described in [this section](#table).
-
 - Property Grid
   - [usePropertyDataProviderWithUnifiedSelection]($presentation-components) hook takes an [IPresentationPropertyDataProvider]($presentation-components) as an input and ensures the provider is updated with current selection as soon as there are changes in unified selection storage. It also returns some cues about the selection that help the component with various edge cases, like nothing being selected or overly large number of selected elements.
 
@@ -151,7 +136,6 @@ Generally, if an application uses unified selection, it should be interacting wi
 ## External resources
 
 - [Hooking a tree into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Tree)
-- [Hooking a table into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Table)
 - [Hooking a property grid into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20PropertyGrid)
 - Hooking 3rd party components into unified selection
   - [Blog post](https://medium.com/itwinjs/hooking-3rd-party-component-into-unified-selection-c4daec69789d)

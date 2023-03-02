@@ -19,7 +19,7 @@ The formatted svg icon string begins with "webSvg:".
 The `IconSpecUtilities.createWebComponentIconSpec` can be used to format the SVG string. See example usage below.
 
 The sprite SVG loader has been deprecated.
-The [SvgSprite]($core-react) React component has been deprecated.
+The `SvgSprite` React component has been deprecated.
 
 ## Examples
 

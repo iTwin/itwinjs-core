@@ -110,7 +110,7 @@ export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem { // 
 }
 
 /** Describes the data needed to insert a button into the status bar.
- * @deprecated in 3.6. Use [AnyStatusBarItem]($appui-react) instead.
+ * @deprecated in 3.6. Use [StatusBarItem]($appui-react) instead.
  * @public
  */
 export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem; // eslint-disable-line deprecation/deprecation
