@@ -9,6 +9,8 @@ import {
   createRealityTileTreeReference, RealityDataSource, SpatialTileTreeReferences, SpatialViewState, TileTreeReference,
 } from "@itwin/core-frontend";
 
+export const loggerCategory = "frontend-tiles";
+
 class TreeRefs implements SpatialTileTreeReferences {
   private readonly _treeRef: TileTreeReference;
 

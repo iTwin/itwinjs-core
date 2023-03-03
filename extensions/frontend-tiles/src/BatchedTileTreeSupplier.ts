@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import {
   IModelConnection, TileTree, TileTreeSupplier,
 } from "@itwin/core-frontend";
+import { loggerCategory } from "./FrontendTiles";
+import { BatchedTilesetReader } from "./BatchedTilesetReader";
 
 export type TreeId = "spatial-models";
 
@@ -18,11 +20,19 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
     return 0;
   }
 
-  public createTileTree(id: TreeId, _iModel: IModelConnection): Promise<TileTree | undefined> {
-    // ###TODO
+  public async createTileTree(id: TreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     assert(id === "spatial-models");
     const url = "http://localhost:8080/tileset.json";
-    return Promise.resolve(undefined);
+    try {
+      const response = await fetch(url);
+      const json = await response.json();
+
+      const reader = new BatchedTilesetReader(json, iModel);
+      throw new Error("###TODO");
+    } catch (err) {
+      Logger.logException(loggerCategory, err);
+      return undefined;
+    }
   }
 }
 
