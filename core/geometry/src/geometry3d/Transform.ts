@@ -251,8 +251,7 @@ export class Transform implements BeJSONFunctions {
    * * Has careful logic for building up optional result without allocations.
    */
   public static createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined {
-    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder,
-      result ? result._matrix : undefined);
+    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder, result ? result._matrix : undefined);
     if (!matrix)
       return undefined;
     if (result) {

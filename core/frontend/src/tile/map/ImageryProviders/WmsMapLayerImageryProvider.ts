@@ -40,7 +40,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   public override async initialize(): Promise<void> {
     try {
-      this._capabilities = await WmsCapabilities.create(this._baseUrl);
+      const credentials = (this._settings.userName && this._settings.password ? {user: this._settings.userName, password:  this._settings.password} : undefined);
+      this._capabilities = await WmsCapabilities.create(this._baseUrl, credentials);
       if (undefined !== this._capabilities) {
         this._allLayersRange = this._capabilities.cartoRange;
         if (this._capabilities.layer && Array.isArray(this._capabilities.layer.subLayers)) {
@@ -146,6 +147,9 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
     return {support3857: support3857 ?? false, support4326: support4326 ?? false};
   }
+
+  // WMS standard requires 'TRUE' or 'FALSE' (case sensitive) values.
+  public override get transparentBackgroundString(): string { return this._settings.transparentBackground ? "TRUE" : "FALSE"; }
 
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {

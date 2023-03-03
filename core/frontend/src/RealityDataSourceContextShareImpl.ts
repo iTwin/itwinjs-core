@@ -204,6 +204,10 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
     return undefined;
   }
 
+  public getTileContentType(url: string): "tile" | "tileset" {
+    return url.endsWith("json") ? "tileset" : "tile";
+  }
+
   /**
    * Gets spatial location and extents of this reality data source
    * @returns spatial location and extents

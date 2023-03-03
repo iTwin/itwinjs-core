@@ -29,7 +29,6 @@ export interface SubCondition {
   /**
    * Specifications that define [ECSchema requirements]($docs/presentation/RequiredSchemaSpecification.md) for
    * the rule to take effect.
-   * @beta
    */
   requiredSchemas?: RequiredSchemaSpecification[];
 

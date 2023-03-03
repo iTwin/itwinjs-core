@@ -17,14 +17,14 @@ import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ElementTooltip } from "../feedback/ElementTooltip";
 import { FrontstageComposer } from "../frontstage/FrontstageComposer";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 import { InputFieldMessage } from "../messages/InputField";
 import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { ContentDialogRenderer } from "../dialog/ContentDialogManager";
+import { UiFramework } from "../UiFramework";
+import { InternalConfigurableUiManager } from "./InternalConfigurableUiManager";
 
 // cSpell:ignore cursormenu cursorpopup
 
@@ -45,14 +45,14 @@ export interface ConfigurableUiContentProps extends CommonProps {
  * @public
  */
 export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
-  const version = useFrameworkVersion();
+  const version = useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   React.useEffect(() => {
-    KeyboardShortcutManager.setFocusToHome();
+    UiFramework.keyboardShortcuts.setFocusToHome();
   }, []);
   React.useEffect(() => {
-    ConfigurableUiManager.activityTracker.initialize({ idleTimeout: props.idleTimeout, intervalTimeout: props.intervalTimeout });
+    InternalConfigurableUiManager.activityTracker.initialize({ idleTimeout: props.idleTimeout, intervalTimeout: props.intervalTimeout });
     return () => {
-      ConfigurableUiManager.activityTracker.terminate();
+      InternalConfigurableUiManager.activityTracker.terminate();
     };
   }, [props.idleTimeout, props.intervalTimeout]);
 

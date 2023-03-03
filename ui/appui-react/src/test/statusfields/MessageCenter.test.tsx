@@ -9,8 +9,8 @@ import { NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-fronten
 import { WidgetState } from "@itwin/appui-abstract";
 import { FooterPopup } from "@itwin/appui-layout-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, WidgetDef,
+  ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, UiFramework, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -38,10 +38,10 @@ import TestUtils, { mount } from "../TestUtils";
     before(async () => {
       await TestUtils.initializeUiFramework();
 
-      ConfigurableUiManager.unregisterControl("AppStatusBar");
-      ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+      UiFramework.controls.unregister("AppStatusBar");
+      UiFramework.controls.register("AppStatusBar", AppStatusBarWidgetControl);
 
-      const statusBarWidgetDef = new WidgetDef({
+      const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,
         defaultState: WidgetState.Open,
         isFreeform: false,
@@ -109,7 +109,7 @@ import TestUtils, { mount } from "../TestUtils";
 
     it("Message Center should close on outside click", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
       const messageCenterField = wrapper.find(MessageCenterField);
       const messageCenter = wrapper.find("div.nz-indicator");
 
@@ -134,7 +134,7 @@ import TestUtils, { mount } from "../TestUtils";
 
     it("Message Center should not close on outside click", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
 
       const statusBarInstance = wrapper.instance();
       statusBarInstance.setState(() => ({ openWidget: "test-widget" }));

@@ -43,6 +43,8 @@ const statEntries: StatEntry[] = [
   { getValue: (stats, _vp) => stats.totalCacheMisses, label: "Cache Misses" },
   { getValue: (stats, _vp) => stats.totalDispatchedRequests, label: "Dispatched" },
   { getValue: (stats, _vp) => stats.totalAbortedRequests, label: "Aborted" },
+  { getValue: (stats) => Math.round(stats.decoding.mean), label: "Decoding mean time (ms)" },
+  { getValue: (stats) => stats.decoding.max, label: "Decoding max time (ms)" },
 ];
 
 const indexOfFirstGlobalStatistic = 7; // "Completed"

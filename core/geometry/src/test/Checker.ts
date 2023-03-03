@@ -80,6 +80,8 @@ export class Checker {
     czechSpiralDistanceChecks: false,
     flatBuffer: false,
     buildFacetsFromSweptParityRegions: true,
+    halfEdgeGraphFromIndexedLoops: false,
+    offsetMesh: false,
   };
   public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
   public getNumErrors(): number { return this._savedErrors + this._numErrors; }
@@ -554,8 +556,8 @@ export class Checker {
     Checker._transform.multiplyTransformTransform(Transform.createTranslationXYZ(dx, dy, dz), Checker._transform);
   }
   public static moveTo(dx: number, dy: number, dz: number = 0) {
-      Checker._transform = Transform.createTranslationXYZ(dx, dy, dz), Checker._transform;
-    }
+    Checker._transform = Transform.createTranslationXYZ(dx, dy, dz), Checker._transform;
+  }
 
   // ===================================================================================
   // Output

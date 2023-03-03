@@ -33,7 +33,7 @@ export enum CurrentImdlVersion {
    * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
    * greater minor version than CurrentVersion.Minor, although some data may be skipped.
    */
-  Major = 29,
+  Major = 30,
   /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this package can
    * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
    */
@@ -74,20 +74,20 @@ export class ImdlHeader extends TileHeader {
    */
   public constructor(stream: ByteStream) {
     super(stream);
-    this.headerLength = stream.nextUint32;
-    this.flags = stream.nextUint32;
+    this.headerLength = stream.readUint32();
+    this.flags = stream.readUint32();
 
     this.contentRange = new Range3d();
     nextPoint3d64FromByteStream(stream, this.contentRange.low);
     nextPoint3d64FromByteStream(stream, this.contentRange.high);
 
-    this.tolerance = stream.nextFloat64;
-    this.numElementsIncluded = stream.nextUint32;
-    this.numElementsExcluded = stream.nextUint32;
-    this.tileLength = stream.nextUint32;
+    this.tolerance = stream.readFloat64();
+    this.numElementsIncluded = stream.readUint32();
+    this.numElementsExcluded = stream.readUint32();
+    this.tileLength = stream.readUint32();
 
     // empty sub-volume bit field introduced in format v02.00
-    this.emptySubRanges = this.versionMajor >= 2 ? stream.nextUint32 : 0;
+    this.emptySubRanges = this.versionMajor >= 2 ? stream.readUint32() : 0;
 
     // Skip any unprocessed bytes in header
     const remainingHeaderBytes = this.headerLength - stream.curPos;
@@ -104,9 +104,9 @@ export class ImdlHeader extends TileHeader {
  */
 export class FeatureTableHeader {
   public static readFrom(stream: ByteStream) {
-    const length = stream.nextUint32;
-    const maxFeatures = stream.nextUint32;
-    const count = stream.nextUint32;
+    const length = stream.readUint32();
+    const maxFeatures = stream.readUint32();
+    const count = stream.readUint32();
     return stream.isPastTheEnd ? undefined : new FeatureTableHeader(length, maxFeatures, count);
   }
 

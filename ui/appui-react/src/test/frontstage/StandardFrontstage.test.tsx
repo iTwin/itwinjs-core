@@ -13,7 +13,7 @@ import {
   ContentGroupProps,
   ContentGroupProvider,
   ContentProps,
-  CoreTools, FrontstageManager, FrontstageProps,
+  CoreTools, FrontstageManager, FrontstageProps, UiFramework,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { StandardFrontstageProps, StandardFrontstageProvider } from "../../appui-react/frontstage/StandardFrontstageProvider";
@@ -48,7 +48,7 @@ class BasicContentGroupProvider extends ContentGroupProvider {
     ],
   };
 
-  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     return new ContentGroup(this.initialContentGroupProps);
   }
 }
@@ -92,7 +92,7 @@ class TestContentGroupProvider extends ContentGroupProvider {
     return { ...contentGroupProps, contents: newContentsArray };
   }
 
-  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     if (this.hasSavedData) {
       const savedViewLayoutProps = await getSavedViewLayoutProps();
       if (savedViewLayoutProps) {
@@ -109,7 +109,7 @@ describe("ContentGroupProvider", () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
   });
 
   after(async () => {
@@ -118,13 +118,13 @@ describe("ContentGroupProvider", () => {
   });
 
   beforeEach(() => {
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
-    FrontstageManager.clearFrontstageProviders();
+    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined); // eslint-disable-line deprecation/deprecation
+    UiFramework.frontstages.clearFrontstageProviders();
   });
 
   it("should exercise base Content Group Provider", async () => {
     const provider = new BasicContentGroupProvider();
-    const contentGroup = await provider.provideContentGroup({ id: "test", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: provider });
+    const contentGroup = await provider.provideContentGroup({ id: "test", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: provider }); // eslint-disable-line deprecation/deprecation
     const savedContentGroupProps = provider.prepareToSaveProps(contentGroup.toJSON());
     expect(savedContentGroupProps).to.exist;
     const retrievedContentGroupProps = provider.applyUpdatesToSavedProps(savedContentGroupProps);
@@ -134,7 +134,7 @@ describe("ContentGroupProvider", () => {
   it("Should provide Content Group", async () => {
     const provider = new TestContentGroupProvider();
 
-    const frontstageProps: FrontstageProps = {
+    const frontstageProps: FrontstageProps = { // eslint-disable-line deprecation/deprecation
       id: "test",
       usage: "General",
       defaultTool: CoreTools.selectElementCommand,
@@ -145,7 +145,7 @@ describe("ContentGroupProvider", () => {
     };
 
     expect(provider).to.exist;
-    const contentGroup = await provider.provideContentGroup(frontstageProps);
+    const contentGroup = await provider.provideContentGroup(frontstageProps); // eslint-disable-line deprecation/deprecation
     expect(contentGroup).to.exist;
 
     expect(contentGroup.groupId).to.contain("main-content-group-");
@@ -175,12 +175,12 @@ describe("ContentGroupProvider", () => {
     };
 
     const standardFrontstageProvider = new StandardFrontstageProvider(ui2StageProps);
-    FrontstageManager.addFrontstageProvider(standardFrontstageProvider);
-    await FrontstageManager.setActiveFrontstage(standardFrontstageProvider.id);
+    UiFramework.frontstages.addFrontstageProvider(standardFrontstageProvider);
+    await UiFramework.frontstages.setActiveFrontstage(standardFrontstageProvider.id);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
 
-      expect(FrontstageManager.activeFrontstageId).to.eq(standardFrontstageProvider.id);
+      expect(UiFramework.frontstages.activeFrontstageId).to.eq(standardFrontstageProvider.id);
     });
   });
 
@@ -200,12 +200,12 @@ describe("ContentGroupProvider", () => {
     };
 
     const standardFrontstageProvider = new StandardFrontstageProvider(ui2StageProps);
-    FrontstageManager.addFrontstageProvider(standardFrontstageProvider);
-    await FrontstageManager.setActiveFrontstage(standardFrontstageProvider.id);
+    UiFramework.frontstages.addFrontstageProvider(standardFrontstageProvider);
+    await UiFramework.frontstages.setActiveFrontstage(standardFrontstageProvider.id);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
 
-      expect(FrontstageManager.activeFrontstageId).to.eq(standardFrontstageProvider.id);
+      expect(UiFramework.frontstages.activeFrontstageId).to.eq(standardFrontstageProvider.id);
     });
   });
 
@@ -232,11 +232,11 @@ describe("ContentGroupProvider", () => {
     };
 
     const standardFrontstageProvider = new StandardFrontstageProvider(testStageProps);
-    FrontstageManager.addFrontstageProvider(standardFrontstageProvider);
-    await FrontstageManager.setActiveFrontstage(standardFrontstageProvider.id);
+    UiFramework.frontstages.addFrontstageProvider(standardFrontstageProvider);
+    await UiFramework.frontstages.setActiveFrontstage(standardFrontstageProvider.id);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
-      expect(FrontstageManager.activeFrontstageId).to.eq(standardFrontstageProvider.id);
+      expect(UiFramework.frontstages.activeFrontstageId).to.eq(standardFrontstageProvider.id);
     });
   });
 

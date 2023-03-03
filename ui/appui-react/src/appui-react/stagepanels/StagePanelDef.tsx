@@ -10,12 +10,12 @@
 import produce, { Draft } from "immer";
 import { StagePanelLocation, StagePanelSection, UiEvent } from "@itwin/appui-abstract";
 import { NineZoneState, PanelSide } from "@itwin/appui-layout-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetHost } from "../widgets/WidgetHost";
 import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework } from "../UiFramework";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 /** Enum for StagePanel state.
  * @public
@@ -85,8 +85,8 @@ export class StagePanelDef extends WidgetHost {
       return this._size;
 
     // istanbul ignore else
-    if (FrontstageManager.activeFrontstageDef) {
-      const [_, size] = FrontstageManager.activeFrontstageDef.getPanelCurrentState(this);
+    if (UiFramework.frontstages.activeFrontstageDef) {
+      const [_, size] = UiFramework.frontstages.activeFrontstageDef.getPanelCurrentState(this);
       return size;
     }
     // istanbul ignore next
@@ -99,7 +99,7 @@ export class StagePanelDef extends WidgetHost {
 
     // istanbul ignore else
     if (UiFramework.uiVersion === "2") {
-      const frontstageDef = FrontstageManager.activeFrontstageDef;
+      const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
       // istanbul ignore else
       if (frontstageDef && frontstageDef.nineZoneState) {
         const side = toPanelSide(this.location);
@@ -111,7 +111,7 @@ export class StagePanelDef extends WidgetHost {
       }
     }
     this._size = size;
-    FrontstageManager.onPanelSizeChangedEvent.emit({
+    InternalFrontstageManager.onPanelSizeChangedEvent.emit({
       panelDef: this,
       size,
     });
@@ -135,8 +135,8 @@ export class StagePanelDef extends WidgetHost {
       return this._panelState;
 
     // istanbul ignore else
-    if (FrontstageManager.activeFrontstageDef) {
-      const [state] = FrontstageManager.activeFrontstageDef?.getPanelCurrentState(this);
+    if (UiFramework.frontstages.activeFrontstageDef) {
+      const [state] = UiFramework.frontstages.activeFrontstageDef?.getPanelCurrentState(this);
       return state;
     }
     // istanbul ignore next
@@ -146,7 +146,7 @@ export class StagePanelDef extends WidgetHost {
   public set panelState(panelState: StagePanelState) {
     if (panelState === this._panelState)
       return;
-    const frontstageDef = FrontstageManager.activeFrontstageDef;
+    const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
     if (UiFramework.uiVersion === "2" && frontstageDef && frontstageDef.nineZoneState) {
       const side = toPanelSide(this.location);
       frontstageDef.nineZoneState = produce(frontstageDef.nineZoneState, (nineZone) => {
@@ -168,7 +168,7 @@ export class StagePanelDef extends WidgetHost {
       });
     }
     this._panelState = panelState;
-    FrontstageManager.onPanelStateChangedEvent.emit({
+    UiFramework.frontstages.onPanelStateChangedEvent.emit({
       panelDef: this,
       panelState,
     });
@@ -188,17 +188,15 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** @internal */
-  public initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation): void {
-    if (panelLocation !== undefined)
-      this._location = panelLocation;
+  public initializeFromProps(props?: StagePanelProps, location?: StagePanelLocation): void {
+    if (location !== undefined)
+      this._location = location;
     if (!props)
       return;
     this._size = props.size;
     this._defaultSize = props.size;
     this._maxSizeSpec = props.maxSize;
     this._minSize = props.minSize;
-    if (panelLocation !== undefined)
-      this._location = panelLocation;
     if (props.defaultState !== undefined) {
       this._panelState = props.defaultState;
       this._defaultState = props.defaultState;
@@ -206,8 +204,7 @@ export class StagePanelDef extends WidgetHost {
     this._resizable = props.resizable;
     if (props.pinned !== undefined)
       this._pinned = props.pinned;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
     if (props.panelZones) {
       this._panelZones.initializeFromProps(props.panelZones, this._location);
     }

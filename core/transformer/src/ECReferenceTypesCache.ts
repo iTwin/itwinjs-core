@@ -40,9 +40,8 @@ export class ECReferenceTypesCache {
     "ElementAspect": ConcreteEntityTypes.ElementAspect,
     "ElementRefersToElements": ConcreteEntityTypes.Relationship,
     "ElementDrivesElement": ConcreteEntityTypes.Relationship,
-    // code spec is technically a potential root class but it is sealed and ignored currently
-    // FIXME: because...
-    // "CodeSpec": ConcreteEntityTypes.CodeSpec,
+    // code spec is technically a potential root class but it is ignored currently
+    // see [ConcreteEntityTypes]($common)
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
   };
 
@@ -50,7 +49,7 @@ export class ECReferenceTypesCache {
     let bisRootForConstraint: ECClass = ecclass;
     await ecclass.traverseBaseClasses((baseClass) => {
       // The depth first traversal will descend all the way to the root class before making any lateral traversal
-      // of mixin hierarchies, (or if the constraint is a mixin, it will traverse to the root of the mixin hierarch)
+      // of mixin hierarchies, (or if the constraint is a mixin, it will traverse to the root of the mixin hierarchy)
       // Once we see that we've moved laterally, we can terminate early
       const isFirstTest = bisRootForConstraint === ecclass;
       const traversalSwitchedRootPath = baseClass.name !== bisRootForConstraint.baseClass?.name;
@@ -63,16 +62,16 @@ export class ECReferenceTypesCache {
     // if the root class of the constraint was a mixin, use its AppliesToEntityClass
     if (bisRootForConstraint instanceof Mixin) {
       assert(bisRootForConstraint.appliesTo !== undefined, "The referenced AppliesToEntityClass could not be found, how did it pass schema validation?");
-      bisRootForConstraint = await bisRootForConstraint.appliesTo;
+      bisRootForConstraint = await this.getRootBisClass(await bisRootForConstraint.appliesTo);
     }
     return bisRootForConstraint;
   }
 
-  private async getRootBisClassForConstraint(constraint: RelationshipConstraint) {
+  private async getAbstractConstraintClass(constraint: RelationshipConstraint): Promise<ECClass> {
     // constraint classes must share a base so we can get the root from any of them, just use the first
     const ecclass = await (constraint.constraintClasses?.[0] || constraint.abstractConstraint);
     assert(ecclass !== undefined, "At least one constraint class or an abstract constraint must have been defined, the constraint is not valid");
-    return this.getRootBisClass(ecclass as ECClass);
+    return ecclass;
   }
 
   /** initialize from an imodel with metadata */
@@ -141,18 +140,24 @@ export class ECReferenceTypesCache {
   private async relInfoFromRelClass(ecclass: RelationshipClass): Promise<RelTypeInfo | undefined> {
     assert(ecclass.source.constraintClasses !== undefined);
     assert(ecclass.target.constraintClasses !== undefined);
-    // constraint classes must share a base so we can get the root from any of them
-    const [source, target] = await Promise.all([
-      this.getRootBisClassForConstraint(ecclass.source),
-      this.getRootBisClassForConstraint(ecclass.target),
+    const [[sourceClass, sourceRootBisClass], [targetClass, targetRootBisClass]] = await Promise.all([
+      this.getAbstractConstraintClass(ecclass.source)
+        .then(async (constraintClass) => [constraintClass, await this.getRootBisClass(constraintClass)]),
+      this.getAbstractConstraintClass(ecclass.target)
+        .then(async (constraintClass) => [constraintClass, await this.getRootBisClass(constraintClass)]),
     ]);
-    if (source.name === "CodeSpec" || target.name === "CodeSpec")
+
+    if (sourceRootBisClass.name === "CodeSpec" || targetRootBisClass.name === "CodeSpec")
       return undefined;
-    const sourceType = ECReferenceTypesCache.bisRootClassToRefType[source.name];
-    const targetType = ECReferenceTypesCache.bisRootClassToRefType[target.name];
-    const makeAssertMsg = (cls: ECClass) => `An unknown root class '${cls.name}' was encountered while populating the nav prop reference type cache. This is a bug.`;
-    assert(sourceType !== undefined, makeAssertMsg(source));
-    assert(targetType !== undefined, makeAssertMsg(target));
+    const sourceType = ECReferenceTypesCache.bisRootClassToRefType[sourceRootBisClass.name];
+    const targetType = ECReferenceTypesCache.bisRootClassToRefType[targetRootBisClass.name];
+    const makeAssertMsg = (root: ECClass, cls: ECClass) => [
+      `An unknown root class '${root.fullName}' was encountered while populating`,
+      `the nav prop reference type cache for ${cls.fullName}.`,
+      "This is a bug.",
+    ].join("\n");
+    assert(sourceType !== undefined, makeAssertMsg(sourceRootBisClass, sourceClass));
+    assert(targetType !== undefined, makeAssertMsg(targetRootBisClass, targetClass));
     return { source: sourceType, target: targetType };
   }
 

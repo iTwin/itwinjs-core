@@ -7,11 +7,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher } from "../../appui-react";
+import { BackstageItemState, CommandLaunchBackstageItem, SyncUiEventDispatcher, UiFramework } from "../../appui-react";
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -22,9 +21,9 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
 
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
   });
 
   after( async () => {
@@ -83,7 +82,7 @@ describe("Backstage", () => {
       const commandHandler = () => { };
       render(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />);
 
-      expect(screen.getByRole("menuitem", {name: "UiFramework:tests.label"})).to.exist;
+      expect(screen.getByRole("menuitem", {name: "tests.label"})).to.exist;
     });
   });
 });

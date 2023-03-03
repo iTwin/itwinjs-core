@@ -33,6 +33,8 @@ export enum MapLayerSourceStatus {
   InvalidUrl,
   /** Authorization is required to access this map layer source. */
   RequireAuth,
+  /** Map-layer coordinate system is not supported */
+  InvalidCoordinateSystem,
 }
 
 /** JSON representation of a map layer source.
@@ -80,7 +82,7 @@ export class MapLayerSource {
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
+    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.userName, this.password, ignoreCache);
   }
 
   /** @internal*/

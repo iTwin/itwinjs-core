@@ -23,6 +23,11 @@ describe("createDiagnosticsOptions", () => {
     expect(createDiagnosticsOptions({ devDiagnostics: { perf: true, handler } })).to.deep.eq({ perf: true, handler });
   });
 
+  it("returns options with perf object when dev diagnostic props have it", () => {
+    const handler = sinon.stub();
+    expect(createDiagnosticsOptions({ devDiagnostics: { perf: { minimumDuration: 100 }, handler } })).to.deep.eq({ perf: { minimumDuration: 100 }, handler });
+  });
+
   it("returns options with dev severity when dev diagnostic props have it", () => {
     const handler = sinon.stub();
     expect(createDiagnosticsOptions({ devDiagnostics: { severity: "warning", handler } })).to.deep.eq({ dev: "warning", handler });

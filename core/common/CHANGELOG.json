@@ -2,6 +2,168 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/core-common_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add optional CodeSpecProperties.scopeSpec.relationship member"
+          },
+          {
+            "comment": "Added 'schemaLockHeld' to UpgradeOptions"
+          },
+          {
+            "comment": "Make EmptyLocalization.getLocalizedString more closely emulate what i18next's translation function would return"
+          },
+          {
+            "comment": "Promote AuthorizationClient and FrustumPlanes to public."
+          },
+          {
+            "comment": "Add support for materials with normal maps"
+          },
+          {
+            "comment": "Marked public RPC types as deprecated in preparation for refactor (or removal) on 5.0."
+          },
+          {
+            "comment": "Fix documentation of ExternalSourceAspectProps.jsonProperties. It must be a string."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.6",
+      "tag": "@itwin/core-common_v3.5.6",
+      "date": "Fri, 24 Feb 2023 16:02:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.5",
+      "tag": "@itwin/core-common_v3.5.5",
+      "date": "Thu, 26 Jan 2023 22:53:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.4",
+      "tag": "@itwin/core-common_v3.5.4",
+      "date": "Wed, 18 Jan 2023 15:27:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.3",
+      "tag": "@itwin/core-common_v3.5.3",
+      "date": "Fri, 13 Jan 2023 17:23:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.2",
+      "tag": "@itwin/core-common_v3.5.2",
+      "date": "Wed, 11 Jan 2023 16:46:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.1",
+      "tag": "@itwin/core-common_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Eye-Dome-Lighting"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/core-common_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "update RenderScheduleScript.discloseIds to use EntityReferences"
+          },
+          {
+            "comment": "add setTimeout override"
+          },
+          {
+            "comment": "add setTimeout override"
+          },
+          {
+            "comment": "Removing node (runtime) dependencies from core-common"
+          },
+          {
+            "comment": "Deprecate Localization.getLocalizedStringWithNamespace"
+          },
+          {
+            "comment": "Update TypeOfChange with Parent changes"
+          },
+          {
+            "comment": "Support for reporting progress and cancelling 'pullChanges' in IpcApp."
+          },
+          {
+            "comment": "Added ability to display normal maps"
+          },
+          {
+            "comment": "Reject an EcefLocation with an origin at the center of the Earth."
+          },
+          {
+            "comment": "Add Rpc method for obtaining meshes from elements."
+          },
+          {
+            "comment": "Add RealityModelDisplaySettings for customization of reality model display."
+          },
+          {
+            "comment": "Avoid raising ViewDetails.onClipVectorChanged if the clip did not actually change."
+          },
+          {
+            "comment": "Add GraphicsRequestProps.useAbsolutePositions to address precision issues with coordinates far from the origin."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/core-common_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/core-common_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/core-common_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.4",
+      "tag": "@itwin/core-common_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "handle null ExternalSourceAspect.scope"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/core-common_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/core-common_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.4.1",
       "tag": "@itwin/core-common_v3.4.1",
       "date": "Mon, 17 Oct 2022 20:06:51 GMT",

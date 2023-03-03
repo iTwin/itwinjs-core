@@ -6,22 +6,43 @@
  * @module Core
  */
 
-import { RelationshipPath } from "./EC";
+import { StrippedRelationshipPath } from "./EC";
 
-/** @alpha */
+/**
+ * Definition of an instance filter that can be used to filter content or hierarchy levels.
+ *
+ * Example:
+ *
+ * ```json
+ * {
+ *   selectClassName: "MySchema:MyClass",
+ *   expression: "this.MyProperty = 1 AND other.OtherProperty = 2",
+ *   relatedInstances: [{
+ *     pathFromSelectToPropertyClass: [{
+ *         sourceClassName: "MySchema:MyClass",
+ *         relationshipName: "MySchema:RelationshipFromMyToOtherClass",
+ *         isForwardRelationship: true,
+ *         targetClassName: "MySchema:OtherClass",
+ *     }],
+ *     alias: "other",
+ *   }],
+ * }
+ * ```
+ *
+ * @beta
+ */
 export interface InstanceFilterDefinition {
   /**
-   * Select class filter that may be used to select only instances of specific class.
+   * Select class filter used to select only instances of specific class.
+   * The [[relatedInstances]] attribute, when used, should specify paths from this class.
+   * Also, the [[expression]] attribute's `this` symbol points to instances of this class.
    *
-   * If specified, the [[relatedInstances]] attribute should specify paths from this
-   * class. Also, the [[expression]] attribute's `this` symbol points to instances of this class.
-   *
-   * It should by full class name: `SchemaName:ClassName`.
+   * The format is full class name: `SchemaName:ClassName`.
    */
-  selectClassName?: string;
+  selectClassName: string;
 
   /**
-   * Relationship paths pointing to related instances used in the [[expression]] attribute.
+   * Specifies relationship paths pointing to related instances used in the [[expression]] attribute.
    *
    * Sometimes there's a need to filter on a related instance property. In that case, the relationship
    * needs to be named by specifying the path and alias for the target (or the relationship). Then, the
@@ -36,18 +57,24 @@ export interface InstanceFilterDefinition {
   expression: string;
 }
 
-/** @alpha */
+/**
+ * Related instance definition for accessing properties of a related instance in [[InstanceFilterDefinition.expression]].
+ * @beta
+ */
 export type InstanceFilterRelatedInstanceDefinition =
   InstanceFilterRelatedInstancePath
   & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
 
-/** @alpha */
+/**
+ * Partial definition of common attributes for [[InstanceFilterRelatedInstanceDefinition]].
+ * @beta
+ */
 export interface InstanceFilterRelatedInstancePath {
   /**
    * A relationship path from select class (either specified through [[InstanceFilterDefinition.selectClassName]] or taken from context)
    * to the target related instance containing the properties used in [[InstanceFilterDefinition.expression]].
    */
-  pathFromSelectToPropertyClass: RelationshipPath;
+  pathFromSelectToPropertyClass: StrippedRelationshipPath;
   /**
    * An optional flag indicating that the target instance must exist. Setting this allows to filter out all
    * select instances that don't have a related instance by following the [[pathFromSelectToPropertyClass]] path.
@@ -55,7 +82,10 @@ export interface InstanceFilterRelatedInstancePath {
   isRequired?: boolean;
 }
 
-/** @alpha */
+/**
+ * Partial definition of [[InstanceFilterRelatedInstanceDefinition]] for the case when referencing the target class.
+ * @beta
+ */
 export interface InstanceFilterRelatedInstanceTargetAlias {
   /**
    * An alias for the target class in the [[InstanceFilterRelatedInstancePath.pathFromSelectToPropertyClass]] path. This alias can be used to
@@ -64,7 +94,10 @@ export interface InstanceFilterRelatedInstanceTargetAlias {
   alias: string;
 }
 
-/** @alpha */
+/**
+ * Partial definition of [[InstanceFilterRelatedInstanceDefinition]] for the case when referencing the relationship class.
+ * @beta
+ */
 export interface InstanceFilterRelatedInstanceRelationshipAlias {
   /**
    * An alias for the relationship in the last step of the [[InstanceFilterRelatedInstancePath.pathFromSelectToPropertyClass]] path. This alias can be

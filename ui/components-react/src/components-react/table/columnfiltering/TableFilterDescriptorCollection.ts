@@ -10,6 +10,7 @@ import { RowItem } from "../TableDataProvider";
 import {
   ColumnFilterDescriptor, CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator, FilterDescriptorCollection,
 } from "./ColumnFiltering";
+/* eslint-disable deprecation/deprecation */
 
 /** Represents collection of FilterDescriptor objects composed together by a logical operator.
  * @internal

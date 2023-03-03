@@ -3,9 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { expect } from "chai";
+import { LineSegment3d } from "../../core-geometry";
 import { Geometry } from "../../Geometry";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { ConvexPolygon2d, Ray2d } from "../../numerics/ConvexPolygon2d";
 import { Checker } from "../Checker";
@@ -221,6 +227,35 @@ describe("ConvexPolygon2d", () => {
     ck.testExactNumber(0, countPointsInHull(hull1, hull2.points));
 
     ck.checkpoint("ConvexHullManyPoints");
+
+    const offsetDistance1 = 0.01 * offsetDistance;
+    const innerMidPt = Point2d.createZero();
+    const innerMidPt3d = Point3d.createZero();
+    const outerEdge = LineSegment3d.createXYXY(0, 0, 0, 0);
+    const detail = new CurveLocationDetail();
+    let i0 = n - 1;
+    for (let i1 = 0; i1 < n; i0 = i1++) {
+      // verify hull1 offsetDistance from hull
+      let innerPt0 = hull.points[i0];
+      let innerPt1 = hull.points[i1];
+      innerPt0.interpolate(0.5, innerPt1, innerMidPt);
+      outerEdge.point0Ref.setFrom(hull1.points[i0]);
+      outerEdge.point1Ref.setFrom(hull1.points[i1]);
+      outerEdge.closestPoint(Point3d.createFrom(innerMidPt, innerMidPt3d), false, detail);
+      ck.testCoordinate(offsetDistance, detail.a, "hull1 has expected offsetDistance from hull");
+      // verify hull2 offsetDistance1 from hull1
+      innerPt0 = hull1.points[i0];
+      innerPt1 = hull1.points[i1];
+      innerPt0.interpolate(0.5, innerPt1, innerMidPt);
+      outerEdge.point0Ref.setFrom(hull2.points[i0]);
+      outerEdge.point1Ref.setFrom(hull2.points[i1]);
+      outerEdge.closestPoint(Point3d.createFrom(innerMidPt, innerMidPt3d), false, detail);
+      ck.testCoordinate(offsetDistance1, detail.a, "hull2 has expected offsetDistance1 from hull1");
+    }
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [GrowableXYZArray.create(hull.points), GrowableXYZArray.create(hull1.points), GrowableXYZArray.create(hull2.points)]);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ConvexPolygon2d", "OffsetInPlace");
+
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -13,7 +13,7 @@ import { SelectionMode, Table } from "@itwin/components-react";
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface Props {
-  dataProvider: IPresentationTableDataProvider & { dispose?: () => void };
+  dataProvider: IPresentationTableDataProvider & { dispose?: () => void }; // eslint-disable-line deprecation/deprecation
   onDismissed?: () => void;
 }
 

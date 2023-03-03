@@ -1,0 +1,17 @@
+{
+  "FirstTrivial": "First level string (default german)",
+  "FirstSubstitution1": "First level {{str}} (default german)",
+  "FirstSubstitution2": "First level {{str1}} and {{str2}} (default german)",
+  "SecondTrivial": {
+    "Test1": "Second level string 1 (default german)",
+    "Test2": "Second level string 2 (default german)"
+  },
+  "SecondSubstitution": {
+    "Test1": "Substitute {{varA}} and {{varB}} (default german)",
+    "Test2": "Reverse substitute {{varB}} and {{varA}} (default german)"
+  },
+  "MyObject": {
+    "ObjectKey1": "ObjectValue1 (default german)"
+  },
+  "OnlyGerman": "Hallo"
+}

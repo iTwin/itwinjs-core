@@ -10,10 +10,11 @@ import * as React from "react";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContentLayoutProps, UiError } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
 import { FrontstageProps } from "../frontstage/Frontstage";
+import { FrontstageConfig } from "../frontstage/FrontstageConfig";
+import { InternalConfigurableUiManager } from "../configurableui/InternalConfigurableUiManager";
 
 /** Properties for content displayed in a content view
  * @public
@@ -44,7 +45,15 @@ export interface ContentGroupProps {
  * @public
  */
 export abstract class ContentGroupProvider {
-  abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
+  /** Return the contentGroup based on the `FrontstageProps`.
+   * @deprecated in 3.5. Implement using `contentGroup` instead.
+   */
+  abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>; // eslint-disable-line deprecation/deprecation
+
+  /** Return the contentGroup based on the `FrontstageConfig`.
+   * @beta This method will be required in upcoming version, this method will be prioritized if it exists over `provideContentGroup`.
+   */
+  public contentGroup?(config: FrontstageConfig): Promise<ContentGroup>;
 
   /** Allow provider to update any data stored in ContentGroupProps. Typically this may
    * be to remove applicationData entries.
@@ -103,8 +112,8 @@ export class ContentGroup {
       let usedClassId: string = "";
 
       if (typeof contentProps.classId === "string") {
-        if (!this._contentControls.get(contentProps.id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
-          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData, contentProps.id) as ContentControl;
+        if (!this._contentControls.get(contentProps.id) && UiFramework.controls.isRegistered(contentProps.classId)) {
+          contentControl = UiFramework.controls.create(contentProps.classId, id, contentProps.applicationData, contentProps.id) as ContentControl;
           usedClassId = contentProps.classId;
         }
       } else {
@@ -206,7 +215,7 @@ export class ContentGroup {
 
     contentGroupProps.contents.forEach((content: ContentProps, index: number) => {
       if (typeof content.classId !== "string") {
-        const classId = ConfigurableUiManager.getConstructorClassId(content.classId);
+        const classId = InternalConfigurableUiManager.getConstructorClassId(content.classId);
         if (classId !== undefined)
           content.classId = classId;
         else

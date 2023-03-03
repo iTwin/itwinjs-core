@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 import * as moq from "typemoq";
 import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { Code, ElementProps, EmptyLocalization } from "@itwin/core-common";
+import { Code, ElementProps } from "@itwin/core-common";
 import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@itwin/core-frontend";
 import { ViewportComponent } from "@itwin/imodel-components-react";
 import { KeySet } from "@itwin/presentation-common";
@@ -26,9 +26,7 @@ const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
 describe("Viewport withUnifiedSelection", () => {
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     classNameGenerator = () => faker.random.word();
   });
 
@@ -166,9 +164,7 @@ describe("ViewportSelectionHandler", () => {
   let getHiliteSet: sinon.SinonStub<[IModelConnection], Promise<HiliteSet>>;
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     const defaultClassName = faker.random.word();
     classNameGenerator = () => defaultClassName;
   });

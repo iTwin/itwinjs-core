@@ -12,6 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Dialog]] component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @beta
  */
 export interface DialogProps extends CommonProps {
@@ -23,6 +24,7 @@ export interface DialogProps extends CommonProps {
 
 /** Dialog used in footer indicators.
  * @note See [[MessageCenter]], [[ToolAssistance]]
+ * @deprecated in 3.5. Use [StatusBarDialog]($appui-react) instead.
  * @beta
  */
 export class Dialog extends React.PureComponent<DialogProps> {

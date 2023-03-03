@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+  AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../ViewRect";
 import { ScreenViewport } from "../Viewport";
@@ -19,7 +19,7 @@ import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 
 describe("Viewport", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   describe("flashedId", () => {
@@ -517,6 +517,15 @@ describe("Viewport", () => {
         vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
 
         vp.dispose = dispose;
+      });
+    });
+  });
+
+  describe("readPixels", () => {
+    it("returns undefined if specified area is invalid", async () => {
+      testBlankViewport((vp) => {
+        vp.readPixels(new ViewRect(10, 0, 50, 0), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
+        vp.readPixels(new ViewRect(0, 10, 0, 50), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
       });
     });
   });

@@ -112,11 +112,14 @@ module.exports = {
           return;
         }
       }
+
+      const declarationName = ts.getNameOfDeclaration(declaration.parent)
+      const name = declarationName ? declarationName.getFullText() : ""
       context.report({
         node,
         messageId: "namespace",
         data: {
-          name: ts.getNameOfDeclaration(declaration.parent)?.getFullText(),
+          name
         }
       });
     }
@@ -130,20 +133,25 @@ module.exports = {
       if (!tags || tags.length === 0)
         return;
 
-      let jsDocExtensionTag = tags.find(tag => tag?.tagName?.escapedText === extensionsTag);
-      let jsDocPreviewTag = tags.find(tag => tag?.tagName?.escapedText === previewTag);
+      function tagEscapedText(tag){
+        return tag && tag.tagName && tag.tagName.escapedText 
+      }
+
+      const jsDocExtensionTag = tags.find(tag => tagEscapedText(tag) === extensionsTag);
+      const jsDocPreviewTag = tags.find(tag => tagEscapedText(tag) === previewTag);
+
       // Has extension API tag
       if (jsDocExtensionTag) {
         addToApiList(declaration, jsDocPreviewTag);
-        const validReleaseTag = tags.some(tag => releaseTags.includes(tag?.tagName?.escapedText));
+        const validReleaseTag = tags.some(tag => releaseTags.includes(tagEscapedText(tag)));
         if (validReleaseTag) {
           return true;
         } else {
           let name;
           if (declaration.kind === ts.SyntaxKind.Constructor)
-            name = declaration.parent?.symbol?.escapedName;
+            name = declaration.parent && declaration.parent.symbol && declaration.parent.symbol.escapedName;
           else {
-            name = declaration.symbol?.escapedName;
+            name = declaration.symbol && declaration.symbol.escapedName;
             const parentSymbol = getParentSymbolName(declaration);
             if (parentSymbol)
               name = `${parentSymbol}.${name}`;

@@ -24,7 +24,7 @@ interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
 
 /** Clear Emphasis StatusField
  * @beta
- * @deprecated use clear emphasis tool button option instead.
+ * @deprecated in 3.0. Use clear emphasis tool button option instead.
  */
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
   const [toolTip] = React.useState(UiFramework.translate("tools.clearVisibility"));
@@ -64,7 +64,7 @@ export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
   };
 
   return (
-    <Indicator toolTip={toolTip} className={classes} opened={false} onClick={clearEmphasize} iconName="icon-visibility"
+    <Indicator toolTip={toolTip} className={classes} opened={false} onClick={clearEmphasize} iconName="icon-visibility" // eslint-disable-line deprecation/deprecation
       // eslint-disable-next-line deprecation/deprecation
       isInFooterMode={props.isInFooterMode ?? true} />
   );

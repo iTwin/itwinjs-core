@@ -9,10 +9,11 @@ import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";
 import { Marker } from "../Marker";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
   });
   afterEach(async () => {
     if (IModelApp.initialized)

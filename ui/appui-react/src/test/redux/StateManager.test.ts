@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { UiError } from "@itwin/appui-abstract";
-import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance, SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../../appui-react";
+import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance, SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../../appui-react";
 import { StateManager } from "../../appui-react/redux/StateManager";
 import { ConfigurableUiActions, ConfigurableUiReducer, ConfigurableUiState } from "../../appui-react/configurableui/state";
 import { SnapMode } from "@itwin/core-frontend";
@@ -197,6 +197,7 @@ describe("ConfigurableUiReducer", () => {
       viewOverlayDisplay: true,
       animateToolSettings: false,
       useToolAsToolSettingsLabel: false,
+      toolbarOpacity: TOOLBAR_OPACITY_DEFAULT,
     };
 
     let outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setDragInteraction(true));
@@ -214,8 +215,8 @@ describe("ConfigurableUiReducer", () => {
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setSnapMode(SnapMode.Center));
     expect(outState.snapMode).to.be.eql(SnapMode.Center);
 
-    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setFrameworkVersion("1"));
-    expect(outState.frameworkVersion).to.be.eql("1");
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setFrameworkVersion("1")); // eslint-disable-line deprecation/deprecation
+    expect(outState.frameworkVersion).to.be.eql("1"); // eslint-disable-line deprecation/deprecation
 
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setShowWidgetIcon(false));
     expect(outState.showWidgetIcon).to.be.eql(false);
@@ -231,5 +232,8 @@ describe("ConfigurableUiReducer", () => {
 
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setUseToolAsToolSettingsLabel(true));
     expect(outState.useToolAsToolSettingsLabel).to.be.true;
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setToolbarOpacity(.9));
+    expect(outState.toolbarOpacity).to.be.eql(.9);
   });
 });

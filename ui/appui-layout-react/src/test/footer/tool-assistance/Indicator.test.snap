@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<ToolAssistance /> renders correctly 1`] = `
-<FooterIndicator
+<ForwardRef(FooterIndicator)
   className="nz-footer-toolAssistance-indicator"
 >
   <div
@@ -16,11 +16,11 @@ exports[`<ToolAssistance /> renders correctly 1`] = `
       className="nz-triangle"
     />
   </div>
-</FooterIndicator>
+</ForwardRef(FooterIndicator)>
 `;
 
 exports[`<ToolAssistance /> renders correctly with label 1`] = `
-<FooterIndicator
+<ForwardRef(FooterIndicator)
   className="nz-footer-toolAssistance-indicator"
 >
   <div
@@ -40,5 +40,5 @@ exports[`<ToolAssistance /> renders correctly with label 1`] = `
       className="nz-triangle"
     />
   </div>
-</FooterIndicator>
+</ForwardRef(FooterIndicator)>
 `;

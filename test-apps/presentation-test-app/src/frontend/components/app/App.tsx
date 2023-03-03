@@ -34,7 +34,7 @@ export interface State {
   rightPaneHeight?: number;
   contentRatio: number;
   contentWidth?: number;
-  similarInstancesProvider?: IPresentationTableDataProvider;
+  similarInstancesProvider?: IPresentationTableDataProvider; // eslint-disable-line deprecation/deprecation
   activeUnitSystem?: UnitSystemKey;
   persistSettings: boolean;
 }
@@ -125,7 +125,7 @@ export default class App extends React.Component<{}, State> {
     return { ratio };
   };
 
-  private _selectAllInstances = async (provider: IPresentationTableDataProvider) => {
+  private _selectAllInstances = async (provider: IPresentationTableDataProvider) => { // eslint-disable-line deprecation/deprecation
     const size = await provider.getRowsCount();
     const rowPromises = [];
     for (let i = 0; i < size; ++i)
@@ -137,7 +137,7 @@ export default class App extends React.Component<{}, State> {
 
   private _onFindSimilar = async (provider: IPresentationPropertyDataProvider, record: PropertyRecord) => {
     try {
-      const factory = new DataProvidersFactory();
+      const factory = new DataProvidersFactory(); // eslint-disable-line deprecation/deprecation
       const similarInstancesProvider = await factory.createSimilarInstancesTableDataProvider(provider,
         record, { displayType: DefaultContentDisplayTypes.List });
       await this._selectAllInstances(similarInstancesProvider);

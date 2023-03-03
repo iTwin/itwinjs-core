@@ -35,46 +35,58 @@ function exerciseClonePartialLineString3d(ck: Checker, allGeometry: GeometryQuer
     const c01e = lsA.clonePartialCurve(0, 1 + extendFraction);                        // contains [0,1]
     const c1e = lsA.clonePartialCurve(1, 1 + extendFraction);                         // contains [1]
     const c1ee = lsA.clonePartialCurve(1 + extendFraction / 2, 1 + extendFraction);   // does not contain [0,1]
+
+    // first segment distance multipliers
+    const preLocal = lsA.globalFractionToSegmentIndexAndLocalFraction(-extendFraction);
+    const preLocalFraction = Math.abs(preLocal.fraction);
+    ck.testExactNumber(0, preLocal.index, "global parameter < 0 converts to local index 0");
+    const preLocalFractionHalf = Math.abs(lsA.globalFractionToSegmentIndexAndLocalFraction(-extendFraction / 2).fraction);
+    // last segment distance multipliers
+    const postLocal = lsA.globalFractionToSegmentIndexAndLocalFraction(1 + extendFraction);
+    const postLocalFraction = postLocal.fraction - 1;
+    ck.testExactNumber(lsA.numPoints() - 2, postLocal.index, "global parameter > 1 converts to local index numPoints-2");
+    const postLocalFractionHalf = lsA.globalFractionToSegmentIndexAndLocalFraction(1 + extendFraction / 2).fraction - 1;
+
     if (ck.testPointer(cee0) && expectValidResults) {
       ck.testExactNumber(cee0.numPoints(), 2, "isolated pre-extension is a segment");
       if (!lsA.isPhysicallyClosed)
-        ck.testCoordinate(cee0.curveLength(), (extendFraction - (extendFraction / 2)) * lsA.points[0].distance(lsA.points[1]), "isolated pre-extension length is fraction of first segment");
+        ck.testCoordinate(cee0.curveLength(), preLocalFractionHalf * lsA.points[0].distance(lsA.points[1]), "isolated pre-extension length is fraction of first segment");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cee0, delta.x, delta.y += yInc);
     }
     if (ck.testPointer(ce0) && expectValidResults) {
       ck.testExactNumber(ce0.numPoints(), 2, "pre-extension is a segment");
       if (!lsA.isPhysicallyClosed)
-        ck.testCoordinate(ce0.curveLength(), extendFraction * lsA.points[0].distance(lsA.points[1]), "pre-extension length is fraction of first segment");
+        ck.testCoordinate(ce0.curveLength(), preLocalFraction * lsA.points[0].distance(lsA.points[1]), "pre-extension length is fraction of first segment");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, ce0, delta.x, delta.y += yInc);
     }
     if (ck.testPointer(ce01) && expectValidResults) {
       ck.testExactNumber(ce01.numPoints(), lsA.numPoints(), "pre-extended linestring has same point count");
       if (!lsA.isPhysicallyClosed)
-        ck.testCoordinate(ce01.curveLength(), lsA.curveLength() + extendFraction * lsA.points[0].distance(lsA.points[1]), "pre-extended linestring has expected length");
+        ck.testCoordinate(ce01.curveLength(), lsA.curveLength() + preLocalFraction * lsA.points[0].distance(lsA.points[1]), "pre-extended linestring has expected length");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, ce01, delta.x, delta.y += yInc);
     }
     if (ck.testPointer(ce01e) && expectValidResults) {
       ck.testExactNumber(ce01e.numPoints(), lsA.numPoints(), "bi-extended linestring has same point count");
       if (!lsA.isPhysicallyClosed)
-        ck.testCoordinate(ce01e.curveLength(), extendFraction * lsA.points[0].distance(lsA.points[1]) + lsA.curveLength() + extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "bi-extended linestring has expected length");
+        ck.testCoordinate(ce01e.curveLength(), preLocalFraction * lsA.points[0].distance(lsA.points[1]) + lsA.curveLength() + postLocalFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "bi-extended linestring has expected length");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, ce01e, delta.x, delta.y += yInc);
     }
     if (ck.testPointer(c01e) && expectValidResults) {
       ck.testExactNumber(c01e.numPoints(), lsA.numPoints(), "post-extended linestring has same point count");
       if (!lsA.isPhysicallyClosed)
-        ck.testCoordinate(c01e.curveLength(), lsA.curveLength() + extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extended linestring has expected length");
+        ck.testCoordinate(c01e.curveLength(), lsA.curveLength() + postLocalFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extended linestring has expected length");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, c01e, delta.x, delta.y += yInc);
     }
     if (ck.testPointer(c1e) && expectValidResults) {
       ck.testExactNumber(c1e.numPoints(), 2, "post-extension is a segment");
       if (!lsA.isPhysicallyClosed)
-        ck.testCoordinate(c1e.curveLength(), extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extension length is fraction of last segment");
+        ck.testCoordinate(c1e.curveLength(), postLocalFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extension length is fraction of last segment");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, c1e, delta.x, delta.y += yInc);
     }
     if (ck.testPointer(c1ee) && expectValidResults) {
       ck.testExactNumber(c1ee.numPoints(), 2, "isolated post-extension is a segment");
       if (!lsA.isPhysicallyClosed)
-        ck.testCoordinate(c1ee.curveLength(), (extendFraction - (extendFraction / 2)) * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "isolated post-extension length is fraction of last segment");
+        ck.testCoordinate(c1ee.curveLength(), postLocalFractionHalf * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "isolated post-extension length is fraction of last segment");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, c1ee, delta.x, delta.y += yInc);
     }
   }
@@ -179,6 +191,39 @@ describe("LineString3d", () => {
     const lsA = LineString3d.create([Point3d.create(1, 0, 0), Point3d.create(4, 2, 0), Point3d.create(4, 5, 0), Point3d.create(1, 5, 0)]);
     exerciseClonePartialLineString3d(ck, allGeometry, lsA, delta);
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "ClonePartial");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClonePartialFromExtendedClosestPointDetailFraction", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const pts = new GrowableXYZArray();
+    const numPts = 5;
+    for (let i = 0; i < numPts; ++i)
+      pts.pushXYZ(i, (numPts - 2) - i * i / numPts, Math.sin(2 * Math.PI * i / numPts));
+    const ls = LineString3d.create(pts);
+
+    const offsetDist = 3;
+    const ray0 = ls.fractionToPointAndUnitTangent(0);
+    const ray1 = ls.fractionToPointAndUnitTangent(1);
+    ray0.direction.scaleInPlace(-offsetDist);
+    ray1.direction.scaleInPlace(offsetDist);
+    const detail0 = ls.closestPoint(ray0.fractionToPoint(1), true);
+    const detail1 = ls.closestPoint(ray1.fractionToPoint(1), true);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, [detail0.point, detail1.point], 0.1);
+
+    const ls0 = ls.clonePartialCurve(detail0.fraction, 1);
+    const ls1 = ls.clonePartialCurve(0, detail1.fraction);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ls, ls0, ls1]);
+
+    ck.testLT(detail0.fraction, 1, "Point projected off curve start has projection fraction < 0");
+    ck.testLT(1, detail1.fraction, "Point projected off curve end has projection fraction > 1");
+    ck.testPoint3d(detail0.point, ls0.startPoint(), "Point projected off curve start equals start of clonedPartialCurve at projection fraction < 0");
+    ck.testPoint3d(detail0.point, ls.fractionToPoint(detail0.fraction), "Point projected off curve start equals fractionToPoint at projection fraction < 0");
+    ck.testPoint3d(detail1.point, ls1.endPoint(), "Point projected off curve end equals end of clonedPartialCurve at projection fraction > 1");
+    ck.testPoint3d(detail1.point, ls.fractionToPoint(detail1.fraction), "Point projected off curve end equals fractionToPoint at projection fraction > 1");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "ClonePartialFromExtendedClosestPointDetailFraction");
     expect(ck.getNumErrors()).equals(0);
   });
 

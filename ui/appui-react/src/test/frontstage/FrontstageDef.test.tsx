@@ -8,11 +8,13 @@ import * as React from "react";
 import * as sinon from "sinon";
 import produce from "immer";
 import { MockRender } from "@itwin/core-frontend";
-import { CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
+import { ContentGroup, ContentGroupProvider, CoreTools, Frontstage, FrontstageConfig, FrontstageDef, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
 import { ProcessDetector } from "@itwin/core-bentley";
+import { StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("FrontstageDef", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
@@ -73,21 +75,76 @@ describe("FrontstageDef", () => {
     }
   }
 
+  class ConfigContentGroupProvider extends ContentGroupProvider {
+    public override async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
+      throw new Error("Not implemented.");
+    }
+
+    public override async contentGroup(_config: FrontstageConfig): Promise<ContentGroup> {
+      return TestUtils.TestContentGroup1;
+    }
+  }
+
+  class ConfigFrontstageProvider extends FrontstageProvider {
+    public constructor(private _contentGroup?: FrontstageConfig["contentGroup"]) {
+      super();
+    }
+
+    public override get id() {
+      return "config";
+    }
+
+    public override get frontstage(): React.ReactElement<FrontstageProps> {
+      throw new Error("Not implemented.");
+    }
+
+    public override frontstageConfig(): FrontstageConfig {
+      return {
+        id: this.id,
+        version: 1,
+        contentGroup: this._contentGroup ? this._contentGroup : TestUtils.TestContentGroup1,
+        leftPanel: {
+          defaultState: StagePanelState.Minimized,
+          sections: {
+            start: [
+              {
+                id: "w1",
+              },
+            ],
+          },
+        },
+        bottomPanel: {
+          size: 400,
+          sections: {
+            end: [
+              {
+                id: "w2",
+              },
+              {
+                id: "w3",
+              },
+            ],
+          },
+        },
+      };
+    }
+  }
+
   it("setActiveFrontstage should throw Error on invalid content layout", () => {
     const frontstageProvider = new BadLayoutFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    expect(FrontstageManager.setActiveFrontstage("BadLayout")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    expect(UiFramework.frontstages.setActiveFrontstage("BadLayout")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
   });
 
   it("setActiveFrontstage should throw Error on invalid content group", () => {
     const frontstageProvider = new BadGroupFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    expect(FrontstageManager.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    expect(UiFramework.frontstages.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
   });
 
   describe("restoreLayout", () => {
     it("should emit onFrontstageRestoreLayoutEvent", () => {
-      const spy = sinon.spy(FrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
+      const spy = sinon.spy(InternalFrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
       const frontstageDef = new FrontstageDef();
       frontstageDef.restoreLayout();
       spy.calledOnceWithExactly(sinon.match({
@@ -185,11 +242,11 @@ describe("FrontstageDef", () => {
 
     it("should add extension widgets to stage panel zones", async () => {
       const frontstageProvider = new EmptyFrontstageProvider();
-      FrontstageManager.addFrontstageProvider(frontstageProvider);
-      const frontstageDef = await FrontstageManager.getFrontstageDef(EmptyFrontstageProvider.stageId);
+      UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+      const frontstageDef = await UiFramework.frontstages.getFrontstageDef(EmptyFrontstageProvider.stageId);
       expect(!!frontstageDef?.isReady).to.be.false;
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-      const sut = FrontstageManager.activeFrontstageDef!;
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
+      const sut = UiFramework.frontstages.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
       sut.rightPanel!.panelZones.end.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);
       sut.leftPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderW1"]);
@@ -301,6 +358,36 @@ describe("FrontstageDef", () => {
       top: 99,
       right: 99 + 999 + 16,
       bottom: 99 + 999 + 39,
+    });
+  });
+
+  describe("FrontstageConfig", () => {
+    it("should initialize a frontstage", async () => {
+      const provider = new ConfigFrontstageProvider();
+      const frontstageDef = await FrontstageDef.create(provider);
+      const w1 = frontstageDef.findWidgetDef("w1");
+      expect(w1).to.exist;
+
+      const leftPanel = frontstageDef.leftPanel;
+      expect(leftPanel).to.exist;
+      expect(leftPanel?.panelState).to.eq(StagePanelState.Minimized);
+
+      const bottomPanel = frontstageDef.bottomPanel;
+      expect(bottomPanel).to.exist;
+      expect(bottomPanel?.size).to.eq(400);
+    });
+
+    it("should use ContentGroupProvider.contentGroup", async () => {
+      const contentGroupProvider = new ConfigContentGroupProvider();
+      const spy = sinon.spy(contentGroupProvider, "contentGroup");
+      const provider = new ConfigFrontstageProvider(contentGroupProvider);
+      UiFramework.frontstages.addFrontstageProvider(provider);
+      await UiFramework.frontstages.setActiveFrontstage(provider.id);
+      sinon.assert.calledOnceWithExactly(spy, sinon.match({ id: provider.id }));
+      const config = spy.firstCall.args[0];
+
+      expect(config.leftPanel?.sections?.start).to.eql([{ id: "w1" }]);
+      expect(config.bottomPanel?.sections?.end).to.eql([{ id: "w2" }, { id: "w3" }]);
     });
   });
 });
@@ -554,7 +641,6 @@ describe("float and dock widget", () => {
     sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
     expect(frontstageDef.setFloatingWidgetContainerBounds("fw1", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.true;
     expect(frontstageDef.setFloatingWidgetContainerBounds("bad", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.false;
-    frontstageDef.setFloatingWidgetBoundsInternal("fw1", { top: 55, left: 105, bottom: 155, right: 255 }, true); // should not trigger setter
     nineZoneStateSetter.calledOnce.should.true;
   });
 

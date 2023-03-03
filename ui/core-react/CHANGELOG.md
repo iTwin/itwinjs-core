@@ -1,6 +1,83 @@
 # Change Log - @itwin/core-react
 
-This log was last generated on Mon, 17 Oct 2022 20:06:51 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+- Use EmptyLocalization for localization in tests to increase test performance
+- Update UnderlineButton test.
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+_Version update only_
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:29 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- Unpin classnames package, fix invalid use of classnames
+- Change core-dialog-hidden class so that modeless dialogs will be compatible with iTwinUI components.
+- Use --buic-toolbar-opacity to set the opacity of toolbar items.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
 
 ## 3.4.1
 Mon, 17 Oct 2022 20:06:51 GMT
@@ -106,7 +183,7 @@ Fri, 20 May 2022 13:10:54 GMT
 
 - Added 'useCrossOriginPopup' and 'useInterval' hooks
 - ListBox component: `onKeyPress` has been deprecated, switch to `onKeyDown`
-- Fix for losing viewport content after clicking PW link 
+- Fix for losing viewport content after clicking PW link
 - Implement svg icons loading as a web component.
 - Allow React icons to be used on Wedget tabs, backstage, and status bar items
 
@@ -460,9 +537,9 @@ Mon, 24 May 2021 15:58:39 GMT
 ### Updates
 
 - Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error.
-- Add support for child popup windows. 
+- Add support for child popup windows.
 - Improved Multi-Value column filtering in the Table component
-- Update to latest classnames package 
+- Update to latest classnames package
 - Fix GlobalContextMenu layout issue in presentation-test-app by setting display:none on anchoring div.
 
 ## 2.15.6
@@ -590,7 +667,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Update components that support providing refs via React.forwardRef to work better with document generation.
 - Add option to use a 'x-small' webfont icon.
 - Add nested popup support to components that use HOC withOnOutsideClick.
 - Fix bug processing zero value in Select options.
@@ -861,7 +938,7 @@ Tue, 28 Jul 2020 16:26:24 GMT
 - Add support for a basic single selection aria compliant listbox.
 - Checkboxes in lists & trees are out of place
 - Disabled component styling. Fixed Dialog focus problems.
-- Map Layer UX 
+- Map Layer UX
 - Allowing Input component user to override the type
 - Fix ThemeSelect formatOptionLabel prop to return React.ReactNode.
 - Added Arrow key navigation in Tabs components. Added ItemKeyboardNavigator.
@@ -1184,7 +1261,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Put sourcemap in npm package.
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
 - Update icons-generic-webfont version to latest available.
 - Added TableProp to hide header and supporting style changes

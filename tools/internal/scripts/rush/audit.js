@@ -38,7 +38,11 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // All security issues should be addressed asap.
   // every entry should look like:
   // "GHSA-xxxx-xxxx-xxxx", // https://github.com/advisories/GHSA-xxxx-xxxx-xxxx pkgName>subDepA>subDepB
-  const excludedAdvisories = ["GHSA-f8q6-p94x-37v3"];
+  const excludedAdvisories = [
+    "GHSA-9c47-m6qq-7p4h", // https://github.com/advisories/GHSA-9c47-m6qq-7p4h appui-test-app>@bentley/react-scripts>eslint-config-react-app>eslint-plugin-import>tsconfig-paths>json5
+    "GHSA-27h2-hvpr-p74q", // https://github.com/advisories/GHSA-27h2-hvpr-p74q backend-integration-tests>azurite>jsonwebtoken
+    "GHSA-8mwq-mj73-qv68", // https://github.com/advisories/GHSA-8mwq-mj73-qv68 full-stack-tests__backend>azurite>sequelize
+  ];
 
   let shouldFailBuild = false;
   for (const action of jsonOut.actions) {

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, EdgeOptions, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
+  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
   ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -593,7 +593,7 @@ describe("mirukuru TileTree", () => {
     MockRender.App.systemFactory = () => new TestSystem();
     await MockRender.App.startup();
     if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup();
+      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
 
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -744,10 +744,11 @@ describe("TileAdmin", () => {
 
       await super.startup({
         tileAdmin: props,
+        localization: new EmptyLocalization(),
       });
 
       if (ProcessDetector.isElectronAppFrontend)
-        await ElectronApp.startup();
+        await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;

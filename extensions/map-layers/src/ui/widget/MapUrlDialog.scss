@@ -17,6 +17,14 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   padding-right: 5px;
   padding-left: 5px;
 }
+
+.map-layer-source-select-previewBadge.iui-button.iui-small {
+  // Make button appear as a simple icon
+  border: 0;
+  background: 0;
+  padding: 0;
+}
+
 .map-layer-source-url {
 
   height: 100%;
@@ -26,9 +34,14 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   grid-column-gap: 10px;
   align-items: center;
 
-  .map-layer-source-select, .map-layer-source-input {
+  .map-layer-source-select,
+  .map-layer-source-input {
     margin-bottom: 0.5rem;
-    }
+  }
+
+  .map-layer-source-select .iui-end-icon {
+    background: 0;
+  }
 
   .map-layer-source-label {
     font-size: $iui-font-size;

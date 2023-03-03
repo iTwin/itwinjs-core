@@ -9,7 +9,7 @@ module.exports = function (results) {
 
   results.forEach((result) => {
     result.messages.forEach((message) => {
-      if (message.ruleId === "@bentley/no-internal")
+      if (message.ruleId === "@itwin/no-internal")
         uniqueMessages.add(message.message);
     });
   });

@@ -24,9 +24,26 @@ schedules:
         - releases/*
 
 jobs:
-  - template: jobs/ci-core.yaml
-    parameters:
-      name: Node_16
-      nodeVersion: 16.13.0
-      pool:
-        vmImage: $(OS)
+  - job:
+    strategy:
+      matrix:
+        "Windows_Node_18":
+          OS: windows-latest
+        "Linux_Node_18":
+          OS: ubuntu-latest
+        "MacOS_Node_18":
+          OS: macOS-latest
+
+    pool:
+      vmImage: $(OS)
+
+    timeoutInMinutes: 120
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+      - template: ./templates/core-build.yaml
+        parameters:
+          nodeVersion: 18.x

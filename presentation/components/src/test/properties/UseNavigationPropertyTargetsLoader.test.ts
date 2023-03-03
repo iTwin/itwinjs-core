@@ -6,7 +6,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Content, LabelDefinition, NavigationPropertyInfo } from "@itwin/presentation-common";
 import { createTestContentDescriptor, createTestContentItem } from "@itwin/presentation-common/lib/cjs/test";
@@ -20,9 +19,7 @@ describe("UseNavigationPropertyTargetsLoader", () => {
   const testImodel = {} as IModelConnection;
 
   beforeEach(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 
@@ -113,7 +110,7 @@ describe("UseNavigationPropertyTargetsLoader", () => {
     await result.current("testFilter", []);
     expect(getContentStub).to.be.calledOnce;
     const descriptor = getContentStub.getCall(0).args[0].descriptor;
-    expect(descriptor.filterExpression).to.contain("testFilter");
+    expect(descriptor.fieldsFilterExpression).to.contain("testFilter");
   });
 });
 

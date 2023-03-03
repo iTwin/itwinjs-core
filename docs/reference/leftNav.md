@@ -18,7 +18,8 @@ packageClassification:  [
          "core-geometry",
          "frontend-devtools",
          "hypermodeling-frontend",
-         "webgl-compatibility"
+         "webgl-compatibility",
+         "map-layers-formats"
       ]
    },
    {

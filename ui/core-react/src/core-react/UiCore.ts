@@ -72,7 +72,7 @@ export class UiCore {
     return "UiCore";
   }
 
-  /** Calls localization.getLocalizedStringWithNamespace with the "UiCore" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedString with the "UiCore" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
@@ -80,7 +80,7 @@ export class UiCore {
       Logger.logError(UiCore.loggerCategory(this), `translate: UiCore must be initialize with a localization provider. Returning blank string.`);
       return "";
     }
-    return UiCore._localization.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
+    return UiCore._localization.getLocalizedString(key, { ns: UiCore.localizationNamespace });
   }
 
   /** @internal */

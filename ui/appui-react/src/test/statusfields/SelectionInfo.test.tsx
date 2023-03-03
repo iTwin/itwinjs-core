@@ -37,7 +37,7 @@ import TestUtils from "../TestUtils";
     before(async () => {
       await TestUtils.initializeUiFramework();
 
-      const statusBarWidgetDef = new WidgetDef({
+      const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,
         defaultState: WidgetState.Open,
         isFreeform: false,

@@ -68,6 +68,17 @@
       background: $buic-row-hover;
     }
   }
+
+  .components--hoverable {
+    &:hover {
+      // Highlight the whole row of inner-most expandable block
+      margin: 0 -4px;
+      // Compensate the negative margin by adding padding
+      padding: 0 12px;
+
+      background: $buic-row-hover;
+    }
+  }
 }
 
 .virtualized-grid-node-category {

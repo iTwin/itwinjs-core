@@ -43,7 +43,7 @@ export class ExamplePickableGraphicDecoration {
 
     // Get next available Id to represent our decoration for it's life span.
     if (undefined === this._decoId)
-      this._decoId = vp.iModel.transientIds.next;
+      this._decoId = vp.iModel.transientIds.getNext();
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._decoId);
     builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 2);
@@ -378,7 +378,7 @@ export async function displayGltfAsset(iModel: IModelConnection): Promise<boolea
     const buffer = await file.arrayBuffer();
 
     // Allocate a new transient Id to identify the graphic so it can be picked.
-    const id = iModel.transientIds.next;
+    const id = iModel.transientIds.getNext();
 
     // Convert the glTF into a RenderGraphic.
     let graphic = await readGltfGraphics({

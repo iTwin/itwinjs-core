@@ -66,7 +66,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
     it("BackstageAppButton should render in 2.0 mode", () => {
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton icon={"icon-test"} />
           </FrameworkVersion>
         </Provider>);
@@ -76,7 +76,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       const spy = sinon.spy();
       const component = render(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton icon={"icon-test"} execute={spy} label="Hello" />
           </FrameworkVersion>
         </Provider>);
@@ -88,10 +88,10 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
     });
 
     it("BackstageAppButton should render with defaults in 2.0 mode", () => {
-      const spy = sinon.spy(UiFramework.backstageManager, "toggle");
+      const spy = sinon.spy(UiFramework.backstage, "toggle");
       const component = render(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton />
           </FrameworkVersion>
         </Provider>);
@@ -101,16 +101,16 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
     });
 
     it("BackstageAppButton should render in 1.0 mode", async () => {
-      UiFramework.setUiVersion("1");
+      UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton icon={"icon-test"} />
           </FrameworkVersion>
         </Provider>
       );
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     });
 
   });

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
+import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Gltf, GltfGraphicsReader, GltfId, GltfNode, GltfReaderProps, GltfSampler, GltfWrapMode } from "../../tile/GltfReader";
@@ -87,7 +87,7 @@ describe("GltfReader", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = createBlankConnection();
   });
 

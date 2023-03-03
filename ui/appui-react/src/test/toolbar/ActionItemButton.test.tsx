@@ -7,8 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../appui-react";
-import { SyncUiEventId } from "../../appui-react/syncui/SyncUiEventDispatcher";
+import { ActionItemButton, BaseItemState, CommandItemDef, SyncUiEventDispatcher, SyncUiEventId, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionItemButton", () => {
@@ -35,23 +34,23 @@ describe("ActionItemButton", () => {
   });
 
   it("should render", () => {
-    mount(<ActionItemButton actionItem={testCommand} />);
+    mount(<ActionItemButton actionItem={testCommand} />); // eslint-disable-line deprecation/deprecation
   });
 
   it("renders correctly", () => {
-    shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
+    shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
   it("hidden renders correctly", () => {
     const myCommand = testCommand;
     myCommand.isVisible = false; // eslint-disable-line deprecation/deprecation
-    shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot();
+    shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
   it("enabled renders correctly", () => {
     const myCommand = testCommand;
     myCommand.isEnabled = true; // eslint-disable-line deprecation/deprecation
-    shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot();
+    shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
   it("should execute a function", () => {
@@ -64,18 +63,18 @@ describe("ActionItemButton", () => {
         execute: spyMethod,
       });
 
-    const wrapper = mount(<ActionItemButton actionItem={spyCommand} />);
+    const wrapper = mount(<ActionItemButton actionItem={spyCommand} />); // eslint-disable-line deprecation/deprecation
     wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
   });
 
   it("should set focus to home on Esc", () => {
-    const wrapper = mount(<ActionItemButton actionItem={testCommand} />);
+    const wrapper = mount(<ActionItemButton actionItem={testCommand} />); // eslint-disable-line deprecation/deprecation
     const element = wrapper.find(".nz-toolbar-item-item");
     element.length.should.eq(1);
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
-    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+    expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
   });
 
   it("sync event should trigger stateFunc", () => {
@@ -95,7 +94,7 @@ describe("ActionItemButton", () => {
         execute: () => { },
       });
 
-    const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />);
+    const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />); // eslint-disable-line deprecation/deprecation
     expect(stateFunctionCalled).to.eq(false);
     // force to state[0]
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
@@ -129,7 +128,7 @@ describe("ActionItemButton", () => {
         execute: () => { },
       });
 
-    const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />);
+    const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />); // eslint-disable-line deprecation/deprecation
     expect(stateFunctionCalled).to.eq(false);
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
@@ -139,7 +138,7 @@ describe("ActionItemButton", () => {
   it("should handle changing state via props", () => {
     const myCommand = testCommand;
     myCommand.isEnabled = true; // eslint-disable-line deprecation/deprecation
-    const wrapper = mount(<ActionItemButton actionItem={myCommand} isEnabled={false} />);
+    const wrapper = mount(<ActionItemButton actionItem={myCommand} isEnabled={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper.state("isEnabled")).to.be.false;
     wrapper.setProps({ isEnabled: true });
     expect(wrapper.state("isEnabled")).to.be.true;
@@ -154,7 +153,7 @@ it("should render with badgeType", () => {
       badgeType: BadgeType.New,
     });
 
-  const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
+  const wrapper = mount(<ActionItemButton actionItem={myCommand} />); // eslint-disable-line deprecation/deprecation
   const badge = wrapper.find("div.nz-badge");
   badge.length.should.eq(1);
   const newBadge = wrapper.find("div.core-new-badge");

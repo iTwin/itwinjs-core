@@ -10,11 +10,11 @@ import { Logger } from "@itwin/core-bentley";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { LocalStateStorage } from "@itwin/core-react";
-import { FooterPopup, TitleBarButton } from "@itwin/appui-layout-react";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { FooterPopup } from "@itwin/appui-layout-react";
+import { IconButton, ToggleSwitch } from "@itwin/itwinui-react";
 import {
-  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
+  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, ToolAssistanceField, UiFramework, WidgetDef,
 } from "../../../appui-react";
 import TestUtils, { mount, storageMock } from "../../TestUtils";
 import { render } from "@testing-library/react";
@@ -61,7 +61,7 @@ import { render } from "@testing-library/react";
       await TestUtils.initializeUiFramework();
       await MockRender.App.startup();
 
-      const statusBarWidgetDef = new WidgetDef({
+      const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,
         defaultState: WidgetState.Open,
         isFreeform: false,
@@ -356,7 +356,7 @@ import { render } from "@testing-library/react";
 
     it("should close on outside click", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
       const toolAssistance = wrapper.find("div.nz-indicator");
 
@@ -379,7 +379,7 @@ import { render } from "@testing-library/react";
 
     it("should not close on outside click if pinned", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
       const toolAssistance = wrapper.find("div.nz-indicator");
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
 
@@ -474,14 +474,14 @@ import { render } from "@testing-library/react";
     it("cursorPrompt should open when tool icon changes", () => {
       const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
-      FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+      UiFramework.frontstages.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
       expect(toolAssistanceField.length).to.eq(1);
       toolAssistanceField.setState({ showPromptAtCursor: true });
 
       // emit before instructions set
-      FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+      UiFramework.frontstages.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
       const spyMethod = sinon.spy();
       CursorPopupManager.onCursorPopupUpdatePositionEvent.addListener(spyMethod);
@@ -492,7 +492,7 @@ import { render } from "@testing-library/react";
       notifications.setToolAssistance(instructions);
 
       // emit after instructions set
-      FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+      UiFramework.frontstages.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
       wrapper.update();
 
@@ -565,13 +565,13 @@ import { render } from "@testing-library/react";
       expect(toolAssistanceField.length).to.eq(1);
       expect(toolAssistanceField.state("isPinned")).to.be.false;
 
-      let buttons = wrapper.find(TitleBarButton); // Pin button
+      let buttons = wrapper.find(IconButton); // Pin button
       expect(buttons.length).to.eq(1);
       buttons.simulate("click");
       wrapper.update();
       expect(toolAssistanceField.state("isPinned")).to.be.true;
 
-      buttons = wrapper.find(TitleBarButton);   // Close button
+      buttons = wrapper.find(IconButton);   // Close button
       expect(buttons.length).to.eq(1);
       buttons.simulate("click");
       wrapper.update();

@@ -46,7 +46,9 @@ describe("MenuTab", () => {
     state = addTab(state, "t1");
     state = addPanelWidget(state, "top", "w1", ["t1"]);
     const { container } = render(
-      <WidgetMenuTab />,
+      <WidgetOverflowContext.Provider value={{ close: sinon.spy() }}>
+        <WidgetMenuTab />
+      </WidgetOverflowContext.Provider>,
       {
         wrapper: (props) => <Wrapper // eslint-disable-line react/display-name
           state={state}
@@ -64,9 +66,11 @@ describe("MenuTab", () => {
     state = addTab(state, "t1", { iconSpec: <div>icon</div> });
     state = addPanelWidget(state, "top", "w1", ["t1"]);
     const { findByText } = render(
-      <ShowWidgetIconContext.Provider value={true}>
-        <WidgetMenuTab badge={<div>badge</div>} />
-      </ShowWidgetIconContext.Provider>,
+      <WidgetOverflowContext.Provider value={{ close: sinon.spy() }}>
+        <ShowWidgetIconContext.Provider value={true}>
+          <WidgetMenuTab badge={<div>badge</div>} />
+        </ShowWidgetIconContext.Provider>
+      </WidgetOverflowContext.Provider>,
       {
         wrapper: (props) => <Wrapper // eslint-disable-line react/display-name
           state={state}

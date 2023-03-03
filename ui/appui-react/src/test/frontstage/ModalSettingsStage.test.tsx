@@ -26,7 +26,7 @@ function TestModalSettingsPage({ settingsManager, title }: { settingsManager: Se
 }
 
 function renderModalFrontstage(isOpen: boolean): React.ReactElement<any> {
-  const activeModalFrontstage: ModalFrontstageInfo | undefined = FrontstageManager.activeModalFrontstage;
+  const activeModalFrontstage: ModalFrontstageInfo | undefined = UiFramework.frontstages.activeModalFrontstage;
   if (!activeModalFrontstage) {
     throw (Error);
   }
@@ -59,7 +59,7 @@ describe("ModalSettingsStage", () => {
 
   it("will display no settings when none are registered", () => {
     const modalFrontstage = new SettingsModalFrontstage();
-    FrontstageManager.openModalFrontstage(modalFrontstage);
+    UiFramework.frontstages.openModalFrontstage(modalFrontstage);
 
     const wrapper = render(renderModalFrontstage(true));
     // wrapper.debug();
@@ -69,7 +69,7 @@ describe("ModalSettingsStage", () => {
     expect(centeredDiv.length).to.eq(1);
     expect(centeredDiv[0].textContent).to.eq("settings.noSettingsAvailable");
 
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
     wrapper.unmount();
   });
 
@@ -110,14 +110,14 @@ describe("ModalSettingsStage", () => {
   it("will display settings because they are registered", async () => {
     const settingsManager = UiFramework.settingsManager;
 
-    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
     // const modalFrontstage = new SettingsModalFrontstage();
-    // FrontstageManager.openModalFrontstage(modalFrontstage);
+    // UiFramework.frontstages.openModalFrontstage(modalFrontstage);
     SettingsModalFrontstage.showSettingsStage(); // set the stage using static
 
     const wrapper = render(renderModalFrontstage(true));
@@ -140,17 +140,17 @@ describe("ModalSettingsStage", () => {
     await TestUtils.flushAsyncOperations();
 
     settingsManager.removeSettingsProvider("AppSettingsProvider");
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
     wrapper.unmount();
   });
 
   it("set initial stage via tab-id", async () => {
     const settingsManager = UiFramework.settingsManager;
 
-    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
     SettingsModalFrontstage.showSettingsStage("page-3");
@@ -163,17 +163,17 @@ describe("ModalSettingsStage", () => {
     expect(liPage3.classList.contains("core-active")).to.be.true;
 
     settingsManager.removeSettingsProvider("AppSettingsProvider");
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
     wrapper.unmount();
   });
 
   it("set initial stage via tab name", async () => {
     const settingsManager = UiFramework.settingsManager;
 
-    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
     SettingsModalFrontstage.showSettingsStage("page2");
@@ -186,7 +186,7 @@ describe("ModalSettingsStage", () => {
     expect(liPage2.classList.contains("core-active")).to.be.true;
 
     settingsManager.removeSettingsProvider("AppSettingsProvider");
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
     wrapper.unmount();
   });
 

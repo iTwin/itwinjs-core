@@ -7,7 +7,7 @@ import { produce } from "immer";
 import { Point, Rectangle } from "@itwin/core-react";
 import {
   addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, convertAllPopupWidgetContainersToFloating, createNineZoneState, dockWidgetContainer, floatWidget, isTabDragDropTargetState, isWidgetDragDropTargetState,
-  NineZoneStateReducer, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds, toolSettingsTabId,
+  NineZoneStateReducer, popoutWidgetToChildWindow, toolSettingsTabId,
 } from "../../appui-layout-react";
 import { addTabs } from "../Utils";
 import {
@@ -732,6 +732,79 @@ describe("NineZoneStateReducer", () => {
         height: 350,
       });
     });
+
+    it("should set user sized flag", () => {
+      let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+      state = addTabs(state, ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        bounds: new Rectangle(0, 100, 200, 400).toProps(),
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_RESIZE",
+        id: "fw1",
+        resizeBy: new Rectangle(10).toProps(),
+      });
+      newState.floatingWidgets.byId.fw1!.userSized!.should.eq(true);
+    });
+
+    it("should maintain min size when resizing (top-left)", () => {
+      let state = createNineZoneState();
+      state = addTabs(state, ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        bounds: new Rectangle(100, 300, 500, 900),
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_RESIZE",
+        id: "fw1",
+        resizeBy: new Rectangle(-800, -800),
+      });
+      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+        left: 500 - 200, // 200 is widget min width
+        top: 900 - 120, // 120 is widget min height
+        right: 500,
+        bottom: 900,
+      });
+    });
+
+    it("should maintain min size when resizing (bottom-right)", () => {
+      let state = createNineZoneState();
+      state = addTabs(state, ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        bounds: new Rectangle(100, 300, 500, 900),
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_RESIZE",
+        id: "fw1",
+        resizeBy: new Rectangle(0, 0, -800, -800),
+      });
+      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+        left: 100,
+        top: 300,
+        right: 100 + 200,
+        bottom: 300 + 120,
+      });
+    });
+  });
+
+  describe("FLOATING_WIDGET_SET_BOUNDS", () => {
+    it("should set floating widget bounds", () => {
+      let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+      state = addTabs(state, ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        bounds: new Rectangle(0, 100, 200, 400).toProps(),
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_SET_BOUNDS",
+        id: "fw1",
+        bounds: { top: 50, left: 30, bottom: 250, right: 350 },
+      });
+      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+        left: 30,
+        top: 50,
+        right: 350,
+        bottom: 250,
+      });
+    });
   });
 
   describe("FLOATING_WIDGET_BRING_TO_FRONT", () => {
@@ -745,6 +818,36 @@ describe("NineZoneStateReducer", () => {
         id: "fw1",
       });
       newState.floatingWidgets.allIds.should.eql(["fw2", "fw1"]);
+    });
+  });
+
+  describe("FLOATING_WIDGET_CLEAR_USER_SIZED", () => {
+    it("should clear user sized flag", () => {
+      let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+      state = addTab(state, "t1", { userSized: true });
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        userSized: true,
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
+        id: "fw1",
+      });
+      newState.floatingWidgets.byId.fw1!.userSized!.should.eq(false);
+      newState.tabs.t1!.userSized!.should.eq(false);
+    });
+  });
+
+  describe("FLOATING_WIDGET_SET_USER_SIZED", () => {
+    it("should set user sized flag", () => {
+      let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+      state = addTabs(state, ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1"]);
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_SET_USER_SIZED",
+        id: "fw1",
+        userSized: true,
+      });
+      newState.floatingWidgets.byId.fw1!.userSized!.should.eq(true);
     });
   });
 
@@ -1342,7 +1445,6 @@ describe("NineZoneStateReducer", () => {
       newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
       should().not.exist(newState.widgets.fw1);
     });
-
   });
 });
 
@@ -1599,55 +1701,6 @@ describe("floatWidget", () => {
 
     newState = convertFloatingWidgetContainerToPopout(newState, popoutWidgetContainerId1);
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(2);
-  });
-
-  it("should set and clear user sized setting for floating widgets", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addTabs(state, ["t1"]);
-    state = addFloatingWidget(state, "fw1", ["t1"], {
-      bounds: new Rectangle(0, 100, 200, 400).toProps(),
-    });
-    const newState = NineZoneStateReducer(state, {
-      type: "FLOATING_WIDGET_RESIZE",
-      id: "fw1",
-      resizeBy: new Rectangle(0, 10, 20, 40).toProps(),
-    });
-    newState.floatingWidgets.byId.fw1!.bounds.should.eql({
-      left: 0,
-      top: 90,
-      right: 220,
-      bottom: 440,
-    });
-    newState.floatingWidgets.byId.fw1!.userSized?.should.eql(true);
-    const newState2 = NineZoneStateReducer(newState, {
-      type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
-      id: "fw1",
-    });
-    newState2.floatingWidgets.byId.fw1!.userSized?.should.eql(false);
-  });
-
-  it("should set floating widget bounds", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addTabs(state, ["t1"]);
-    state = addFloatingWidget(state, "fw1", ["t1"], {
-      bounds: new Rectangle(0, 100, 200, 400).toProps(),
-    });
-    const newState = setFloatingWidgetContainerBounds(state, "fw1", { top: 50, left: 30, bottom: 250, right: 350 });
-    newState.floatingWidgets.byId.fw1!.userSized?.should.eql(true);
-    newState.floatingWidgets.byId.fw1!.bounds.should.eql({
-      left: 30,
-      top: 50,
-      right: 350,
-      bottom: 250,
-    });
-  });
-
-  it("should not set floating widget bounds if widget is not floating", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addTabs(state, ["t1"]);
-    state = addPanelWidget(state, "right", "p1", ["t1"]);
-    const newState = setFloatingWidgetContainerBounds(state, "p1", { top: 50, left: 30, bottom: 250, right: 350 });
-    newState.should.equal(state);
   });
 });
 

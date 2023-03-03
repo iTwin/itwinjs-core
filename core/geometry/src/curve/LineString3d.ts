@@ -17,7 +17,7 @@ import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUn
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming";
-import { Range3d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
@@ -26,6 +26,7 @@ import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMo
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "./LineSegment3d";
 import { StrokeCountMap } from "./Query/StrokeCountMap";
@@ -573,7 +574,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Convert a segment index and local fraction to a global fraction.
    * @param index index of segment being evaluated
-   * @param localFraction local fraction within that segment
+   * @param localFraction local fraction in [0,1] within the segment
+   * @return global fraction f in [0,1] such that the segment is parameterized by index/N <= f <= (index+1)/N.
    */
   public segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number {
     const numSegment = this._points.length - 1;
@@ -581,6 +583,28 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return 0.0;
     return (index + localFraction) / numSegment;
   }
+  /**
+   * Convert a global fraction to a segment index and local fraction.
+   * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
+   */
+  public globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): {index: number, fraction: number} {
+    const numSegment = this._points.length - 1;
+    if (numSegment < 1)
+      return {index: 0, fraction: 0.0};
+
+    const scaledGlobalFraction = globalFraction * numSegment;
+    let segmentIndex: number;
+    if (globalFraction < 0)
+      segmentIndex = 0;
+    else if (globalFraction > 1)
+      segmentIndex = numSegment - 1;
+    else  // globalFraction in [0,1]
+      segmentIndex = Math.floor(scaledGlobalFraction);
+
+    const localFraction = scaledGlobalFraction - segmentIndex;
+    return {index: segmentIndex, fraction: localFraction};
+  }
+
   /** Return a frenet frame, using nearby points to estimate a plane. */
   public override fractionToFrenetFrame(fraction: number, result?: Transform): Transform {
     const n = this._points.length;
@@ -823,7 +847,6 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
       if (numPoints > 1) {
         let segmentFraction = 0;
         let d = 0;
-        const df = 1.0 / lastIndex;
         for (let i = 1; i < numPoints; i++) {
           segmentFraction = spacePoint.fractionOfProjectionToLine(this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i));
           if (segmentFraction < 0) {
@@ -836,7 +859,7 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
           this._points.getPoint3dAtUncheckedPointIndex(i - 1).interpolate(segmentFraction, this._points.getPoint3dAtUncheckedPointIndex(i), result.pointQ);
           d = result.pointQ.distance(spacePoint);
           if (d < result.a) {
-            result.setFP((i - 1 + segmentFraction) * df, result.pointQ, undefined, d);
+            result.setFP(this.segmentIndexAndLocalFractionToGlobalFraction(i - 1, segmentFraction), result.pointQ, undefined, d);
           }
         }
       }
@@ -1182,7 +1205,8 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     }
     return status;
   }
-  private static _indexPoint = Point3d.create();  // private point for indexAndFractionToPoint.
+  private static _indexPoint = Point3d.create();  // private point for addResolvedPoint
+  /** @param fraction used to interpolate between points at index and index + 1 */
   private addResolvedPoint(index: number, fraction: number, dest: GrowableXYZArray) {
     const n = this._points.length;
     if (n === 0) return;
@@ -1222,45 +1246,32 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
       if (fractionB > 1)
         fractionB = 1;
     }
-    const numEdge = n - 1;
-    let indexA: number;   // left index of first extended/partial segment of clone
-    let indexB: number;   // left index of last extended/partial segment of clone
     let index0, index1: number;   // range of original vertices to copy into clone
-    let localFractionA = fractionA;
-    let localFractionB = fractionB;
+    const localA = this.globalFractionToSegmentIndexAndLocalFraction(fractionA);
+    const localB = this.globalFractionToSegmentIndexAndLocalFraction(fractionB);
     if (fractionA < 0) {
-      indexA = 0;
       index0 = 1; // first original vertex is not in clone
     } else if (0 <= fractionA && fractionA <= 1) {
-      const gA = fractionA * numEdge;
-      indexA = Math.floor(gA);
-      localFractionA = gA - indexA;
-      index0 = Geometry.isSmallRelative(1 - localFractionA) ? indexA + 2 : indexA + 1;
+      index0 = Geometry.isSmallRelative(1 - localA.fraction) ? localA.index + 2 : localA.index + 1;
     } else { // 1 < fractionA
-      indexA = n - 2;
       index0 = n; // no original vertices in clone
     }
     if (fractionB < 0) {
-      indexB = 0;
       index1 = -1;  // no original vertices in clone
     } else if (0 <= fractionB && fractionB <= 1) {
-      const gB = fractionB * numEdge;
-      indexB = Math.floor(gB);
-      localFractionB = gB - indexB;
-      index1 = Geometry.isSmallRelative(localFractionB) ? indexB - 1: indexB;
+      index1 = Geometry.isSmallRelative(localB.fraction) ? localB.index - 1: localB.index;
     } else {  // 1 < fractionB
-      indexB = n - 2;
       index1 = n - 2; // last original vertex is not in clone
     }
     const result = LineString3d.create();
-    this.addResolvedPoint(indexA, localFractionA, result._points);
+    this.addResolvedPoint(localA.index, localA.fraction, result._points);
     for (let index = index0; index <= index1; index++) {
       if (this._points.isIndexValid(index)) {
         this._points.getPoint3dAtUncheckedPointIndex(index, LineString3d._workPointA);
         result._points.push(LineString3d._workPointA);
       }
     }
-    this.addResolvedPoint(indexB, localFractionB, result._points);
+    this.addResolvedPoint(localB.index, localB.fraction, result._points);
     return result;
   }
   /** Return (if possible) a specific segment of the linestring */
@@ -1367,6 +1378,14 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
       }
     }
     return offsets;
+  }
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point

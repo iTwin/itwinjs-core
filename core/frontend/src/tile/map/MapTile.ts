@@ -47,7 +47,7 @@ export type TilePatch = PlanarTilePatch | EllipsoidPatch;
 
 /** Projects points within the rectangular region of a [[MapTile]] into 3d space.
  * @see [[MapTile.getProjection]] to obtain the projection for a [[MapTile]].
- * @beta
+ * @public
  */
 export abstract class MapTileProjection {
   /** The extents of the volume of space associated with the projected [[MapTile]]. */
@@ -126,11 +126,13 @@ const scratchClipPlanes = [ClipPlane.createNormalAndPoint(scratchNormal, scratch
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 
 /** A [[Tile]] belonging to a [[MapTileTree]] representing a rectangular region of a map of the Earth.
- * @beta
+ * @public
  */
 export class MapTile extends RealityTile {
   private static _maxParentHeightDepth = 4;
   private _imageryTiles?: ImageryMapTile[];
+  private _hiddenTiles?: ImageryMapTile[];
+  private _highResolutionReplacementTiles?: ImageryMapTile[];
   /** @internal */
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   /** @internal */
@@ -159,6 +161,19 @@ export class MapTile extends RealityTile {
   public get isPlanar(): boolean { return this._patch instanceof PlanarTilePatch; }
   /** @internal */
   public get imageryTiles(): ImageryMapTile[] | undefined { return this._imageryTiles; }
+  /** List of selected tiles but are currently in hidden state (i.e. scale range visibility)
+   * @internal
+   */
+  public get hiddenImageryTiles(): ImageryMapTile[] | undefined { return this._hiddenTiles; }
+
+  /** List of leafs tiles that have been selected as a replacement for missing high resolution tiles.
+   * When this list is non-empty this means we are past the maximum LOD available of the tile tree.
+   * By using those tiles, you are likely to get a display where tiles looks pixelated..
+   * in some cases this is preferred to have no tile at all.
+   * @internal
+   */
+  public get highResolutionReplacementTiles(): ImageryMapTile[] | undefined { return this._highResolutionReplacementTiles; }
+
   /** The [[MapTileTree]] to which this tile belongs. */
   public readonly mapTree: MapTileTree;
   /** Uniquely identifies this tile within its [[mapTree]]. */
@@ -497,6 +512,12 @@ export class MapTile extends RealityTile {
       this._imageryTiles.forEach((tile) => tile.releaseMapTileUsage());
       this._imageryTiles = undefined;
     }
+    if (this._hiddenTiles) {
+      this._hiddenTiles = undefined;
+    }
+    if (this._highResolutionReplacementTiles) {
+      this._highResolutionReplacementTiles = undefined;
+    }
   }
 
   /** @internal */
@@ -505,7 +526,6 @@ export class MapTile extends RealityTile {
       return this._graphic;
 
     const geometry = this.renderGeometry;
-    assert(undefined !== geometry);
     if (undefined === geometry)
       return undefined;
 
@@ -583,20 +603,20 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public get baseImageryIsReady(): boolean {
-    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.imageryTrees.length)
+    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.layerImageryTrees.length)
       return true;
 
     if (undefined === this._imageryTiles)
       return false;
 
-    const baseTreeId = this.mapTree.imageryTrees[0].modelId;
+    const baseTreeId = this.mapTree.layerImageryTrees[0].tree.modelId;
     return this._imageryTiles.every((imageryTile) => imageryTile.imageryTree.modelId !== baseTreeId || imageryTile.isReady);
   }
 
   /** @internal */
   public get imageryIsReady(): boolean {
     if (undefined === this._imageryTiles)
-      return 0 === this.mapTree.imageryTrees.length;
+      return 0 === this.mapTree.layerImageryTrees.length;
 
     return this._imageryTiles.every((tile) => tile.isReady);
   }
@@ -605,24 +625,50 @@ export class MapTile extends RealityTile {
    * @internal
    */
   public override selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext) {
-    if (0 === this.mapTree.imageryTrees.length || this.imageryIsReady)
+    if (0 === this.mapTree.layerImageryTrees.length || this.imageryIsReady)
       return;
 
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
-    for (const imageryTree of this.mapTree.imageryTrees) {
-      if (TileTreeLoadStatus.Loaded !== imageryTree.selectCartoDrapeTiles(this._imageryTiles, this, args)) {
+    this._hiddenTiles = new Array<ImageryMapTile>();
+    this._highResolutionReplacementTiles = new Array<ImageryMapTile>();
+    for (const layerImageryTree of this.mapTree.layerImageryTrees) {
+      let tmpTiles = new Array<ImageryMapTile>();
+      const tmpLeafTiles = new Array<ImageryMapTile>();
+      if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, tmpLeafTiles, this, args,)) {
         this._imageryTiles = undefined;
         return;
       }
-    }
 
-    for (const imageryTile of this._imageryTiles) {
-      imageryTile.markMapTileUsage();
-      if (imageryTile.isReady)
-        args.markReady(imageryTile);
-      else
-        context.missing.push(imageryTile);
+      // When the base layer is zoomed-in beyond it's max resolution,
+      // we display leaf tiles and stretched them if needed.
+      // We don't want the same behavior non-base layers, in the case,
+      // the layer will simply disappear past its max resolution.
+      // Note: Replacement leaf tiles are kept as a mean to determine which
+      // imagery tree has reached it's maximum zoom level.
+      if (layerImageryTree.baseImageryLayer) {
+        tmpTiles = [...tmpTiles, ...tmpLeafTiles];
+      } else {
+        this._highResolutionReplacementTiles = [...this._highResolutionReplacementTiles, ...tmpLeafTiles];
+      }
+
+      // MapTileTree might include a non-visible imagery tree, we need to check for that.
+      if (layerImageryTree.settings.visible && !layerImageryTree.settings.allSubLayersInvisible) {
+        for (const imageryTile of tmpTiles) {
+          imageryTile.markMapTileUsage();
+          if (imageryTile.isReady)
+            args.markReady(imageryTile);
+          else
+            context.missing.push(imageryTile);
+          this._imageryTiles.push(imageryTile);
+        }
+      } else {
+        // Even though those selected imagery tile are not visible,
+        // we keep track of them for scale range reporting.
+        for (const imageryTile of tmpTiles) {
+          this._hiddenTiles.push(imageryTile);
+        }
+      }
     }
   }
 

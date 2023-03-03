@@ -12,7 +12,7 @@ import { RpcInterfaceDefinition } from "@itwin/core-common";
 import { Presentation, PresentationProps } from "@itwin/presentation-backend";
 // __PUBLISH_EXTRACT_END__
 // eslint-disable-next-line no-duplicate-imports
-import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory, PresentationManagerMode } from "@itwin/presentation-backend";
+import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@itwin/presentation-backend";
 import rpcs from "../common/Rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -43,7 +43,6 @@ import rpcs from "../common/Rpcs";
   // __PUBLISH_EXTRACT_END__
 
   // props that we don't want to show in documentation set up example
-  presentationBackendProps.mode = PresentationManagerMode.ReadWrite;
   presentationBackendProps.workerThreadsCount = 1;
   presentationBackendProps.useMmap = true;
   presentationBackendProps.updatesPollInterval = 20;

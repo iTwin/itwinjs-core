@@ -34,7 +34,7 @@ class PromptFieldComponent extends React.Component<PromptFieldProps> {
 
   public override render(): React.ReactNode {
     return (
-      <FooterIndicator
+      <FooterIndicator // eslint-disable-line deprecation/deprecation
         className={classnames("uifw-statusFields-promptField", this.props.className)}
         style={this.props.style}
         // eslint-disable-next-line deprecation/deprecation
@@ -63,6 +63,6 @@ function mapStateToProps(state: any) {
  * IModelApp.notifications.outputPrompt.
  * This React component is Redux connected.
  * @public
- * @deprecated Use ToolAssistanceField instead
+ * @deprecated in 1.x Use ToolAssistanceField instead
  */ // eslint-disable-next-line @typescript-eslint/naming-convention
 export const PromptField = connect(mapStateToProps)(PromptFieldComponent);

@@ -140,17 +140,12 @@ exports[`WidgetPanels should render widget content 1`] = `
         class="nz-widgetPanels-grip nz-left nz-grip"
       >
         <div
-          class="nz-dot"
-        />
-        <div
-          class="nz-dot"
-        />
-        <div
-          class="nz-dot"
-        />
-        <div
-          class="nz-dot"
-        />
+          class="nz-line-grip"
+        >
+          <div
+            class="nz-line-grip-detail"
+          />
+        </div>
         <div
           class="nz-handle"
         />

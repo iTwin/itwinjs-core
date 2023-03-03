@@ -115,9 +115,9 @@ export class LoopCurveLoopCurve {
  * @public
  */
 export interface SignedLoops {
-  /** Array of loops that have positive area sign.  (i.e. counterclockwise loops) */
+  /** Array of loops that have positive area sign (i.e. counterclockwise loops). */
   positiveAreaLoops: Loop[];
-  /** Array of loops that have negative area sign. (i.e. clockwise loops. */
+  /** Array of loops that have negative area sign (i.e. clockwise loops). */
   negativeAreaLoops: Loop[];
   /** slivers where there are coincident sections of input curves. */
   slivers: Loop[];

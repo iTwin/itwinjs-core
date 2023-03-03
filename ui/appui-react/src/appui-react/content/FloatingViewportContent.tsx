@@ -8,13 +8,13 @@
 
 import "./FloatingViewportContent.css";
 import * as React from "react";
-import { IModelApp, ScreenViewport, ViewState } from "@itwin/core-frontend";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
-import { ViewportComponent } from "@itwin/imodel-components-react";
+import { ViewportComponent, ViewStateProp } from "@itwin/imodel-components-react";
 import { FloatingViewportContentControl } from "./ViewportContentControl";
-import { ContentViewManager } from "./ContentViewManager";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentWrapper } from "./ContentLayout";
+import { useRefs } from "@itwin/core-react";
+import { UiFramework } from "../UiFramework";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const FloatingViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -27,8 +27,10 @@ export interface FloatingViewportContentProps {
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** viewport/content control uniqueId */
   contentId: string;
-  /** The initial view state used to create the viewport */
-  initialViewState: ViewState;
+  /** The initial view state used to create the viewport, or a function that returns it (will refresh when the function changes) */
+  initialViewState: ViewStateProp;
+  /** Function to get a reference to the ScreenViewport */
+  viewportRef?: React.Ref<ScreenViewport>;
 }
 
 /**
@@ -39,35 +41,47 @@ export interface FloatingViewportContentProps {
  */
 // istanbul ignore next
 export function FloatingViewportContent(props: FloatingViewportContentProps) { // eslint-disable-line @typescript-eslint/naming-convention
-  const { contentId, initialViewState } = props;
+  const { contentId, initialViewState, viewportRef } = props;
   const [viewport, setViewport] = React.useState<ScreenViewport | undefined>();
   const contentControl = React.useRef<FloatingViewportContentControl | undefined>();
 
-  const onViewportRef = React.useCallback((v: ScreenViewport) => setViewport(v), []);
+  const viewState = React.useMemo(() => typeof initialViewState === "function" ? initialViewState() : initialViewState, [initialViewState]);
+  const ref = React.useCallback((v: ScreenViewport) => {
+    setViewport(v);
+  }, []);
+  const onViewportRef = useRefs(ref, ...(viewportRef ? [viewportRef] : []));
 
   React.useEffect(() => {
     if (!contentControl.current) {
       contentControl.current = new FloatingViewportContentControl(contentId, contentId, null);
-      ContentViewManager.addFloatingContentControl(contentControl.current);
+      UiFramework.content.addFloatingContentControl(contentControl.current);
     }
     return () => {
       if (contentControl.current) {
-        ContentViewManager.dropFloatingContentControl(contentControl.current);
+        UiFramework.content.dropFloatingContentControl(contentControl.current);
         contentControl.current = undefined;
       }
     };
   }, [contentId]);
 
-  const viewPortControl = React.useMemo(() =>
-    initialViewState ? (
-      <FloatingViewport
-        viewportRef={onViewportRef}
-        imodel={initialViewState.iModel}
-        viewState={initialViewState}
-        onContextMenu={props.onContextMenu}
-        controlId={contentId}
-      />
-    ) : undefined, [onViewportRef, props.onContextMenu, initialViewState, contentId]);
+  const viewPortControl = React.useMemo(() => {
+
+    const node = <FloatingViewport
+      viewportRef={onViewportRef}
+      imodel={viewState.iModel}
+      viewState={viewState}
+      onContextMenu={props.onContextMenu}
+      controlId={contentId}
+    />;
+    let control = node;
+
+    if (!(node as React.ReactElement<any>).key) {
+      const additionalProps: any = { key:contentId };
+      control = React.cloneElement(node, additionalProps);
+    }
+    return control;
+
+  }, [onViewportRef, props.onContextMenu, viewState, contentId]);
 
   React.useEffect(() => {
     if (viewport && contentControl.current) {
@@ -75,17 +89,15 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
       if (null === contentControl.current.reactNode) {
         contentControl.current.reactNode = viewPortControl;
       }
-      if (initialViewState) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        contentControl.current.processViewSelectorChange(initialViewState.iModel, initialViewState.id, initialViewState, initialViewState.name);
-      }
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      contentControl.current.viewport.changeView(viewState);
     }
-  }, [initialViewState, viewPortControl, viewport]);
+  }, [viewState, viewPortControl, viewport]);
 
   React.useEffect(() => {
     const onViewClose = (vp: ScreenViewport) => {
       if (contentControl.current?.viewport === vp) {
-        ContentViewManager.dropFloatingContentControl(contentControl.current);
+        UiFramework.content.dropFloatingContentControl(contentControl.current);
         contentControl.current = undefined;
       }
     };
@@ -93,7 +105,7 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
   }, []);
 
   return (
-    <div onMouseMove={UiShowHideManager.handleContentMouseMove} className="uifw-dialog-imodel-content" style={{ height: "100%", position: "relative" }}>
+    <div onMouseMove={UiFramework.visibility.handleContentMouseMove} className="uifw-dialog-imodel-content" style={{ height: "100%", position: "relative" }}>
       <ContentWrapper content={viewPortControl} style={{ height: "100%", position: "relative" }} />
     </div>
   );

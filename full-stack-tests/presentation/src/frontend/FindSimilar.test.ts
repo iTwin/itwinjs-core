@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyData, RowItem } from "@itwin/components-react";
 import { Id64String, using } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { InstanceKey, KeySet } from "@itwin/presentation-common";
 import {
   DataProvidersFactory, DEFAULT_PROPERTY_GRID_RULESET, IPresentationTableDataProvider, PresentationPropertyDataProvider,
 } from "@itwin/presentation-components";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyData, RowItem } from "@itwin/components-react";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Find Similar", () => {
@@ -30,12 +30,12 @@ describe("Find Similar", () => {
   });
 
   let propertiesDataProvider: PresentationPropertyDataProvider;
-  let factory: DataProvidersFactory;
+  let factory: DataProvidersFactory; // eslint-disable-line deprecation/deprecation
 
   beforeEach(async () => {
     propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
     propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
-    factory = new DataProvidersFactory();
+    factory = new DataProvidersFactory(); // eslint-disable-line deprecation/deprecation
   });
 
   const getPropertyRecordByLabel = (props: PropertyData, label: string): PropertyRecord | undefined => {
@@ -47,7 +47,9 @@ describe("Find Similar", () => {
     return undefined;
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   const getAllRows = async (provider: IPresentationTableDataProvider): Promise<RowItem[]> => {
+    // eslint-disable-next-line deprecation/deprecation
     const rows: RowItem[] = [];
     const count = await provider.getRowsCount();
     for (let i = 0; i < count; ++i) {
@@ -56,11 +58,11 @@ describe("Find Similar", () => {
     return rows;
   };
 
-  const getAllRowsInstanceKeys = async (provider: IPresentationTableDataProvider): Promise<InstanceKey[]> => {
-    return (await getAllRows(provider)).map((r) => InstanceKey.fromJSON(JSON.parse(r.key)));
+  const getAllRowsInstanceKeys = async (provider: IPresentationTableDataProvider): Promise<InstanceKey[]> => { // eslint-disable-line deprecation/deprecation
+    return (await getAllRows(provider)).map((r) => JSON.parse(r.key));
   };
 
-  const getAllRowsInstanceIds = async (provider: IPresentationTableDataProvider): Promise<Id64String[]> => {
+  const getAllRowsInstanceIds = async (provider: IPresentationTableDataProvider): Promise<Id64String[]> => { // eslint-disable-line deprecation/deprecation
     return (await getAllRowsInstanceKeys(provider)).map((k) => k.id);
   };
 

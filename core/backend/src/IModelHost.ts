@@ -116,7 +116,7 @@ export interface IModelHostOptions {
 
   /**
    * @beta
-   * @deprecated use tileCacheStorage
+   * @deprecated in 3.x. Use [[tileCacheStorage]] instead.
    */
   tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
 
@@ -175,9 +175,7 @@ export interface IModelHostOptions {
    */
   crashReportingConfig?: CrashReportingConfig;
 
-  /** The AuthorizationClient used to get accessTokens
-   * @beta
-   */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   authorizationClient?: AuthorizationClient;
 }
 
@@ -189,7 +187,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileLoadTimeThreshold = 40;
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
-  public  static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
+  public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
 
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
@@ -198,9 +196,9 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public workspace?: WorkspaceOpts;
   /** @beta */
   public hubAccess?: BackendHubAccess;
-  /** @beta */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
-  /** @beta @deprecated */
+  /** @beta @deprecated in 3.x. Use [[tileCacheStorage]] instead. */
   public tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
   /** @beta */
   public restrictTileUrlsByClientIp?: boolean;
@@ -258,6 +256,8 @@ class ApplicationSettings extends BaseSettings {
  */
 export class IModelHost {
   private constructor() { }
+
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
 
   /** @alpha */
@@ -339,6 +339,9 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
   }
+  private static syncNativeLogLevels() {
+    this.platform.clearLogLevelCache();
+  }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
     this._platform = platform;
@@ -346,11 +349,12 @@ export class IModelHost {
       return;
 
     platform.logger = Logger;
+    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
   }
 
   /**
    * @internal
-   * @deprecated
+   * @deprecated in 3.x. Use [[IModelHost.tileStorage]] instead.
    * @note Use [[IModelHostOptions.tileCacheService]] to set the service provider.
    */
   public static tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
@@ -360,7 +364,7 @@ export class IModelHost {
 
   /**
    * @internal
-   * @deprecated
+   * @deprecated in 3.x. Use [[IModelHost.tileStorage]] instead.
    */
   public static tileUploader?: CloudStorageTileUploader; // eslint-disable-line deprecation/deprecation
 

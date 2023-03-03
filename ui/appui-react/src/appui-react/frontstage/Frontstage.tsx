@@ -22,29 +22,32 @@ import { ToolItemDef } from "../shared/ToolItemDef";
 import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
 import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { WidgetsChangedEventArgs } from "../widgets/WidgetManager";
 import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
-import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
+import { FrontstageActivatedEventArgs } from "../framework/FrameworkFrontstages";
+import { InternalFrontstageManager } from "./InternalFrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface FrontstageProps extends CommonProps {
   /** Id for the Frontstage */
   id: string;
-  /** Tool that is started once the Frontstage is activated */
+  /** Tool that is started once the Frontstage is activated.
+   * Use [UiFramework.frontstages.onFrontstageReadyEvent] instead.
+   */
   defaultTool: ToolItemDef;
   /** The Content Group providing the Content Views */
   contentGroup: ContentGroup | ContentGroupProvider;
   /** Id of the Content View to be activated initially */
   defaultContentId?: string;
   /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true.
-   * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
+   * @deprecated in 3.3. In upcoming version, widget mode will be removed and footer mode will always be true.
   */
   isInFooterMode?: boolean;                     // Default - true
   /** Any application data to attach to this Frontstage. */
@@ -60,28 +63,28 @@ export interface FrontstageProps extends CommonProps {
   /** if isIModelIndependent then frontstage is independent from any iModel. */
   isIModelIndependent?: boolean;
   /** The Zone in the top-left corner.
-   * @deprecated Use 'contentManipulationTools' property. */
+   * @deprecated in 3.0. Use 'contentManipulationTools' property. */
   topLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the top-center edge.
-   * @deprecated Use 'toolSettings' property. */
+   * @deprecated in 3.0. Use 'toolSettings' property. */
   topCenter?: React.ReactElement<ZoneProps>;
   /** The Zone in the top-right corner.
-   * @deprecated Use 'viewNavigationTools' property. */
+   * @deprecated in 3.0. Use 'viewNavigationTools' property. */
   topRight?: React.ReactElement<ZoneProps>;
   /** The Zone along the center-left edge.
-   * @deprecated Place widgets in appropriate stage panel zone. */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone. */
   centerLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the center-right edge.
-   * @deprecated Place widgets in appropriate stage panel zone. */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone. */
   centerRight?: React.ReactElement<ZoneProps>;
   /** The Zone in the bottom-left corner.
-   * @deprecated Place widgets in appropriate stage panel zone.  */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone.  */
   bottomLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the bottom-center edge.
-   * @deprecated use statusBar property */
+   * @deprecated in 3.0. use statusBar property */
   bottomCenter?: React.ReactElement<ZoneProps>;
   /** The Zone in the bottom-right corner.
-   * @deprecated Place widgets in appropriate stage panel zone. */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
 
   /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition. */
@@ -96,7 +99,7 @@ export interface FrontstageProps extends CommonProps {
   /** The StagePanel on the top of the AppUi container. */
   topPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very top across the full width.
-   * @deprecated Only topPanel is supported in UI 2.0 */
+   * @deprecated in 3.0. Only topPanel is supported in UI 2.0 */
   topMostPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the left.  */
   leftPanel?: React.ReactElement<StagePanelProps>;
@@ -105,7 +108,7 @@ export interface FrontstageProps extends CommonProps {
   /** The StagePanel on the bottom of the AppUi container.  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very bottom across the full width.
-   * @deprecated Only bottomPanel is supported in UI 2.0  */
+   * @deprecated in 3.0. Only bottomPanel is supported in UI 2.0  */
   bottomMostPanel?: React.ReactElement<StagePanelProps>;
 
   /** @internal */
@@ -119,6 +122,7 @@ interface FrontstageState {
 
 /** Frontstage React component.
  * A Frontstage is a full-screen configuration designed to enable the user to accomplish a task.
+ * @deprecated in 3.6. Use [[FrontstageConfig]] instead.
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
@@ -199,7 +203,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     {
       const frontstageDef = this.props.runtimeProps.frontstageDef;
       frontstageDef.updateWidgetDefs();
-      FrontstageManager.onWidgetDefsUpdatedEvent.emit();
+      InternalFrontstageManager.onWidgetDefsUpdatedEvent.emit();
       if (this._isMounted)
         this.forceUpdate();
     }
@@ -332,7 +336,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   private cloneStagePanelElement(panelDef: StagePanelDef | undefined, runtimeProps: FrontstageRuntimeProps): React.ReactNode {
-    if (!this.state.isUiVisible && UiShowHideManager.showHidePanels)
+    if (!this.state.isUiVisible && UiFramework.visibility.showHidePanels)
       return null;
 
     // istanbul ignore else
@@ -381,14 +385,14 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       if (!zoneDef)
         return null;
 
-      const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
+      const nestedPanelsManager = InternalFrontstageManager.NineZoneManager.getNestedPanelsManager();
       const panelsManager = nestedPanelsManager.getPanelsManager("inner");
       const type = panelsManager.findWidget(zoneId, runtimeProps.nineZone.nested.panels.inner);
       // istanbul ignore if
       if (type !== undefined)
         return null;
 
-      const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
+      const zonesManager = InternalFrontstageManager.NineZoneManager.getZonesManager();
       const zones = runtimeProps.nineZone.zones;
       const ghostOutline = zonesManager.getGhostOutlineBounds(zoneId, zones);
       const dropTarget = zonesManager.getDropTarget(zoneId, zones);
@@ -406,7 +410,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         dropTarget,
         getWidgetContentRef: this._getContentRef,
         ghostOutline,
-        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && ( /* istanbul ignore next */ this.state.isUiVisible || /* istanbul ignore next */ !UiShowHideManager.showHideFooter)) ?
+        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && ( /* istanbul ignore next */ this.state.isUiVisible || /* istanbul ignore next */ !UiFramework.visibility.showHideFooter)) ?
           /* istanbul ignore next */ false : !this.state.isUiVisible,
         isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
         openWidgetId,
@@ -548,8 +552,8 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
 
   public override componentDidMount() {
     this._isMounted = true;
-    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
-    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    UiFramework.frontstages.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
 
     this._content.style.display = this.props.isHidden ? "none" : "flex";
     this._content.style.flexDirection = "column";
@@ -581,8 +585,8 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   public override componentWillUnmount() {
     this._isMounted = false;
     this._content.parentNode && this._content.parentNode.removeChild(this._content);
-    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
-    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    UiFramework.frontstages.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   public override render() {
@@ -593,7 +597,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
           key={this.state.widgetKey}
           mode={this.props.toolSettingsMode}
         >
-          {FrontstageManager.activeToolSettingsProvider && FrontstageManager.activeToolSettingsProvider.toolSettingsNode}
+          {InternalFrontstageManager.activeToolSettingsProvider && InternalFrontstageManager.activeToolSettingsProvider.toolSettingsNode}
         </ToolSettingsContent>
       ), this._content);
     }
@@ -629,7 +633,7 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
   const zone = zones.zones[zoneId];
   if (zoneId === 1 || zoneId === 3) {
     let extendOverId: WidgetZoneId = zoneId; // eslint-disable-line deprecation/deprecation
-    const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
+    const zonesManager = InternalFrontstageManager.NineZoneManager.getZonesManager();
     let bottomZoneId = zonesManager.bottomZones.getInitial(extendOverId);
     while (bottomZoneId !== undefined) {
       const bottomZoneDef = defProvider.getZoneDef(bottomZoneId);
@@ -665,15 +669,15 @@ export const useActiveFrontstageId = () => {
 
 /** @internal */
 export function useActiveFrontstageDef() {
-  const [def, setDef] = React.useState(FrontstageManager.activeFrontstageDef);
+  const [def, setDef] = React.useState(UiFramework.frontstages.activeFrontstageDef);
   React.useEffect(() => {
     // istanbul ignore next
     const handleActivated = (args: FrontstageActivatedEventArgs) => {
       setDef(args.activatedFrontstageDef);
     };
-    FrontstageManager.onFrontstageActivatedEvent.addListener(handleActivated);
+    UiFramework.frontstages.onFrontstageActivatedEvent.addListener(handleActivated);
     return () => {
-      FrontstageManager.onFrontstageActivatedEvent.removeListener(handleActivated);
+      UiFramework.frontstages.onFrontstageActivatedEvent.removeListener(handleActivated);
     };
   }, []);
   return def;

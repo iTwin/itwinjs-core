@@ -56,7 +56,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
   protected async startCommand(): Promise<string> {
     if (undefined !== this._startedCmd)
       return this._startedCmd;
-    return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
+    return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: this.iModel.key });
   }
 
   protected get allowJoin(): boolean { return this.isControlDown; }
@@ -486,7 +486,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
       return;
 
     if (undefined === this._snapGeomId)
-      this._snapGeomId = this.iModel.transientIds.next;
+      this._snapGeomId = this.iModel.transientIds.getNext();
 
     const builder = context.createGraphic({ type: GraphicType.WorldDecoration, pickable: { id: this._snapGeomId, locateOnly: true } });
     builder.setSymbology(ColorDef.white, ColorDef.white, 1);

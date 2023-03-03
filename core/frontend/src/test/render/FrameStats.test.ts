@@ -9,12 +9,13 @@ import { createBlankConnection } from "../createBlankConnection";
 import { ScreenViewport } from "../../Viewport";
 import { FrameStats } from "../../render/FrameStats";
 import { openBlankViewport } from "../openBlankViewport";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameStats", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("frame-stats");
   });
 

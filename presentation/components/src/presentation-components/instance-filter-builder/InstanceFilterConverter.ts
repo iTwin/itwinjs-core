@@ -9,11 +9,16 @@
 import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, PropertyInfo, RelationshipPath } from "@itwin/presentation-common";
-import { ECClassHierarchyProvider } from "./ECClassesHierarchy";
+import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, RelationshipPath } from "@itwin/presentation-common";
+import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
 
-/** @alpha */
+/**
+ * Converts [[PresentationInstanceFilter]] built by [[PresentationInstanceFilterBuilder]] component into
+ * [InstanceFilterDefinition]($presentation-common) that can be passed to [PresentationManager]($presentation-frontend) through request options
+ * in order to filter results.
+ * @beta
+ */
 export async function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition> {
   const context: ConvertContext = { relatedInstances: [], propertyClasses: [] };
   const expression = convertFilter(filter, context);
@@ -24,7 +29,7 @@ export async function convertToInstanceFilterDefinition(filter: PresentationInst
     expression,
     selectClassName: baseClass.name,
     relatedInstances: context.relatedInstances.map((related) => ({
-      pathFromSelectToPropertyClass: related.path,
+      pathFromSelectToPropertyClass: RelationshipPath.strip(related.path),
       alias: related.alias,
     })),
   };
@@ -58,7 +63,7 @@ function convertCondition(condition: PresentationInstanceFilterCondition, ctx: C
   addClassInfoToContext(relatedInstance ? relatedInstance.path[0].sourceClassInfo : property.classInfo, ctx);
   const propertyAlias = relatedInstance?.alias ?? "this";
 
-  return createComparison(property, propertyAlias, operator, value);
+  return createComparison(property.name, field.type.typeName, propertyAlias, operator, value);
 }
 
 function addClassInfoToContext(classInfo: ClassInfo, ctx: ConvertContext) {
@@ -93,8 +98,8 @@ function getPathToPrimaryClass(field: NestedContentField): RelationshipPath {
   return [...field.pathToPrimaryClass];
 }
 
-function createComparison(property: PropertyInfo, alias: string, operator: PropertyFilterRuleOperator, propValue?: PrimitiveValue): string {
-  const propertyAccessor = `${alias}.${property.name}`;
+function createComparison(propertyName: string, type: string, alias: string, operator: PropertyFilterRuleOperator, propValue?: PrimitiveValue): string {
+  const propertyAccessor = `${alias}.${propertyName}`;
   const operatorExpression = getRuleOperatorString(operator);
   if (propValue === undefined || isUnaryPropertyFilterOperator(operator)) {
     return `${propertyAccessor} ${operatorExpression}`;
@@ -115,11 +120,11 @@ function createComparison(property: PropertyInfo, alias: string, operator: Prope
       break;
   }
 
-  if (property.type === "navigation")
+  if (type === "navigation")
     return `${propertyAccessor}.Id ${operatorExpression} ${(value as Primitives.InstanceKey).id}`;
-  if (property.type === "double")
+  if (type === "double")
     return `CompareDoubles(${propertyAccessor}, ${valueExpression}) ${operatorExpression} 0`;
-  if (property.type === "dateTime")
+  if (type === "dateTime")
     return `CompareDateTimes(${propertyAccessor}, ${valueExpression}) ${operatorExpression} 0`;
 
   return `${propertyAccessor} ${operatorExpression} ${valueExpression}`;
@@ -145,15 +150,15 @@ function getRuleOperatorString(operator: PropertyFilterRuleOperator) {
     case PropertyFilterRuleOperator.IsEqual:
       return "=";
     case PropertyFilterRuleOperator.IsFalse:
-      return "IS FALSE";
+      return "= FALSE";
     case PropertyFilterRuleOperator.IsNotEqual:
       return "<>";
     case PropertyFilterRuleOperator.IsNotNull:
-      return "IS NOT NULL";
+      return "<> NULL";
     case PropertyFilterRuleOperator.IsNull:
-      return "IS NULL";
+      return "= NULL";
     case PropertyFilterRuleOperator.IsTrue:
-      return "IS TRUE";
+      return "= TRUE";
     case PropertyFilterRuleOperator.Less:
       return "<";
     case PropertyFilterRuleOperator.LessOrEqual:
@@ -173,30 +178,16 @@ function isFilterConditionGroup(obj: PresentationInstanceFilter): obj is Present
   return (obj as PresentationInstanceFilterConditionGroup).conditions !== undefined;
 }
 
-const hierarchyProviders = new Map<string, ECClassHierarchyProvider>();
-async function getImodelClassHierarchyProvider(imodel: IModelConnection) {
-  let hierarchyProvider = hierarchyProviders.get(imodel.key);
-  if (!hierarchyProvider) {
-    hierarchyProvider = await ECClassHierarchyProvider.create(imodel);
-    hierarchyProviders.set(imodel.key, hierarchyProvider);
-    // istanbul ignore next
-    imodel.onClose.addOnce(() => {
-      hierarchyProviders.delete(imodel.key);
-    });
-  }
-  return hierarchyProvider;
-}
-
 async function findBaseExpressionClass(imodel: IModelConnection, propertyClasses: ClassInfo[]) {
   if (propertyClasses.length === 1)
     return propertyClasses[0];
 
-  const hierarchyProvider = await getImodelClassHierarchyProvider(imodel);
+  const metadataProvider = getIModelMetadataProvider(imodel);
   const [firstClass, ...restClasses] = propertyClasses;
   let currentBaseClass = firstClass;
   for (const propClass of restClasses) {
-    const propHierarchy = hierarchyProvider.getClassHierarchy(propClass.id);
-    if (propHierarchy.is(currentBaseClass.id, { isBase: true })) {
+    const propClassInfo = await metadataProvider.getECClassInfo(propClass.id);
+    if (propClassInfo && propClassInfo.isDerivedFrom(currentBaseClass.id)) {
       currentBaseClass = propClass;
     }
   }

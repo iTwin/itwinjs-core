@@ -16,7 +16,6 @@ import {
 } from "@itwin/appui-layout-react";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
 import { WidgetProps } from "../widgets/WidgetProps";
@@ -25,9 +24,10 @@ import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarZone } from "./StatusBarZone";
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { ZoneDef, ZoneState } from "./ZoneDef";
+import { UiFramework } from "../UiFramework";
 
 /** Enum for [[Zone]] Location.
- * @public @deprecated
+ * @public @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export enum ZoneLocation {
   TopLeft = 1,
@@ -41,6 +41,7 @@ export enum ZoneLocation {
 }
 
 /** Properties of a [[Zone]] component
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface ZoneProps extends CommonProps {
@@ -88,7 +89,7 @@ export interface ZoneRuntimeProps {
 }
 
 /** @internal */
-export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string) {
+export function getStableWidgetProps<T extends { id?: string }>(widgetProps: T, stableId: string) {
   let props = widgetProps;
   if (props.id === undefined)
     props = {
@@ -100,6 +101,7 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
+ * @deprecated in 3.6. Use [[WidgetConfig]] or [[StagePanelConfig]] instead.
  * @public
  */
 export class Zone extends React.Component<ZoneProps> {
@@ -126,11 +128,11 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   public override componentDidMount(): void {
-    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+    UiFramework.frontstages.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
   public override componentWillUnmount(): void {
-    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+    UiFramework.frontstages.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
   public override render(): React.ReactNode {

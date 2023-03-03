@@ -18,10 +18,13 @@ import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 /** @internal */
 export function WidgetPanelsStatusBar(props: CommonProps) {
   const frontstageDef = useActiveFrontstageDef();
-  const zone = frontstageDef?.bottomCenter;
-  if (!zone || !zone.isStatusBar)
+  const zone = frontstageDef?.bottomCenter; // eslint-disable-line deprecation/deprecation
+  let widget = frontstageDef?.statusBar;
+  if (zone && zone.isStatusBar) {
+    widget = zone.getSingleWidgetDef();
+  }
+  if (!widget)
     return null;
-  const widget = zone.getSingleWidgetDef();
   const className = classnames(
     "uifw-widgetPanels-statusBar",
     props.className,

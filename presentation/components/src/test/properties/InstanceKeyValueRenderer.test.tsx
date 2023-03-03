@@ -12,7 +12,6 @@ import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import { act, cleanup, render } from "@testing-library/react";
 import { InstanceKeyValueRenderer } from "../../presentation-components/properties/InstanceKeyValueRenderer";
 import { UnifiedSelectionContextProvider } from "../../presentation-components/unified-selection/UnifiedSelectionContext";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("InstanceKeyValueRenderer", () => {
   const renderer = new InstanceKeyValueRenderer();
@@ -26,9 +25,7 @@ describe("InstanceKeyValueRenderer", () => {
   }
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 

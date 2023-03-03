@@ -22,10 +22,10 @@ export class PntsHeader extends TileHeader {
 
   public constructor(stream: ByteStream) {
     super(stream);
-    this.length = stream.nextUint32;
-    this.featureTableJsonLength = stream.nextUint32;
-    this.featureTableBinaryLength = stream.nextUint32;
-    this.batchTableJsonLength = stream.nextUint32;
-    this.batchTableBinaryLength = stream.nextUint32;
+    this.length = stream.readUint32();
+    this.featureTableJsonLength = stream.readUint32();
+    this.featureTableBinaryLength = stream.readUint32();
+    this.batchTableJsonLength = stream.readUint32();
+    this.batchTableBinaryLength = stream.readUint32();
   }
 }

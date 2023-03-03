@@ -172,7 +172,6 @@ function getContainer(args: EditorOpts) {
 
 /** get a WorkspaceContainer that is expected to be a cloud container, throw otherwise. */
 function getCloudContainer(args: EditorOpts): CloudSqlite.CloudContainer {
-  args.syncOnConnect = true;
   const container = getContainer(args);
   const cloudContainer = container.cloudContainer;
   if (!cloudContainer || !cloudContainer.isConnected)

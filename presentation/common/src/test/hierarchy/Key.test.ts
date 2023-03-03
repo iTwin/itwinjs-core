@@ -7,8 +7,8 @@ import { NodeKey, StandardNodeTypes } from "../../presentation-common/hierarchy/
 import { createTestECInstanceKey } from "../_helpers/EC";
 import { createTestNodeKey } from "../_helpers/Hierarchy";
 import {
-  createRandomBaseNodeKey, createRandomECClassGroupingNodeKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
-  createRandomECPropertyGroupingNodeKey, createRandomLabelGroupingNodeKey,
+  createRandomBaseNodeKey, createRandomECClassGroupingNodeKey, createRandomECInstancesNodeKey, createRandomECPropertyGroupingNodeKey,
+  createRandomLabelGroupingNodeKey,
 } from "../_helpers/random";
 
 describe("NodeKey", () => {
@@ -16,26 +16,31 @@ describe("NodeKey", () => {
   describe("toJSON", () => {
 
     it("serializes BaseNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.toJSON(createRandomBaseNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("serializes ECInstancesNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.toJSON(createRandomECInstancesNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("serializes ECClassGroupingNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.toJSON(createRandomECClassGroupingNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("serializes ECPropertyGroupingNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.toJSON(createRandomECPropertyGroupingNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("serializes LabelGroupingNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.toJSON(createRandomLabelGroupingNodeKey());
       expect(key).to.matchSnapshot();
     });
@@ -45,26 +50,31 @@ describe("NodeKey", () => {
   describe("fromJSON", () => {
 
     it("creates BaseNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.fromJSON(createRandomBaseNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("creates ECInstancesNodeKey", () => {
-      const key = NodeKey.fromJSON(createRandomECInstancesNodeKeyJSON());
+      // eslint-disable-next-line deprecation/deprecation
+      const key = NodeKey.fromJSON(createRandomECInstancesNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("creates ECClassGroupingNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.fromJSON(createRandomECClassGroupingNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("creates ECPropertyGroupingNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.fromJSON(createRandomECPropertyGroupingNodeKey());
       expect(key).to.matchSnapshot();
     });
 
     it("creates LabelGroupingNodeKey", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const key = NodeKey.fromJSON(createRandomLabelGroupingNodeKey());
       expect(key).to.matchSnapshot();
     });

@@ -1,0 +1,10 @@
+{
+  "exclude": [
+    "**/*.gen.js",
+    "src/test/**/*",
+    "lib/cjs/test/**/*",
+    "lib/module/**/*",
+    "**/*.d.ts",
+    "**/*.d.tsx"
+  ]
+}

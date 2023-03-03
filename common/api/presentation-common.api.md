@@ -9,19 +9,19 @@ import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
+import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
-// @alpha (undocumented)
+// @public
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
-
-// @internal (undocumented)
-export function applyOptionalPrefix(str: string, prefix?: string): string;
 
 // @public
 export interface ArrayTypeDescription extends BaseTypeDescription {
@@ -59,19 +59,29 @@ export interface BaseFieldJSON {
 
 // @public
 export interface BaseNodeKey {
+    // @alpha
+    instanceKeysSelectQuery?: PresentationQuery;
     pathFromRoot: string[];
     type: string;
     version: number;
 }
 
-// @public
+// @public @deprecated
 export interface BaseNodeKeyJSON {
+    // @alpha (undocumented)
+    instanceKeysSelectQuery?: PresentationQuery;
     // (undocumented)
     pathFromRoot: string[];
     // (undocumented)
     type: string;
     // (undocumented)
     version?: number;
+}
+
+// @alpha (undocumented)
+export interface BasePresentationQueryBinding {
+    // (undocumented)
+    type: "Id" | "IdSet" | "ECValue" | "ValueSet";
 }
 
 // @public
@@ -88,7 +98,7 @@ export interface BooleanRulesetVariable extends RulesetVariableBase {
     value: boolean;
 }
 
-// @public
+// @public @deprecated
 export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
     // (undocumented)
     type: VariableValueTypes.Bool;
@@ -148,13 +158,13 @@ export interface CheckBoxRule extends RuleBase {
     defaultValue?: boolean;
     isEnabled?: string | boolean;
     propertyName?: string;
-    ruleType: RuleTypes.CheckBox;
+    ruleType: "CheckBox";
     useInversedPropertyValue?: boolean;
 }
 
 // @public
 export interface ChildNodeRule extends NavigationRuleBase {
-    ruleType: RuleTypes.ChildNodes;
+    ruleType: "ChildNodes";
 }
 
 // @public
@@ -170,8 +180,7 @@ export interface ChildNodeSpecificationBase {
     nestedRules?: ChildNodeRule[];
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
-    specType: ChildNodeSpecificationTypes;
-    // @beta
+    specType: `${ChildNodeSpecificationTypes}`;
     suppressSimilarAncestorsCheck?: boolean;
 }
 
@@ -191,7 +200,7 @@ export enum ChildNodeSpecificationTypes {
 export interface ClassGroup extends GroupingSpecificationBase {
     baseClass?: SingleSchemaClassSpecification;
     createGroupForSingleItem?: boolean;
-    specType: GroupingSpecificationTypes.Class;
+    specType: "Class";
 }
 
 // @public
@@ -206,11 +215,13 @@ export interface ClassInfo {
 
 // @public (undocumented)
 export namespace ClassInfo {
+    // @deprecated
     export function fromJSON(json: ClassInfoJSON): ClassInfo;
+    // @deprecated
     export function toJSON(info: ClassInfo): ClassInfoJSON;
 }
 
-// @public
+// @public @deprecated
 export interface ClassInfoJSON {
     // (undocumented)
     id: string;
@@ -246,6 +257,9 @@ export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
 // @internal
 export function combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined;
 
+// @public
+export function combineFieldNames(fieldName: string, parentFieldName?: string): string;
+
 // @internal (undocumented)
 export interface CommonIpcParams {
     // (undocumented)
@@ -266,7 +280,7 @@ export interface CompressedClassInfoJSON {
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
-// @alpha
+// @public
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
     // (undocumented)
     elementIds: Id64String[];
@@ -274,7 +288,7 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
     scope: SelectionScopeProps;
 }
 
-// @alpha (undocumented)
+// @public
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
 // @public @deprecated
@@ -308,7 +322,6 @@ export enum ContentFlags {
     // @internal
     DescriptorOnly = 512,
     DistinctValues = 16,
-    // @beta
     IncludeInputKeys = 256,
     KeysOnly = 1,
     MergeResults = 8,
@@ -318,13 +331,13 @@ export enum ContentFlags {
     ShowLabels = 4
 }
 
-// @beta
+// @public
 export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
     displayType?: string;
     keys: TKeySet;
 }
 
-// @beta
+// @public
 export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
 
 // @public
@@ -335,7 +348,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
     handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
-    specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
+    specType: "ContentInstancesOfSpecificClasses";
 }
 
 // @public
@@ -349,7 +362,7 @@ export interface ContentJSON {
 // @public
 export interface ContentModifier extends RuleBase, ContentModifiersList {
     class?: SingleSchemaClassSpecification;
-    ruleType: RuleTypes.ContentModifier;
+    ruleType: "ContentModifier";
 }
 
 // @public
@@ -360,11 +373,18 @@ export interface ContentModifiersList {
     relatedProperties?: RelatedPropertiesSpecification[];
 }
 
+// @alpha (undocumented)
+export class ContentPropertyValueFormatter {
+    constructor(_propertyValueFormatter: PropertyValueFormatter, _unitSystem: UnitSystemKey);
+    // (undocumented)
+    formatContent(content: Content): Promise<Content>;
+}
+
 // @public
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
-    specType: ContentSpecificationTypes.ContentRelatedInstances;
+    specType: "ContentRelatedInstances";
 }
 
 // @public
@@ -379,19 +399,19 @@ export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequ
 // @public
 export interface ContentRule extends RuleBase {
     condition?: string;
-    ruleType: RuleTypes.Content;
+    ruleType: "Content";
     specifications: ContentSpecification[];
 }
 
-// @beta
+// @public
 export interface ContentSourcesRequestOptions<TIModel> extends RequestOptions<TIModel> {
     classes: string[];
 }
 
-// @beta
+// @public
 export type ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions<ContentSourcesRequestOptions<never>>;
 
-// @beta
+// @public
 export interface ContentSourcesRpcResult {
     classesMap: {
         [id: string]: CompressedClassInfoJSON;
@@ -409,7 +429,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
     relatedInstances?: RelatedInstanceSpecification[];
     // @deprecated
     showImages?: boolean;
-    specType: ContentSpecificationTypes;
+    specType: `${ContentSpecificationTypes}`;
 }
 
 // @public
@@ -425,7 +445,7 @@ export enum ContentSpecificationTypes {
 // @alpha (undocumented)
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
-// @internal
+// @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 
 // @public
@@ -440,14 +460,14 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
     description?: string;
     imageId?: string;
     label: string;
-    specType: ChildNodeSpecificationTypes.CustomNode;
+    specType: "CustomNode";
     type: string;
 }
 
 // @public
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     queries?: QuerySpecification[];
-    specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
+    specType: "CustomQueryInstanceNodes";
 }
 
 // @public
@@ -475,7 +495,7 @@ export interface DefaultGroupingPropertiesContainer {
 
 // @public
 export interface DefaultPropertyCategoryOverride extends RuleBase {
-    ruleType: RuleTypes.DefaultPropertyCategoryOverride;
+    ruleType: "DefaultPropertyCategoryOverride";
     specification: PropertyCategorySpecification;
 }
 
@@ -485,14 +505,19 @@ export class Descriptor implements DescriptorSource {
     readonly categories: CategoryDescription[];
     readonly connectionId?: string;
     readonly contentFlags: number;
+    // @deprecated
     readonly contentOptions: any;
     createDescriptorOverrides(): DescriptorOverrides;
     readonly displayType: string;
     readonly fields: Field[];
+    fieldsFilterExpression?: string;
+    // @deprecated
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     readonly inputKeysHash?: string;
+    // @beta
+    instanceFilter?: InstanceFilterDefinition;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
@@ -512,16 +537,20 @@ export interface DescriptorJSON {
     connectionId: string;
     // (undocumented)
     contentFlags: number;
-    // (undocumented)
+    // @deprecated (undocumented)
     contentOptions: any;
     // (undocumented)
     displayType: string;
     // (undocumented)
     fields: FieldJSON<Id64String>[];
     // (undocumented)
+    fieldsFilterExpression?: string;
+    // @deprecated (undocumented)
     filterExpression?: string;
     // (undocumented)
     inputKeysHash: string;
+    // @beta (undocumented)
+    instanceFilter?: InstanceFilterDefinition;
     // (undocumented)
     selectClasses: SelectClassInfoJSON<Id64String>[];
     // (undocumented)
@@ -536,11 +565,15 @@ export interface DescriptorJSON {
 export interface DescriptorOverrides {
     contentFlags?: number;
     displayType?: string;
+    fieldsFilterExpression?: string;
     fieldsSelector?: {
         type: "include" | "exclude";
         fields: FieldDescriptor[];
     };
+    // @deprecated
     filterExpression?: string;
+    // @beta
+    instanceFilter?: InstanceFilterDefinition;
     sorting?: {
         field: FieldDescriptor;
         direction: SortDirection;
@@ -554,8 +587,12 @@ export interface DescriptorSource {
     readonly contentFlags: number;
     readonly displayType: string;
     readonly fields: Field[];
-    readonly filterExpression?: string;
+    fieldsFilterExpression?: string;
+    // @deprecated
+    filterExpression?: string;
     readonly inputKeysHash?: string;
+    // @beta
+    instanceFilter?: InstanceFilterDefinition;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     readonly sortDirection?: SortDirection;
@@ -624,7 +661,7 @@ export interface DiagnosticsScopeLogs {
 
 // @public
 export interface DisabledSortingRule extends SortingRuleBase {
-    ruleType: RuleTypes.DisabledSorting;
+    ruleType: "DisabledSorting";
 }
 
 // @public
@@ -633,7 +670,7 @@ export interface DisplayLabelRequestOptions<TIModel, TInstanceKey> extends Reque
 }
 
 // @public
-export type DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelRequestOptions<never, InstanceKeyJSON>>;
+export type DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelRequestOptions<never, InstanceKey>>;
 
 // @public
 export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends RequestOptions<TIModel> {
@@ -641,17 +678,19 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
 }
 
 // @public
-export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelsRequestOptions<never, InstanceKeyJSON>>;
+export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelsRequestOptions<never, InstanceKey>>;
 
 // @public
 export type DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray;
 
 // @public (undocumented)
 export namespace DisplayValue {
+    // @deprecated
     export function fromJSON(json: DisplayValueJSON): DisplayValue;
     export function isArray(value: DisplayValue): value is DisplayValuesArray;
     export function isMap(value: DisplayValue): value is DisplayValuesMap;
     export function isPrimitive(value: DisplayValue): value is string | undefined;
+    // @deprecated
     export function toJSON(value: DisplayValue): DisplayValueJSON;
 }
 
@@ -663,11 +702,13 @@ export interface DisplayValueGroup {
 
 // @public (undocumented)
 export namespace DisplayValueGroup {
+    // @deprecated
     export function fromJSON(json: DisplayValueGroupJSON): DisplayValueGroup;
+    // @deprecated
     export function toJSON(group: DisplayValueGroup): DisplayValueGroupJSON;
 }
 
-// @public
+// @public @deprecated
 export interface DisplayValueGroupJSON {
     // (undocumented)
     displayValue: DisplayValueJSON;
@@ -675,14 +716,14 @@ export interface DisplayValueGroupJSON {
     groupedRawValues: ValueJSON[];
 }
 
-// @public
+// @public @deprecated
 export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON;
 
 // @public
 export interface DisplayValuesArray extends Array<DisplayValue> {
 }
 
-// @public
+// @public @deprecated
 export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {
 }
 
@@ -690,7 +731,7 @@ export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {
 export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {
 }
 
-// @public
+// @public @deprecated
 export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {
 }
 
@@ -711,8 +752,8 @@ export interface ECClassGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.ECClassGroupingNode;
 }
 
-// @public
-export interface ECClassGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
+// @public @deprecated
+export interface ECClassGroupingNodeKeyJSON extends GroupingNodeKey {
     // (undocumented)
     className: string;
     // (undocumented)
@@ -726,10 +767,10 @@ export interface ECInstancesNodeKey extends BaseNodeKey {
     type: StandardNodeTypes.ECInstancesNode;
 }
 
-// @public
-export interface ECInstancesNodeKeyJSON extends BaseNodeKeyJSON {
+// @public @deprecated
+export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
     // (undocumented)
-    instanceKeys: InstanceKeyJSON[];
+    instanceKeys: InstanceKey[];
     // (undocumented)
     type: StandardNodeTypes.ECInstancesNode;
 }
@@ -743,8 +784,8 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.ECPropertyGroupingNode;
 }
 
-// @public
-export interface ECPropertyGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
+// @public @deprecated
+export interface ECPropertyGroupingNodeKeyJSON extends GroupingNodeKey {
     // (undocumented)
     className: string;
     // (undocumented)
@@ -758,7 +799,27 @@ export interface ECPropertyGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
 // @public
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
     parentPropertyName: string;
-    specType: QuerySpecificationTypes.ECPropertyValue;
+    specType: "ECPropertyValue";
+}
+
+// @alpha (undocumented)
+export interface ECValueBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "ECValue";
+    // (undocumented)
+    value: any;
+    // (undocumented)
+    valueType: string;
+}
+
+// @alpha (undocumented)
+export interface ECValueSetBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "ValueSet";
+    // (undocumented)
+    value: any[];
+    // (undocumented)
+    valueType: string;
 }
 
 // @public
@@ -767,7 +828,7 @@ export interface EditorDescription {
     params?: any;
 }
 
-// @beta
+// @public
 export interface ElementProperties {
     class: string;
     id: Id64String;
@@ -777,16 +838,16 @@ export interface ElementProperties {
     label: string;
 }
 
-// @beta
+// @public
 export type ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem;
 
-// @beta
+// @public
 export interface ElementPropertiesArrayPropertyItemBase extends ElementPropertiesPropertyItemBase {
     type: "array";
     valueType: "primitive" | "struct";
 }
 
-// @beta
+// @public
 export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase {
     items: {
         [label: string]: ElementPropertiesItem;
@@ -794,41 +855,41 @@ export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase
     type: "category";
 }
 
-// @beta
+// @public
 export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem;
 
-// @beta
+// @public
 export interface ElementPropertiesItemBase {
     type: "category" | ElementPropertiesPropertyValueType;
 }
 
-// @beta
+// @public
 export interface ElementPropertiesPrimitiveArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
     values: string[];
     valueType: "primitive";
 }
 
-// @beta
+// @public
 export interface ElementPropertiesPrimitivePropertyItem extends ElementPropertiesPropertyItemBase {
     type: "primitive";
     value: string;
 }
 
-// @beta
+// @public
 export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem;
 
-// @beta
+// @public
 export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItemBase {
     type: ElementPropertiesPropertyValueType;
 }
 
-// @beta
+// @public
 export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct";
 
-// @beta
+// @public
 export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
 
-// @beta
+// @public
 export interface ElementPropertiesStructArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
     values: Array<{
         [memberLabel: string]: ElementPropertiesPropertyItem;
@@ -836,7 +897,7 @@ export interface ElementPropertiesStructArrayPropertyItem extends ElementPropert
     valueType: "struct";
 }
 
-// @beta
+// @public
 export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPropertyItemBase {
     members: {
         [memberLabel: string]: ElementPropertiesPropertyItem;
@@ -844,11 +905,9 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
     type: "struct";
 }
 
-// @alpha (undocumented)
+// @public
 export interface ElementSelectionScopeProps {
-    // (undocumented)
     ancestorLevel?: number;
-    // (undocumented)
     id: "element";
 }
 
@@ -892,7 +951,7 @@ export interface ExtendedDataRule extends RuleBase {
     items: {
         [key: string]: string;
     };
-    ruleType: RuleTypes.ExtendedData;
+    ruleType: "ExtendedData";
 }
 
 // @public
@@ -916,10 +975,8 @@ export class Field {
     name: string;
     get parent(): NestedContentField | undefined;
     priority: number;
-    // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
     renderer?: RendererDescription;
-    // @internal (undocumented)
     resetParentship(): void;
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
@@ -954,11 +1011,9 @@ export enum FieldDescriptorType {
     Properties = "properties"
 }
 
-// @alpha (undocumented)
+// @public
 export interface FieldHierarchy {
-    // (undocumented)
     childFields: FieldHierarchy[];
-    // (undocumented)
     field: Field;
 }
 
@@ -982,6 +1037,14 @@ export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable =
 // @public
 export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>>;
 
+// @alpha (undocumented)
+export interface FormatOptions {
+    // (undocumented)
+    koqName: string;
+    // (undocumented)
+    unitSystem: UnitSystemKey;
+}
+
 // @internal (undocumented)
 export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
 
@@ -993,8 +1056,8 @@ export interface GroupingNodeKey extends BaseNodeKey {
     groupedInstancesCount: number;
 }
 
-// @public
-export interface GroupingNodeKeyJSON extends BaseNodeKeyJSON {
+// @public @deprecated
+export interface GroupingNodeKeyJSON extends BaseNodeKey {
     // (undocumented)
     groupedInstancesCount: number;
 }
@@ -1004,7 +1067,7 @@ export interface GroupingRule extends RuleBase {
     class: SingleSchemaClassSpecification;
     condition?: string;
     groups: GroupingSpecification[];
-    ruleType: RuleTypes.Grouping;
+    ruleType: "Grouping";
 }
 
 // @public
@@ -1012,7 +1075,7 @@ export type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstan
 
 // @public
 export interface GroupingSpecificationBase {
-    specType: GroupingSpecificationTypes;
+    specType: `${GroupingSpecificationTypes}`;
 }
 
 // @public
@@ -1036,11 +1099,13 @@ export interface HierarchyCompareInfo {
 
 // @public (undocumented)
 export namespace HierarchyCompareInfo {
+    // @deprecated
     export function fromJSON(json: HierarchyCompareInfoJSON): HierarchyCompareInfo;
+    // @deprecated
     export function toJSON(obj: HierarchyCompareInfo): HierarchyCompareInfoJSON;
 }
 
-// @public
+// @public @deprecated
 export interface HierarchyCompareInfoJSON {
     // (undocumented)
     changes: PartialHierarchyModificationJSON[];
@@ -1069,13 +1134,43 @@ export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = R
     resultSetSize?: number;
 }
 
+// @beta
+export interface HierarchyLevel {
+    nodes: Node_2[];
+    supportsFiltering?: boolean;
+}
+
+// @beta
+export namespace HierarchyLevel {
+    // @deprecated
+    export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel;
+}
+
+// @beta
+export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+    parentKey?: TNodeKey;
+}
+
+// @beta
+export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKey, RulesetVariableJSON>>;
+
+// @beta @deprecated
+export interface HierarchyLevelJSON {
+    // (undocumented)
+    nodes: NodeJSON[];
+    // (undocumented)
+    supportsFiltering?: boolean;
+}
+
 // @public
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+    // @beta
+    instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
 }
 
 // @public
-export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKey, RulesetVariableJSON>>;
 
 // @alpha (undocumented)
 export type HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[];
@@ -1094,6 +1189,8 @@ export interface HierarchyUpdateRecord {
     // (undocumented)
     expandedNodes?: ExpandedNodeUpdateRecord[];
     // (undocumented)
+    instanceFilter?: string;
+    // (undocumented)
     nodesCount: number;
     // (undocumented)
     parent?: NodeKey;
@@ -1110,42 +1207,29 @@ export interface HierarchyUpdateRecordJSON {
     // (undocumented)
     expandedNodes?: ExpandedNodeUpdateRecordJSON[];
     // (undocumented)
+    instanceFilter?: string;
+    // (undocumented)
     nodesCount: number;
     // (undocumented)
     parent?: NodeKeyJSON;
 }
 
-// @alpha (undocumented)
+// @public
 export interface IContentVisitor {
-    // (undocumented)
     finishArray(): void;
-    // (undocumented)
     finishCategory(): void;
-    // (undocumented)
     finishContent(): void;
-    // (undocumented)
     finishField(): void;
-    // (undocumented)
     finishItem(): void;
-    // (undocumented)
     finishStruct(): void;
-    // (undocumented)
     processFieldHierarchies(props: ProcessFieldHierarchiesProps): void;
-    // (undocumented)
     processMergedValue(props: ProcessMergedValueProps): void;
-    // (undocumented)
     processPrimitiveValue(props: ProcessPrimitiveValueProps): void;
-    // (undocumented)
     startArray(props: StartArrayProps): boolean;
-    // (undocumented)
     startCategory(props: StartCategoryProps): boolean;
-    // (undocumented)
     startContent(props: StartContentProps): boolean;
-    // (undocumented)
     startField(props: StartFieldProps): boolean;
-    // (undocumented)
     startItem(props: StartItemProps): boolean;
-    // (undocumented)
     startStruct(props: StartStructProps): boolean;
 }
 
@@ -1157,7 +1241,7 @@ export interface Id64RulesetVariable extends RulesetVariableBase {
     value: Id64String;
 }
 
-// @public
+// @public @deprecated
 export interface Id64RulesetVariableJSON extends RulesetVariableBaseJSON {
     // (undocumented)
     type: VariableValueTypes.Id64;
@@ -1181,41 +1265,57 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
     value: Id64String[] | CompressedId64Set;
 }
 
+// @alpha (undocumented)
+export interface IdBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "Id";
+    // (undocumented)
+    value: Id64String;
+}
+
 // @public
 export interface IdCategoryIdentifier {
     categoryId: string;
     type: "Id";
 }
 
+// @alpha (undocumented)
+export interface IdSetBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "IdSet";
+    // (undocumented)
+    value: Id64String[];
+}
+
 // @public @deprecated
 export interface ImageIdOverride extends RuleBase {
     condition?: string;
     imageIdExpression: string;
-    ruleType: RuleTypes.ImageIdOverride;
+    ruleType: "ImageIdOverride";
 }
 
-// @alpha (undocumented)
+// @beta
 export interface InstanceFilterDefinition {
     expression: string;
     relatedInstances?: InstanceFilterRelatedInstanceDefinition[];
-    selectClassName?: string;
+    selectClassName: string;
 }
 
-// @alpha (undocumented)
+// @beta
 export type InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
 
-// @alpha (undocumented)
+// @beta
 export interface InstanceFilterRelatedInstancePath {
     isRequired?: boolean;
-    pathFromSelectToPropertyClass: RelationshipPath;
+    pathFromSelectToPropertyClass: StrippedRelationshipPath;
 }
 
-// @alpha (undocumented)
+// @beta
 export interface InstanceFilterRelatedInstanceRelationshipAlias {
     relationshipAlias: string;
 }
 
-// @alpha (undocumented)
+// @beta
 export interface InstanceFilterRelatedInstanceTargetAlias {
     alias: string;
 }
@@ -1232,14 +1332,16 @@ export interface InstanceKey {
 // @public (undocumented)
 export namespace InstanceKey {
     export function compare(lhs: InstanceKey, rhs: InstanceKey): number;
+    // @deprecated
     export function fromJSON(json: InstanceKeyJSON): {
-        id: string;
         className: string;
+        id: string;
     };
-    export function toJSON(json: InstanceKey): InstanceKeyJSON;
+    // @deprecated
+    export function toJSON(key: InstanceKey): InstanceKeyJSON;
 }
 
-// @public
+// @public @deprecated
 export interface InstanceKeyJSON {
     // (undocumented)
     className: string;
@@ -1250,27 +1352,27 @@ export interface InstanceKeyJSON {
 // @public
 export interface InstanceLabelOverride extends RuleBase {
     class: SingleSchemaClassSpecification;
-    ruleType: RuleTypes.InstanceLabelOverride;
+    ruleType: "InstanceLabelOverride";
     values: InstanceLabelOverrideValueSpecification[];
 }
 
 // @public
 export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.BriefcaseId;
+    specType: "BriefcaseId";
 }
 
 // @public
 export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.ClassLabel;
+    specType: "ClassLabel";
 }
 
 // @public
 export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
     full?: boolean;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.ClassName;
+    specType: "ClassName";
 }
 
 // @public
@@ -1281,35 +1383,34 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
     }>;
     separator?: string;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.Composite;
+    specType: "Composite";
 }
 
 // @public
 export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.LocalId;
+    specType: "LocalId";
 }
 
 // @public
 export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
     propertyName: string;
-    // @beta
     propertySource?: RelationshipPathSpecification;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.Property;
+    specType: "Property";
 }
 
 // @public
 export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
     pathToRelatedInstance: RelationshipPathSpecification;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.RelatedInstanceLabel;
+    specType: "RelatedInstanceLabel";
 }
 
 // @public
 export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.String;
+    specType: "String";
     value: string;
 }
 
@@ -1318,7 +1419,7 @@ export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompo
 
 // @public
 export interface InstanceLabelOverrideValueSpecificationBase {
-    specType: InstanceLabelOverrideValueSpecificationType;
+    specType: `${InstanceLabelOverrideValueSpecificationType}`;
 }
 
 // @public
@@ -1348,7 +1449,7 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     instanceFilter?: string;
-    specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
+    specType: "InstanceNodesOfSpecificClasses";
 }
 
 // @public
@@ -1359,7 +1460,7 @@ export interface IntRulesetVariable extends RulesetVariableBase {
     value: number;
 }
 
-// @public
+// @public @deprecated
 export interface IntRulesetVariableJSON extends RulesetVariableBaseJSON {
     // (undocumented)
     type: VariableValueTypes.Int;
@@ -1375,7 +1476,7 @@ export interface IntsRulesetVariable extends RulesetVariableBase {
     value: number[];
 }
 
-// @public
+// @public @deprecated
 export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
     // (undocumented)
     type: VariableValueTypes.IntArray;
@@ -1386,7 +1487,7 @@ export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
 // @internal (undocumented)
 export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel>;
 
-// @beta
+// @internal
 export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel>;
 
 // @public
@@ -1402,7 +1503,6 @@ export class Item {
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
     // @deprecated
     imageId: string;
-    // @beta
     inputKeys?: InstanceKey[];
     isFieldMerged(fieldName: string): boolean;
     label: LabelDefinition;
@@ -1417,7 +1517,7 @@ export class Item {
 // @public
 export interface ItemJSON {
     // (undocumented)
-    classInfo?: ClassInfoJSON;
+    classInfo?: ClassInfo;
     // (undocumented)
     displayValues: ValuesDictionary<DisplayValueJSON>;
     // (undocumented)
@@ -1426,14 +1526,14 @@ export interface ItemJSON {
     };
     // @deprecated (undocumented)
     imageId: string;
-    // @beta (undocumented)
-    inputKeys?: InstanceKeyJSON[];
+    // (undocumented)
+    inputKeys?: InstanceKey[];
     // (undocumented)
     labelDefinition: LabelDefinitionJSON;
     // (undocumented)
     mergedFieldNames: string[];
     // (undocumented)
-    primaryKeys: InstanceKeyJSON[];
+    primaryKeys: InstanceKey[];
     // (undocumented)
     values: ValuesDictionary<ValueJSON>;
 }
@@ -1500,16 +1600,18 @@ export interface LabelCompositeValue {
 
 // @public (undocumented)
 export namespace LabelCompositeValue {
+    // @deprecated
     export function fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue;
+    // @deprecated
     export function toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON;
 }
 
-// @public
+// @public @deprecated
 export interface LabelCompositeValueJSON {
     // (undocumented)
     separator: string;
     // (undocumented)
-    values: LabelDefinitionJSON[];
+    values: LabelDefinition[];
 }
 
 // @public
@@ -1521,26 +1623,24 @@ export interface LabelDefinition {
 
 // @public (undocumented)
 export namespace LabelDefinition {
+    // @deprecated
     export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition;
-    // @internal (undocumented)
-    export function fromLabelString(label: string): LabelDefinitionJSON;
+    export function fromLabelString(label: string): LabelDefinition;
     const // @internal (undocumented)
     COMPOSITE_DEFINITION_TYPENAME = "composite";
-    // @internal (undocumented)
     export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & {
         rawValue: LabelCompositeValue;
     };
-    // @internal
-    export function reviver(key: string, value: any): any;
+    // @deprecated
     export function toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON;
 }
 
-// @public
+// @public @deprecated
 export interface LabelDefinitionJSON {
     // (undocumented)
     displayValue: string;
     // (undocumented)
-    rawValue: LabelRawValueJSON;
+    rawValue: LabelRawValue;
     // (undocumented)
     typeName: string;
 }
@@ -1552,8 +1652,8 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// @public
-export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
+// @public @deprecated
+export interface LabelGroupingNodeKeyJSON extends GroupingNodeKey {
     // (undocumented)
     label: string;
     // (undocumented)
@@ -1565,14 +1665,14 @@ export interface LabelOverride extends RuleBase {
     condition?: string;
     description?: string;
     label?: string;
-    ruleType: RuleTypes.LabelOverride;
+    ruleType: "LabelOverride";
 }
 
 // @public
 export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 
-// @public
-export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
+// @public @deprecated
+export type LabelRawValueJSON = LabelRawValue;
 
 // @internal (undocumented)
 export class LocalizationHelper {
@@ -1597,7 +1697,7 @@ export interface LocalizationHelperProps {
     getLocalizedString: (key: string) => string;
 }
 
-// @beta
+// @public
 export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
     elementClasses?: string[];
 }
@@ -1625,15 +1725,17 @@ export interface NavigationPropertyInfo {
     targetClassInfo: ClassInfo;
 }
 
-// @beta (undocumented)
+// @beta
 export namespace NavigationPropertyInfo {
     export function fromCompressedJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): NavigationPropertyInfo;
-    export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo;
+    // @deprecated
+    export function fromJSON(json: NavigationPropertyInfoJSON): NavigationPropertyInfo;
     export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): NavigationPropertyInfoJSON<string>;
+    // @deprecated
     export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON;
 }
 
@@ -1664,7 +1766,7 @@ export interface NavigationRuleBase extends RuleBase {
 // @public
 export class NestedContentField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
-    // @alpha (undocumented)
+    // @beta
     actualPrimaryClassIds: Id64String[];
     autoExpand?: boolean;
     // (undocumented)
@@ -1673,22 +1775,20 @@ export class NestedContentField extends Field {
     static fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }, categories: CategoryDescription[]): any;
+    // @deprecated
     static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     nestedFields: Field[];
     pathToPrimaryClass: RelationshipPath;
-    // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
-    // @alpha (undocumented)
     relationshipMeaning: RelationshipMeaning;
-    // @internal (undocumented)
     resetParentship(): void;
     toJSON(): NestedContentFieldJSON;
 }
 
 // @public
 export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
-    // @alpha (undocumented)
+    // @beta (undocumented)
     actualPrimaryClassIds?: Id64String[];
     // (undocumented)
     autoExpand?: boolean;
@@ -1698,7 +1798,7 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
     nestedFields: FieldJSON<TClassInfoJSON>[];
     // (undocumented)
     pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
-    // @alpha (undocumented)
+    // (undocumented)
     relationshipMeaning?: RelationshipMeaning;
 }
 
@@ -1712,18 +1812,20 @@ export interface NestedContentValue {
 
 // @public (undocumented)
 export namespace NestedContentValue {
+    // @deprecated
     export function fromJSON(json: NestedContentValueJSON): NestedContentValue;
-    export function toJSON(json: NestedContentValue): NestedContentValueJSON;
+    // @deprecated
+    export function toJSON(value: NestedContentValue): NestedContentValueJSON;
 }
 
-// @public
+// @public @deprecated
 export interface NestedContentValueJSON {
     // (undocumented)
     displayValues: ValuesDictionary<DisplayValueJSON>;
     // (undocumented)
     mergedFieldNames: string[];
     // (undocumented)
-    primaryKeys: InstanceKeyJSON[];
+    primaryKeys: InstanceKey[];
     // (undocumented)
     values: ValuesDictionary<ValueJSON>;
 }
@@ -1759,10 +1861,13 @@ interface Node_2 {
     isSelectionDisabled?: boolean;
     key: NodeKey;
     label: LabelDefinition;
+    // @beta
+    supportsFiltering?: boolean;
 }
 
 // @public (undocumented)
 namespace Node_2 {
+    // @deprecated
     function fromJSON(json: NodeJSON | string): Node_2;
     // @internal (undocumented)
     function fromPartialJSON(json: PartialNodeJSON): PartialNode;
@@ -1772,6 +1877,7 @@ namespace Node_2 {
     function listReviver(key: string, value: any): any;
     // @internal
     function reviver(key: string, value: any): any;
+    // @deprecated
     function toJSON(node: Node_2): NodeJSON;
     // @internal (undocumented)
     function toPartialJSON(node: PartialNode): PartialNodeJSON;
@@ -1784,7 +1890,7 @@ export interface NodeArtifactsRule extends RuleBase {
     items: {
         [key: string]: string;
     };
-    ruleType: RuleTypes.NodeArtifacts;
+    ruleType: "NodeArtifacts";
 }
 
 // @public
@@ -1795,7 +1901,7 @@ export interface NodeDeletionInfo {
     type: "Delete";
 }
 
-// @public
+// @public @deprecated
 export interface NodeDeletionInfoJSON {
     parent?: NodeKeyJSON;
     position: number;
@@ -1812,7 +1918,7 @@ export interface NodeInsertionInfo {
     type: "Insert";
 }
 
-// @public
+// @public @deprecated
 export interface NodeInsertionInfoJSON {
     // (undocumented)
     node: NodeJSON;
@@ -1824,7 +1930,7 @@ export interface NodeInsertionInfoJSON {
     type: "Insert";
 }
 
-// @public
+// @public @deprecated
 export interface NodeJSON {
     // @deprecated (undocumented)
     backColor?: string;
@@ -1858,6 +1964,8 @@ export interface NodeJSON {
     key: NodeKeyJSON;
     // (undocumented)
     labelDefinition: LabelDefinitionJSON;
+    // @beta (undocumented)
+    supportsFiltering?: boolean;
 }
 
 // @public
@@ -1866,21 +1974,28 @@ export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey 
 // @public (undocumented)
 export namespace NodeKey {
     export function equals(lhs: NodeKey, rhs: NodeKey): boolean;
+    // @deprecated
     export function fromJSON(json: NodeKeyJSON): NodeKey;
     export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
+    // @deprecated
     export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
     export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
+    // @deprecated
     export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
     export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
+    // @deprecated
     export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
     export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
+    // @deprecated
     export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
     export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
+    // @deprecated
     export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
+    // @deprecated
     export function toJSON(key: NodeKey): NodeKeyJSON;
 }
 
-// @public
+// @public @deprecated
 export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
 
 // @public
@@ -1897,6 +2012,7 @@ export interface NodePathElement {
 
 // @public (undocumented)
 export namespace NodePathElement {
+    // @deprecated
     export function fromJSON(json: NodePathElementJSON | string): NodePathElement;
     // @internal
     export function listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[];
@@ -1904,10 +2020,11 @@ export namespace NodePathElement {
     export function listReviver(key: string, value: any): any;
     // @internal
     export function reviver(key: string, value: any): any;
+    // @deprecated
     export function toJSON(npe: NodePathElement): NodePathElementJSON;
 }
 
-// @public
+// @public @deprecated
 export interface NodePathElementJSON {
     // (undocumented)
     children: NodePathElementJSON[];
@@ -1929,11 +2046,13 @@ export interface NodePathFilteringData {
 
 // @public (undocumented)
 export namespace NodePathFilteringData {
+    // @deprecated
     export function fromJSON(json: NodePathFilteringDataJSON): NodePathFilteringData;
+    // @deprecated
     export function toJSON(npfd: NodePathFilteringData): NodePathFilteringDataJSON;
 }
 
-// @public
+// @public @deprecated
 export interface NodePathFilteringDataJSON {
     // (undocumented)
     childrenOccurances: number;
@@ -1949,7 +2068,7 @@ export interface NodeUpdateInfo {
     type: "Update";
 }
 
-// @public
+// @public @deprecated
 export interface NodeUpdateInfoJSON {
     // (undocumented)
     changes: PartialNodeJSON;
@@ -1986,6 +2105,9 @@ export interface ParentCategoryIdentifier {
 }
 
 // @public
+export function parseCombinedFieldNames(combinedName: string): string[];
+
+// @public
 export type PartialBy<T, K extends keyof T> = Omit_2<T, K> & Partial<Pick<T, K>>;
 
 // @public
@@ -1993,21 +2115,20 @@ export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo 
 
 // @public (undocumented)
 export namespace PartialHierarchyModification {
+    // @deprecated
     export function fromJSON(json: PartialHierarchyModificationJSON): PartialHierarchyModification;
+    // @deprecated
     export function toJSON(obj: PartialHierarchyModification): PartialHierarchyModificationJSON;
 }
 
-// @public
+// @public @deprecated
 export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON;
 
 // @public
 export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 
-// @public
+// @public @deprecated
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
-
-// @internal (undocumented)
-export const PRESENTATION_COMMON_ROOT: string;
 
 // @internal (undocumented)
 export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
@@ -2018,7 +2139,7 @@ export class PresentationError extends BentleyError {
     protected _initName(): string;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export enum PresentationIpcEvents {
     Update = "presentation.onUpdate"
 }
@@ -2027,29 +2148,38 @@ export enum PresentationIpcEvents {
 export interface PresentationIpcInterface {
     setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
     unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
-    updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void>;
+    updateHierarchyState(params: UpdateHierarchyStateParams<NodeKey>): Promise<void>;
 }
+
+// @alpha
+export interface PresentationQuery {
+    bindings?: PresentationQueryBinding[];
+    query: string;
+}
+
+// @alpha
+export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;
 
 // @public
 export class PresentationRpcInterface extends RpcInterface {
-    // (undocumented)
+    // @deprecated (undocumented)
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
-    // @alpha (undocumented)
+    // (undocumented)
     computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
-    // @beta (undocumented)
+    // (undocumented)
     getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{
         total: number;
         items: KeySetJSON;
     }>;
     // (undocumented)
     getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number>;
-    // @beta (undocumented)
+    // (undocumented)
     getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult>;
     // (undocumented)
-    getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON>;
-    // @beta (undocumented)
+    getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinition>;
+    // (undocumented)
     getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
@@ -2057,6 +2187,8 @@ export class PresentationRpcInterface extends RpcInterface {
     getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
     getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number>;
+    // @beta (undocumented)
+    getNodesDescriptor(_token: IModelRpcProps, _options: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined>;
     // (undocumented)
     getPagedContent(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<{
         descriptor: DescriptorJSON;
@@ -2065,7 +2197,7 @@ export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
     getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>>;
     // (undocumented)
-    getPagedDisplayLabelDefinitions(_token: IModelRpcProps, _options: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinitionJSON>>;
+    getPagedDisplayLabelDefinitions(_token: IModelRpcProps, _options: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinition>>;
     // (undocumented)
     getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>>;
     // (undocumented)
@@ -2117,33 +2249,24 @@ export type Prioritized<TOptions extends {}> = TOptions & {
     priority?: number;
 };
 
-// @alpha (undocumented)
+// @public
 export interface ProcessFieldHierarchiesProps {
-    // (undocumented)
     hierarchies: FieldHierarchy[];
 }
 
-// @alpha (undocumented)
+// @public
 export interface ProcessMergedValueProps {
-    // (undocumented)
     mergedField: Field;
-    // (undocumented)
-    namePrefix?: string;
-    // (undocumented)
+    parentFieldName?: string;
     requestedField: Field;
 }
 
-// @alpha (undocumented)
+// @public
 export interface ProcessPrimitiveValueProps {
-    // (undocumented)
     displayValue: DisplayValue;
-    // (undocumented)
     field: Field;
-    // (undocumented)
-    namePrefix?: string;
-    // (undocumented)
+    parentFieldName?: string;
     rawValue: Value;
-    // (undocumented)
     valueType: TypeDescription;
 }
 
@@ -2186,10 +2309,12 @@ export interface Property {
 
 // @public (undocumented)
 export namespace Property {
+    // @deprecated
     export function fromJSON(json: PropertyJSON): Property;
     export function toCompressedJSON(prop: Property, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): PropertyJSON<string>;
+    // @deprecated
     export function toJSON(prop: Property): PropertyJSON;
 }
 
@@ -2216,13 +2341,13 @@ export interface PropertyCategorySpecification {
 // @public
 export interface PropertyEditorJsonParameters extends PropertyEditorParametersBase {
     json: any;
-    paramsType: PropertyEditorParameterTypes.Json;
+    paramsType: "Json";
 }
 
 // @public
 export interface PropertyEditorMultilineParameters extends PropertyEditorParametersBase {
     height?: number;
-    paramsType: PropertyEditorParameterTypes.Multiline;
+    paramsType: "Multiline";
 }
 
 // @public
@@ -2230,7 +2355,7 @@ export type PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEd
 
 // @public
 export interface PropertyEditorParametersBase {
-    paramsType: PropertyEditorParameterTypes;
+    paramsType: `${PropertyEditorParameterTypes}`;
 }
 
 // @public
@@ -2249,7 +2374,7 @@ export enum PropertyEditorParameterTypes {
 export interface PropertyEditorRangeParameters extends PropertyEditorParametersBase {
     max?: number;
     min?: number;
-    paramsType: PropertyEditorParameterTypes.Range;
+    paramsType: "Range";
 }
 
 // @public
@@ -2258,7 +2383,7 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
     isVertical?: boolean;
     max: number;
     min: number;
-    paramsType: PropertyEditorParameterTypes.Slider;
+    paramsType: "Slider";
 }
 
 // @public
@@ -2272,13 +2397,13 @@ export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
     // @deprecated
-    groupingValue?: PropertyGroupingValue;
+    groupingValue?: `${PropertyGroupingValue}`;
     imageId?: string;
     propertyName: string;
     ranges?: PropertyRangeGroupSpecification[];
     // @deprecated
-    sortingValue?: PropertyGroupingValue;
-    specType: GroupingSpecificationTypes.Property;
+    sortingValue?: `${PropertyGroupingValue}`;
+    specType: "Property";
 }
 
 // @public @deprecated
@@ -2302,10 +2427,12 @@ export interface PropertyInfo {
 
 // @public (undocumented)
 export namespace PropertyInfo {
+    // @deprecated
     export function fromJSON(json: PropertyInfoJSON): PropertyInfo;
     export function toCompressedJSON(propertyInfo: PropertyInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): PropertyInfoJSON<string>;
+    // @deprecated
     export function toJSON(info: PropertyInfo): PropertyInfoJSON;
 }
 
@@ -2355,7 +2482,7 @@ export interface PropertyRangeGroupSpecification {
 // @public
 export interface PropertySortingRule extends SortingRuleBase {
     propertyName: string;
-    ruleType: RuleTypes.PropertySorting;
+    ruleType: "PropertySorting";
     sortAscending?: boolean;
 }
 
@@ -2371,13 +2498,24 @@ export enum PropertyValueFormat {
     Struct = "Struct"
 }
 
+// @alpha (undocumented)
+export class PropertyValueFormatter {
+    constructor(_schemaContext: SchemaContext);
+    // (undocumented)
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
+    // (undocumented)
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec | undefined>;
+    // (undocumented)
+    getParserSpec(options: FormatOptions): Promise<ParserSpec | undefined>;
+}
+
 // @public
 export type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
 
 // @public
 export interface QuerySpecificationBase {
     class: SingleSchemaClassSpecification;
-    specType: QuerySpecificationTypes;
+    specType: `${QuerySpecificationTypes}`;
 }
 
 // @public
@@ -2409,8 +2547,8 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
 // @public
 export interface RelatedClassInfo {
     isForwardRelationship: boolean;
-    isPolymorphicRelationship: boolean;
-    isPolymorphicTargetClass: boolean;
+    isPolymorphicRelationship?: boolean;
+    isPolymorphicTargetClass?: boolean;
     relationshipInfo: ClassInfo;
     sourceClassInfo: ClassInfo;
     targetClassInfo: ClassInfo;
@@ -2422,11 +2560,13 @@ export namespace RelatedClassInfo {
     export function fromCompressedJSON(json: RelatedClassInfoJSON<string>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): RelatedClassInfo;
+    // @deprecated
     export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo;
     export function strip(full: RelatedClassInfo): StrippedRelatedClassInfo;
     export function toCompressedJSON(classInfo: RelatedClassInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): RelatedClassInfoJSON<string>;
+    // @deprecated
     export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON;
 }
 
@@ -2466,7 +2606,7 @@ export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassI
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
-    specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
+    specType: "RelatedInstanceNodes";
 }
 
 // @public
@@ -2489,10 +2629,10 @@ export interface RelatedPropertiesSpecification {
     handleTargetClassPolymorphically?: boolean;
     instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
-    properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+    properties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
     propertiesSource: RelationshipPathSpecification;
-    relationshipMeaning?: RelationshipMeaning;
-    relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+    relationshipMeaning?: `${RelationshipMeaning}`;
+    relationshipProperties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
     // @beta
     skipIfDuplicate?: boolean;
 }
@@ -2527,7 +2667,7 @@ export type RelationshipPathSpecification = RelationshipStepSpecification | Rela
 
 // @public
 export interface RelationshipStepSpecification {
-    direction: RelationshipDirection.Forward | RelationshipDirection.Backward;
+    direction: `${RelationshipDirection}`;
     relationship: SingleSchemaClassSpecification;
     targetClass?: SingleSchemaClassSpecification;
 }
@@ -2560,7 +2700,7 @@ export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVa
     rulesetVariables?: TRulesetVariable[];
 }
 
-// @beta
+// @public
 export interface RequiredSchemaSpecification {
     maxVersion?: string;
     minVersion?: string;
@@ -2575,7 +2715,7 @@ export interface RootCategoryIdentifier {
 // @public
 export interface RootNodeRule extends NavigationRuleBase {
     autoExpand?: boolean;
-    ruleType: RuleTypes.RootNodes;
+    ruleType: "RootNodes";
 }
 
 // @beta
@@ -2601,7 +2741,7 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult>;
     // (undocumented)
-    getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<LabelDefinitionJSON>;
+    getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
     // (undocumented)
     getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     // (undocumented)
@@ -2609,7 +2749,9 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number>;
+    getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number>;
+    // (undocumented)
+    getNodesDescriptor(options: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
     getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>): Promise<{
         descriptor: DescriptorJSON;
@@ -2618,11 +2760,11 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     getPagedContentSet(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>): Promise<PagedResponse<ItemJSON>>;
     // (undocumented)
-    getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<LabelDefinitionJSON>>;
+    getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKey> & ClientDiagnosticsAttribute): Promise<PagedResponse<LabelDefinition>>;
     // (undocumented)
     getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroupJSON>>;
     // (undocumented)
-    getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
+    getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
     // (undocumented)
@@ -2642,15 +2784,13 @@ export type Rule = CustomizationRule | NavigationRule | ContentRule | ContentMod
 export interface RuleBase {
     onlyIfNotHandled?: boolean;
     priority?: number;
-    // @beta
     requiredSchemas?: RequiredSchemaSpecification[];
-    ruleType: RuleTypes;
+    ruleType: `${RuleTypes}`;
 }
 
 // @public
 export interface Ruleset {
     id: string;
-    // @beta
     requiredSchemas?: RequiredSchemaSpecification[];
     rules: Rule[];
     supplementationInfo?: SupplementationInfo;
@@ -2735,8 +2875,8 @@ export enum RuleTypes {
 
 // @public
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
-    applicationStage?: SameLabelInstanceGroupApplicationStage;
-    specType: GroupingSpecificationTypes.SameLabelInstance;
+    applicationStage?: `${SameLabelInstanceGroupApplicationStage}`;
+    specType: "SameLabelInstance";
 }
 
 // @public
@@ -2796,7 +2936,7 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
     acceptableClassNames?: string[];
     acceptablePolymorphically?: boolean;
     acceptableSchemaName?: string;
-    specType: ContentSpecificationTypes.SelectedNodeInstances;
+    specType: "SelectedNodeInstances";
 }
 
 // @public
@@ -2812,7 +2952,7 @@ export interface SelectionScope {
     label: string;
 }
 
-// @alpha (undocumented)
+// @public
 export type SelectionScopeProps = ElementSelectionScopeProps | {
     id: string;
 };
@@ -2832,12 +2972,12 @@ export interface SetRulesetVariableParams<TVariable> extends CommonIpcParams {
     variable: TVariable;
 }
 
-// @beta
+// @public
 export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
     elementId: Id64String;
 }
 
-// @beta
+// @public
 export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<SingleElementPropertiesRequestOptions<never>>;
 
 // @public
@@ -2876,62 +3016,48 @@ export enum StandardNodeTypes {
     ECPropertyGroupingNode = "ECPropertyGroupingNode"
 }
 
-// @alpha (undocumented)
+// @public
 export interface StartArrayProps {
-    // (undocumented)
     displayValues: DisplayValuesArray;
-    // (undocumented)
     hierarchy: FieldHierarchy;
-    // (undocumented)
-    namePrefix?: string;
-    // (undocumented)
+    parentFieldName?: string;
     rawValues: ValuesArray;
-    // (undocumented)
     valueType: TypeDescription;
 }
 
-// @alpha (undocumented)
+// @public
 export interface StartCategoryProps {
-    // (undocumented)
     category: CategoryDescription;
 }
 
-// @alpha (undocumented)
+// @public
 export interface StartContentProps {
-    // (undocumented)
     descriptor: Descriptor;
 }
 
-// @alpha (undocumented)
+// @public
 export interface StartFieldProps {
-    // (undocumented)
     hierarchy: FieldHierarchy;
 }
 
-// @alpha (undocumented)
+// @public
 export interface StartItemProps {
-    // (undocumented)
     item: Item;
 }
 
-// @alpha (undocumented)
+// @public
 export interface StartStructProps {
-    // (undocumented)
     displayValues: DisplayValuesMap;
-    // (undocumented)
     hierarchy: FieldHierarchy;
-    // (undocumented)
-    namePrefix?: string;
-    // (undocumented)
+    parentFieldName?: string;
     rawValues: ValuesMap;
-    // (undocumented)
     valueType: TypeDescription;
 }
 
 // @public
 export interface StringQuerySpecification extends QuerySpecificationBase {
     query: string;
-    specType: QuerySpecificationTypes.String;
+    specType: "String";
 }
 
 // @public
@@ -2942,7 +3068,7 @@ export interface StringRulesetVariable extends RulesetVariableBase {
     value: string;
 }
 
-// @public
+// @public @deprecated
 export interface StringRulesetVariableJSON extends RulesetVariableBaseJSON {
     // (undocumented)
     type: VariableValueTypes.String;
@@ -2984,13 +3110,12 @@ export interface StyleOverride extends RuleBase {
     condition?: string;
     fontStyle?: string;
     foreColor?: string;
-    ruleType: RuleTypes.StyleOverride;
+    ruleType: "StyleOverride";
 }
 
 // @public
 export interface SubCondition {
     condition?: string;
-    // @beta
     requiredSchemas?: RequiredSchemaSpecification[];
     specifications?: ChildNodeSpecification[];
     subConditions?: SubCondition[];
@@ -3004,13 +3129,13 @@ export interface SupplementationInfo {
     supplementationPurpose: string;
 }
 
-// @alpha (undocumented)
+// @public
 export function traverseContent(visitor: IContentVisitor, content: Content): void;
 
-// @alpha (undocumented)
+// @public
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void;
 
-// @internal (undocumented)
+// @public
 export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean): void;
 
 // @public
@@ -3030,13 +3155,15 @@ export const UPDATE_FULL = "FULL";
 // @internal (undocumented)
 export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
     // (undocumented)
-    changeType: "nodesExpanded" | "nodesCollapsed";
-    // (undocumented)
     imodelKey: string;
     // (undocumented)
-    nodeKeys: Array<TNodeKey>;
-    // (undocumented)
     rulesetId: string;
+    // (undocumented)
+    stateChanges: Array<{
+        nodeKey: TNodeKey | undefined;
+        isExpanded?: boolean;
+        instanceFilters?: string[];
+    }>;
 }
 
 // @alpha (undocumented)
@@ -3072,22 +3199,24 @@ export type Value = string | number | boolean | undefined | ValuesMap | ValuesAr
 
 // @public (undocumented)
 export namespace Value {
+    // @deprecated
     export function fromJSON(json: ValueJSON): Value;
     export function isArray(value: Value): value is ValuesArray;
     export function isMap(value: Value): value is ValuesMap;
     export function isNestedContent(value: Value): value is NestedContentValue[];
     export function isPrimitive(value: Value): value is string | number | boolean | undefined;
+    // @deprecated
     export function toJSON(value: Value): ValueJSON;
 }
 
-// @public
+// @public @deprecated
 export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[];
 
 // @public
 export interface ValuesArray extends Array<Value> {
 }
 
-// @public
+// @public @deprecated
 export interface ValuesArrayJSON extends Array<ValueJSON> {
 }
 
@@ -3101,7 +3230,7 @@ export interface ValuesDictionary<T> {
 export interface ValuesMap extends ValuesDictionary<Value> {
 }
 
-// @public
+// @public @deprecated
 export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {
 }
 
@@ -3110,7 +3239,7 @@ export interface Variable {
     defaultValue?: string;
     id: string;
     label: string;
-    type?: VariableValueType;
+    type?: `${VariableValueType}`;
 }
 
 // @public

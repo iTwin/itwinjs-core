@@ -104,7 +104,7 @@ export class IModelTile extends Tile {
     const streamBuffer = ByteStream.fromUint8Array(data);
 
     const position = streamBuffer.curPos;
-    const format = streamBuffer.nextUint32;
+    const format = streamBuffer.readUint32();
     streamBuffer.curPos = position;
 
     let content: IModelTileContent = { isLeaf: true };

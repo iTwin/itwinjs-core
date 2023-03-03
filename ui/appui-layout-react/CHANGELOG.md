@@ -1,6 +1,91 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Mon, 17 Oct 2022 20:06:51 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:39 GMT
+
+### Updates
+
+- Fix a floating widget resize issue.
+- Fix Grip.scss webpack variables issue.
+- Updated the side panel handles
+- Fix floating widget offset issue.
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+_Version update only_
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Expose onMouseEnter and onMouseLeave events for a FloatingWidget.
+- upgrade to node 18
+- Number sort
+- Close widget overflow popup when panel is collapsed.
+- Bring panel handle on top of panel splitter
+- Unpin classnames package, enable allowSynteticDefaultImports to use latest.
+- Deprecate all components.
+- Use --buic-toolbar-opacity to set the opacity of toolbar items.
+- Update TabState to honor allowedPanelTargets when creating new widgets.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:49 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
 
 ## 3.4.1
 Mon, 17 Oct 2022 20:06:51 GMT
@@ -460,7 +545,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 - Update unit tests for resizeObserver fix.
 - Update test to account for different number of calls to getBoundingClientRect.
-- Update to latest classnames package 
+- Update to latest classnames package
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -791,7 +876,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.  
+- Add drop shadow to toolsettings overflow popup.
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -898,7 +983,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer. 
+- Fix safe area insets for bottom zones w/o footer.
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.

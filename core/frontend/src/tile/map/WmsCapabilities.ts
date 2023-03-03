@@ -229,7 +229,10 @@ export class WmsCapabilities {
       return undefined;
 
     const capabilities = new WmsCapabilities(new WMS().parse(xmlCapabilities));
-    WmsCapabilities._capabilitiesCache.set(url, capabilities);
+    if (!credentials) {
+      // Avoid caching protected data
+      WmsCapabilities._capabilitiesCache.set(url, capabilities);
+    }
 
     return capabilities;
   }

@@ -8,6 +8,8 @@
 
   /** Default Widget Opacity */
   --buic-widget-opacity:      0.90;
+  /** Default Toolbar Opacity */
+  --buic-toolbar-opacity:     0.50;
 
   /** CSS variables for each z-index layer */
   @include uicore-z-index-variables();

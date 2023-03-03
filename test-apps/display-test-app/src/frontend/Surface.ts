@@ -156,7 +156,7 @@ export class Surface {
           name: "Decoration Geometry Example",
           extents: new Range3d(-1, -1, -1, 13, 2, 2),
         });
-        openDecorationGeometryExample(viewer);
+        void openDecorationGeometryExample(viewer);
       },
     }));
 

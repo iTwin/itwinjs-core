@@ -764,6 +764,7 @@ export class ViewAttributes {
       max: "1.0",
       step: "0.05",
       value: "1.0",
+      readout: "right",
       handler: (_) => this.overrideEdgeSettings({ transThreshold: parseFloat(slider.slider.value) }),
     });
     slider.div.style.textAlign = "left";
@@ -803,7 +804,7 @@ export class ViewAttributes {
 
       nestedMenu.div.hidden = false;
       const settings = this._edgeSettings;
-      slider.slider.value = settings.transparencyThreshold.toString();
+      slider.slider.value = slider.readout.innerText = settings.transparencyThreshold.toString();
 
       const vf = this._vp.viewFlags;
       visEdgesCb.checkbox.checked = vf.visibleEdges;

@@ -64,7 +64,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
    * @see [[IModelImportOptions.autoExtendProjectExtents]]
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
-   * @deprecated Use [[IModelImporter.options.autoExtendProjectExtents]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.autoExtendProjectExtents]] instead
    */
   public get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"] {
     return this.options.autoExtendProjectExtents;
@@ -75,7 +75,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
 
   /**
    * See [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
-   * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
   public get preserveElementIdsForFiltering(): boolean {
     return this.options.preserveElementIdsForFiltering;
@@ -86,7 +86,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
 
   /**
    * See [[IModelImportOptions.simplifyElementGeometry]]
-   * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
   public get simplifyElementGeometry(): boolean {
     return this.options.simplifyElementGeometry;

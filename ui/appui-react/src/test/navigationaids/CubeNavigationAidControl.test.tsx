@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AnyWidgetProps, ConfigurableUiManager, CubeNavigationAidControl, NavigationWidgetDef } from "../../appui-react";
+import { AnyWidgetProps, CubeNavigationAidControl, NavigationWidgetDef, UiFramework } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("CubeNavigationAidControl", () => {
@@ -11,15 +11,15 @@ describe("CubeNavigationAidControl", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    if (!ConfigurableUiManager.isControlRegistered("CubeNavigationAid"))
-      ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
+    if (!UiFramework.controls.isRegistered("CubeNavigationAid"))
+      UiFramework.controls.register("CubeNavigationAid", CubeNavigationAidControl);
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
   });
 
-  const widgetProps: AnyWidgetProps = {
+  const widgetProps: AnyWidgetProps = { // eslint-disable-line deprecation/deprecation
     classId: "NavigationWidget",
     isFreeform: true,
     navigationAidId: "CubeNavigationAid",

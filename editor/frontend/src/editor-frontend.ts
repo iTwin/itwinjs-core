@@ -11,6 +11,7 @@ export * from "./EditTool";
 export * from "./ElementGeometryTool";
 export * from "./EditToolIpc";
 export * from "./ModifyCurveTools";
+export * from "./ModifyElementTool";
 export * from "./ProjectLocation/ProjectExtentsDecoration";
 export * from "./ProjectLocation/ProjectGeolocation";
 export * from "./SketchTools";

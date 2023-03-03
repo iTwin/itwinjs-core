@@ -15,8 +15,8 @@ The following types of tests are supported:
 
 There are two steps to running tests with Certa:
 
-1. **Bundle your tests.** Depending on your project configuration, this can be as easy as running `webpack`.
-2. **Choose a test runner.** This determines which environment tests will run in.
+1. __Bundle your tests.__ Depending on your project configuration, this can be as easy as running `webpack`.
+2. __Choose a test runner.__ This determines which environment tests will run in.
 
 Assuming your bundled tests are located at `lib/bundled-tests.js`, you can run chrome tests on the command line via:
 
@@ -102,12 +102,12 @@ The following diagram shows a simplified process tree for each test runner:
 > *Chrome technically spawns many child processes of its own, but since we're using Puppeteer to automate chrome,
 > this can be considered an implementation detail.
 
-Note that each test runner designates a single **frontend** and **backend** process (for the node test runner,
-there is only one process which serves as _both_ frontend and backend). Tests are ***always*** executed in the **frontend** process.
+Note that each test runner designates a single __frontend__ and __backend__ process (for the node test runner,
+there is only one process which serves as _both_ frontend and backend). Tests are __always__ executed in the __frontend__ process.
 
 ### Local Integration Tests
 
-You can use the optional `backendInitModule` setting to specify a CommonJs module that should be `require`d in Certa's **backend**
+You can use the optional `backendInitModule` setting to specify a CommonJs module that should be `require`d in Certa's __backend__
 process _before_ executing tests. For example, you can define a local express server that will handle API requests made by your tests.
 Alternatively, (with the electron test runner), you can use this to handle IPC messages in the electron main process.
 
@@ -117,10 +117,10 @@ Certa makes measuring code coverage super easy! Just use the `--cover` CLI optio
 [nyc](https://github.com/istanbuljs/nyc#nyc) to create a single combined report showing both backend and frontend coverage.
 Any nyc settings in `package.json` or `.nycrc` will be honored.
 
-> **NB:** Code coverage is currently only supported by the **chrome** and **node** test runners.
+> __NB:__ Code coverage is currently only supported by the __chrome__ and __node__ test runners.
 >
 > Also, when using the chrome test runner, your bundled frontend code must be pre-instrumented.
-> We recommend using [istanbul-instrumenter-loader](https://github.com/webpack-contrib/istanbul-instrumenter-loader) for this.
+> We recommend using [babel-plugin-istanbul](https://github.com/istanbuljs/babel-plugin-istanbul) for this.
 
 ## Debugging Certa Tests with VS Code
 
@@ -166,7 +166,7 @@ The following is an example VS Code `launch.json` for debugging Certa tests:
 }
 ```
 
-> **NB:** This configuration assumes that `${workspaceFolder}/certa.json` exists and defines a valid `testBundle` path.
+> __NB:__ This configuration assumes that `${workspaceFolder}/certa.json` exists and defines a valid `testBundle` path.
 
 With this config, you can set breakpoints in both your test backend (if a `backendInitModule` was specified in certa.json) and frontend (tests).
 When you launch "Certa Tests", VS Code will prompt you to choose an environment, then start[multi-target debugging](https://code.visualstudio.com/docs/editor/debugging#_multitarget-debugging).
@@ -224,7 +224,12 @@ function createConfig(shouldInstrument) {
       test: /\.(jsx?|tsx?)$/,
       include: path.resolve(__dirname, "lib"),
       exclude: path.resolve(__dirname, "lib/test"),
-      loader: "istanbul-instrumenter-loader",
+      use: {
+            loader: "babel-loader",
+            options: {
+              plugins: ["babel-plugin-istanbul"],
+            },
+          },
       enforce: "post",
     });
   }
@@ -232,8 +237,7 @@ function createConfig(shouldInstrument) {
   return config;
 }
 
-// Exporting two configs in a array like this actually
-// tells webpack to run twice - once for each config.
+// Runs webpack once for each config in the export array
 module.exports = [
   createConfig(true),
   createConfig(false)

@@ -50,7 +50,7 @@ export interface InstanceChange {
 
 /** Options for [ChangeSummaryManager.extractChangeSummaries]($backend).
  * @beta
- * @deprecated Use [CreateChangeSummaryArgs]($core-backend) instead
+ * @deprecated in 2.x. Use [CreateChangeSummaryArgs]($core-backend) instead
  */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
@@ -151,7 +151,7 @@ export class ChangeSummaryManager {
    * @param options Extraction options
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
-   * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
+   * @deprecated in 2.x. Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
    */
   public static async extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
     if (!iModel?.isOpen)
@@ -550,6 +550,8 @@ export class ChangeSummaryManager {
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
       throw new IModelError(IModelStatus.BadArg, "Invalid range of changesets");
+    if (range.first === 0 && range.end === 0)
+      return []; // no changesets exist, so the inclusive range is empty
 
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId, range });
 
@@ -582,5 +584,4 @@ export class ChangeSummaryManager {
       IModelJsFs.removeSync(fileName);
     }
   }
-
 }

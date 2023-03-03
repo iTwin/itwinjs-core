@@ -10,16 +10,14 @@ import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import {
-  AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
+  AnyWidgetProps, ConfigurableCreateInfo, ContentControl, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
   ToolButton,
   UiFramework,
 } from "../../appui-react";
-import { ConfigurableUiManager } from "../../appui-react/configurableui/ConfigurableUiManager";
 import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
 import { FrameworkVersion } from "../../appui-react/hooks/useFrameworkVersion";
 import { NavigationAidControl } from "../../appui-react/navigationaids/NavigationAidControl";
 import TestUtils, { storageMock } from "../TestUtils";
-import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
 import { Provider } from "react-redux";
 
 describe("NavigationWidget localStorage Wrapper", () => {
@@ -41,7 +39,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     before(async () => {
       await NoRenderApp.startup();
       await TestUtils.initializeUiFramework();
-      UiFramework.setUiVersion("1");
+      UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
@@ -50,7 +48,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       await IModelApp.shutdown();
     });
 
-    const widgetProps: AnyWidgetProps = {
+    const widgetProps: AnyWidgetProps = { // eslint-disable-line deprecation/deprecation
       id: "navigationWidget",
       classId: "NavigationWidget",
       defaultState: WidgetState.Open,
@@ -81,7 +79,9 @@ describe("NavigationWidget localStorage Wrapper", () => {
         expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
           </>
         }
@@ -92,7 +92,9 @@ describe("NavigationWidget localStorage Wrapper", () => {
         expandsTo={Direction.Left} // eslint-disable-line deprecation/deprecation
         items={
           <>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
           </>
         }
@@ -101,6 +103,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     it("NavigationWidget should render", async () => {
       mount(
         <Provider store={TestUtils.store} >
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <FrameworkVersion>
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               horizontalToolbar={horizontalToolbar}
@@ -114,6 +117,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     it("NavigationWidget should render correctly", async () => {
       shallow(
         <Provider store={TestUtils.store} >
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <FrameworkVersion>
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               id="navigationWidget"
@@ -130,6 +134,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       const vItemList = new ItemList([CoreTools.fitViewCommand]);
       mount(
         <Provider store={TestUtils.store} >
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <FrameworkVersion>
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               horizontalItems={hItemList}
@@ -147,11 +152,11 @@ describe("NavigationWidget localStorage Wrapper", () => {
           verticalToolbar={verticalToolbar}
         />,
       );
-      expect(wrapper.find(ToolButton).length).to.eq(4);
+      expect(wrapper.find(ToolButton).length).to.eq(4); {/* eslint-disable-line deprecation/deprecation */}
 
       wrapper.setProps({ verticalToolbar: undefined });
       wrapper.update();
-      expect(wrapper.find(ToolButton).length).to.eq(2);
+      expect(wrapper.find(ToolButton).length).to.eq(2); {/* eslint-disable-line deprecation/deprecation */}
     });
 
     class TestContentControl extends ContentControl {
@@ -174,51 +179,51 @@ describe("NavigationWidget localStorage Wrapper", () => {
       const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
         navigationAidId: "Aid1",
       });
-      ConfigurableUiManager.registerControl("Aid1", TestContentControl);
+      UiFramework.controls.register("Aid1", TestContentControl);
       expect(() => def.renderCornerItem()).to.throw(Error);
-      ConfigurableUiManager.unregisterControl("Aid1");
+      UiFramework.controls.unregister("Aid1");
     });
 
     it("NavigationWidgetDef should handle updateNavigationAid", () => {
       const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
         navigationAidId: "Aid1",
       });
-      ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);
+      UiFramework.controls.register("Aid1", TestNavigationAidControl);
 
       const element = def.reactNode;
       expect(def.reactNode).to.eq(element);
       const wrapper = mount(element as React.ReactElement<any>);
 
       const connection = moq.Mock.ofType<IModelConnection>();
-      FrontstageManager.setActiveNavigationAid("Aid1", connection.object);
+      UiFramework.frontstages.setActiveNavigationAid("Aid1", connection.object);
       wrapper.update();
 
-      FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
+      UiFramework.frontstages.setActiveToolId(CoreTools.selectElementCommand.toolId);
 
-      ConfigurableUiManager.unregisterControl("Aid1");
+      UiFramework.controls.unregister("Aid1");
     });
 
     it("NavigationAidHost should render in 2.0 mode",  async () => {
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
 
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationAidHost />
           </FrameworkVersion>
         </Provider>);
     });
 
     it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", async () => {
-      UiShowHideManager.snapWidgetOpacity = true;
+      UiFramework.visibility.snapWidgetOpacity = true;
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationAidHost />
           </FrameworkVersion>
         </Provider>);
-      UiShowHideManager.snapWidgetOpacity = false;
+      UiFramework.visibility.snapWidgetOpacity = false;
     });
   });
 });

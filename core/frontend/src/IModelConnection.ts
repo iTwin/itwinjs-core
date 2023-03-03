@@ -10,7 +10,7 @@ import {
   assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
@@ -91,6 +91,8 @@ export abstract class IModelConnection extends IModel {
   /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
    * [[expandDisplayedExtents]], but never smaller, to accommodate data sources like reality models that may exceed the project extents.
    * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
+   * @deprecated in 3.6. These extents are still computed, but no longer used to determine the viewed extents of a [[SpatialViewState]]. It is not useful to
+   * perpetually expand the iModel's extents.
    */
   public readonly displayedExtents: AxisAlignedBox3d;
   private readonly _extentsExpansion = Range3d.createNull();
@@ -225,10 +227,12 @@ export abstract class IModelConnection extends IModel {
 
     this.tiles = new Tiles(this);
     this.geoServices = new GeoServices(this);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
+      /* eslint-disable-next-line deprecation/deprecation */
       this.expandDisplayedExtents(this._extentsExpansion);
     });
 
@@ -393,11 +397,28 @@ export abstract class IModelConnection extends IModel {
   /** Request element mass properties from the backend.
    * @note For better performance use [[getMassPropertiesPerCandidate]] when called from a loop with identical operations and a single candidate per iteration.
    */
-  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps); }
+  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps);
+  }
 
   /** Request mass properties for multiple elements from the backend. */
   public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
+  }
+
+  /** Produce encoded [Polyface]($core-geometry)s from the geometry stream of a [GeometricElement]($backend).
+   * A polyface is produced for each geometric entry in the element's geometry stream, excluding geometry like open curves that can't be converted into polyfaces.
+   * The polyfaces can be decoded using [readElementMeshes]($common).
+   * Symbology, UV parameters, and normal vectors are not included in the result.
+   * @param requestProps A description of how to produce the polyfaces and from which element to obtain them.
+   * @returns an encoded list of polyfaces that can be decoded by [readElementMeshes]($common).
+   * @throws Error if [ElementMeshRequestProps.source]($common) does not refer to a [GeometricElement]($backend).
+   * @note This function is intended to support limited analysis of an element's geometry as a mesh. It is not intended for producing graphics.
+   * @see [[TileAdmin.requestElementGraphics]] to obtain meshes appropriate for display.
+   * @beta
+   */
+  public async generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
@@ -479,16 +500,14 @@ export abstract class IModelConnection extends IModel {
   /** Expand this iModel's [[displayedExtents]] to include the specified range.
    * This is done automatically when reality models are added to a spatial view. In some cases a [[TiledGraphicsProvider]] may wish to expand
    * the extents explicitly to include its geometry.
+   * @deprecated in 3.6. See [[displayedExtents]].
    */
   public expandDisplayedExtents(range: Range3d): void {
     this._extentsExpansion.extendRange(range);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents.setFrom(this.projectExtents);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents.extendRange(this._extentsExpansion);
-
-    for (const vp of IModelApp.viewManager) {
-      if (vp.view.isSpatialView() && vp.iModel === this)
-        vp.invalidateController();
-    }
   }
 
   /** @internal */
@@ -1122,7 +1141,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
      * @throws "No content" error if invalid thumbnail.
-     * @deprecated
+     * @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel.
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
       // eslint-disable-next-line deprecation/deprecation

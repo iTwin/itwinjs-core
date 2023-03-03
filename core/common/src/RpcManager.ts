@@ -12,6 +12,8 @@ import { RpcRegistry } from "./rpc/core/RpcRegistry";
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Describes the endpoints of an RPC interface.
  * @internal
  */

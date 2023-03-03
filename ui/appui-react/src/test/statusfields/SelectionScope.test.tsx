@@ -40,7 +40,7 @@ import TestUtils, { handleError, selectChangeValueByIndex, stubScrollIntoView } 
         await MockRender.App.startup();
         await TestUtils.initializeUiFramework();
 
-        const statusBarWidgetDef = new WidgetDef({
+        const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
           classId: AppStatusBarWidgetControl,
           defaultState: WidgetState.Open,
           isFreeform: false,
@@ -100,7 +100,7 @@ import TestUtils, { handleError, selectChangeValueByIndex, stubScrollIntoView } 
         await initializePresentationTesting();
         await TestUtils.initializeUiFramework();
 
-        const statusBarWidgetDef = new WidgetDef({
+        const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
           classId: AppStatusBarWidgetControl,
           defaultState: WidgetState.Open,
           isFreeform: false,

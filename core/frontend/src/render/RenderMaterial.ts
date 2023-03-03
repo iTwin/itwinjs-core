@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ColorDef, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
+import { ColorDef, NormalMapParams, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 /** Specifies the provenance of a [RenderMaterial]($common) created for a persistent material element.
@@ -62,6 +62,9 @@ export interface MaterialTextureMappingProps {
   /** The texture from which the image is obtained. */
   texture: RenderTexture;
 
+  /** The parameters describing a normal map to use either in place of or in addition to the texture. */
+  normalMapParams?: NormalMapParams;
+
   /** The mode controlling how the image is mapped onto the surface.
    * Default: [TextureMapping.Mode.Parametric]($common).
    */
@@ -103,6 +106,6 @@ export interface CreateRenderMaterialArgs {
   /** The [specular](https://en.wikipedia.org/wiki/Specular_highlight) properties of the material. */
   specular?: MaterialSpecularProps;
 
-  /** Maps a [RenderTexture]($common) image to the surfaces to which the material is applied. */
+  /** Maps [RenderTexture]($common) images to the surfaces to which the material is applied to customize their appearance. */
   textureMapping?: MaterialTextureMappingProps;
 }

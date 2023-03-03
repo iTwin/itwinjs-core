@@ -346,7 +346,9 @@ export class Synchronizer {
     };
 
     if (item.id !== "") {
-      ids = ExternalSourceAspect.findBySource(this.imodel, item.scope, item.kind, item.id);
+      ids = ExternalSourceAspect.findAllBySource(this.imodel, item.scope, item.kind, item.id);
+      if (ids.length === 1)
+        ids = ids[0];
     }
 
     // If we fail to locate the aspect with its unique (kind, identifier) tuple, we consider the
@@ -417,7 +419,10 @@ export class Synchronizer {
     // __PUBLISH_EXTRACT_START__ Synchronizer-updateIModel.example-code
     let aspectId: Id64String | undefined;
     if (sourceItem.id !== "") {
-      const xsa = ExternalSourceAspect.findBySource(this.imodel, sourceItem.scope, sourceItem.kind, sourceItem.id);
+      const xsas = ExternalSourceAspect.findAllBySource(this.imodel, sourceItem.scope, sourceItem.kind, sourceItem.id);
+      if (xsas.length > 1)
+        return IModelStatus.DuplicateName;
+      const xsa = xsas[0];
       if (xsa.aspectId !== undefined) {
         aspectId = xsa.aspectId;
       }

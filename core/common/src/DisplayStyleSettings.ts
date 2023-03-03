@@ -411,6 +411,10 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
 export interface DisplayStyleSettingsOptions {
   /** A function that instantiates a [[ContextRealityModel]] to be stored in [[DisplayStyleSettings.contextRealityModels]]. */
   createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+  /** If true, the caller will populate contextRealityModels after construction.
+   * @internal used by DisplayStyleState constructor.
+   */
+  deferContextRealityModels?: boolean;
 }
 
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
@@ -578,7 +582,11 @@ export class DisplayStyleSettings {
         return settings.isValid ? settings : undefined;
       });
 
-    this._contextRealityModels = new ContextRealityModels(this._json, options?.createContextRealityModel);
+    this._contextRealityModels = new ContextRealityModels({
+      container: this._json,
+      createContextRealityModel: options?.createContextRealityModel,
+      deferPopulating: options?.deferContextRealityModels,
+    });
   }
 
   /** Flags controlling various aspects of the display style. */

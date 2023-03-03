@@ -41,6 +41,7 @@ export interface BranchStateOptions {
   frustumScale?: { x: number, y: number };
   readonly appearanceProvider?: FeatureAppearanceProvider;
   readonly realityModelDisplaySettings?: RealityModelDisplaySettings;
+  forceViewCoords?: boolean;
 }
 
 /**
@@ -55,6 +56,7 @@ export class BranchState {
   public get viewFlags() { return this._opts.viewFlags; }
   public set viewFlags(vf: ViewFlags) { this._opts.viewFlags = vf.normalize(); }
   public get clipVolume() { return this._opts.clipVolume; }
+  public get forceViewCoords(): boolean { return true === this._opts.forceViewCoords; }
   public get planarClassifier() { return this._opts.planarClassifier; }
   public get textureDrape() { return this._opts.textureDrape; }
   public get edgeSettings() { return this._opts.edgeSettings; }
@@ -88,6 +90,7 @@ export class BranchState {
       planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
       clipVolume: branch.clips,
+      forceViewCoords: prev.forceViewCoords,
       edgeSettings: branch.edgeSettings ?? prev.edgeSettings,
       is3d: branch.frustum?.is3d ?? prev.is3d,
       frustumScale: branch.frustum?.scale ?? prev.frustumScale,
@@ -109,6 +112,10 @@ export class BranchState {
     const vf = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: false, whiteOnWhiteReversal: false });
 
     return new BranchState({ viewFlags: vf, transform: Transform.createIdentity(), symbologyOverrides: new FeatureSymbology.Overrides(), edgeSettings: EdgeSettings.create(undefined), is3d: true });
+  }
+
+  public withViewCoords(): BranchState {
+    return new BranchState({ ...this._opts, forceViewCoords: true });
   }
 
   public constructor(opts: BranchStateOptions) {

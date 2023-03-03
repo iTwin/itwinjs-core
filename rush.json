@@ -1,14 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.76.1",
-  "pnpmVersion": "6.24.4",
-  "nodeSupportedVersionRange": ">=12.17.0 <17.0.0",
+  "rushVersion": "5.83.1",
+  "pnpmVersion": "6.35.1",
+  "nodeSupportedVersionRange": "^18.0.0",
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
-  "pnpmOptions": {
-    "useWorkspaces": true
-  },
   "approvedPackagesPolicy": {
     "reviewCategories": [
       "frontend",
@@ -55,8 +52,7 @@
       "packageName": "@itwin/eslint-plugin",
       "projectFolder": "tools/eslint-plugin",
       "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/core-telemetry",
@@ -216,8 +212,7 @@
       "packageName": "@itwin/presentation-components",
       "projectFolder": "presentation/components",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/presentation-opentelemetry",
@@ -230,8 +225,7 @@
       "packageName": "@itwin/presentation-testing",
       "projectFolder": "presentation/testing",
       "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/appui-abstract",
@@ -244,36 +238,31 @@
       "packageName": "@itwin/core-react",
       "projectFolder": "ui/core-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/components-react",
       "projectFolder": "ui/components-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/imodel-components-react",
       "projectFolder": "ui/imodel-components-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/appui-layout-react",
       "projectFolder": "ui/appui-layout-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/appui-react",
       "projectFolder": "ui/appui-react",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/ecschema-metadata",
@@ -409,6 +398,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/map-layers-formats",
+      "projectFolder": "extensions/map-layers-formats",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "internal-tools",
       "projectFolder": "tools/internal",
       "reviewCategory": "internal",
@@ -451,30 +447,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@itwin/ui-items-providers-test",
-      "projectFolder": "test-apps/ui-items-providers-test",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "appui-connected-app",
-      "projectFolder": "test-apps/appui-test-app/connected",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "appui-standalone-app",
-      "projectFolder": "test-apps/appui-test-app/standalone",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-test-providers",
-      "projectFolder": "test-apps/appui-test-app/appui-test-providers",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "display-test-app",
       "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",
@@ -501,12 +473,6 @@
     {
       "packageName": "presentation-test-app",
       "projectFolder": "test-apps/presentation-test-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "ui-test-app",
-      "projectFolder": "test-apps/ui-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -540,12 +506,6 @@
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "ui-end-to-end-tests",
-      "projectFolder": "full-stack-tests/ui",
-      "reviewCategory": "internal",
-      "shouldPublish": false
     }
   ]
 }

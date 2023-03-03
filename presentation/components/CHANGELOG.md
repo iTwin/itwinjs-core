@@ -1,6 +1,96 @@
 # Change Log - @itwin/presentation-components
 
-This log was last generated on Mon, 17 Oct 2022 20:06:51 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+-  Use EmptyLocalization for localization in tests to increase test performance
+- Added support for initial filter to presentation instance filter builder
+- API promotions
+- Correctly render 'NavigationPropertyEditor' when it is used in dialog
+- Correctly handle navigation property value when converting 'PresentationInstanceFilter' into ECExpression
+- Fixed PresentationInstanceFilter to InstanceFilterDefinition coversion to use operator supported by ECExpressions
+- API promotion
+- Fix duplicate classes displayed in instance filter class selector
+- Added dialog for presentation instance filter
+- Deprecate `PresentationPropertyDataProvider` properties `includeFieldsWithNoValues` and `includeFieldsWithCompositeValues`. Should use `FilteringPropertyDataProvider` instead.
+- Added API to enable hierarchy level filtering in trees using presentation library
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:28 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+_Version update only_
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:29 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- Use stripped relationship path in instance filter definition
+- Added convertion from FilterBuilder output to InstanceFilterDefinition
+- Deprecated `PresentationTableDataProvider` and `Table` related code that uses deprecated `Table` component from `@itwin/components-react` package
+- Added editor for navigation properties
+- Avoid loading whole class hierarchy up front for PresentationInstanceFilterBuilder component
+- Updated DiagnosticsProps interface to match DiagnosticsOptions
+- Unpin classnames package
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
 
 ## 3.4.1
 Mon, 17 Oct 2022 20:06:51 GMT
@@ -156,7 +246,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - `usePresentationTreeNodeLoader`: Redesign the way tree component reloads when `enableHierarchyAutoUpdate` is set.
 - Remove `IPresentationTreeDataProvider.loadHierarchy`.
 - Fixed SameInstance nested properties bug when merged cells with multiple nested content items were not created properly.
-- Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress. 
+- Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress.
 - Replace usage of I18N with generic Localization interface.
 -  Renamed an iModel's parent container to iTwin
 - Removed deprecated `DEPRECATED_controlledTreeWithFilteringSupport` and `DEPRECATED_controlledTreeWithVisibleNodes`.
@@ -1180,7 +1270,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

@@ -13,7 +13,7 @@ import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 
 describe("PopoutWidget", () => {
   const sandbox = sinon.createSandbox();
-  const testWidgetDef = new WidgetDef({
+  const testWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
     classId: "test",
     defaultState: WidgetState.Open,
     isFreeform: false,

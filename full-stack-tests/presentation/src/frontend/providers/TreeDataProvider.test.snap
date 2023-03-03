@@ -3,7 +3,13 @@
 exports[`TreeDataProvider returns child nodes 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "description": "child description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "icon": "child image id",
+    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
         "45a35284023f06495cb8802368089dd5",
@@ -11,9 +17,6 @@ Array [
       "type": "child",
       "version": 2,
     },
-    "description": "child description",
-    "icon": "child image id",
-    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -34,7 +37,13 @@ Array [
 exports[`TreeDataProvider returns child nodes with paging 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "description": "child description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "icon": "child image id",
+    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
         "45a35284023f06495cb8802368089dd5",
@@ -42,9 +51,6 @@ Array [
       "type": "child",
       "version": 2,
     },
-    "description": "child description",
-    "icon": "child image id",
-    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -65,20 +71,23 @@ Array [
 exports[`TreeDataProvider returns root nodes 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "checkBoxState": 1,
+    "description": "root description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "icon": "root image id",
+    "id": "d40a267dc8ff557a9c69ad79d652e39f",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
       ],
       "type": "root",
       "version": 2,
     },
-    "checkBoxState": 1,
-    "description": "root description",
-    "hasChildren": true,
-    "icon": "root image id",
-    "id": "d40a267dc8ff557a9c69ad79d652e39f",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -106,20 +115,23 @@ Array [
 exports[`TreeDataProvider returns root nodes with paging 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "checkBoxState": 1,
+    "description": "root description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "icon": "root image id",
+    "id": "d40a267dc8ff557a9c69ad79d652e39f",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
       ],
       "type": "root",
       "version": 2,
     },
-    "checkBoxState": 1,
-    "description": "root description",
-    "hasChildren": true,
-    "icon": "root image id",
-    "id": "d40a267dc8ff557a9c69ad79d652e39f",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -147,18 +159,25 @@ Array [
 exports[`TreeDataProvider shows grouping node children counts 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "description": "A container for persisting definition elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "80c7ed6b188503c857ac50041bf4b6d0",
+    "key": Object {
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:DefinitionModel))",
+      },
       "pathFromRoot": Array [
-        "eb6880726b26fb0b8f2b59e078fd660d",
+        "80c7ed6b188503c857ac50041bf4b6d0",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "A container for persisting definition elements.",
-    "hasChildren": true,
-    "id": "eb6880726b26fb0b8f2b59e078fd660d",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -187,18 +206,25 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "The singleton container for repository-specific definition elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "20780ee9a09d76aeba732a9a1e483a49",
+    "key": Object {
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:DictionaryModel))",
+      },
       "pathFromRoot": Array [
-        "a7993be2bef1dbf325c55516aecb4e57",
+        "20780ee9a09d76aeba732a9a1e483a49",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "The singleton container for repository-specific definition elements.",
-    "hasChildren": true,
-    "id": "a7993be2bef1dbf325c55516aecb4e57",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -227,18 +253,25 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "Contains a list of document elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "b3334e28acbad8431c46ca61e7f8e5e3",
+    "key": Object {
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:DocumentListModel))",
+      },
       "pathFromRoot": Array [
-        "c0a2b573d856d783743e815f8955575e",
+        "b3334e28acbad8431c46ca61e7f8e5e3",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "Contains a list of document elements.",
-    "hasChildren": true,
-    "id": "c0a2b573d856d783743e815f8955575e",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -267,17 +300,24 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "b35e9d24b15bc9912c6abb46cb27ca7f",
+    "key": Object {
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY Generic:GroupModel))",
+      },
       "pathFromRoot": Array [
-        "8c23be83ea7e73ec45e333422288a6dd",
+        "b35e9d24b15bc9912c6abb46cb27ca7f",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "hasChildren": true,
-    "id": "8c23be83ea7e73ec45e333422288a6dd",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -306,18 +346,25 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "A container for persisting link elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "7f40f83df83799f79d13cfb7446d677f",
+    "key": Object {
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:LinkModel))",
+      },
       "pathFromRoot": Array [
-        "24c7c8fa938be6596bb29a320c2f9d53",
+        "7f40f83df83799f79d13cfb7446d677f",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "A container for persisting link elements.",
-    "hasChildren": true,
-    "id": "24c7c8fa938be6596bb29a320c2f9d53",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -346,18 +393,25 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "A container for persisting physical elements that model physical space.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "685c4d0e7d0c2f8d0b6279cfb4a5f03a",
+    "key": Object {
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:PhysicalModel))",
+      },
       "pathFromRoot": Array [
-        "42e0a71f59b8b9087a3fa81ed5569da3",
+        "685c4d0e7d0c2f8d0b6279cfb4a5f03a",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "A container for persisting physical elements that model physical space.",
-    "hasChildren": true,
-    "id": "42e0a71f59b8b9087a3fa81ed5569da3",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -386,18 +440,25 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "The singleton container of repository-related information elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "72283c5c8ebd68e345d166c40f0b5101",
+    "key": Object {
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:RepositoryModel))",
+      },
       "pathFromRoot": Array [
-        "2ce9bbc061104dbbf14e8319322f0db4",
+        "72283c5c8ebd68e345d166c40f0b5101",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "The singleton container of repository-related information elements.",
-    "hasChildren": true,
-    "id": "2ce9bbc061104dbbf14e8319322f0db4",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",

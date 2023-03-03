@@ -11,7 +11,7 @@ import { Tile, TileProps } from "./Tile";
 
 /** Minimal and Featured [[Tile]] component
  * @beta
- * @deprecated Use Tile in itwinui-react instead
+ * @deprecated in 3.0. Use Tile in itwinui-react instead
  */
 export function MinimalFeaturedTile(props: TileProps) {   // eslint-disable-line deprecation/deprecation
   return <Tile {...props} minimal={true} featured={true} />;  // eslint-disable-line deprecation/deprecation

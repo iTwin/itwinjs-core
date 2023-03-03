@@ -28,13 +28,13 @@ describe("AccuDrawWidget", () => {
   });
 
   it("should get AccuDrawWidgetControl", () => {
-    const widgetProps: WidgetProps = {
+    const widgetProps: WidgetProps = { // eslint-disable-line deprecation/deprecation
       id: AccuDrawWidgetControl.id,
       label: AccuDrawWidgetControl.label,
       control: AccuDrawWidgetControl,
     };
 
-    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
     const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
 
     expect(widgetControl).to.not.be.undefined;

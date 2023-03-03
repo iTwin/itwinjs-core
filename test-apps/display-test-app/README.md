@@ -154,10 +154,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* IMJS_ENABLE_MAP_TEXTURE_FILTER
-  * If defined, the anisotropic filtering will be used for (planar) map tiles.
-* IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER
-  * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
 * IMJS_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
 * IMJS_DEVICE_PIXEL_RATIO_OVERRIDE
@@ -284,6 +280,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `elementId=Id` The element for which to obtain graphics
   * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 * `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
+* `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 
 ## Editing
 

@@ -9,7 +9,6 @@
 import { ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
-import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";
 import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
 import { TextureUnit } from "../RenderFlags";
@@ -20,22 +19,6 @@ vec4 getSensor(int index) {
   float x = 0.5;
   float y = (float(index) + 0.5) / float(u_numSensors);
   return TEXTURE(s_sensorSampler, vec2(x, y));
-}
-`;
-
-const unpackSensor = `
-vec4 getSensor(int index) {
-  float y = (float(index) + 0.5) / float(u_numSensors);
-  float sx = 0.25;
-  vec2 tc = vec2(0.125, y);
-  float posX = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  tc.x += sx;
-  float posY = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  tc.x += sx;
-  float posZ = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  tc.x += sx;
-  float value = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  return vec4(posX, posY, posZ, value);
 }
 `;
 
@@ -65,11 +48,10 @@ vec3 getIsoLineColor(float ndx, float stepCount) {
 }
 `;
 
-const fwidthWhenAvailable = `\nfloat _universal_fwidth(float coord) { return fwidth(coord); }\n`;
-const fwidthWhenNotAvailable = `\nfloat _universal_fwidth(float coord) { return coord; }\n`; // ###TODO: can we do something reasonable in this case?
+const fwidth = `\nfloat _universal_fwidth(float coord) { return fwidth(coord); }\n`;
 
 const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
-    float d = dot(v_n, u_thematicAxis);
+    float d = dot(g_normal, u_thematicAxis);
     if (d < 0.0)
       d = -d;
 
@@ -87,11 +69,7 @@ const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thema
 
     ndx = d;
   } else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-    float d = dot(v_n, u_thematicSunDirection);
-
-    // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
-    if (!gl_FrontFacing && v_thematicIndex < 0.0)
-      d = -d;
+    float d = dot(g_normal, u_thematicSunDirection);
 
     ndx = max(0.0, d);
   }`;
@@ -346,22 +324,8 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
     });
   }
 
-  const isWebGL2 = System.instance.capabilities.isWebGL2;
-  if (isWebGL2) {
-    frag.addFunction(fwidthWhenAvailable);
-  } else if (System.instance.capabilities.supportsStandardDerivatives) {
-    frag.addExtension("GL_OES_standard_derivatives");
-    frag.addFunction(fwidthWhenAvailable);
-  } else {
-    frag.addFunction(fwidthWhenNotAvailable);
-  }
-
-  if (System.instance.capabilities.supportsTextureFloat) {
-    frag.addFunction(getSensorFloat);
-  } else {
-    frag.addFunction(unpackFloat);
-    frag.addFunction(unpackSensor);
-  }
+  frag.addFunction(fwidth);
+  frag.addFunction(getSensorFloat);
 
   frag.addFunction(getColor);
   frag.addFunction(getIsoLineColor);

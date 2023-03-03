@@ -14,6 +14,7 @@ import { NumericFilterType, NumericRangeData } from "../../../components-react/t
 import { TableFilterDescriptor } from "../../../components-react/table/columnfiltering/TableFilterDescriptor";
 import { CellItem, ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
+/* eslint-disable deprecation/deprecation */
 
 const columns: ColumnDescription[] = [
   {

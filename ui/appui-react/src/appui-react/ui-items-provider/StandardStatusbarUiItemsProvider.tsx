@@ -8,7 +8,6 @@
 
 import * as React from "react";
 import { CommonStatusBarItem, StatusBarSection, UiItemsProvider } from "@itwin/appui-abstract";
-import { FooterSeparator } from "@itwin/appui-layout-react";
 import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
 import { ToolAssistanceField } from "../statusfields/toolassistance/ToolAssistanceField";
 import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
@@ -19,6 +18,9 @@ import { SnapModeField } from "../statusfields/SnapMode";
 import { SelectionInfoField } from "../statusfields/SelectionInfo";
 import { TileLoadingIndicator } from "../statusfields/tileloading/TileLoadingIndicator";
 import { SelectionScopeField } from "../statusfields/SelectionScope";
+import { StatusBarSeparator } from "../statusbar/Separator";
+
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Defines what items to include from the provider. If any items are
@@ -57,14 +59,14 @@ export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.toolAssistance) {
       if (!this._defaultItems || this._defaultItems.preToolAssistanceSeparator)
-        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PreToolAssistance", StatusBarSection.Left, 15, <FooterSeparator />));
+        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PreToolAssistance", StatusBarSection.Left, 15, <StatusBarSeparator />));
 
       // eslint-disable-next-line deprecation/deprecation
       const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ToolAssistance", StatusBarSection.Left, 20, <ToolAssistance />));
 
       if (!this._defaultItems || this._defaultItems.postToolAssistanceSeparator)
-        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PostToolAssistance", StatusBarSection.Left, 25, <FooterSeparator />));
+        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PostToolAssistance", StatusBarSection.Left, 25, <StatusBarSeparator />));
     }
     // istanbul ignore else
     if (this._defaultItems?.activityCenter) {

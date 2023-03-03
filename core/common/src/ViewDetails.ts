@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@itwin/core-geometry";
 import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
@@ -143,10 +143,22 @@ export class ViewDetails {
     return this._clipVector.isValid ? this._clipVector : undefined;
   }
   public set clipVector(clip: ClipVector | undefined) {
-    if (!clip)
-      clip = ClipVector.createEmpty();
+    const curClip = this.clipVector;
+    if (curClip === clip)
+      return;
+
+    if (!curClip) {
+      assert(undefined !== clip);
+
+      // An empty clip is equivalent to no clip.
+      if (!clip.isValid)
+        return;
+    }
+
+    clip = clip ?? ClipVector.createEmpty();
 
     this.onClipVectorChanged.raiseEvent(clip.isValid ? clip : undefined);
+
     this._clipVector = clip;
     if (clip.isValid)
       this._json.clip = clip.toJSON();

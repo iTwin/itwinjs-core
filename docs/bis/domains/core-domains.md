@@ -11,3 +11,7 @@ The following domains lay out the [Core layer](../guide/intro/bis-organization.m
 ### [Generic](./Generic.ecschema.md)
 
 ### [PhysicalMaterial](./PhysicalMaterial.ecschema.md)
+
+## Helpful articles - Core
+
+### [Provenance in BIS](./Provenance-in-BIS.md)

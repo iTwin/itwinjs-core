@@ -18,7 +18,7 @@ describe("Widget", () => {
   });
 
   it("should render", () => {
-    mount(<Widget id="widget" defaultState={WidgetState.Open} applicationData={{ key: "value" }} />);
+    mount(<Widget id="widget" defaultState={WidgetState.Open} applicationData={{ key: "value" }} />); // eslint-disable-line deprecation/deprecation
   });
 
 });

@@ -20,7 +20,8 @@ export const enum FrustumUniformType { // eslint-disable-line no-restricted-synt
   Perspective,
 }
 
-const enum Plane { // eslint-disable-line no-restricted-syntax
+/** @internal */
+export const enum Plane { // eslint-disable-line no-restricted-syntax
   kTop,
   kBottom,
   kLeft,

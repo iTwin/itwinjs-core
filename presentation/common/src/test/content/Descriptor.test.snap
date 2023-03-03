@@ -35,7 +35,6 @@ Object {
   },
   "connectionId": "",
   "contentFlags": 0,
-  "contentOptions": undefined,
   "displayType": "",
   "fields": Array [
     Object {
@@ -109,8 +108,6 @@ Object {
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x4",
           "sourceClassInfo": "0x2",
           "targetClassInfo": "0x3",
@@ -170,8 +167,6 @@ Object {
       "navigationPropertyClasses": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x4",
           "sourceClassInfo": "0x2",
           "targetClassInfo": "0x3",
@@ -180,7 +175,6 @@ Object {
       "pathFromInputToSelectClass": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x4",
           "sourceClassInfo": "0x2",
           "targetClassInfo": "0x3",
@@ -190,8 +184,6 @@ Object {
         Array [
           Object {
             "isForwardRelationship": true,
-            "isPolymorphicRelationship": false,
-            "isPolymorphicTargetClass": false,
             "relationshipInfo": "0x4",
             "sourceClassInfo": "0x2",
             "targetClassInfo": "0x3",
@@ -202,8 +194,6 @@ Object {
         Array [
           Object {
             "isForwardRelationship": true,
-            "isPolymorphicRelationship": false,
-            "isPolymorphicTargetClass": false,
             "relationshipInfo": "0x4",
             "sourceClassInfo": "0x2",
             "targetClassInfo": "0x3",
@@ -243,7 +233,6 @@ Object {
   },
   "connectionId": "",
   "contentFlags": 0,
-  "contentOptions": undefined,
   "displayType": "",
   "fields": Array [
     Object {
@@ -334,8 +323,27 @@ Object {
       },
     },
   ],
+  "fieldsFilterExpression": "testFilterExpression",
   "filterExpression": "testFilterExpression",
-  "inputKeysHash": undefined,
+  "instanceFilter": Object {
+    "expression": "testExpression",
+    "relatedInstances": Array [
+      Object {
+        "alias": "testAlias",
+        "isRequired": true,
+        "pathFromSelectToPropertyClass": Array [
+          Object {
+            "isForwardRelationship": true,
+            "relationshipName": "relClass",
+            "sourceClassName": "sourceClass",
+            "targetClassName": "targetClass",
+          },
+        ],
+        "relationshipAlias": "testRelAlias",
+      },
+    ],
+    "selectClassName": "testClass",
+  },
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": false,

@@ -7,17 +7,16 @@
  * @module ArraysAndInterfaces
  */
 
-// import { Point2d } from "./Geometry2d";
-import { Point2d, Vector2d } from "./Point2dVector2d";
+import { Point2d, Vector2d, XY } from "./Point2dVector2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { XAndY } from "./XYZProps";
 
 /**
- * abstract base class for access to XYZ data with indexed reference.
- * * This allows algorithms to work with Point2d[] or GrowableXYZ.
- * ** GrowableXYZArray implements these for its data.
- * ** Point2dArrayCarrier carries a (reference to) a Point2d[] and implements the methods with calls on that array reference.
- * * In addition to "point by point" accessors, there abstract members compute commonly useful vector data "between points".
+ * abstract base class for access to XY data with indexed reference.
+ * * This allows algorithms to work with Point2d[] or GrowableXY.
+ *   * GrowableXYArray implements these for its data.
+ *   * Point2dArrayCarrier carries a (reference to) a Point2d[] and implements the methods with calls on that array reference.
+ * * In addition to "point by point" accessors, other abstract members compute commonly useful vector data "between points".
  * * Methods that create vectors among multiple indices allow callers to avoid creating temporaries.
  * @public
  */
@@ -73,7 +72,44 @@ export abstract class IndexedXYCollection {
   public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
 
   /**
-   * read-only property for number of XYZ in the collection.
+   * read-only property for number of XY in the collection.
    */
   public abstract get length(): number;
+
+  private static _workPoint?: Point2d;
+
+  /** access x of indexed point
+   * * Subclasses may wish to override with a more efficient implementation.
+   */
+  public getXAtUncheckedPointIndex(pointIndex: number): number {
+    const pt = this.getPoint2dAtCheckedPointIndex(pointIndex, IndexedXYCollection._workPoint);
+    if (undefined === IndexedXYCollection._workPoint)
+      IndexedXYCollection._workPoint = pt;  // allocate the cache
+    return pt ? pt.x : 0.0;
+  }
+
+  /** access y of indexed point
+   * * Subclasses may wish to override with a more efficient implementation.
+   */
+  public getYAtUncheckedPointIndex(pointIndex: number): number {
+    const pt = this.getPoint2dAtCheckedPointIndex(pointIndex, IndexedXYCollection._workPoint);
+    if (undefined === IndexedXYCollection._workPoint)
+      IndexedXYCollection._workPoint = pt;  // allocate the cache
+    return pt ? pt.y : 0.0;
+  }
+
+  /** Compute the linear combination s of the indexed p_i and given scales s_i.
+   * @param scales array of scales. For best results, scales should have same length as the instance.
+   * @param result optional pre-allocated object to fill and return
+   * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
+   */
+  public linearCombination(scales: number[], result?: Point2d | Vector2d): XY {
+    const n = Math.min(this.length, scales.length);
+    const sum = (result instanceof Vector2d) ? Vector2d.createZero(result) : Point2d.createZero(result);
+    for (let i = 0; i < n; ++i) {
+      sum.x += scales[i] * this.getXAtUncheckedPointIndex(i);
+      sum.y += scales[i] * this.getYAtUncheckedPointIndex(i);
+    }
+    return sum;
+  }
 }

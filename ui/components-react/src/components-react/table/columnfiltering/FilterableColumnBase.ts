@@ -10,6 +10,7 @@ import { ColumnDescription } from "../TableDataProvider";
 import { ColumnFilterDescriptor, DistinctValueCollection, FilterableColumn, FilterableTable, FilterOperator } from "./ColumnFiltering";
 import { TableColumnFilterDescriptor } from "./TableColumnFilterDescriptor";
 import { TableFilterDescriptor } from "./TableFilterDescriptor";
+/* eslint-disable deprecation/deprecation */
 
 /** Filterable Column base class.
  * @internal

@@ -37,8 +37,8 @@ function main() {
       imjsEnv[key] = process.env[key];
     }
   });
-  const jsonPath = path.join(__dirname, "lib", "ios", "env.json");
-  // Write the contents of imjsEnv to ./lib/ios/env.json
+  const jsonPath = path.join(__dirname, "lib", "mobile", "env.json");
+  // Write the contents of imjsEnv to ./lib/mobile/env.json
   fs.writeFileSync(jsonPath, JSON.stringify(imjsEnv, undefined, 2));
   console.log(`Wrote environment to ${jsonPath}`);
 }

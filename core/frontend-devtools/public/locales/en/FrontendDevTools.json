@@ -18,6 +18,9 @@
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
     },
+    "ToggleNormalMaps": {
+      "keyin": "fdt toggle normalmaps"
+    },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
     },
@@ -203,6 +206,9 @@
     },
     "AttachArcGISMapLayerTool": {
       "keyin": "fdt attach arcgis maplayer"
+    },
+    "AttachArcGISFeatureMapLayerTool": {
+      "keyin": "fdt attach arcgisfeature maplayer"
     },
     "AttachTileURLMapLayerTool": {
       "keyin": "fdt attach tileurl maplayer"
@@ -463,7 +469,7 @@
     "ToggleTileTreeReferences": {
       "keyin": "fdt toggle treerefs"
     },
-   "WoWIgnoreBackground": {
+    "WoWIgnoreBackground": {
       "keyin": "fdt wow ignore background"
     },
     "SetSkySphere": {

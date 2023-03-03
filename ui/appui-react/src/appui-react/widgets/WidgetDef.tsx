@@ -10,8 +10,6 @@ import * as React from "react";
 import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
 import { Direction, FloatingWidgetState, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { ItemList } from "../shared/ItemMap";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
@@ -21,6 +19,9 @@ import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
+
+/* eslint-disable deprecation/deprecation */
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -59,6 +60,7 @@ export interface WidgetEventArgs {
 export enum WidgetType {
   Tool,
   Navigation,
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0 */
   FreeFrom,
   Rectangular,
   ToolSettings,
@@ -66,9 +68,10 @@ export enum WidgetType {
 }
 
 /** Properties for a Toolbar Widget.
+ * @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0.
  * @public
  */
-export interface ToolbarWidgetProps extends WidgetProps {
+export interface ToolbarWidgetProps extends WidgetProps { // eslint-disable-line deprecation/deprecation
   horizontalDirection?: Direction; // eslint-disable-line deprecation/deprecation
   verticalDirection?: Direction; // eslint-disable-line deprecation/deprecation
 
@@ -77,25 +80,29 @@ export interface ToolbarWidgetProps extends WidgetProps {
 }
 
 /** Properties for a Tool Widget.
+ * @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0
  * @public
  */
-export interface ToolWidgetProps extends ToolbarWidgetProps {
+export interface ToolWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
   appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
+ * @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0
  * @public
  */
-export interface NavigationWidgetProps extends ToolbarWidgetProps {
+export interface NavigationWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
   navigationAidId?: string;
 }
 
 /** Union of all Widget properties.
+ * @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0
  * @public
  */
-export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
+export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps; // eslint-disable-line deprecation/deprecation
 
 /** Prototype for WidgetDef StateFunc (UI 1.0 only deprecate ???)
+ * @deprecated in 3.5. Used in UI1.0 only.
  * @public
  */
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
@@ -133,7 +140,7 @@ export class WidgetDef {
   private _stateChanged: boolean = false;
   private _fillZone: boolean = false;
   private _syncEventIds: string[] = [];
-  private _stateFunc?: WidgetStateFunc;
+  private _stateFunc?: WidgetStateFunc; // eslint-disable-line deprecation/deprecation
   private _widgetType: WidgetType = WidgetType.Rectangular;
   private _applicationData?: any;
   private _iconSpec?: string | ConditionalStringValue | React.ReactNode;
@@ -150,7 +157,7 @@ export class WidgetDef {
 
   private _hideWithUiWhenFloating?: boolean;
   private _allowedPanelTargets?: ReadonlyArray<"left"|"right"|"bottom"|"top">;
-  private _initialProps?: WidgetProps;
+  private _initialProps?: WidgetProps; // eslint-disable-line deprecation/deprecation
 
   private _tabLocation?: TabLocation;
   private _defaultTabLocation: TabLocation = {
@@ -162,10 +169,10 @@ export class WidgetDef {
   private _popoutBounds?: Rectangle;
 
   public get state(): WidgetState {
-    if ("1" === UiFramework.uiVersion)
+    if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
       return this._state;
 
-    const frontstageDef = FrontstageManager.activeFrontstageDef;
+    const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
     if (frontstageDef && frontstageDef.findWidgetDef(this.id)) {
       const currentState = frontstageDef.getWidgetCurrentState(this);
       // istanbul ignore else
@@ -178,21 +185,25 @@ export class WidgetDef {
   public get id(): string { return this._id; }
   public get classId(): string | ConfigurableUiControlConstructor | undefined { return this._classId; }
   public get priority(): number { return this._priority; }
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0*/
   public get isFreeform(): boolean { return this._isFreeform; }
   public get isFloatingStateSupported(): boolean { return this._isFloatingStateSupported; }
   public get isFloatingStateWindowResizable(): boolean { return this._isFloatingStateWindowResizable; }
   public get isToolSettings(): boolean { return this._isToolSettings; }
   public get isStatusBar(): boolean { return this._isStatusBar; }
   public get stateChanged(): boolean { return this._stateChanged; }
+  /** @deprecated in 3.6. UI1.0 is deprecated. */
   public get fillZone(): boolean { return this._fillZone; }
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0*/
   public get syncEventIds(): string[] { return this._syncEventIds; }
-  public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; }
+  /** @deprecated in 3.6. UI 1.0 will be removed in AppUi 4.0*/
+  public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; } // eslint-disable-line deprecation/deprecation
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
   public get iconSpec(): IconSpec { return this._iconSpec === IconHelper.reactIconKey ? IconHelper.getIconReactNode(this._iconSpec, this._internalData) : this._iconSpec; }
   public set iconSpec(spec: IconSpec) { this._iconSpec = this._internalData ? IconHelper.getIconData(spec, this._internalData) : spec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
-  public get initialProps(): WidgetProps | undefined { return this._initialProps; }
+  public get initialProps(): WidgetProps | undefined { return this._initialProps; } // eslint-disable-line deprecation/deprecation
 
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
@@ -219,19 +230,27 @@ export class WidgetDef {
   public get popoutBounds() { return this._popoutBounds; }
   public set popoutBounds(bounds: Rectangle | undefined) { this._popoutBounds = bounds; }
 
-  constructor(widgetProps: WidgetProps) {
-    if (widgetProps.id !== undefined)
-      this._id = widgetProps.id;
-    else {
-      WidgetDef._sId++;
-      this._id = `Widget-${WidgetDef._sId}`;
-    }
+  constructor();
 
-    WidgetDef.initializeFromWidgetProps(widgetProps, this);
+  /** @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0 */
+  constructor(props: WidgetProps); // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
+
+  /** @internal */
+  constructor(widgetProps?: WidgetProps) { // eslint-disable-line deprecation/deprecation
+    WidgetDef._sId++;
+    this._id = `Widget-${WidgetDef._sId}`;
+
+    if (widgetProps)
+      WidgetDef.initializeFromWidgetProps(widgetProps, this); // eslint-disable-line deprecation/deprecation
   }
 
-  public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
+  /** @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0 */
+  public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) { // eslint-disable-line deprecation/deprecation
     me._initialProps = widgetProps;
+
+    if (widgetProps.id !== undefined)
+      me._id = widgetProps.id;
+
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)
@@ -261,13 +280,13 @@ export class WidgetDef {
     if (widgetProps.defaultState !== undefined) {
       me._defaultState = widgetProps.defaultState;
       // istanbul ignore next
-      if ("1" === UiFramework.uiVersion)
+      if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
         me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }
 
-    if (widgetProps.isFreeform !== undefined) {
-      me._isFreeform = widgetProps.isFreeform;
-      me._widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+    if (widgetProps.isFreeform !== undefined) {  // eslint-disable-line deprecation/deprecation
+      me._isFreeform = widgetProps.isFreeform;  // eslint-disable-line deprecation/deprecation
+      me._widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular; // eslint-disable-line deprecation/deprecation
     }
 
     if (widgetProps.isFloatingStateSupported !== undefined)
@@ -304,16 +323,18 @@ export class WidgetDef {
     me._saveTransientState = widgetProps.saveTransientState;
     me._restoreTransientState = widgetProps.restoreTransientState;
 
-    me.setUpSyncSupport(widgetProps);
+    me.setUpSyncSupport(widgetProps); // eslint-disable-line deprecation/deprecation
   }
 
-  public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps {
-    const widgetProps: WidgetProps = abstractWidgetProps;
+  /** @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0 */
+  public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps { // eslint-disable-line deprecation/deprecation
+    const widgetProps: WidgetProps = abstractWidgetProps; // eslint-disable-line deprecation/deprecation
     widgetProps.element = abstractWidgetProps.getWidgetContent();
     return widgetProps;
   }
 
-  public setUpSyncSupport(props: WidgetProps) {
+  /** @deprecated in 3.5. UI 1.0 will be removed in AppUi 4.0 */
+  public setUpSyncSupport(props: WidgetProps) { // eslint-disable-line deprecation/deprecation
     if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;
       this._stateFunc = props.stateFunc; // eslint-disable-line deprecation/deprecation
@@ -322,11 +343,11 @@ export class WidgetDef {
   }
 
   private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
-    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
+    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) { // eslint-disable-line deprecation/deprecation
       // istanbul ignore else
-      if (this.stateFunc) {
+      if (this.stateFunc) { // eslint-disable-line deprecation/deprecation
         let newState = this.state;
-        newState = this.stateFunc(newState);
+        newState = this.stateFunc(newState); // eslint-disable-line deprecation/deprecation
         this.setWidgetState(newState);
       }
     }
@@ -349,7 +370,7 @@ export class WidgetDef {
     if (this._label === v)
       return;
     this._label = v;
-    FrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef: this });
+    InternalFrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef: this });
   }
 
   /** Get the tooltip string */
@@ -375,7 +396,7 @@ export class WidgetDef {
       if (typeof this.classId === "string") {
         // istanbul ignore else
         if (this.classId)
-          this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
+          this._widgetControl = UiFramework.controls.create(this.classId, this.id, this.applicationData) as WidgetControl;
         usedClassId = this.classId;
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
@@ -424,10 +445,10 @@ export class WidgetDef {
   public setWidgetState(newState: WidgetState): void {
     if (this.state === newState)
       return;
-    if ("1" === UiFramework.uiVersion)
+    if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
       this._state = newState;
     this._stateChanged = true;
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
+    UiFramework.frontstages.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
     this.onWidgetStateChanged();
   }
 
@@ -515,13 +536,13 @@ export class WidgetDef {
    * @alpha
    */
   public show() {
-    FrontstageManager.onWidgetShowEvent.emit({ widgetDef: this });
+    InternalFrontstageManager.onWidgetShowEvent.emit({ widgetDef: this });
   }
 
   /** Opens the widget and expands it to fill full size of the stage panel.
    * @alpha
    */
   public expand() {
-    FrontstageManager.onWidgetExpandEvent.emit({ widgetDef: this });
+    InternalFrontstageManager.onWidgetExpandEvent.emit({ widgetDef: this });
   }
 }

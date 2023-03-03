@@ -110,7 +110,7 @@ describe("DeleteDefinitionElements", () => {
     assert.isDefined(iModelDb.elements.tryGetElement(renderMaterialId));
 
     // deleteDefinitionElements for an unused RenderMaterial should succeed, delete should still fail
-    const unusedRenderMaterialId = RenderMaterialElement.insert(iModelDb, definitionModelId, "Unused RenderMaterial", new RenderMaterialElement.Params("PaletteName"));
+    const unusedRenderMaterialId = RenderMaterialElement.insert(iModelDb, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
     assert.isTrue(Id64.isValidId64(unusedRenderMaterialId));
     assert.throws(() => iModelDb.elements.deleteElement(unusedRenderMaterialId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedRenderMaterialId]);

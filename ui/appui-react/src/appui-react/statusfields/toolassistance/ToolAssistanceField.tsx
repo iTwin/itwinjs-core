@@ -20,13 +20,13 @@ import {
   FillCentered, Icon, LocalStateStorage, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
-  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog,
+  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistance, ToolAssistanceDialog,
   ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@itwin/appui-layout-react";
-import { HorizontalTabs, ToggleSwitch } from "@itwin/itwinui-react";
+import { HorizontalTabs, IconButton, ToggleSwitch } from "@itwin/itwinui-react";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
-import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
+import { ToolIconChangedEventArgs } from "../../framework/FrameworkFrontstages";
 import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
 import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
@@ -49,6 +49,7 @@ import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
 import mouseWheelClickIcon from "./mouse-click-wheel.svg";
 import touchCursorDragIcon from "./touch-cursor-pan.svg";
 import touchCursorTapIcon from "./touch-cursor-point.svg";
+import { SvgClose, SvgPinHollow } from "@itwin/itwinui-icons-react";
 
 // cSpell:ignore cursorprompt
 
@@ -154,7 +155,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   public override async componentDidMount() {
     this._isMounted = true;
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
-    FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
+    UiFramework.frontstages.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
     // istanbul ignore else
     if (this.props.uiStateStorage)
@@ -169,7 +170,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   public override componentWillUnmount() {
     this._isMounted = false;
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
-    FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
+    UiFramework.frontstages.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
   }
 
   private async restoreSettings() {
@@ -408,16 +409,18 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           <ToolAssistanceDialog
             buttons={
               <>
-                {!this.state.isPinned &&
-                  <TitleBarButton onClick={this._handlePinButtonClick} title={UiFramework.translate("toolAssistance.pin")}>
-                    <i className={"icon icon-pin"} />
-                  </TitleBarButton>
-                }
-                {this.state.isPinned &&
-                  <TitleBarButton onClick={this._handleCloseButtonClick} title={UiCore.translate("dialog.close")}>
-                    <i className={"icon icon-close"} />
-                  </TitleBarButton>
-                }
+                <IconButton
+                  size="small"
+                  styleType="borderless"
+                  onClick={this._handlePinButtonClick}
+                  title={
+                    this.state.isPinned
+                      ? UiCore.translate("dialog.close")
+                      : UiFramework.translate("toolAssistance.pin")
+                  }
+                >
+                  {this.state.isPinned ? <SvgClose /> : <SvgPinHollow />}
+                </IconButton>
               </>
             }
             title={dialogTitle}
@@ -470,12 +473,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
   private _handlePinButtonClick = () => {
     // istanbul ignore else
-    if (this._isMounted)
-      this.setState({ isPinned: true });
-  };
-
-  private _handleCloseButtonClick = () => {
-    this._handleClose();
+    if (this._isMounted) {
+      const isPinned = !this.state.isPinned;
+      this.setState({
+        isPinned,
+      });
+      if (!isPinned) {
+        this._handleClose();
+      }
+    }
   };
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
@@ -484,7 +490,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       openWidget,
     };
     if (!openWidget && this.state.isPinned && this._isMounted) {
-      newState = {...newState, ...{isPinned: false}};
+      newState = { ...newState, ...{ isPinned: false } };
     }
     this.setState(newState);
   }

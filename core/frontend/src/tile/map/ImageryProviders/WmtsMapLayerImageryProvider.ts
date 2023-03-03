@@ -12,7 +12,7 @@ import {
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
   QuadId,
-  WmsUtilities, WmtsCapabilities, WmtsCapability,
+  WmsUtilities, WmtsCapabilities, WmtsCapability, WmtsConstants,
 } from "../../internal";
 
 interface TileMatrixSetAndLimits { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
@@ -66,7 +66,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   // We have to pick one for each layer: for now we look for a Google Maps compatible tile tree.
   private initPreferredTileMatrixSet() {
     const googleMapsTms = this._capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
-    const wellGoogleKnownTms = googleMapsTms?.find((tms) => tms.wellKnownScaleSet?.toLowerCase().includes(WmtsCapability.Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME));
+    const wellGoogleKnownTms = googleMapsTms?.find((tms) => tms.wellKnownScaleSet?.toLowerCase().includes(WmtsConstants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME));
 
     this._capabilities?.contents?.layers.forEach((layer) => {
       let preferredTms: WmtsCapability.TileMatrixSet | undefined;
