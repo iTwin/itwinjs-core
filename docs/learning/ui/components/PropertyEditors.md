@@ -32,7 +32,6 @@ The following is a list of the provided property editors:
 - [NumericInputPropertyEditor]($components-react) - registered for the "number" type name and "numeric-input" editor name
 - [SliderPropertyEditor]($components-react) - registered for the "number" type name and "slider" editor name
 - [TextareaPropertyEditor]($components-react) - registered for the "text" and "string" type names and "multi-line" editor name
-- `ThemedEnumPropertyEditor` - registered for the "enum" type name and "themed-enum" editor name
 - [TogglePropertyEditor]($components-react) - registered for the "bool" and "boolean" type names and "toggle" editor name
 - [WeightPropertyEditor]($imodel-components-react) - registered for the "number" type name and "weight-picker" editor name
 
