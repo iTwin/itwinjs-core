@@ -8,8 +8,10 @@ import {
 } from "@itwin/core-frontend";
 import { BatchedTileTree } from "./BatchedTileTree";
 
+export type BatchedTileParams = TileParams;
+
 export class BatchedTile extends Tile {
-  public constructor(params: TileParams, tree: BatchedTileTree) {
+  public constructor(params: BatchedTileParams, tree: BatchedTileTree) {
     super(params, tree);
   }
 

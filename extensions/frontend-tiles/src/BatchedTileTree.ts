@@ -5,8 +5,14 @@
 
 import { Range3d } from "@itwin/core-geometry";
 import { RenderMode, ViewFlagOverrides } from "@itwin/core-common";
-import { Tile, TileDrawArgs, TileTree, TileTreeParams } from "@itwin/core-frontend";
-import { BatchedTile } from "./BatchedTile";
+import {
+  Tile, TileDrawArgs, TileTree, TileTreeParams,
+} from "@itwin/core-frontend";
+import { BatchedTile, BatchedTileParams } from "./BatchedTile";
+
+export interface BatchedTileTreeParams extends TileTreeParams {
+  rootTile: BatchedTileParams;
+}
 
 const viewFlagOverrides: ViewFlagOverrides = {
   renderMode: RenderMode.SmoothShade,
