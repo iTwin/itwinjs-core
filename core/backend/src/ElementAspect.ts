@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -113,40 +113,6 @@ export class ElementMultiAspect extends ElementAspect {
   public static override get className(): string { return "ElementMultiAspect"; }
 }
 
-/** A ChannelRootAspect identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
- * @note The associated ECClass was added to the BisCore schema in version 1.0.10
- * @public
- */
-export class ChannelRootAspect extends ElementUniqueAspect {
-  /** @internal */
-  public static override get className(): string { return "ChannelRootAspect"; }
-
-  /** The owner of the channel */
-  public owner: string;
-
-  /** @internal */
-  constructor(props: ChannelRootAspectProps, iModel: IModelDb) {
-    super(props, iModel);
-    this.owner = props.owner;
-  }
-
-  /** @internal */
-  public override toJSON(): ChannelRootAspectProps {
-    const val = super.toJSON() as ChannelRootAspectProps;
-    val.owner = this.owner;
-    return val;
-  }
-
-  /** Insert a ChannelRootAspect on the specified element. */
-  public static insert(iModel: IModelDb, ownerId: Id64String, ownerDescription: string) {
-    const props: ChannelRootAspectProps = {
-      classFullName: ChannelRootAspect.classFullName,
-      element: { id: ownerId },
-      owner: ownerDescription,
-    };
-    iModel.elements.insertAspect(props);
-  }
-}
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2

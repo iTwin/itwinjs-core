@@ -52,6 +52,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
+import { ChannelAdmin } from "./ChannelAdmin";
 
 // spell:ignore fontid fontmap
 
@@ -148,13 +149,6 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 }
 
-export interface ChannelControl {
-  getChannelForModel(modelId: Id64String): string;
-  addAllowedChannel(channelName: string): void;
-  removeAllowedChannel(channelName: string): void;
-  verifyChannel(model: Id64String, operation: string): void;
-}
-
 /**
      * Options for the importing of schemas
      * @public
@@ -229,6 +223,8 @@ export abstract class IModelDb extends IModel {
   public readonly elements = new IModelDb.Elements(this);
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
+  /** @beta */
+  public readonly channels = new ChannelAdmin(this);
   private _relationships?: Relationships;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -244,11 +240,7 @@ export abstract class IModelDb extends IModel {
   protected _locks?: LockControl = new NoLocks();
 
   /**  @internal */
-  protected _channels?: ChannelControl;
-  /** @beta */
-  public get
-    /** @internal */
-    protected _codeService?: CodeService;
+  protected _codeService?: CodeService;
 
   /** @alpha */
   public get codeService() { return this._codeService; }

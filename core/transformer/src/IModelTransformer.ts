@@ -16,7 +16,7 @@ import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChangeSummaryManager,
-  ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSchemaXmlContext, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
+  ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSchemaXmlContext, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
   ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
@@ -33,6 +33,7 @@ import { PendingReference, PendingReferenceMap } from "./PendingReferenceMap";
 import { EntityMap } from "./EntityMap";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { EntityUnifier } from "./EntityUnifier";
+import { ChannelAdmin } from "@itwin/core-backend/lib/cjs/ChannelAdmin";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -163,7 +164,7 @@ class PartiallyCommittedEntity {
      */
     private _missingReferences: EntityReferenceSet,
     private _onComplete: () => void
-  ) {}
+  ) { }
   public resolveReference(id: EntityReference) {
     this._missingReferences.delete(id);
     if (this._missingReferences.size === 0)
@@ -293,7 +294,7 @@ export class IModelTransformer extends IModelExportHandler {
       IModelTransformer.provenanceElementClasses.forEach((cls) => this.exporter.excludeElementClass(cls.classFullName));
       IModelTransformer.provenanceElementAspectClasses.forEach((cls) => this.exporter.excludeElementAspectClass(cls.classFullName));
     }
-    this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
+    this.exporter.excludeElementAspectClass(ChannelAdmin.channelClassName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
@@ -959,7 +960,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Import elements that were deferred in a prior pass.
    * @deprecated in 3.x. This method is no longer necessary since the transformer no longer needs to defer elements
    */
-  public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
+  public async processDeferredElements(_numRetries: number = 3): Promise<void> { }
 
   private finalizeTransformation() {
     if (this._partiallyCommittedEntities.size > 0) {
@@ -1347,22 +1348,22 @@ export class IModelTransformer extends IModelExportHandler {
           AND Kind=:kind
           AND Element.Id=:entityId
       `,
-      (statement: ECSqlStatement): boolean => {
-        statement.bindId("scopeId", this.targetScopeElementId);
-        statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
-        statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
-        statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
-        const stepResult = statement.step();
-        switch (stepResult) {
-          case DbResult.BE_SQLITE_ROW:
-            const version = statement.getValue(0).getString();
-            return version === lastProvenanceEntityInfo.aspectVersion;
-          case DbResult.BE_SQLITE_DONE:
-            return false;
-          default:
-            throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
-        }
-      });
+        (statement: ECSqlStatement): boolean => {
+          statement.bindId("scopeId", this.targetScopeElementId);
+          statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
+          statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
+          statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
+          const stepResult = statement.step();
+          switch (stepResult) {
+            case DbResult.BE_SQLITE_ROW:
+              const version = statement.getValue(0).getString();
+              return version === lastProvenanceEntityInfo.aspectVersion;
+            case DbResult.BE_SQLITE_DONE:
+              return false;
+            default:
+              throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
+          }
+        });
     if (!targetHasCorrectLastProvenance)
       throw Error([
         "Target for resuming from does not have the expected provenance ",
@@ -1396,7 +1397,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @param constructorArgs remaining arguments that you would normally pass to the Transformer subclass you are using, usually (sourceDb, targetDb)
    * @note custom transformers with custom state may need to override this method in order to handle loading their own custom state somewhere
    */
-  public static resumeTransformation<SubClass extends new(...a: any[]) => IModelTransformer = typeof IModelTransformer>(
+  public static resumeTransformation<SubClass extends new (...a: any[]) => IModelTransformer = typeof IModelTransformer>(
     this: SubClass,
     statePath: string,
     ...constructorArgs: ConstructorParameters<SubClass>
@@ -1424,7 +1425,7 @@ export class IModelTransformer extends IModelExportHandler {
    * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
    * @see [[IModelTransformer.loadStateFromFile]]
    */
-  protected loadAdditionalStateJson(_additionalState: any): void {}
+  protected loadAdditionalStateJson(_additionalState: any): void { }
 
   /**
    * Save the state of the active transformation to an open SQLiteDb
