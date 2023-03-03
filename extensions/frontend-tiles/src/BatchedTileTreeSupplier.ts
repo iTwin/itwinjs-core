@@ -21,6 +21,7 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
   public createTileTree(id: TreeId, _iModel: IModelConnection): Promise<TileTree | undefined> {
     // ###TODO
     assert(id === "spatial-models");
+    const url = "http://localhost:8080/tileset.json";
     return Promise.resolve(undefined);
   }
 }
