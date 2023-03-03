@@ -158,6 +158,12 @@ export class SweepContour {
             const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
             this._facets = unflippedPoly;
             this._facets.tryTransformInPlace(this.localToWorld);
+          } else {  // earcut failed (e.g., on a split washer polygon, where the bridge edge is traversed twice)
+            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(points, [], true);
+            if (polyface) {
+              this._facets = polyface as IndexedPolyface;
+              this._facets.tryTransformInPlace(this.localToWorld);
+            }
           }
         }
       } else if (this.curves instanceof ParityRegion) {
