@@ -417,9 +417,7 @@ describe("Hierarchies", () => {
           expression: `TRUE`,
         },
       };
-      // FIXME: at the moment the manager eats the error and returns empty nodes result...
-      // await expect(Presentation.presentation.getNodes(requestParams)).to.eventually.be.rejectedWith(PresentationError);
-      expect(await Presentation.presentation.getNodes(requestParams)).to.deep.eq([]);
+      await expect(Presentation.presentation.getNodes(requestParams)).to.eventually.be.rejectedWith(PresentationError);
     });
 
   });
@@ -481,12 +479,7 @@ describe("Hierarchies", () => {
       });
 
       it("throws when result set size exceeds given limit", async () => {
-        // FIXME: at the moment the manager eats the error and returns empty nodes result...
-        expect(await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-          sizeLimit: 1,
-        })).to.deep.eq([]);
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, sizeLimit: 1 })).to.eventually.be.rejectedWith(PresentationError);
       });
 
     });
@@ -570,14 +563,7 @@ describe("Hierarchies", () => {
       it("throws when result set size exceeds given limit", async () => {
         const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
         const rootSubject = rootNodes[0];
-
-        // FIXME: at the moment the manager eats the error and returns empty nodes result...
-        expect(await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-          parentKey: rootSubject.key,
-          sizeLimit: 1,
-        })).to.deep.eq([]);
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootSubject.key, sizeLimit: 1 })).to.eventually.be.rejectedWith(PresentationError);
       });
 
     });
@@ -688,21 +674,15 @@ describe("Hierarchies", () => {
       it("throws when result set size exceeds given limit", async () => {
         const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
         const classGroupingNode = classGroupingNodes[0];
-
-        // FIXME: at the moment the manager eats the error and returns empty nodes result...
-        expect(await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key, sizeLimit: 2 })).to.deep.eq([]);
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key, sizeLimit: 2 })).to.eventually.be.rejectedWith(PresentationError);
 
         const propertyGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key });
         const propertyGroupingNode = propertyGroupingNodes[0];
-
-        // FIXME: at the moment the manager eats the error and returns empty nodes result...
-        expect(await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: propertyGroupingNode.key, sizeLimit: 2 })).to.deep.eq([]);
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: propertyGroupingNode.key, sizeLimit: 2 })).to.eventually.be.rejectedWith(PresentationError);
 
         const labelGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: propertyGroupingNode.key });
         const labelGroupingNode = labelGroupingNodes[0];
-
-        // FIXME: at the moment the manager eats the error and returns empty nodes result...
-        expect(await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: labelGroupingNode.key, sizeLimit: 1 })).to.deep.eq([]);
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: labelGroupingNode.key, sizeLimit: 1 })).to.eventually.be.rejectedWith(PresentationError);
       });
 
     });

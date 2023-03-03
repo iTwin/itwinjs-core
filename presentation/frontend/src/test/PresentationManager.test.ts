@@ -1377,33 +1377,30 @@ describe("PresentationManager", () => {
       expect(result).to.deep.eq({ total: 5, items: [2, 3, 4, 5] });
     });
 
-    it("returns zero response when page start index is larger than total number of items", async () => {
+    it("throws when page start index is larger than total number of items", async () => {
       const getter = sinon.stub();
       getter.resolves({ total: 5, items: [] });
-      const result = await buildPagedArrayResponse({ start: 9 }, getter);
+      await expect(buildPagedArrayResponse({ start: 9 }, getter)).to.eventually.be.rejected;
       expect(getter).to.be.calledOnce;
       expect(getter).to.be.calledWith({ start: 9, size: 0 });
-      expect(result).to.deep.eq({ total: 0, items: [] });
     });
 
-    it("returns zero response when partial request returns no items", async () => {
+    it("throws when partial request returns no items", async () => {
       const getter = sinon.stub();
       getter.resolves({ total: 5, items: [] });
-      const result = await buildPagedArrayResponse({ start: 1 }, getter);
+      await expect(buildPagedArrayResponse({ start: 1 }, getter)).to.eventually.be.rejected;
       expect(getter).to.be.calledOnce;
       expect(getter).to.be.calledWith({ start: 1, size: 0 });
-      expect(result).to.deep.eq({ total: 0, items: [] });
     });
 
-    it("returns zero response when partial request returns less items than requested", async () => {
+    it("throws when partial request returns less items than requested", async () => {
       const getter = sinon.stub();
       getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
       getter.onSecondCall().resolves({ total: 5, items: [] });
-      const result = await buildPagedArrayResponse({ start: 1 }, getter);
+      await expect(buildPagedArrayResponse({ start: 1 }, getter)).to.eventually.be.rejected;
       expect(getter).to.be.calledTwice;
       expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
       expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
-      expect(result).to.deep.eq({ total: 0, items: [] });
     });
 
   });

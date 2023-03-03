@@ -80,10 +80,9 @@ describe("TreeDataProvider", async () => {
     expect(nodes).to.matchSnapshot();
   });
 
-  it("does not return root nodes with invalid paging", async () => {
+  it("throws when requesting root nodes with invalid paging", async () => {
     provider.pagingSize = 5;
-    const nodes = await provider.getNodes(undefined, { start: 1, size: 5 });
-    expect(nodes.length).to.eq(0);
+    await expect(provider.getNodes(undefined, { start: 1, size: 5 })).to.eventually.be.rejected;
   });
 
   it("returns child nodes count", async () => {
@@ -106,11 +105,10 @@ describe("TreeDataProvider", async () => {
     expect(nodes).to.matchSnapshot();
   });
 
-  it("does not return child nodes with invalid paging", async () => {
+  it("throws when requesting child nodes with invalid paging", async () => {
     const rootNodes = await provider.getNodes();
     provider.pagingSize = 5;
-    const nodes = await provider.getNodes(rootNodes[0], { start: 1, size: 5 });
-    expect(nodes.length).to.eq(0);
+    await expect(provider.getNodes(rootNodes[0], { start: 1, size: 5 })).to.eventually.be.rejected;
   });
 
   it("requests backend only once to get first page", async () => {
