@@ -1113,3 +1113,26 @@ function makeSticks(points: Point3d[]): Path {
   }
   return path;
 }
+
+describe("SortRegionLoops", () => {
+  it.skip("TriangulateRegion", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const testCases = ["./src/test/testInputs/curve/arcGisLoops.imjs", "./src/test/testInputs/curve/loopWithHole.imjs"];
+    for (const testCase of testCases) {
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
+      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
+        const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
+        ck.testTrue(region.isClosedPath || region.children.length > 0, "region created");
+        const builder = PolyfaceBuilder.create();
+        builder.addGeometryQuery(region);
+        const mesh = builder.claimPolyface();
+        ck.testFalse(mesh.isEmpty, "triangulation not empty");
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SortRegionLoops", "TriangulateRegion");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
