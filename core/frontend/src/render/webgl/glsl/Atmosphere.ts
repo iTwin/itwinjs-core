@@ -6,7 +6,6 @@ import {
   FragmentShaderBuilder,
   FragmentShaderComponent,
   ProgramBuilder,
-  ShaderType,
   VariablePrecision,
   VariableType,
   VertexShaderBuilder,
@@ -129,19 +128,15 @@ vec2 rayEllipsoidIntersection(
   vec3 ellipsoidCenter,
   vec3 rayOrigin,
   vec3 rayDir,
-  mat3 inverseRotationMatrix,
   mat3 inverseScaleInverseRotationMatrix,
   mat3 ellipsoidScaleMatrix
 ) {
   vec3 rayOriginFromEllipsoid = rayOrigin - ellipsoidCenter;
-  vec3 rayOriginFromAxisAlignedEllipsoid = inverseRotationMatrix * rayOriginFromEllipsoid;
   vec3 rayOriginFromAxisAlignedUnitSphere = inverseScaleInverseRotationMatrix * rayOriginFromEllipsoid;
   vec3 rayDirFromAxisAlignedUnitSphere = normalize(inverseScaleInverseRotationMatrix * rayDir);
 
   vec2 intersectionInfo = raySphere(vec3(0.0), 1.0, rayOriginFromAxisAlignedUnitSphere, rayDirFromAxisAlignedUnitSphere);
-  if (intersectionInfo[1] <= 0.0) {
-    return vec2(MAX_FLOAT, 0.0);
-  }
+
   // To map the intersection measurements from unit coordinates back to those of the ellipsoid, we scale both the distance to and through the unit sphere by the scale matrix.
   float distanceToEllipsoidNear = length(ellipsoidScaleMatrix * rayDirFromAxisAlignedUnitSphere * intersectionInfo[0]);
   float distanceThroughEllipsoid = length(ellipsoidScaleMatrix * rayDirFromAxisAlignedUnitSphere * intersectionInfo[1]);
@@ -166,7 +161,7 @@ const densityAtPoint = `
 float densityAtPoint(vec3 point) {
   vec3 pointFromEarthCenter = u_inverseRotationInverseMinDensityScaleMatrix * (point - u_earthCenter);
 
-  // TODO: allow max density threshold to be specified
+  // TODO: allow max density threshold to be specified instead of assuming it's equal to the earth's size (1.0)
   if (length(pointFromEarthCenter) <= 1.0) { // point is below the max density threshold
     return 1.0;
   }
@@ -224,15 +219,15 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, int numSamplePo
 /**
  * Calculates the atmospheric interference of light from both the sun and a given original color.
  */
-const computeAtmosphericScattering = `
-vec3 computeAtmosphericScattering() {
+const computeAtmosphericScatteringFromScratch = `
+vec3 computeAtmosphericScattering(boolean ignoreRaycastsIntersectingEarth) {
   vec3 rayDir = computeRayDir(v_eyeSpace);
   vec3 rayOrigin = computeRayOrigin(v_eyeSpace);
   float sceneDepth = computeSceneDepth(v_eyeSpace);
   float diameterOfEarthAtEquator = u_earthScaleMatrix[2][2];
 
-  vec2 earthHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseEllipsoidRotationMatrix, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
-  vec2 atmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseEllipsoidRotationMatrix, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
+  vec2 earthHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
+  vec2 atmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
 
   float distanceThroughAtmosphere = min(
     atmosphereHitInfo[1],
@@ -265,29 +260,28 @@ vec3 computeAtmosphericScattering() {
   // The first sample point either lies at the edge of the atmosphere (camera is in space) or exactly at the ray origin (camera is in the atmosphere).
   // In both cases, the distance traveled through the atmosphere to this point is 0.
   opticalDepthFromRayOriginToSamplePoints[0] = 0.0;
-  vec3 totalLightFromSun = vec3(0.0);
+  float amountOfLightScatteredAway = 0.0;
 
   for (int i = 1; i <= numPartitions; i++) {
     opticalDepthFromRayOriginToSamplePoints[i] = opticalDepth(scatterPoint, rayDir, -stepSize, 2) + opticalDepthFromRayOriginToSamplePoints[i-1];
 
-    vec2 sunRayEarthHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseEllipsoidRotationMatrix, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
+    vec2 sunRayEarthHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
     bool sunBlockedByEarth = sunRayEarthHitInfo[1] > 0.0;
     if (!sunBlockedByEarth) {
-      // TODO: figure out if ellipsoid intersection is even useful compared to sphere intersection for this math, especially if we divide by the diameter of the earth anyway later to make the numbers nice
-      vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseEllipsoidRotationMatrix, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
+      vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
       // TODO: Calculate an appropriate number of samples for sun ray optical depth based off the stepSize (so we don't take too many samples when the density doesn't change much)
       float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numOpticalDepthPoints);
 
       float totalOpticalDepthOfSunRay = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtEquator; // We scale by earth diameter purely to obtain values that are easier to work with
-      vec3 lightTransmittedFromSun = u_scatteringCoefficients * densityAtPoint(scatterPoint) * exp(-totalOpticalDepthOfSunRay) * stepSize; // TODO: check if this density sample is really needed if we use the trapezoid rule
-      totalLightFromSun += lightTransmittedFromSun;
+      amountOfLightScatteredAway += exp(-totalOpticalDepthOfSunRay);
     }
 
     scatterPoint += step;
   }
 
   // Scattering coefficients adjust the amount of light scattered by color. (e.g. earth's atmosphere scatters shorter wavelengths more than longer ones)
-  totalLightFromSun *= u_inScatteringIntensity;
+  // Scale by stepSize to account for larger atmospheres scattering more light
+  vec3 totalLightFromSun = u_scatteringCoefficients * u_inScatteringIntensity * stepSize * amountOfLightScatteredAway;
 
   // float totalViewRayOpticalDepth = exp(-opticalDepthFromRayOriginToSamplePoints[numPartitions] / diameterOfEarthAtEquator);
   if (earthHitInfo[1] > 0.0) { // view ray looks at the earth
@@ -325,9 +319,27 @@ vec3 computeAtmosphericScattering() {
 /**
  *
  */
-const computeAtmosphericScatteringFromVaryings = `
-vec3 computeAtmosphericScattering() {
+const computeAtmosphericScatteringFragmentFromVaryings = `
+vec3 computeAtmosphericScatteringFragment() {
   return v_atmosphericScattering;
+}
+`;
+
+/**
+ *
+ */
+const computeAtmosphericScatteringFragmentOnSky = `
+vec3 computeAtmosphericScatteringFragment() {
+  return computeAtmosphericScattering(true);
+}
+`;
+
+/**
+ *
+ */
+const computeAtmosphericScatteringFragmentOnRealityMesh = `
+vec3 computeAtmosphericScatteringFragment() {
+  return computeAtmosphericScattering(false);
 }
 `;
 
@@ -346,7 +358,7 @@ vec4 mixAtmosphericScatteringWithBaseColor(vec3 atmosphericScatteringColor, vec4
 `;
 
 const applyAtmosphericScattering = `
-  vec3 atmosphericScatteringColor = computeAtmosphericScattering();
+  vec3 atmosphericScatteringColor = computeAtmosphericScatteringFragment();
   vec3 result = atmosphericScatteringColor - vec3(u_outScatteringIntensity);
   return mixAtmosphericScatteringWithBaseColor(result, baseColor);
 `;
@@ -420,16 +432,16 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     },
     VariablePrecision.High
   );
-  shader.addUniform(
-    "u_inverseEllipsoidRotationMatrix",
-    VariableType.Mat3,
-    (prog) => {
-      prog.addProgramUniform("u_inverseEllipsoidRotationMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindInverseEllipsoidRotationMatrix(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
+  // shader.addUniform(
+  //   "u_inverseEllipsoidRotationMatrix",
+  //   VariableType.Mat3,
+  //   (prog) => {
+  //     prog.addProgramUniform("u_inverseEllipsoidRotationMatrix", (uniform, params) => {
+  //       params.target.uniforms.atmosphere.bindInverseEllipsoidRotationMatrix(uniform);
+  //     });
+  //   },
+  //   VariablePrecision.High
+  // );
   shader.addUniform(
     "u_atmosphereScaleMatrix",
     VariableType.Mat3,
@@ -537,6 +549,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
  */
 export function addAtmosphericScatteringEffect(
   builder: ProgramBuilder,
+  isSkyBox: boolean,
   perFragmentCompute = false,
 ) {
   const mainShader = perFragmentCompute ? builder.frag : builder.vert;
@@ -550,16 +563,22 @@ export function addAtmosphericScatteringEffect(
   mainShader.addFunction(computeRayDir);
   mainShader.addFunction(computeSceneDepthDefault);
   mainShader.addFunction(raySphere);
-  mainShader.addFunction(densityAtPoint);
   mainShader.addFunction(rayEllipsoidIntersection);
+  mainShader.addFunction(densityAtPoint);
   mainShader.addFunction(opticalDepth);
   // mainShader.addFunction(computeReflectedLight);
 
   if (perFragmentCompute) {
-    builder.frag.addFunction(computeAtmosphericScattering);
+    builder.frag.addFunction(computeAtmosphericScatteringFromScratch);
+    if (isSkyBox) {
+      builder.frag.addFunction(computeAtmosphericScatteringFragmentOnSky);
+    } else {
+      builder.frag.addFunction(computeAtmosphericScatteringFragmentOnRealityMesh);
+    }
   } else {
-    builder.addFunctionComputedVaryingWithArgs("v_atmosphericScattering", VariableType.Vec3, `computeAtmosphericScattering()`, computeAtmosphericScattering);
-    builder.frag.addFunction(computeAtmosphericScatteringFromVaryings);
+    const functionCall = isSkyBox ? `computeAtmosphericScattering(true)` : `computeAtmosphericScattering(false)`;
+    builder.addFunctionComputedVaryingWithArgs("v_atmosphericScattering", VariableType.Vec3, functionCall, computeAtmosphericScatteringFromScratch);
+    builder.frag.addFunction(computeAtmosphericScatteringFragmentFromVaryings);
   }
 
   // builder.frag.addUniform(
