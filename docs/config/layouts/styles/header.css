@@ -155,7 +155,8 @@ header nav {
   border: none;
   color: #ffffff;
   cursor: pointer;
-  padding: 10px;
+  padding: 10px 0;
+
 }
 
 .dropdown-toggle:hover,
@@ -171,9 +172,10 @@ header nav {
   z-index: 999;
   background-color: #2b2d42;
   border: 1px solid #1d1f2f;
-  border-top: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   min-width: 200px;
+  padding-top: 0;
+  margin-top: 0;
 }
 
 .dropdown-menu a {
@@ -193,6 +195,8 @@ header nav {
 .dropdown:hover .dropdown-menu {
   display: block;
 }
+
+
 
 
 
