@@ -132,7 +132,7 @@ header nav {
 
 
 #main-nav a,
-#main-nav select {
+.dropdown {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: var(--white);
@@ -140,34 +140,60 @@ header nav {
   margin-right: var(--space-unit);
 }
 
-#main-nav a:hover,
-#main-nav select:hover {
+#main-nav a:hover {
   color: #fff;
   text-decoration: none;
 }
 
-.select-wrapper {
-  display: inline-block;
+.dropdown {
   position: relative;
-  overflow: hidden;
+  display: inline-block;
 }
 
-.select-wrapper select {
-  width: 100%;
-  margin: 0;
-  font-size: 14px;
+.dropdown-toggle {
+  background: none;
   border: none;
-  background-color: transparent;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  outline: none;
+  color: #ffffff;
+  cursor: pointer;
   padding: 10px;
 }
 
-.select-wrapper select option {
-  background-color: #32b1d1;
+.dropdown-toggle:hover,
+.dropdown-toggle:focus {
+  color: #bbbbbb;
 }
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 999;
+  background-color: #2b2d42;
+  border: 1px solid #1d1f2f;
+  border-top: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  min-width: 200px;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu a:focus {
+  background-color: #1d1f2f;
+  color: #bbbbbb;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
 
 
 header #search-component {
