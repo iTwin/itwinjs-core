@@ -115,8 +115,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
         case IModelJsNative.ECPresentationStatus.ResultSetTooLarge: return PresentationStatus.ResultSetTooLarge;
         case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
-        default: return PresentationStatus.Error;
       }
+      return PresentationStatus.Error;
     }
     private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
