@@ -562,15 +562,14 @@ export class RegionOps {
     curves.dispatchToGeometryHandler(context);
   }
   /**
-   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
-   * * Return an array of arrays which capture the input pointers.
-   * * In each first level array:
-   *    * The first loop is an outer loop.
-   *    * all subsequent loops are holes
-   *    * The outer loop is CCW
-   *    * The holes are CW.
-   * * Call PolygonOps.sortOuterAndHoleLoopsXY to have the result returned as an array of arrays of polygons.
-   * @param loops multiple loops to sort and reverse.
+   * Reverse and reorder loops in the xy-plane for consistency and containment.
+   * @param loops multiple loops in any order and orientation, z-coordinates ignored
+   * @returns a region that captures the input pointers. This region is a:
+   * * `Loop` if there is exactly one input loop. It is oriented counterclockwise.
+   * * `ParityRegion` if input consists of exactly one outer loop with at least one hole loop.
+   * Its first child is an outer loop oriented counterclockwise; all subsequent children are holes oriented clockwise.
+   * * `UnionRegion` if any other input configuration. Its children are individually ordered/oriented as in the above cases.
+   * @see PolygonOps.sortOuterAndHoleLoopsXY
    */
   public static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion {
     const loopAndArea: SortablePolygon[] = [];

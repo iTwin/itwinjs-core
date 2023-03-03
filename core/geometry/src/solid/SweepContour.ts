@@ -175,7 +175,7 @@ export class SweepContour {
             }
           }
           const numLoops = strokes.length;
-      /** Try the earcut algorithm first -- lots less machinery, but can't handle any form of overlap */
+          /** Try the earcut algorithm first -- lots less machinery, but can't handle any form of overlap */
           const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
           if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph, true, numLoops - 1)) {
             Triangulator.flipTriangles(graph);
@@ -190,7 +190,6 @@ export class SweepContour {
               this._facets.tryTransformInPlace(this.localToWorld);
             }
           }
-
         }
       }
     }
