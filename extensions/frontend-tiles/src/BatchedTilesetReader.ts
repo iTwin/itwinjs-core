@@ -7,7 +7,9 @@ import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { Tileset3dSchema as schema } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, TileLoadPriority, RealityModelTileUtils } from "@itwin/core-frontend";
+import { BatchedTileTreeParams } from "./BatchedTileTree";
+import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
 function isTileset3d(json: unknown): json is schema.Tileset {
   if (typeof "json" !== "object")
@@ -62,5 +64,34 @@ export class BatchedTilesetReader {
       throw new Error("Invalid tileset JSON");
 
     this._tileset = json;
+  }
+
+    private readTile(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
+    const content = json.content;
+    const geometricError = json.geometricError;
+    const range = rangeFromBoundingVolume(json.boundingVolume);
+
+    return {
+      parent,
+      contentId: content?.uri ?? "",
+      range,
+      contentRange: content?.boundingVolume ? rangeFromBoundingVolume(content.boundingVolume) : undefined,
+      isLeaf: !!(json.children?.length),
+      maximumSize: RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
+    };
+  }
+
+  public async readTileTree(): Promise<BatchedTileTreeParams> {
+    const root = this._tileset.root;
+    const location = root.transform ? transformFromJSON(root.transform) : Transform.createIdentity();
+
+    return {
+      id: "spatial-models",
+      modelId: this._iModel.transientIds.getNext(),
+      iModel: this._iModel,
+      location,
+      priority: TileLoadPriority.Primary,
+      rootTile: this.readTile(root),
+    };
   }
 }

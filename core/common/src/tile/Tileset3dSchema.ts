@@ -85,7 +85,7 @@ export namespace Tileset3dSchema {
   export interface Tileset extends TilesetProperty {
     asset: Asset;
     geometricError: GeometricError;
-    // properties: currently unused.
+    properties: unknown; // currently unused.
     root: Tile;
     extensionsUsed?: string[];
     extensionsRequired?: string[];
