@@ -66,7 +66,7 @@ export class BatchedTilesetReader {
     this._tileset = json;
   }
 
-    private readTile(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
+    private readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;
     const geometricError = json.geometricError;
     const range = rangeFromBoundingVolume(json.boundingVolume);
@@ -81,7 +81,7 @@ export class BatchedTilesetReader {
     };
   }
 
-  public async readTileTree(): Promise<BatchedTileTreeParams> {
+  public async readTileTreeParams(): Promise<BatchedTileTreeParams> {
     const root = this._tileset.root;
     const location = root.transform ? transformFromJSON(root.transform) : Transform.createIdentity();
 
@@ -91,7 +91,8 @@ export class BatchedTilesetReader {
       iModel: this._iModel,
       location,
       priority: TileLoadPriority.Primary,
-      rootTile: this.readTile(root),
+      rootTile: this.readTileParams(root),
+      reader: this,
     };
   }
 }

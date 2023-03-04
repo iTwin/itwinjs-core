@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Range3d } from "@itwin/core-geometry";
 import { RenderMode, ViewFlagOverrides } from "@itwin/core-common";
 import {
   Tile, TileDrawArgs, TileTree, TileTreeParams,
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
+import { BatchedTilesetReader } from "./BatchedTilesetReader";
 
 export interface BatchedTileTreeParams extends TileTreeParams {
   rootTile: BatchedTileParams;
+  reader: BatchedTilesetReader;
 }
 
 const viewFlagOverrides: ViewFlagOverrides = {
@@ -21,14 +22,12 @@ const viewFlagOverrides: ViewFlagOverrides = {
 
 export class BatchedTileTree extends TileTree {
   private readonly _rootTile: BatchedTile;
+  public readonly reader: BatchedTilesetReader;
 
-  public constructor(params: TileTreeParams) {
+  public constructor(params: BatchedTileTreeParams) {
     super(params);
-    this._rootTile = new BatchedTile({
-      contentId: "###TODO",
-      range: new Range3d(), // ###TODO
-      maximumSize: 512, // ###TODO
-    }, this);
+    this._rootTile = new BatchedTile(params.rootTile, this);
+    this.reader = params.reader;
   }
 
   public override get rootTile(): BatchedTile {
@@ -40,7 +39,6 @@ export class BatchedTileTree extends TileTree {
   }
 
   public override get maxDepth(): number | undefined {
-    // ###TODO?
     return undefined;
   }
 

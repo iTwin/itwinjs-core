@@ -9,6 +9,7 @@ import {
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./FrontendTiles";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
+import { BatchedTileTree } from "./BatchedTileTree";
 
 export type TreeId = "spatial-models";
 
@@ -28,7 +29,8 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
       const json = await response.json();
 
       const reader = new BatchedTilesetReader(json, iModel);
-      throw new Error("###TODO");
+      const params = await reader.readTileTreeParams();
+      return new BatchedTileTree(params);
     } catch (err) {
       Logger.logException(loggerCategory, err);
       return undefined;
