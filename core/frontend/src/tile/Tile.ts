@@ -144,7 +144,7 @@ export abstract class Tile {
       this.setIsReady();
 
     this._isLeaf = true === params.isLeaf;
-    this._childrenLoadStatus = (undefined !== tree.maxDepth && this.depth < tree.maxDepth) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
+    this._childrenLoadStatus = (undefined === tree.maxDepth || this.depth < tree.maxDepth) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
   }
 
   /** Free memory-consuming resources owned by this tile to reduce memory pressure.

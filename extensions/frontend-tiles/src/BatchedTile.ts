@@ -3,16 +3,32 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Logger } from "@itwin/core-bentley";
+import { Tileset3dSchema } from "@itwin/core-common";
 import {
   IModelApp, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "@itwin/core-frontend";
+import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
 
-export type BatchedTileParams = TileParams;
+export interface BatchedTileParams extends TileParams {
+  childrenProps: Tileset3dSchema.Tile[] | undefined;
+}
 
 export class BatchedTile extends Tile {
+  private readonly _childrenProps?: Tileset3dSchema.Tile[];
+
+  public get batchedTree(): BatchedTileTree {
+    return this.tree as BatchedTileTree;
+  }
+
   public constructor(params: BatchedTileParams, tree: BatchedTileTree) {
     super(params, tree);
+    if (params.childrenProps?.length)
+      this._childrenProps = params.childrenProps;
+
+    if (!this.contentId)
+      this.setIsReady();
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -47,9 +63,25 @@ export class BatchedTile extends Tile {
     }
   }
 
-  protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
-    // ###TODO
-    resolve([]);
+  protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
+    let children: BatchedTile[] | undefined;
+    if (this._childrenProps) {
+      try {
+        for (const childProps of this._childrenProps) {
+          const params = this.batchedTree.reader.readTileParams(childProps, this);
+          const child = new BatchedTile(params, this.batchedTree);
+          children = children ?? [];
+          children.push(child);
+        }
+      } catch (err) {
+        Logger.logException(loggerCategory, err);
+        children = undefined;
+        if (err instanceof Error)
+          reject(err);
+      }
+    }
+
+    resolve(children);
   }
 
   public override get channel(): TileRequestChannel {

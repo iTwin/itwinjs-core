@@ -74,18 +74,20 @@ export class BatchedTilesetReader {
     this._tileset = json;
   }
 
-    private readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
+  public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;
     const geometricError = json.geometricError;
     const range = rangeFromBoundingVolume(json.boundingVolume);
+    const isLeaf = undefined === json.children || json.children.length === 0;
 
     return {
       parent,
       contentId: content?.uri ?? "",
       range,
       contentRange: content?.boundingVolume ? rangeFromBoundingVolume(content.boundingVolume) : undefined,
-      isLeaf: !!(json.children?.length),
+      isLeaf,
       maximumSize: RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
+      childrenProps: isLeaf ? undefined : json.children,
     };
   }
 
