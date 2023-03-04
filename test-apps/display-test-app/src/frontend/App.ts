@@ -268,7 +268,13 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
-      opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
+      // The electron package produces an exception every time getAccessToken is called, which is quite frequently.
+      // It makes debugging with "pause on caught exceptions" infuriating.
+      // ###TODO fix that in the client and remove this
+      const doAuth = false;
+      if (doAuth)
+        opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
+
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
