@@ -65,13 +65,15 @@ function transformFromJSON(json: schema.Transform): Transform {
 export class BatchedTilesetReader {
   private readonly _iModel: IModelConnection;
   private readonly _tileset: schema.Tileset;
+  public readonly baseUrl: string;
 
-  public constructor(json: unknown, iModel: IModelConnection) {
-    this._iModel = iModel;
+  public constructor(json: unknown, iModel: IModelConnection, baseUrl: string) {
     if (!isTileset3d(json))
       throw new Error("Invalid tileset JSON");
 
+    this._iModel = iModel;
     this._tileset = json;
+    this.baseUrl = baseUrl;
   }
 
   public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {

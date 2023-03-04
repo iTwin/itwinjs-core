@@ -88,12 +88,13 @@ export class BatchedTile extends Tile {
     return IModelApp.tileAdmin.channels.getForHttp("itwinjs-batched-models");
   }
 
-  public override requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
-    // ###TODO
-    return Promise.resolve(undefined);
+  public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+    const url = `${this.batchedTree.reader.baseUrl}${this.contentId}`;
+    const response = await fetch(url);
+    return response.arrayBuffer();
   }
 
-  public override readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> {
+  public override async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> {
     // ###TODO
     return Promise.resolve({ });
   }

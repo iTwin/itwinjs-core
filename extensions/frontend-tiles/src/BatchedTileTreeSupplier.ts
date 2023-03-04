@@ -23,12 +23,13 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
 
   public async createTileTree(id: TreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     assert(id === "spatial-models");
-    const url = "http://localhost:8080/tileset.json";
+    const baseUrl = "http://localhost:8080/";
+    const url = `${baseUrl}tileset.json`;
     try {
       const response = await fetch(url);
       const json = await response.json();
 
-      const reader = new BatchedTilesetReader(json, iModel);
+      const reader = new BatchedTilesetReader(json, iModel, baseUrl);
       const params = await reader.readTileTreeParams();
       return new BatchedTileTree(params);
     } catch (err) {
