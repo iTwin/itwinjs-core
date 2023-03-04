@@ -5,7 +5,7 @@
 
 import { assert, Logger } from "@itwin/core-bentley";
 import {
-  IModelConnection, TileTree, TileTreeSupplier,
+  IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./FrontendTiles";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
@@ -38,4 +38,8 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
   }
 }
 
-export const batchedTileTreeSupplier: TileTreeSupplier = new BatchedTileTreeSupplier();
+const batchedTileTreeSupplier: TileTreeSupplier = new BatchedTileTreeSupplier();
+
+export function getBatchedTileTreeOwner(iModel: IModelConnection): TileTreeOwner {
+  return iModel.tiles.getTileTreeOwner("spatial-models", batchedTileTreeSupplier);
+}

@@ -12,11 +12,19 @@ import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
 function isTileset3d(json: unknown): json is schema.Tileset {
-  if (typeof "json" !== "object")
+  if (typeof json !== "object")
     return false;
 
   const props = json as schema.Tileset;
-  return undefined !== props.root && undefined !== props.geometricError && undefined !== props.asset;
+
+  if (!props.root || !props.asset)
+    return false;
+
+  // ###TODO spec requires geometricError to be present on tileset and all tiles; exporter is omitting from tileset.
+  if (undefined === props.geometricError)
+    props.geometricError = props.root.geometricError;
+
+  return true;
 }
 
 function rangeFromBoundingVolume(vol: schema.BoundingVolume): Range3d {

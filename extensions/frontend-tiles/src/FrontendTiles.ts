@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { TransformProps } from "@itwin/core-geometry";
-import { RealityModelDisplaySettings } from "@itwin/core-common";
 import {
-  createRealityTileTreeReference, RealityDataSource, SpatialTileTreeReferences, SpatialViewState, TileTreeReference,
+   SpatialTileTreeReferences, SpatialViewState, TileTreeReference,
 } from "@itwin/core-frontend";
+import { createBatchedTileTreeReference } from "./BatchedTileTreeReference";
 
 export const loggerCategory = "frontend-tiles";
 
@@ -31,22 +30,6 @@ class TreeRefs implements SpatialTileTreeReferences {
 }
 
 export function createSpatialTileTreeReferences(view: SpatialViewState): SpatialTileTreeReferences {
-  const modelId = view.iModel.transientIds.getNext();
-  const url = "http://localhost:8080/tileset.json";
-  // const tilesetToDbTransform = Transform.createTranslation(view.iModel.projectExtents.center).toJSON();
-  let tilesetToDbTransform: TransformProps | undefined;
-  if (view.iModel.ecefLocation)
-    tilesetToDbTransform = view.iModel.ecefLocation.getTransform().toJSON();
-
-  const treeRef = createRealityTileTreeReference({
-    rdSourceKey: RealityDataSource.createKeyFromUrl(url),
-    url,
-    iModel: view.iModel,
-    source: view,
-    modelId,
-    tilesetToDbTransform,
-    getDisplaySettings: () => RealityModelDisplaySettings.defaults,
-  });
-
+  const treeRef = createBatchedTileTreeReference(view.iModel);
   return new TreeRefs(treeRef);
 }
