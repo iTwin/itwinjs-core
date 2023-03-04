@@ -46,13 +46,18 @@ export class BatchedTileTree extends TileTree {
     return viewFlagOverrides;
   }
 
-  public override _selectTiles(_args: TileDrawArgs): Tile[] {
-    // ###TODO
-    return [];
+  public override _selectTiles(args: TileDrawArgs): Tile[] {
+    const selected: BatchedTile[] = [];
+    this.rootTile.selectTiles(selected, args);
+    return selected;
   }
 
-  public override draw(_args: TileDrawArgs): void {
-    // ###TODO
+  public override draw(args: TileDrawArgs): void {
+    const tiles = this.selectTiles(args);
+    for (const tile of tiles)
+      tile.drawGraphics(args);
+
+    args.drawGraphics();
   }
 
   public override prune(): void {
