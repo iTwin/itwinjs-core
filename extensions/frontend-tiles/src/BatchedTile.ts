@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import { Tileset3dSchema } from "@itwin/core-common";
 import {
-  IModelApp, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileVisibility,
+  GltfReaderProps, IModelApp, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
+import { BatchedTileContentReader } from "./BatchedTileContentReader";
 
 export interface BatchedTileParams extends TileParams {
   childrenProps: Tileset3dSchema.Tile[] | undefined;
@@ -94,8 +95,26 @@ export class BatchedTile extends Tile {
     return response.arrayBuffer();
   }
 
-  public override async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> {
-    // ###TODO
-    return Promise.resolve({ });
+  public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, shouldAbort?: () => boolean): Promise<TileContent> {
+    assert(data instanceof Uint8Array);
+    if (!(data instanceof Uint8Array))
+      return { };
+
+    const props = GltfReaderProps.create(data, true, this.batchedTree.reader.baseUrl);
+    if (!props)
+      return { };
+
+    const reader = new BatchedTileContentReader({
+      props,
+      iModel: this.tree.iModel,
+      system,
+      shouldAbort,
+      vertexTableRequired: true,
+      modelId: this.tree.modelId,
+      isLeaf: this.isLeaf,
+      range: this.range,
+    });
+
+    return reader.read();
   }
 }

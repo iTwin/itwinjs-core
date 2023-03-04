@@ -16,7 +16,7 @@ interface BatchedTileReaderArgs extends GltfReaderArgs {
   range: Range3d;
 }
 
-export class BatchedTileReader extends GltfReader {
+export class BatchedTileContentReader extends GltfReader {
   private readonly _modelId: Id64String;
   private readonly _isLeaf: boolean;
   private readonly _range: Range3d;
