@@ -7,7 +7,7 @@ import { assert, Logger } from "@itwin/core-bentley";
 import {
   IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
 } from "@itwin/core-frontend";
-import { loggerCategory } from "./FrontendTiles";
+import { loggerCategory } from "./LoggerCategory";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
 

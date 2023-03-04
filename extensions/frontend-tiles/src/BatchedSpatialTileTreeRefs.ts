@@ -8,8 +8,6 @@ import {
 } from "@itwin/core-frontend";
 import { createBatchedTileTreeReference } from "./BatchedTileTreeReference";
 
-export const loggerCategory = "frontend-tiles";
-
 class TreeRefs implements SpatialTileTreeReferences {
   private readonly _treeRef: TileTreeReference;
 
@@ -29,7 +27,7 @@ class TreeRefs implements SpatialTileTreeReferences {
   }
 }
 
-export function createSpatialTileTreeReferences(view: SpatialViewState): SpatialTileTreeReferences {
+export function createBatchedSpatialTileTreeReferences(view: SpatialViewState): SpatialTileTreeReferences {
   const treeRef = createBatchedTileTreeReference(view.iModel);
   return new TreeRefs(treeRef);
 }

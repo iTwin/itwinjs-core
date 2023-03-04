@@ -3,4 +3,5 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
+export const loggerCategory = "batched-tiles";
+
