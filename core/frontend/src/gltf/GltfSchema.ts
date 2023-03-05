@@ -511,88 +511,90 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
   };
 }
 
-export type ClassPropertyType = "SCALAR" | "STRING" | "BOOLEAN" | "ENUM" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
-export type ClassPropertyComponentType = "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | "FLOAT32" | "FLOAT64" | string;
+export namespace GltfStructuralMetadata {
+  export type ClassPropertyType = "SCALAR" | "STRING" | "BOOLEAN" | "ENUM" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
+  export type ClassPropertyComponentType = "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | "FLOAT32" | "FLOAT64" | string;
 
-// Ignoring VECN and MATN types because they complicate offset, scale, min, and max, all of which are otherwise only relevant to SCALAR in which case they're all just numbers.
-export interface ClassProperty extends GltfProperty {
-  type: ClassPropertyType;
-  name?: string;
-  description?: string;
-  componentType?: ClassPropertyComponentType;
-  enumType?: string;
-  array?: boolean;
-  count?: number;
-  normalized?: boolean;
-  offset?: number;
-  scale?: number;
-  min?: number;
-  max?: number;
-  required?: boolean;
-  noData?: unknown;
-  default?: unknown;
-  semantic?: string;
-}
+  // Ignoring VECN and MATN types because they complicate offset, scale, min, and max, all of which are otherwise only relevant to SCALAR in which case they're all just numbers.
+  export interface ClassProperty extends GltfProperty {
+    type: ClassPropertyType;
+    name?: string;
+    description?: string;
+    componentType?: ClassPropertyComponentType;
+    enumType?: string;
+    array?: boolean;
+    count?: number;
+    normalized?: boolean;
+    offset?: number;
+    scale?: number;
+    min?: number;
+    max?: number;
+    required?: boolean;
+    noData?: unknown;
+    default?: unknown;
+    semantic?: string;
+  }
 
-export interface EnumValue extends GltfProperty {
-  name: string;
-  value: number; // an integer
-  description?: string;
-}
+  export interface EnumValue extends GltfProperty {
+    name: string;
+    value: number; // an integer
+    description?: string;
+  }
 
-export interface Enum extends GltfProperty {
-  values: EnumValue[];
-  // Default: UINT16
-  valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;
-  name?: string;
-  description?: string;
-}
+  export interface Enum extends GltfProperty {
+    values: EnumValue[];
+    // Default: UINT16
+    valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;
+    name?: string;
+    description?: string;
+  }
 
-export interface Class extends GltfProperty {
-  name?: string;
-  description?: string;
-  properties?: {
-    [propertyId: string]: ClassProperty | undefined;
-  };
-}
+  export interface Class extends GltfProperty {
+    name?: string;
+    description?: string;
+    properties?: {
+      [propertyId: string]: ClassProperty | undefined;
+    };
+  }
 
-export interface Schema extends GltfProperty {
-  id: string;
-  name?: string;
-  description?: string;
-  version?: string;
-  classes?: Class[];
-  enums?: Enum[];
-}
+  export interface Schema extends GltfProperty {
+    id: string;
+    name?: string;
+    description?: string;
+    version?: string;
+    classes?: Class[];
+    enums?: Enum[];
+  }
 
-// Ignoring VECN and MATN types because they complicate offset, scale, min, and max, all of which are otherwise only relevant to SCALAR in which case they're all just numbers.
-export interface PropertyTableProperty extends GltfProperty {
-  values: GltfId;
-  arrayOffsets?: GltfId;
-  stringOffsets?: GltfId;
-  arrayOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
-  stringOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
-  offset?: number;
-  scale?: number;
-  min?: number;
-  max?: number;
-}
+  // Ignoring VECN and MATN types because they complicate offset, scale, min, and max, all of which are otherwise only relevant to SCALAR in which case they're all just numbers.
+  export interface PropertyTableProperty extends GltfProperty {
+    values: GltfId;
+    arrayOffsets?: GltfId;
+    stringOffsets?: GltfId;
+    arrayOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
+    stringOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
+    offset?: number;
+    scale?: number;
+    min?: number;
+    max?: number;
+  }
 
-export interface PropertyTable {
-  class: string;
-  count: number;
-  properties?: {
-    [propertyId: string]: PropertyTableProperty | undefined;
-  };
-}
+  export interface PropertyTable {
+    class: string;
+    count: number;
+    properties?: {
+      [propertyId: string]: PropertyTableProperty | undefined;
+    };
+  }
 
-export interface StructuralMetadata extends GltfProperty {
-  // Exactly one of schema or schemaUri must be present.
-  schemaUri?: string;
-  schema?: Schema;
-  propertyTables?: PropertyTable[];
-  propertyTextures?: unknown;
-  propertyAttributes?: unknown;
+  export interface Extension extends GltfProperty {
+    // Exactly one of schema or schemaUri must be present.
+    schemaUri?: string;
+    schema?: Schema;
+    propertyTables?: PropertyTable[];
+    propertyTextures?: unknown;
+    propertyAttributes?: unknown;
+  }
 }
 
 /** Describes the top-level structure of a glTF asset.
@@ -632,7 +634,7 @@ export interface GltfDocument extends GltfProperty {
         };
       }>;
     };
-    EXT_structural_metadata?: StructuralMetadata;
+    EXT_structural_metadata?: GltfStructuralMetadata.Extension;
   };
   /** Names of glTF extensions used in the asset. */
   extensionsUsed?: string[];
