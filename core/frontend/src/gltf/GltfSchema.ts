@@ -149,7 +149,7 @@ export interface MeshFeature extends GltfProperty {
 }
 
 export interface MeshFeatures {
-  featuresIds: MeshFeature[];
+  featureIds: MeshFeature[];
 }
 
 /** A unit of geometry belonging to a [[GltfMesh]]. @internal */

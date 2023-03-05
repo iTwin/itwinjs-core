@@ -12,7 +12,7 @@ import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileR
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
-import { GltfDataType } from "../gltf/GltfSchema";
+import { GltfDataType, GltfMeshPrimitive } from "../gltf/GltfSchema";
 import {
   BatchedTileIdMap, GltfBufferData, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
 } from "./internal";
@@ -149,7 +149,7 @@ export class B3dmReader extends GltfReader {
     return this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias);
   }
 
-  protected override readBatchTable(mesh: Mesh, json: any) {
+  protected override readBatchTable(mesh: Mesh, json: GltfMeshPrimitive) {
     if (mesh.features !== undefined) {
       if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes) {
         const view = this.getBufferView(json.attributes, "_BATCHID");

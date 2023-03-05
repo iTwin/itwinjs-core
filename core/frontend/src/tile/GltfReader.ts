@@ -1000,6 +1000,15 @@ export abstract class GltfReader {
       return this.readDracoMeshPrimitive(mesh.primitive, draco) ? mesh : undefined;
 
     this.readBatchTable(mesh.primitive, primitive);
+    if (mesh.primitive.features) {
+      const features = this.readPrimitiveFeatures(primitive);
+      if (features) {
+        if (features instanceof Feature)
+          mesh.primitive.features.add(features, 1);
+        else
+          mesh.primitive.features.setIndices(features);
+      }
+    }
 
     if (!this.readVertices(mesh, primitive, pseudoRtcBias))
       return undefined;
@@ -1243,7 +1252,11 @@ export abstract class GltfReader {
     return indices;
   }
 
-  protected readBatchTable(_mesh: Mesh, _json: any) {
+  protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive) {
+  }
+
+  protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined {
+    return undefined;
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {

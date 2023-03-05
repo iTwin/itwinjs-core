@@ -31,6 +31,7 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
+export * from "./gltf/GltfSchema";
 export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";

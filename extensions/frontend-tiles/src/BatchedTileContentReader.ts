@@ -7,7 +7,7 @@ import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
 import {
-  GltfReader, GltfReaderArgs, GltfReaderResult,
+  GltfDataType, GltfMeshPrimitive, GltfReader, GltfReaderArgs, GltfReaderResult,
 } from "@itwin/core-frontend";
 
 interface BatchedTileReaderArgs extends GltfReaderArgs {
@@ -67,5 +67,26 @@ export class BatchedTileContentReader extends GltfReader {
     }
 
     return featureTable;
+  }
+
+  protected override readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined {
+    const ext = primitive.extensions?.EXT_mesh_features;
+    if (ext) {
+      // ###TODO making assumptions here.
+      const view = this.getBufferView(primitive.attributes, `_FEATURE_ID_${ext.featureIds[0].attribute}`);
+      // ###TODO 32-bit attributes are not supported by glTF -- make sure they are stored as floats if > 64k features in tile...
+      const featureIds = view?.toBufferData(GltfDataType.UInt32);
+      if (view && featureIds) {
+        const indices = [];
+        for (let i = 0; i < featureIds.count; i++) {
+          const featureId = featureIds.buffer[i * view.stride];
+          indices.push(featureId);
+        }
+
+        return indices;
+      }
+    }
+
+    return new Feature(this._modelId);
   }
 }
