@@ -12,7 +12,7 @@ import { Textarea as ITwinUI_Textarea } from "@itwin/itwinui-react";
 import { useRefs } from "../utils/hooks/useRefs";
 import { CommonProps } from "../utils/Props";
 
-/** Properties for [[Textarea]] component
+/** Properties for `Textarea` component
  * @public
  * @deprecated in 3.0. Use TextareaProps in itwinui-react instead
  */

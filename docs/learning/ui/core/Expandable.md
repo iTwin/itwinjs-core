@@ -1,7 +1,6 @@
 # Expandable
 
 The [ExpandableList]($core-react) React component is a container for one or more ExpandableBlock components.
-The [ExpandableBlock]($core-react) React component is a container that shows and hides child content.
 
 ## Examples
 
@@ -12,7 +11,7 @@ It will be used in the examples below.
 
 ```tsx
 import * as React from "react";
-import { ExpandableBlock, ExpandableBlockProps } from "@itwin/core-react";
+import { ExpandableBlock, ExpandableBlockProps } from "@itwin/itwinui-react";
 
 /** Sample component using ExpandableBlock with an expanded state  */
 export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (props: ExpandableBlockProps) => {
