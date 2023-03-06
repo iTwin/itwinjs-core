@@ -4518,6 +4518,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     handleRuledSweep(g: RuledSweep): any;
     handleSphere(g: Sphere): any;
     handleTorusPipe(g: TorusPipe): any;
+    handleUnionRegion(g: UnionRegion): any;
     get options(): StrokeOptions;
     static pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined;
     static polygonToTriangulatedPolyface(points: Point3d[], localToWorld?: Transform): IndexedPolyface | undefined;
