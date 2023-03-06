@@ -39,7 +39,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 
 ## Selection handling
 
-The `@itwin/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [Tree]($components-react:ControlledTree), Table, [Property Grid]($components-react:PropertyGrid) and [Viewport]($imodel-components-react:ViewportComponent). Each of those components handle unified selection differently and that behavior is explained in the below sections.
+The `@itwin/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [Tree]($components-react:Tree), Table, [Property Grid]($components-react:PropertyGrid) and [Viewport]($imodel-components-react:Viewport). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
 ### Tree
 
@@ -124,7 +124,7 @@ For each type of component described in [selection handling section](#selection-
   - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($components-react) that can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.
 
 - Table
-  - [usePresentationTableWithUnifiedSelection]($presentation-components) hook registers a unified selection listener and causes the Table to be re-rendered with the new `KeySet` whenever the selection changes.
+  - `usePresentationTableWithUnifiedSelection` (`@itwin/presentation-components`) hook registers a unified selection listener and causes the Table to be re-rendered with the new `KeySet` whenever the selection changes.
 
 - Property Grid
   - [usePropertyDataProviderWithUnifiedSelection]($presentation-components) hook takes an [IPresentationPropertyDataProvider]($presentation-components) as an input and ensures the provider is updated with current selection as soon as there are changes in unified selection storage. It also returns some cues about the selection that help the component with various edge cases, like nothing being selected or overly large number of selected elements.
