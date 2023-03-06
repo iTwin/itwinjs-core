@@ -74,8 +74,8 @@ export class BatchedTileContentReader extends GltfReader {
     if (ext) {
       // ###TODO making assumptions here.
       const view = this.getBufferView(primitive.attributes, `_FEATURE_ID_${ext.featureIds[0].attribute}`);
-      // ###TODO 32-bit attributes are not supported by glTF -- make sure they are stored as floats if > 64k features in tile...
-      const featureIds = view?.toBufferData(GltfDataType.UInt32);
+      // ###TODO remove UInt32, add check for smaller integers.
+      const featureIds = view?.toBufferData(GltfDataType.Float) ?? view?.toBufferData(GltfDataType.UInt32);
       if (view && featureIds) {
         const indices = [];
         for (let i = 0; i < featureIds.count; i++) {
