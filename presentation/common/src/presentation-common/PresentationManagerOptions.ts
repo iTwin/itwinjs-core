@@ -81,6 +81,7 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
    * to return early as soon as the limit is reached, instead of creating a very large result that's possibly too large to
    * be useful to be displayed to end users.
    *
+   * @see [Hierarchies' filtering and limiting]($docs/presentation/hierarchies/FilteringLimiting.md)
    * @beta
    */
   sizeLimit?: number;
