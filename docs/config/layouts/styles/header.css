@@ -180,7 +180,7 @@ header nav {
   color: #e3e1e1;
 }
 
-.dropdown-menu {
+.version-dropdown-menu {
   display: none;
   position: absolute;
   top: 100%;
@@ -191,9 +191,10 @@ header nav {
   padding-top: 0;
   padding-bottom: 0;
   margin-top: 0;
+  background-color: white;
 }
 
-#main-nav .dropdown-menu a {
+#main-nav .version-dropdown-menu a {
   display: block;
   padding: 10px;
   text-decoration: none;
@@ -201,13 +202,13 @@ header nav {
   font-size: 14px;
 }
 
-.dropdown-menu a:hover,
-.dropdown-menu a:focus {
+.version-dropdown-menu a:hover,
+.version-dropdown-menu a:focus {
   background-color: rgb(209, 207, 207);
   width: 100%;
 }
 
-.dropdown:hover .dropdown-menu {
+.dropdown:hover .version-dropdown-menu {
   display: block;
 }
 
