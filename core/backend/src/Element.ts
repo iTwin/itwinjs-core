@@ -149,7 +149,7 @@ export class Element extends Entity {
   protected static onInsert(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
     const operation = "insert";
-    iModel.channels.verifyChannel(arg.props.model, operation);
+    iModel.channels.verifyChannel(arg.props.model);
     iModel.locks.checkSharedLock(props.model, "model", operation); // inserting requires shared lock on model
     if (props.parent)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parent.id, "parent", operation);
@@ -173,7 +173,7 @@ export class Element extends Entity {
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
-    iModel.channels.verifyChannel(props.model, "update");
+    iModel.channels.verifyChannel(props.model);
     iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     iModel.codeService?.verifyCode(arg);
   }
@@ -192,7 +192,7 @@ export class Element extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    arg.iModel.channels.verifyChannel(arg.model, "delete");
+    arg.iModel.channels.verifyChannel(arg.model);
     arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
 

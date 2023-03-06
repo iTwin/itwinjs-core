@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { DbResult, Id64String, RepositoryStatus } from "@itwin/core-bentley";
+import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/core-bentley";
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "./Element";
 import { ElementUniqueAspect } from "./ElementAspect";
@@ -18,26 +18,35 @@ export class ChannelAdmin {
   public static readonly sharedChannel = "shared";
   /** @internal */
   public static readonly channelClassName = "bis:ChannelRootAspect";
-  private _allowedModels!: Set<string>;
-  private _deniedModels!: Map<string, string>;
-  private _allowedChannels = new Set<string>();
+  private _allowedChannels = new Set<ChannelName>();
+  private _allowedModels = new Set<Id64String>();
+  private _deniedModels = new Map<Id64String, ChannelName>();
+  private _hasChannels?: boolean;
 
   public constructor(private _iModel: IModelDb) {
-    this.reset();
-  }
-
-  private reset() {
-    this._allowedChannels = new Set<string>();
     this._allowedChannels.add(ChannelAdmin.sharedChannel);
-    this._deniedModels = new Map<string, string>();
   }
   public addAllowedChannel(channelName: ChannelName) {
-    this.reset();
     this._allowedChannels.add(channelName);
+    this._deniedModels.clear();
   }
   public removeAllowedChannel(channelName: ChannelName) {
-    this.reset();
     this._allowedChannels.delete(channelName);
+    this._allowedModels.clear();
+  }
+
+  public get hasChannels(): boolean {
+    if (undefined === this._hasChannels) {
+      this._hasChannels = false;
+      try {
+        this._hasChannels = this._iModel.withStatement(`SELECT count(*) FROM ${ChannelAdmin.channelClassName}`, (stmt) => {
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? (stmt.getValue(0).getInteger() > 0) : false;
+        }, false);
+      } catch (e) {
+        // iModel doesn't have channel class in its BIS schema
+      }
+    }
+    return this._hasChannels;
   }
 
   public getChannel(elementId: Id64String): ChannelName {
@@ -50,28 +59,30 @@ export class ChannelAdmin {
     });
     if (channel !== undefined)
       return channel;
-    const parentId = this._iModel.withPreparedSqliteStatement("SELECT ParentId FROM bis_Element WHERE id=?", (stmt) => {
+    const parentId = this._iModel.withPreparedSqliteStatement("SELECT ParentId,ModelId FROM bis_Element WHERE id=?", (stmt) => {
       stmt.bindId(1, elementId);
-      return DbResult.BE_SQLITE_ROW !== stmt.step() ? IModel.rootSubjectId : stmt.getValueId(0);
+      if (DbResult.BE_SQLITE_ROW !== stmt.step())
+        throw new IModelError(IModelStatus.NotFound, "Element does not exist");
+      return stmt.getValueId(0) ?? stmt.getValueId(1); // if parent is undefined, use modelId
     });
     return this.getChannel(parentId);
   }
 
-  public verifyChannel(model: Id64String, operation: string): void {
-    if (this._allowedModels.has(model))
+  public verifyChannel(modelId: Id64String): void {
+    if (!this.hasChannels || this._allowedModels.has(modelId))
       return;
 
-    const deniedChannel = this._deniedModels.get(model);
+    const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel)
-      throw new IModelError(RepositoryStatus.ChannelConstraintViolation, `channel ${deniedChannel} is not allowed for ${operation}`);
+      throw new IModelError(RepositoryStatus.ChannelConstraintViolation, `ChannelAdmin: channel "${deniedChannel}" is not allowed`);
 
-    const channel = this.getChannel(model);
+    const channel = this.getChannel(modelId);
     if (this._allowedChannels.has(channel)) {
-      this._allowedModels.add(model);
+      this._allowedModels.add(modelId);
       return;
     }
-    this._deniedModels.set(model, channel);
-    return this.verifyChannel(model, operation);
+    this._deniedModels.set(modelId, channel);
+    return this.verifyChannel(modelId);
   }
 
   public insertChannelSubject(args: { parentSubjectId: Id64String, subjectName: string, channelName: ChannelName, description?: string }): Id64String {
@@ -81,6 +92,7 @@ export class ChannelAdmin {
     const subjectId = Subject.insert(this._iModel, args.parentSubjectId, args.subjectName, args.description);
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: subjectId }, owner: args.channelName };
     this._iModel.elements.insertAspect(props);
+    this._hasChannels = true;
     return subjectId;
   }
 }

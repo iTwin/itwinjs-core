@@ -18,6 +18,8 @@ import { DbResult, Id64String } from "@itwin/core-bentley";
 export interface OnAspectArg {
   /** The iModel for the aspect affected by this event. */
   iModel: IModelDb;
+  /** The model for the aspect affected by this event */
+  model: Id64String;
 }
 /** Argument for the `ElementAspect.onXxx` static methods that supply the properties of an aspect to be inserted or updated.
  * @beta
@@ -62,7 +64,9 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onInsert(_arg: OnAspectPropsArg): void { }
+  protected static onInsert(arg: OnAspectPropsArg): void {
+    arg.iModel.channels.verifyChannel(arg.model);
+  }
 
   /** Called after a new ElementAspect was inserted.
    * @note If you override this method, you must call super.
@@ -75,7 +79,9 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onUpdate(_arg: OnAspectPropsArg): void { }
+  protected static onUpdate(arg: OnAspectPropsArg): void {
+    arg.iModel.channels.verifyChannel(arg.model);
+  }
 
   /** Called after an ElementAspect was updated.
    * @note If you override this method, you must call super.
@@ -88,7 +94,9 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onDelete(_arg: OnAspectIdArg): void { }
+  protected static onDelete(arg: OnAspectIdArg): void {
+    arg.iModel.channels.verifyChannel(arg.model);
+  }
 
   /** Called after an ElementAspect was deleted.
    * @note If you override this method, you must call super.
@@ -112,7 +120,6 @@ export class ElementMultiAspect extends ElementAspect {
   /** @internal */
   public static override get className(): string { return "ElementMultiAspect"; }
 }
-
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
