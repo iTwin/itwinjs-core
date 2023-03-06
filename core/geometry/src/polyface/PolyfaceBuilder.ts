@@ -20,6 +20,7 @@ import { ParityRegion } from "../curve/ParityRegion";
 import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
 import { StrokeOptions } from "../curve/StrokeOptions";
+import { UnionRegion } from "../curve/UnionRegion";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
@@ -1139,7 +1140,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Construct facets for any planar region
    */
-  public addTriangulatedRegion(region: AnyRegion) {
+  public addTriangulatedRegion(region: AnyRegion): void {
+    if (region instanceof UnionRegion) {
+      for (const child of region.children)
+        this.addTriangulatedRegion(child);
+    }
     const contour = SweepContour.createForLinearSweep(region);
     if (contour)
       contour.emitFacets(this, this.reversedFlag, undefined);
@@ -1558,6 +1563,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public override handleLoop(g: Loop): any { return this.addTriangulatedRegion(g); }
   /** Double dispatch handler for ParityRegion */
   public override handleParityRegion(g: ParityRegion): any { return this.addTriangulatedRegion(g); }
+  /** Double dispatch handler for UnionRegion */
+  public override handleUnionRegion(g: UnionRegion): any { return this.addTriangulatedRegion(g); }
   /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandler(this)` */
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 
