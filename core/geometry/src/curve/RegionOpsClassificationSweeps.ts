@@ -226,6 +226,8 @@ export class RegionOpsFaceToFaceSearch {
       if (graphCheckPoint)
         graphCheckPoint("After regularize", graph, "MR");
       const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(graph);
+      if (exteriorHalfEdge === undefined)
+        return undefined;
       const exteriorMask = HalfEdgeMask.EXTERIOR;
       const faceVisitedMask = graph.grabMask();
       const nodeVisitedMask = graph.grabMask();

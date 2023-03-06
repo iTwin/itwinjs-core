@@ -55,12 +55,13 @@ export class HalfEdgeGraphSearch {
   /**
    * Search an array of faceSeed nodes for the face with the most negative area.
    * @param oneCandidateNodePerFace array containing one node from each face to be considered.
+   * @returns node on the minimum area face, or undefined if no such face (e.g., all faces have zero area).
    */
-  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[],
-    faceAreaFunction?: NodeToNumberFunction): HalfEdge {
+  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[], faceAreaFunction?: NodeToNumberFunction): HalfEdge | undefined {
     const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace, false, faceAreaFunction);
-    return summary.largestNegativeItem!;
+    return summary.largestNegativeItem;
   }
+
   /**
    * static method for face area computation -- useful as function parameter in collect FaceAreaSummary.
    * * This simply calls `node.signedFaceArea ()`
