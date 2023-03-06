@@ -41,11 +41,13 @@ export class BatchedTile extends Tile {
     if (TileVisibility.OutsideFrustum === vis)
       return;
 
-    // ###TODO this currently just draws the first level of the tile tree that has content.
-    if (!this.isReady)
+    // ###TODO proper tile selection
+    if (!this.isReady) {
       args.insertMissing(this);
+      return;
+    }
 
-    if (this.hasGraphics) {
+    if (TileVisibility.Visible === vis && this.hasGraphics) {
       args.markReady(this);
       selected.push(this);
       return;
