@@ -23,7 +23,7 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
 
   public async createTileTree(id: TreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     assert(id === "spatial-models");
-    const baseUrl = "http://localhost:8080/";
+    const baseUrl = `http://localhost:8080${iModel.key}-tiles/3dft/`;
     const url = `${baseUrl}tileset.json`;
     try {
       const response = await fetch(url);
