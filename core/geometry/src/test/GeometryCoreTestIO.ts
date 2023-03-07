@@ -3,19 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
+import { CurvePrimitive, Plane3dByOriginAndUnitNormal, PlaneOps } from "../core-geometry";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
-import { Geometry } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { UVSurface } from "../geometry3d/GeometryHandler";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { MomentData } from "../geometry4d/MomentData";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
@@ -36,7 +39,7 @@ export class GeometryCoreTestIO {
     }
     let fullPath = `${path}/${fileName}`;
     if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
-        fullPath = `${fullPath}.imjs`;
+      fullPath = `${fullPath}.imjs`;
 
     console.log(`saveGeometry:: ${fullPath}`);
 
@@ -211,6 +214,66 @@ export class GeometryCoreTestIO {
       collection.push(linestring);
     } else
       this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
+  }
+
+  /**
+   * Create a marker (or many markers) for shape with given center, normal and size  Save in collection, shifted by [dx,dy,dz]
+   * * marker = 0 is a circle
+   * * marker = n (for n <= 10) is an n sided polygon, with an added stroke from the center to the first point.
+   * * marker = -n (negative number) is n lines from the center to the n points of the n-sided polygon
+   * @param collection growing array of geometry
+   * @param center single or multiple center point data
+   * @param normal normal to marker plane
+   * @param a size of the marker
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static createAndCaptureLoopWithNormal(collection: GeometryQuery[], numSides: number, center: Point3d | Point3d[], normal: Vector3d, a: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (Array.isArray(center)) {
+      for (const c of center)
+        this.createAndCaptureXYMarker(collection, numSides, c, a, dx, dy, dz);
+      return;
+    }
+    const axes = Matrix3d.createRigidViewAxesZTowardsEye(normal.x, normal.y, normal.z);
+    const frame = Transform.createOriginAndMatrix(center.plusXYZ(dx, dy, dz), axes);
+    if (numSides < 3)
+      numSides = 3;
+    if (numSides > 3) {
+      const linestring = LineString3d.create();
+      const radiansStep = Math.PI * 2 / numSides;
+      for (let i = 0; i < numSides; i++) {
+        const radians = i * radiansStep;
+        const u = a * Math.cos(radians);
+        const v = a * Math.sin(radians);
+        linestring.addPoint(frame.multiplyXYZ(u, v, 0));
+      }
+      linestring.addClosurePoint();
+      collection.push(Loop.create(linestring));
+    } else {
+      const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, a, 0, 0, 0, a, 0);
+      arc.tryTransformInPlace(frame);
+      collection.push(Loop.create(arc));
+    }
+  }
+  public static createAndCaptureLoopOnPlane(collection: GeometryQuery[], numSides: number,
+    plane: PlaneAltitudeEvaluator | Plane3dByOriginAndUnitNormal | Array<PlaneAltitudeEvaluator | Plane3dByOriginAndUnitNormal>,
+    a: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (Array.isArray(plane)) {
+      for (const p of plane)
+        this.createAndCaptureLoopOnPlane(collection, numSides, p, a, dx, dy, dz);
+      return;
+    }
+    let center: Point3d;
+    let normal: Vector3d;
+    if (plane instanceof Plane3dByOriginAndUnitNormal) {
+      center = plane.getOriginRef().clone();
+      normal = plane.getNormalRef().clone();
+    } else {
+      center = PlaneOps.closestPointToOrigin(plane);
+      normal = PlaneOps.planeNormal(plane);
+    }
+    this.createAndCaptureLoopWithNormal(collection, numSides, center, normal, a, dx, dy, dz);
   }
 
   /**

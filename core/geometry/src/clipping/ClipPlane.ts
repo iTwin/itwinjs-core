@@ -222,6 +222,21 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
   public get invisible() { return this._invisible; }
 
   /**
+   * Create a plane containing pointA and perpendicular to the segment from pointA to pointB.
+   * @param pointA point on plane
+   * @param pointB target of normal
+   * @param pointBInside if true, pointB is on the inside of the plane's half space.   If false, pointB is outside.
+   */
+  public static createPerpendicularToSegment(pointA: Point3d, pointB: Point3d, pointBInside: boolean = false): ClipPlane | undefined {
+    const edgeVector = pointBInside ? Vector3d.createStartEnd(pointA, pointB) : Vector3d.createStartEnd(pointB, pointA);
+    const normal = edgeVector.normalize();
+
+    if (normal)
+      return ClipPlane.createNormalAndPoint(normal, pointB, false, false);
+    return undefined;
+  }
+
+  /**
    * Create a plane defined by two points, an up vector, and a tilt angle relative to the up vector.
    * @param point0 start point of the edge
    * @param point1 end point of the edge
@@ -315,15 +330,15 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
   /**
    * Return the x component of the normal used to evaluate altitude.
    */
-  public normalX(): number {return this._inwardNormal.x; }
+  public normalX(): number { return this._inwardNormal.x; }
   /**
    * Return the x component of the normal used to evaluate altitude.
    */
-   public normalY(): number {return this._inwardNormal.y; }
+  public normalY(): number { return this._inwardNormal.y; }
   /**
    * Return the z component of the normal used to evaluate altitude.
    */
-   public normalZ(): number {return this._inwardNormal.z; }
+  public normalZ(): number { return this._inwardNormal.z; }
 
   /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
    */

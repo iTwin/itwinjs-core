@@ -97,7 +97,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   public static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
     const ux = target.x - origin.x;
     const uy = target.y - origin.y;
-    return  this.createXYZUVW(origin.x, origin.y, 0.0, uy, -ux, 0.0, result);
+    return this.createXYZUVW(origin.x, origin.y, 0.0, uy, -ux, 0.0, result);
   }
 
   /** create a new  Plane3dByOriginAndUnitNormal with xy origin (at z=0) and normal angle in xy plane.
@@ -216,15 +216,15 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   /**
    * Return the x component of the normal used to evaluate altitude.
    */
-   public normalX(): number {return this._normal.x; }
-   /**
-    * Return the x component of the normal used to evaluate altitude.
-    */
-    public normalY(): number {return this._normal.y; }
-   /**
-    * Return the z component of the normal used to evaluate altitude.
-    */
-    public normalZ(): number {return this._normal.z; }
+  public normalX(): number { return this._normal.x; }
+  /**
+   * Return the x component of the normal used to evaluate altitude.
+   */
+  public normalY(): number { return this._normal.y; }
+  /**
+   * Return the z component of the normal used to evaluate altitude.
+   */
+  public normalZ(): number { return this._normal.z; }
 
   /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {
@@ -257,4 +257,5 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   }
   /** Returns true of spacePoint is within distance tolerance of the plane. */
   public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
+
 }

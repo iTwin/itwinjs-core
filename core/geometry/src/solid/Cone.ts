@@ -58,7 +58,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
-  /** Apply the transform to this cone's locla to world coordinates.
+  /** Apply the transform to this cone's local to world coordinates.
    * * Note that the radii are not changed.  Scaling is absorbed into the frame.
    * * This fails if the transformation is singular.
    */
@@ -238,6 +238,8 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const sinTheta = Math.sin(theta);
     return this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
   }
+
+  // cspell::word drdv
   /** Evaluate a point tangent plane on the Cone surfaces, with
    * * v = 0 is the base plane.
    * * v = 1 is the top plane

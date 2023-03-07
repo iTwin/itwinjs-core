@@ -166,6 +166,15 @@ export class XYZ implements XYAndZ {
       && Geometry.isSameCoordinate(this.y, y, tol)
       && Geometry.isSameCoordinate(this.z, z, tol);
   }
+  /** Return true if this and {other + vector*scale} have equal x,y,z parts within Geometry.smallMetricDistance.
+   * * this method is useful in testing "point on ray" without explicitly constructing the projection point
+  */
+  public isAlmostEqualPointPlusScaledVector(other: XYAndZ, vector: XYAndZ, scale: number, tol?: number): boolean {
+    return Geometry.isSameCoordinate(this.x, other.x + vector.x * scale, tol)
+      && Geometry.isSameCoordinate(this.y, other.y + vector.y * scale, tol)
+      && Geometry.isSameCoordinate(this.z, other.z + vector.z * scale, tol);
+  }
+
   /** Return true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqualXY(other: XAndY, tol?: number): boolean {
     return Geometry.isSameCoordinate(this.x, other.x, tol)
@@ -750,6 +759,19 @@ export class Vector3d extends XYZ {
     return Vector3d.createCrossProduct(pointA.x - origin.x, pointA.y - origin.y, pointA.z - origin.z,
       pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
   }
+  /**
+   * Return the NORMALIZED cross product of the vectors from origin to pointA and pointB, or undefined
+   *
+   * * the result is a vector
+   * * the result is perpendicular to both vectors, with right hand orientation
+   * * the magnitude of the vector is twice the area of the triangle.
+   */
+  public static createUnitCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d | undefined {
+    const vector = Vector3d.createCrossProduct(pointA.x - origin.x, pointA.y - origin.y, pointA.z - origin.z,
+      pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
+    return vector.normalize();
+  }
+
   /**
    * Return a vector defined by polar coordinates distance and angle from x axis
    * @param r distance measured from origin

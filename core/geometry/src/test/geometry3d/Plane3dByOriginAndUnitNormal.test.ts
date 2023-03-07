@@ -15,7 +15,7 @@ import { Checker } from "../Checker";
 function testParallelPair(ck: Checker,
   plane0: Plane3dByOriginAndUnitNormal,
   planeA: Plane3dByOriginAndUnitNormal,
-  // expetcted altitude of planeA origin above plane0 origin.
+  // expected altitude of planeA origin above plane0 origin.
   a: number) {
   ck.testParallel(plane0.getNormalRef(), planeA.getNormalRef());
   ck.testCoordinate(a, plane0.altitude(planeA.getOriginRef()), "expected altitude");
@@ -40,7 +40,6 @@ function testParallelPair(ck: Checker,
   ck.testCoordinate(0, plane0.velocity(triad.multiplyXY(3, 4)), "in plane vector has zero velocity");
   const v = 23.4;
   ck.testCoordinate(v, plane0.velocity(triad.multiplyXYZ(3, 4, v)), "in plane vector has zero velocity");
-
 }
 
 describe("Plane3dByOriginAndUnitNormal", () => {
