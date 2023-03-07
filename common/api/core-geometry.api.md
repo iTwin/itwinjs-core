@@ -3540,6 +3540,7 @@ export class Matrix3d implements BeJSONFunctions {
     get isDiagonal(): boolean;
     isExactEqual(other: Matrix3d): boolean;
     get isIdentity(): boolean;
+    get isLowerTriangular(): boolean;
     isRigid(allowMirror?: boolean): boolean;
     get isSignedPermutation(): boolean;
     isSingular(): boolean;
@@ -3569,8 +3570,8 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyXY(x: number, y: number, result?: Vector3d): Vector3d;
     multiplyXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     multiplyXYZtoXYZ(xyz: XYZ, result: XYZ): XYZ;
-    normalizeColumnsInPlace(originalRowMagnitudes?: Vector3d): boolean;
-    normalizeRowsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
+    normalizeColumnsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
+    normalizeRowsInPlace(originalRowMagnitudes?: Vector3d): boolean;
     static numComputeCache: number;
     static numUseCache: number;
     originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d;
@@ -3585,6 +3586,7 @@ export class Matrix3d implements BeJSONFunctions {
     scaleColumns(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
     scaleColumnsInPlace(scaleX: number, scaleY: number, scaleZ: number): void;
     scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
+    scaleRowsInPlace(scaleX: number, scaleY: number, scaleZ: number): void;
     setAt(row: number, column: number, value: number): void;
     setColumn(columnIndex: number, value: Vector3d | undefined): void;
     setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d): void;

@@ -266,7 +266,10 @@ export class Geometry {
   public static inverseMetricDistanceSquared(a: number): number | undefined {
     return (Math.abs(a) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / a;
   }
-  /** Boolean test for metric coordinate near-equality */
+  /**
+   * Boolean test for metric coordinate near-equality. If tolerance is not passed, `Geometry.smallMetricDistance`
+   * is used as tolerance.
+   */
   public static isSameCoordinate(x: number, y: number, tol?: number): boolean {
     if (tol)
       return Math.abs(x - y) < Math.abs(tol);
@@ -726,18 +729,40 @@ export class Geometry {
   }
   /** return 0 if the value is undefined, 1 if defined. */
   public static defined01(value: any): number { return value === undefined ? 0 : 1; }
-  /** normally, return numerator/denominator.
-   * but if the ratio would exceed Geometry.largeFractionResult, return undefined.
+  /**
+   * Return `numerator` over `denominator` or `undefined`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * return `undefined`.
    */
   public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
     if (Math.abs(denominator) * Geometry.largeFractionResult > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }
-  /** normally, return numerator/denominator.
-   * but if the ratio would exceed Geometry.largestResult, return undefined.
+  /**
+   * Return `numerator` over `denominator`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * return `defaultResult`.
    */
-  public static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult: number = Geometry.largeCoordinateResult): number | undefined {
+  public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
+    const a = Geometry.conditionalDivideFraction(numerator, denominator);
+    if (a !== undefined)
+      return a;
+    return defaultResult;
+  }
+  /**
+   * Return `numerator` over `denominator` (with a given `largestResult`) or `undefined`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @param largestResult the ratio threshold.
+   * @returns return `numerator/denominator` but if the ratio would exceed `largestResult`, return `undefined`.
+   */
+  public static conditionalDivideCoordinate(numerator: number, denominator: number,
+    largestResult: number = Geometry.largeCoordinateResult): number | undefined {
     if (Math.abs(denominator * largestResult) > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
@@ -772,15 +797,6 @@ export class Geometry {
       }
       return result;
     }
-  }
-  /** normally,  return the number result of conditionalDivideFraction.
-   * but if conditionalDivideFraction fails return specified default number.
-   */
-  public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
-    const a = Geometry.conditionalDivideFraction(numerator, denominator);
-    if (a !== undefined)
-      return a;
-    return defaultResult;
   }
   /** For a line f(x) whose function values at x0 and x1 are f0 and f1, return the x value at which f(x)=fTarget; */
   public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF: number = 0,

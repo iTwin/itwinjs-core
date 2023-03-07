@@ -14,6 +14,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */
+// cSpell:words Jcross CCWXY CWXY
 describe("Point3d", () => {
   it("zeros", () => {
     const ck = new bsiChecker.Checker();
