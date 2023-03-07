@@ -49,8 +49,11 @@ public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
-internal;BentleyCloudRpcManager 
+public;BentleyCloudRpcConfigurationHolder
+public;BentleyCloudRpcManager 
 internal;BentleyCloudRpcParams
+internal;BentleyCloudRpcParams
+public;BentleyCloudRpcParamsHolder
 internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
@@ -652,12 +655,12 @@ internal;RpcDirectRequest
 public;RpcEndpoint
 deprecated;RpcEndpoint
 public;class RpcInterface
-internal;RpcInterfaceDefinition
-internal;RpcInterfaceEndpoints
-internal;RpcInterfaceImplementation
+public;RpcInterfaceDefinition
+public;RpcInterfaceEndpoints
+public;RpcInterfaceImplementation
 internal;RpcInvocation
 internal;RpcManagedStatus
-internal;RpcManager
+public;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
@@ -700,7 +703,7 @@ public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
-internal;RpcRoutingToken
+public;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
 internal;RpcSessionInvocation 
