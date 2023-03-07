@@ -41,16 +41,6 @@ export namespace Tileset3dSchema {
     region?: BoundingRegion;
   }>;
 
-  export type TileBoundingVolumeProps = RequireAtLeastOne<{
-    box?: [centerX: number, centerY: number, centerZ: number,
-      uX: number, uY: number, uZ: number,
-      vX: number, vY: number, vZ: number,
-      wX: number, wY: number, wZ: number,
-    ];
-    sphere?: [centerX: number, centerY: number, centerZ: number, radius: number];
-    region?: [west: number, south: number, east: number, north: number, minHeight: number, maxHeight: number];
-  }>;
-
   export type GeometricError = number;
 
   export type Refinement = "ADD" | "REPLACE" | string;
