@@ -15,8 +15,8 @@ import { Point4d } from "./geometry4d/Point4d";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
-/** Enumeration of the 6 possible orderings of XYZ axis order
- *
+/**
+ * Enumeration of the 6 possible orderings of XYZ axis order
  * * **Note:** There are 3 axis order with right hand system (XYZ = 0, YZX = 1, ZXY = 2) and 3 axis order with
  * left hand system (XZY = 4, YXZ = 5, ZYX = 6). Note that AxisOrder is encoding the handedness as well. Cross
  * product of the i_th axis in an ordering (i=0,1,2), with the i+1_th in that ordering, will produce the i+2_th
@@ -37,7 +37,8 @@ export enum AxisOrder {
   /** Left handed system, Z then Y then X */
   ZYX = 6,
 }
-/** Enumeration of numeric indices of 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
+/**
+ * Enumeration of numeric indices of 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
  * @public
  */
 export enum AxisIndex {
