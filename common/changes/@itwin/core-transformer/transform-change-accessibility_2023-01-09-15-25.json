@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "Make changeset information accessible in core-transformer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}
