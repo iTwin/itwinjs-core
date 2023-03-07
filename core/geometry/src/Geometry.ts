@@ -732,7 +732,7 @@ export class Geometry {
   /** return 0 if the value is undefined, 1 if defined. */
   public static defined01(value: any): number { return value === undefined ? 0 : 1; }
   /**
-   * Return `numerator` over `denominator` or `undefined`.
+   * Return `numerator` divided by `denominator`, or `undefined`.
    * @param numerator the numerator
    * @param denominator the denominator
    * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
@@ -744,7 +744,7 @@ export class Geometry {
     return undefined;
   }
   /**
-   * Return `numerator` over `denominator`.
+   * Return `numerator` divided by `denominator`.
    * @param numerator the numerator
    * @param denominator the denominator
    * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
@@ -757,7 +757,7 @@ export class Geometry {
     return defaultResult;
   }
   /**
-   * Return `numerator` over `denominator` (with a given `largestResult`) or `undefined`.
+   * Return `numerator` divided by `denominator` (with a given `largestResult`), or `undefined`.
    * @param numerator the numerator
    * @param denominator the denominator
    * @param largestResult the ratio threshold.

@@ -712,7 +712,14 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return Matrix3d.createIdentity(result);
   }
-  /** Return the matrix for rotation of `angle` around desired `axis` */
+  /**
+   * Return the matrix for rotation of `angle` around desired `axis`
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeRotationAroundAnAxis
+   * @param axis the axis of rotation
+   * @param angle the angle of rotation
+   * @param result caller-allocated matrix (optional)
+   * @returns the `rotation matrix` or `undefined` (if axis magnitude is near zero).
+   */
   public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined {
     // Rodriguez formula (matrix form), https://mathworld.wolfram.com/RodriguesRotationFormula.html
     const c = angle.cos();
@@ -1260,7 +1267,7 @@ export class Matrix3d implements BeJSONFunctions {
     column.push(matrixVD.getColumn(0));
     column.push(matrixVD.getColumn(1));
     column.push(matrixVD.getColumn(2));
-    scale.set(column[0].magnitude(), column[1].magnitude(), column[2].magnitude()); // eigenvalues of `this`
+    scale.set(column[0].magnitude(), column[1].magnitude(), column[2].magnitude()); // singular values of `this`
     const det = matrixVD.determinant();
     if (det < 0)
       scale.z = -scale.z;
@@ -2597,7 +2604,7 @@ export class Matrix3d implements BeJSONFunctions {
     const sumOff = Math.abs(sumAll - sumDiagonal);
     return Math.sqrt(sumOff) <= Geometry.smallAngleRadians * (1.0 + Math.sqrt(sumAll));
   }
-  /** Sum of squared differences between symmetric pairs (entry 1 and 3 - 2 and 6 - 5 and 7) */
+  /** Sum of squared differences between symmetric pairs (symmetric pairs have indices (1,3), (2,6), and (5,7).) */
   public sumSkewSquares(): number {
     return Geometry.hypotenuseSquaredXYZ(
       this.coffs[1] - this.coffs[3],

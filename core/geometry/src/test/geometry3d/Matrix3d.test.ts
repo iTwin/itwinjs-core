@@ -179,8 +179,8 @@ function checkPointArrays(ck: bsiChecker.Checker, pointA: Point3d[]) {
   ck.testPoint3d(rangeB.low, rangeC.low, "transformed array, range");
   ck.testPoint3d(rangeB.high, rangeC.high, "transformed array, range");
 }
-describe("Point3dArray.checkPointArrays", () => {
-  it("Point3dArray.checkPointArrays", () => {
+describe("Matrix3d.checkPointArrays", () => {
+  it("Matrix3d.checkPointArrays", () => {
     const ck = new bsiChecker.Checker();
     const pointA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
     checkPointArrays(ck, pointA);
@@ -282,7 +282,7 @@ describe("Matrix3d.symmetricEigenvalues", () => {
           // matrixA is symmetric because columns of matrixM are perpendicular
           const matrixA = matrixM.scaleColumns(lambda0.x, lambda0.y, lambda0.z).multiplyMatrixMatrixTranspose(matrixM);
 
-          if (matrixA.isSymmetric()) {
+          if (ck.testTrue(matrixA.isSymmetric())) {
             const eigen1 = Matrix3d.createIdentity();
             const lambda1 = Vector3d.create();
             matrixA.symmetricEigenvalues(eigen1, lambda1);
@@ -1618,7 +1618,7 @@ describe("Matrix3d.MatrixProduct", () => {
     ck.testUndefined(matrixB.inverseCoffs);
     matrixA.multiplyInverse(vectorU);
     matrixB.multiplyInverse(vectorU);
-    // confirm that multiplies with inversion did not introduce inverse
+    // confirm that multiplies with inversion did introduce inverse
     ck.testDefined(matrixA.inverseCoffs);
     ck.testDefined(matrixB.inverseCoffs);
 
