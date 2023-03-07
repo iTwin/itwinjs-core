@@ -3,5 +3,5 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export const loggerCategory = "batched-tiles";
+export const loggerCategory = "frontend-tiles";
 
