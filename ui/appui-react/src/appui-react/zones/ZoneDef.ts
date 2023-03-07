@@ -12,7 +12,7 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { ZoneLocation, ZoneProps } from "./Zone";
 
 /** Zone State enum.
- * @public @deprecated in 3.0.
+ * @public @deprecated in 3.0. UI 1.0 will be removed in AppUi 4.0.
  */
 export enum ZoneState {
   Off,
@@ -35,13 +35,13 @@ export class ZoneDef extends WidgetHost {
   private _mergeWithZone?: ZoneLocation;
   private _zoneLocation: ZoneLocation = ZoneLocation.TopLeft;
 
-  /** Zone state.  Defaults to ZoneState.Open. @deprecated in 3.0. */
+  /** Zone state.  Defaults to ZoneState.Open. @deprecated in 3.0.  UI 1.0 will be removed in AppUi 4.0.*/
   public get zoneState(): ZoneState { return this._zoneState; }
-  /** Indicates if other Zones may be merged with this Zone. Defaults to false. @deprecated in 3.0. */
+  /** Indicates if other Zones may be merged with this Zone. Defaults to false. @deprecated in 3.0.  UI 1.0 will be removed in AppUi 4.0.*/
   public get allowsMerging(): boolean { return this._allowsMerging; }
   /** Any application data to attach to this Zone. */
   public get applicationData(): any | undefined { return this._applicationData; }
-  /** Indicates with which other zone to merge. @deprecated in 3.0. */
+  /** Indicates with which other zone to merge. @deprecated in 3.0.  UI 1.0 will be removed in AppUi 4.0.*/
   public get mergeWithZone(): ZoneLocation | undefined { return this._mergeWithZone; }
 
   /** The Zone's location.

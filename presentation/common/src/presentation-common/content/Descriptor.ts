@@ -311,7 +311,7 @@ export class Descriptor implements DescriptorSource {
   public readonly inputKeysHash?: string;
   /**
    * Extended options used to create the descriptor.
-   * @deprecated since 3.6. The attribute is not used anymore.
+   * @deprecated in 3.6. The attribute is not used anymore.
    */
   public readonly contentOptions: any;
   /** Selection info used to create the descriptor */

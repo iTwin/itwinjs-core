@@ -17,7 +17,7 @@ import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
+  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
   TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
 import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
@@ -991,6 +991,10 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     numActiveTileTreePropsRequests: number;
     /** The number of pending IModelTileTreeProps requests. */
     numPendingTileTreePropsRequests: number;
+    /** See [[TileContentDecodingStatistics]].
+     * @beta
+     */
+    decoding: TileContentDecodingStatistics;
   }
 
   /** Describes the configuration of the [[TileAdmin]].

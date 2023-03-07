@@ -11,7 +11,7 @@ import { getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptio
 /** Interface adopted by an object that can supply [[TerrainMeshProvider]]s enabling the display of 3d terrain in a [[Viewport]].
  * @see [[TerrainProviderRegistry]] to register or look up a `TerrainProvider` by its name.
  * @see [TerrainSettings.providerName]($common) to specify the terrain provider used by a [DisplayStyle]($backend).
- * @beta
+ * @public
  */
 export interface TerrainProvider {
   /** Produce a [[TerrainMeshProvider]] using the specified options. */
@@ -23,7 +23,7 @@ export interface TerrainProvider {
  * Any number of additional providers can be [[register]]ed.
  *
  * When terrain is enabled for a [[Viewport]], the display system will attempt to look up the [[TerrainProvider]] corresponding to the [TerrainSettings.providerName]($common) specified by the [[Viewport]]'s [DisplayStyleSettings]($common). If a provider by that name is registered, it will be used to obtain terrain meshes; otherwise, the display system will produce flat terrain meshes.
- * @beta
+ * @public
  */
 export class TerrainProviderRegistry {
   private readonly _providers = new Map<string, TerrainProvider>();

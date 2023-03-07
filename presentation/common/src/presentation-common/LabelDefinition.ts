@@ -108,13 +108,18 @@ export namespace LabelDefinition {
   /** @internal */
   export const COMPOSITE_DEFINITION_TYPENAME = "composite";
 
-  /** @internal */
-  // istanbul ignore next
+  /**
+   * Checks if provided [[LabelDefinition]] has raw value of type [[LabelCompositeValue]].
+   * @public
+   */
   export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & { rawValue: LabelCompositeValue } {
     return def.typeName === COMPOSITE_DEFINITION_TYPENAME;
   }
 
-  /** @internal */
+  /**
+   * Creates [[LabelDefinition]] from string value.
+   * @public
+   */
   export function fromLabelString(label: string): LabelDefinition {
     return {
       displayValue: label,
