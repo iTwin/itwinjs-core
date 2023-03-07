@@ -4,7 +4,6 @@
     "outDir": "./lib",
     "allowSyntheticDefaultImports": true,
     "module": "commonjs",
-    "target": "ES2019",
     "jsx": "react",
     "types": [
       "sinon-chai",

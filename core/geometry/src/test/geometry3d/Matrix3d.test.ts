@@ -179,12 +179,14 @@ function checkPointArrays(ck: bsiChecker.Checker, pointA: Point3d[]) {
   ck.testPoint3d(rangeB.low, rangeC.low, "transformed array, range");
   ck.testPoint3d(rangeB.high, rangeC.high, "transformed array, range");
 }
+
 describe("Point3dArray.checkPointArrays", () => {
   it("Point3dArray.checkPointArrays", () => {
     const ck = new bsiChecker.Checker();
     const pointA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
     checkPointArrays(ck, pointA);
     ck.checkpoint("Point3dArray.checkPointArrays");
+
     expect(ck.getNumErrors()).equals(0);
   });
 });

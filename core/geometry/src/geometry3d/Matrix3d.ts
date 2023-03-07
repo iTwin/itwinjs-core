@@ -2641,6 +2641,14 @@ export class Matrix3d implements BeJSONFunctions {
       return this.coffs[0];
     return undefined;
   }
+  /** Sum of squared differences between symmetric pairs (entry 1 and 3 - 2 and 6 - 5 and 7) */
+  public sumSkewSquares(): number {
+    return Geometry.hypotenuseSquaredXYZ(
+      this.coffs[1] - this.coffs[3],
+      this.coffs[2] - this.coffs[6],
+      this.coffs[5] - this.coffs[7]
+    );
+  }
   /**
    * Test if all rows and columns are unit length and are perpendicular to each other, i.e., the matrix is either
    * a `pure rotation` (determinant is +1) or is a `mirror` (determinant is -1).
