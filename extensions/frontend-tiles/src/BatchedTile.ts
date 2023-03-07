@@ -36,6 +36,45 @@ export class BatchedTile extends Tile {
     return this.children as BatchedTile[] | undefined;
   }
 
+  public override computeVisibility(args: TileDrawArgs): TileVisibility {
+    // ###TODO evaluate this. It's from [Dani's 3js prototype](https://dev.azure.com/DANIELIBORRA/_git/Three.js%20prototype%20with%203D%20Tiles%201.1?path=/Tiles3D.js).
+    // It ignores geometricError, which seems to be smaller than it should be.
+    const doSuper = true;
+    if (doSuper || !args.context.viewport.isCameraOn)
+      return super.computeVisibility(args);
+
+    // All of the following is copy-pasted from super
+    if (this.isEmpty)
+      return TileVisibility.OutsideFrustum;
+
+    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range))
+      return TileVisibility.OutsideFrustum;
+
+    // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
+    // they are outside frustum
+    if (this.isRegionCulled(args))
+      return TileVisibility.OutsideFrustum;
+
+    // some nodes are merely for structure and don't have any geometry
+    if (!this.isDisplayable)
+      return TileVisibility.TooCoarse;
+
+    if (this.isLeaf) {
+      if (this.hasContentRange && this.isContentCulled(args))
+        return TileVisibility.OutsideFrustum;
+      else
+        return TileVisibility.Visible;
+    }
+
+    // The only bit that differs from super:
+    assert(args.context.viewport.view.is3d() && args.context.viewport.view.isCameraOn);
+    const center = args.getTileCenter(this);
+    const radius = args.getTileRadius(this);
+    const cam = args.context.viewport.view.camera.eye;
+    const minDist = Math.max(Math.abs(center.x - cam.x), Math.max(Math.abs(center.y - cam.y), Math.abs(center.z - cam.z)));
+    return minDist < radius * 1.5 ? TileVisibility.TooCoarse : TileVisibility.Visible;
+  }
+
   public selectTiles(selected: BatchedTile[], args: TileDrawArgs): void {
     const vis = this.computeVisibility(args);
     if (TileVisibility.OutsideFrustum === vis)
