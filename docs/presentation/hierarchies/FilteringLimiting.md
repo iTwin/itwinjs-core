@@ -63,15 +63,12 @@ function MyTree(props: MyTreeProps) {
   const treeModel = useTreeModel(nodeLoader.modelSource);
 
   // create presentation-specific tree renderer
-  const treeRenderer = React.useCallback(
-    (treeRendererProps: TreeRendererProps) => (
-      <PresentationTreeRenderer
-        {...treeRendererProps}
-        imodel={props.iModel}
-        modelSource={nodeLoader.modelSource}
-      />
-    ),
-    [props.iModel, nodeLoader.modelSource],
+  const treeRenderer = (treeRendererProps: TreeRendererProps) => (
+    <PresentationTreeRenderer
+      {...treeRendererProps}
+      imodel={props.iModel}
+      modelSource={nodeLoader.modelSource}
+    />
   );
 
   return (
@@ -107,15 +104,12 @@ export function MyTree(props: MyTreeProps) {
   });
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader });
   const treeModel = useTreeModel(nodeLoader.modelSource);
-  const treeRenderer = React.useCallback(
-    (treeRendererProps: TreeRendererProps) => (
-      <PresentationTreeRenderer
-        {...treeRendererProps}
-        imodel={props.iModel}
-        modelSource={nodeLoader.modelSource}
-      />
-    ),
-    [props.iModel, nodeLoader.modelSource],
+  const treeRenderer = (treeRendererProps: TreeRendererProps) => (
+    <PresentationTreeRenderer
+      {...treeRendererProps}
+      imodel={props.iModel}
+      modelSource={nodeLoader.modelSource}
+    />
   );
 
   return (
