@@ -180,7 +180,6 @@ function checkPointArrays(ck: bsiChecker.Checker, pointA: Point3d[]) {
   ck.testPoint3d(rangeB.high, rangeC.high, "transformed array, range");
 }
 
-
 describe("Matrix3d.checkPointArrays", () => {
   it("Matrix3d.checkPointArrays", () => {
 
