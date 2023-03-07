@@ -6,7 +6,6 @@
  * @module Geometry
  */
 
-import { assert } from "@itwin/core-bentley";
 import { ClipPlane, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Frustum } from "../Frustum";
 import { BoundingSphere } from "./BoundingSphere";
@@ -37,7 +36,6 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
     planes.push(plane);
   }
 
-  assert(planes.length === 6);
   return planes;
 }
 
@@ -128,7 +126,6 @@ export class FrustumPlanes {
    * @returns the degree to which all of the points are contained within the clipping planes.
    */
   public computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance: number = 1.0e-8): FrustumPlanes.Containment {
-    assert(this.isValid);
     if (undefined === this._planes)
       return FrustumPlanes.Containment.Outside;
 
@@ -173,7 +170,6 @@ export class FrustumPlanes {
    * @returns true if the ray extending from `origin` in the specified `direction` intersects at least one of the clipping planes.
    */
   public intersectsRay(origin: Point3d, direction: Vector3d): boolean {
-    assert(this.isValid);
     if (undefined === this._planes) {
       return false;
     }

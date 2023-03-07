@@ -31,7 +31,7 @@ function precondition(condition: boolean, message: string | (() => string)): ass
  * include [[TerrainMeshProvider]]s to which background map imagery is applied, and [ContextRealityModel]($common)s captured using
  * [photogrammetry](https://en.wikipedia.org/wiki/Photogrammetry).
  * @see [[RealityMeshParamsBuilder]] to incrementally construct a `RealityMeshParams`.
- * @beta
+ * @public
  */
 export interface RealityMeshParams {
   /** The 3d position of each vertex in the mesh, indexed by [[indices]]. */
@@ -48,7 +48,7 @@ export interface RealityMeshParams {
   texture?: RenderTexture;
 }
 
-/** @beta */
+/** @public */
 export namespace RealityMeshParams {
   /** @internal */
   export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {

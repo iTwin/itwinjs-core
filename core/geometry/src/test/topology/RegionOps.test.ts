@@ -1113,3 +1113,31 @@ function makeSticks(points: Point3d[]): Path {
   }
   return path;
 }
+
+describe("RegionOps2", () => {
+  it("TriangulateSortedLoops", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const testCases = [
+      "./src/test/testInputs/curve/arcGisLoops.imjs",
+      "./src/test/testInputs/curve/loopWithHole.imjs", // aka, split washer polygon
+    ];
+    for (const testCase of testCases) {
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
+      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
+        const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
+        if (ck.testTrue(region.isClosedPath || region.children.length > 0, "region created")) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, region);
+          const builder = PolyfaceBuilder.create();
+          builder.addGeometryQuery(region);
+          const mesh = builder.claimPolyface();
+          if (ck.testFalse(mesh.isEmpty, "triangulation not empty"))
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps2", "TriangulateSortedLoops");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});

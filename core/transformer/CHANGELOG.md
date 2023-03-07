@@ -10,6 +10,11 @@ Wed, 08 Feb 2023 14:58:40 GMT
 - handle long named schemas on linux
 - do not download unnecessary changesets past the source changeset when processing changesets
 
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
 ## 3.5.5
 Thu, 26 Jan 2023 22:53:27 GMT
 
