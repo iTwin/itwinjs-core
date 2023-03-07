@@ -24,7 +24,7 @@ The filter applies to a single hierarchy level and doesn't filter the whole sub-
 
    ![Filtering dialog](./media/filtering-limiting-workflow-2.png)
 
-   The dialog allows filtering the results by class and properties of elements w hich the hierarchy level consists of and doesn't display properties of classes that don't exist in the hierarchy level. In addition, selecting a class filters the available property list to show only properties for that class of elements. And it works in the opposite direction too - selecting a property filters the classes to show only the ones that have the property.
+   The dialog allows filtering the results by class and properties of elements which the hierarchy level consists of and doesn't display properties of classes that don't exist in the hierarchy level. In addition, selecting a class filters the available property list to show only properties for that class of elements. And it works in the opposite direction too - selecting a property filters the classes to show only the ones that have the property.
 
 3. Pressing the "Apply" button filters the child hierarchy level:
 
