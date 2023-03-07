@@ -234,7 +234,7 @@ export class SampleAppIModelApp {
         undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
           { info: { title: "imodel/rpc", version: "" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
+      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!); // eslint-disable-line deprecation/deprecation
 
       await IModelApp.startup({
         ...iModelAppOpts,

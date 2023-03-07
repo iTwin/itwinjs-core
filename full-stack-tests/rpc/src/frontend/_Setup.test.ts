@@ -5,7 +5,7 @@
 
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, EmptyLocalization, RpcConfiguration } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, BentleyCloudRpcParams, EmptyLocalization, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -20,11 +20,12 @@ function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
   const mobilePort = port + 2000;
 
-  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
-  config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${port}`;
+  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "rpc-full-stack-test", version: "v1.0" } });
+  const configHolder = BentleyCloudRpcManager.initializeClient(paramsHolder, rpcInterfaces);
+  configHolder.configuration.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${port}`;
 
-  initializeMultipleClientsTest(config.protocol.pathPrefix);
-  initializeAttachedInterfacesTest(config);
+  initializeMultipleClientsTest(configHolder.configuration.protocol.pathPrefix);
+  initializeAttachedInterfacesTest(configHolder.configuration);
   setupMockMobileFrontend(mobilePort);
 }
 
@@ -35,20 +36,20 @@ function setupMockMobileFrontend(port: number) {
 
 function initializeMultipleClientsTest(path: string) {
   const config1 = BentleyCloudRpcManager.initializeClient(
-    { info: { title: `rpc-full-stack-test-config${MultipleClientsInterface.config1.id}`, version: "v1.0" } },
+    BentleyCloudRpcParams.wrap({ info: { title: `rpc-full-stack-test-config${MultipleClientsInterface.config1.id}`, version: "v1.0" } }),
     [MultipleClientsInterface],
     MultipleClientsInterface.config1,
   );
 
-  config1.protocol.pathPrefix = path;
+  config1.configuration.protocol.pathPrefix = path;
 
   const config2 = BentleyCloudRpcManager.initializeClient(
-    { info: { title: `rpc-full-stack-test-config${MultipleClientsInterface.config2.id}`, version: "v1.0" } },
+    BentleyCloudRpcParams.wrap({ info: { title: `rpc-full-stack-test-config${MultipleClientsInterface.config2.id}`, version: "v1.0" } }),
     [MultipleClientsInterface],
     MultipleClientsInterface.config2,
   );
 
-  config2.protocol.pathPrefix = path;
+  config2.configuration.protocol.pathPrefix = path;
 }
 
 function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
@@ -74,10 +75,11 @@ before(async () => {
       socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
       socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
-      BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces);
+      BentleyCloudRpcManager.initializeClient(BentleyCloudRpcParams.wrap({ info: { title: "", version: "" } }), rpcInterfaces);
       return LocalhostIpcApp.startup({
         localhostIpcApp: { socketUrl },
-        iModelApp: { localization: new EmptyLocalization() } });
+        iModelApp: { localization: new EmptyLocalization() },
+      });
   }
 });
 

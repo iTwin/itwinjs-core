@@ -279,9 +279,9 @@ export class DisplayTestApp {
         await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
       }
 
-      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      if (opts.iModelApp?.rpcInterfaces)
-        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
+      const rpcParams = BentleyCloudRpcParams.wrap({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" });
+      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line deprecation/deprecation
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
       await LocalhostIpcApp.startup(opts);
     }
 

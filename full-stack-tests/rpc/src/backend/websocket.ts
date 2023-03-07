@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { LocalhostIpcHost } from "@itwin/core-backend";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
@@ -17,10 +17,11 @@ async function init() {
   await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "websocket");
 
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
+  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "rpc-full-stack-test", version: "v1.0" } });
+  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, rpcInterfaces);
 
   // create a basic express web server
-  const webEditServer = new WebEditServer(rpcConfig.protocol);
+  const webEditServer = new WebEditServer(rpcConfigHolder.configuration.protocol);
   const httpServer = await webEditServer.initialize(port);
 
   await LocalhostIpcHost.startup({ localhostIpcHost: { noServer: true } });
@@ -28,7 +29,7 @@ async function init() {
   // eslint-disable-next-line no-console
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
-  initializeAttachedInterfacesTest(rpcConfig);
+  initializeAttachedInterfacesTest(rpcConfigHolder.configuration);
 
   return () => {
     httpServer.close();

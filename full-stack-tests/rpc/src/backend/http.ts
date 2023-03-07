@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
 import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
@@ -21,17 +21,18 @@ async function init() {
   await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "http");
 
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
+  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "rpc-full-stack-test", version: "v1.0" } });
+  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, rpcInterfaces);
 
   // create a basic express web server
-  const testServer = new TestServer(rpcConfig.protocol);
+  const testServer = new TestServer(rpcConfigHolder.configuration.protocol);
   const httpServer = await testServer.initialize(port);
 
   // eslint-disable-next-line no-console
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
-  initializeAttachedInterfacesTest(rpcConfig);
-  initializeWebRoutingTest(rpcConfig.protocol);
+  initializeAttachedInterfacesTest(rpcConfigHolder.configuration);
+  initializeWebRoutingTest(rpcConfigHolder.configuration.protocol);
 
   await initializeMockMobileTest();
 

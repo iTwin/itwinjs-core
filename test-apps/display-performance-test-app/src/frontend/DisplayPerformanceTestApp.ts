@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
@@ -44,10 +44,10 @@ export class DisplayPerfTestApp {
     /* eslint-enable @typescript-eslint/naming-convention */
 
     iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
-      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` }}))
+      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
-    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line deprecation/deprecation
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
@@ -69,10 +69,10 @@ export class DisplayPerfTestApp {
 }
 
 async function signIn(): Promise<void> {
-  if(process.env.IMJS_OIDC_HEADLESS)
+  if (process.env.IMJS_OIDC_HEADLESS)
     return;
   let authorizationClient;
-  if(ProcessDetector.isElectronAppFrontend)
+  if (ProcessDetector.isElectronAppFrontend)
     authorizationClient = new ElectronRendererAuthorization();
   else
     authorizationClient = new BrowserAuthorizationClient({
@@ -89,7 +89,7 @@ async function main() {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
-    if(props.signIn)
+    if (props.signIn)
       await signIn();
 
     const runner = new TestRunner(props);
@@ -110,7 +110,8 @@ window.onload = async () => {
 
   if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix });
+    BentleyCloudRpcManager.initializeClient(paramsHolder, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }
 
   await DisplayPerfTestApp.startup();

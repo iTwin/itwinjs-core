@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as https from "https";
 import * as enableWs from "express-ws";
 import { Logger } from "@itwin/core-bentley";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { LocalhostIpcHost } from "@itwin/core-backend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -40,7 +40,8 @@ const dtaWebMain = (async () => {
   Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
   // Set up the ability to serve the supported rpcInterfaces via web requests
-  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces());
+  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "display-test-app", version: "v1.0" } });
+  const cloudConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, getRpcInterfaces());
 
   const app = express();
   enableWs(app);
@@ -58,9 +59,9 @@ const dtaWebMain = (async () => {
   // Routes
   // --------------------------------------------
   (app as any).ws("/ipc", (ws: any, _req: any) => LocalhostIpcHost.connect(ws));
-  app.get("/v3/swagger.json", (req: any, res: any) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
-  app.post("*", async (req: any, res: any) => cloudConfig.protocol.handleOperationPostRequest(req, res));
-  app.get(/\/imodel\//, async (req: any, res: any) => cloudConfig.protocol.handleOperationGetRequest(req, res));
+  app.get("/v3/swagger.json", (req: any, res: any) => cloudConfigHolder.configuration.protocol.handleOpenApiDescriptionRequest(req, res));
+  app.post("*", async (req: any, res: any) => cloudConfigHolder.configuration.protocol.handleOperationPostRequest(req, res));
+  app.get(/\/imodel\//, async (req: any, res: any) => cloudConfigHolder.configuration.protocol.handleOperationGetRequest(req, res));
   app.use("*", (_req: any, res: any) => res.send("<h1>iTwin.js RPC Server</h1>"));
 
   // ---------------------------------------------

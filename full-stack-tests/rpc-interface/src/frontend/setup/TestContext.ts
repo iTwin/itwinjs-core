@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
@@ -48,7 +48,7 @@ export class TestContext {
   private initializeRpcInterfaces(info: OpenAPIInfo) { // eslint-disable-line deprecation/deprecation
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces(this.settings));
+    BentleyCloudRpcManager.initializeClient(BentleyCloudRpcParams.wrap({ info, uriPrefix }), getRpcInterfaces(this.settings));
   }
 
   private async initialize() {

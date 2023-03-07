@@ -12,7 +12,7 @@ import {
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, OpenAPIInfo } from "@itwin/core-common";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 
@@ -41,7 +41,7 @@ export class TestContext {
   private initializeRpcInterfaces(info: OpenAPIInfo) { // eslint-disable-line deprecation/deprecation
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces());
+    BentleyCloudRpcManager.initializeClient(BentleyCloudRpcParams.wrap({ info, uriPrefix }), getRpcInterfaces());
   }
 
   private async initialize() {
