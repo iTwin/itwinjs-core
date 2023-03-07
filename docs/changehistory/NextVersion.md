@@ -6,11 +6,14 @@ publish: false
 Table of contents:
 
 - [Updated minimum requirements](#updated-minimum-requirements)
-  - [Node.js](#node-js)
+  - [Node.js](#nodejs)
   - [WebGL](#webgl)
   - [Electron](#electron)
 - [Mesh offset](#mesh-offset)
 - [Mesh intersection with ray](#mesh-intersection-with-ray)
+- [Presentation](#presentation)
+  - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
+  - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
 
 ## Updated minimum requirements
 
