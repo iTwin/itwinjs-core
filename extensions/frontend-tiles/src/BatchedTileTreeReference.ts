@@ -25,7 +25,7 @@ class BatchedTileTreeReference extends TileTreeReference {
   }
 }
 
-export function createBatchedTileTreeReference(iModel: IModelConnection): TileTreeReference {
-  const owner = getBatchedTileTreeOwner(iModel);
+export function createBatchedTileTreeReference(iModel: IModelConnection, baseUrl: string): TileTreeReference {
+  const owner = getBatchedTileTreeOwner(iModel, baseUrl);
   return new BatchedTileTreeReference(owner);
 }

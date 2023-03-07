@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Logger } from "@itwin/core-bentley";
+import { assert, compareStrings, Logger } from "@itwin/core-bentley";
 import {
   IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
 } from "@itwin/core-frontend";
@@ -11,19 +11,15 @@ import { loggerCategory } from "./LoggerCategory";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
 
-export type TreeId = "spatial-models";
+export type TreeId = string;
 
 class BatchedTileTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: TreeId, rhs: TreeId): number {
     // Currently each iModel has exactly 1 unique tile tree for all spatial models.
-    assert(lhs === "spatial-models");
-    assert(rhs === "spatial-models");
-    return 0;
+    return compareStrings(lhs, rhs);
   }
 
-  public async createTileTree(id: TreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    assert(id === "spatial-models");
-    const baseUrl = `http://localhost:8080${iModel.key}-tiles/3dft/`;
+  public async createTileTree(baseUrl: TreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const url = `${baseUrl}tileset.json`;
     try {
       const response = await fetch(url);
@@ -41,6 +37,6 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
 
 const batchedTileTreeSupplier: TileTreeSupplier = new BatchedTileTreeSupplier();
 
-export function getBatchedTileTreeOwner(iModel: IModelConnection): TileTreeOwner {
-  return iModel.tiles.getTileTreeOwner("spatial-models", batchedTileTreeSupplier);
+export function getBatchedTileTreeOwner(iModel: IModelConnection, baseUrl: string): TileTreeOwner {
+  return iModel.tiles.getTileTreeOwner(baseUrl, batchedTileTreeSupplier);
 }
