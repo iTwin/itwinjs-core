@@ -102,7 +102,7 @@ export class BatchedTile extends Tile {
     if (!(data instanceof Uint8Array))
       return { };
 
-    const props = GltfReaderProps.create(data, true, this.batchedTree.reader.baseUrl);
+    const props = GltfReaderProps.create(data, false, this.batchedTree.reader.baseUrl);
     if (!props)
       return { };
 

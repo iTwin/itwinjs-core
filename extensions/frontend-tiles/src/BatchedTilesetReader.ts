@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  Matrix3d, Point3d, Range3d, Transform, Vector3d,
+  Angle, Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { Tileset3dSchema as schema } from "@itwin/core-common";
 import { IModelConnection, TileLoadPriority, RealityModelTileUtils } from "@itwin/core-frontend";
@@ -96,6 +96,8 @@ export class BatchedTilesetReader {
   public async readTileTreeParams(): Promise<BatchedTileTreeParams> {
     const root = this._tileset.root;
     const location = root.transform ? transformFromJSON(root.transform) : Transform.createIdentity();
+    // y axis is up in glTF. we want z up.
+    location.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1, 0, 0), Angle.createRadians(Angle.piOver2Radians))!, location);
 
     return {
       id: "spatial-models",
