@@ -25,11 +25,6 @@ steps:
       versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
 
-  - task: UsePythonVersion@0
-    displayName: Use Python 3
-    inputs:
-      versionSpec: 3.x
-
   - script: |
       git config --local user.email imodeljs-admin@users.noreply.github.com
       git config --local user.name imodeljs-admin
@@ -62,28 +57,22 @@ steps:
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
-
-  # - script: dir common\temp\node_modules\.pnpm\@bentley+imodeljs-native@3.6.6\node_modules\@bentley\imodeljs-native /a-D /S /B
-  #   displayName: Debug imodeljs-native installation
-  #   workingDirectory: ${{ parameters.workingDir }}
-
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
-  # - script: node common/scripts/install-run-rush.js build:ci -v -p max
-  #   displayName: rush build:ci
-  #   workingDirectory: ${{ parameters.workingDir }}
-  #   condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
-  #   env:
-  #     RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-  #     RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+  - script: node common/scripts/install-run-rush.js build:ci -v -p max
+    displayName: rush build:ci
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
+    env:
+      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
-    # condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
-    # condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
   - script: npm run ios:all
     workingDirectory: "test-apps/display-test-app"
     displayName: "Build & run iOS display-test-app"
