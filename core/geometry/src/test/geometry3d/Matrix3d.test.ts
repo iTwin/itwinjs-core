@@ -179,8 +179,11 @@ function checkPointArrays(ck: bsiChecker.Checker, pointA: Point3d[]) {
   ck.testPoint3d(rangeB.low, rangeC.low, "transformed array, range");
   ck.testPoint3d(rangeB.high, rangeC.high, "transformed array, range");
 }
+
+
 describe("Matrix3d.checkPointArrays", () => {
   it("Matrix3d.checkPointArrays", () => {
+
     const ck = new bsiChecker.Checker();
     const pointA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
     checkPointArrays(ck, pointA);
@@ -281,7 +284,6 @@ describe("Matrix3d.symmetricEigenvalues", () => {
         if (matrixM.isRigid()) {
           // matrixA is symmetric because columns of matrixM are perpendicular
           const matrixA = matrixM.scaleColumns(lambda0.x, lambda0.y, lambda0.z).multiplyMatrixMatrixTranspose(matrixM);
-
           if (ck.testTrue(matrixA.isSymmetric())) {
             const eigen1 = Matrix3d.createIdentity();
             const lambda1 = Vector3d.create();
