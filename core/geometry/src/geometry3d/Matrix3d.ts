@@ -363,7 +363,7 @@ export class Matrix3d implements BeJSONFunctions {
       /**
        * Here we rotate this.columnX() around this.columnZ() by "angle" and expect to get other.columnX().
        * Then we rotate this.columnY() around this.columnZ() by the same "angle" and if we get other.columnY(),
-       * that means this` and `other` have X and Y columns differing only by a rotation around that Z.
+       * that means `this` and `other` have X and Y columns differing only by a rotation around column Z.
        */
       let column = Vector3d.createRotateVectorAroundVector(columnX, columnZ, angle)!;
       if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)) {
@@ -598,7 +598,6 @@ export class Matrix3d implements BeJSONFunctions {
       result.setZero();
     else
       result = new Matrix3d();
-
     result.coffs[0] = scaleFactorX;
     result.coffs[4] = scaleFactorY;
     result.coffs[8] = scaleFactorZ;
@@ -1365,6 +1364,18 @@ export class Matrix3d implements BeJSONFunctions {
       + this.coffs[3] * this.coffs[4]
       + this.coffs[6] * this.coffs[7];
   }
+  /** Return the dot product of column X with column Z */
+  public columnXDotColumnZ(): number {
+    return this.coffs[0] * this.coffs[2]
+      + this.coffs[3] * this.coffs[5]
+      + this.coffs[6] * this.coffs[8];
+  }
+  /** Return the dot product of column Y with column Z */
+  public columnYDotColumnZ(): number {
+    return this.coffs[1] * this.coffs[2]
+      + this.coffs[4] * this.coffs[5]
+      + this.coffs[7] * this.coffs[8];
+  }
   /**
    * Dot product of an indexed column with a vector given as x,y,z
    * @param columnIndex index of column. Must be 0,1,2.
@@ -1828,8 +1839,8 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Solve `matrix * result = vector` for an unknown `result`.
-   * * This is equivalent to multiplication `result = inverse matrix * vector`.
-   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
+   * * This is equivalent to multiplication `result = matrixInverse * vector`.
+   * * Result is `undefined` if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
    */
   public multiplyInverse(vector: Vector3d, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
@@ -1849,7 +1860,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Solve `matrixTranspose * result = vector` for an unknown `result`.
    * * This is equivalent to multiplication `result = matrixInverseTranspose * vector`.
-   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
+   * * Result is `undefined` if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
    */
   public multiplyInverseTranspose(vector: Vector3d, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
@@ -1869,7 +1880,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply `matrixInverse * [x,y,z]`.
    * * This is equivalent to solving `matrix * result = [x,y,z]` for an unknown `result`.
-   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
+   * * Result is `undefined` if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
    * @return result as a Vector3d or undefined (if the matrix is singular).
    */
   public multiplyInverseXYZAsVector3d(x: number, y: number, z: number, result?: Vector3d): Vector3d | undefined {
@@ -1887,7 +1898,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply `matrixInverse * [x,y,z]` and return result as `Point4d` with given weight.
    * * Equivalent to solving `matrix * result = [x,y,z]` for an unknown `result`.
-   * * Result is undefined if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
+   * * Result is `undefined` if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
    * @return result as a Point4d with the same weight.
    */
   public multiplyInverseXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d | undefined {
@@ -1906,7 +1917,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply `matrixInverse * [x,y,z]` and return result as `Point3d`.
    * * Equivalent to solving `matrix * result = [x,y,z]` for an unknown `result`.
-   * @return result as a Point3d or undefined (if the matrix is singular).
+   * @return result as a Point3d or `undefined` (if the matrix is singular).
    */
   public multiplyInverseXYZAsPoint3d(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
     this.computeCachedInverse(true);
@@ -1922,7 +1933,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Invoke a given matrix*matrix operation to compute the inverse matrix and set this.inverseCoffs
-   * * If either input coffA or coffB is undefined, set state to `InverseMatrixState.unknown` but
+   * * If either input coffA or coffB is `undefined`, set state to `InverseMatrixState.unknown` but
    * leave the inverseCoffs untouched.
    * @param f the given matrix*matrix operation that is called by this function to compute the inverse.
    * `f` must be a matrix*matrix operation. Otherwise, the function does not generate the inverse properly.
