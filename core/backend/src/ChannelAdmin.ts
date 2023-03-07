@@ -9,12 +9,53 @@
 import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/core-bentley";
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "./Element";
-import { ElementUniqueAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 
+/** The name of a channel. Used for "allowed channels" in [[ChannelAdmin]] */
 export type ChannelName = string;
 
+/**
+ * Controls which channels of an iModel are permitted for write operations. An instance of this class is
+ * available via [[IModelDb.channels]].
+ * @see [Working With Channels]($docs/learning/backend/channels.md) for details
+ * @beta
+ */
+export interface ChannelControl {
+  /** Add a new channel to the list of allowed channels of the [[IModelDb]] for this session.
+   * @param channelName The name of the channel to become editable in this session.
+   */
+  addAllowedChannel(channelName: ChannelName): void;
+
+  /** Remove a channel from the list of allowed channels of the [[IModelDb]] for this session.
+   * @param channelName The name of the channel that should no longer be editable in this session.
+   */
+  removeAllowedChannel(channelName: ChannelName): void;
+  /** Get the channelName of the channel for an element by ElementId.
+   * @throws if the element does not exist
+   */
+  getChannel(elementId: Id64String): ChannelName;
+
+  /** @internal */
+  verifyChannel(modelId: Id64String): void;
+
+  /** Insert a new Subject element that defines a new Channel in this iModel. Its parent will be the Root Subject.
+   * @returns the ElementId of the new Subject element.
+   */
+  insertChannelSubject(args: {
+    /** The name of the new Subject element */
+    subjectName: string;
+    /** The channel name for the new [[Subject]]. This is the string to pass to [[addAllowedChannel]]*/
+    channelName: ChannelName;
+    /** the Id of the parent of the new Subject. Default is [[IModel.rootSubjectId]]. */
+    parentSubjectId?: Id64String;
+    /** Optional description for new Subject. */
+    description?: string;
+  }): Id64String;
+}
+
+/** @internal */
 export class ChannelAdmin {
+  /** the name of the special "shared" channel holding information that is editable by any application. */
   public static readonly sharedChannel = "shared";
   /** @internal */
   public static readonly channelClassName = "bis:ChannelRootAspect";
@@ -23,34 +64,43 @@ export class ChannelAdmin {
   private _deniedModels = new Map<Id64String, ChannelName>();
   private _hasChannels?: boolean;
 
+  /** @internal */
   public constructor(private _iModel: IModelDb) {
     this._allowedChannels.add(ChannelAdmin.sharedChannel);
   }
+  /** Add a new channel to the list of allowed channels of the [[IModelDb]] for this session.
+   * @param channelName The name of the channel to become editable in this session.
+   */
   public addAllowedChannel(channelName: ChannelName) {
     this._allowedChannels.add(channelName);
     this._deniedModels.clear();
   }
+  /** Remove a channel from the list of allowed channels of the [[IModelDb]] for this session.
+   * @param channelName The name of the channel that should no longer be editable in this session.
+   */
   public removeAllowedChannel(channelName: ChannelName) {
     this._allowedChannels.delete(channelName);
     this._allowedModels.clear();
   }
 
+  /** Determine whether this [[IModelDb]] has any channels in it. */
   public get hasChannels(): boolean {
     if (undefined === this._hasChannels) {
-      this._hasChannels = false;
       try {
-        this._hasChannels = this._iModel.withStatement(`SELECT count(*) FROM ${ChannelAdmin.channelClassName}`, (stmt) => {
-          return stmt.step() === DbResult.BE_SQLITE_ROW ? (stmt.getValue(0).getInteger() > 0) : false;
-        }, false);
+        this._hasChannels = this._iModel.withStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName}`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
       } catch (e) {
         // iModel doesn't have channel class in its BIS schema
+        this._hasChannels = false;
       }
     }
     return this._hasChannels;
   }
 
+  /** Get the channelName of the channel for an element by ElementId.
+   * @throws if the element does not exist
+   */
   public getChannel(elementId: Id64String): ChannelName {
-    if (elementId === IModel.rootSubjectId)
+    if (!this.hasChannels || elementId === IModel.rootSubjectId)
       return ChannelAdmin.sharedChannel;
 
     const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
@@ -68,6 +118,7 @@ export class ChannelAdmin {
     return this.getChannel(parentId);
   }
 
+  /** @internal */
   public verifyChannel(modelId: Id64String): void {
     if (!this.hasChannels || this._allowedModels.has(modelId))
       return;
@@ -85,32 +136,26 @@ export class ChannelAdmin {
     return this.verifyChannel(modelId);
   }
 
-  public insertChannelSubject(args: { parentSubjectId: Id64String, subjectName: string, channelName: ChannelName, description?: string }): Id64String {
-    if (ChannelAdmin.sharedChannel !== this.getChannel(args.parentSubjectId))
+  /** Insert a new Subject element that defines a new Channel in this iModel. Its parent will be the Root Subject.
+   * @returns the ElementId of the new Subject element.
+   */
+  public insertChannelSubject(args: {
+    /** The name of the new Subject element */
+    subjectName: string;
+    /** The channel name for the new [[Subject]]. This is the string to pass to [[addAllowedChannel]]*/
+    channelName: ChannelName;
+    /** the Id of the parent of the new Subject. Default is [[IModel.rootSubjectId]]. */
+    parentSubjectId?: Id64String;
+    /** Optional description for new Subject. */
+    description?: string;
+  }): Id64String {
+    if (args.parentSubjectId && ChannelAdmin.sharedChannel !== this.getChannel(args.parentSubjectId))
       throw new Error("channels may not nest");
 
-    const subjectId = Subject.insert(this._iModel, args.parentSubjectId, args.subjectName, args.description);
+    const subjectId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: subjectId }, owner: args.channelName };
     this._iModel.elements.insertAspect(props);
     this._hasChannels = true;
     return subjectId;
-  }
-}
-
-/**
- * @public
- * @deprecated in 4.0 use [[ChannelAdmin]]
- */
-export class ChannelRootAspect extends ElementUniqueAspect {
-  private constructor(props: ChannelRootAspectProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
-
-  /** Insert a ChannelRootAspect on the specified element.
-   * @deprecated in 4.0 use [[ChannelAdmin.insertChannelSubject]]
-   */
-  public static insert(iModel: IModelDb, ownerId: Id64String, channelName: ChannelName) {
-    const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: ownerId }, owner: channelName };
-    iModel.elements.insertAspect(props);
   }
 }

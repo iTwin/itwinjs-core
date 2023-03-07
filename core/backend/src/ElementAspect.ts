@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -119,6 +119,21 @@ export class ElementUniqueAspect extends ElementAspect {
 export class ElementMultiAspect extends ElementAspect {
   /** @internal */
   public static override get className(): string { return "ElementMultiAspect"; }
+}
+
+/**
+ * @public
+ */
+export class ChannelRootAspect extends ElementUniqueAspect {
+  /** @internal */
+  public static override get className(): string { return "ChannelRootAspect"; }
+  /** Insert a ChannelRootAspect on the specified element.
+   * @deprecated in 4.0 use [[ChannelAdmin.insertChannelSubject]]
+   */
+  public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
+    const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
+    iModel.elements.insertAspect(props);
+  }
 }
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.

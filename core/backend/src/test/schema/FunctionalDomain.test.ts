@@ -234,7 +234,7 @@ describe("Functional Domain", () => {
     sinonRestore();
   });
 
-  it.only("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
+  it("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
@@ -337,11 +337,8 @@ describe("Functional Domain", () => {
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
     // create a channel subject for all elements in this test
-    const channel1 = iModelDb.channels.insertChannelSubject({ parentSubjectId: IModel.rootSubjectId, subjectName: "TestSubject", channelName: testChannelName });
+    const channel1 = iModelDb.channels.insertChannelSubject({ subjectName: "TestSubject", channelName: testChannelName });
     iModelDb.channels.addAllowedChannel(testChannelName);
-
-    // should not be able to create a nested channel
-    expect(() => iModelDb.channels.insertChannelSubject({ parentSubjectId: channel1, subjectName: "TestSubject2", channelName: "channel2" })).throws("may not nest");
 
     const partitionCode = FunctionalPartition.createCode(iModelDb, channel1, "Test Functional Model");
     const partitionProps = {

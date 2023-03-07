@@ -16,7 +16,7 @@ import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChangeSummaryManager,
-  ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSchemaXmlContext, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
+  ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSchemaXmlContext, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
   ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
@@ -33,7 +33,6 @@ import { PendingReference, PendingReferenceMap } from "./PendingReferenceMap";
 import { EntityMap } from "./EntityMap";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { EntityUnifier } from "./EntityUnifier";
-import { ChannelAdmin } from "@itwin/core-backend/lib/cjs/ChannelAdmin";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -294,7 +293,7 @@ export class IModelTransformer extends IModelExportHandler {
       IModelTransformer.provenanceElementClasses.forEach((cls) => this.exporter.excludeElementClass(cls.classFullName));
       IModelTransformer.provenanceElementAspectClasses.forEach((cls) => this.exporter.excludeElementAspectClass(cls.classFullName));
     }
-    this.exporter.excludeElementAspectClass(ChannelAdmin.channelClassName); // Channel boundaries within the source iModel are not relevant to the target iModel
+    this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
