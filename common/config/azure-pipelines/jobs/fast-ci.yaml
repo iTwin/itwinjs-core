@@ -3,7 +3,6 @@
 trigger:
   - master
   - release/*
-  - appui-4.0
 
 variables:
   - group: Rush Build Cache SAS Token
@@ -33,14 +32,14 @@ jobs:
       matrix:
         "Windows_Node_18":
           platform: Windows_NT
-          name: $(win_pool)
-          # name: iTwin Windows Testing
-        "Linux_Node_18":
-          platform: Linux
-          name: $(linux_pool)
-        "MacOS_Node_18":
-          platform: Darwin
-          name: $(mac_pool)
+          # name: $(win_pool)
+          name: iTwin Windows Testing
+        # "Linux_Node_18":
+        #   platform: Linux
+        #   name: $(linux_pool)
+        # "MacOS_Node_18":
+        #   platform: Darwin
+        #   name: $(mac_pool)
 
     pool:
       name: $(name)
