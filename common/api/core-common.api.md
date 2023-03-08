@@ -9745,6 +9745,7 @@ export type UpdateCallback = (obj: any, t: number) => void;
 export interface UpgradeOptions {
     readonly domain?: DomainOptions;
     readonly profile?: ProfileOptions;
+    readonly schemaLockHeld?: boolean;
 }
 
 // @public

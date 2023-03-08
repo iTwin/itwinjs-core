@@ -15,7 +15,6 @@ import {
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
-import { isArray } from "lodash";
 import { Logger } from "@itwin/core-bentley";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
@@ -189,7 +188,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     } else if (json.minScale) {
       // Read min LOD using minScale
       const minScale = json.minScale;
-      if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
+      if (json.tileInfo?.lods !== undefined && Array.isArray(json.tileInfo.lods)) {
         for (const lod of json.tileInfo.lods) {
           if (lod.scale < minScale) {
             this._minDepthFromLod = lod.level;

@@ -91,7 +91,7 @@ export abstract class ConfigurableUiControl extends ConfigurableBase {
    * @param info         An object that the subclass must pass to this base class.
    * @param options      Options provided to the control
    * @note Subclasses must pass all arguments to the base class and not add themselves
-   * to any container - the control is added automatically by the [[FrontstageComposer]].
+   * to any container - the control is added automatically.
    * @protected
    */
   constructor(info: ConfigurableCreateInfo, options: any) {

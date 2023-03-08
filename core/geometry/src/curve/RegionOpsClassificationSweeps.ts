@@ -226,6 +226,8 @@ export class RegionOpsFaceToFaceSearch {
       if (graphCheckPoint)
         graphCheckPoint("After regularize", graph, "MR");
       const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(graph);
+      if (exteriorHalfEdge === undefined)
+        return undefined;
       const exteriorMask = HalfEdgeMask.EXTERIOR;
       const faceVisitedMask = graph.grabMask();
       const nodeVisitedMask = graph.grabMask();
@@ -522,8 +524,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    *    * groups with point data but no curves get no further annotation.
    * * compute intersections.
    * * assemble and merge the HalfEdgeGraph.
+   * @param mergeTolerance absolute distance tolerance for merging loops
    */
-  public annotateAndMergeCurvesInGraph() {
+  public annotateAndMergeCurvesInGraph(mergeTolerance: number = Geometry.smallMetricDistance) {
     const allPrimitives: CurvePrimitive[] = [];
     // ASSUME loops have fine-grained types -- no linestrings !!
     for (const group of [this.groupA, this.groupB, this.extraGeometry]) {
@@ -537,7 +540,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       }
     }
     //    const range = RegionOps.curveArrayRange(allPrimitives);
-    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives);
+    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections);
     this.graph = graph;
     this.faceAreaFunction = faceAreaFromCurvedEdgeData;

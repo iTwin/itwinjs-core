@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
-  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
@@ -34,6 +33,7 @@ import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
+import { samplePngTexture } from "../imageData";
 
 // spell-checker: disable
 
@@ -157,29 +157,29 @@ describe("iModel", () => {
       assert.equal(error.errorNumber, IModelStatus.NotFound);
     }
 
-    const element1: Element | undefined = imodel1.elements.tryGetElement(code1);
-    const element2: Element | undefined = imodel1.elements.tryGetElement("0x34");
-    const element3: Element | undefined = imodel1.elements.tryGetElement(badCode);
+    const element1 = imodel1.elements.tryGetElement(code1);
+    const element2 = imodel1.elements.tryGetElement("0x34");
+    const element3 = imodel1.elements.tryGetElement(badCode);
     assert.isDefined(element1);
     assert.isDefined(element2);
     assert.isUndefined(element3);
-    const elementProps1: ElementProps | undefined = imodel1.elements.tryGetElementProps(code1);
-    const elementProps2: ElementProps | undefined = imodel1.elements.tryGetElementProps("0x34");
-    const elementProps3: ElementProps | undefined = imodel1.elements.tryGetElementProps(badCode);
+    const elementProps1 = imodel1.elements.tryGetElementProps(code1);
+    const elementProps2 = imodel1.elements.tryGetElementProps("0x34");
+    const elementProps3 = imodel1.elements.tryGetElementProps(badCode);
     assert.isDefined(elementProps1);
     assert.isDefined(elementProps2);
     assert.isUndefined(elementProps3);
 
-    const model1: Model | undefined = imodel1.models.tryGetModel(IModel.dictionaryId);
-    const modelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(IModel.dictionaryId);
-    const subModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.dictionaryId);
+    const model1 = imodel1.models.tryGetModel(IModel.dictionaryId);
+    const modelProps1 = imodel1.models.tryGetModelProps(IModel.dictionaryId);
+    const subModel1 = imodel1.models.tryGetSubModel(IModel.dictionaryId);
     assert.isDefined(model1);
     assert.isDefined(modelProps1);
     assert.isDefined(subModel1);
-    const badModel1: Model | undefined = imodel1.models.tryGetModel(Id64.fromUint32Pair(999, 999));
-    const badModelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(Id64.fromUint32Pair(999, 999));
-    const badSubModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.rootSubjectId);
-    const badSubModel2: Model | undefined = imodel1.models.tryGetSubModel(badCode);
+    const badModel1 = imodel1.models.tryGetModel(Id64.fromUint32Pair(999, 999));
+    const badModelProps1 = imodel1.models.tryGetModelProps(Id64.fromUint32Pair(999, 999));
+    const badSubModel1 = imodel1.models.tryGetSubModel(IModel.rootSubjectId);
+    const badSubModel2 = imodel1.models.tryGetSubModel(badCode);
     assert.isUndefined(badModel1);
     assert.isUndefined(badModelProps1);
     assert.isUndefined(badSubModel1);
@@ -220,17 +220,37 @@ describe("iModel", () => {
 
     const a2 = imodel2.elements.getElement("0x1d");
     assert.exists(a2);
-    assert.isTrue(a2.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    const el3: Element = imodel2.elements.getElement(a2.federationGuid!);
+    expect(a2.federationGuid).equal("18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const el3 = imodel2.elements.getElement(a2.federationGuid!);
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.equal(a2.id, el3.id);
     roundtripThroughJson(el3);
 
-    const newEl = el3;
+    const newEl = el3.toJSON();
     newEl.federationGuid = undefined;
-    const newId = imodel2.elements.insertElement(newEl.toJSON());
-    assert.isTrue(Id64.isValidId64(newId), "insert worked");
+    newEl.code = { scope: "bad scope", spec: "0x10", value: "new code" };
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+    newEl.code.scope = "0x34322"; // valid id, but element doesn't exist
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+
+    newEl.code.scope = el3.federationGuid!;
+    const newId = imodel2.elements.insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
+    const a4 = imodel2.elements.getElementProps(newId);
+    expect(a4.code.scope).equal(el3.id);
+
+    a4.code.scope = "0x13343";
+    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope");
+
+    a4.code.scope = "0x1";
+    imodel2.elements.updateElement(a4); // should change the code scope to new element
+    let a5 = imodel2.elements.getElementProps(newId);
+    expect(a5.code.scope).equal("0x1");
+
+    a4.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
+    imodel2.elements.updateElement(a4);
+    a5 = imodel2.elements.getElementProps(newId);
+    expect(a5.code.scope).equal(el3.id);
   });
 
   it("should optionally detect class mismatches", () => {
@@ -379,16 +399,11 @@ describe("iModel", () => {
   });
 
   it("attempt to apply material to new element in imodel5", () => {
-    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
-    // bottom right pixel.  The rest of the square is red.
-    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
-
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
-    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
     const testTextureDescription = "empty description";
 
-    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureDescription);
+    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, samplePngTexture.base64, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
@@ -471,7 +486,7 @@ describe("iModel", () => {
     const props: DisplayStyleProps = {
       classFullName: DisplayStyle3d.classFullName,
       model: IModel.dictionaryId,
-      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId, value: "test style" },
       isPrivate: false,
       jsonProperties: {
         styles: settings,

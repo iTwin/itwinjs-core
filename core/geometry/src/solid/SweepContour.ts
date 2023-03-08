@@ -158,6 +158,12 @@ export class SweepContour {
             const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
             this._facets = unflippedPoly;
             this._facets.tryTransformInPlace(this.localToWorld);
+          } else {  // earcut failed (e.g., on a split washer polygon, where the bridge edge is traversed twice)
+            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(points, [], true);
+            if (polyface) {
+              this._facets = polyface as IndexedPolyface;
+              this._facets.tryTransformInPlace(this.localToWorld);
+            }
           }
         }
       } else if (this.curves instanceof ParityRegion) {
@@ -175,7 +181,7 @@ export class SweepContour {
             }
           }
           const numLoops = strokes.length;
-      /** Try the earcut algorithm first -- lots less machinery, but can't handle any form of overlap */
+          /** Try the earcut algorithm first -- lots less machinery, but can't handle any form of overlap */
           const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
           if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph, true, numLoops - 1)) {
             Triangulator.flipTriangles(graph);
@@ -190,7 +196,6 @@ export class SweepContour {
               this._facets.tryTransformInPlace(this.localToWorld);
             }
           }
-
         }
       }
     }

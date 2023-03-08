@@ -9,12 +9,15 @@ import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
+import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public
@@ -368,6 +371,13 @@ export interface ContentModifiersList {
     propertyCategories?: PropertyCategorySpecification[];
     propertyOverrides?: PropertySpecification[];
     relatedProperties?: RelatedPropertiesSpecification[];
+}
+
+// @alpha (undocumented)
+export class ContentPropertyValueFormatter {
+    constructor(_propertyValueFormatter: PropertyValueFormatter, _unitSystem: UnitSystemKey);
+    // (undocumented)
+    formatContent(content: Content): Promise<Content>;
 }
 
 // @public
@@ -1026,6 +1036,14 @@ export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable =
 
 // @public
 export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>>;
+
+// @alpha (undocumented)
+export interface FormatOptions {
+    // (undocumented)
+    koqName: string;
+    // (undocumented)
+    unitSystem: UnitSystemKey;
+}
 
 // @internal (undocumented)
 export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
@@ -2478,6 +2496,17 @@ export enum PropertyValueFormat {
     Array = "Array",
     Primitive = "Primitive",
     Struct = "Struct"
+}
+
+// @alpha (undocumented)
+export class PropertyValueFormatter {
+    constructor(_schemaContext: SchemaContext);
+    // (undocumented)
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
+    // (undocumented)
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec | undefined>;
+    // (undocumented)
+    getParserSpec(options: FormatOptions): Promise<ParserSpec | undefined>;
 }
 
 // @public
