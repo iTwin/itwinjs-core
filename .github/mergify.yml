@@ -17,9 +17,11 @@ pull_request_rules:
         teams:
           - "@iTwin/itwinjs-core-backport-reviewers"
 
-  - name: ask to resolve conflict
+  - name: Ask to resolve conflict
     conditions:
-      - conflict
+      - and:
+          - conflict
+          - -draft
     actions:
       comment:
         message: |
