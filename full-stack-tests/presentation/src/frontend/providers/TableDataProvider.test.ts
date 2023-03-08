@@ -203,10 +203,9 @@ describe("TableDataProvider", async () => {
       }]);
     });
 
-    it("returns undefined when requesting row with invalid index", async () => {
+    it("throws when requesting row with invalid index", async () => {
       provider.keys = new KeySet([instances.physicalModel]);
-      const row = await provider.getRow(1);
-      expect(row).to.be.undefined;
+      await expect(provider.getRow(1)).to.eventually.be.rejected;
     });
 
   });
