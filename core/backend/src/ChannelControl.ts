@@ -77,7 +77,7 @@ export class ChannelAdmin implements ChannelControl {
   public get hasChannels(): boolean {
     if (undefined === this._hasChannels) {
       try {
-        this._hasChannels = this._iModel.withStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName}`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
+        this._hasChannels = this._iModel.withStatement(`SELECT 1 FROM ${ChannelAdmin.channelClassName}`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
       } catch (e) {
         // iModel doesn't have channel class in its BIS schema
         this._hasChannels = false;
@@ -109,7 +109,7 @@ export class ChannelAdmin implements ChannelControl {
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel)
-      throw new IModelError(RepositoryStatus.ChannelConstraintViolation, `ChannelAdmin: channel "${deniedChannel}" is not allowed`);
+      throw new IModelError(RepositoryStatus.ChannelConstraintViolation, `channel "${deniedChannel}" is not allowed`);
 
     const channel = this.getChannel(modelId);
     if (this._allowedChannels.has(channel)) {
