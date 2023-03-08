@@ -254,9 +254,16 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       if (vp.iModel.iTwinId && !(await MapLayerPreferences.storeSource(source, vp.iModel.iTwinId, vp.iModel.iModelId, storeOnIModel))) {
         const msgError = MapLayersUI.localization.getLocalizedString("mapLayers:Messages.MapLayerPreferencesStoreFailed");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
-      }
+	    }
     }
-    const settings = source.toLayerSettings(validation.subLayers);
+
+    // Some sources have a single non-visible sub-layer (i.e. ArcGIS World Topo Map); to avoid having a layer with no content (and no way to change the sub-layer visibility)
+    // we force the sub-layer visibility to ON.
+    let subLayers = validation.subLayers;
+    if (validation.subLayers && validation.subLayers.length === 1 && validation.subLayers[0].visible === false) {
+      subLayers = [{...validation.subLayers[0], visible: true}];
+    }
+    const settings = source.toLayerSettings(subLayers);
     if (settings) {
       vp.displayStyle.attachMapLayer({ settings, isOverlay });
 

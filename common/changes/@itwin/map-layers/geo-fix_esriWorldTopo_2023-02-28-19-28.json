@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Maplayers widget would not display ArcGIS's world topo base map.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

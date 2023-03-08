@@ -1,5 +1,8 @@
 sep=;
 Release Tag;API Item
+beta;ChangedInstanceIds
+beta;ChangedInstanceOps
+beta;ExportSchemaResult
 internal;hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set
 beta;IModelExporter
 internal;IModelExporterState
