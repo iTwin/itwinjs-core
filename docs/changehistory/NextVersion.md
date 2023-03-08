@@ -6,11 +6,13 @@ publish: false
 Table of contents:
 
 - [Updated minimum requirements](#updated-minimum-requirements)
-  - [Node.js](#node-js)
+  - [Node.js](#nodejs)
   - [WebGL](#webgl)
   - [Electron](#electron)
 - [Mesh offset](#mesh-offset)
 - [Mesh intersection with ray](#mesh-intersection-with-ray)
+- [Presentation](#presentation)
+  - [Handling of long-running requests](#handling-of-long-running-requests)
 
 ## Updated minimum requirements
 
@@ -51,3 +53,13 @@ The lower left is the original (smaller, inside) mesh with the (transparent) off
 New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with a [Polyface]($core-geometry). By default, [PolyfaceQuery.intersectRay3d]($core-geometry) returns a [FacetLocationDetail]($core-geometry) for the first found facet that intersects the infinite line parameterized by the ray. A callback can be specified in the optional [FacetIntersectOptions]($core-geometry) parameter to customize intersection processing, e.g., to filter and collect multiple intersections. Other options control whether to populate the returned detail with interpolated auxiliary vertex data: normals, uv parameters, colors, and/or the barycentric scale factors used to interpolate such data.
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
+
+## Presentation
+
+### Handling of long-running requests
+
+The timeouts' strategy used for Presentation RPC has been changed.
+
+Previously, the backend would return a "timeout" status if creating the response took more than 90 seconds (or as configured through [PresentationPropsBase.requestTimeout]($presentation-backend)). The frontend, upon receiving such a status, would repeat the request 5 times before propagating the timeout to the requestor on the frontend. This means that changing the timeout on the backend affects how long in total the frontend waits. By default that was 5 times 90 seconds, so 7.5 minutes in total.
+
+Now, the two timeout configs on the backend and the frontend have been separated. The timeout on the frontend is set through [PresentationManagerProps.requestTimeout]($presentation-frontend) and defaults to 10 minutes. Presentation manager will repeat the RPC request as many times as needed to wait at least 10 minutes until returning the "timeout" response to the requestor. With this change the timeout configuration on the backend becomes less important as it merely affects how often the frontend will have to repeat the request. It can still be changed through [PresentationPropsBase.requestTimeout]($presentation-backend), but the default value has been reduced to 5 seconds.

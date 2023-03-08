@@ -70,6 +70,7 @@ public;CustomNodeSpecification
 public;CustomQueryInstanceNodesSpecification 
 public;CustomRendererSpecification
 public;DEFAULT_KEYS_BATCH_SIZE = 5000
+internal;DEFAULT_REQUEST_TIMEOUT: number
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
 public;DefaultPropertyCategoryOverride 
@@ -380,7 +381,7 @@ public;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
 beta;RpcDiagnosticsOptions = Omit_2
-internal;RpcRequestsHandler 
+internal;RpcRequestsHandler
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
 public;RuleBase

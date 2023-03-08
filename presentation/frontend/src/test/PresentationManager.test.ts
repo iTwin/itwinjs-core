@@ -116,6 +116,12 @@ describe("PresentationManager", () => {
       expect(mgr.rpcRequestsHandler.clientId).to.eq(props.clientId);
     });
 
+    it("sets RpcRequestsHandler timeout if supplied with props", async () => {
+      const props = { requestTimeout: 123 };
+      const mgr = PresentationManager.create(props);
+      expect(mgr.rpcRequestsHandler.timeout).to.eq(props.requestTimeout);
+    });
+
     it("sets custom IpcRequestsHandler if supplied with props", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       sinon.stub(IpcApp, "addListener");
@@ -145,15 +151,6 @@ describe("PresentationManager", () => {
       const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(() => { });
       using(PresentationManager.create(), (_) => { });
       expect(addListenerSpy).to.be.calledOnceWith(PresentationIpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
-    });
-
-  });
-
-  describe("dispose", () => {
-
-    it("disposes RPC requests handler", () => {
-      manager.dispose();
-      rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
     });
 
   });

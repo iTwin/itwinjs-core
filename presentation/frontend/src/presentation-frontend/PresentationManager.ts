@@ -77,6 +77,14 @@ export interface PresentationManagerProps {
    */
   clientId?: string;
 
+  /**
+   * Timeout (in milliseconds) for how long we're going to wait for RPC request to be fulfilled before throwing
+   * a timeout error.
+   *
+   * Defaults to 5 minutes.
+   */
+  requestTimeout?: number;
+
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
 
@@ -123,7 +131,7 @@ export class PresentationManager implements IDisposable {
       this.activeUnitSystem = props.activeUnitSystem;
     }
 
-    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
+    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
@@ -142,7 +150,6 @@ export class PresentationManager implements IDisposable {
   public set activeLocale(locale: string | undefined) { this._localizationHelper.locale = locale; }
 
   public dispose() {
-    this._requestsHandler.dispose();
     if (this._clearEventListener) {
       this._clearEventListener();
       this._clearEventListener = undefined;
@@ -190,8 +197,9 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  /** Function that is called when a new IModelConnection is used to retrieve data.
-   *  @internal
+  /**
+   * Function that is called when a new IModelConnection is used to retrieve data.
+   * @internal
    */
   public async onNewiModelConnection(_: IModelConnection) { }
 
