@@ -52,7 +52,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
-import { ChannelAdmin, ChannelControl } from "./ChannelAdmin";
+import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 
 // spell:ignore fontid fontmap
 

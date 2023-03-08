@@ -11,11 +11,11 @@ import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common"
 import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** The name of a channel. Used for "allowed channels" in [[ChannelAdmin]] */
+/** The name of a channel. Used for "allowed channels" in [[ChannelControl]] */
 export type ChannelName = string;
 
 /**
- * Controls which channels of an iModel are permitted for write operations. An instance of this class is
+ * Controls which channels of an iModel are permitted for write operations. An implementation of this interface is
  * available via [[IModelDb.channels]].
  * @see [Working With Channels]($docs/learning/backend/channels.md) for details
  * @beta
