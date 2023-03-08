@@ -16,7 +16,7 @@ import {
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
@@ -100,8 +100,7 @@ async function init() {
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
   } else {
-    const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "full-stack-test", version: "v1.0" } });
-    const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, rpcInterfaces);
+    const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;

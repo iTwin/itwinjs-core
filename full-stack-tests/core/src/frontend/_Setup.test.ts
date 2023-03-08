@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, Assertion, util } from "chai";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
 
@@ -106,8 +106,7 @@ Assertion.addMethod(
 );
 
 if (!ProcessDetector.isElectronAppFrontend) {
-  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "full-stack-test", version: "v1.0" } });
-  const configHolder = BentleyCloudRpcManager.initializeClient(paramsHolder, rpcInterfaces);
+  const configHolder = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
   configHolder.configuration.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
 
   // This is a web-only test

@@ -8,7 +8,7 @@
 import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost } from "@itwin/core-backend";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
@@ -44,8 +44,7 @@ const settings = new Settings(process.env);
 
   PresentationBackend.initialize();
 
-  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "full-stack-test", version: "v1.0" } });
-  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, getRpcInterfaces(settings));
+  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, getRpcInterfaces(settings));
 
   // create a basic express web server
   const port = 5011;

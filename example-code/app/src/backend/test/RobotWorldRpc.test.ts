@@ -123,14 +123,14 @@ if (ProcessDetector.isElectronAppFrontend) {
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
 
 export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {
-  const cloudParams = BentleyCloudRpcParams.wrap({ info: { title: "RobotWorldEngine", version: "v1.0" } });
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
   BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudRemote
 export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], serviceUrl?: string) {
-  const cloudParams = BentleyCloudRpcParams.wrap({ info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: serviceUrl });
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: serviceUrl };
   BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
 // __PUBLISH_EXTRACT_END__

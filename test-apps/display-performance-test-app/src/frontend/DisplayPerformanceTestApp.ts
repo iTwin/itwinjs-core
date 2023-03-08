@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
@@ -110,8 +110,7 @@ window.onload = async () => {
 
   if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
-    const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix });
-    BentleyCloudRpcManager.initializeClient(paramsHolder, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }
 
   await DisplayPerfTestApp.startup();

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost } from "@itwin/core-backend";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
+import { BentleyCloudRpcManager, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 
 /**
  * Initializes Web Server backend
@@ -18,8 +18,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
   await IModelHost.startup();
 
   // tell BentleyCloudRpcManager which RPC interfaces to handle
-  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "presentation-test-app", version: "v1.0" } });
-  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, rpcInterfaces);
+  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "presentation-test-app", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
   const port = Number(process.env.PORT || 3001);

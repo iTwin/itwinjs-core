@@ -6,7 +6,7 @@ import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import * as express from "express";
 import * as path from "path";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
@@ -67,8 +67,7 @@ function startWebServer() {
   }
 
   // Set up the ability to serve the supported rpcInterfaces via web requests
-  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "display-performance-test-app", version: "v1.0" } });
-  const cloudConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, getRpcInterfaces());
+  const cloudConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-performance-test-app", version: "v1.0" } }, getRpcInterfaces());
 
   const app = express();
   app.use(express.text({ limit: "50mb" }));

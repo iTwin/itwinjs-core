@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as https from "https";
 import * as enableWs from "express-ws";
 import { Logger } from "@itwin/core-bentley";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { LocalhostIpcHost } from "@itwin/core-backend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -40,8 +40,7 @@ const dtaWebMain = (async () => {
   Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
   // Set up the ability to serve the supported rpcInterfaces via web requests
-  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "display-test-app", version: "v1.0" } });
-  const cloudConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, getRpcInterfaces());
+  const cloudConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces());
 
   const app = express();
   enableWs(app);

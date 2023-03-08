@@ -33,7 +33,7 @@ export class SampleApp {
       await ElectronApp.startup({ iModelApp: iModelAppOpts });
       // __PUBLISH_EXTRACT_END__
     } else if (ProcessDetector.isBrowserProcess) {
-      const rpcParams = BentleyCloudRpcParams.wrap({ info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" });
+      const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       await IModelApp.startup(iModelAppOpts);
       BentleyCloudRpcManager.initializeClient(rpcParams, iModelAppOpts.rpcInterfaces ?? []); // eslint-disable-line deprecation/deprecation
     }

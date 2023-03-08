@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { LocalhostIpcHost } from "@itwin/core-backend";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
@@ -17,8 +17,7 @@ async function init() {
   await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "websocket");
 
-  const paramsHolder = BentleyCloudRpcParams.wrap({ info: { title: "rpc-full-stack-test", version: "v1.0" } });
-  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl(paramsHolder, rpcInterfaces);
+  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
   const webEditServer = new WebEditServer(rpcConfigHolder.configuration.protocol);
