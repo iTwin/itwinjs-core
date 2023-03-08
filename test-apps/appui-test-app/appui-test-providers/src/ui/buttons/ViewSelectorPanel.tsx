@@ -9,7 +9,7 @@ import { getListPanel, IModelConnectedViewSelector, ListItem, ListItemType, Supp
 import { IModelApp, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { CustomToolbarItem } from "@itwin/components-react";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
 function ViewSelectorPanel() {
   const activeViewport = useActiveViewport();
   const activeImodelConnection = React.useMemo(() => activeViewport?.iModel, [activeViewport]);
