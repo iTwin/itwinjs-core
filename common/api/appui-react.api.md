@@ -3982,7 +3982,11 @@ export interface ListPickerProps {
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
     // (undocumented)
+    onSearchValueChange?: (search: string) => void;
+    // (undocumented)
     onSizeKnown?: (size: SizeProps) => void;
+    // (undocumented)
+    searchBox?: boolean;
     // (undocumented)
     setEnabled: (item: ListItem, enabled: boolean) => any;
     // (undocumented)
@@ -7230,6 +7234,8 @@ export interface ViewSelectorProps {
     imodel?: IModelConnection;
     // (undocumented)
     listenForShowUpdates?: boolean;
+    // (undocumented)
+    searchBox?: boolean;
     // (undocumented)
     showDrawings: boolean;
     // (undocumented)
