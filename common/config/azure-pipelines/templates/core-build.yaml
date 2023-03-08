@@ -60,7 +60,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'), or(eq(variables[Build.SourceBranch],'release'), eq(variables[Build.SourceBranch],'master')))
+    condition: or(eq(variables[Build.SourceBranch],'release'), eq(variables[Build.SourceBranch],'master'))
   - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
