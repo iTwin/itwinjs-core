@@ -27,7 +27,7 @@ class TreeRefs implements SpatialTileTreeReferences {
   }
 }
 
-export function createBatchedSpatialTileTreeReferences(iModel: IModelConnection, computeBaseUrl: (iModel: IModelConnection) => string): SpatialTileTreeReferences {
+export function createBatchedSpatialTileTreeReferences(iModel: IModelConnection, computeBaseUrl: (iModel: IModelConnection) => URL): SpatialTileTreeReferences {
   const treeRef = createBatchedTileTreeReference(iModel, computeBaseUrl(iModel));
   return new TreeRefs(treeRef);
 }

@@ -7,7 +7,7 @@ import {
   Angle, Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { Tileset3dSchema as schema } from "@itwin/core-common";
-import { IModelConnection, TileLoadPriority, RealityModelTileUtils } from "@itwin/core-frontend";
+import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
@@ -65,9 +65,9 @@ function transformFromJSON(json: schema.Transform): Transform {
 export class BatchedTilesetReader {
   private readonly _iModel: IModelConnection;
   private readonly _tileset: schema.Tileset;
-  public readonly baseUrl: string;
+  public readonly baseUrl: URL;
 
-  public constructor(json: unknown, iModel: IModelConnection, baseUrl: string) {
+  public constructor(json: unknown, iModel: IModelConnection, baseUrl: URL) {
     if (!isTileset3d(json))
       throw new Error("Invalid tileset JSON");
 

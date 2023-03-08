@@ -92,8 +92,9 @@ export class BatchedTile extends Tile {
   }
 
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const url = `${this.batchedTree.reader.baseUrl}${this.contentId}`;
-    const response = await fetch(url);
+    const url = new URL(this.contentId, this.batchedTree.reader.baseUrl);
+    url.search = this.batchedTree.reader.baseUrl.search;
+    const response = await fetch(url.toString());
     return response.arrayBuffer();
   }
 

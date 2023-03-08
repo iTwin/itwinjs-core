@@ -5,7 +5,7 @@
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, SpatialTileTreeReferences, TileAdmin,
+  IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
 } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
@@ -148,7 +148,7 @@ const dtaFrontendMain = async () => {
   await getFrontendConfig();
 
   initializeFrontendTiles({
-    computeSpatialTilesetBaseUrl: (iModel) => `http://localhost:8080${iModel.key}-tiles/3dft/`,
+    computeSpatialTilesetBaseUrl: (iModel) => new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`),
   });
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)

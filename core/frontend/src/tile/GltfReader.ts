@@ -156,9 +156,9 @@ export class GltfReaderProps {
   public readonly glTF: GltfDocument;
   public readonly yAxisUp: boolean;
   public readonly binaryData?: Uint8Array;
-  public readonly baseUrl?: string;
+  public readonly baseUrl?: URL;
 
-  private constructor(glTF: GltfDocument, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined, baseUrl?: string | undefined) {
+  private constructor(glTF: GltfDocument, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined, baseUrl?: URL | undefined) {
     this.version = version;
     this.glTF = glTF;
     this.binaryData = binaryData;
@@ -167,7 +167,7 @@ export class GltfReaderProps {
   }
 
   /** Attempt to construct a new GltfReaderProps from the binary data beginning at the supplied stream's current read position. */
-  public static create(source: Uint8Array | GltfDocument, yAxisUp: boolean = false, baseUrl?: string): GltfReaderProps | undefined {
+  public static create(source: Uint8Array | GltfDocument, yAxisUp: boolean = false, baseUrl?: URL): GltfReaderProps | undefined {
     let version: number;
     let json: GltfDocument;
     let binaryData: Uint8Array | undefined;
@@ -413,7 +413,7 @@ export abstract class GltfReader {
   protected readonly _system: RenderSystem;
   protected readonly _returnToCenter?: Point3d;
   protected readonly _yAxisUp: boolean;
-  protected readonly _baseUrl?: string;
+  protected readonly _baseUrl?: URL;
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
   protected readonly _vertexTableRequired: boolean;
@@ -1509,7 +1509,9 @@ export abstract class GltfReader {
 
   private resolveUrl(uri: string): string | undefined {
     try {
-      return new URL(uri, this._baseUrl).toString();
+      const resolved = new URL(uri, this._baseUrl);
+      resolved.search = this._baseUrl?.search ?? "";
+      return resolved.toString();
     } catch (_) {
       return undefined;
     }
@@ -1677,7 +1679,7 @@ export interface ReadGltfGraphicsArgs {
   /** The base URL for any relative URIs in the glTF. Typically, this is the same as the URL for the glTF asset itself.
    * If not supplied, relative URIs cannot be resolved. For glTF assets containing no relative URIs, this is not required.
    */
-  baseUrl?: string;
+  baseUrl?: URL;
   /** @alpha */
   contentRange?: ElementAlignedBox3d;
   /** @alpha */
