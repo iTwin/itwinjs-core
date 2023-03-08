@@ -226,8 +226,8 @@ describe("FrameBuilder", () => {
             select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
             select === AxisScaleSelect.Unit,  // and of course rigid.
             true, // always invertible
-            true
-          );  // always diagonal
+            true // always diagonal
+          );
           const worldCorners = range.corners();
           worldCorners.push(range.fractionToPoint(0.5, 0.5, 0.5));
         }

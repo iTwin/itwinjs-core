@@ -625,10 +625,12 @@ export class Point3d extends XYZ {
    * @param scaleB scale factor for pointB
    */
   public static createAdd2Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, result?: Point3d): Point3d {
-    return Point3d.create(pointA.x * scaleA + pointB.x * scaleB,
+    return Point3d.create(
+      pointA.x * scaleA + pointB.x * scaleB,
       pointA.y * scaleA + pointB.y * scaleB,
       pointA.z * scaleA + pointB.z * scaleB,
-      result);
+      result
+    );
   }
   /** Create a point that is a linear combination (weighted sum) of 3 input points.
    * @param pointA first input point
@@ -639,10 +641,12 @@ export class Point3d extends XYZ {
    * @param scaleC scale factor for pointC
    */
   public static createAdd3Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number, result?: Point3d): Point3d {
-    return Point3d.create(pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
+    return Point3d.create(
+      pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
       pointA.y * scaleA + pointB.y * scaleB + pointC.y * scaleC,
       pointA.z * scaleA + pointB.z * scaleB + pointC.z * scaleC,
-      result);
+      result
+    );
   }
   /**
    * Return the dot product of vectors from this to pointA and this to pointB.
