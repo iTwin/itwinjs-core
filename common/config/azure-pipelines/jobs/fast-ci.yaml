@@ -33,8 +33,8 @@ jobs:
       matrix:
         "Windows_Node_18":
           platform: Windows_NT
-          # name: $(win_pool)
-          name: iTwin Windows Testing
+          name: $(win_pool)
+          # name: iTwin Windows Testing
         "Linux_Node_18":
           platform: Linux
           name: $(linux_pool)
