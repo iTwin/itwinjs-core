@@ -61,8 +61,8 @@ export class BatchedTile extends Tile {
 
       const children = this._batchedChildren;
       if (children)
-          for (const child of children)
-            child.selectTiles(selected, args);
+        for (const child of children)
+          child.selectTiles(selected, args);
     }
   }
 
@@ -92,19 +92,20 @@ export class BatchedTile extends Tile {
   }
 
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const url = `${this.batchedTree.reader.baseUrl}${this.contentId}`;
-    const response = await fetch(url);
+    const url = new URL(`${this.contentId}.gz`, this.batchedTree.reader.baseUrl);
+    url.search = this.batchedTree.reader.baseUrl.search;
+    const response = await fetch(url.toString());
     return response.arrayBuffer();
   }
 
   public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, shouldAbort?: () => boolean): Promise<TileContent> {
     assert(data instanceof Uint8Array);
     if (!(data instanceof Uint8Array))
-      return { };
+      return {};
 
     const props = GltfReaderProps.create(data, false, this.batchedTree.reader.baseUrl);
     if (!props)
-      return { };
+      return {};
 
     const reader = new BatchedTileContentReader({
       props,

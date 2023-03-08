@@ -156,9 +156,9 @@ export class GltfReaderProps {
   public readonly glTF: GltfDocument;
   public readonly yAxisUp: boolean;
   public readonly binaryData?: Uint8Array;
-  public readonly baseUrl?: string;
+  public readonly baseUrl?: URL;
 
-  private constructor(glTF: GltfDocument, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined, baseUrl?: string | undefined) {
+  private constructor(glTF: GltfDocument, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined, baseUrl?: URL | undefined) {
     this.version = version;
     this.glTF = glTF;
     this.binaryData = binaryData;
@@ -167,7 +167,7 @@ export class GltfReaderProps {
   }
 
   /** Attempt to construct a new GltfReaderProps from the binary data beginning at the supplied stream's current read position. */
-  public static create(source: Uint8Array | GltfDocument, yAxisUp: boolean = false, baseUrl?: string): GltfReaderProps | undefined {
+  public static create(source: Uint8Array | GltfDocument, yAxisUp: boolean = false, baseUrl?: URL): GltfReaderProps | undefined {
     let version: number;
     let json: GltfDocument;
     let binaryData: Uint8Array | undefined;
@@ -278,7 +278,7 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
   }
 -------------------------------------- */
 
-const emptyDict = { };
+const emptyDict = {};
 
 function colorFromJson(values: number[]): ColorDef {
   return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255);
@@ -413,7 +413,7 @@ export abstract class GltfReader {
   protected readonly _system: RenderSystem;
   protected readonly _returnToCenter?: Point3d;
   protected readonly _yAxisUp: boolean;
-  protected readonly _baseUrl?: string;
+  protected readonly _baseUrl?: URL;
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
   protected readonly _vertexTableRequired: boolean;
@@ -672,7 +672,7 @@ export abstract class GltfReader {
     }
   }
 
-  private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): Polyface | undefined {
+  private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined, needNormals: boolean, needParams: boolean): Polyface | undefined {
     if (!mesh.pointQParams || !mesh.points || !mesh.indices)
       return undefined;
 
@@ -682,7 +682,7 @@ export abstract class GltfReader {
     const includeParams = needParams && undefined !== uvQParams && undefined !== uvs;
 
     const polyface = IndexedPolyface.create(includeNormals, includeParams);
-    for (let i = 0; i < points.length; ) {
+    for (let i = 0; i < points.length;) {
       const point = pointQParams.unquantize(points[i++], points[i++], points[i++]);
       if (transform)
         transform.multiplyPoint3d(point, point);
@@ -691,11 +691,11 @@ export abstract class GltfReader {
     }
 
     if (includeNormals && normals)
-      for (let i = 0; i < normals.length; )
+      for (let i = 0; i < normals.length;)
         polyface.addNormal(OctEncodedNormal.decodeValue(normals[i++]));
 
     if (includeParams && uvs && uvQParams)
-      for (let i = 0; i < uvs.length; )
+      for (let i = 0; i < uvs.length;)
         polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
 
     let j = 0;
@@ -845,7 +845,7 @@ export abstract class GltfReader {
     // KHR_techniques_webgl extension
     const techniques = this._glTF.extensions?.KHR_techniques_webgl?.techniques;
     const ext = Array.isArray(techniques) ? material.extensions?.KHR_techniques_webgl : undefined;
-    if (techniques && undefined !== ext && typeof(ext.values) === "object") {
+    if (techniques && undefined !== ext && typeof (ext.values) === "object") {
       const uniforms = typeof ext.technique === "number" ? techniques[ext.technique].uniforms : undefined;
       if (typeof uniforms === "object") {
         for (const uniformName of Object.keys(uniforms)) {
@@ -924,7 +924,7 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
-    const material = 0 < materialName.length ? this._materials[materialName] : { };
+    const material = 0 < materialName.length ? this._materials[materialName] : {};
     if (!material)
       return undefined;
 
@@ -1502,14 +1502,16 @@ export abstract class GltfReader {
 
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
-    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+    const mesh = await loader.parse(buf, {}); // NB: `options` argument declared optional but will produce exception if not supplied.
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }
 
   private resolveUrl(uri: string): string | undefined {
     try {
-      return new URL(uri, this._baseUrl).toString();
+      const res = new URL(uri, this._baseUrl);
+      res.search = this._baseUrl?.search ?? "";
+      return res.toString();
     } catch (_) {
       return undefined;
     }
@@ -1677,7 +1679,7 @@ export interface ReadGltfGraphicsArgs {
   /** The base URL for any relative URIs in the glTF. Typically, this is the same as the URL for the glTF asset itself.
    * If not supplied, relative URIs cannot be resolved. For glTF assets containing no relative URIs, this is not required.
    */
-  baseUrl?: string;
+  baseUrl?: URL;
   /** @alpha */
   contentRange?: ElementAlignedBox3d;
   /** @alpha */
