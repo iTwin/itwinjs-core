@@ -2882,8 +2882,8 @@ importers:
       eslint-plugin-deprecation: 1.2.1
       eslint-plugin-import: 2.23.4
       eslint-plugin-prefer-arrow: 1.2.3
-      eslint-plugin-react: 7.24.0
-      eslint-plugin-react-hooks: 4.2.0
+      eslint-plugin-react: ^7.32.2
+      eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-testing-library: ^5.6.0
       express: ^4.16.3
       express-ws: ^5.0.2
@@ -2949,8 +2949,8 @@ importers:
       eslint-plugin-deprecation: 1.2.1_eslint@7.32.0+typescript@4.4.4
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-prefer-arrow: 1.2.3_eslint@7.32.0
-      eslint-plugin-react: 7.24.0_eslint@7.32.0
-      eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
+      eslint-plugin-react: 7.32.2_eslint@7.32.0
+      eslint-plugin-react-hooks: 4.6.0_eslint@7.32.0
       eslint-plugin-testing-library: 5.10.2_eslint@7.32.0+typescript@4.4.4
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
@@ -3475,8 +3475,8 @@ importers:
       eslint-plugin-jsdoc: 35.1.3
       eslint-plugin-jsx-a11y: 6.4.1
       eslint-plugin-prefer-arrow: 1.2.3
-      eslint-plugin-react: 7.24.0
-      eslint-plugin-react-hooks: 4.2.0
+      eslint-plugin-react: ^7.32.2
+      eslint-plugin-react-hooks: ^4.6.0
       mocha: ^10.0.0
       require-dir: ^1.2.0
       typescript: ~4.4.0
@@ -3491,8 +3491,8 @@ importers:
       eslint-plugin-jsdoc: 35.1.3_eslint@7.32.0
       eslint-plugin-jsx-a11y: 6.4.1_eslint@7.32.0
       eslint-plugin-prefer-arrow: 1.2.3_eslint@7.32.0
-      eslint-plugin-react: 7.24.0_eslint@7.32.0
-      eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
+      eslint-plugin-react: 7.32.2_eslint@7.32.0
+      eslint-plugin-react-hooks: 4.6.0_eslint@7.32.0
       require-dir: 1.2.0
     devDependencies:
       '@types/eslint': 7.2.14
@@ -9953,7 +9953,6 @@ packages:
       es-abstract: 1.21.1
       es-shim-unscopables: 1.0.0
       get-intrinsic: 1.2.0
-    dev: true
 
   /asap/2.0.6:
     resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
@@ -11220,7 +11219,7 @@ packages:
     dev: true
 
   /concat-map/0.0.1:
-    resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
+    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   /concurrently/3.6.1:
     resolution: {integrity: sha512-/+ugz+gwFSEfTGUxn0KHkY+19XPRTXR8+7oUK/HxgiN1n7FjeJmkrbSiXAJfyQ0zORgJYPaenmymwon51YXH9Q==}
@@ -12938,11 +12937,11 @@ packages:
     dependencies:
       eslint: 7.32.0
 
-  /eslint-plugin-react-hooks/4.2.0_eslint@7.32.0:
-    resolution: {integrity: sha512-623WEiZJqxR7VdxFCKLI6d6LLpwJkGPYKODnkH3D7WpOG5KM8yWueBd8TLsNAetEJNF5iJmolaAKO3F8yzyVBQ==}
+  /eslint-plugin-react-hooks/4.6.0_eslint@7.32.0:
+    resolution: {integrity: sha512-oFc7Itz9Qxh2x4gNHStv3BqJq54ExXmfC+a1NjAta66IAN87Wu0R/QArgIS9qKzX3dXKPI9H5crl9QchNMY9+g==}
     engines: {node: '>=10'}
     peerDependencies:
-      eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
+      eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
     dependencies:
       eslint: 7.32.0
 
@@ -12955,24 +12954,27 @@ packages:
       eslint: 8.34.0
     dev: true
 
-  /eslint-plugin-react/7.24.0_eslint@7.32.0:
-    resolution: {integrity: sha512-KJJIx2SYx7PBx3ONe/mEeMz4YE0Lcr7feJTCMyyKb/341NcjuAgim3Acgan89GfPv7nxXK2+0slu0CWXYM4x+Q==}
+  /eslint-plugin-react/7.32.2_eslint@7.32.0:
+    resolution: {integrity: sha512-t2fBMa+XzonrrNkyVirzKlvn5RXzzPwRHtMvLAtVZrt8oxgnTQaYbU6SXTOO1mwQgp1y5+toMSKInnzGr0Knqg==}
     engines: {node: '>=4'}
     peerDependencies:
-      eslint: ^3 || ^4 || ^5 || ^6 || ^7
+      eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
     dependencies:
       array-includes: 3.1.6
       array.prototype.flatmap: 1.3.1
+      array.prototype.tosorted: 1.1.1
       doctrine: 2.1.0
       eslint: 7.32.0
-      has: 1.0.3
+      estraverse: 5.3.0
       jsx-ast-utils: 3.3.3
       minimatch: 3.1.2
       object.entries: 1.1.6
       object.fromentries: 2.0.6
+      object.hasown: 1.1.2
       object.values: 1.1.6
       prop-types: 15.8.1
       resolve: 2.0.0-next.4
+      semver: 6.3.0
       string.prototype.matchall: 4.0.8
 
   /eslint-plugin-react/7.32.2_eslint@8.34.0:
@@ -17193,7 +17195,6 @@ packages:
     dependencies:
       define-properties: 1.2.0
       es-abstract: 1.21.1
-    dev: true
 
   /object.pick/1.3.0:
     resolution: {integrity: sha512-tqa/UMy/CCoYmj+H5qc07qvSL9dqcs/WZENZ1JbtWBlATP+iVOe778gE6MSijnyCnORzDuX6hU+LA4SZ09YjFQ==}

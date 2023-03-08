@@ -70,6 +70,7 @@ export const TreeNodeRenderer = React.memo((props: TreeNodeRendererProps) => {
       nodeEditorRenderer={props.nodeEditorRenderer}
     />
   );
+  TreeNodeRenderer.displayName = "TreeNodeRenderer";
 
   function onExpansionToggle() {
     if (props.node.isExpanded)
