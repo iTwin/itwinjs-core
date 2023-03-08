@@ -51,7 +51,7 @@ export class BentleyCloudRpcParamsHolder {
 }
 
 /** @internal */
-export namespace BentleyCloudRpcParams {
+export namespace BentleyCloudRpcInternalParams {
   export function wrap(params: BentleyCloudRpcInternalParams) {
     return new BentleyCloudRpcParamsHolder(params);
   }

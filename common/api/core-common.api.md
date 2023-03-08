@@ -567,32 +567,36 @@ export class BentleyCloudRpcConfigurationHolder {
     configuration: BentleyCloudRpcConfiguration;
 }
 
-// @public
-export class BentleyCloudRpcManager extends RpcManager {
-    static initializeClient(paramsHolder: BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfigurationHolder;
-    static initializeImpl(paramsHolder: BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfigurationHolder;
-}
-
 // @internal
-export interface BentleyCloudRpcParams {
-    info: OpenAPIInfo;
+export interface BentleyCloudRpcInternalParams extends BentleyCloudRpcParams {
     pendingRequestListener?: RpcRequestEventHandler;
     protocol?: typeof BentleyCloudRpcProtocol;
-    uriPrefix?: string;
 }
 
 // @internal (undocumented)
-export namespace BentleyCloudRpcParams {
+export namespace BentleyCloudRpcInternalParams {
     // (undocumented)
-    export function wrap(params: BentleyCloudRpcParams): BentleyCloudRpcParamsHolder;
+    export function wrap(params: BentleyCloudRpcInternalParams): BentleyCloudRpcParamsHolder;
+}
+
+// @public
+export class BentleyCloudRpcManager extends RpcManager {
+    static initializeClient(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfigurationHolder;
+    static initializeImpl(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfigurationHolder;
+}
+
+// @public
+export interface BentleyCloudRpcParams {
+    info: OpenAPIInfo;
+    uriPrefix?: string;
 }
 
 // @public
 export class BentleyCloudRpcParamsHolder {
     // @internal
-    constructor(params: BentleyCloudRpcParams);
+    constructor(params: BentleyCloudRpcInternalParams);
     // @internal (undocumented)
-    params: BentleyCloudRpcParams;
+    params: BentleyCloudRpcInternalParams;
 }
 
 // @internal

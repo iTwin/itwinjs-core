@@ -50,9 +50,10 @@ public;BasicPlanarClipMaskArgs
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcConfigurationHolder
+internal;BentleyCloudRpcInternalParams 
+internal;BentleyCloudRpcInternalParams
 public;BentleyCloudRpcManager 
-internal;BentleyCloudRpcParams
-internal;BentleyCloudRpcParams
+public;BentleyCloudRpcParams
 public;BentleyCloudRpcParamsHolder
 internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
