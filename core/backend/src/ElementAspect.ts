@@ -128,7 +128,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
   /** @internal */
   public static override get className(): string { return "ChannelRootAspect"; }
   /** Insert a ChannelRootAspect on the specified element.
-   * @deprecated in 4.0 use [[ChannelAdmin.insertChannelSubject]]
+   * @deprecated in 4.0 use [[ChannelControl.insertChannelSubject]]
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
