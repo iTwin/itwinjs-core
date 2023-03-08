@@ -25,11 +25,13 @@ steps:
       versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: 3.x
-    displayName: Use Python3
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+  # - task: UsePythonVersion@0
+  #   inputs:
+  #     versionSpec: 3.x
+  #   displayName: Use Python3
+  #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
+  - script: python --version
 
   - script: |
       git config --local user.email imodeljs-admin@users.noreply.github.com
