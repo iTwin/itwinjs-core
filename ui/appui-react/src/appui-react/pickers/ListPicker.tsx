@@ -10,7 +10,7 @@ import "./ListPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PopupItem } from "@itwin/components-react";
-import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@itwin/core-react";
+import { CommonProps, Icon, SearchBox, SizeProps, withOnOutsideClick } from "@itwin/core-react";
 import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@itwin/appui-layout-react";
 import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
@@ -51,6 +51,8 @@ export interface ListPickerProps {
   setEnabled: (item: ListItem, enabled: boolean) => any;
   onExpanded?: (expand: boolean) => void;
   onSizeKnown?: (size: SizeProps) => void;
+  searchBox?: boolean;
+  onSearchValueChange?: (search: string) => void;
 }
 
 /** State for the [[ListPickerBase]] component
@@ -214,9 +216,13 @@ export function getListPanel(props: ListPickerProps): React.ReactNode {
     <ContainedGroup
       className="ListPickerContainer"
       columns={
-        <GroupColumn className="ListPicker-column"> {/* eslint-disable-line deprecation/deprecation */}
+        <><GroupColumn className="ListPicker-column"> {/* eslint-disable-line deprecation/deprecation */}
+          {
+            props.searchBox && props.onSearchValueChange &&
+            <SearchBox className="ListPickerSearchBox" onValueChanged={props.onSearchValueChange}/>
+          }
           {props.items.map(listItemToElement)}
-        </GroupColumn>}
+        </GroupColumn></>}
       containFn={containHorizontally} // eslint-disable-line deprecation/deprecation
       title={props.title}
     />

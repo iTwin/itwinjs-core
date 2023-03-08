@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import "./ViewSelectorPanel.scss";
-import { getListPanel, ListItem, ListItemType, SupportsViewSelectorChange, UiFramework, useActiveViewport, ViewUtilities } from "@itwin/appui-react";
+import { getListPanel, IModelConnectedViewSelector, ListItem, ListItemType, SupportsViewSelectorChange, UiFramework, useActiveViewport, ViewUtilities } from "@itwin/appui-react";
 import { IModelApp, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { CustomToolbarItem } from "@itwin/components-react";
 
@@ -149,9 +149,7 @@ export function getCustomViewSelectorPopupItem(itemPriority: number, groupPriori
     isCustom: true,
     id: "appui-test-providers:viewSelector",
     itemPriority,
-    icon: "icon-saved-view",
-    label: "Load selected view into active content view",
-    panelContentNode: <ViewSelectorPanel />,
+    buttonNode: <IModelConnectedViewSelector />,
     keepContentsLoaded: true,
     groupPriority,
   };
