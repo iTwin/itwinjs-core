@@ -17,7 +17,7 @@ import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { BackstageAppButton } from "./BackstageAppButton";
 import { useUiVisibility } from "../hooks/useUiVisibility";
 
-/** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
+/** Properties that can be used to append items to the default set of toolbar items of `BasicToolWidget`.
  * @public
  */
 export interface BasicToolWidgetProps {
