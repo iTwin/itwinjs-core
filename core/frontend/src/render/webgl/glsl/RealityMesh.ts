@@ -341,7 +341,7 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
     addWiremesh(builder);
 
   // TODO: conditionally call this if atmospheric scattering enabled
-  addAtmosphericScatteringEffect(builder, false);
+  addAtmosphericScatteringEffect(builder, false, false);
 
   return builder;
 }

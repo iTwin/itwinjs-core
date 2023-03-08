@@ -44,11 +44,11 @@ float computeSceneDepth(vec3 eyeSpace) {
 `;
 
 // TODO: ask about default scene depth potentially being insufficient
-// const computeSceneDepthSky = `
-// float computeSceneDepth(vec3 eyeSpace) {
-//   return MAX_FLOAT;
-// }
-// `;
+const computeSceneDepthSky = `
+float computeSceneDepth(vec3 eyeSpace) {
+  return MAX_FLOAT;
+}
+`;
 
 const computeRayOrigin = `
 vec3 computeRayOrigin(vec3 eyeSpace) {
@@ -220,11 +220,11 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, int numSamplePo
  * Calculates the atmospheric interference of light from both the sun and a given original color.
  */
 const computeAtmosphericScatteringFromScratch = `
-vec3 computeAtmosphericScattering(boolean ignoreRaycastsIntersectingEarth) {
+vec3 computeAtmosphericScattering(bool ignoreRaycastsIntersectingEarth) {
   vec3 rayDir = computeRayDir(v_eyeSpace);
   vec3 rayOrigin = computeRayOrigin(v_eyeSpace);
   float sceneDepth = computeSceneDepth(v_eyeSpace);
-  float diameterOfEarthAtEquator = u_earthScaleMatrix[2][2];
+  float diameterOfEarthAtPole = u_earthScaleMatrix[2][2];
 
   vec2 earthHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
   vec2 atmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
@@ -235,6 +235,11 @@ vec3 computeAtmosphericScattering(boolean ignoreRaycastsIntersectingEarth) {
   );
 
   if (distanceThroughAtmosphere <= 0.0) {
+    return vec3(0.0);
+  }
+
+  float ignoreDistanceThreshold = diameterOfEarthAtPole * 0.15; // need to accomodate a small threshold to ensure skybox atmosphere overlaps with the uneven earth mesh
+  if (ignoreRaycastsIntersectingEarth && earthHitInfo[1] > ignoreDistanceThreshold) {
     return vec3(0.0);
   }
 
@@ -260,10 +265,12 @@ vec3 computeAtmosphericScattering(boolean ignoreRaycastsIntersectingEarth) {
   // The first sample point either lies at the edge of the atmosphere (camera is in space) or exactly at the ray origin (camera is in the atmosphere).
   // In both cases, the distance traveled through the atmosphere to this point is 0.
   opticalDepthFromRayOriginToSamplePoints[0] = 0.0;
-  float amountOfLightScatteredAway = 0.0;
+
+  vec3 lightScatteredTowardsCamera = vec3(0.0);
+  float sunRayOpticalDepthToLastSamplePoint = 0.0;
 
   for (int i = 1; i <= numPartitions; i++) {
-    opticalDepthFromRayOriginToSamplePoints[i] = opticalDepth(scatterPoint, rayDir, -stepSize, 2) + opticalDepthFromRayOriginToSamplePoints[i-1];
+    opticalDepthFromRayOriginToSamplePoints[i] = opticalDepth(scatterPoint, rayDir, stepSize, 2) + opticalDepthFromRayOriginToSamplePoints[i-1];
 
     vec2 sunRayEarthHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
     bool sunBlockedByEarth = sunRayEarthHitInfo[1] > 0.0;
@@ -271,33 +278,52 @@ vec3 computeAtmosphericScattering(boolean ignoreRaycastsIntersectingEarth) {
       vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
       // TODO: Calculate an appropriate number of samples for sun ray optical depth based off the stepSize (so we don't take too many samples when the density doesn't change much)
       float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numOpticalDepthPoints);
+      sunRayOpticalDepthToLastSamplePoint = sunRayOpticalDepthToScatterPoint;
 
-      float totalOpticalDepthOfSunRay = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtEquator; // We scale by earth diameter purely to obtain values that are easier to work with
-      amountOfLightScatteredAway += exp(-totalOpticalDepthOfSunRay);
+      float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
+      lightScatteredTowardsCamera += densityAtPoint(scatterPoint) * exp(-(u_scatteringCoefficients * totalOpticalDepthFromSunToCamera));
+    } else {
+      sunRayOpticalDepthToLastSamplePoint = 0.0;
     }
 
     scatterPoint += step;
   }
 
   // Scattering coefficients adjust the amount of light scattered by color. (e.g. earth's atmosphere scatters shorter wavelengths more than longer ones)
-  // Scale by stepSize to account for larger atmospheres scattering more light
-  vec3 totalLightFromSun = u_scatteringCoefficients * u_inScatteringIntensity * stepSize * amountOfLightScatteredAway;
+  float stepSizeByEarthDiameter = (stepSize / diameterOfEarthAtPole);
+  vec3 totalLightScatteredTowardsCamera = u_scatteringCoefficients * u_inScatteringIntensity * stepSizeByEarthDiameter * lightScatteredTowardsCamera;
 
-  // float totalViewRayOpticalDepth = exp(-opticalDepthFromRayOriginToSamplePoints[numPartitions] / diameterOfEarthAtEquator);
-  if (earthHitInfo[1] > 0.0) { // view ray looks at the earth
-
-    // float brightnessAdaption = (totalLightFromSun.r + totalLightFromSun.g + totalLightFromSun.b) * u_reflectedLightStrength;
-    // float reflectedLightStrength = exp(-totalViewRayOpticalDepth) * u_outScatteringIntensity + brightnessAdaption;
-
-    // totalLightFromSun += baseColor * reflectedLightStrength
-  } else { // view ray looks into space
-    // Assume original colors originate outside the atmosphere and must travel along the entire view ray to reach the camera.
-    // float lightTransmittedFromBaseColor = densityAtPoint(rayOrigin) * exp(-totalViewRayOpticalDepth) * distanceThroughAtmosphere * u_scatteringCoefficients * u_inScatteringIntensity;
-    // vec3 scatteredLightFromBaseColor = baseColor.rgb * lightTransmittedFromBaseColor;
-    // totalLightFromSun += scatteredLightFromBaseColor;
+  vec3 foo;
+  if (earthHitInfo[1] <= 0.0 || sunRayOpticalDepthToLastSamplePoint <= 0.0) { // view ray does not look at the earth, or the sun ray is blocked before it reaches the earth's surface
+    vec3 foo = totalLightScatteredTowardsCamera;
+    // foo = vec3(1.0, 0.0, 0.0);
+    return foo;
   }
 
-  return vec3(totalLightFromSun);
+  vec3 lightScatteredBeforeReachingSurface = u_scatteringCoefficients * stepSizeByEarthDiameter * exp(-sunRayOpticalDepthToLastSamplePoint / diameterOfEarthAtPole);
+
+  // vec3 totalReflectedLight = u_scatteringCoefficients * u_reflectedLightIntensity *
+
+  //  exp(-opticalDepthFromRayOriginToSamplePoints[numPartitions] / diameterOfEarthAtPole);
+  // scatteringCoefficients
+
+  foo = lightScatteredBeforeReachingSurface;
+  foo = totalLightScatteredTowardsCamera;
+  return foo;
+
+  // float brightnessAdaption = (totalLightFromSun.r + totalLightFromSun.g + totalLightFromSun.b) * u_reflectedLightStrength;
+  // float reflectedLightStrength = exp(-totalViewRayOpticalDepth) * u_outScatteringIntensity + brightnessAdaption;
+
+  // totalLightFromSun += baseColor * reflectedLightStrength
+
+
+
+  // Assume original colors originate outside the atmosphere and must travel along the entire view ray to reach the camera.
+  // float lightTransmittedFromBaseColor = densityAtPoint(rayOrigin) * exp(-totalViewRayOpticalDepth) * distanceThroughAtmosphere * u_scatteringCoefficients * u_inScatteringIntensity;
+  // vec3 scatteredLightFromBaseColor = baseColor.rgb * lightTransmittedFromBaseColor;
+  // totalLightFromSun += scatteredLightFromBaseColor;
+
+  return vec3(totalLightScatteredTowardsCamera);
 }
 `;
 
@@ -359,7 +385,7 @@ vec4 mixAtmosphericScatteringWithBaseColor(vec3 atmosphericScatteringColor, vec4
 
 const applyAtmosphericScattering = `
   vec3 atmosphericScatteringColor = computeAtmosphericScatteringFragment();
-  vec3 result = atmosphericScatteringColor - vec3(u_outScatteringIntensity);
+  vec3 result = atmosphericScatteringColor;
   return mixAtmosphericScatteringWithBaseColor(result, baseColor);
 `;
 
@@ -550,7 +576,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
 export function addAtmosphericScatteringEffect(
   builder: ProgramBuilder,
   isSkyBox: boolean,
-  perFragmentCompute = false,
+  perFragmentCompute: boolean,
 ) {
   const mainShader = perFragmentCompute ? builder.frag : builder.vert;
 
@@ -561,7 +587,11 @@ export function addAtmosphericScatteringEffect(
 
   mainShader.addFunction(computeRayOrigin);
   mainShader.addFunction(computeRayDir);
-  mainShader.addFunction(computeSceneDepthDefault);
+  if (isSkyBox) {
+    mainShader.addFunction(computeSceneDepthSky);
+  } else {
+    mainShader.addFunction(computeSceneDepthDefault);
+  }
   mainShader.addFunction(raySphere);
   mainShader.addFunction(rayEllipsoidIntersection);
   mainShader.addFunction(densityAtPoint);
@@ -590,16 +620,16 @@ export function addAtmosphericScatteringEffect(
   //     });
   //   },
   // );
-  builder.frag.addUniform(
-    "u_outScatteringIntensity",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
+  // builder.frag.addUniform(
+  //   "u_outScatteringIntensity",
+  //   VariableType.Float,
+  //   (prog) => {
+  //     prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
+  //       params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
+  //     });
+  //   },
+  //   VariablePrecision.High
+  // );
   builder.frag.addFunction(mixAtmosphericScatteringWithBaseColor);
   builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
 }

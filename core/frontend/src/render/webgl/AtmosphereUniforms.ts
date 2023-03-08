@@ -149,9 +149,13 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   }
 
   private _updateScatteringCoefficients(scatteringStrength: number, wavelengths: Atmosphere.Wavelengths) {
-    this._scatteringCoefficients[0] = ((400.0 / wavelengths.r) ** 4.0) * scatteringStrength;
-    this._scatteringCoefficients[1] = ((400.0 / wavelengths.g) ** 4.0) * scatteringStrength;
-    this._scatteringCoefficients[2] = ((400.0 / wavelengths.b) ** 4.0) * scatteringStrength;
+    // Rayleigh scattering strength is inversely related to the 4th power of the wavelength ( 1/pow(wavelength, 4) )
+    // Because this produces very small values when the wavelengths are taken in nanometers,
+    //   we attempt to normalize them around 1 by multiplying by the smallest wavelength of visible light (violet light - 400nm)
+    const violetLightWavelength = 400.0;
+    this._scatteringCoefficients[0] = ((violetLightWavelength / wavelengths.r) ** 4.0) * scatteringStrength;
+    this._scatteringCoefficients[1] = ((violetLightWavelength / wavelengths.g) ** 4.0) * scatteringStrength;
+    this._scatteringCoefficients[2] = ((violetLightWavelength / wavelengths.b) ** 4.0) * scatteringStrength;
   }
 
   private _updateNumInScatteringPoints(numInScatteringPoints: number) {
