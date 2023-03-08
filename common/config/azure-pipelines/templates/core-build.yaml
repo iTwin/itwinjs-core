@@ -63,7 +63,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(eq('{{ parameters.runRushAudit }}', 'true'), ne(variables['System.PullRequest.TargetBranch'], 'imodel02'))
+    condition: and(eq('${{ parameters.runRushAudit }}', 'true'), ne('${{ parameters.targetBranch }}', 'imodel02'))
   - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
