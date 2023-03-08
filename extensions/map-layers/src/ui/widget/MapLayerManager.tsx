@@ -61,7 +61,7 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
 
   const layers = new Array<StyleMapLayerSettings>();
 
-  const displayStyleLayers = (getBackgroundMap ? displayStyle.backgroundMapLayers : displayStyle.overlayMapLayers);
+  const displayStyleLayers = (getBackgroundMap ? displayStyle.settings.mapImagery.backgroundLayers : displayStyle.settings.mapImagery.overlayLayers);
   for (let layerIndex = 0; layerIndex < displayStyleLayers.length; layerIndex++) {
     const layerSettings = displayStyleLayers[layerIndex];
     const isOverlay = !getBackgroundMap;
@@ -421,7 +421,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
         // Manually reverse index when moved from one section to the other
         if (fromMapLayer.isOverlay && backgroundMapLayers) {
-          toIndexInDisplayStyle = displayStyle.backgroundMapLayers.length - destination.index;
+          toIndexInDisplayStyle = displayStyle.settings.mapImagery.backgroundLayers.length - destination.index;
         } else if (!fromMapLayer.isOverlay && overlayMapLayers) {
           toIndexInDisplayStyle = overlayMapLayers.length - destination.index;
         }

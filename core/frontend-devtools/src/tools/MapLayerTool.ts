@@ -307,7 +307,7 @@ export class ReorderMapLayers extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.moveMapLayerToIndex(isNaN(from) ? 0 : from, isNaN(to) ? vp.displayStyle.backgroundMapLayers.length : to, false);
+    vp.displayStyle.moveMapLayerToIndex(isNaN(from) ? 0 : from, isNaN(to) ? vp.displayStyle.settings.mapImagery.backgroundLayers.length : to, false);
     vp.invalidateRenderPlan();
     return true;
   }

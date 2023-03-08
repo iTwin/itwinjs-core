@@ -192,12 +192,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** @internal */
-  public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
-
-  /** @internal */
-  public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
-
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    */
@@ -396,7 +390,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
+  public getMapLayers(isOverlay: boolean) { return isOverlay ? this.settings.mapImagery.overlayLayers : this.settings.mapImagery.backgroundLayers; }
 
   /**
    * Attach a map layer to display style.

@@ -95,16 +95,22 @@ export interface Localization {
    * @see [Localization in iTwin.js]($docs/learning/frontend/Localization.md)
    */
   registerNamespace(namespace: string): Promise<void>;
-  /** TODO find where/how used
+
+  /** Unregister a namespace.
    * @param namespace - the name of the namespace.
-   * @internal
+   * @beta
    */
   unregisterNamespace(namespace: string): void;
+
   /** @internal */
   getNamespacePromise(name: string): Promise<void> | undefined;
+
   /** Get the list of available languages for translations */
   getLanguageList(): readonly string[];
-  /** Change the language for translations. This overrides the language from the browser, for tests. */
+
+  /** Change the language for translations. This overrides the language from the browser, for tests.
+   * @param language - the language to change to.
+   */
   changeLanguage(language: string): Promise<void>;
 }
 
