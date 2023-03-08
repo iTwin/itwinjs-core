@@ -17,7 +17,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */
-// cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT rigids
+// cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT rigids ATTV
 
 export class MatrixTests {
   public static checkProperties(ck: bsiChecker.Checker, matrix: Matrix3d, isIdentity: boolean | undefined,
@@ -179,12 +179,14 @@ function checkPointArrays(ck: bsiChecker.Checker, pointA: Point3d[]) {
   ck.testPoint3d(rangeB.low, rangeC.low, "transformed array, range");
   ck.testPoint3d(rangeB.high, rangeC.high, "transformed array, range");
 }
-describe("Point3dArray.HelloWorld", () => {
-  it("Point3dArray.HelloWorld", () => {
+
+describe("Matrix3d.checkPointArrays", () => {
+  it("Matrix3d.checkPointArrays", () => {
+
     const ck = new bsiChecker.Checker();
     const pointA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
     checkPointArrays(ck, pointA);
-    ck.checkpoint("Point3dArray.HelloWorld");
+    ck.checkpoint("Point3dArray.checkPointArrays");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -212,54 +214,60 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
   it("Matrix3d.factorPerpendicularColumns", () => {
     const ck = new bsiChecker.Checker();
     for (const scale of [1, 10, 1000, 68234]) {
-      for (const ef of [[0, 0, 0], [0.1, 0, 0], [0.1, 0.5, -0.3], [0.1, 0.5, 0.54], [-0.2, 0.8, 1.1], [0.01, 0, 0]]) {
-        const e = ef[0];
-        const f = ef[1];
-        const g = ef[2];
+      for (const efg of [[0, 0, 0], [0.1, 0, 0], [0.1, 0.5, -0.3], [0.1, 0.5, 0.54], [-0.2, 0.8, 1.1], [0.01, 0, 0]]) {
+        const e = efg[0];
+        const f = efg[1];
+        const g = efg[2];
         const matrixA = Matrix3d.createRowValues(
           2, 0, 2,
           e, f, -e,
-          g, 1, 0);
+          g, 1, 0
+        );
         matrixA.scaleColumns(scale, scale, scale);
         const matrixB = Matrix3d.createZero();
-        const matrixU = Matrix3d.createZero();
-        matrixA.factorPerpendicularColumns(matrixB, matrixU);
-        const matrixBU = matrixB.multiplyMatrixMatrix(matrixU);
+        const matrixC = Matrix3d.createZero();
+        matrixA.factorPerpendicularColumns(matrixB, matrixC);
+        const matrixBU = matrixB.multiplyMatrixMatrix(matrixC);
         const matrixBTB = matrixB.multiplyMatrixTransposeMatrix(matrixB);
         if (bsiChecker.Checker.noisy.factorPerpendicularColumns) {
           console.log("A", matrixA);
-          console.log("diagBTB", matrixBTB.at(0, 0), matrixBTB.at(1, 1), matrixBTB.at(1, 1), " error",
-            matrixBTB.sumSquares() - matrixBTB.sumDiagonalSquares());
+          console.log("diagonal elements of BTB: ",
+            matrixBTB.at(0, 0), " - ", matrixBTB.at(1, 1), " - ", matrixBTB.at(1, 1),
+            ". error: ", matrixBTB.sumSquares() - matrixBTB.sumDiagonalSquares()
+          );
           console.log("B", matrixB);
-          console.log("U", matrixU);
+          console.log("C", matrixC);
           console.log("BTB", matrixBTB);
         }
-        ck.testBoolean(true, matrixBTB.isDiagonal, "BTB diagonal");
-        ck.testCoordinate(0, matrixA.maxDiff(matrixBU), "factorPerpendicularColumns");
-        ck.testBoolean(true, matrixU.isRigid());
+        ck.testCoordinate(0, matrixA.maxDiff(matrixBU), "A = B*C");
+        ck.testBoolean(true, matrixBTB.isDiagonal, "BT*B is diagonal");
+        ck.testBoolean(true, matrixC.isRigid(), "C is rigid");
 
         // test full SVD
         const matrixV = Matrix3d.createZero();
-        const matrixW = Matrix3d.createZero();
+        const matrixU = Matrix3d.createZero();
         const scaleFactors = Point3d.createZero();
-        if (ck.testTrue(matrixA.factorOrthogonalScaleOrthogonal(matrixV, scaleFactors, matrixW), "SVD = V*S*W succeeds")) {
-          ck.testTrue(scaleFactors.x >= scaleFactors.y && scaleFactors.y >= scaleFactors.z, "Singular values are decreasing");
-          const matrixS = Matrix3d.createScale(scaleFactors.x, scaleFactors.y, scaleFactors.z);
-          const matrixVS = matrixV.multiplyMatrixMatrix(matrixS);
-          ck.testCoordinate(0, matrixU.maxDiff(matrixW), "W === U");
-          if (ck.testCoordinate(0, matrixA.maxDiff(matrixVS.multiplyMatrixMatrix(matrixW)), "V*S*W === A"))
-            ck.testCoordinate(0, matrixB.maxDiff(matrixVS), "V*S === B");
+        if (ck.testTrue(matrixA.factorOrthogonalScaleOrthogonal(matrixV, scaleFactors, matrixU), "SVD = V*D*U succeeds")) {
+          ck.testTrue(
+            scaleFactors.x >= scaleFactors.y && scaleFactors.y >= scaleFactors.z,
+            "Singular values are decreasing"
+          );
+          const matrixD = Matrix3d.createScale(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+          const matrixVD = matrixV.multiplyMatrixMatrix(matrixD);
+          ck.testCoordinate(0, matrixC.maxDiff(matrixU), "C = U");
+          if (ck.testCoordinate(0, matrixA.maxDiff(matrixVD.multiplyMatrixMatrix(matrixU)), "A = V*D*U"))
+            ck.testCoordinate(0, matrixB.maxDiff(matrixVD), "B = V*D");
           else  // recompute for debugging
-            matrixA.maxDiff(matrixVS.multiplyMatrixMatrix(matrixW));
+            matrixA.maxDiff(matrixVD.multiplyMatrixMatrix(matrixU));
           if (ck.testTrue(matrixV.isRigid(true), "V is orthogonal")) {
-            const matrixVW = matrixV.multiplyMatrixMatrix(matrixW);
-            ck.testTrue(matrixVW.isRigid(true), "VW is orthogonal");
+            const matrixVU = matrixV.multiplyMatrixMatrix(matrixU);
+            ck.testTrue(matrixVU.isRigid(true), "VU is orthogonal");
           } else  // recompute for debugging
             matrixV.isRigid(true);
         }
       }
     }
-    ck.checkpoint("Matrix3d.Columns");
+    ck.checkpoint("Matrix3d.factorPerpendicularColumns");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -267,44 +275,30 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
 describe("Matrix3d.symmetricEigenvalues", () => {
   it("Matrix3d.symmetricEigenvalues", () => {
     const ck = new bsiChecker.Checker();
-    let caseCounter = 0;
     for (const lambda0 of [
       Vector3d.create(2, 1, 4),
-      Vector3d.create(3, 2, -1)]) {
-      for (const eigen0 of Sample.createMatrix3dArray()) {
-        if (eigen0.isRigid()) {
-          const matrixA = eigen0.scaleColumns(lambda0.x, lambda0.y, lambda0.z);
-          const matrixB = matrixA.multiplyMatrixMatrixTranspose(eigen0);
-          if (bsiChecker.Checker.noisy.symmetricEigenvalues) {
-            console.log("*** SYMMETRIC EIGENVALUE CASE ", caseCounter++);
-            console.log("GeneratorVectors", eigen0);
-            console.log("symmetric matrix", matrixB);
-            console.log("EXPECTED Eigenvalues", lambda0);
-          }
+      Vector3d.create(3, 2, -1),
+    ]) {
+      for (const matrixM of Sample.createMatrix3dArray()) {
+        if (matrixM.isRigid()) {
+          // matrixA is symmetric because columns of matrixM are perpendicular
+          const matrixA = matrixM.scaleColumns(lambda0.x, lambda0.y, lambda0.z).multiplyMatrixMatrixTranspose(matrixM);
+          if (ck.testTrue(matrixA.isSymmetric())) {
+            const eigen1 = Matrix3d.createIdentity();
+            const lambda1 = Vector3d.create();
+            matrixA.symmetricEigenvalues(eigen1, lambda1);
+            // matrixA1 = eigen1 * lambda1 * eigen1Transpose
+            const matrixA1 = eigen1.scaleColumns(lambda1.x, lambda1.y, lambda1.z).multiplyMatrixMatrixTranspose(eigen1);
+            ck.testMatrix3d(matrixA, matrixA1, "A = eigen1*lambda1*eigen1Transpose");
+            ck.testBoolean(true, eigen1.isRigid(), "Eigenvector matrix is rigid");
 
-          const eigen1 = Matrix3d.createIdentity();
-          const lambda1 = Vector3d.create();
-          matrixB.symmetricEigenvalues(eigen1, lambda1);
-
-          const eigenF = Matrix3d.createIdentity();
-          const lambdaF = Vector3d.create();
-          matrixB.fastSymmetricEigenvalues(eigenF, lambdaF);
-          const matrixAF = eigenF.scaleColumns(lambdaF.x, lambdaF.y, lambdaF.z);
-          const matrixBF = matrixAF.multiplyMatrixMatrixTranspose(eigenF);
-          ck.testBoolean(true, eigenF.isRigid(), "Eigenvector matrix is rigid");
-          ck.testMatrix3d(matrixB, matrixBF, "Symmetric Eigenvalue reconstruction");
-
-          // um .. order can change. Only the reconstruction has to match ..
-          const matrixA1 = eigen1.scaleColumns(lambda1.x, lambda1.y, lambda1.z);
-          const matrixB1 = matrixA1.multiplyMatrixMatrixTranspose(eigen1);
-          ck.testBoolean(true, eigen1.isRigid(), "Eigenvector matrix is rigid");
-          ck.testMatrix3d(matrixB, matrixB1, "Symmetric Eigenvalue reconstruction");
-          if (bsiChecker.Checker.noisy.symmetricEigenvalues) {
-            console.log(" FAST Eigenvalues ", lambdaF);
-            console.log(" FAST product", matrixBF);
-            console.log(" COMPUTED Eigenvalues ", lambda1);
-            console.log(" product", matrixB1);
-            console.log("   product error", matrixB.maxDiff(matrixB1));
+            const eigenF = Matrix3d.createIdentity();
+            const lambdaF = Vector3d.create();
+            matrixA.fastSymmetricEigenvalues(eigenF, lambdaF);
+            // matrixAF = eigenF * lambdaF * eigenFTranspose
+            const matrixAF = eigenF.scaleColumns(lambdaF.x, lambdaF.y, lambdaF.z).multiplyMatrixMatrixTranspose(eigenF);
+            ck.testMatrix3d(matrixA, matrixAF, "A = eigenF*lambdaF*eigenFTranspose");
+            ck.testBoolean(true, eigenF.isRigid(), "Eigenvector matrix is rigid");
           }
         }
       }
@@ -373,7 +367,7 @@ describe("Matrix3d.cachedInverse", () => {
       const product = matrixB.multiplyMatrixMatrix(inverseB);
       ck.testTrue(product.isIdentity);
     }
-    // when you clone a matrix. its inverse is also copied.
+    // when you clone a matrix, its inverse is also copied.
     ck.testExactNumber(0, Matrix3d.numComputeCache, "B numComputeCache");
     ck.testExactNumber(numInvert, Matrix3d.numUseCache, "B numUseCache");
     expect(ck.getNumErrors()).equals(0);
@@ -1346,148 +1340,204 @@ describe("Matrix3d.JSON", () => {
 });
 
 describe("Matrix3d.Transpose", () => {
-  it("Transpose", () => {
+  it("Matrix3d.Transpose", () => {
     const ck = new bsiChecker.Checker();
     const vector = Vector3d.create(2.9123, -0.23423, 4.0029);
     for (const matrixA of Sample.createScaleSkewMatrix3d()) {
       const matrixAT = matrixA.transpose();
       const vectorAV = matrixA.multiplyVector(vector);
-      // const vectorATV = matrixA.multiplyTransposeVector(vector);
-      const vectorVTAT = matrixAT.multiplyTransposeVector(vector);
-      ck.testVector3d(vectorVTAT, vectorAV, "matrix*vector transpose");
+      const vectorATTV = matrixAT.multiplyTransposeVector(vector);
+      ck.testVector3d(vectorATTV, vectorAV, "A*V = ATT*V");
 
       const matrixATT = matrixAT.clone();
       matrixATT.transpose(matrixATT);
-      ck.testMatrix3d(matrixATT, matrixA, "in place transpose of transpose is original");
+      ck.testMatrix3d(matrixATT, matrixA, "ATT = A");
     }
     expect(ck.getNumErrors()).equals(0);
   });
 });
 
-function skewFactors(matrixA: Matrix3d): { rigidFactor: Matrix3d, skewFactor: Matrix3d } | undefined {
-  const rigid = Matrix3d.createRigidFromMatrix3d(matrixA, AxisOrder.XYZ);
+function skewFactors(matrix: Matrix3d): { rigidFactor: Matrix3d, skewFactor: Matrix3d } | undefined {
+  const rigid = Matrix3d.createRigidFromMatrix3d(matrix, AxisOrder.XYZ);
   if (rigid) {
-    const skew = rigid.multiplyMatrixTransposeMatrix(matrixA);
+    const skew = rigid.multiplyMatrixTransposeMatrix(matrix); // skew = rigidTranspose * matrix
     return { rigidFactor: rigid, skewFactor: skew };
   }
   return undefined;
 }
-describe("SkewFactorization", () => {
-  it("XY", () => {
+describe("Matrix3d.SkewFactorization", () => {
+  it("Matrix3d.SkewFactorization", () => {
     const ck = new bsiChecker.Checker();
     for (const matrix of Sample.createScaleSkewMatrix3d()) {
       const factors = skewFactors(matrix);
       if (ck.testPointer(factors)) {
         const product = factors.rigidFactor.multiplyMatrixMatrix(factors.skewFactor);
-        ck.testMatrix3d(matrix, product, "rigid*skew=matrix");
-        ck.testTrue(factors.skewFactor.isUpperTriangular, "upper triangular skew factors");
+        // skew = rigidTranspose * matrix ==> rigid * skew = rigid * rigidTranspose * matrix = matrix
+        // because rigid * rigidTranspose = identity because rigid is orthogonal
+        ck.testMatrix3d(matrix, product, "rigid * skew = matrix");
+        ck.testTrue(factors.skewFactor.isUpperTriangular, "skew factor is upper triangular");
+        ck.testTrue(factors.skewFactor.transpose().isLowerTriangular, "transpose of skew factor os lower triangular");
       }
       const scaleX = 3, scaleY = 2, scaleZ = 7;
-      // inverse first, then scale:
+      // inverse first, then scale columns
       const matrixA = matrix.clone();
       matrixA.computeCachedInverse(true);
       matrixA.scaleColumnsInPlace(scaleX, scaleY, scaleZ);
-
-      // scale, then inverse
+      // scale columns, then inverse
       const matrixB = matrix.clone();
       matrixB.scaleColumnsInPlace(scaleX, scaleY, scaleZ);
       matrixB.computeCachedInverse(true);
-      ck.testNumberArray(matrixA.inverseCoffs, matrixB.inverseCoffs);
+      ck.testNumberArray(matrixA.inverseCoffs, matrixB.inverseCoffs, "matrixA inverse = matrixB inverse");
+
+      // inverse first, then scale rows
+      const matrixC = matrix.clone();
+      matrixC.computeCachedInverse(true);
+      matrixC.scaleRowsInPlace(scaleX, scaleY, scaleZ);
+      // scale rows first, then inverse
+      const matrixD = matrix.clone();
+      matrixD.scaleRowsInPlace(scaleX, scaleY, scaleZ);
+      matrixD.computeCachedInverse(true);
+      ck.testNumberArray(matrixC.inverseCoffs, matrixD.inverseCoffs, "matrixC inverse = matrixD inverse");
     }
     expect(ck.getNumErrors()).equals(0);
   });
-
 });
 
-describe("InverseVariants", () => {
-  it("CreateCapture", () => {
+describe("Matrix3d.InverseVariants", () => {
+  it("Matrix3d.CreateCapture", () => {
     const ck = new bsiChecker.Checker();
     for (const matrix of Sample.createScaleSkewMatrix3d()) {
       const coffs = new Float64Array(matrix.coffs);
       matrix.computeCachedInverse(true);
       const inverseCoffs = new Float64Array(matrix.inverseCoffs!);
-      const matrix1 = Matrix3d.createCapture(coffs);     // matrix1 uses coffs direction.
-      const matrix2 = Matrix3d.createCapture(new Float64Array(coffs), inverseCoffs);   // uses copy of coffs; uses inverseCoffs directly
+      const matrix1 = Matrix3d.createCapture(coffs);
+      const matrix2 = Matrix3d.createCapture(coffs, inverseCoffs);
+      const matrix3 = Matrix3d.createCapture(new Float64Array(coffs), inverseCoffs);
       ck.testMatrix3d(matrix, matrix1);
+      expect(matrix1.inverseState).equals(InverseMatrixState.unknown);
       ck.testMatrix3d(matrix, matrix2);
+      expect(matrix2.inverseState).equals(InverseMatrixState.inverseStored);
+      ck.testMatrix3d(matrix, matrix3);
+      expect(matrix3.inverseState).equals(InverseMatrixState.inverseStored);
     }
     expect(ck.getNumErrors()).equals(0);
   });
-  it("Misc", () => {
+
+  it("Matrix3d.Singular", () => {
     const ck = new bsiChecker.Checker();
     const matrixA = Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(13))!;
     const matrixB = Matrix3d.createZero();
     ck.testUndefined(matrixA.multiplyMatrixMatrixInverse(matrixB), "singular matrix trapped at multiplication");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("SnapToCube", () => {
+});
+
+function correctSmallNumber(value: number, tolerance: number): number {
+  return Math.abs(value) < tolerance ? 0 : value;
+}
+function snapVectorToCubeFeatures(vec: XYAndZ, tolerance: number = 1.0e-6): Vector3d {
+  const x = correctSmallNumber(vec.x, tolerance);
+  let y = correctSmallNumber(vec.y, tolerance);
+  let z = correctSmallNumber(vec.z, tolerance);
+
+  const xx = Math.abs(x);
+  const yy = Math.abs(y);
+  const zz = Math.abs(z);
+
+  // adjust any adjacent pair of near equal values to the first.
+  if (Geometry.isSameCoordinate(xx, yy, tolerance)) {
+    y = Geometry.split3WaySign(y, -xx, xx, xx);
+  }
+  if (Geometry.isSameCoordinate(yy, zz, tolerance)) {
+    z = Geometry.split3WaySign(z, -yy, yy, yy);
+  }
+  if (Geometry.isSameCoordinate(xx, zz, tolerance)) {
+    z = Geometry.split3WaySign(z, -xx, xx, xx);
+  }
+  return Vector3d.create(x, y, z);
+}
+describe("Matrix3d.SnapToCube", () => {
+  it("Matrix3d.SnapToCube", () => {
     const ck = new bsiChecker.Checker();
     const points = Sample.createPoint3dLattice(-1, 1, 1);
     ck.testExactNumber(points.length, 27, "Expect 27 lattice points");
     const a = 1.0e-8;
-    const fuzz = [Vector3d.create(a, 0, 0), Vector3d.create(0, a, 0), Vector3d.create(0, 0, a), Vector3d.create(a, a, 0), Vector3d.create(0, a, a), Vector3d.create(a, 0, 0), Vector3d.create(a, a, a)];
+    const fuzz = [
+      Vector3d.create(a, 0, 0),
+      Vector3d.create(0, a, 0),
+      Vector3d.create(0, 0, a),
+      Vector3d.create(a, a, 0),
+      Vector3d.create(0, a, a),
+      Vector3d.create(a, 0, a),
+      Vector3d.create(a, a, a),
+    ];
     const bigShift = Vector3d.create(0.1, 0.2, -0.3);
     const smallTol = 1.0e-14;
     const bigTol = 1.0e-6;
-    // All lattice points
+    // all lattice points
     for (const point of points) {
       const p = Vector3d.create(point.x, point.y, point.z);
       if (p.magnitude() !== 0.0) {
+        // no shift
         const q = snapVectorToCubeFeatures(p, bigTol);
-        ck.testLE(p.distance(q), smallTol, "minimal snap on lattice points");
+        ck.testLE(p.distance(q), smallTol, "no snap on lattice points");
+        // small shift
         for (const s of [1, -1]) {
           for (const shiftVector of fuzz) {
             const p1 = p.plusScaled(shiftVector, s);
             const q1 = snapVectorToCubeFeatures(p1);
-            if (!ck.testLE(q1.angleTo(p).radians, smallTol, "snap on lattice fuzz points"))
+            if (!ck.testLE(q1.angleTo(p).radians, smallTol, "snap on lattice points with small shift"))
+              // never should reach this line
               snapVectorToCubeFeatures(p1);
             else {
               const matrix3 = Matrix3d.createRigidViewAxesZTowardsEye(q1.x, q1.y, q1.z);
               const z3 = matrix3.columnZ();
-              ck.testLE(z3.angleTo(p).radians, bigTol, "matrix Z near request");
+              ck.testLE(z3.angleTo(p).radians, bigTol, "column Z is parallel tp q1");
             }
           }
         }
-        // make sure a big shift (not aligned with any lattice direction) is left alone
+        // big shift
         const p2 = p.plus(bigShift);
         const q2 = snapVectorToCubeFeatures(p2);
-        if (!ck.testLE(q2.angleTo(p2).radians, smallTol, "non-lattice point is left alone."))
+        if (!ck.testLE(q2.angleTo(p2).radians, smallTol, "snap on lattice points with big shift"))
+          // never should reach this line
           snapVectorToCubeFeatures(p2);
-
       }
     }
     expect(ck.getNumErrors()).equals(0);
   });
 });
 
-function checkInverseRelationship(ck: bsiChecker.Checker, name: string, matrix: Matrix3d | undefined, expectedInverseState: InverseMatrixState | undefined) {
+function checkInverseRelationship(ck: bsiChecker.Checker, name: string, matrix: Matrix3d | undefined,
+  expectedInverseState: InverseMatrixState | undefined) {
   if (matrix !== undefined) {
     if (bsiChecker.Checker.noisy.matrixMultiplyAliasing) {
       console.log("-------------------------------");
-      console.log(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}`);
-      console.log(`                                                 cached inverse    ${matrix.inverseCoffs}`);
+      console.log(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
+      console.log(`cached inverse    ${matrix.inverseCoffs}`);
     }
     if (expectedInverseState !== undefined)
       ck.testExactNumber(expectedInverseState, matrix.inverseState, `${name} inverse state`);
     if (matrix.inverseState === InverseMatrixState.inverseStored) {
-      const product = Matrix3d.createScale(2, 4, 3);
+      const product = Matrix3d.createScale(1, 2, 3);
       PackedMatrix3dOps.multiplyMatrixMatrix(matrix.coffs, matrix.inverseCoffs!, product.coffs);
-      ck.testTrue(product.isIdentity, "Confirm inverseCoffs", product);
+      ck.testTrue(product.isIdentity, "confirm inverseCoffs", product);
     }
   }
 }
-
-function testProductCombinations(ck: bsiChecker.Checker,
+function testProductCombinations(
+  ck: bsiChecker.Checker,
   matrixA0: Matrix3d,
   matrixB0: Matrix3d,
   expectInvertible: boolean,
   f: (matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d) => Matrix3d | undefined,
-  expectedInverseState: InverseMatrixState | undefined) {
+  expectedInverseState: InverseMatrixState | undefined
+) {
   const matrixA = matrixA0.clone();
   const matrixB = matrixB0.clone();
   const masterResult = f(matrixA, matrixB);
   if (masterResult !== undefined) {
-    checkInverseRelationship(ck, "AB 1", masterResult, expectedInverseState);
+    checkInverseRelationship(ck, "AB", masterResult, expectedInverseState);
     const matrixAInverse = matrixA.inverse();
     const matrixBInverse = matrixB.inverse();
     if (expectedInverseState !== undefined)
@@ -1496,135 +1546,217 @@ function testProductCombinations(ck: bsiChecker.Checker,
       ck.testDefined(matrixAInverse, "expect invertible A");
       ck.testDefined(matrixBInverse, "expect invertible B");
       const masterResultInverse = masterResult.inverse();
-      if (ck.testDefined(masterResultInverse) && masterResultInverse) {
+      if (ck.testPointer(masterResultInverse)) {
         const inverseTest = masterResultInverse.multiplyMatrixMatrix(masterResult);
         ck.testDefined(inverseTest);
+        ck.testTrue(inverseTest.isIdentity, "confirm masterResultInverse", inverseTest);
       }
     }
+    const expectMasterResultInverseCoffs = expectInvertible && matrixA.hasCachedInverse && matrixB.hasCachedInverse;
+    ck.testBoolean(expectMasterResultInverseCoffs, masterResult.hasCachedInverse);
 
-    const expectProductInverseCoffs = expectInvertible && matrixA.hasCachedInverse && matrixB.hasCachedInverse;
-    ck.testBoolean(expectProductInverseCoffs, masterResult.hasCachedInverse);
     if (masterResult) {
-      // pre-allocate result, no aliasing ...
-      {
-        const matrixA1 = matrixA.clone();
-        const matrixB1 = matrixB.clone();
-        const matrixC1 = Matrix3d.createZero();
-        const result1 = f(matrixA1, matrixB1, matrixC1);
-        checkInverseRelationship(ck, "AB 1", result1, expectedInverseState);
-        if (ck.testDefined(result1) && result1) {
-          ck.testMatrix3d(masterResult, result1, "(A,B) vs (A,B,result)");
-          ck.testMatrix3d(masterResult, matrixC1, "(A,B) vs (A,B,result)");
-          ck.testBoolean(expectProductInverseCoffs, result1.hasCachedInverse);
-        }
+      // pre-allocate result:
+      const matrixA1 = matrixA.clone();
+      const matrixB1 = matrixB.clone();
+      const matrixC1 = Matrix3d.createZero(); // pre-allocated result
+      const result1 = f(matrixA1, matrixB1, matrixC1);
+      checkInverseRelationship(ck, "AB 1", result1, expectedInverseState);
+      if (ck.testPointer(result1)) {
+        ck.testMatrix3d(masterResult, result1, "f(A,B) vs f(A,B,result)");
+        ck.testMatrix3d(masterResult, matrixC1, "f(A,B) vs f(A,B,result)");
+        ck.testBoolean(expectMasterResultInverseCoffs, result1.hasCachedInverse);
       }
       // reuse A:
-      {
-        const matrixA2 = matrixA.clone();
-        const matrixB2 = matrixB.clone();
-        // const matrixC2 = Matrix3d.createZero();
-        const result2 = f(matrixA2, matrixB2, matrixA2);
-        checkInverseRelationship(ck, "AB 2", result2, expectedInverseState);
+      const matrixA2 = matrixA.clone();
+      const matrixB2 = matrixB.clone();
+      const result2 = f(matrixA2, matrixB2, matrixA2);
+      checkInverseRelationship(ck, "AB 2", result2, expectedInverseState);
 
-        if (ck.testDefined(result2) && result2) {
-          ck.testMatrix3d(masterResult, result2, "(A,B) vs (A,B,A)");
-          ck.testMatrix3d(masterResult, matrixA2, "(A,B) vs (A,B,A)");
-          ck.testBoolean(expectProductInverseCoffs, result2.hasCachedInverse);
-        }
+      if (ck.testPointer(result2)) {
+        ck.testMatrix3d(masterResult, result2, "f(A,B) vs f(A,B,A)");
+        ck.testMatrix3d(masterResult, matrixA2, "f(A,B) vs f(A,B,A)");
+        ck.testBoolean(expectMasterResultInverseCoffs, result2.hasCachedInverse);
       }
       // reuse B:
-      {
-        const matrixA3 = matrixA.clone();
-        const matrixB3 = matrixB.clone();
-        // const matrixC3 = Matrix3d.createZero();
-        const result3 = f(matrixA3, matrixB3, matrixB3);
-        checkInverseRelationship(ck, "AB 3", result3, expectedInverseState);
-        if (ck.testDefined(result3) && result3) {
-          ck.testMatrix3d(masterResult, result3, "(A,B) vs (A,B,B)");
-          ck.testMatrix3d(masterResult, matrixB3, "(A,B) vs (A,B,B)");
-          ck.testBoolean(expectProductInverseCoffs, result3.hasCachedInverse);
-        }
+      const matrixA3 = matrixA.clone();
+      const matrixB3 = matrixB.clone();
+      const result3 = f(matrixA3, matrixB3, matrixB3);
+      checkInverseRelationship(ck, "AB 3", result3, expectedInverseState);
+      if (ck.testPointer(result3)) {
+        ck.testMatrix3d(masterResult, result3, "f(A,B) vs f(A,B,B)");
+        ck.testMatrix3d(masterResult, matrixB3, "f(A,B) vs f(A,B,B)");
+        ck.testBoolean(expectMasterResultInverseCoffs, result3.hasCachedInverse);
       }
     }
   }
 }
-describe("MatrixProductAliasing", () => {
-  it("CachedInverse", () => {
+describe("Matrix3d.MatrixProduct", () => {
+  it("Matrix3d.MatrixProduct", () => {
     const ck = new bsiChecker.Checker();
-    /*
-    const matrix = Matrix3d.createRowValues(
-      0.9996204009003555, 0.027550936532400754, 0,
-      - 0.027550936532400754, 0.9996204009003555, 0,
-      0, 0, 1);
-    */
-    const matrixA = Matrix3d.createRowValues(10, 1, 2, -3, 12, 4, 3, 5, 15);
-    const matrixB = Matrix3d.createRowValues(9, 0.2, 2.2, -3.5, 12.5, 4.1, 3.9, -2.1, 17.8);
-    const matrixAB0 = matrixA.multiplyMatrixMatrix(matrixB);
-    ck.testExactNumber(InverseMatrixState.unknown, matrixAB0.inverseState);
-    const matrixABT0 = matrixA.multiplyMatrixMatrixTranspose(matrixB);
-    ck.testExactNumber(InverseMatrixState.unknown, matrixABT0.inverseState);
-    const matrixATB0 = matrixA.multiplyMatrixTransposeMatrix(matrixB);
-    ck.testExactNumber(InverseMatrixState.unknown, matrixATB0.inverseState);
+    const matrixA = Matrix3d.createRowValues(
+      10, 1, 2,
+      -3, 12, 4,
+      3, 5, 15,
+    );
+    const matrixB = Matrix3d.createRowValues(
+      9, 0.2, 2.2,
+      -3.5, 12.5, 4.1,
+      3.9, -2.1, 17.8,
+    );
+    const matrixAB = matrixA.multiplyMatrixMatrix(matrixB);
+    const matrixABT = matrixA.multiplyMatrixMatrixTranspose(matrixB);
+    const matrixATB = matrixA.multiplyMatrixTransposeMatrix(matrixB);
+    ck.testExactNumber(InverseMatrixState.unknown, matrixAB.inverseState);
+    ck.testExactNumber(InverseMatrixState.unknown, matrixABT.inverseState);
+    ck.testExactNumber(InverseMatrixState.unknown, matrixATB.inverseState);
     // confirm that multiplies without inversion did not introduce inverse
     ck.testExactNumber(InverseMatrixState.unknown, matrixA.inverseState);
     ck.testExactNumber(InverseMatrixState.unknown, matrixB.inverseState);
 
     const vectorU = Vector3d.create(1.4, 2.3, 9.1);
     ck.testUndefined(matrixA.inverseCoffs);
-
-    // This forces inverse coffs to appear !!!
+    ck.testUndefined(matrixB.inverseCoffs);
     matrixA.multiplyInverse(vectorU);
-
-    ck.testDefined(matrixA.inverseCoffs, "inverseCoffs appear after multiplyInverseXYZ");
     matrixB.multiplyInverse(vectorU);
+    // confirm that multiplies with inversion did introduce inverse
+    ck.testDefined(matrixA.inverseCoffs);
+    ck.testDefined(matrixB.inverseCoffs);
 
-    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d => matrixA1.multiplyMatrixMatrix(matrixB1, result1), InverseMatrixState.inverseStored);
-    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixInverseMatrix(matrixB1, result1), InverseMatrixState.inverseStored);
-    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixMatrixInverse(matrixB1, result1), InverseMatrixState.inverseStored);
+    testProductCombinations(
+      ck, matrixA, matrixB, true,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d =>
+        matrixA1.multiplyMatrixMatrix(matrixB1, result1),
+      InverseMatrixState.inverseStored
+    );
+    testProductCombinations(
+      ck, matrixA, matrixB, true,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined =>
+        matrixA1.multiplyMatrixInverseMatrix(matrixB1, result1),
+      InverseMatrixState.inverseStored
+    );
+    testProductCombinations(
+      ck, matrixA, matrixB, true,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined =>
+        matrixA1.multiplyMatrixMatrixInverse(matrixB1, result1),
+      InverseMatrixState.inverseStored
+    );
 
-    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixTransposeMatrix(matrixB1, result1), InverseMatrixState.inverseStored);
-    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixMatrixTranspose(matrixB1, result1), InverseMatrixState.inverseStored);
+    testProductCombinations(
+      ck, matrixA, matrixB, true,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined =>
+        matrixA1.multiplyMatrixTransposeMatrix(matrixB1, result1),
+      InverseMatrixState.inverseStored
+    );
+    testProductCombinations(
+      ck, matrixA, matrixB, true,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined =>
+        matrixA1.multiplyMatrixMatrixTranspose(matrixB1, result1),
+      InverseMatrixState.inverseStored
+    );
     const singularMatrix = Matrix3d.createScale(1, 0, 1);
-    testProductCombinations(ck, matrixA, singularMatrix, false, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d => matrixA1.multiplyMatrixMatrix(matrixB1, result1), InverseMatrixState.singular);
-    testProductCombinations(ck, matrixA, singularMatrix, false, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixTransposeMatrix(matrixB1, result1), InverseMatrixState.singular);
-    testProductCombinations(ck, matrixA, singularMatrix, false, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixMatrixTranspose(matrixB1, result1), InverseMatrixState.singular);
+    testProductCombinations(
+      ck, matrixA, singularMatrix, false,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d =>
+        matrixA1.multiplyMatrixMatrix(matrixB1, result1),
+      InverseMatrixState.singular
+    );
+    testProductCombinations(
+      ck, matrixA, singularMatrix, false,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined =>
+        matrixA1.multiplyMatrixTransposeMatrix(matrixB1, result1),
+      InverseMatrixState.singular
+    );
+    testProductCombinations(
+      ck, matrixA, singularMatrix, false,
+      (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined =>
+        matrixA1.multiplyMatrixMatrixTranspose(matrixB1, result1),
+      InverseMatrixState.singular
+    );
     ck.testUndefined(matrixA.multiplyMatrixMatrixInverse(singularMatrix), "singular product");
     ck.testUndefined(singularMatrix.multiplyMatrixInverseMatrix(matrixA), "singular product");
 
     const matrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(20))!;
-
     for (const result of [undefined, Matrix3d.createIdentity()]) {
-      checkInverseRelationship(ck, "inverse", matrix.inverse(result), InverseMatrixState.inverseStored);
+      checkInverseRelationship(
+        ck,
+        "inverse",
+        matrix.inverse(result),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
+
       const angle = Angle.createRadians(Math.atan2(0.027550936532400754, 0.9996204009003555));
-      checkInverseRelationship(ck, "zRotation", Matrix3d.createRotationAroundAxisIndex(2, angle), InverseMatrixState.inverseStored);
+      checkInverseRelationship(
+        ck,
+        "zRotation",
+        Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
 
-      checkInverseRelationship(ck, "zRotation", Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle), InverseMatrixState.inverseStored);
+      checkInverseRelationship(
+        ck,
+        "zRotation",
+        Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
 
-      checkInverseRelationship(ck, "AB", matrix.multiplyMatrixMatrix(matrixB, result), InverseMatrixState.inverseStored);
+      checkInverseRelationship(
+        ck,
+        "AB",
+        matrix.multiplyMatrixMatrix(matrixB, result),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
-      checkInverseRelationship(ck, "ABInverse", matrix.multiplyMatrixMatrixInverse(matrixB, result), InverseMatrixState.inverseStored);
+
+      checkInverseRelationship(
+        ck,
+        "ABInverse",
+        matrix.multiplyMatrixMatrixInverse(matrixB, result),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
-      checkInverseRelationship(ck, "AInverseB", matrix.multiplyMatrixInverseMatrix(matrixB, result), InverseMatrixState.inverseStored);
+
+      checkInverseRelationship(
+        ck,
+        "AInverseB",
+        matrix.multiplyMatrixInverseMatrix(matrixB, result),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
-      checkInverseRelationship(ck, "ABTranspose", matrix.multiplyMatrixMatrixTranspose(matrixB, result), InverseMatrixState.inverseStored);
+
+      checkInverseRelationship(
+        ck,
+        "ABTranspose",
+        matrix.multiplyMatrixMatrixTranspose(matrixB, result),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
-      checkInverseRelationship(ck, "ATransposeB", matrix.multiplyMatrixMatrixTranspose(matrixB, result), InverseMatrixState.inverseStored);
+
+      checkInverseRelationship(
+        ck,
+        "ATransposeB",
+        matrix.multiplyMatrixMatrixTranspose(matrixB, result),
+        InverseMatrixState.inverseStored
+      );
       if (result)
         result.setZero();
     }
     expect(ck.getNumErrors()).equals(0);
   });
-  it("cloneRigid", () => {
+});
+
+describe("Matrix3d.CloneRigid", () => {
+  it("Matrix3d.CloneRigid", () => {
     const ck = new bsiChecker.Checker();
     // createRigidFromMatrix3d failed on this.
     // Failure due to applying metric tolerance to columns AFTER doing cross products.
@@ -1663,69 +1795,16 @@ describe("MatrixProductAliasing", () => {
   });
 });
 
-function correctSmallNumber(value: number, tolerance: number): number {
-  return Math.abs(value) < tolerance ? 0 : value;
-}
-/**
- * Snap coordinates of a vector to zero and to each other so that the vector prefers to be
- * * perpendicular to a face of the unit cube.
- * * or pass through a nearby vertex or edge of the unit cube.
- * @param zVector existing z vector.
- * @param zTolerance tolerance to determine if a z vector component is close to zero or 1.
- */
-function snapVectorToCubeFeatures(zVector: XYAndZ, tolerance: number = 1.0e-6): Vector3d {
-  const x = correctSmallNumber(zVector.x, tolerance);
-  let y = correctSmallNumber(zVector.y, tolerance);
-  let z = correctSmallNumber(zVector.z, tolerance);
-
-  const xx = Math.abs(x);
-  const yy = Math.abs(y);
-  const zz = Math.abs(z);
-
-  // adjust any adjacent pair of near equal values to the first.
-  if (Geometry.isSameCoordinate(xx, yy, tolerance)) {
-    y = Geometry.split3WaySign(y, -xx, xx, xx);
-  }
-  if (Geometry.isSameCoordinate(yy, zz, tolerance)) {
-    z = Geometry.split3WaySign(z, -yy, yy, yy);
-  }
-  if (Geometry.isSameCoordinate(xx, zz, tolerance)) {
-    z = Geometry.split3WaySign(z, -xx, xx, xx);
-  }
-  return Vector3d.create(x, y, z);
-}
-/**
- * Adjust a worldToView matrix to favor both
- * * direct view at faces, edges, and corners of a view cube.
- * * heads up
- * @param matrix candidate matrix
- * @param tolerance tolerance for cleaning up fuzz.  The default (1.0e-6) is appropriate if very dirty viewing operations are expected.
- * @param result optional result.
- function snapWorldToViewMatrixToCubeFeatures(worldToView: Matrix3d, tolerance: number = 1.0e-6, result?: Matrix3d): Matrix3d {
-  const oldZ = worldToView.rowZ();
-  const newZ = snapVectorToCubeFeatures(oldZ, tolerance);
-  // If newZ is true up or down, it will have true 0 for x and y.
-  // special case this to take x direction from the input.
-  if (newZ.x === 0.0 && newZ.y === 0) {
-    const perpVector = worldToView.rowX();
-    result = Matrix3d.createRigidFromColumns(newZ, perpVector, AxisOrder.ZXY, result)!;
-  } else {
-    result = Matrix3d.createRigidViewAxesZTowardsEye(newZ.x, newZ.y, newZ.z, result);
-  }
-  if (result)
-    result.transposeInPlace();
-  return result;
-}
-*/
-describe("Matrix3d.setColumns", () => {
-  it("setColumns", () => {
+describe("Matrix3d.SetColumns", () => {
+  it("Matrix3d.SetColumns", () => {
     const ck = new bsiChecker.Checker();
     const vectorX: Vector3d = Vector3d.create(1, 2, 3);
     const vectorY: Vector3d = Vector3d.create(4, 5, 6);
     const expectedMatrix: Matrix3d = Matrix3d.createRowValues(
       1, 4, 0,
       2, 5, 0,
-      3, 6, 0);
+      3, 6, 0
+    );
     const theMatrix = Matrix3d.createIdentity();
     theMatrix.setColumns(vectorX, vectorY);
     ck.testMatrix3d(theMatrix, expectedMatrix, "matrixes are equal");
@@ -1733,14 +1812,15 @@ describe("Matrix3d.setColumns", () => {
   });
 });
 
-describe("Matrix3d.setRow", () => {
-  it("setRow", () => {
+describe("Matrix3d.SetRow", () => {
+  it("Matrix3d.SetRow", () => {
     const ck = new bsiChecker.Checker();
     const vector: Vector3d = Vector3d.create(1, 2, 3);
     const expectedMatrix: Matrix3d = Matrix3d.createRowValues(
       1, 2, 3,
       0, 1, 0,
-      0, 0, 1);
+      0, 0, 1
+    );
     const theMatrix = Matrix3d.createIdentity();
     theMatrix.setRow(0, vector);
     ck.testMatrix3d(theMatrix, expectedMatrix, "matrixes are equal");
@@ -1748,8 +1828,8 @@ describe("Matrix3d.setRow", () => {
   });
 });
 
-describe("Matrix3d.createDirectionalScale", () => {
-  it("createDirectionalScale", () => {
+describe("Matrix3d.CreateDirectionalScale", () => {
+  it("Matrix3d.CreateDirectionalScale", () => {
     const scale = -1;
     const vector = Vector3d.create(1, 0, 1);
     const direction = Vector3d.create(0, 0, 1);
