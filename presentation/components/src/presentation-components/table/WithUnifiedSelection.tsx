@@ -57,7 +57,7 @@ export interface TableWithUnifiedSelectionProps {
  * **Note:** it is required for the table to use [[PresentationTableDataProvider]]
  *
  * @public
- * @deprecated in 3.x. Based on [Table]($components-react) component which is deprecated
+ * @deprecated in 3.x. Based on `Table` (components-react) component which is deprecated
  */
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps> {
 
