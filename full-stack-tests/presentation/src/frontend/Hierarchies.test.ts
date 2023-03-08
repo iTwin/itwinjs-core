@@ -27,17 +27,6 @@ describe("Hierarchies", () => {
 
   describe("Filtering hierarchy levels", () => {
 
-    function insertDocumentPartition(builder: TestIModelBuilder, code: string, label?: string) {
-      const id = builder.insertElement({
-        classFullName: "BisCore:DocumentPartition",
-        model: IModel.repositoryModelId,
-        parent: { relClassName: "BisCore:SubjectOwnsPartitionElements", id: IModel.rootSubjectId },
-        code: builder.createCode(IModel.rootSubjectId, BisCodeSpec.informationPartitionElement, code),
-        userLabel: label,
-      });
-      return { className: "BisCore:DocumentPartition", id };
-    }
-
     it("filters root instance nodes hierarchy level", async () => {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
@@ -428,9 +417,274 @@ describe("Hierarchies", () => {
           expression: `TRUE`,
         },
       };
-      // FIXME: at the moment the manager eats the error and returns empty nodes result...
-      // await expect(Presentation.presentation.getNodes(requestParams)).to.eventually.be.rejectedWith(PresentationError);
-      expect(await Presentation.presentation.getNodes(requestParams)).to.deep.eq([]);
+      await expect(Presentation.presentation.getNodes(requestParams)).to.eventually.be.rejectedWith(PresentationError);
+    });
+
+  });
+
+  describe("Limiting hierarchy level size", () => {
+
+    describe("root instance nodes", () => {
+
+      let imodel: IModelConnection;
+      let ruleset: Ruleset;
+      let expectedInstanceKeys: InstanceKey[];
+
+      before(async () => {
+        // set up imodel with 2 DocumentPartition elements "a" and "b"
+        expectedInstanceKeys = [];
+        imodel = await buildTestIModel("root-hierarchy-level-limiting", (builder) => {
+          expectedInstanceKeys.push(
+            insertDocumentPartition(builder, "a"),
+            insertDocumentPartition(builder, "b"),
+          );
+        });
+
+        // set up ruleset
+        ruleset = {
+          id: Guid.createValue(),
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: [{
+                schemaName: "BisCore",
+                classNames: ["DocumentPartition"],
+              }],
+              groupByClass: false,
+              groupByLabel: false,
+            }],
+          }],
+        };
+      });
+
+      it("succeeds without limiting", async () => {
+        await validateHierarchy({
+          requestParams: { imodel, rulesetOrId: ruleset },
+          expectedHierarchy: [
+            NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[0]], label: "a" }),
+            NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[1]], label: "b" }),
+          ],
+        });
+      });
+
+      it("succeeds when result set size doesn't exceed given limit", async () => {
+        await validateHierarchy({
+          requestParams: { imodel, rulesetOrId: ruleset, sizeLimit: 2 },
+          expectedHierarchy: [
+            NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[0]], label: "a" }),
+            NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[1]], label: "b" }),
+          ],
+        });
+      });
+
+      it("throws when result set size exceeds given limit", async () => {
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, sizeLimit: 1 })).to.eventually.be.rejectedWith(PresentationError);
+      });
+
+    });
+
+    describe("child instance nodes", () => {
+
+      let imodel: IModelConnection;
+      let ruleset: Ruleset;
+      let expectedInstanceKeys: InstanceKey[];
+
+      before(async () => {
+        // set up imodel with 2 DocumentPartition elements "a" and "b"
+        expectedInstanceKeys = [];
+        imodel = await buildTestIModel("child-hierarchy-level-limiting", (builder) => {
+          expectedInstanceKeys.push(
+            insertDocumentPartition(builder, "a"),
+            insertDocumentPartition(builder, "b"),
+          );
+        });
+
+        // set up ruleset
+        ruleset = {
+          id: Guid.createValue(),
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: [{
+                schemaName: "BisCore",
+                classNames: ["Subject"],
+              }],
+              groupByClass: false,
+              groupByLabel: false,
+            }],
+          }, {
+            ruleType: RuleTypes.ChildNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+              relationshipPaths: [{
+                relationship: { schemaName: "BisCore", className: "SubjectOwnsPartitionElements" },
+                direction: RelationshipDirection.Forward,
+                targetClass: { schemaName: "BisCore", className: "DocumentPartition" },
+              }],
+              groupByClass: false,
+              groupByLabel: false,
+            }],
+          }],
+        };
+      });
+
+      it("succeeds without limiting", async () => {
+        await validateHierarchy({
+          requestParams: { imodel, rulesetOrId: ruleset },
+          expectedHierarchy: [
+            NodeValidators.createForInstanceNode({
+              instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
+              children: [
+                NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[0]], label: "a" }),
+                NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[1]], label: "b" }),
+              ],
+            }),
+          ],
+        });
+      });
+
+      it("succeeds when result set size doesn't exceed given limit", async () => {
+        await validateHierarchy({
+          requestParams: { imodel, rulesetOrId: ruleset, sizeLimit: 2 },
+          expectedHierarchy: [
+            NodeValidators.createForInstanceNode({
+              instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
+              children: [
+                NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[0]], label: "a" }),
+                NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[1]], label: "b" }),
+              ],
+            }),
+          ],
+        });
+      });
+
+      it("throws when result set size exceeds given limit", async () => {
+        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const rootSubject = rootNodes[0];
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootSubject.key, sizeLimit: 1 })).to.eventually.be.rejectedWith(PresentationError);
+      });
+
+    });
+
+    describe("grouping nodes", () => {
+
+      let imodel: IModelConnection;
+      let ruleset: Ruleset;
+      let expectedInstanceKeys: InstanceKey[];
+
+      before(async () => {
+        // set up imodel with 2 DocumentPartition elements "a" and "b"
+        expectedInstanceKeys = [];
+        imodel = await buildTestIModel("grouping-hierarchy-level-limiting", (builder) => {
+          expectedInstanceKeys.push(
+            insertDocumentPartition(builder, "a1", "a"),
+            insertDocumentPartition(builder, "a2", "a"),
+            insertDocumentPartition(builder, "b"),
+          );
+        });
+
+        // set up ruleset for a hierarchy that looks like this:
+        // - Document Partition (DocumentPartition class grouping node)
+        //   - grouped-hierarchy-level-filtering (Model property grouping node)
+        //    - a (label grouping node)
+        //      - a (instance node #1)
+        //      - a (instance node #2)
+        //    - b (label grouping node)
+        ruleset = {
+          id: Guid.createValue(),
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: [{
+                schemaName: "BisCore",
+                classNames: ["DocumentPartition"],
+              }],
+              groupByClass: true,
+              groupByLabel: true,
+            }],
+          }, {
+            ruleType: RuleTypes.Grouping,
+            class: { schemaName: "BisCore", className: "DocumentPartition" },
+            groups: [{
+              specType: GroupingSpecificationTypes.Property,
+              propertyName: "Model",
+              createGroupForSingleItem: true,
+            }],
+          }],
+        };
+      });
+
+      it("succeeds without limiting", async () => {
+        await validateHierarchy({
+          requestParams: { imodel, rulesetOrId: ruleset },
+          expectedHierarchy: [
+            NodeValidators.createForClassGroupingNode({
+              className: "BisCore:DocumentPartition",
+              children: [
+                NodeValidators.createForPropertyGroupingNode({
+                  className: "BisCore:DocumentPartition",
+                  propertyName: "Model",
+                  children: [
+                    NodeValidators.createForLabelGroupingNode({
+                      label: "a",
+                      children: [
+                        NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[0]], label: "a" }),
+                        NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[1]], label: "a" }),
+                      ],
+                    }),
+                    NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[2]], label: "b" }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        });
+      });
+
+      it("succeeds when result set size doesn't exceed given limit", async () => {
+        await validateHierarchy({
+          requestParams: { imodel, rulesetOrId: ruleset, sizeLimit: 3 },
+          expectedHierarchy: [
+            NodeValidators.createForClassGroupingNode({
+              className: "BisCore:DocumentPartition",
+              children: [
+                NodeValidators.createForPropertyGroupingNode({
+                  className: "BisCore:DocumentPartition",
+                  propertyName: "Model",
+                  children: [
+                    NodeValidators.createForLabelGroupingNode({
+                      label: "a",
+                      children: [
+                        NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[0]], label: "a" }),
+                        NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[1]], label: "a" }),
+                      ],
+                    }),
+                    NodeValidators.createForInstanceNode({ instanceKeys: [expectedInstanceKeys[2]], label: "b" }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        });
+      });
+
+      it("throws when result set size exceeds given limit", async () => {
+        const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const classGroupingNode = classGroupingNodes[0];
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key, sizeLimit: 2 })).to.eventually.be.rejectedWith(PresentationError);
+
+        const propertyGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key });
+        const propertyGroupingNode = propertyGroupingNodes[0];
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: propertyGroupingNode.key, sizeLimit: 2 })).to.eventually.be.rejectedWith(PresentationError);
+
+        const labelGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: propertyGroupingNode.key });
+        const labelGroupingNode = labelGroupingNodes[0];
+        await expect(Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: labelGroupingNode.key, sizeLimit: 1 })).to.eventually.be.rejectedWith(PresentationError);
+      });
+
     });
 
   });
@@ -1011,4 +1265,15 @@ async function validateHierarchy(props: {
   }
 
   return resultHierarchy;
+}
+
+function insertDocumentPartition(builder: TestIModelBuilder, code: string, label?: string) {
+  const id = builder.insertElement({
+    classFullName: "BisCore:DocumentPartition",
+    model: IModel.repositoryModelId,
+    parent: { relClassName: "BisCore:SubjectOwnsPartitionElements", id: IModel.rootSubjectId },
+    code: builder.createCode(IModel.rootSubjectId, BisCodeSpec.informationPartitionElement, code),
+    userLabel: label,
+  });
+  return { className: "BisCore:DocumentPartition", id };
 }
