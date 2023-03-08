@@ -38,7 +38,7 @@ The [AppUiSettings]($appui-react) class, which implements the UserSettingsProvid
 
 ### FrameworkVersion
 
-The [FrameworkVersion]($appui-react) component defines the version context that is accessible to any lower level components. The version string is set to the value returned by UiFramework.uiVersion. Version "1" compatible components are deprecated and will be removed in a future release.
+The `FrameworkVersion` component defines the version context that is accessible to any lower level components. The version string is set to the value returned by UiFramework.uiVersion. Version "1" compatible components are deprecated and will be removed in a future release.
 
 ## Settings Components
 

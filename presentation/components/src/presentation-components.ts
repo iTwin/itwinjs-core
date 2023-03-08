@@ -58,7 +58,7 @@ export * from "./presentation-components/favorite-properties/DataProvider";
  * @module Table
  *
  * @docs-group-description Table
- * Presentation features for [Table]($components-react) component.
+ * Presentation features for `Table` (components-react) component.
  */
 export * from "./presentation-components/table/DataProvider";
 export * from "./presentation-components/table/WithUnifiedSelection";

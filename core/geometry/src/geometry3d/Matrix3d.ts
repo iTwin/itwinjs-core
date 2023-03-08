@@ -15,7 +15,7 @@ import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
 /* eslint-disable @itwin/prefer-get */
-// cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan newcommand
+// cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan newcommand diagonalization
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
@@ -712,7 +712,14 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return Matrix3d.createIdentity(result);
   }
-  /** Return the matrix for rotation of `angle` around desired `axis` */
+  /**
+   * Return the matrix for rotation of `angle` around desired `axis`
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeRotationAroundAnAxis
+   * @param axis the axis of rotation
+   * @param angle the angle of rotation
+   * @param result caller-allocated matrix (optional)
+   * @returns the `rotation matrix` or `undefined` (if axis magnitude is near zero).
+   */
   public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined {
     // Rodriguez formula (matrix form), https://mathworld.wolfram.com/RodriguesRotationFormula.html
     const c = angle.cos();
@@ -978,63 +985,70 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
   /**
-   * Apply (in place) a jacobi update that zeros out this.at(i,j).
+   * Apply (in place) a jacobi eigenvalue algorithm.
    * @param i row index of zeroed member
    * @param j column index of zeroed member
-   * @param k other row/column index (different from i and j)
-   * @param leftEigenVectors a matrix that its columns will be filled by eigenvectors of this Matrix3d
-   * (allocated by caller, computed and filled by this function)
+   * @param leftEigenvectors a matrix that its columns will be filled by the left eigenvectors of `this` Matrix3d
+   * (allocated by caller, computed and filled by this function). Note that columns of leftEigenVectors will be
+   * mutually perpendicular because `this` matrix is symmetric.
+   * @param lambda a matrix that its diagonal entries will be filled by eigenvalues and its non-diagonal elements
+   * converge to 0 (allocated by caller, computed and filled by this function).
    */
-  private applyFastSymmetricJacobiUpdate(i: number, j: number, k: number, leftEigenVectors: Matrix3d): number {
-    const indexII = 4 * i;
-    const indexJJ = 4 * j;
-    const indexIJ = 3 * i + j;
-    const indexIK = 3 * i + k;
-    const indexJK = 3 * j + k;
-    const dotUU = this.coffs[indexII];
-    const dotVV = this.coffs[indexJJ];
-    const dotUV = this.coffs[indexIJ];
-    const jacobi = Angle.trigValuesToHalfAngleTrigValues(dotUU - dotVV, 2.0 * dotUV);
-    if (Math.abs(dotUV) < 1.0e-15 * (dotUU + dotVV))
+  private applySymmetricJacobi(i: number, j: number, leftEigenvectors: Matrix3d, lambda: Matrix3d): number {
+    const sii = lambda.at(i, i);
+    const sjj = lambda.at(j, j);
+    const sij = lambda.at(i, j);
+    if (Math.abs(sij) < 1.0e-15 * (sii + sjj))
       return 0.0;
+    const jacobi = Angle.trigValuesToHalfAngleTrigValues(sii - sjj, 2.0 * sij);
     const c = jacobi.c;
     const s = jacobi.s;
-    const cc = c * c;
-    const ss = s * s;
-    const sc2 = 2.0 * c * s;
-    this.coffs[indexII] = cc * dotUU + sc2 * dotUV + ss * dotVV;
-    this.coffs[indexJJ] = ss * dotUU - sc2 * dotUV + cc * dotVV;
-    this.coffs[indexIJ] = 0.0;
-    const a = this.coffs[indexIK];
-    const b = this.coffs[indexJK];
-    this.coffs[indexIK] = a * c + b * s;
-    this.coffs[indexJK] = -s * a + c * b;
-    this.coffs[3 * j + i] = 0.0;
-    this.coffs[3 * k + i] = this.coffs[indexIK];
-    this.coffs[3 * k + j] = this.coffs[indexJK];
-    leftEigenVectors.applyGivensColumnOp(i, j, c, s);
-    return Math.abs(dotUV);
+    /**
+     * The following check does not exist in applyFastSymmetricJacobi because here if we don't return
+     * early, the matrix remains untouched. However, applyFastSymmetricJacobi zeroes-out elements ij
+     * and ji. Therefore, if we return early in applyFastSymmetricJacobi, zeroing-out wont happen.
+     */
+    if (Math.abs(s) < 2.0e-15)
+      return 0.0;
+    /**
+     * If you apply the following 2 lines to a symmetric matrix, you get same lines used in
+     * applyFastSymmetricJacobi. There are 2 differences which make applyFastSymmetricJacobi
+     * more efficient. First, we directly set elements ij and ji equal to zero rather than
+     * calculation them. Second, we copy symmetric elements from upper triangle to lower
+     * instead of calculating them.
+     */
+    lambda.applyGivensRowOp(i, j, c, s);
+    lambda.applyGivensColumnOp(i, j, c, s);
+    leftEigenvectors.applyGivensColumnOp(i, j, c, s);
+    return Math.abs(sij);
   }
   /**
-   * Factor this (symmetrized) as a product U * lambda * UT where U is orthogonal, lambda is diagonal.
-   * The upper triangle is mirrored to lower triangle to enforce symmetry.
-   * @param leftEigenvectors a matrix that its columns will be filled by eigenvectors of this Matrix3d
-   * (allocated by caller, computed and filled by this function)
-   * @param lambda a vector that its entries will be filled by eigenvalues of this Matrix3d
-   * (allocated by caller, computed and filled by this function)
+   * Factor `this` matrix as a product `U * lambda * UT` where `U` is an orthogonal matrix and `lambda`
+   * is a diagonal matrix.
+   *
+   * * **Note 1:** You must apply this function to a `symmetric` matrix. Otherwise, the lower triangle is ignored
+   * and the upper triangle is mirrored to the lower triangle to enforce symmetry.
+   * * **Note 2:** This function is replaced by a faster method called `fastSymmetricEigenvalues` so consider
+   * using the fast version instead.
+   * @param leftEigenvectors a matrix that its columns will be filled by the left eigenvectors of `this` Matrix3d
+   * (allocated by caller, computed and filled by this function). Note that columns of leftEigenVectors will be
+   * mutually perpendicular because `this` matrix is symmetric.
+   * @param lambda a vector that its entries will be filled by eigenvalues of `this` Matrix3d (allocated by
+   * caller, computed and filled by this function).
    */
-  public fastSymmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
+  public symmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
     const matrix = this.clone();
     leftEigenvectors.setIdentity();
+    matrix.coffs[3] = matrix.coffs[1];
+    matrix.coffs[6] = matrix.coffs[2];
+    matrix.coffs[7] = matrix.coffs[5];
     const tolerance = 1.0e-12 * this.sumSquares();
-    for (let iteration = 0; iteration < 7; iteration++) {
-      const sum = matrix.applyFastSymmetricJacobiUpdate(0, 1, 2, leftEigenvectors)
-        + matrix.applyFastSymmetricJacobiUpdate(0, 2, 1, leftEigenvectors)
-        + matrix.applyFastSymmetricJacobiUpdate(1, 2, 0, leftEigenvectors);
-      // console.log("symmetric sum", sum);
-      // console.log ("sum", sum);
+    const numberOfIterations = 7;
+    for (let iteration = 0; iteration < numberOfIterations; iteration++) {
+      const sum = this.applySymmetricJacobi(0, 1, leftEigenvectors, matrix)
+        + this.applySymmetricJacobi(0, 2, leftEigenvectors, matrix)
+        + this.applySymmetricJacobi(1, 2, leftEigenvectors, matrix);
       if (sum < tolerance) {
-        // console.log("symmetric iterations", iteration);
         lambda.set(matrix.at(0, 0), matrix.at(1, 1), matrix.at(2, 2));
         return true;
       }
@@ -1042,13 +1056,86 @@ export class Matrix3d implements BeJSONFunctions {
     return false;
   }
   /**
-   * Compute the (unit vector) axis and angle of rotation.
-   * * math details can be found at docs/learning/geometry/Angle.md
+   * Apply (in place) a jacobi eigenvalue algorithm that diagonalize `this` matrix, i.e., zeros out this.at(i,j).
+   * * During diagonalization, the upper triangle is mirrored to lower triangle to enforce symmetry.
+   * * Math details can be found at docs/learning/geometry/Matrix.md
+   * @param i row index of zeroed member.
+   * @param j column index of zeroed member.
+   * @param k other row/column index (different from i and j).
+   * @param leftEigenVectors a matrix that its columns will be filled by the left eigenvectors of `this` Matrix3d
+   * (allocated by caller, computed and filled by this function). Note that columns of leftEigenVectors will be
+   * mutually perpendicular because `this` matrix is symmetric.
+   */
+  private applyFastSymmetricJacobi(i: number, j: number, k: number, leftEigenVectors: Matrix3d): number {
+    const indexII = 4 * i;
+    const indexJJ = 4 * j;
+    const indexIJ = 3 * i + j;
+    const indexJI = 3 * j + i;
+    const indexIK = 3 * i + k;
+    const indexKI = 3 * k + i;
+    const indexJK = 3 * j + k;
+    const indexKJ = 3 * k + j;
+    const sii = this.coffs[indexII];
+    const sjj = this.coffs[indexJJ];
+    const sij = this.coffs[indexIJ];
+    if (Math.abs(sij) < 1.0e-15 * (sii + sjj))
+      return 0.0;
+    const jacobi = Angle.trigValuesToHalfAngleTrigValues(sii - sjj, 2.0 * sij);
+    const c = jacobi.c;
+    const s = jacobi.s;
+    const cc = c * c;
+    const ss = s * s;
+    const sc2 = 2.0 * c * s;
+    this.coffs[indexII] = cc * sii + sc2 * sij + ss * sjj;
+    this.coffs[indexJJ] = ss * sii - sc2 * sij + cc * sjj;
+    this.coffs[indexIJ] = 0.0;
+    this.coffs[indexJI] = 0.0;
+    const a = this.coffs[indexIK];
+    const b = this.coffs[indexJK];
+    this.coffs[indexIK] = c * a + s * b;
+    this.coffs[indexJK] = -s * a + c * b;
+    this.coffs[indexKI] = this.coffs[indexIK];
+    this.coffs[indexKJ] = this.coffs[indexJK];
+    leftEigenVectors.applyGivensColumnOp(i, j, c, s);
+    return Math.abs(sij);
+  }
+  /**
+   * Factor `this` matrix as a product `U * lambda * UT` where `U` is an orthogonal matrix and `lambda`
+   * is a diagonal matrix.
+   *
+   * * **Note:** You must apply this function to a `symmetric` matrix. Otherwise, the lower triangle is ignored
+   * and the upper triangle is mirrored to the lower triangle to enforce symmetry.
+   * * Math details can be found at docs/learning/geometry/Matrix.md
+   * @param leftEigenvectors a matrix that its columns will be filled by the left eigenvectors of `this` Matrix3d
+   * (allocated by caller, computed and filled by this function). Note that columns of leftEigenVectors will be
+   * mutually perpendicular because `this` matrix is symmetric.
+   * @param lambda a vector that its entries will be filled by eigenvalues of `this` Matrix3d (allocated by
+   * caller, computed and filled by this function).
+   */
+  public fastSymmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
+    const matrix = this.clone();
+    leftEigenvectors.setIdentity();
+    const tolerance = 1.0e-12 * this.sumSquares();
+    const numberOfIterations = 7;
+    for (let iteration = 0; iteration < numberOfIterations; iteration++) {
+      const sum = matrix.applyFastSymmetricJacobi(0, 1, 2, leftEigenvectors)
+        + matrix.applyFastSymmetricJacobi(0, 2, 1, leftEigenvectors)
+        + matrix.applyFastSymmetricJacobi(1, 2, 0, leftEigenvectors);
+      if (sum < tolerance) {
+        lambda.set(matrix.at(0, 0), matrix.at(1, 1), matrix.at(2, 2));
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * Compute the (unit vector) axis and angle for the rotation generated by `this` Matrix3d.
+   * * Math details can be found at docs/learning/geometry/Angle.md
    * @returns Returns axis and angle of rotation with result.ok === true when the conversion succeeded.
    */
   public getAxisAndAngleOfRotation(): { axis: Vector3d, angle: Angle, ok: boolean } {
     const trace = this.coffs[0] + this.coffs[4] + this.coffs[8];
-    const skewXY = this.coffs[3] - this.coffs[1];  // 2*z*sin
+    const skewXY = this.coffs[3] - this.coffs[1]; // 2*z*sin
     const skewYZ = this.coffs[7] - this.coffs[5]; // 2*y*sin
     const skewZX = this.coffs[2] - this.coffs[6]; // 2*x*sin
     // trace = (m00^2 + m11^2 + m22^2) * (1-cos) + 3cos = (1-cos) + 3cos = 1 + 2cos ==> cos = (trace-1) / 2
@@ -1069,7 +1156,7 @@ export class Matrix3d implements BeJSONFunctions {
        *                                 2x^2-1  2xy      2xz
        *                                 2xy     2y^2-1   2yz
        *                                 2xz     2yz      2z^2-1
-       * Note that the matrix is symmetric.
+       * Note that the matrix is "symmetric".
        * If rotation is around one the standard basis then non-diagonal entries become 0 and we
        * have one 1 and two -1s on the diagonal.
        * If rotation is around an axis other than standard basis, then the axis is the eigenvector
@@ -1089,7 +1176,7 @@ export class Matrix3d implements BeJSONFunctions {
       // Look for eigenvector with eigenvalue = 1
       const eigenvectors = Matrix3d.createIdentity();
       const eigenvalues = Vector3d.create(0, 0, 0);
-      if (this.fastSymmetricEigenvalues(eigenvectors, eigenvalues)) {
+      if (this.fastSymmetricEigenvalues(eigenvectors, eigenvalues)) { // note: this matrix is "symmetric"
         for (let axisIndex = 0; axisIndex < 2; axisIndex++) {
           const lambda = eigenvalues.at(axisIndex);
           if (Geometry.isAlmostEqualNumber(1, lambda))
@@ -1110,75 +1197,85 @@ export class Matrix3d implements BeJSONFunctions {
     };
     return result;
   }
-  /** Rotate so columns i and j become perpendicular */
+  /**
+   * Rotate columns i and j of `this` matrix to make them perpendicular using the angle that zero-out
+   * `thisTranspose * this`.
+   * @param i row index of zeroed member.
+   * @param j column index of zeroed member.
+   * @param matrixU a matrix that its columns will be filled by the right eigenvectors of `thisTranspose * this`
+   * (allocated by caller, computed and filled by this function). Note that columns of matrixU will be mutually
+   *  perpendicular because `thisTranspose * this` matrix is symmetric.
+   */
   private applyJacobiColumnRotation(i: number, j: number, matrixU: Matrix3d): number {
-    const uDotU = this.coffs[i] * this.coffs[i] + this.coffs[i + 3] * this.coffs[i + 3] + this.coffs[i + 6] * this.coffs[i + 6];
-    const vDotV = this.coffs[j] * this.coffs[j] + this.coffs[j + 3] * this.coffs[j + 3] + this.coffs[j + 6] * this.coffs[j + 6];
-    const uDotV = this.coffs[i] * this.coffs[j] + this.coffs[i + 3] * this.coffs[j + 3] + this.coffs[i + 6] * this.coffs[j + 6];
-    // const c2 = uDotU - vDotV;
-    // const s2 = 2.0 * uDotV;
+    const uDotU = this.coffs[i] * this.coffs[i]
+      + this.coffs[i + 3] * this.coffs[i + 3]
+      + this.coffs[i + 6] * this.coffs[i + 6];
+    const vDotV = this.coffs[j] * this.coffs[j]
+      + this.coffs[j + 3] * this.coffs[j + 3]
+      + this.coffs[j + 6] * this.coffs[j + 6];
+    const uDotV = this.coffs[i] * this.coffs[j]
+      + this.coffs[i + 3] * this.coffs[j + 3]
+      + this.coffs[i + 6] * this.coffs[j + 6];
     const jacobi = Angle.trigValuesToHalfAngleTrigValues(uDotU - vDotV, 2.0 * uDotV);
-    // const h = Math.hypot(c2, s2);
-    // console.log(" c2 s2", c2 / h, s2 / h);
-    // console.log(" C S ", Math.cos(2 * jacobi.radians), Math.sin(2 * jacobi.radians));
-    // console.log("i j uDotV", i, j, uDotV);
-    if (Math.abs(jacobi.s) < 2.0e-15)
+    const c = jacobi.c;
+    const s = jacobi.s;
+    if (Math.abs(s) < 2.0e-15)
       return 0.0;
-    this.applyGivensColumnOp(i, j, jacobi.c, jacobi.s);
-    matrixU.applyGivensRowOp(i, j, jacobi.c, jacobi.s);
-    // const BTB = this.multiplyMatrixTransposeMatrix(this);
-    // console.log("BTB", BTB.at(0, 0), BTB.at(1, 1), BTB.at(2, 2), "       off", BTB.at(0, 1), BTB.at(0, 2), BTB.at(1, 2), "  at(i,j)", BTB.at(i, j));
+    this.applyGivensColumnOp(i, j, c, s); // make columns i and j of `this` matrix perpendicular
+    matrixU.applyGivensRowOp(i, j, c, s); // right eigenvalues of `thisTranspose * this`
     return Math.abs(uDotV);
   }
   /**
-   * Factor this as a product C * U where C has mutually perpendicular columns and
-   * U is orthogonal.
-   * @param matrixC (allocate by caller, computed here)
-   * @param matrixU (allocate by caller, computed here)
+   * Factor `this` matrix as a product `VD * U` where `VD` has mutually perpendicular columns and `U` is orthogonal.
+   * @param matrixVD a matrix that its columns will be filled by rotating columns of `this` to make them mutually
+   * perpendicular (allocated by caller, computed and filled by this function).
+   * @param matrixU a matrix that its columns will be filled by the right eigenvectors of `thisTranspose * this`
+   * (allocated by caller, computed and filled by this function). Note that columns of matrixU will be mutually
+   *  perpendicular because `thisTranspose * this` matrix is symmetric.
    */
-  public factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean {
-    matrixC.setFrom(this);
+  public factorPerpendicularColumns(matrixVD: Matrix3d, matrixU: Matrix3d): boolean {
+    matrixVD.setFrom(this);
     matrixU.setIdentity();
     const tolerance = 1.0e-12 * this.sumSquares();
-    for (let iteration = 0; iteration < 7; iteration++) {
-      const sum = matrixC.applyJacobiColumnRotation(0, 1, matrixU)
-        + matrixC.applyJacobiColumnRotation(0, 2, matrixU)
-        + matrixC.applyJacobiColumnRotation(1, 2, matrixU);
-      // console.log ("   sum", sum);
+    const numberOfIterations = 7;
+    for (let iteration = 0; iteration < numberOfIterations; iteration++) {
+      const sum = matrixVD.applyJacobiColumnRotation(0, 1, matrixU)
+        + matrixVD.applyJacobiColumnRotation(0, 2, matrixU)
+        + matrixVD.applyJacobiColumnRotation(1, 2, matrixU);
       if (sum < tolerance) {
-        // console.log("jacobi iterations", iteration);
         return true;
       }
     }
     return false;
   }
   /**
-   * Factor this matrix M as a product M = V * D * U where V and U are orthogonal, and D is diagonal (scale matrix).
-   * @param matrixV left orthogonal factor (allocate by caller, computed here)
-   * @param scale diagonal entries of D (allocate by caller, computed here)
-   * @param matrixU right orthogonal factor (allocate by caller, computed here)
+   * Factor `this` matrix as a product `V * D * U` where `V` and `U` are orthogonal and `D` is diagonal with
+   * positive entries.
+   * * This is formally known as the `Singular Value Decomposition` or `SVD`.
+   * @param matrixV an orthogonal matrix that its columns will be filled by the left eigenvectors of
+   * `thisTranspose * this` (allocated by caller, computed and filled by this function).
+   * @param scale singular values of `this` (allocated by caller, computed and filled by this function).
+   * The singular values in the `scale` are non-negative and decreasing.
+   * @param matrixU an orthogonal matrix that its columns will be filled by the right eigenvectors of
+   * `thisTranspose * this` (allocated by caller, computed and filled by this function).
    */
   public factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean {
     const matrixVD = Matrix3d.createZero();
     if (!this.factorPerpendicularColumns(matrixVD, matrixU))
       return false;
-
     const column: Vector3d[] = [];
     column.push(matrixVD.getColumn(0));
     column.push(matrixVD.getColumn(1));
     column.push(matrixVD.getColumn(2));
-    scale.set(column[0].magnitude(), column[1].magnitude(), column[2].magnitude());
-
+    scale.set(column[0].magnitude(), column[1].magnitude(), column[2].magnitude()); // singular values of `this`
     const det = matrixVD.determinant();
     if (det < 0)
-      scale.z = - scale.z;
-
+      scale.z = -scale.z;
     const almostZero = 1.0e-15;
-    const scaleXIsZero = Math.abs(scale.x) < almostZero;
-    const scaleYIsZero = Math.abs(scale.y) < almostZero;
-    const scaleZIsZero = Math.abs(scale.z) < almostZero;
-
-    // ASSUME: any zero-magnitude column(s) of matrixVD are last
+    const scaleXIsZero: boolean = Math.abs(scale.x) < almostZero;
+    const scaleYIsZero: boolean = Math.abs(scale.y) < almostZero;
+    const scaleZIsZero: boolean = Math.abs(scale.z) < almostZero;
+    // NOTE: We assume any zero-magnitude column(s) of matrixVD are last
     if (!scaleXIsZero && !scaleYIsZero && !scaleZIsZero) { // full rank
       matrixV = matrixVD.scaleColumns(1 / scale.x, 1 / scale.y, 1 / scale.z, matrixV);
     } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
@@ -1192,60 +1289,6 @@ export class Matrix3d implements BeJSONFunctions {
       matrixV.setIdentity();
     }
     return true;
-  }
-  /** Apply a jacobi step to lambda which evolves towards diagonal. */
-  private applySymmetricJacobi(i: number, j: number, lambda: Matrix3d): number {
-    const uDotU = lambda.at(i, i);
-    const vDotV = lambda.at(j, j);
-    const uDotV = lambda.at(i, j);
-    if (Math.abs(uDotV) < 1.0e-15 * (uDotU + vDotV))
-      return 0.0;
-    // const c2 = uDotU - vDotV;
-    // const s2 = 2.0 * uDotV;
-    const jacobi = Angle.trigValuesToHalfAngleTrigValues(uDotU - vDotV, 2.0 * uDotV);
-    // const h = Math.hypot(c2, s2);
-    // console.log(" c2 s2", c2 / h, s2 / h);
-    // console.log(" C S ", Math.cos(2 * jacobi.radians), Math.sin(2 * jacobi.radians));
-    // console.log("i j uDotV", i, j, uDotV);
-    if (Math.abs(jacobi.s) < 2.0e-15)
-      return 0.0;
-    // Factored form is this *lambda * thisTranspose
-    // Let Q be the rotation matrix.  Q*QT is inserted, viz
-    //          this*Q * QT * lambda * Q*thisTranspose
-    this.applyGivensColumnOp(i, j, jacobi.c, jacobi.s);
-
-    lambda.applyGivensRowOp(i, j, jacobi.c, jacobi.s);
-    lambda.applyGivensColumnOp(i, j, jacobi.c, jacobi.s);
-    // const BTB = this.multiplyMatrixTransposeMatrix(this);
-    // console.log("BTB", BTB.at(0, 0), BTB.at(1, 1), BTB.at(2, 2), "       off", BTB.at(0, 1), BTB.at(0, 2), BTB.at(1, 2), "  at(i,j)", BTB.at(i, j));
-    return Math.abs(uDotV);
-  }
-  /**
-   * Factor this (symmetrized) as a product U * lambda * UT where U is orthogonal, lambda is diagonal.
-   * The upper triangle is mirrored to lower triangle to enforce symmetry.
-   * @param matrixC (allocate by caller, computed here)
-   * @param factor  (allocate by caller, computed here)
-   */
-  public symmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
-    const matrix = this.clone();
-    leftEigenvectors.setIdentity();
-    matrix.coffs[3] = matrix.coffs[1];
-    matrix.coffs[6] = matrix.coffs[2];
-    matrix.coffs[7] = matrix.coffs[5];
-    const tolerance = 1.0e-12 * this.sumSquares();
-    for (let iteration = 0; iteration < 7; iteration++) {
-      const sum = leftEigenvectors.applySymmetricJacobi(0, 1, matrix)
-        + leftEigenvectors.applySymmetricJacobi(0, 2, matrix)
-        + leftEigenvectors.applySymmetricJacobi(1, 2, matrix);
-      // console.log("symmetric sum", sum);
-      // console.log ("   sum", sum);
-      if (sum < tolerance) {
-        // console.log("symmetric iterations", iteration);
-        lambda.set(matrix.at(0, 0), matrix.at(1, 1), matrix.at(2, 2));
-        return true;
-      }
-    }
-    return false;
   }
   /**
    * Return a matrix that rotates a fraction of the angular sweep from vectorA to vectorB.
@@ -2444,8 +2487,7 @@ export class Matrix3d implements BeJSONFunctions {
     this.inverseState = InverseMatrixState.unknown;
   }
   /**
-   * Create a rigid matrix (columns and rows are unit length and pairwise perpendicular) for
-   * the given eye coordinate.
+   * Create a rigid matrix (columns and rows are unit length and pairwise perpendicular) for the given eye coordinate.
    * * column 2 is parallel to (x,y,z).
    * * column 0 is perpendicular to column 2 and is in the xy plane.
    * * column 1 is perpendicular to both. It is the "up" vector on the view plane.
@@ -2477,7 +2519,8 @@ export class Matrix3d implements BeJSONFunctions {
        *
        * This is an orthogonal matrix meaning it rotates the standard XYZ axis to ABC axis system
        * (if matrix is [A B C]). The matrix rotates (0,0,1), i.e., the default Top view or Z axis,
-       *  to the eye point (x/r,y/r,z/r). The matrix also rotates (1,0,0) to a point on XY plane.
+       * to the eye point (x/r,y/r,z/r) where r = sqrt(x*x + y*y + z*z). The matrix also rotates
+       * (1,0,0) to a point on XY plane.
        */
       const c = x / rxy;
       const s = y / rxy;
@@ -2561,6 +2604,19 @@ export class Matrix3d implements BeJSONFunctions {
     const sumOff = Math.abs(sumAll - sumDiagonal);
     return Math.sqrt(sumOff) <= Geometry.smallAngleRadians * (1.0 + Math.sqrt(sumAll));
   }
+  /** Sum of squared differences between symmetric pairs (symmetric pairs have indices (1,3), (2,6), and (5,7).) */
+  public sumSkewSquares(): number {
+    return Geometry.hypotenuseSquaredXYZ(
+      this.coffs[1] - this.coffs[3],
+      this.coffs[2] - this.coffs[6],
+      this.coffs[5] - this.coffs[7]
+    );
+  }
+  /** Test if the matrix is (very near to) symmetric */
+  public isSymmetric(): boolean {
+    const offDiagonal: number = this.sumSkewSquares();
+    return Math.sqrt(offDiagonal) <= Geometry.smallAngleRadians * (1.0 + Math.sqrt(this.sumSquares()));
+  }
   /** Test if the stored inverse is present and marked valid */
   public get hasCachedInverse(): boolean {
     return this.inverseState === InverseMatrixState.inverseStored && this.inverseCoffs !== undefined;
@@ -2574,7 +2630,7 @@ export class Matrix3d implements BeJSONFunctions {
   /** Test if the above diagonal entries (1,2,5) are all nearly zero */
   public get isLowerTriangular(): boolean {
     const sumAll = this.sumSquares();
-    const sumLow = Geometry.hypotenuseSquaredXYZ(this.coffs[1], this.coffs[2], this.coffs[75]);
+    const sumLow = Geometry.hypotenuseSquaredXYZ(this.coffs[1], this.coffs[2], this.coffs[5]);
     return Math.sqrt(sumLow) <= Geometry.smallAngleRadians * (1.0 + Math.sqrt(sumAll));
   }
   /**
@@ -2591,14 +2647,6 @@ export class Matrix3d implements BeJSONFunctions {
     )
       return this.coffs[0];
     return undefined;
-  }
-  /** Sum of squared differences between symmetric pairs (entry 1 and 3 - 2 and 6 - 5 and 7) */
-  public sumSkewSquares(): number {
-    return Geometry.hypotenuseSquaredXYZ(
-      this.coffs[1] - this.coffs[3],
-      this.coffs[2] - this.coffs[6],
-      this.coffs[5] - this.coffs[7]
-    );
   }
   /**
    * Test if all rows and columns are unit length and are perpendicular to each other, i.e., the matrix is either
