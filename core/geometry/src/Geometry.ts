@@ -268,8 +268,8 @@ export class Geometry {
     return (Math.abs(a) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / a;
   }
   /**
-   * Boolean test for metric coordinate near-equality. If tolerance is not passed, `Geometry.smallMetricDistance`
-   * is used as tolerance.
+   * Boolean test for metric coordinate near-equality (i.e., if x and y are almost equal). If tolerance is not passed,
+   * `Geometry.smallMetricDistance` is used as tolerance.
    */
   public static isSameCoordinate(x: number, y: number, tol?: number): boolean {
     if (tol)
@@ -465,7 +465,8 @@ export class Geometry {
     if (c > q) q = c;
     return q;
   }
-  /** Examine the value (particularly sign) of x.
+  /**
+   * Examine the value (particularly sign) of x.
    * * If x is negative, return outNegative.
    * * If x is true zero, return outZero
    * * If x is positive, return outPositive
@@ -731,7 +732,7 @@ export class Geometry {
   /** return 0 if the value is undefined, 1 if defined. */
   public static defined01(value: any): number { return value === undefined ? 0 : 1; }
   /**
-   * Return `numerator` over `denominator` or `undefined`.
+   * Return `numerator` divided by `denominator`, or `undefined`.
    * @param numerator the numerator
    * @param denominator the denominator
    * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
@@ -743,7 +744,7 @@ export class Geometry {
     return undefined;
   }
   /**
-   * Return `numerator` over `denominator`.
+   * Return `numerator` divided by `denominator`.
    * @param numerator the numerator
    * @param denominator the denominator
    * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
@@ -756,7 +757,7 @@ export class Geometry {
     return defaultResult;
   }
   /**
-   * Return `numerator` over `denominator` (with a given `largestResult`) or `undefined`.
+   * Return `numerator` divided by `denominator` (with a given `largestResult`), or `undefined`.
    * @param numerator the numerator
    * @param denominator the denominator
    * @param largestResult the ratio threshold.
