@@ -21,11 +21,12 @@ export type ChannelName = string;
  * @beta
  */
 export interface ChannelControl {
+  /** Determine whether this [[IModelDb]] has any channels in it. */
+  get hasChannels(): boolean;
   /** Add a new channel to the list of allowed channels of the [[IModelDb]] for this session.
    * @param channelName The name of the channel to become editable in this session.
    */
   addAllowedChannel(channelName: ChannelName): void;
-
   /** Remove a channel from the list of allowed channels of the [[IModelDb]] for this session.
    * @param channelName The name of the channel that should no longer be editable in this session.
    */
@@ -34,11 +35,7 @@ export interface ChannelControl {
    * @throws if the element does not exist
    */
   getChannel(elementId: Id64String): ChannelName;
-
-  /** @internal */
-  verifyChannel(modelId: Id64String): void;
-
-  /** Insert a new Subject element that defines a new Channel in this iModel. Its parent will be the Root Subject.
+  /** Insert a new Subject element that defines a new Channel in this iModel.
    * @returns the ElementId of the new Subject element.
    */
   insertChannelSubject(args: {
@@ -51,39 +48,32 @@ export interface ChannelControl {
     /** Optional description for new Subject. */
     description?: string;
   }): Id64String;
+
+  /** @internal */
+  verifyChannel(modelId: Id64String): void;
 }
 
 /** @internal */
-export class ChannelAdmin {
+export class ChannelAdmin implements ChannelControl {
   /** the name of the special "shared" channel holding information that is editable by any application. */
   public static readonly sharedChannel = "shared";
-  /** @internal */
   public static readonly channelClassName = "bis:ChannelRootAspect";
   private _allowedChannels = new Set<ChannelName>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelName>();
   private _hasChannels?: boolean;
 
-  /** @internal */
   public constructor(private _iModel: IModelDb) {
     this._allowedChannels.add(ChannelAdmin.sharedChannel);
   }
-  /** Add a new channel to the list of allowed channels of the [[IModelDb]] for this session.
-   * @param channelName The name of the channel to become editable in this session.
-   */
   public addAllowedChannel(channelName: ChannelName) {
     this._allowedChannels.add(channelName);
     this._deniedModels.clear();
   }
-  /** Remove a channel from the list of allowed channels of the [[IModelDb]] for this session.
-   * @param channelName The name of the channel that should no longer be editable in this session.
-   */
   public removeAllowedChannel(channelName: ChannelName) {
     this._allowedChannels.delete(channelName);
     this._allowedModels.clear();
   }
-
-  /** Determine whether this [[IModelDb]] has any channels in it. */
   public get hasChannels(): boolean {
     if (undefined === this._hasChannels) {
       try {
@@ -95,10 +85,6 @@ export class ChannelAdmin {
     }
     return this._hasChannels;
   }
-
-  /** Get the channelName of the channel for an element by ElementId.
-   * @throws if the element does not exist
-   */
   public getChannel(elementId: Id64String): ChannelName {
     if (!this.hasChannels || elementId === IModel.rootSubjectId)
       return ChannelAdmin.sharedChannel;
@@ -117,8 +103,6 @@ export class ChannelAdmin {
     });
     return this.getChannel(parentId);
   }
-
-  /** @internal */
   public verifyChannel(modelId: Id64String): void {
     if (!this.hasChannels || this._allowedModels.has(modelId))
       return;
@@ -135,20 +119,7 @@ export class ChannelAdmin {
     this._deniedModels.set(modelId, channel);
     return this.verifyChannel(modelId);
   }
-
-  /** Insert a new Subject element that defines a new Channel in this iModel. Its parent will be the Root Subject.
-   * @returns the ElementId of the new Subject element.
-   */
-  public insertChannelSubject(args: {
-    /** The name of the new Subject element */
-    subjectName: string;
-    /** The channel name for the new [[Subject]]. This is the string to pass to [[addAllowedChannel]]*/
-    channelName: ChannelName;
-    /** the Id of the parent of the new Subject. Default is [[IModel.rootSubjectId]]. */
-    parentSubjectId?: Id64String;
-    /** Optional description for new Subject. */
-    description?: string;
-  }): Id64String {
+  public insertChannelSubject(args: { subjectName: string, channelName: ChannelName, parentSubjectId?: Id64String, description?: string }): Id64String {
     if (args.parentSubjectId && ChannelAdmin.sharedChannel !== this.getChannel(args.parentSubjectId))
       throw new Error("channels may not nest");
 

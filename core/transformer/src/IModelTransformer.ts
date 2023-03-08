@@ -1340,13 +1340,12 @@ export class IModelTransformer extends IModelExportHandler {
       // ignore provenance check if it's null since we can't bind those ids
       !Id64.isValidId64(lastProvenanceEntityInfo.aspectId) ||
       !Id64.isValidId64(lastProvenanceEntityInfo.entityId) ||
-      this.provenanceDb.withPreparedStatement(`
-        SELECT Version FROM ${ExternalSourceAspect.classFullName}
+      this.provenanceDb.withPreparedStatement(
+        `SELECT Version FROM ${ExternalSourceAspect.classFullName}
         WHERE Scope.Id=:scopeId
           AND ECInstanceId=:aspectId
           AND Kind=:kind
-          AND Element.Id=:entityId
-      `,
+          AND Element.Id=:entityId`,
         (statement: ECSqlStatement): boolean => {
           statement.bindId("scopeId", this.targetScopeElementId);
           statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
