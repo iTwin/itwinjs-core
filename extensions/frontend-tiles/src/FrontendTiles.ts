@@ -13,7 +13,7 @@ export interface FrontendTilesOptions {
   /** Given an iModel, provide the base URL where the tiles are stored representing all of the spatial models in the iModel.
    * It is expected that baseUrl/tileset.json exists and contains a 3d tileset in which all relative URLs are relative to baseUrl.
    */
-  computeSpatialTilesetBaseUrl: (iModel: IModelConnection) => string;
+  computeSpatialTilesetBaseUrl: (iModel: IModelConnection) => URL;
 }
 
 /** Initialize the frontend-tiles package to obtain tiles for spatial views.
