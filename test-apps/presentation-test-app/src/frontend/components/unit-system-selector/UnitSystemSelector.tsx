@@ -8,8 +8,8 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export interface UnitSystemSelectorProps {
-  selectedUnitSystem: UnitSystemKey | undefined;
-  onUnitSystemSelected: (unitSystem: UnitSystemKey | undefined) => void;
+  selectedUnitSystem: UnitSystemKey;
+  onUnitSystemSelected: (unitSystem: UnitSystemKey) => void;
 }
 
 export function UnitSystemSelector(props: UnitSystemSelectorProps) {
@@ -28,10 +28,7 @@ export function UnitSystemSelector(props: UnitSystemSelectorProps) {
   );
 }
 
-const availableUnitSystems: SelectOption<UnitSystemKey | undefined>[] = [{
-  value: undefined,
-  label: "",
-}, {
+const availableUnitSystems: SelectOption<UnitSystemKey>[] = [{
   value: "metric",
   label: "Metric",
 }, {
