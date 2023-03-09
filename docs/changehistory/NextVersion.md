@@ -12,6 +12,7 @@ Table of contents:
 - [Mesh offset](#mesh-offset)
 - [Mesh intersection with ray](#mesh-intersection-with-ray)
 - [Presentation](#presentation)
+  - [Active unit system](#active-unit-system)
   - [Handling of long-running requests](#handling-of-long-running-requests)
 
 ## Updated minimum requirements
@@ -55,6 +56,10 @@ New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
 
 ## Presentation
+
+### Active unit system
+
+[PresentationManager]($presentation-frontend) has a way to set active unit system either through props when initializing ([PresentationManagerProps.activeUnitSystem]($presentation-frontend)) or directly through a setter ([PresentationManager.activeUnitSystem]($presentation-frontend)). Both of these ways have been deprecated in favor of using [QuantityFormatter.activeUnitSystem]($core-frontend) (access `QuantityFormatter` through `IModelApp.quantityFormatter`) to avoid asking consumers set the active unit system in two places. For the time being, while we keep the deprecated unit system setters on the presentation manager, they act as an override to [QuantityFormatter.activeUnitSystem]($core-frontend), but the latter is now used by default, so setting active unit system on presentation manager is not necessary any more.
 
 ### Handling of long-running requests
 
