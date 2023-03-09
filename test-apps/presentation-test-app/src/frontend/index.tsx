@@ -10,7 +10,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { BentleyCloudRpcManager } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation, PresentationManagerProps } from "@itwin/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@itwin/components-react";
 import rpcInterfaces from "../common/Rpcs";
