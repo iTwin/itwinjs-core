@@ -217,14 +217,14 @@ export function getListPanel(props: ListPickerProps): React.ReactNode {
       className="ListPickerContainer"
       columns={
         <GroupColumn className="ListPicker-column"> {/* eslint-disable-line deprecation/deprecation */}
-          {
-            props.searchBox && props.onSearchValueChange &&
-            <SearchBox className="ListPickerSearchBox" onValueChanged={props.onSearchValueChange}/>
-          }
           {props.items.map(listItemToElement)}
         </GroupColumn>}
       containFn={containHorizontally} // eslint-disable-line deprecation/deprecation
       title={props.title}
+      header={
+        props.searchBox && props.onSearchValueChange &&
+        <SearchBox className="ListPickerSearchBox" onValueChanged={props.onSearchValueChange}/>
+      }
     />
   );
 }

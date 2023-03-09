@@ -20,6 +20,8 @@ import { Title } from "./Title";
 export interface GroupProps extends CommonProps, NoChildrenProps {
   /** Tool group title. */
   title?: string;
+  /** Tool group header*/
+  header?: React.ReactNode;
   /** Columns of tool group. I.e. [[GroupColumn]]  */
   columns?: React.ReactNode;
 }
@@ -41,6 +43,7 @@ export class Group extends React.PureComponent<GroupProps> {
             {this.props.title}
           </Title>
         }
+        {this.props.header}
         {this.props.columns &&
           <Columns>
             {this.props.columns}
