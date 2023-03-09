@@ -34,8 +34,8 @@ type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) =
 export const MAX_ALLOWED_PAGE_SIZE = 1000;
 /** @internal */
 export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
-/** @internal */
-export const DEFAULT_REQUEST_TIMEOUT = 5000;
+
+const DEFAULT_REQUEST_TIMEOUT = 5000;
 
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
@@ -49,7 +49,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
   private _cancelEvents: Map<string, BeEvent<() => void>>;
 
-  public constructor(props?: { requestTimeout: number }) {
+  public constructor(props?: { requestTimeout?: number }) {
     super();
     this._requestTimeout = props?.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT;
     this._pendingRequests = new TemporaryStorage({

@@ -81,7 +81,7 @@ export interface PresentationManagerProps {
    * Timeout (in milliseconds) for how long we're going to wait for RPC request to be fulfilled before throwing
    * a timeout error.
    *
-   * Defaults to 5 minutes.
+   * Defaults to 10 minutes.
    */
   requestTimeout?: number;
 

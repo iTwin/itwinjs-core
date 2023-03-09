@@ -38,10 +38,8 @@ import { PagedResponse } from "./Utils";
 /**
  * Default timeout for how long we're going to wait for RPC request to be fulfilled before throwing
  * a timeout error.
- *
- * @internal
  */
-export const DEFAULT_REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+const DEFAULT_REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 /**
  * Configuration parameters for [[RpcRequestsHandler]].

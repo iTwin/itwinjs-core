@@ -13,7 +13,7 @@ import { PresentationError, PresentationRpcInterface, PresentationStatus } from 
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
-import { DEFAULT_REQUEST_TIMEOUT, PresentationRpcImpl } from "./PresentationRpcImpl";
+import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
 
 /**
@@ -118,7 +118,7 @@ export class Presentation {
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
 
     this._rpcImpl = new PresentationRpcImpl({
-      requestTimeout: this._initProps.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT,
+      requestTimeout: this._initProps.requestTimeout,
     });
     RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
     RpcManager.supplyImplInstance(PresentationRpcInterface, this._rpcImpl);

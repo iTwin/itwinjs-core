@@ -70,7 +70,6 @@ public;CustomNodeSpecification
 public;CustomQueryInstanceNodesSpecification 
 public;CustomRendererSpecification
 public;DEFAULT_KEYS_BATCH_SIZE = 5000
-internal;DEFAULT_REQUEST_TIMEOUT: number
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
 public;DefaultPropertyCategoryOverride 

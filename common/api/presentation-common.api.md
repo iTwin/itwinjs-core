@@ -478,9 +478,6 @@ export interface CustomRendererSpecification {
 // @public
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
-// @internal
-export const DEFAULT_REQUEST_TIMEOUT: number;
-
 // @public
 export enum DefaultContentDisplayTypes {
     Grid = "Grid",
