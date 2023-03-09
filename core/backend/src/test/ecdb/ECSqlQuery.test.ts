@@ -5,10 +5,10 @@
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../core-backend";
+import { ConcurrentQuery } from "../../ConcurrentQuery";
+import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
-import { ConcurrentQuery } from "../../ConcurrentQuery";
 
 // cspell:ignore mirukuru ibim
 
@@ -26,6 +26,7 @@ describe("ECSql Query", () => {
   let imodel3: SnapshotDb;
   let imodel4: SnapshotDb;
   let imodel5: SnapshotDb;
+  let imodel6: SnapshotDb;
 
   before(async () => {
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
@@ -33,6 +34,7 @@ describe("ECSql Query", () => {
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel6 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test_ec_4003.bim"));
   });
 
   after(async () => {
@@ -41,6 +43,125 @@ describe("ECSql Query", () => {
     imodel3.close();
     imodel4.close();
     imodel5.close();
+    imodel6.close();
+  });
+
+  it("verify return values for system properties", async () => {
+    const testQueries = [
+      {
+        query: "SELECT ECInstanceId, ECClassId FROM Bis.Element LIMIT 1", expected: {
+          id: "0x19",
+          className: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId FROM Bis.Element) LIMIT 1", expected: {
+          id: "0x19",
+          className: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+          id: "0x1",
+          className: "BisCore.PartitionOriginatesFromRepository",
+          sourceId: "0x1c",
+          sourceClassName: "BisCore.PhysicalPartition",
+          targetId: "0x12",
+          targetClassName: "BisCore.RepositoryLink",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+          id: "0x1",
+          className: "BisCore.PartitionOriginatesFromRepository",
+          sourceId: "0x1c",
+          sourceClassName: "BisCore.PhysicalPartition",
+          targetId: "0x12",
+          targetClassName: "BisCore.RepositoryLink",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId a, ECClassId b FROM Bis.Element LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b FROM Bis.Element) LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT Model, Model.Id, Model.RelECClassId from Bis.Element limit 1", expected: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT Model, Model.Id, Model.RelECClassId from Bis.Element) LIMIT 1", expected: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+    ];
+    const builder = new QueryOptionsBuilder();
+    builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+    builder.setConvertClassIdsToNames(true);
+    // With ECDb Profile 4002
+    for (const testQuery of testQueries) {
+      imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
+        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
+        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+      });
+      let hasRow = false;
+      for await (const row of imodel1.query(testQuery.query, undefined, builder.getOptions())) {
+        assert.deepEqual(row, testQuery.expected, `${testQuery.query} does not match expected result`);
+        hasRow = true;
+      }
+      assert.isTrue(hasRow, "imodel1.query() must return latest one row");
+    }
+    // With ECDb Profile 4003
+    for (const testQuery of testQueries) {
+      imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
+        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
+        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+      });
+      let hasRow = false;
+      for await (const row of imodel6.query(testQuery.query, undefined, builder.getOptions())) {
+        assert.deepEqual(row, testQuery.expected, `${testQuery.query} does not match expected result`);
+        hasRow = true;
+      }
+      assert.isTrue(hasRow, "imodel1.query() must return latest one row");
+    }
   });
 
   // new new addon build
