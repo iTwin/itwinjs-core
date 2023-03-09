@@ -663,6 +663,50 @@ export class ChangeSummaryManager {
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
+// @internal (undocumented)
+export class ChannelAdmin implements ChannelControl {
+    constructor(_iModel: IModelDb);
+    // (undocumented)
+    addAllowedChannel(channelKey: ChannelKey): void;
+    // (undocumented)
+    static readonly channelClassName = "bis:ChannelRootAspect";
+    // (undocumented)
+    getChannelKey(elementId: Id64String): ChannelKey;
+    // (undocumented)
+    get hasChannels(): boolean;
+    // (undocumented)
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    // (undocumented)
+    removeAllowedChannel(channelKey: ChannelKey): void;
+    static readonly sharedChannel = "shared";
+    // (undocumented)
+    verifyChannel(modelId: Id64String): void;
+}
+
+// @beta
+export interface ChannelControl {
+    addAllowedChannel(channelKey: ChannelKey): void;
+    getChannelKey(elementId: Id64String): ChannelKey;
+    get hasChannels(): boolean;
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    removeAllowedChannel(channelKey: ChannelKey): void;
+    // @internal (undocumented)
+    verifyChannel(modelId: Id64String): void;
+}
+
+// @beta
+export type ChannelKey = string;
+
 // @public (undocumented)
 export class ChannelRootAspect extends ElementUniqueAspect {
     // @internal (undocumented)

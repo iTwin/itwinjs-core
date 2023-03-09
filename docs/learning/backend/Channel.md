@@ -28,23 +28,23 @@ In this example, <span style="color:red;font-weight:bold">Subject1</span> and <s
 
 Not everything in an iModel is in a channel. Everything that is not below a Channel Subject is considered part of the *Shared Channel*. The Shared Channel may be modified by all applications. In the diagram above, everything in black is in the Shared Channel.
 
-## ChannelNames
+## ChannelKeys
 
-Every channel has a `channelName` that is used as the key for controlling write access to it.
+Every channel has a `channelKey` that is used for controlling write access to it.
 
->Note: `channelName` is distinct from the Code of the Channel Subject element. It is a key chosen by the application that creates a channel and is not visible to the user. More than one Channel Subject may use the same `chanelName`.
+>Note: `channelKey` is distinct from the Code of the Channel Subject element. It is a key chosen by the application that creates a channel and is not visible to the user. More than one Channel Subject may use the same `channelKey`.
 
 ## ChannelControl
 
 Every `IModelDb` has a member [IModelDb.channels]($backend) of type [ChannelControl]($backend) that supplies methods for controlling which channels are editable during a session.
 
-The method [ChannelControl.getChannel]($backend) will return the `channelName` for an element given an `ElementId`.
+The method [ChannelControl.getChannelKey]($backend) will return the `channelKey` for an element given an `ElementId`.
 
 ### Allowed Channels
 
-The `ChannelControl` member of an IModelDb holds a set of allowed (i.e. editable) channels. Any attempt to add/delete/update an [Element]($backend), [ElementAspect]($backend), or [Model]($backend) whose `channelName` is not in the set of Allowed Channels will generate a `ChannelConstraintViolation` exception.
+The `ChannelControl` member of an IModelDb holds a set of allowed (i.e. editable) channels. Any attempt to add/delete/update an [Element]($backend), [ElementAspect]($backend), or [Model]($backend) whose `channelKey` is not in the set of Allowed Channels will generate a `ChannelConstraintViolation` exception.
 
-After opening an `IModelDb` but before editing it, applications should call [ChannelControl.addAllowedChannel]($backend) one or more times with the `channelName`(s) for which editing should be allowed. To stop editing a channel, call [ChannelControl.removeAllowedChannel]($backend).
+After opening an `IModelDb` but before editing it, applications should call [ChannelControl.addAllowedChannel]($backend) one or more times with the `channelKey`(s) for which editing should be allowed. To stop editing a channel, call [ChannelControl.removeAllowedChannel]($backend).
 
 For example:
 
@@ -67,7 +67,7 @@ To create a new Channel Subject element (and thereby a new channel), use [Channe
 E.g.:
 
 ```ts
-  imodel.channels.insertChannelSubject({ subjectName: "Chester", channelName: "surface-stubs" });
+  imodel.channels.insertChannelSubject({ subjectName: "Chester", channelKey: "surface-stubs" });
 ```
 
 Generally, Channel Subject elements are created as an child of the Root Subject. However,  `insertChannelSubject` accepts an optional `parentSubjectId` argument so that Channel Subjects can appear elsewhere in the Subject hierarchy. However, channels may not nest. Attempts to create a Channel Subject within an exiting channel will throw an exception.

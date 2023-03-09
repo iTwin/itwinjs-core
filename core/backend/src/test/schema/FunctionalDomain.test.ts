@@ -274,11 +274,11 @@ describe("Functional Domain", () => {
     assert.equal(commits, 1);
     assert.equal(committed, 1);
 
-    const testChannelName = "channel for tests";
+    const testChannelKey = "channel for tests";
     function testChannel<T>(fn: () => T, spies: Sinon.SinonSpy[]) {
-      iModelDb.channels.removeAllowedChannel(testChannelName);
+      iModelDb.channels.removeAllowedChannel(testChannelKey);
       expect(fn).throws("not allowed");
-      iModelDb.channels.addAllowedChannel(testChannelName);
+      iModelDb.channels.addAllowedChannel(testChannelKey);
       spies.forEach((s) => s.resetHistory());
       return fn();
     }
@@ -339,8 +339,8 @@ describe("Functional Domain", () => {
     expect(iModelDb.channels.hasChannels).equal(false);
 
     // create a channel subject for all elements in this test
-    const channel1 = iModelDb.channels.insertChannelSubject({ subjectName: "TestSubject", channelName: testChannelName });
-    iModelDb.channels.addAllowedChannel(testChannelName);
+    const channel1 = iModelDb.channels.insertChannelSubject({ subjectName: "TestSubject", channelKey: testChannelKey });
+    iModelDb.channels.addAllowedChannel(testChannelKey);
 
     const partitionCode = FunctionalPartition.createCode(iModelDb, channel1, "Test Functional Model");
     const partitionProps = {
@@ -434,7 +434,7 @@ describe("Functional Domain", () => {
 
     let bd2el = elements.getElement(bd2);
     assert.equal(bd2el.userLabel, insertedLabel, "label was modified by onInsert");
-    expect(iModelDb.channels.getChannel(bd2)).equals(testChannelName);
+    expect(iModelDb.channels.getChannelKey(bd2)).equals(testChannelKey);
 
     bd2el.userLabel = "nothing";
     testChannel(() => bd2el.update(), [spy.breakdown.onUpdate, spy.breakdown.onUpdated]);
