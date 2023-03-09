@@ -311,7 +311,9 @@ export enum PresentationFrontendLoggerCategory {
 export class PresentationManager implements IDisposable {
     get activeLocale(): string | undefined;
     set activeLocale(locale: string | undefined);
-    activeUnitSystem: UnitSystemKey | undefined;
+    // @deprecated
+    get activeUnitSystem(): UnitSystemKey;
+    set activeUnitSystem(value: UnitSystemKey | undefined);
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
@@ -360,6 +362,7 @@ export class PresentationManager implements IDisposable {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
+    // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
     // @internal (undocumented)
