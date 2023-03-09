@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Logger } from "@itwin/core-bentley";
+import { assert, ByteStream, Logger } from "@itwin/core-bentley";
 import { Tileset3dSchema } from "@itwin/core-common";
 import {
-  GltfReaderProps, IModelApp, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileVisibility,
+  GltfReaderProps, ImdlReader, IModelApp, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
@@ -142,20 +142,36 @@ export class BatchedTile extends Tile {
     if (!(data instanceof Uint8Array))
       return { };
 
-    const props = GltfReaderProps.create(data, false, this.batchedTree.reader.baseUrl);
-    if (!props)
-      return { };
-
-    const reader = new BatchedTileContentReader({
-      props,
+    let reader: ImdlReader | BatchedTileContentReader | undefined = ImdlReader.create({
+      stream: ByteStream.fromUint8Array(data),
       iModel: this.tree.iModel,
-      system,
-      shouldAbort,
-      vertexTableRequired: true,
       modelId: this.tree.modelId,
-      isLeaf: this.isLeaf,
-      range: this.range,
+      is3d: true,
+      system,
+      isCanceled: shouldAbort,
+      options: {
+        tileId: this.contentId,
+      },
     });
+
+    if (!reader) {
+      const gltfProps = GltfReaderProps.create(data, false, this.batchedTree.reader.baseUrl);
+      if (gltfProps) {
+        reader = new BatchedTileContentReader({
+          props: gltfProps,
+          iModel: this.tree.iModel,
+          system,
+          shouldAbort,
+          vertexTableRequired: true,
+          modelId: this.tree.modelId,
+          isLeaf: this.isLeaf,
+          range: this.range,
+        });
+      }
+    }
+
+    if (!reader)
+      return { };
 
     return reader.read();
   }
