@@ -82,13 +82,15 @@ export class BatchedTilesetReader {
     const range = rangeFromBoundingVolume(json.boundingVolume);
     const isLeaf = undefined === json.children || json.children.length === 0;
 
+    // ###TODO evaluate this. The geometric errors in the tiles seem far too small.
+    const maximumSizeScale = 4;
     return {
       parent,
       contentId: content?.uri ?? "",
       range,
       contentRange: content?.boundingVolume ? rangeFromBoundingVolume(content.boundingVolume) : undefined,
       isLeaf,
-      maximumSize: RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
+      maximumSize: maximumSizeScale * RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
       childrenProps: isLeaf ? undefined : json.children,
     };
   }
