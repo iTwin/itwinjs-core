@@ -11,6 +11,7 @@ import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
@@ -27,6 +28,9 @@ import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Path } from "../curve/Path";
 import { PointString3d } from "../curve/PointString3d";
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { UnionRegion } from "../curve/UnionRegion";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -45,7 +49,10 @@ import { XYAndZ } from "../geometry3d/XYZProps";
 import { Map4d } from "../geometry4d/Map4d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { IndexedPolyface } from "../polyface/Polyface";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { PolyfaceData } from "../polyface/PolyfaceData";
 import { Box } from "../solid/Box";
 import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
@@ -54,13 +61,6 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
-import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
-import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { PolyfaceData } from "../polyface/PolyfaceData";
-import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 
 /* eslint-disable no-console */
 // cspell:word CCWXY
@@ -178,7 +178,8 @@ export class Sample {
       Vector3d.createSpherical(1.0, Angle.createDegrees(20), Angle.createDegrees(10)),
       Vector3d.createPolar(2.0, Angle.createDegrees(20)),
       Vector3d.createSpherical(2.0, Angle.createDegrees(20), Angle.createDegrees(10)),
-      Vector3d.create(2, 3, 0)];
+      Vector3d.create(2, 3, 0),
+    ];
   }
   /** Array with assorted nonzero Vector2d samples */
   public static readonly vector2d: Vector2d[] = [
@@ -190,13 +191,15 @@ export class Sample {
     Vector2d.create(0, 0),
     Vector2d.createPolar(1.0, Angle.createDegrees(20)),
     Vector2d.createPolar(2.0, Angle.createDegrees(20)),
-    Vector2d.create(2, 3)];
+    Vector2d.create(2, 3),
+  ];
   /** Return an array with assorted Range3d samples */
   public static createRange3ds(): Range3d[] {
     return [
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
       Range3d.createXYZ(1, 2, 3),
-      Range3d.createXYZXYZ(-2, -3, 1, 200, 301, 8)];
+      Range3d.createXYZXYZ(-2, -3, 1, 200, 301, 8),
+    ];
   }
   /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x0+ax, y0 + ay) */
   public static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z: number = 0): Point3d[] {
@@ -537,15 +540,18 @@ export class Sample {
     return [
       Matrix3d.createIdentity(),
       Matrix3d.createRotationAroundVector(
-        Vector3d.create(1, 0, 0), Angle.createDegrees(10)) as Matrix3d,
+        Vector3d.create(1, 0, 0), Angle.createDegrees(10)
+      ) as Matrix3d,
       Matrix3d.createRotationAroundVector(
-        Vector3d.create(1, -2, 5), Angle.createDegrees(-6.0)) as Matrix3d,
-
+        Vector3d.create(1, -2, 5), Angle.createDegrees(-6.0)
+      ) as Matrix3d,
+      Matrix3d.createRotationAroundVector(
+        Vector3d.create(1, 2, 3), Angle.createDegrees(49.0)
+      ) as Matrix3d,
       Matrix3d.createUniformScale(2.0),
-      Matrix3d.createRotationAroundVector(
-        Vector3d.create(1, 2, 3), Angle.createDegrees(49.0)) as Matrix3d,
       Matrix3d.createScale(1, 1, -1),
-      Matrix3d.createScale(2, 3, 4)];
+      Matrix3d.createScale(2, 3, 4),
+    ];
   }
   /** Assorted invertible transforms. */
   public static createInvertibleTransforms(): Transform[] {
@@ -565,8 +571,7 @@ export class Sample {
   /** Return an array of Matrix3d with various skew and scale.  This includes at least:
    * * identity
    * * 3 distinct diagonals.
-   * * The distinct diagonal base with smaller value added to
-   *    other 6 spots in succession.
+   * * The distinct diagonal base with smaller value added to other 6 spots in succession.
    * * the distinct diagonals with all others also smaller non-zeros.
    */
   public static createScaleSkewMatrix3d(): Matrix3d[] {
@@ -574,39 +579,49 @@ export class Sample {
       Matrix3d.createRowValues(
         1, 0, 0,
         0, 1, 0,
-        0, 0, 1),
+        0, 0, 1
+      ),
       Matrix3d.createRowValues(
         5, 0, 0,
         0, 6, 0,
-        0, 0, 7),
+        0, 0, 7
+      ),
       Matrix3d.createRowValues(
         5, 2, 0,
         0, 6, 0,
-        0, 0, 7),
+        0, 0, 7
+      ),
       Matrix3d.createRowValues(
         5, 0, 2,
         0, 6, 0,
-        0, 0, 7),
+        0, 0, 7
+      ),
       Matrix3d.createRowValues(
         5, 0, 0,
         1, 6, 0,
-        0, 0, 7),
+        0, 0, 7
+      ),
       Matrix3d.createRowValues(
         5, 0, 0,
         0, 6, 1,
-        0, 0, 7),
+        0, 0, 7
+      ),
       Matrix3d.createRowValues(
         5, 0, 0,
         0, 6, 0,
-        1, 0, 7),
+        1, 0, 7
+      ),
       Matrix3d.createRowValues(
         5, 0, 0,
         0, 6, 0,
-        0, 1, 7),
+        0, 1, 7
+      ),
       Matrix3d.createRowValues(
         5, 2, 3,
         2, 6, 1,
-        -1, 2, 7)];
+        -1, 2, 7
+      ),
+    ];
   }
 
   /** Return an array of singular Matrix3d.  This includes at least:
@@ -685,13 +700,17 @@ export class Sample {
     return [
       Matrix3d.createIdentity(),
       Matrix3d.createRotationAroundVector(
-        Vector3d.unitX(), Angle.createDegrees(10)) as Matrix3d,
+        Vector3d.unitX(), Angle.createDegrees(10)
+      ) as Matrix3d,
       Matrix3d.createRotationAroundVector(
-        Vector3d.unitY(), Angle.createDegrees(10)) as Matrix3d,
+        Vector3d.unitY(), Angle.createDegrees(10)
+      ) as Matrix3d,
       Matrix3d.createRotationAroundVector(
-        Vector3d.unitZ(), Angle.createDegrees(10)) as Matrix3d,
+        Vector3d.unitZ(), Angle.createDegrees(10)
+      ) as Matrix3d,
       Matrix3d.createRotationAroundVector(
-        Vector3d.create(1, 2, 3), Angle.createDegrees(10)) as Matrix3d,
+        Vector3d.create(1, 2, 3), Angle.createDegrees(10)
+      ) as Matrix3d,
     ];
   }
 

@@ -3462,10 +3462,12 @@ export class Matrix3d implements BeJSONFunctions {
     columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number): number;
     columnX(result?: Vector3d): Vector3d;
     columnXDotColumnY(): number;
+    columnXDotColumnZ(): number;
     columnXMagnitude(): number;
     columnXMagnitudeSquared(): number;
     columnXYCrossProductMagnitude(): number;
     columnY(result?: Vector3d): Vector3d;
+    columnYDotColumnZ(): number;
     columnYMagnitude(): number;
     columnYMagnitudeSquared(): number;
     columnZ(result?: Vector3d): Vector3d;
@@ -3511,7 +3513,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowZ(vector: XYZ): number;
     dotRowZXYZ(x: number, y: number, z: number): number;
     factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
-    factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean;
+    factorPerpendicularColumns(matrixVD: Matrix3d, matrixU: Matrix3d): boolean;
     factorRigidWithSignedScale(): {
         rigidAxes: Matrix3d;
         scale: number;
@@ -3540,9 +3542,11 @@ export class Matrix3d implements BeJSONFunctions {
     get isDiagonal(): boolean;
     isExactEqual(other: Matrix3d): boolean;
     get isIdentity(): boolean;
+    get isLowerTriangular(): boolean;
     isRigid(allowMirror?: boolean): boolean;
     get isSignedPermutation(): boolean;
     isSingular(): boolean;
+    isSymmetric(): boolean;
     get isUpperTriangular(): boolean;
     get isXY(): boolean;
     makeRigid(axisOrder?: AxisOrder): boolean;
@@ -3569,8 +3573,8 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyXY(x: number, y: number, result?: Vector3d): Vector3d;
     multiplyXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     multiplyXYZtoXYZ(xyz: XYZ, result: XYZ): XYZ;
-    normalizeColumnsInPlace(originalRowMagnitudes?: Vector3d): boolean;
-    normalizeRowsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
+    normalizeColumnsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
+    normalizeRowsInPlace(originalRowMagnitudes?: Vector3d): boolean;
     static numComputeCache: number;
     static numUseCache: number;
     originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d;
@@ -3585,6 +3589,7 @@ export class Matrix3d implements BeJSONFunctions {
     scaleColumns(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
     scaleColumnsInPlace(scaleX: number, scaleY: number, scaleZ: number): void;
     scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
+    scaleRowsInPlace(scaleX: number, scaleY: number, scaleZ: number): void;
     setAt(row: number, column: number, value: number): void;
     setColumn(columnIndex: number, value: Vector3d | undefined): void;
     setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d): void;
@@ -4518,6 +4523,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     handleRuledSweep(g: RuledSweep): any;
     handleSphere(g: Sphere): any;
     handleTorusPipe(g: TorusPipe): any;
+    handleUnionRegion(g: UnionRegion): any;
     get options(): StrokeOptions;
     static pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined;
     static polygonToTriangulatedPolyface(points: Point3d[], localToWorld?: Transform): IndexedPolyface | undefined;

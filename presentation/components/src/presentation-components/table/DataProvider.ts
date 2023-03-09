@@ -84,7 +84,7 @@ export interface PresentationTableDataProviderProps extends DiagnosticsProps {
 /**
  * Presentation Rules-driven table data provider.
  * @public
- * @deprecated in 3.x. Based on [Table]($components-react) component which is deprecated
+ * @deprecated in 3.x. Based on `Table` (components-react) component which is deprecated
  */
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
   private _sortColumnKey: string | undefined;
