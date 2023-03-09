@@ -30,5 +30,4 @@ jobs:
     parameters:
       workingDir: $(Pipeline.Workspace)/itwinjs-core
       outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
-      # shouldPublish: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}
-      shouldPublish: true
+      shouldPublish: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}
