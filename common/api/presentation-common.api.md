@@ -2722,13 +2722,11 @@ export interface RootNodeRule extends NavigationRuleBase {
 export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
 
 // @internal
-export class RpcRequestsHandler implements IDisposable {
+export class RpcRequestsHandler {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
     computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON>;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
@@ -2767,14 +2765,15 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
-    // (undocumented)
-    readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
+    readonly timeout: number;
 }
 
 // @internal
 export interface RpcRequestsHandlerProps {
     clientId?: string;
+    // (undocumented)
+    timeout?: number;
 }
 
 // @public
