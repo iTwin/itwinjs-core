@@ -35,6 +35,8 @@ export const MAX_ALLOWED_PAGE_SIZE = 1000;
 /** @internal */
 export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
 
+const DEFAULT_REQUEST_TIMEOUT = 5000;
+
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
  * responsible for is forwarding calls to [[Presentation.manager]].
@@ -47,9 +49,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
   private _cancelEvents: Map<string, BeEvent<() => void>>;
 
-  public constructor(props?: { requestTimeout: number }) {
+  public constructor(props?: { requestTimeout?: number }) {
     super();
-    this._requestTimeout = props?.requestTimeout ?? 90 * 1000;
+    this._requestTimeout = props?.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT;
     this._pendingRequests = new TemporaryStorage({
       // remove the pending request after request timeout + 10 seconds - this gives
       // frontend 10 seconds to re-send the request until it's removed from requests' cache
@@ -189,7 +191,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     let timeout: NodeJS.Timeout;
     const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
-        reject("Timed out");
+        reject();
       }, this._requestTimeout);
     });
 
@@ -198,10 +200,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     return Promise
       .race([resultPromise, timeoutPromise])
       .catch<PresentationRpcResponseData>(() => {
+        // note: error responses from the manager get handled when creating `resultPromise`, so we can only get here due
+        // to a timeout exception
         Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
         return this.errorResponse(PresentationStatus.BackendTimeout);
       })
-      .then((response: PresentationRpcResponseData<any>) => {
+      .then((response: PresentationRpcResponseData<TResult>) => {
         if (response.statusCode !== PresentationStatus.BackendTimeout) {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request completed, returning result.`);
           this._pendingRequests.deleteValue(requestKey);

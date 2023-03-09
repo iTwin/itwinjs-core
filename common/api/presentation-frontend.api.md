@@ -364,6 +364,7 @@ export interface PresentationManagerProps {
     clientId?: string;
     // @internal (undocumented)
     ipcRequestsHandler?: IpcRequestsHandler;
+    requestTimeout?: number;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
     // @internal (undocumented)
