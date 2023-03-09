@@ -23,6 +23,7 @@ describe("ECSql Query", () => {
   let imodel3: SnapshotDb;
   let imodel4: SnapshotDb;
   let imodel5: SnapshotDb;
+  let imodel6: SnapshotDb;
 
   before(async () => {
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
@@ -30,6 +31,7 @@ describe("ECSql Query", () => {
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel6 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test_ec_4003.bim"));
   });
 
   after(async () => {
@@ -38,8 +40,9 @@ describe("ECSql Query", () => {
     imodel3.close();
     imodel4.close();
     imodel5.close();
+    imodel6.close();
   });
-  it.only("verify return values for system properties", async () => {
+  it("verify return values for system properties with ecdb", async () => {
     const testQueries = [
       {
         query: "SELECT ECInstanceId, ECClassId FROM Bis.Element LIMIT 1", expected: {
@@ -105,8 +108,29 @@ describe("ECSql Query", () => {
           f: "0xa9",
         },
       },
+      {
+        query: "SELECT Model, Model.Id, Model.RelECClassId from Bis.Element limit 1", expected: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT Model, Model.Id, Model.RelECClassId from Bis.Element) LIMIT 1", expected: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
     ];
 
+    // Test with ECDb Profile 4002
     for (const testQuery of testQueries) {
       imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
@@ -119,7 +143,22 @@ describe("ECSql Query", () => {
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
     }
+
+    // Test with ECDb Profile 4003
+    for (const testQuery of testQueries) {
+      imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
+        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
+        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+      });
+      let hasRow = false;
+      for await (const row of imodel6.query(testQuery.query)) {
+        assert.deepEqual(row, testQuery.expected, `${testQuery.query} does not match expected result`);
+        hasRow = true;
+      }
+      assert.isTrue(hasRow, "imodel1.query() must return latest one row");
+    }
   });
+
   // new new addon build
   it("ECSQL with BLOB", async () => {
     let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
