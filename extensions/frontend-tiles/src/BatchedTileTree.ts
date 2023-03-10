@@ -48,7 +48,7 @@ export class BatchedTileTree extends TileTree {
 
   public override _selectTiles(args: TileDrawArgs): Tile[] {
     const selected: BatchedTile[] = [];
-    this.rootTile.selectTiles(selected, args, 0);
+    this.rootTile.selectTiles(selected, args);
     return selected;
   }
 
