@@ -444,10 +444,13 @@ export abstract class Tile {
         return TileVisibility.Visible;
     }
 
+    return this.meetsScreenSpaceError(args) ? TileVisibility.Visible : TileVisibility.TooCoarse;
+  }
+
+  protected meetsScreenSpaceError(args: TileDrawArgs): boolean {
     const pixelSize = args.getPixelSize(this) * args.pixelSizeScaleFactor;
     const maxSize = this.maximumSize * args.tileSizeModifier;
-
-    return pixelSize > maxSize ? TileVisibility.TooCoarse : TileVisibility.Visible;
+    return pixelSize <= maxSize;
   }
 
   /** @internal */
