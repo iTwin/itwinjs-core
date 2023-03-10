@@ -83,7 +83,7 @@ export class BatchedTilesetReader {
     const isLeaf = undefined === json.children || json.children.length === 0;
 
     // ###TODO evaluate this. The geometric errors in the tiles seem far too small.
-    const maximumSizeScale = 4;
+    const maximumSizeScale = 8;
     return {
       parent,
       contentId: content?.uri ?? "",
