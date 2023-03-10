@@ -38,10 +38,8 @@ export class BatchedTile extends Tile {
   }
 
   public override computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number {
-    const doSuper = false;
-    if (doSuper)
-      return super.computeLoadPriority(viewports, users);
-
+    // Prioritize tiles closer to camera and center of attention (zoom point or screen center).
+    // ###TODO move this function out of RealityTileLoader.
     return RealityTileLoader.computeTileLocationPriority(this, viewports, this.tree.iModelTransform);
   }
 
