@@ -219,7 +219,7 @@ export class PlaneOps {
    * * return -2 if the planes are parallel but not coplanar, with opposing normals.
    * @param planeA
    * @param planeB
-   * @returns
+   * @returns classification code
    */
   public static classifyIfParallelPlanes(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): 0 | 1 | -1 | 2 | -2 {
     const altitudeA = planeA.altitudeXYZ(0, 0, 0);
