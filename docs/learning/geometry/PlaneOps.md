@@ -17,8 +17,8 @@ There are multiple concrete implementations of a "plane" -- e.g. ClipPlane and P
   * -1: coincident with opposing normals
   * : 2: parallel non-coincident with normals in the same direction.
   * -2: parallel non-coincident with opposing normals
-* PlaneOps.intersect2Planes(planeA, planeB): PlanePlaneIntersectionCases -- return complete details of plane-plane intersection
-* PlaneOps.intersect3Planes(planeA, planeB, planeC): PlanePlanePlaneIntersectionCases -- return complete details of plane-plane intersection.
+* PlaneOps.intersect2Planes(planeA, planeB): Plane3dPlane3dIntersectionCases -- return complete details of plane-plane intersection
+* PlaneOps.intersect3Planes(planeA, planeB, planeC): Plane3dPlane3dPlane3dIntersectionCases -- return complete details of plane-plane-plane intersection.
 * PlaneOps.intersectRayPlane (ray, plane):Ray3dPlane3dIntersectionCases -- return complete details of ray-plane intersection.                     gd
 
  In order to support convenient decision logic in callers, the return value of intersecting either 2 or 3 planes is an interface class with optional members for various cases.
