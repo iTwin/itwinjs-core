@@ -57,7 +57,7 @@ This returns the relationship of a ray and plane.   The cases are elaborated by 
 
 This returns a point _on_ the plane and closest to the space point.  That is, the vector from plane point to space point is perpendicular to the plane.
 
-# PlaneOps.public static planeNormal(plane: PlaneAltitudeEvaluator): Vector3d
+# PlaneOps.planeNormal(plane: PlaneAltitudeEvaluator): Vector3d
 
 This returns a vector perpendicular to the plane.
 
