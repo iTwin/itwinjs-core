@@ -544,6 +544,14 @@ export abstract class Tile {
       builder.addArc(Arc3d.create(this.center, x, y), false, false);
       builder.addArc(Arc3d.create(this.center, x, z), false, false);
       builder.addArc(Arc3d.create(this.center, y, z), false, false);
+    } else if (TileBoundingBoxes.SolidBox === type) {
+      const range = this.range;
+      let color = this.rangeGraphicColor;
+      builder.setSymbology(color, color, 1);
+      addRangeGraphic(builder, range, this.tree.is2d);
+      color = color.withTransparency(0xcf);
+      builder.setSymbology(color, color, 1);
+      builder.addRangeBox(range, true);
     } else {
       const color = this.rangeGraphicColor;
       builder.setSymbology(color, color, 1);
@@ -637,6 +645,8 @@ export enum TileBoundingBoxes {
   ChildVolumes,
   /** Display bounding sphere. */
   Sphere,
+  /** Display a solid box representing the tile's full volume. */
+  SolidBox,
 }
 
 // TileLoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.

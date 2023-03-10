@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+  AnyCurvePrimitive, Arc3d, Box, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, GeometryClass, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -519,8 +519,15 @@ export abstract class GraphicBuilder {
   }
 
   /** Add Range3d edges. Useful for debugging. */
-  public addRangeBox(range: Range3d) {
-    this.addFrustum(Frustum.fromRange(range));
+  public addRangeBox(range: Range3d, solid = false) {
+    if (!solid) {
+      this.addFrustum(Frustum.fromRange(range));
+      return;
+    }
+
+    const box = Box.createRange(range, true);
+    if (box)
+      this.addSolidPrimitive(box);
   }
 
   /** Add Frustum edges. Useful for debugging. */
