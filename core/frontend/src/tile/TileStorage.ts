@@ -21,7 +21,7 @@ export class TileStorage {
     guid?: string
   ): Promise<Uint8Array | undefined> {
     const transferConfig = await this.getTransferConfig(tokenProps, iModelId);
-    if(transferConfig === undefined)
+    if (transferConfig === undefined)
       return undefined;
     try {
       const buffer = await this.storage.download({
@@ -38,11 +38,11 @@ export class TileStorage {
   }
 
   private async getTransferConfig(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
-    if(this._transferConfigs.has(iModelId)) {
+    if (this._transferConfigs.has(iModelId)) {
       const transferConfig = this._transferConfigs.get(iModelId);
-      if(transferConfig === undefined)
+      if (transferConfig === undefined)
         return undefined;
-      if(transferConfig.expiration > new Date())
+      if (transferConfig.expiration > new Date(Date.now() - 120000)) // 2 minutes before expiry
         return transferConfig;
       else // Refresh expired transferConfig
         return this.sendTransferConfigRequest(tokenProps, iModelId);
@@ -52,7 +52,7 @@ export class TileStorage {
 
   private async sendTransferConfigRequest(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
     const pendingRequest = this._pendingTransferConfigRequests.get(iModelId);
-    if(pendingRequest !== undefined)
+    if (pendingRequest !== undefined)
       return pendingRequest;
 
     const request = (async () => {

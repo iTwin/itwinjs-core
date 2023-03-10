@@ -17,10 +17,11 @@ import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
+  BlockBlobHTTPClientFactory, DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
   TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
 import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
+import { AzureFrontendStorage } from "@itwin/object-storage-azure/lib/frontend";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -303,14 +304,9 @@ export class TileAdmin {
   }
 
   private _tileStorage?: TileStorage;
-  private _tileStoragePromise?: Promise<TileStorage>;
-  private async getTileStorage(): Promise<TileStorage> {
+  private getTileStorage(): TileStorage {
     if (this._tileStorage !== undefined)
       return this._tileStorage;
-
-    // if object-storage-azure is already being dynamically loaded, just return the promise.
-    if (this._tileStoragePromise !== undefined)
-      return this._tileStoragePromise;
 
     // if custom implementation is provided, construct a new TileStorage instance and return it.
     if (this._cloudStorage !== undefined) {
@@ -318,16 +314,9 @@ export class TileAdmin {
       return this._tileStorage;
     }
 
-    // start dynamically loading default implementation and save the promise to avoid duplicate instances
-    this._tileStoragePromise = (async () => {
-      await import("reflect-metadata");
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import(/* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend");
-      const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
-      this._tileStorage = new TileStorage(azureStorage);
-      return this._tileStorage;
-    })();
-    return this._tileStoragePromise;
+    const azureStorage = new AzureFrontendStorage(new BlockBlobHTTPClientFactory());
+    this._tileStorage = new TileStorage(azureStorage);
+    return this._tileStorage;
   }
 
   /** @internal */
@@ -658,7 +647,7 @@ export class TileAdmin {
       throw new Error("Provided iModel has no iModelId");
 
     const { guid, tokenProps, treeId } = this.getTileRequestProps(tile);
-    const content = await (await this.getTileStorage()).downloadTile(tokenProps, tile.iModelTree.iModel.iModelId, tile.iModelTree.iModel.changeset.id, treeId, tile.contentId, guid);
+    const content = await this.getTileStorage().downloadTile(tokenProps, tile.iModelTree.iModel.iModelId, tile.iModelTree.iModel.changeset.id, treeId, tile.contentId, guid);
     return content;
   }
 
