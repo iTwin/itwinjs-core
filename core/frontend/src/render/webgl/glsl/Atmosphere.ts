@@ -307,26 +307,14 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 const calculateReflectedLightIntensity = `
 vec3 calculateReflectedLightIntensity(float opticalDepth) {
     vec3 sunlightColor = vec3(1.0, 0.95, 0.925);
-    vec3 outScatteredLight = u_scatteringCoefficients * opticalDepth;
+
+    float averageScatteringValue = (u_scatteringCoefficients.x + u_scatteringCoefficients.y + u_scatteringCoefficients.z) / 3.0;
+    vec3 scatteringStrength = mix(vec3(averageScatteringValue), u_scatteringCoefficients, u_brightnessAdaptionStrength);
+    vec3 outScatteredLight = opticalDepth * u_inScatteringIntensity * scatteringStrength;
     vec3 reflectedLightIntensity = sunlightColor * exp(-outScatteredLight);
     return reflectedLightIntensity;
 }
 `;
-
-// /**
-//  *
-//  */
-// const computeReflectedLight = `
-// vec3 computeReflectedLight(vec3 inScatteredLight, float viewRayOpticalDepth, vec3 baseColor) {
-//   float reflectedLightOutScatterStrength = 3.0;
-//   float brightnessAdaption = (inScatteredLight.r + inScatteredLight.g + inScatteredLight.b) * u_brightnessAdaptionStrength;
-//   float brightnessSum = viewRayOpticalDepth / u_earthScaleMatrix[2][2] * u_outScatteringIntensity * reflectedLightOutScatterStrength + brightnessAdaption;
-//   float reflectedLightStrength = exp(-brightnessSum);
-//   float hdrStrength = clamp((baseColor.r + baseColor.g + baseColor.b) / 3.0 - 1.0, 0.0, 1.0);
-//   reflectedLightStrength = mix(reflectedLightStrength, 1.0, hdrStrength);
-//   return baseColor * reflectedLightStrength;
-// }
-// `;
 
 /**
  *
@@ -370,11 +358,15 @@ vec3 applyHdr(vec3 atmosphericScatteringColor, vec3 reflectedLightColor) {
 `;
 
 const applyAtmosphericScattering = `
+  if (!u_isEnabled) {
+    return baseColor;
+  }
+
   mat3 atmosphericScatteringOutput = computeAtmosphericScatteringFragment();
   vec3 atmosphericScatteringColor = atmosphericScatteringOutput[0];
 
   vec3 reflectedLightIntensity = atmosphericScatteringOutput[1];
-  vec3 reflectedLightColor = baseColor.rgb * reflectedLightIntensity;
+  vec3 reflectedLightColor = reflectedLightIntensity * baseColor.rgb;
 
   return vec4(applyHdr(atmosphericScatteringColor, reflectedLightColor), baseColor.a);
 `;
@@ -518,16 +510,6 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     }
   );
   // shader.addUniform(
-  //   "u_brightnessAdaptionStrength",
-  //   VariableType.Float,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_brightnessAdaptionStrength", (uniform, params) => {
-  //       params.target.uniforms.atmosphere.bindBrightnessAdaptationStrength(uniform);
-  //     });
-  //   },
-  //   VariablePrecision.High
-  // );
-  // shader.addUniform(
   //   "u_outScatteringIntensity",
   //   VariableType.Float,
   //   (prog) => {
@@ -537,16 +519,16 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
   //   },
   //   VariablePrecision.High
   // );
-  // shader.addUniform(
-  //   "u_inScatteringIntensity",
-  //   VariableType.Float,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
-  //       params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
-  //     });
-  //   },
-  //   VariablePrecision.High
-  // );
+  shader.addUniform(
+    "u_inScatteringIntensity",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
   shader.addUniform(
     "u_earthScaleMatrix",
     VariableType.Mat3,
@@ -610,6 +592,25 @@ export function addAtmosphericScatteringEffect(
       });
     },
     VariablePrecision.High
+  );
+  mainShader.addUniform(
+    "u_brightnessAdaptionStrength",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_brightnessAdaptionStrength", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindBrightnessAdaptationStrength(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  builder.frag.addUniform(
+    "u_isEnabled",
+    VariableType.Boolean,
+    (prog) => {
+      prog.addProgramUniform("u_isEnabled", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindIsEnabled(uniform);
+      });
+    },
   );
   builder.frag.addFunction(applyHdr);
   builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
