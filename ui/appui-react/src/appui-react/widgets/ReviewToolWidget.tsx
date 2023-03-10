@@ -14,7 +14,7 @@ import { SelectionContextToolDefinitions } from "../selection/SelectionContextIt
 import { ItemList } from "../shared/ItemMap";
 import { ToolWidget } from "./ToolWidget";
 
-/** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
+/** Properties that can be used to append items to the default set of toolbar items of `ReviewToolWidget`.
  * @beta
  */
 export interface ReviewToolWidgetProps {

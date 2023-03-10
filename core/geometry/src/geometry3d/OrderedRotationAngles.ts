@@ -98,6 +98,7 @@ export class OrderedRotationAngles {
    * For example XYZ means to rotate around x axis first, then y axis, and finally Z axis.
    * * Note that rotation order is reverse of rotation matrix multiplication so for XYZ the rotation
    * matrix multiplication would be zRot*yRot*xRot
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeRotationAroundStandardAxes
    * @param xyzRotationIsClockwise the flags controlling whether direction of x,y,z is clockwise or counterclockwise.
    * rotation direction of x,y,z: true ---> clockwise - false ---> counterclockwise.
    * * if xyzRotationIsClockwise is undefined it's set to [false, false, false].

@@ -65,6 +65,12 @@ export class Loop extends CurveChain {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
+    // eliminate near-duplicate points between children
+    strokes.removeDuplicatePoints();
+    if (strokes.isPhysicallyClosed) {
+      strokes.popPoint();
+      strokes.addClosurePoint();
+    }
     return Loop.create(strokes);
   }
   /** Return the boundary type (2) of a corresponding  MicroStation CurveVector */
