@@ -119,8 +119,7 @@ export interface Plane3dPlane3dPlane3dIntersectionCases {
 | Relationship | primary member in return struct | primary member type | Remarks |
 |---|---|---|---|
 | single point intersection | point | Point3d | [ray], [plane], and [pairwiseDetail] are undefined![>](./figs/PlaneOps/PPPPoint.png) |
-| coincident planes | plane | Plane3dByOriginAndUnitNormal | ![>](./figs/PlaneOps/PPPCoincident.png) (point) and [ray] are undefined. |
-| | pairwiseDetail | Plane3dPlane3dIntersectionCases | undefined |
+| coincident planes | plane | Plane3dByOriginAndUnitNormal | [point], [ray], and [pairwiseDetail] are undefined ![>](./figs/PlaneOps/PPPCoincident.png) |
 | unbounded line of intersection | ray | Ray3d | |
 | | pairwiseDetail | Plane3dPlane3dIntersectionDetails[3] | Array of 3 pairwise plane intersections: |
 | | pairwiseDetail[0] | Plane3dPlane3dIntersectionDetail | computed by  PlaneOps.intersect2Planes(planeA, planeB) |
