@@ -5793,7 +5793,7 @@ export class Transform implements BeJSONFunctions {
     computeCachedInverse(useCached?: boolean): boolean;
     static createFixedPointAndMatrix(fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
     static createIdentity(result?: Transform): Transform;
-    static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform;
+    static createMatrixPickupPutdown(matrix: Matrix3d, a: Point3d, b: Point3d, result?: Transform): Transform;
     static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform;
     static createOriginAndMatrixColumns(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d, result?: Transform): Transform;
     static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
@@ -5805,6 +5805,7 @@ export class Transform implements BeJSONFunctions {
     static createZero(result?: Transform): Transform;
     freeze(): Readonly<this>;
     static fromJSON(json?: TransformProps): Transform;
+    getMatrix(): Matrix3d;
     getOrigin(): Point3d;
     getTranslation(): Vector3d;
     static get identity(): Transform;
@@ -5822,7 +5823,7 @@ export class Transform implements BeJSONFunctions {
     multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean;
     multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;
     multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
-    multiplyPoint2d(source: XAndY, result?: Point2d): Point2d;
+    multiplyPoint2d(point: XAndY, result?: Point2d): Point2d;
     multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[];
     multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d;
     multiplyPoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[];
