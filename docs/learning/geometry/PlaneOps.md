@@ -1,7 +1,7 @@
 
 # The `PlaneOps` class: static methods for queries involving planes
 
-Prior methods for intersection among 3 planes returned the single point if it existed, and left it up to the caller to distinguish among cases where there are parallel or coincident planes and planes the 3 coincident normals.
+Prior methods for intersection among 3 planes returned the single point if it existed, and left it up to the caller to distinguish among cases where there are parallel or coincident planes and planes with 3 coincident normals.
 
 The PlaneOps class contains static methods that provide that extended level of detailed output.
 PlaneOps is in the core3d/geometry/src/geometry3d3d directory as a peer of other "Ops" classes for services that span multiple classes, e.g. PolygonOps, PolylineOps, PointHelpers, UVSurfaceOps.
