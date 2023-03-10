@@ -54,11 +54,6 @@ describe("RpcRequestsHandler", () => {
 
     let handler: RpcRequestsHandler;
 
-    afterEach(() => {
-      if (handler)
-        handler.dispose();
-    });
-
     it("uses client id specified through props", () => {
       handler = new RpcRequestsHandler({ clientId });
       expect(handler.clientId).to.eq(clientId);
@@ -77,10 +72,6 @@ describe("RpcRequestsHandler", () => {
 
     beforeEach(() => {
       handler = new RpcRequestsHandler();
-    });
-
-    afterEach(() => {
-      handler.dispose();
     });
 
     describe("when request succeeds", () => {
@@ -132,7 +123,7 @@ describe("RpcRequestsHandler", () => {
       it("re-throws exception when request throws unknown exception", async () => {
         const func = sinon.stub().rejects(new Error("test"));
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(Error);
-        expect(func.callCount).to.eq(handler.maxRequestRepeatCount);
+        expect(func.callCount).to.eq(1);
       });
 
     });
@@ -159,21 +150,53 @@ describe("RpcRequestsHandler", () => {
 
     describe("when request returns a status of BackendTimeout", () => {
 
-      it("returns PresentationError", async () => {
-        const func = sinon.stub().resolves(errorResponse(PresentationStatus.BackendTimeout));
-        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", PresentationStatus.BackendTimeout);
-        expect(func.callCount).to.eq(handler.maxRequestRepeatCount);
+      it("returns PresentationError with BackendTimeout status", async () => {
+        let callCount = 0;
+        const nowStub = sinon.stub(Date, "now").returns(0);
+        const func = sinon.fake(async () => {
+          nowStub.reset();
+          nowStub.returns(++callCount);
+          return errorResponse(PresentationStatus.BackendTimeout);
+        });
+
+        // create a handler with a known timeout
+        handler = new RpcRequestsHandler({ timeout: 10 });
+
+        await expect(handler.request(func, defaultRpcHandlerOptions))
+          .to.eventually.be.rejectedWith(PresentationError)
+          .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+
+        /**
+         * The `func` will be repeatedly called until `Date.now()` at the `request` call `+ timeout`
+         * exceeds `Date.now()`. We're setting up 0 for the starting time and increase it by 1 on each
+         * call of `func`, so the total call count should match `handler.timeout`.
+         */
+        expect(func.callCount).to.eq(handler.timeout);
       });
 
       it("calls diagnostics handler if provided", async () => {
+        let callCount = 0;
+        const nowStub = sinon.stub(Date, "now").returns(0);
+        const func = sinon.fake(async () => {
+          nowStub.reset();
+          nowStub.returns(++callCount);
+          return errorResponse(PresentationStatus.BackendTimeout, undefined, { logs: [{ scope: `${callCount}` }] });
+        });
+
+        // create a handler with a known timeout
+        handler = new RpcRequestsHandler({ timeout: 3 });
+
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
-        let funcCallCount = 0;
-        const func = sinon.fake(async () => errorResponse(PresentationStatus.BackendTimeout, undefined, { logs: [{ scope: `${funcCallCount++}` }] }));
-        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
-        expect(diagnosticsOptions.handler.callCount).to.eq(handler.maxRequestRepeatCount);
-        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => expect(call).to.be.calledWith({ logs: [{ scope: `${callIndex}` }] }));
+        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions }))
+          .to.eventually.be.rejectedWith(PresentationError)
+          .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+
+        expect(diagnosticsOptions.handler.callCount).to.eq(3);
+        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => {
+          expect(call).to.be.calledWith({ logs: [{ scope: `${callIndex + 1}` }] });
+        });
       });
 
     });
@@ -199,10 +222,6 @@ describe("RpcRequestsHandler", () => {
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
       rpcInterfaceMock.reset();
-    });
-
-    afterEach(() => {
-      handler.dispose();
     });
 
     it("forwards getNodesCount call for root nodes", async () => {

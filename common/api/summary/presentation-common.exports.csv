@@ -380,7 +380,7 @@ public;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
 beta;RpcDiagnosticsOptions = Omit_2
-internal;RpcRequestsHandler 
+internal;RpcRequestsHandler
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
 public;RuleBase

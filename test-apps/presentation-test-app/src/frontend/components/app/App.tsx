@@ -35,7 +35,7 @@ export interface State {
   contentRatio: number;
   contentWidth?: number;
   similarInstancesProvider?: IPresentationTableDataProvider; // eslint-disable-line deprecation/deprecation
-  activeUnitSystem?: UnitSystemKey;
+  activeUnitSystem: UnitSystemKey;
   persistSettings: boolean;
 }
 
@@ -51,7 +51,7 @@ export default class App extends React.Component<{}, State> {
   constructor() {
     super({});
     this.state = {
-      activeUnitSystem: Presentation.presentation.activeUnitSystem,
+      activeUnitSystem: IModelApp.quantityFormatter.activeUnitSystem,
       rightPaneRatio: 0.5,
       contentRatio: 0.7,
       persistSettings: MyAppFrontend.settings.persistSettings,
@@ -97,8 +97,8 @@ export default class App extends React.Component<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUnitSystemSelected = (unitSystem: UnitSystemKey | undefined) => {
-    Presentation.presentation.activeUnitSystem = unitSystem;
+  private onUnitSystemSelected = async (unitSystem: UnitSystemKey) => {
+    await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
     this.setState({ activeUnitSystem: unitSystem }, () => this.updateAppSettings());
   };
 

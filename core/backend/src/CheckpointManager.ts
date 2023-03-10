@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
@@ -20,6 +20,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -316,6 +317,7 @@ export class CheckpointManager {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId, changeset: checkpoint.changeset };
     try {
       // Open checkpoint for write
+      Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.None); // Ignores noisy error messages when applying changesets.
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
       try {
@@ -342,6 +344,7 @@ export class CheckpointManager {
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
         }
       } finally {
+        Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.Error); // Turn logging back on after applying changesets.
         db.saveChanges();
         db.close();
       }
