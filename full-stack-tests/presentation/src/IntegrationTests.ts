@@ -12,12 +12,12 @@ import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import {
-  EmptyLocalization, IModelReadRpcInterface, Localization, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition,
+  AuthorizationClient, EmptyLocalization, IModelReadRpcInterface, Localization, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
@@ -78,7 +78,12 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 }
 
-const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean, localization?: Localization }) => {
+const initializeCommon = async (props: {
+  backendTimeout?: number;
+  frontendTimeout?: number;
+  authorizationClient?: AuthorizationClient;
+  localization?: Localization;
+}) => {
   // init logging
   Logger.initializeToConsole();
   Logger.turnOffCategories();
@@ -98,7 +103,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
-    requestTimeout: props.backendTimeout ?? 0,
+    requestTimeout: props.backendTimeout,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
@@ -111,19 +116,15 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {
+      requestTimeout: props.frontendTimeout,
       activeLocale: "en-PSEUDO",
     },
   };
 
   const frontendAppOptions: IModelAppOptions = {
-    authorizationClient: props.useClientServices
-      ? TestUtility.getAuthorizationClient(TestUsers.regular)
-      : undefined,
+    authorizationClient: props.authorizationClient,
     localization: props.localization ?? new EmptyLocalization(),
   };
-
-  if (props.useClientServices)
-    await (frontendAppOptions.authorizationClient! as TestBrowserAuthorizationClient).signIn();
 
   const presentationTestingInitProps: PresentationInitProps = {
     backendProps: backendInitProps,
@@ -143,12 +144,21 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   console.log(`[${new Date().toISOString()}] Tests initialized`);
 };
 
-export const initialize = async (options?: { backendTimeout?: number, localization?: Localization }) => {
-  await initializeCommon({ backendTimeout: DEFAULT_BACKEND_TIMEOUT, ...options });
+export const initialize = async (props?: {
+  backendTimeout?: number;
+  frontendTimeout?: number;
+  localization?: Localization;
+}) => {
+  await initializeCommon({
+    backendTimeout: DEFAULT_BACKEND_TIMEOUT,
+    ...props,
+  });
 };
 
 export const initializeWithClientServices = async () => {
-  await initializeCommon({ useClientServices: true });
+  const authorizationClient = TestUtility.getAuthorizationClient(TestUsers.regular);
+  await authorizationClient.signIn();
+  await initializeCommon({ authorizationClient });
 };
 
 export const terminate = async () => {

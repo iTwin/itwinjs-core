@@ -92,7 +92,7 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
-// @internal
+// @public
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps;
 
 // @public
@@ -288,7 +288,6 @@ export class Presentation {
     static initialize(props?: PresentationProps): Promise<void>;
     static get localization(): Localization;
     static get presentation(): PresentationManager;
-    // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
     static get selection(): SelectionManager;
     // @internal (undocumented)
@@ -312,7 +311,9 @@ export enum PresentationFrontendLoggerCategory {
 export class PresentationManager implements IDisposable {
     get activeLocale(): string | undefined;
     set activeLocale(locale: string | undefined);
-    activeUnitSystem: UnitSystemKey | undefined;
+    // @deprecated
+    get activeUnitSystem(): UnitSystemKey;
+    set activeUnitSystem(value: UnitSystemKey | undefined);
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
@@ -361,10 +362,12 @@ export class PresentationManager implements IDisposable {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
+    // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
     // @internal (undocumented)
     ipcRequestsHandler?: IpcRequestsHandler;
+    requestTimeout?: number;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
     // @internal (undocumented)
@@ -503,7 +506,7 @@ export interface SelectionHandlerProps {
     rulesetId?: string;
 }
 
-// @internal (undocumented)
+// @public
 export class SelectionHelper {
     static getKeysForSelection(keys: Readonly<Keys>): Key[];
 }

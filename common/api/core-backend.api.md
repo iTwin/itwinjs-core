@@ -182,6 +182,7 @@ import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
+import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1221,10 +1222,11 @@ export class DevTools {
     static ping(): boolean;
     static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined;
     static stats(): DevToolsStats;
-    static versions(): {
+    static versions(): Promise<{
         application: string;
         iTwinJs: any;
-    };
+        availableRpcs: RpcInterfaceEndpoints[];
+    }>;
 }
 
 // @internal
@@ -1448,6 +1450,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     // @internal (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition;
+    static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): DrawingViewDefinition;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
 }
 
@@ -2793,7 +2796,7 @@ export abstract class IModelDb extends IModel {
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
-    importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;
+    importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
@@ -4418,6 +4421,12 @@ export class Schema {
     static toSemverString(paddedVersion: string): string;
 }
 
+// @public
+export interface SchemaImportOptions {
+    // @internal
+    ecSchemaXmlContext?: ECSchemaXmlContext;
+}
+
 // @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
 
@@ -4755,6 +4764,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
+    static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
@@ -4762,7 +4772,6 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
-    // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
 

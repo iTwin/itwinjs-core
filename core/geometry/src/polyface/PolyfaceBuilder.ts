@@ -15,11 +15,14 @@ import { CurveFactory } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
 import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
 import { StrokeOptions } from "../curve/StrokeOptions";
+import { UnionRegion } from "../curve/UnionRegion";
 import { AxisOrder, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -38,6 +41,7 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { UVSurfaceOps } from "../geometry3d/UVSurfaceOps";
+import { XAndY } from "../geometry3d/XYZProps";
 import { Box } from "../solid/Box";
 import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
@@ -50,12 +54,10 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
-import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
-import { XAndY } from "../geometry3d/XYZProps";
-import { PolyfaceQuery } from "./PolyfaceQuery";
-import { Angle } from "../geometry3d/Angle";
-import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
+import { PolyfaceQuery } from "./PolyfaceQuery";
 
 /* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/prefer-for-of */
 /**
@@ -160,27 +162,27 @@ class FacetSector {
  *    * `builder.addGeometryQuery(g: GeometryQuery)`
  *    * `builder.addCone(cone: Cone)`
  *    * `builder.addTorusPipe(surface: TorusPipe)`
- *    * `builder.addLinearSweepLineStrings(surface: LinearSweep)`
+ *    * `builder.addLinearSweepLineStringsXYZOnly(surface: LinearSweep)`
  *    * `builder.addRotationalSweep(surface: RotationalSweep)`
  *    * `builder.addLinearSweep(surface: LinearSweep)`
  *    * `builder.addRuledSweep(surface: RuledSweep)`
  *    * `builder.addSphere(sphere: Sphere)`
  *    * `builder.addBox(box: Box)`
  *    * `builder.addIndexedPolyface(polyface)`
- *  *  Extract with `builder.claimPolyface (true)`
+ *  *  Extract with `builder.claimPolyface(true)`
  *
  * * Simple construction for ephemeral constructive data:
  *
  *  * Create a builder with `builder = PolyfaceBuilder.create()`
  *  * Add from fragmentary data:
- *    * `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
- *    * `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
- *    * `builder.addBetweenStroked (curveA, curveB)`
- *    * `builder.addLinearSweepLineStrings (contour, vector)`
- *    * `builder.addPolygon (points, numPointsToUse)`
- *    * `builder.addTransformedUnitBox (transform)`
- *    * `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
- *    * `builder.addTrianglesInUncheckedPolygon (linestring, toggle)`
+ *    * `builder.addBetweenLineStringsWithStoredIndices(linestringA  linestringB)`
+ *    * `builder.addBetweenLineStringsWithRuleEdgeNormals(linestringA, vA, linestringB, vB, addClosure)`
+ *    * `builder.addBetweenTransformedLineStrings(curves, transformA, transformB, addClosure)`
+ *    * `builder.addLinearSweepLineStringsXYZOnly(contour, vector)`
+ *    * `builder.addPolygon(points, numPointsToUse)`
+ *    * `builder.addTransformedUnitBox(transform)`
+ *    * `builder.addTriangleFan(conePoint, linestring, toggleOrientation)`
+ *    * `builder.addTrianglesInUncheckedConvexPolygon(linestring, toggle)`
  *    * `builder.addUVGridBody(surface,numU, numV, createFanInCaps)`
  *    * `builder.addGraph(Graph, acceptFaceFunction)`
  *  *  Extract with `builder.claimPolyface(true)`
@@ -189,10 +191,10 @@ class FacetSector {
  *  * Create a builder with `builder = PolyfaceBuilder.create()`
  *  * Add GeometryQuery objects
  *    * `builder.addPoint(point)`
- *    * `builder.findOrAddPointInLineString (linestring, index)`
+ *    * `builder.findOrAddPointInLineString(linestring, index)`
  *    * `builder.addPointXYZ(x,y,z)`
- *    * `builder.addTriangleFacet (points)`
- *    * `builder.addQuadFacet (points)`
+ *    * `builder.addTriangleFacet(points)`
+ *    * `builder.addQuadFacet(points)`
   * @public
  */
 export class PolyfaceBuilder extends NullGeometryHandler {
@@ -1138,10 +1140,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Construct facets for any planar region
    */
-  public addTriangulatedRegion(region: AnyRegion) {
+  public addTriangulatedRegion(region: AnyRegion): void {
+    if (region instanceof UnionRegion) {
+      for (const child of region.children)
+        this.addTriangulatedRegion(child);
+    }
     const contour = SweepContour.createForLinearSweep(region);
     if (contour)
-      contour.emitFacets(this, true, undefined);
+      contour.emitFacets(this, this.reversedFlag, undefined);
   }
 
   /**
@@ -1553,6 +1559,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public override handleRotationalSweep(g: RotationalSweep): any { return this.addRotationalSweep(g); }
   /** Double dispatch handler for RuledSweep */
   public override handleRuledSweep(g: RuledSweep): any { return this.addRuledSweep(g); }
+  /** Double dispatch handler for Loop */
+  public override handleLoop(g: Loop): any { return this.addTriangulatedRegion(g); }
+  /** Double dispatch handler for ParityRegion */
+  public override handleParityRegion(g: ParityRegion): any { return this.addTriangulatedRegion(g); }
+  /** Double dispatch handler for UnionRegion */
+  public override handleUnionRegion(g: UnionRegion): any { return this.addTriangulatedRegion(g); }
   /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandler(this)` */
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 

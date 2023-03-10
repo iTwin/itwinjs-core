@@ -257,8 +257,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
 
   }
   /** Evaluate as a uv surface
-   * @param uFraction fractional position in minor (phi)
-   * @param vFraction fractional position on major (theta) arc
+   * @param uFraction fractional position on minor arc (theta, longitude)
+   * @param vFraction fractional position on major arc (phi, latitude)
    */
   public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     // sphere with radius 1 . . .
@@ -271,8 +271,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result);
   }
   /** Evaluate as a uv surface, returning point and two vectors.
-   * @param u fractional position in minor (phi)
-   * @param v fractional position on major (theta) arc
+   * @param uFraction fractional position on minor arc (theta, longitude)
+   * @param vFraction fractional position on major arc (phi, latitude)
    */
   public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaRadians = this.uFractionToRadians(uFraction);
@@ -300,7 +300,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   }
   /**
    * Directional distance query
-   * * u direction is around longitude circle at maximum distance from axis.
+   * * u direction is around latitude circle at maximum distance from axis.
    * * v direction is on a line of longitude between the latitude limits.
    */
   public maxIsoParametricDistance(): Vector2d {

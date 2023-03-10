@@ -13,7 +13,7 @@ The following React components comprise the PropertyGrid control.
 - [PrimitivePropertyRenderer]($components-react) - renders a primitive property
 - [NonPrimitivePropertyRenderer]($components-react) - renders struct and array properties
 - [PropertyView]($components-react) - renders a property as a label/value pair
-- [PropertyCategoryBlock]($components-react) - Expandable block for a category; uses [ExpandableBlock]($core-react) for rendering
+- [PropertyCategoryBlock]($components-react) - Expandable block for a category; uses `ExpandableBlock` for rendering
 
 There are a number of value renderer components for different types that can be found in the [Properties]($components-react:Properties) category.
 Those components are managed by the [PropertyValueRendererManager]($components-react).

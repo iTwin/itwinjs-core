@@ -521,6 +521,15 @@ describe("Viewport", () => {
     });
   });
 
+  describe("readPixels", () => {
+    it("returns undefined if specified area is invalid", async () => {
+      testBlankViewport((vp) => {
+        vp.readPixels(new ViewRect(10, 0, 50, 0), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
+        vp.readPixels(new ViewRect(0, 10, 0, 50), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
+      });
+    });
+  });
+
   describe("Map layers", () => {
     // Issue #4436
     it("ignores map layer with invalid format Id", async () => {

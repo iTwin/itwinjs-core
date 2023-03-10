@@ -219,6 +219,8 @@ export class ElementPicker {
     const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
     let pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
+    if (rect.isNull)
+      return 0;
     let result: number = 0;
     vp.readPixels(rect, Pixel.Selector.All, (pixels) => {
       if (undefined === pixels)

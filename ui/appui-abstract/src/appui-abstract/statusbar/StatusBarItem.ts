@@ -44,7 +44,7 @@ export enum StatusBarLabelSide {
 }
 
 /** Type for StatusBar Item Id
- * @deprecated in 3.6.
+ * @deprecated in 3.6. Please use `CommonStatusBarItem["id"]` from @itwin/appui-react.
  * @public
  */
 export type StatusBarItemId = CommonStatusBarItem["id"]; // eslint-disable-line deprecation/deprecation
@@ -110,7 +110,7 @@ export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem { // 
 }
 
 /** Describes the data needed to insert a button into the status bar.
- * @deprecated in 3.6. Use [AnyStatusBarItem]($appui-react) instead.
+ * @deprecated in 3.6. Use [StatusBarItem]($appui-react) instead.
  * @public
  */
 export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem; // eslint-disable-line deprecation/deprecation
