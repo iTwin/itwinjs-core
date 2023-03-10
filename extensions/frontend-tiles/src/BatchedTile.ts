@@ -6,7 +6,8 @@
 import { assert, ByteStream, Logger } from "@itwin/core-bentley";
 import { Tileset3dSchema } from "@itwin/core-common";
 import {
-  GltfReaderProps, ImdlReader, IModelApp, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileVisibility,
+  GltfReaderProps, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest,
+  TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
@@ -34,6 +35,14 @@ export class BatchedTile extends Tile {
 
   private get _batchedChildren(): BatchedTile[] | undefined {
     return this.children as BatchedTile[] | undefined;
+  }
+
+  public override computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number {
+    const doSuper = false;
+    if (doSuper)
+      return super.computeLoadPriority(viewports, users);
+
+    return RealityTileLoader.computeTileLocationPriority(this, viewports, this.tree.iModelTransform);
   }
 
   public override meetsScreenSpaceError(args: TileDrawArgs): boolean {
