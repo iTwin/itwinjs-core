@@ -14,7 +14,7 @@ There are multiple concrete implementations of a "plane" -- e.g. ClipPlane and P
 * PlaneOps.classifyIfParallelPlanes(planeA, planeB): -2 | -1 | 0 | 1 | 2 -- provide a concise indicator of whether two planes are:
   * 0: intersecting (i.e. non-parallel)
   * 1: coincident with normals in the same direction
-  * -1: coincident with normals in opposing normals
+  * -1: coincident with opposing normals
   * : 2: parallel non-coincident with normals in the same direction.
   * -2: parallel non-coincident with opposing normals
 * PlaneOps.intersect2Planes(planeA, planeB): PlanePlaneIntersectionCases -- return complete details of plane-plane intersection
