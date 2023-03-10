@@ -133,9 +133,9 @@ export interface Plane3dPlane3dPlane3dIntersectionCases {
 | 2 distinct parallel planes  and a transverse plane | | | ![>](./figs/PlaneOps/PPP2Rays.png) (point), [ray] and [plane] are all undefined. |
 | | pairwiseDetail | Plane3dPlane3dIntersection[3] | 2 of the pairwiseDetails indicate ray of intersection; 1 is joining segment for the parallel pair. |
 
-# PlaneOps:intersect2Planes (planeA, planeB, planeC):Plane3dPlane3dIntersectionCases
+# PlaneOps:intersect2Planes (planeA, planeB):Plane3dPlane3dIntersectionCases
 
-Computes the intersection of 3 planes.  Results are returned in an object with named member.
+Computes the intersection of 2 planes.  Results are returned in an object with named member.
 
 ```typescript
 /**
