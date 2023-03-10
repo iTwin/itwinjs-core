@@ -559,7 +559,7 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
-// @public
+// @beta
 export class BentleyCloudRpcConfigurationHolder {
     // @internal
     constructor(configuration: BentleyCloudRpcConfiguration);
@@ -581,7 +581,9 @@ export namespace BentleyCloudRpcInternalParams {
 
 // @public
 export class BentleyCloudRpcManager extends RpcManager {
+    // @beta
     static initializeClient(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfigurationHolder;
+    // @beta
     static initializeImpl(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfigurationHolder;
 }
 
@@ -591,7 +593,7 @@ export interface BentleyCloudRpcParams {
     uriPrefix?: string;
 }
 
-// @public
+// @beta
 export class BentleyCloudRpcParamsHolder {
     // @internal
     constructor(params: BentleyCloudRpcInternalParams);

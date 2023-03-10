@@ -38,7 +38,8 @@ export interface BentleyCloudRpcInternalParams extends BentleyCloudRpcParams {
 }
 
 /** Holds initialization parameters for BentleyCloudRpcConfiguration.
- * @public
+ * @beta This is only required to support passing internal parameters to BentleyCloudRpcManager.
+ * Most use cases can be supported using the public BentleyCloudRpcParams type only.
  */
 export class BentleyCloudRpcParamsHolder {
   /** @internal */
@@ -73,7 +74,8 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
 }
 
 /** Operating parameters for Bentley cloud RPC interface deployments.
- * @public
+ * @beta This is only required to support accessing internal state returned from BentleyCloudRpcManager.
+ * Most use cases can be supported without accessing the internal members of this class.
  */
 export class BentleyCloudRpcConfigurationHolder {
   /** @internal */
@@ -97,13 +99,13 @@ export class BentleyCloudRpcManager extends RpcManager {
     }
   }
 
-  /** Initializes BentleyCloudRpcManager for the frontend of an application. */
+  /** @beta Initializes BentleyCloudRpcManager for the frontend of an application. */
   public static initializeClient(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[], routing: RpcRoutingToken = RpcRoutingToken.default): BentleyCloudRpcConfigurationHolder {
     const configuration = BentleyCloudRpcManager.performInitialization(this.resolve(params), interfaces, routing);
     return new BentleyCloudRpcConfigurationHolder(configuration);
   }
 
-  /** Initializes BentleyCloudRpcManager for the backend of an application. */
+  /** @beta Initializes BentleyCloudRpcManager for the backend of an application. */
   public static initializeImpl(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfigurationHolder {
     const configuration = BentleyCloudRpcManager.performInitialization(this.resolve(params), interfaces);
     return new BentleyCloudRpcConfigurationHolder(configuration);

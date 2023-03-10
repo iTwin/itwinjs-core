@@ -49,12 +49,12 @@ public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
-public;BentleyCloudRpcConfigurationHolder
+beta;BentleyCloudRpcConfigurationHolder
 internal;BentleyCloudRpcInternalParams 
 internal;BentleyCloudRpcInternalParams
 public;BentleyCloudRpcManager 
 public;BentleyCloudRpcParams
-public;BentleyCloudRpcParamsHolder
+beta;BentleyCloudRpcParamsHolder
 internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
