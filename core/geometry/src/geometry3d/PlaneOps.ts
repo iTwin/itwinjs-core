@@ -272,9 +272,7 @@ export class PlaneOps {
   }
   /**
      * Return the intersection of the unbounded ray with plane.
-     * Stores the point of intersection in the result point given as a parameter,
-     * and returns the parameter along the ray where the intersection occurs.
-     * Returns undefined if the ray and plane are parallel or coplanar.
+     * @returns the point of intersection, the cloned input ray if coplanar, or a separator segment if ray is parallel and non-coplanar
      */
   public static intersectRayPlane(ray: Ray3d, plane: PlaneAltitudeEvaluator): Ray3dPlane3dIntersectionCases {
     const altitude = plane.altitude(ray.origin);
