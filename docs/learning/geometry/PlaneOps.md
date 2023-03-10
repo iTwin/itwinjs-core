@@ -28,7 +28,7 @@ There are multiple concrete implementations of a "plane" -- e.g. ClipPlane and P
 ```typescript
 /**
  * Plane3dRay3dIntersectionCases is has members to fully describe the relationship of a plane and ray.
- * * The return from [[PlaneOps.intersectRayPlane]] will have one and only one if the three members
+ * * The return from [[PlaneOps.intersectRayPlane]] will have one and only one of the three members
  *     {point,ray, separatorSegment} present.
  * @public
  */
