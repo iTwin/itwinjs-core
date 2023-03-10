@@ -214,7 +214,7 @@ export class PlaneOps {
    * Using the altitude and normal data, determine if planeA and planeB have a parallel or coplanar relationship:
    * * return 0 if the planes are not parallel.
    * * return 1 if the planes are coplanar with normals in the same direction
-   * * return 2 if the planes are parallel (but not coplanar) with normals in the same direction but different distance from origin.
+   * * return 2 if the planes are parallel but not coplanar, with normals in the same direction.
    * * return -2 if the planes are coplanar with opposing normals
    * * return -2 if the planes are parallel but not coplanar, with opposing normals.
    * @param planeA
