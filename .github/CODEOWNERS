@@ -152,7 +152,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
 /test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
-/test-apps/presentation-test-app            @iTwin/itwinjs-core-presentation
 /test-apps/synchro-schedule-importer        @iTwin/itwinjs-core-display
 
 /tools/backend-webpack @calebmshafer @wgoehrig
