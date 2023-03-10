@@ -301,7 +301,8 @@ $item-height: 32px;
 }
 
 .core-searchbox.ListPickerSearchBox {
-  width: 21em;
+  width: inherit;
   margin-left: 10px;
-  margin-bottom: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px
 }
