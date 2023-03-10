@@ -196,18 +196,17 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, int numSamplePo
   int numPartitions = numSamplePoints - 1;
   float stepSize = rayLength / float(numPartitions);
   vec3 samplePointA = rayOrigin;
-  vec3 samplePointB = rayOrigin + rayDir * stepSize;
-  float previousSampleADensity = densityAtPoint(rayOrigin);
+  vec3 samplePointB = rayOrigin + (rayDir * stepSize);
+  float samplePointADensity = densityAtPoint(samplePointA);
   float trapezoidRuleSum = 0.0;
 
   // To approximate the atmospheric density over the ray, we utilize the trapezoid rule, taking 2 density samples at each step, and averaging them before multiplying by the step size.
   // For performance benefit, we divide by 2 and multiply by stepSize after all steps are summed instead of every loop.
   for (int i = 1; i <= numPartitions; i++) {
-    float sampleADensity = previousSampleADensity;
-    float sampleBDensity = densityAtPoint(samplePointB);
+    float samplePointBDensity = densityAtPoint(samplePointB);
 
-    trapezoidRuleSum += sampleADensity + sampleBDensity;
-    previousSampleADensity = sampleBDensity;
+    trapezoidRuleSum += samplePointADensity + samplePointBDensity;
+    samplePointADensity = samplePointBDensity;
     samplePointB += rayDir * stepSize;
   }
 
@@ -220,7 +219,8 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, int numSamplePo
  * Calculates the atmospheric interference of light from both the sun and a given original color.
  */
 const computeAtmosphericScatteringFromScratch = `
-vec3 computeAtmosphericScattering(bool ignoreRaycastsIntersectingEarth) {
+mat3 computeAtmosphericScattering(bool isSkyBox) {
+  mat3 emptyResult = mat3(vec3(0.0), vec3(1.0), vec3(0.0));
   vec3 rayDir = computeRayDir(v_eyeSpace);
   vec3 rayOrigin = computeRayOrigin(v_eyeSpace);
   float sceneDepth = computeSceneDepth(v_eyeSpace);
@@ -235,12 +235,13 @@ vec3 computeAtmosphericScattering(bool ignoreRaycastsIntersectingEarth) {
   );
 
   if (distanceThroughAtmosphere <= 0.0) {
-    return vec3(0.0);
+    return emptyResult;
   }
 
   float ignoreDistanceThreshold = diameterOfEarthAtPole * 0.15; // need to accomodate a small threshold to ensure skybox atmosphere overlaps with the uneven earth mesh
+  bool ignoreRaycastsIntersectingEarth = isSkyBox;
   if (ignoreRaycastsIntersectingEarth && earthHitInfo[1] > ignoreDistanceThreshold) {
-    return vec3(0.0);
+    return emptyResult;
   }
 
   // Before light reaches the camera, it must first travel from the sun through the atmosphere, where it is scattered in various directions through atmospheric interference.
@@ -267,63 +268,48 @@ vec3 computeAtmosphericScattering(bool ignoreRaycastsIntersectingEarth) {
   opticalDepthFromRayOriginToSamplePoints[0] = 0.0;
 
   vec3 lightScatteredTowardsCamera = vec3(0.0);
-  float sunRayOpticalDepthToLastSamplePoint = 0.0;
+  float opticalDepthFromSunToCameraThroughLastSamplePoint = 0.0;
 
   for (int i = 1; i <= numPartitions; i++) {
-    opticalDepthFromRayOriginToSamplePoints[i] = opticalDepth(scatterPoint, rayDir, stepSize, 2) + opticalDepthFromRayOriginToSamplePoints[i-1];
+    float opticalDepthForCurrentPartition = opticalDepth(scatterPoint, rayDir, stepSize, 2);
+    opticalDepthFromRayOriginToSamplePoints[i] = opticalDepthForCurrentPartition + opticalDepthFromRayOriginToSamplePoints[i-1];
 
-    vec2 sunRayEarthHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
-    bool sunBlockedByEarth = sunRayEarthHitInfo[1] > 0.0;
-    if (!sunBlockedByEarth) {
-      vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
-      // TODO: Calculate an appropriate number of samples for sun ray optical depth based off the stepSize (so we don't take too many samples when the density doesn't change much)
-      float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numOpticalDepthPoints);
-      sunRayOpticalDepthToLastSamplePoint = sunRayOpticalDepthToScatterPoint;
+    vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
+    // TODO: Calculate an appropriate number of samples for sun ray optical depth based off the stepSize (so we don't take too many samples when the density doesn't change much)
+    float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numOpticalDepthPoints);
 
-      float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
-      lightScatteredTowardsCamera += densityAtPoint(scatterPoint) * exp(-(u_scatteringCoefficients * totalOpticalDepthFromSunToCamera));
-    } else {
-      sunRayOpticalDepthToLastSamplePoint = 0.0;
-    }
+    float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
+    float averageDensityAcrossPartition = opticalDepthForCurrentPartition / stepSize;
+    vec3 outScatteredLight = u_scatteringCoefficients * totalOpticalDepthFromSunToCamera;
 
+    // The amount of light scattered towards the camera at a scatter point is related to the inverse exponential of the amount of light scattered away along its path
+    //   In more intuitive terms: There's exponentially less light left to scatter towards the camera deeper in the atmosphere because it's all scattered away by the time it gets to the sample point.
+    // This value is then scaled by the density at the scatter point, because a denser atmosphere scatters more light.
+    //   In more intuitive terms: Just because a lot of sunlight reaches a scatter point, doesn't mean it'll all reach the camera. High atmosphere sample points receive much light, but do not convey much of that light to the camera.
+
+    lightScatteredTowardsCamera += averageDensityAcrossPartition * exp(-outScatteredLight);
+
+    opticalDepthFromSunToCameraThroughLastSamplePoint = totalOpticalDepthFromSunToCamera;
     scatterPoint += step;
   }
 
   // Scattering coefficients adjust the amount of light scattered by color. (e.g. earth's atmosphere scatters shorter wavelengths more than longer ones)
   float stepSizeByEarthDiameter = (stepSize / diameterOfEarthAtPole);
-  vec3 totalLightScatteredTowardsCamera = u_scatteringCoefficients * u_inScatteringIntensity * stepSizeByEarthDiameter * lightScatteredTowardsCamera;
+  vec3 totalLightScatteredTowardsCamera = u_scatteringCoefficients * stepSizeByEarthDiameter * lightScatteredTowardsCamera;
 
-  vec3 foo;
-  if (earthHitInfo[1] <= 0.0 || sunRayOpticalDepthToLastSamplePoint <= 0.0) { // view ray does not look at the earth, or the sun ray is blocked before it reaches the earth's surface
-    vec3 foo = totalLightScatteredTowardsCamera;
-    // foo = vec3(1.0, 0.0, 0.0);
-    return foo;
-  }
+  vec3 reflectedLightIntensity = isSkyBox ? vec3(1.0) : calculateReflectedLightIntensity(opticalDepthFromSunToCameraThroughLastSamplePoint);
 
-  vec3 lightScatteredBeforeReachingSurface = u_scatteringCoefficients * stepSizeByEarthDiameter * exp(-sunRayOpticalDepthToLastSamplePoint / diameterOfEarthAtPole);
+  mat3 result = mat3(totalLightScatteredTowardsCamera, reflectedLightIntensity, vec3(0.0));
+  return result;
+}
+`;
 
-  // vec3 totalReflectedLight = u_scatteringCoefficients * u_reflectedLightIntensity *
-
-  //  exp(-opticalDepthFromRayOriginToSamplePoints[numPartitions] / diameterOfEarthAtPole);
-  // scatteringCoefficients
-
-  foo = lightScatteredBeforeReachingSurface;
-  foo = totalLightScatteredTowardsCamera;
-  return foo;
-
-  // float brightnessAdaption = (totalLightFromSun.r + totalLightFromSun.g + totalLightFromSun.b) * u_reflectedLightStrength;
-  // float reflectedLightStrength = exp(-totalViewRayOpticalDepth) * u_outScatteringIntensity + brightnessAdaption;
-
-  // totalLightFromSun += baseColor * reflectedLightStrength
-
-
-
-  // Assume original colors originate outside the atmosphere and must travel along the entire view ray to reach the camera.
-  // float lightTransmittedFromBaseColor = densityAtPoint(rayOrigin) * exp(-totalViewRayOpticalDepth) * distanceThroughAtmosphere * u_scatteringCoefficients * u_inScatteringIntensity;
-  // vec3 scatteredLightFromBaseColor = baseColor.rgb * lightTransmittedFromBaseColor;
-  // totalLightFromSun += scatteredLightFromBaseColor;
-
-  return vec3(totalLightScatteredTowardsCamera);
+const calculateReflectedLightIntensity = `
+vec3 calculateReflectedLightIntensity(float opticalDepth) {
+    vec3 sunlightColor = vec3(1.0, 0.95, 0.925);
+    vec3 outScatteredLight = u_scatteringCoefficients * opticalDepth;
+    vec3 reflectedLightIntensity = sunlightColor * exp(-outScatteredLight);
+    return reflectedLightIntensity;
 }
 `;
 
@@ -346,7 +332,7 @@ vec3 computeAtmosphericScattering(bool ignoreRaycastsIntersectingEarth) {
  *
  */
 const computeAtmosphericScatteringFragmentFromVaryings = `
-vec3 computeAtmosphericScatteringFragment() {
+mat3 computeAtmosphericScatteringFragment() {
   return v_atmosphericScattering;
 }
 `;
@@ -355,7 +341,7 @@ vec3 computeAtmosphericScatteringFragment() {
  *
  */
 const computeAtmosphericScatteringFragmentOnSky = `
-vec3 computeAtmosphericScatteringFragment() {
+mat3 computeAtmosphericScatteringFragment() {
   return computeAtmosphericScattering(true);
 }
 `;
@@ -364,7 +350,7 @@ vec3 computeAtmosphericScatteringFragment() {
  *
  */
 const computeAtmosphericScatteringFragmentOnRealityMesh = `
-vec3 computeAtmosphericScatteringFragment() {
+mat3 computeAtmosphericScatteringFragment() {
   return computeAtmosphericScattering(false);
 }
 `;
@@ -373,20 +359,24 @@ vec3 computeAtmosphericScatteringFragment() {
 
 // #region MAIN
 
-const mixAtmosphericScatteringWithBaseColor = `
-vec4 mixAtmosphericScatteringWithBaseColor(vec3 atmosphericScatteringColor, vec4 baseColor) {
-  // TODO: redefine HDR using an exponential curve
-  // float averageColorStrength = (totalLightFromSun.r + totalLightFromSun.g + totalLightFromSun.b) / 3.0;
-  // float hdrStrength = clamp(, 0.0, 1.0);
-  // reflectedLightStrength = mix(atmosphericScatteringColor, 1.0, hdrStrength);
-  return vec4(atmosphericScatteringColor, baseColor.a);
+const applyHdr = `
+vec3 applyHdr(vec3 atmosphericScatteringColor, vec3 reflectedLightColor) {
+  vec3 colorWithoutHdr = atmosphericScatteringColor + reflectedLightColor;
+  float exposure = u_outScatteringIntensity;
+  vec3 colorWithHdr = 1.0 - exp(-exposure * colorWithoutHdr);
+
+  return colorWithHdr;
 }
 `;
 
 const applyAtmosphericScattering = `
-  vec3 atmosphericScatteringColor = computeAtmosphericScatteringFragment();
-  vec3 result = atmosphericScatteringColor;
-  return mixAtmosphericScatteringWithBaseColor(result, baseColor);
+  mat3 atmosphericScatteringOutput = computeAtmosphericScatteringFragment();
+  vec3 atmosphericScatteringColor = atmosphericScatteringOutput[0];
+
+  vec3 reflectedLightIntensity = atmosphericScatteringOutput[1];
+  vec3 reflectedLightColor = baseColor.rgb * reflectedLightIntensity;
+
+  return vec4(applyHdr(atmosphericScatteringColor, reflectedLightColor), baseColor.a);
 `;
 
 const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuilder) => {
@@ -489,16 +479,6 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariablePrecision.High
   );
   shader.addUniform(
-    "u_inScatteringIntensity",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  shader.addUniform(
     "u_inverseAtmosphereScaleInverseRotationMatrix",
     VariableType.Mat3,
     (prog) => {
@@ -557,6 +537,16 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
   //   },
   //   VariablePrecision.High
   // );
+  // shader.addUniform(
+  //   "u_inScatteringIntensity",
+  //   VariableType.Float,
+  //   (prog) => {
+  //     prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
+  //       params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
+  //     });
+  //   },
+  //   VariablePrecision.High
+  // );
   shader.addUniform(
     "u_earthScaleMatrix",
     VariableType.Mat3,
@@ -596,7 +586,7 @@ export function addAtmosphericScatteringEffect(
   mainShader.addFunction(rayEllipsoidIntersection);
   mainShader.addFunction(densityAtPoint);
   mainShader.addFunction(opticalDepth);
-  // mainShader.addFunction(computeReflectedLight);
+  mainShader.addFunction(calculateReflectedLightIntensity);
 
   if (perFragmentCompute) {
     builder.frag.addFunction(computeAtmosphericScatteringFromScratch);
@@ -607,30 +597,21 @@ export function addAtmosphericScatteringEffect(
     }
   } else {
     const functionCall = isSkyBox ? `computeAtmosphericScattering(true)` : `computeAtmosphericScattering(false)`;
-    builder.addFunctionComputedVaryingWithArgs("v_atmosphericScattering", VariableType.Vec3, functionCall, computeAtmosphericScatteringFromScratch);
+    builder.addFunctionComputedVaryingWithArgs("v_atmosphericScattering", VariableType.Mat3, functionCall, computeAtmosphericScatteringFromScratch);
     builder.frag.addFunction(computeAtmosphericScatteringFragmentFromVaryings);
   }
 
-  // builder.frag.addUniform(
-  //   "u_isEnabled",
-  //   VariableType.Boolean,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-  //       params.target.uniforms.atmosphere.bindIsEnabled(uniform);
-  //     });
-  //   },
-  // );
-  // builder.frag.addUniform(
-  //   "u_outScatteringIntensity",
-  //   VariableType.Float,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-  //       params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
-  //     });
-  //   },
-  //   VariablePrecision.High
-  // );
-  builder.frag.addFunction(mixAtmosphericScatteringWithBaseColor);
+  builder.frag.addUniform(
+    "u_outScatteringIntensity",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  builder.frag.addFunction(applyHdr);
   builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
 }
 
