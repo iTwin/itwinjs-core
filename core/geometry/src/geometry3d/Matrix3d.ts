@@ -773,6 +773,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Replace current rows Ui and Uj with (c*Ui + s*Uj) and (c*Uj - s*Ui).
    * * There is no checking for i,j being 0,1,2.
+   * * The instance matrix A is multiplied in place on the left by a Givens rotation G, resulting in the matrix G*A.
    * @param i first row index. **must be 0,1,2** (unchecked)
    * @param j second row index. **must be 0,1,2** (unchecked)
    * @param c fist coefficient
@@ -792,6 +793,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Replace current columns Ui and Uj with (c*Ui + s*Uj) and (c*Uj - s*Ui).
    * * There is no checking for i,j being 0,1,2.
+   * * The instance matrix A is multiplied in place on the right by a Givens rotation G, resulting in the matrix A*G.
    * * This is used in compute intensive inner loops
    * @param i first row index. **must be 0,1,2** (unchecked)
    * @param j second row index. **must be 0,1,2** (unchecked)
@@ -1803,7 +1805,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param xyz right side
    * @param result the result.
    */
-  public multiplyXYZtoXYZ(xyz: XYZ, result: XYZ) {
+  public multiplyXYZtoXYZ(xyz: XYZ, result: XYZ): XYZ {
     const x = xyz.x;
     const y = xyz.y;
     const z = xyz.z;
