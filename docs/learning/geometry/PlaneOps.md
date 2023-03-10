@@ -65,7 +65,7 @@ This returns a vector perpendicular to the plane.
 
 This returns the plane point closest to the coordinate system origin.
 
-# PlaneOps.PlaneOps.classifyIfParallelPlanes(planeA, planeB): -2 | -1 | 0 | 1 | 2
+# PlaneOps.classifyIfParallelPlanes(planeA, planeB): -2 | -1 | 0 | 1 | 2
 
 This returns a concise single-number indicator of relationship of parallel planes.  (Use PlaneOps.intersect2Planes for geometric line-of-intersection data.)
 
