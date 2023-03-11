@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, ByteStream, Logger } from "@itwin/core-bentley";
-import { Tileset3dSchema } from "@itwin/core-common";
+import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GltfReaderProps, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileContent, TileDrawArgs, TileParams, TileRequest,
+  GltfReaderProps, GraphicBuilder, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileParams, TileRequest,
   TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
@@ -157,5 +157,27 @@ export class BatchedTile extends Tile {
       return { };
 
     return reader.read();
+  }
+
+  protected override addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
+    if (TileBoundingBoxes.ChildVolumes !== type) {
+      super.addRangeGraphic(builder, type);
+      return;
+    }
+
+    builder.setSymbology(ColorDef.green, ColorDef.green, 2);
+    builder.addRangeBox(this.range);
+
+    this.loadChildren();
+    const children = this.children;
+    if (!children)
+      return;
+
+    builder.setSymbology(ColorDef.blue, ColorDef.blue.withTransparency(0xdf), 1);
+    for (const child of children) {
+      const range = child.range;
+      builder.addRangeBox(range);
+      builder.addRangeBox(range, true);
+    }
   }
 }
