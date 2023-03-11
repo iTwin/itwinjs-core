@@ -39,7 +39,7 @@ export class ViewRect {
   /** The bottommost side of this ViewRect. */
   public get bottom(): number { return this._bottom; }
   public set bottom(val: number) { this._set("_bottom", val); }
-  /** True if this ViewRect has an area > 0. */
+  /** True if this ViewRect has an area <= 0. */
   public get isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
   /** True if `!isNull` */
   public get isValid(): boolean { return !this.isNull; }

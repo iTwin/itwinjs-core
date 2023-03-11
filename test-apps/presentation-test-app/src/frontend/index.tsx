@@ -59,9 +59,6 @@ export class SampleApp {
       presentation: {
         // specify locale for localizing presentation data, it can be changed afterwards
         activeLocale: IModelApp.localization.getLanguageList()[0],
-
-        // specify the preferred unit system
-        activeUnitSystem: "metric",
       },
       favorites: {
         storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),

@@ -52,8 +52,7 @@
       "packageName": "@itwin/eslint-plugin",
       "projectFolder": "tools/eslint-plugin",
       "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "@itwin/core-telemetry",
@@ -232,7 +231,8 @@
       "packageName": "@itwin/appui-abstract",
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/core-react",
