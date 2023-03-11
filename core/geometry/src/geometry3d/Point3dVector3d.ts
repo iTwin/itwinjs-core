@@ -5,16 +5,13 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-// cspell:word CWXY
-// cspell:word arctan
-// cspell:word Rodrigues
 
 import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
-// cspell:word CCWXY
 
+// cspell:words CWXY CCWXY arctan Rodrigues
 /**
  *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.
  *  * `XYZ` is not instantiable.
@@ -628,10 +625,12 @@ export class Point3d extends XYZ {
    * @param scaleB scale factor for pointB
    */
   public static createAdd2Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, result?: Point3d): Point3d {
-    return Point3d.create(pointA.x * scaleA + pointB.x * scaleB,
+    return Point3d.create(
+      pointA.x * scaleA + pointB.x * scaleB,
       pointA.y * scaleA + pointB.y * scaleB,
       pointA.z * scaleA + pointB.z * scaleB,
-      result);
+      result
+    );
   }
   /** Create a point that is a linear combination (weighted sum) of 3 input points.
    * @param pointA first input point
@@ -642,10 +641,12 @@ export class Point3d extends XYZ {
    * @param scaleC scale factor for pointC
    */
   public static createAdd3Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number, result?: Point3d): Point3d {
-    return Point3d.create(pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
+    return Point3d.create(
+      pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
       pointA.y * scaleA + pointB.y * scaleB + pointC.y * scaleC,
       pointA.z * scaleA + pointB.z * scaleB + pointC.z * scaleC,
-      result);
+      result
+    );
   }
   /**
    * Return the dot product of vectors from this to pointA and this to pointB.
@@ -805,9 +806,9 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return a vector defined by start and end points (end - start).
-   * @param start start point for vector
-   * @param end end point for vector
-   * @param result optional result
+   * @param start start point for vector.
+   * @param end end point for vector.
+   * @param result optional result.
    */
   public static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d {
     const zStart = XYZ.accessZ(start, 0.0) as number;
@@ -821,22 +822,22 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return a vector (optionally in preallocated result, otherwise newly created) from [x0,y0,z0] to [x1,y1,z1]
-   * @param x0 start point x coordinate
-   * @param y0 start point y coordinate
-   * @param z0 start point z coordinate
-   * @param x1 end point x coordinate
-   * @param y1 end point y coordinate
-   * @param z1 end point z coordinate
-   * @param result optional result vector
+   * @param x0 start point x coordinate.
+   * @param y0 start point y coordinate.
+   * @param z0 start point z coordinate.
+   * @param x1 end point x coordinate.
+   * @param y1 end point y coordinate.
+   * @param z1 end point z coordinate.
+   * @param result optional result vector.
    */
   public static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d {
     return this.create(x1 - x0, y1 - y0, z1 - z0, result);
   }
   /**
-   * Return a vector which is the input vector rotated around the axis vector.
-   * @param vector initial vector
-   * @param axis axis of rotation
-   * @param angle angle of rotation.  If undefined, 90 degrees is implied
+   * Return a vector which is the input `vector` rotated by `angle` around the `axis` vector.
+   * @param vector initial vector.
+   * @param axis axis of rotation.
+   * @param angle angle of rotation.  If undefined, 90 degrees is implied.
    * @param result optional result vector
    * @returns undefined if axis has no length.
    */
@@ -859,7 +860,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Set (replace) xyz components so they are a vector from point0 to point1
-   * @param point0 start point of computed vector
+   * @param point0 start point of computed vector.
    * @param point1 end point of computed vector.
    */
   public setStartEnd(point0: XYAndZ, point1: XYAndZ) {

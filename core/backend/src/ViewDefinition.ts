@@ -594,6 +594,11 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     return new DrawingViewDefinition(viewDefinitionProps, iModelDb);
   }
 
+  /** Construct a DrawingViewDefinition from its JSON representation. */
+  public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb) {
+    return new DrawingViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  }
+
   /** Insert a DrawingViewDefinition
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new DrawingViewDefinition into this [[DefinitionModel]]

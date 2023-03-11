@@ -41,7 +41,7 @@ export interface ListItem {
   children?: ListItem[];
 }
 
-/** Properties for the [[ListPickerBase]] component
+/** Properties for the `ListPickerBase` component
  * @beta
  */
 export interface ListPickerProps {
@@ -53,7 +53,7 @@ export interface ListPickerProps {
   onSizeKnown?: (size: SizeProps) => void;
 }
 
-/** State for the [[ListPickerBase]] component
+/** State for the `ListPickerBase` component
  * @internal
  */
 interface ListPickerState {
@@ -62,7 +62,7 @@ interface ListPickerState {
 
 let lastOpenedPicker: ListPickerBase | undefined; // eslint-disable-line deprecation/deprecation
 
-/** Properties for the [[ListPickerItem]] component
+/** Properties for the `ListPickerItem` component
  * @beta
  */
 export interface ListPickerItemProps extends CommonProps {

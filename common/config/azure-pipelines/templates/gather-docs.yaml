@@ -14,6 +14,9 @@ parameters:
   - name: useCurrentBisDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentPresentationDocsArtifact
+    type: boolean
+    default: false
 
 steps:
   # build script exists outside of any project so manually install fs-extra
@@ -73,6 +76,31 @@ steps:
     inputs:
       SourceFolder: $(Pipeline.Workspace)/Bis Docs
       TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
+
+  # Download Presentation Docs artifact
+  - ${{ if eq(parameters.useCurrentPresentationDocsArtifact, true) }}:
+    - download: current
+      artifact: Presentation Docs
+      displayName: Download Presentation Docs Artifact
+
+  - ${{ else }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download Presentation Docs Artifact
+      inputs:
+        buildType: specific
+        project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+        pipeline: 8602 # iTwin Presentation/iTwin Presentation Docs
+        buildVersionToDownload: latestFromBranch
+        branchName: refs/heads/master
+        artifactName: Presentation Docs
+        targetPath: $(Pipeline.Workspace)/Presentation Docs
+
+  - task: CopyFiles@2
+    displayName: Copy Presentation Docs to staging
+    inputs:
+      SourceFolder: $(Pipeline.Workspace)/Presentation Docs
+      TargetFolder: ${{ parameters.stagingDir }}
+      OverWrite: true
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

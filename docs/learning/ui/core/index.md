@@ -11,7 +11,6 @@ It also contains various input components, such as Input, Radio, Checkbox, Numbe
 - [Common](./Common.md) - Common classes used across various UI components.
 - [ContextMenu](./ContextMenu.md) - Components and classes for working with a Context Menu.
 - [Dialog](./Dialog.md) - Components for working with a Dialog or MessageBox.
-- [Form](./Form.md) - Components used to create a Form using supplied properties to specify fields.
 - [Icon](./Icon.md) - Components that render icons when given an icon name or SVG source or path.
 - [Loading](./Loading.md) - Components for working with Loading spinners and progress bars.
 - [Notification](./Notification.md) - Components for working with with messages and tooltips.
