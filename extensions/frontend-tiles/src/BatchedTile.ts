@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, ByteStream, Logger } from "@itwin/core-bentley";
+import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
   GltfReaderProps, GraphicBuilder, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileParams, TileRequest,
@@ -178,6 +178,19 @@ export class BatchedTile extends Tile {
       const range = child.range;
       builder.addRangeBox(range);
       builder.addRangeBox(range, true);
+    }
+  }
+
+  public prune(olderThan: BeTimePoint): void {
+    const children = this._batchedChildren;
+    if (!children)
+      return;
+
+    if (this.usageMarker.isExpired(olderThan)) {
+      this.disposeChildren();
+    } else {
+      for (const child of children)
+        child.prune(olderThan);
     }
   }
 }

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { BeTimePoint } from "@itwin/core-bentley";
 import { RenderMode, ViewFlagOverrides } from "@itwin/core-common";
 import {
   Tile, TileDrawArgs, TileTree, TileTreeParams,
@@ -61,6 +62,7 @@ export class BatchedTileTree extends TileTree {
   }
 
   public override prune(): void {
-    // ###TODO
+    const olderThan = BeTimePoint.now().minus(this.expirationTime);
+    this.rootTile.prune(olderThan);
   }
 }
