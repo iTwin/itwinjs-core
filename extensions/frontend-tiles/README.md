@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/frontend-tiles__ package provides an experimental alternative technique for visualizing the contents of an iModel.
+The __@itwin/frontend-tiles__ package provides an experimental alternative technique for visualizing the contents of an iModel. Use `initializeFrontendTiles` to activate it.
 
 ## Documentation
 
