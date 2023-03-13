@@ -13,10 +13,12 @@ import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
 import { BatchedTileContentReader } from "./BatchedTileContentReader";
 
+/** @internal */
 export interface BatchedTileParams extends TileParams {
   childrenProps: Tileset3dSchema.Tile[] | undefined;
 }
 
+/** @internal */
 export class BatchedTile extends Tile {
   private readonly _childrenProps?: Tileset3dSchema.Tile[];
 
@@ -71,8 +73,8 @@ export class BatchedTile extends Tile {
 
       const children = this._batchedChildren;
       if (children)
-          for (const child of children)
-            child.selectTiles(selected, args);
+        for (const child of children)
+          child.selectTiles(selected, args);
     }
   }
 

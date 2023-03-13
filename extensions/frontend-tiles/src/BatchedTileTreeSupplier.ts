@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareStrings, Logger } from "@itwin/core-bentley";
+import { compareStrings, Logger } from "@itwin/core-bentley";
 import {
   IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
 } from "@itwin/core-frontend";
@@ -11,6 +11,7 @@ import { loggerCategory } from "./LoggerCategory";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
 
+/** @internal */
 export type TreeId = URL;
 
 class BatchedTileTreeSupplier implements TileTreeSupplier {
@@ -38,6 +39,7 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
 
 const batchedTileTreeSupplier: TileTreeSupplier = new BatchedTileTreeSupplier();
 
+/** @internal */
 export function getBatchedTileTreeOwner(iModel: IModelConnection, baseUrl: URL): TileTreeOwner {
   return iModel.tiles.getTileTreeOwner(baseUrl, batchedTileTreeSupplier);
 }

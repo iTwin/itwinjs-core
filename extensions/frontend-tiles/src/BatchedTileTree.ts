@@ -11,6 +11,7 @@ import {
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
 
+/** @internal */
 export interface BatchedTileTreeParams extends TileTreeParams {
   rootTile: BatchedTileParams;
   reader: BatchedTilesetReader;
@@ -21,6 +22,7 @@ const viewFlagOverrides: ViewFlagOverrides = {
   visibleEdges: false,
 };
 
+/** @internal */
 export class BatchedTileTree extends TileTree {
   private readonly _rootTile: BatchedTile;
   public readonly reader: BatchedTilesetReader;
@@ -47,6 +49,7 @@ export class BatchedTileTree extends TileTree {
     return viewFlagOverrides;
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public override _selectTiles(args: TileDrawArgs): Tile[] {
     const selected: BatchedTile[] = [];
     this.rootTile.selectTiles(selected, args);

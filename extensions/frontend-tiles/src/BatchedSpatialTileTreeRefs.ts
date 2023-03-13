@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-   IModelConnection, SpatialTileTreeReferences, TileTreeReference,
+  IModelConnection, SpatialTileTreeReferences, TileTreeReference,
 } from "@itwin/core-frontend";
 import { createBatchedTileTreeReference } from "./BatchedTileTreeReference";
 
@@ -27,6 +27,7 @@ class TreeRefs implements SpatialTileTreeReferences {
   }
 }
 
+/** @internal */
 export function createBatchedSpatialTileTreeReferences(iModel: IModelConnection, computeBaseUrl: (iModel: IModelConnection) => URL): SpatialTileTreeReferences {
   const treeRef = createBatchedTileTreeReference(iModel, computeBaseUrl(iModel));
   return new TreeRefs(treeRef);

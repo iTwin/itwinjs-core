@@ -3,5 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @internal */
 export const loggerCategory = "frontend-tiles";
 

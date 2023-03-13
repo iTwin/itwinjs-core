@@ -16,6 +16,9 @@ interface BatchedTileReaderArgs extends GltfReaderArgs {
   range: Range3d;
 }
 
+/** Read batched tiles in 3d Tiles 1.1 format. Currently, we prefer to produce tiles in iMdl format, so this goes unused for now.
+ * @internal
+ */
 export class BatchedTileContentReader extends GltfReader {
   private readonly _modelId: Id64String;
   private readonly _isLeaf: boolean;
@@ -41,7 +44,7 @@ export class BatchedTileContentReader extends GltfReader {
     // ###TODO we're just assuming there's one property table with one u64 property containing element Ids.
     const tables = this._glTF.extensions?.EXT_structural_metadata?.propertyTables;
     const table = tables ? tables[0] : undefined;
-    const elementIdProperty = table?.properties ? table.properties["ElementId"] : undefined;
+    const elementIdProperty = table?.properties ? table.properties.ElementId : undefined;
     if (!elementIdProperty)
       return undefined;
 

@@ -62,6 +62,7 @@ function transformFromJSON(json: schema.Transform): Transform {
   return Transform.createOriginAndMatrix(translation, matrix);
 }
 
+/** @internal */
 export class BatchedTilesetReader {
   private readonly _iModel: IModelConnection;
   private readonly _tileset: schema.Tileset;

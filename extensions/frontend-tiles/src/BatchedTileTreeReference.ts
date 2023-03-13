@@ -21,6 +21,7 @@ class BatchedTileTreeReference extends TileTreeReference {
   }
 }
 
+/** @internal */
 export function createBatchedTileTreeReference(iModel: IModelConnection, baseUrl: URL): TileTreeReference {
   const owner = getBatchedTileTreeOwner(iModel, baseUrl);
   return new BatchedTileTreeReference(owner);
