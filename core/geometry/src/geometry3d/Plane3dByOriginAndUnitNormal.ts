@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry, PlaneEvaluator } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
@@ -21,7 +21,7 @@ import { XAndY } from "./XYZProps";
  * * a unit normal.
  * @public
  */
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
+export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvaluator {
   private _origin: Point3d;
   private _normal: Vector3d;
   // constructor captures references !!!
@@ -97,7 +97,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   public static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
     const ux = target.x - origin.x;
     const uy = target.y - origin.y;
-    return  this.createXYZUVW(origin.x, origin.y, 0.0, uy, -ux, 0.0, result);
+    return this.createXYZUVW(origin.x, origin.y, 0.0, uy, -ux, 0.0, result);
   }
 
   /** create a new  Plane3dByOriginAndUnitNormal with xy origin (at z=0) and normal angle in xy plane.
@@ -119,6 +119,30 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
    */
   public static createPointPointVectorInPlane(pointA: Point3d, pointB: Point3d, vector: Vector3d): Plane3dByOriginAndUnitNormal | undefined {
     const cross = vector.crossProductStartEnd(pointA, pointB);
+    if (cross.tryNormalizeInPlace())
+      return new Plane3dByOriginAndUnitNormal(pointA, cross);
+    return undefined;
+  }
+
+  /** Create a plane defined by three points and an in-plane vector.
+   * @param pointA any point in the plane.  This will be the origin.
+   * @param pointB any other point in the plane
+   * @param pointC any third point in the plane but not on the line of pointA and pointB
+   */
+  public static createOriginAndTargets(pointA: Point3d, pointB: Point3d, pointC: Point3d): Plane3dByOriginAndUnitNormal | undefined {
+    const cross = pointA.crossProductToPoints(pointB, pointC);
+    if (cross.tryNormalizeInPlace())
+      return new Plane3dByOriginAndUnitNormal(pointA, cross);
+    return undefined;
+  }
+
+  /** Create a plane defined by a point and two vectors in the plane
+   * @param pointA any point in the plane
+   * @param vectorB any vector in the plane
+   * @param vectorC any vector in the plane but not parallel to vectorB
+   */
+  public static createOriginAndVectors(pointA: Point3d, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined {
+    const cross = vectorB.crossProduct(vectorC);
     if (cross.tryNormalizeInPlace())
       return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
@@ -216,15 +240,15 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   /**
    * Return the x component of the normal used to evaluate altitude.
    */
-   public normalX(): number {return this._normal.x; }
-   /**
-    * Return the x component of the normal used to evaluate altitude.
-    */
-    public normalY(): number {return this._normal.y; }
-   /**
-    * Return the z component of the normal used to evaluate altitude.
-    */
-    public normalZ(): number {return this._normal.z; }
+  public normalX(): number { return this._normal.x; }
+  /**
+   * Return the x component of the normal used to evaluate altitude.
+   */
+  public normalY(): number { return this._normal.y; }
+  /**
+   * Return the z component of the normal used to evaluate altitude.
+   */
+  public normalZ(): number { return this._normal.z; }
 
   /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {

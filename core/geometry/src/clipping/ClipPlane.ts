@@ -315,15 +315,15 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
   /**
    * Return the x component of the normal used to evaluate altitude.
    */
-  public normalX(): number {return this._inwardNormal.x; }
+  public normalX(): number { return this._inwardNormal.x; }
   /**
    * Return the x component of the normal used to evaluate altitude.
    */
-   public normalY(): number {return this._inwardNormal.y; }
+  public normalY(): number { return this._inwardNormal.y; }
   /**
    * Return the z component of the normal used to evaluate altitude.
    */
-   public normalZ(): number {return this._inwardNormal.z; }
+  public normalZ(): number { return this._inwardNormal.z; }
 
   /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
    */
@@ -571,5 +571,9 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(this, xyz, newInside, newOutside, perpendicularRange);
     ClipUtilities.captureOrDrop(newInside, 3, insideFragments, arrayCache);
     ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
+  }
+  public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
+    const d = -this.altitude(spacePoint);
+    return spacePoint.plusXYZ(d * this._inwardNormal.x, d * this._inwardNormal.y, d * this._inwardNormal.z, result);
   }
 }

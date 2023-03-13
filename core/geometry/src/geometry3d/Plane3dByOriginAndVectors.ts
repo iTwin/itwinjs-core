@@ -6,10 +6,12 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry, PlaneEvaluator } from "../Geometry";
+import { Point4d } from "../geometry4d/Point4d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
 import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
 
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
@@ -19,7 +21,7 @@ import { Transform } from "./Transform";
  *   * are NOT required to be perpendicular vectors.
  * @public
  */
-export class Plane3dByOriginAndVectors implements BeJSONFunctions {
+export class Plane3dByOriginAndVectors implements BeJSONFunctions, PlaneEvaluator {
   /** origin of plane grid */
   public origin: Point3d;
   /** u direction in plane grid */
@@ -247,7 +249,72 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
    */
   public transformInPlace(transform: Transform) {
     transform.multiplyPoint3d(this.origin, this.origin);
-    transform.multiplyVector (this.vectorU, this.vectorU);
-    transform.multiplyVector (this.vectorV, this.vectorV);
+    transform.multiplyVector(this.vectorU, this.vectorU);
+    transform.multiplyVector(this.vectorV, this.vectorV);
+  }
+  // Implement PlaneAltitudeEvaluator methods . . .
+  // These turn the parametric UV plane into an implicit plane
+  //         altitude = (xyz - origin) DOT (vectorU Cross vectorV) = xyz DOT vectorU cross vectorV - origin DOT vectorU CROSS vectorV
+  // This essentially uses vectorU CROSS vectorV as the plane normal.  This is a NON-UNIT normal.
+  public normalX(): number { return Geometry.crossProductXYXY(this.vectorU.y, this.vectorU.z, this.vectorV.y, this.vectorV.z); }
+  public normalY(): number { return Geometry.crossProductXYXY(this.vectorU.z, this.vectorU.x, this.vectorV.z, this.vectorV.x); }
+  public normalZ(): number { return Geometry.crossProductXYXY(this.vectorU.x, this.vectorU.y, this.vectorV.x, this.vectorV.y); }
+  public altitude(xyz: XYAndZ): number {
+    return Geometry.tripleProduct(
+      (xyz.x - this.origin.x), (xyz.y - this.origin.y), (xyz.z - this.origin.z),
+      this.vectorU.x, this.vectorU.y, this.vectorU.z,
+      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+  }
+  public altitudeXYZ(x: number, y: number, z: number): number {
+    return Geometry.tripleProduct(
+      (x - this.origin.x), (y - this.origin.y), (z - this.origin.z),
+      this.vectorU.x, this.vectorU.y, this.vectorU.z,
+      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+  }
+  public velocity(xyzVector: XYAndZ): number {
+    return Geometry.tripleProduct(
+      xyzVector.x, xyzVector.y, xyzVector.z,
+      this.vectorU.x, this.vectorU.y, this.vectorU.z,
+      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+  }
+  public velocityXYZ(x: number, y: number, z: number): number {
+    return Geometry.tripleProduct(
+      x, y, z,
+      this.vectorU.x, this.vectorU.y, this.vectorU.z,
+      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+  }
+  public weightedAltitude(xyzw: Point4d) {
+    const w = xyzw.w;
+    return Geometry.tripleProduct(
+      (xyzw.x - this.origin.x * w), (xyzw.y - this.origin.y * w), (xyzw.z - this.origin.z * w),
+      this.vectorU.x, this.vectorU.y, this.vectorU.z,
+      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+  }
+  /** Return the projection of spacePoint onto the plane.
+   * If the plane is degenerate to a ray, project to the ray.
+   * If the plane is degenerate to its origin, return the point
+   */
+  public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    if (unitNormal !== undefined) {
+      const w = unitNormal.dotProductStartEnd(this.origin, spacePoint);
+      return spacePoint.plusScaled(unitNormal, -w, result);
+    }
+    // uh oh.   vectorU and vectorV are colinear or zero.
+    // project to ray defined by the longer one, or just to origin.
+    const dotUU = this.vectorU.magnitudeSquared();
+    const dotVV = this.vectorV.magnitudeSquared();
+    if (dotUU >= dotVV) {
+      const dotUW = this.vectorV.dotProductStartEnd(this.origin, spacePoint);
+      const f = Geometry.conditionalDivideCoordinate(dotUW, dotUU, 0.0);
+      if (f !== undefined)
+        return spacePoint.plusScaled(this.vectorU, f, result);
+    } else {
+      const dotUW = this.vectorV.dotProductStartEnd(this.origin, spacePoint);
+      const f = Geometry.conditionalDivideCoordinate(dotUW, dotVV, 0.0);
+      if (f !== undefined)
+        return spacePoint.plusScaled(this.vectorV, f, result);
+    }
+    return this.origin.clone(result);
   }
 }

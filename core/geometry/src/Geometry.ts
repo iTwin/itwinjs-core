@@ -98,6 +98,7 @@ export interface TrigValues {
  * Specific implementors are
  * * Plane3dByOriginAndUnitNormal
  * * Point4d (used for homogeneous plane coefficients)
+ * * ClipPlane implicit plane as used in ConvexClipPlaneSet and UnionOfConvexClipPlaneSet
  * @public
  */
 export interface PlaneAltitudeEvaluator {
@@ -134,6 +135,12 @@ export interface PlaneAltitudeEvaluator {
   normalY(): number;
   /** x part of normal vector */
   normalZ(): number;
+}
+/**
+ * Additional plane evaluation methods.
+ */
+export interface PlaneEvaluator extends PlaneAltitudeEvaluator {
+  projectPointToPlane(spacePoint: Point3d): Point3d;
 }
 
 /** Enumeration of possible locations of a point in the plane of a polygon.

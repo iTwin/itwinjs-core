@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Numerics
  */
-import { BeJSONFunctions, Geometry } from "../Geometry";
+import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d } from "../geometry3d/Point2dVector2d";
@@ -42,7 +42,7 @@ function quotientDerivative2(ddg: number, dh: number, ddh: number,
  * *
  * @public
  */
-export class Point4d implements BeJSONFunctions {
+export class Point4d implements BeJSONFunctions, PlaneAltitudeEvaluator {
   /** x,y,z,w are packed into a Float64Array */
   public xyzw: Float64Array;
   /** Set x,y,z,w of this point.  */
