@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "nightly",
     "esbuild": "^0.13.8",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
