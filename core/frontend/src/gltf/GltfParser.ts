@@ -20,10 +20,14 @@ import {
 } from "./GltfSchema";
 import { Gltf } from "./GltfModel";
 
+/** @internal */
 export interface ParseGltfLogger {
   log(message: string, type: "error" | "warning" | "info"): void;
 }
 
+/** Arguments supplied to [[parseGltf]].
+ * @internal
+ */
 export interface ParseGltfArgs {
   logger?: ParseGltfLogger;
   gltf: Uint8Array | GltfDocument;
@@ -33,6 +37,10 @@ export interface ParseGltfArgs {
   upAxis?: "y" | "z"; // default "y"
 }
 
+/** Parse a [[GltfDocument]] or binary representation thereof to produce a [[Gltf.Model]].
+ * This implementation is incomplete and not currently used.
+ * @internal
+ */
 export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undefined> {
   const source = args.gltf;
   let version: number;
@@ -123,8 +131,8 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
     logger,
     isCanceled: () => args.isCanceled ?? false,
     imageFromImageSource: (args.noCreateImageBitmap ?
-      (source) => imageElementFromImageSource(source) :
-      (source) => imageBitmapFromImageSource(source)),
+      async (imgSrc) => imageElementFromImageSource(imgSrc) :
+      async (imgSrc) => imageBitmapFromImageSource(imgSrc)),
   });
 
   return parser.parse();
@@ -147,7 +155,7 @@ type ParserImage = GltfImage & { resolvedImage?: TextureImageSource };
 class GltfParser {
   private readonly _version: number;
   private readonly _upAxis: "y" | "z";
-  private readonly _baseUrl?: string
+  private readonly _baseUrl?: string;
   private readonly _logger: ParseGltfLogger;
   private readonly _isCanceled: () => boolean;
   private readonly _buffers: GltfDictionary<ParserBuffer>;
@@ -281,7 +289,7 @@ class GltfParser {
   }
 
   private parseTrianglesPrimitive(primitive: GltfMeshPrimitive): Gltf.TrianglesPrimitive | undefined {
-    const posId = primitive.attributes["POSITION"];
+    const posId = primitive.attributes.POSITION;
     const pos = undefined !== posId ? this._accessors[posId] : undefined;
     if (!pos)
       return undefined;

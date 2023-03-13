@@ -518,8 +518,11 @@ export abstract class GraphicBuilder {
     }
   }
 
-  /** Add Range3d edges. Useful for debugging. */
-  public addRangeBox(range: Range3d, solid = false) {
+  /** Add a box representing a volume of space. Typically used for debugging purposes.
+   * @param range The volume of space.
+   * @param solid If true, a [[Box]] solid primitive will be added; otherwise, a wireframe outline of the box will be added.
+   */
+  public addRangeBox(range: Range3d, solid = false): void {
     if (!solid) {
       this.addFrustum(Frustum.fromRange(range));
       return;

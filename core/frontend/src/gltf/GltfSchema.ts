@@ -91,7 +91,8 @@ export interface GltfDictionary<T extends GltfChildOfRootProperty> {
   [key: GltfId]: T | undefined;
 }
 
-export type GltfStringMap<T> = {
+/** @internal */
+export interface GltfStringMap<T> {
   [key: string]: T | undefined;
 }
 
@@ -139,6 +140,7 @@ export interface DracoMeshCompression {
   attributes: GltfStringMap<number>;
 }
 
+/** @internal */
 export interface MeshFeature extends GltfProperty {
   featureCount: number;
   nullFeatureId?: number;
@@ -148,6 +150,7 @@ export interface MeshFeature extends GltfProperty {
   attribute?: number;
 }
 
+/** @internal */
 export interface MeshFeatures {
   featureIds: MeshFeature[];
 }
@@ -181,6 +184,7 @@ export interface GltfMeshPrimitive extends GltfProperty {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     KHR_draco_mesh_compression?: DracoMeshCompression;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_features?: MeshFeatures;
   };
 }
@@ -511,6 +515,7 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
   };
 }
 
+/** @internal */
 export namespace GltfStructuralMetadata {
   export type ClassPropertyType = "SCALAR" | "STRING" | "BOOLEAN" | "ENUM" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
   export type ClassPropertyComponentType = "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | "FLOAT32" | "FLOAT64" | string;
@@ -634,6 +639,7 @@ export interface GltfDocument extends GltfProperty {
         };
       }>;
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_structural_metadata?: GltfStructuralMetadata.Extension;
   };
   /** Names of glTF extensions used in the asset. */

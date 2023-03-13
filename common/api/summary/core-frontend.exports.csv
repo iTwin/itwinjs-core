@@ -144,6 +144,7 @@ internal;disposeTileTreesForGeometricModels(modelIds: Set
 public;DownloadBriefcaseId =
 public;DownloadBriefcaseOptions = DownloadBriefcaseId &
 public;DownloadProgressInfo
+internal;DracoMeshCompression
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -212,6 +213,7 @@ internal;getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
+internal;getGltfNodeMeshIds(node: GltfNode): GltfId[]
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GetPixelDataWorldPointArgs
@@ -220,15 +222,54 @@ public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
 public;GlobeAnimator 
+internal;Gltf1Id = string
+internal;Gltf1Material 
+internal;Gltf1Node 
+internal;Gltf2Id = number
+internal;Gltf2Material 
+internal;Gltf2Node 
+internal;GltfAccessor 
+internal;GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND"
+internal;GltfAsset 
+internal;GltfBuffer 
 internal;GltfBufferData
+internal;GltfBufferTarget
+internal;GltfBufferViewProps 
+internal;GltfChildOfRootProperty 
 internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
+internal;GltfDataType
+internal;GltfDictionary
+internal;gltfDictionaryIterator
+internal;GltfDocument 
+internal;GltfExtensions = GltfStringMap
 internal;GltfGraphicsReader 
 internal;GltfHeader 
+internal;GltfId = Gltf1Id | Gltf2Id
+internal;GltfImage 
+internal;GltfMagFilter
+internal;GltfMaterial = Gltf1Material | Gltf2Material
+internal;GltfMaterialPbrMetallicRoughness 
+internal;GltfMesh 
 internal;GltfMeshData
+internal;GltfMeshMode
+internal;GltfMeshPrimitive 
+internal;GltfMinFilter
+internal;GltfNode = Gltf1Node | Gltf2Node
+internal;GltfNodeBaseProps
+internal;GltfProperty
 internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
 internal;GltfReaderResult 
+internal;GltfSampler 
+internal;GltfScene 
+internal;GltfStringMap
+internal;GltfStructuralMetadata
+internal;GltfTechnique 
+internal;GltfTechniqueState
+internal;GltfTexture 
+internal;GltfTextureInfo 
+internal;GltfWrapMode
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
@@ -314,6 +355,7 @@ public;IpcApp
 public;IpcAppOptions
 public;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
 public;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+internal;isGltf1Material(material: GltfMaterial): material is Gltf1Material
 public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
@@ -394,6 +436,8 @@ public;class MeasureElementTool
 public;MeasureLengthTool 
 public;MeasureLocationTool 
 public;MeasureVolumeTool 
+internal;MeshFeature 
+internal;MeshFeatures
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -693,6 +737,7 @@ internal;TouchCursor
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
+internal;traverseGltfNodes(ids: Iterable
 public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync

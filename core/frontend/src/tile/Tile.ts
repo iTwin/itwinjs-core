@@ -447,6 +447,10 @@ export abstract class Tile {
     return this.meetsScreenSpaceError(args) ? TileVisibility.Visible : TileVisibility.TooCoarse;
   }
 
+  /** Returns true if this tile is of at least high enough resolution to be displayed, per the supplied [[TileDrawArgs]]; or false if
+   * a higher-resolution tile should be substituted for it.
+   * This method is called by [[computeVisibility]] if the tile has passed all culling checks.
+   */
   protected meetsScreenSpaceError(args: TileDrawArgs): boolean {
     const pixelSize = args.getPixelSize(this) * args.pixelSizeScaleFactor;
     const maxSize = this.maximumSize * args.tileSizeModifier;

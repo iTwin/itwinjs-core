@@ -103,7 +103,7 @@ export abstract class RealityTileLoader {
           stream: streamBuffer,
           iModel,
           modelId,
-          is3d: true,
+          is3d,
           system,
           isCanceled,
         });
@@ -118,7 +118,6 @@ export abstract class RealityTileLoader {
         }
 
         return { graphic };
-
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
         break;
