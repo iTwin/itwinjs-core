@@ -149,7 +149,7 @@
       "packageName": "@itwin/frontend-tiles",
       "projectFolder": "extensions/frontend-tiles",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
+      "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
