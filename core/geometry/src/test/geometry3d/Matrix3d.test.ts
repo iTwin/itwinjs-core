@@ -593,8 +593,10 @@ describe("Matrix3d.Factors", () => {
       0.0040687348173572974, 0.019908485552297163, 0,
       0, 0, 0.020320000000000008
     );
-    const data = rigidScale.factorRigidWithSignedScale();
+    const result = Matrix3d.createZero();
+    const data = rigidScale.factorRigidWithSignedScale(result);
     if (ck.testPointer(data)) {
+      ck.testTrue(data.rigidAxes === result, "pre-allocated result object is returned");
       const rotationMatrix = data.rigidAxes;
       const quat = rotationMatrix.toQuaternion();
       const quatMatrix = Matrix3d.createFromQuaternion(quat);
