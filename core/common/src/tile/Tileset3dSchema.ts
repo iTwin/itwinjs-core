@@ -9,12 +9,15 @@
 import { RequireAtLeastOne } from "@itwin/core-bentley";
 
 /** The schema describing a 3d tileset per the [3d tiles specification](https://github.com/CesiumGS/3d-tiles/blob/main/specification/schema/tileset.schema.json).
+ * @alpha
  */
 export namespace Tileset3dSchema {
+  /** An object that can be defined on any [[TilesetProperty]] to provide extensions to the core spec. */
   export interface Extensions {
     [key: string]: any;
   }
 
+  /** An extensible property of a [[Tileset]]. Most types within the schema are extensible. */
   export interface TilesetProperty {
     extensions?: Extensions;
     extras?: any;
