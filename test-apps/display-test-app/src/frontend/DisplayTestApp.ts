@@ -147,9 +147,11 @@ const dtaFrontendMain = async () => {
   // retrieve, set, and output the global configuration variable
   await getFrontendConfig();
 
-  initializeFrontendTiles({
-    computeSpatialTilesetBaseUrl: (iModel) => new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`),
-  });
+  if (configuration.useFrontendTiles) {
+    initializeFrontendTiles({
+      computeSpatialTilesetBaseUrl: (iModel) => new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`),
+    });
+  }
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   let tileAdminProps: TileAdmin.Props;

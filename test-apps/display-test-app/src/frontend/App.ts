@@ -271,8 +271,7 @@ export class DisplayTestApp {
       // The electron package produces an exception every time getAccessToken is called, which is quite frequently.
       // It makes debugging with "pause on caught exceptions" infuriating.
       // ###TODO fix that in the client and remove this
-      const doAuth = false;
-      if (doAuth)
+      if (!configuration.noElectronAuth)
         opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
 
       await ElectronApp.startup(opts);
