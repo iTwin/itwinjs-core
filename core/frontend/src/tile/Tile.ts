@@ -645,7 +645,9 @@ export enum TileBoundingBoxes {
   ChildVolumes,
   /** Display bounding sphere. */
   Sphere,
-  /** Display a solid box representing the tile's full volume. */
+  /** Display a transparent solid box representing the tile's full volume.
+   * @alpha To be replaced with a separate option that applies to any of the other TileBoundingBoxes modes.
+   */
   SolidBox,
 }
 

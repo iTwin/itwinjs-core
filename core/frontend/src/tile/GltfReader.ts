@@ -1679,7 +1679,7 @@ export interface ReadGltfGraphicsArgs {
   /** The base URL for any relative URIs in the glTF. Typically, this is the same as the URL for the glTF asset itself.
    * If not supplied, relative URIs cannot be resolved. For glTF assets containing no relative URIs, this is not required.
    */
-  baseUrl?: URL;
+  baseUrl?: URL | string;
   /** @alpha */
   contentRange?: ElementAlignedBox3d;
   /** @alpha */
@@ -1697,7 +1697,8 @@ export interface ReadGltfGraphicsArgs {
  * @public
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
-  const props = GltfReaderProps.create(args.gltf, true, args.baseUrl); // glTF supports exactly one coordinate system with y axis up.
+  const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
+  const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader)
     return undefined;
