@@ -59,8 +59,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/editor-*.*                         @bbastings @kabentley @pmconne
 /common/**/editor-*/                          @bbastings @kabentley @pmconne
-/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
-/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
+/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse
+/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse
 /common/**/core-frontend.*                    @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-frontend/                     @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-i18n.*                        @calebmshafer @wgoehrig
@@ -73,7 +73,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/linear-referencing-backend/        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/         @calebmshafer @diegoalexdiaz
-/common/**/map-layers/                        @mdastous-bentley @MarcBedard8
 /common/**/core-orbitgt.*                     @iTwin/itwinjs-core-display
 /common/**/core-orbitgt/                      @iTwin/itwinjs-core-display
 /common/**/perf-tools.*                       @calebmshafer @wgoehrig
@@ -130,7 +129,6 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /extensions                           @aruniverse @calebmshafer
 /extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
-/extensions/map-layers                @mdastous-bentley @MarcBedard8
 
 /full-stack-tests/core                    @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface  @calebmshafer @ColinKerr @wgoehrig
@@ -159,7 +157,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /tools/certa @calebmshafer @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig @aruniverse
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
-/tools/eslint-plugin @calebmshafer @paulius-valiunas
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
