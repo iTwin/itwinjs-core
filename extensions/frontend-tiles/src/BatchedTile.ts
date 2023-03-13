@@ -39,23 +39,7 @@ export class BatchedTile extends Tile {
 
   public override computeLoadPriority(viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     // Prioritize tiles closer to camera and center of attention (zoom point or screen center).
-    // ###TODO move this function out of RealityTileLoader.
     return RealityTileLoader.computeTileLocationPriority(this, viewports, this.tree.iModelTransform);
-  }
-
-  public override meetsScreenSpaceError(args: TileDrawArgs): boolean {
-    // ###TODO evaluate this. It's from [Dani's 3js prototype](https://dev.azure.com/DANIELIBORRA/_git/Three.js%20prototype%20with%203D%20Tiles%201.1?path=/Tiles3D.js).
-    // It ignores geometricError, which seems to be smaller than it should be.
-    const doSuper = true;
-    if (doSuper || !args.context.viewport.isCameraOn)
-      return super.meetsScreenSpaceError(args);
-
-    assert(args.context.viewport.view.is3d() && args.context.viewport.view.isCameraOn);
-    const center = args.getTileCenter(this);
-    const radius = args.getTileRadius(this);
-    const cam = args.context.viewport.view.camera.eye;
-    const minDist = Math.max(Math.abs(center.x - cam.x), Math.max(Math.abs(center.y - cam.y), Math.abs(center.z - cam.z)));
-    return minDist >= radius * 1.5;
   }
 
   public selectTiles(selected: BatchedTile[], args: TileDrawArgs): void {
@@ -63,7 +47,11 @@ export class BatchedTile extends Tile {
     if (TileVisibility.OutsideFrustum === vis)
       return;
 
-    // ###TODO proper tile selection
+    // ###TODO proper tile refinement. Currently we simply load each level of the tree in succession until we find a tile that
+    // meets screen space error. Moreover, while we wait for children to load we stop displaying the parent.
+    // Prefer to skip some levels where appropriate.
+    // More importantly, fix tile tree structure so that children can be substituted for (portions of) parents more quickly, especially near the camera
+    // (need non-overlapping child volumes).
     if (!this.isReady) {
       args.insertMissing(this);
       return;

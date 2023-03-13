@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  HitDetail, IModelConnection, TileTreeOwner, TileTreeReference,
+  IModelConnection, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 
@@ -18,10 +18,6 @@ class BatchedTileTreeReference extends TileTreeReference {
 
   public override get treeOwner(): TileTreeOwner {
     return this._treeOwner;
-  }
-
-  public override async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> {
-    return "###TODO";
   }
 }
 
