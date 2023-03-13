@@ -2,25 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import chaiSubset from "chai-subset";
+
 import * as cpx from "cpx2";
 import * as fs from "fs";
 import Backend from "i18next-http-backend";
 import * as path from "path";
+import rimraf from "rimraf";
 import sinon from "sinon";
-import sinonChai from "sinon-chai";
-import { IModelJsFs } from "@itwin/core-backend";
-import { Logger, LogLevel } from "@itwin/core-bentley";
-import { AuthorizationClient, EmptyLocalization, Localization } from "@itwin/core-common";
+import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
+import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
+import {
+  AuthorizationClient, EmptyLocalization, IModelReadRpcInterface, Localization, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
-import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
-import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { getOutputRoot } from "./Utils";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
@@ -39,9 +41,6 @@ function loadEnv(envFile: string) {
 
   dotenvExpand(envResult);
 }
-
-chai.use(sinonChai);
-chai.use(chaiSubset);
 
 loadEnv(path.join(__dirname, "..", ".env"));
 
@@ -103,6 +102,7 @@ const initializeCommon = async (props: {
     fs.mkdirSync(tempCachesDir);
 
   const backendInitProps: PresentationBackendProps = {
+    id: `test-${Guid.createValue()}`,
     requestTimeout: props.backendTimeout,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
     defaultLocale: "en-PSEUDO",
@@ -126,7 +126,7 @@ const initializeCommon = async (props: {
     localization: props.localization ?? new EmptyLocalization(),
   };
 
-  const presentationTestingInitProps: PresentationTestingInitProps = {
+  const presentationTestingInitProps: PresentationInitProps = {
     backendProps: backendInitProps,
     backendHostProps: { cacheDir: tempCachesDir },
     frontendProps: frontendInitProps,
@@ -134,7 +134,7 @@ const initializeCommon = async (props: {
     frontendAppOptions,
   };
 
-  await initializeTesting(presentationTestingInitProps);
+  await initializePresentation(presentationTestingInitProps);
 
   global.requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 0);
@@ -163,7 +163,7 @@ export const initializeWithClientServices = async () => {
 
 export const terminate = async () => {
   delete (global as any).requestAnimationFrame;
-  await terminateTesting();
+  await terminatePresentation();
   // eslint-disable-next-line no-console
   console.log(`[${new Date().toISOString()}] Tests terminated`);
 };
@@ -203,3 +203,74 @@ export const testLocalization = new ITwinLocalization({
     },
   },
 });
+
+interface PresentationInitProps {
+  backendProps: PresentationBackendProps;
+  backendHostProps: IModelHostOptions;
+  frontendProps: PresentationFrontendProps;
+  frontendApp: { startup: (opts?: IModelAppOptions) => Promise<void> };
+  frontendAppOptions: IModelAppOptions;
+}
+
+let isInitialized = false;
+async function initializePresentation(props: PresentationInitProps) {
+  if (isInitialized)
+    return;
+
+  // set up rpc interfaces
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+
+  // init backend
+  // make sure backend gets assigned an id which puts its resources into a unique directory
+  await IModelHost.startup(props.backendHostProps);
+  PresentationBackend.initialize(props.backendProps);
+
+  // init frontend
+  await props.frontendApp.startup(props.frontendAppOptions);
+  await PresentationFrontend.initialize(props.frontendProps);
+
+  isInitialized = true;
+}
+
+async function terminatePresentation(frontendApp = IModelApp) {
+  if (!isInitialized)
+    return;
+
+  // store directory that needs to be cleaned-up
+  let hierarchiesCacheDirectory: string | undefined;
+  const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
+  if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.directory;
+  else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.disk?.directory;
+
+  // terminate backend
+  PresentationBackend.terminate();
+  await IModelHost.shutdown();
+  if (hierarchiesCacheDirectory)
+    rimraf.sync(hierarchiesCacheDirectory);
+
+  // terminate frontend
+  PresentationFrontend.terminate();
+  await frontendApp.shutdown();
+
+  isInitialized = false;
+}
+
+function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
+  const config = class extends RpcDefaultConfiguration {
+    public override interfaces: any = () => interfaces;
+  };
+
+  for (const definition of interfaces)
+    RpcConfiguration.assign(definition, () => config);
+
+  const instance = RpcConfiguration.obtain(config);
+
+  try {
+    RpcConfiguration.initializeInterfaces(instance);
+  } catch {
+    // this may fail with "Error: RPC interface "xxx" is already initialized." because
+    // multiple different tests want to set up rpc interfaces
+  }
+}
