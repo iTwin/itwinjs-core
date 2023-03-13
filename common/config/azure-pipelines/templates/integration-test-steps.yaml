@@ -109,6 +109,8 @@ steps:
   # MacOS and Windows agents work without any virtual display
   - script: npm run test:integration:frontend:ci
     workingDirectory: "core/electron"
+    env:
+      NODE_ENV: development
     displayName: "Run Electron Frontend Tests"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 

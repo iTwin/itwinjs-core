@@ -15,8 +15,8 @@ import { Point4d } from "./geometry4d/Point4d";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
-/** Enumeration of the 6 possible orderings of XYZ axis order
- *
+/**
+ * Enumeration of the 6 possible orderings of XYZ axis order
  * * **Note:** There are 3 axis order with right hand system (XYZ = 0, YZX = 1, ZXY = 2) and 3 axis order with
  * left hand system (XZY = 4, YXZ = 5, ZYX = 6). Note that AxisOrder is encoding the handedness as well. Cross
  * product of the i_th axis in an ordering (i=0,1,2), with the i+1_th in that ordering, will produce the i+2_th
@@ -37,7 +37,8 @@ export enum AxisOrder {
   /** Left handed system, Z then Y then X */
   ZYX = 6,
 }
-/** Enumeration of numeric indices of 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
+/**
+ * Enumeration of numeric indices of 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
  * @public
  */
 export enum AxisIndex {
@@ -134,6 +135,31 @@ export interface PlaneAltitudeEvaluator {
   /** x part of normal vector */
   normalZ(): number;
 }
+
+/** Enumeration of possible locations of a point in the plane of a polygon.
+ * @public
+ */
+export enum PolygonLocation {
+  /** No location specified. */
+  Unknown = 0,
+  /** Point is at a vertex. */
+  OnPolygonVertex = 1,
+  /** Point is on an edge (but not a vertex). */
+  OnPolygonEdgeInterior = 2,
+  /** Point is strictly inside the polygon with unknown projection. */
+  InsidePolygon = 3,
+  /** Point is strictly inside the polygon and projects to a vertex. */
+  InsidePolygonProjectsToVertex = 4,
+  /** Point is strictly inside the polygon and projects to an edge (but not a vertex). */
+  InsidePolygonProjectsToEdgeInterior = 5,
+  /** Point is strictly outside the polygon with unknown projection. */
+  OutsidePolygon = 6,
+  /** Point is strictly outside the polygon and projects to a vertex. */
+  OutsidePolygonProjectsToVertex = 7,
+  /** Point is strictly outside the polygon and projects to an edge (but not a vertex). */
+  OutsidePolygonProjectsToEdgeInterior = 8,
+}
+
 /**
  * Interface for `toJSON` and `setFromJSON` methods
  * @public
@@ -241,7 +267,10 @@ export class Geometry {
   public static inverseMetricDistanceSquared(a: number): number | undefined {
     return (Math.abs(a) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / a;
   }
-  /** Boolean test for metric coordinate near-equality */
+  /**
+   * Boolean test for metric coordinate near-equality (i.e., if x and y are almost equal). If tolerance is not passed,
+   * `Geometry.smallMetricDistance` is used as tolerance.
+   */
   public static isSameCoordinate(x: number, y: number, tol?: number): boolean {
     if (tol)
       return Math.abs(x - y) < Math.abs(tol);
@@ -436,7 +465,8 @@ export class Geometry {
     if (c > q) q = c;
     return q;
   }
-  /** Examine the value (particularly sign) of x.
+  /**
+   * Examine the value (particularly sign) of x.
    * * If x is negative, return outNegative.
    * * If x is true zero, return outZero
    * * If x is positive, return outPositive
@@ -701,18 +731,40 @@ export class Geometry {
   }
   /** return 0 if the value is undefined, 1 if defined. */
   public static defined01(value: any): number { return value === undefined ? 0 : 1; }
-  /** normally, return numerator/denominator.
-   * but if the ratio would exceed Geometry.largeFractionResult, return undefined.
+  /**
+   * Return `numerator` divided by `denominator`, or `undefined`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * return `undefined`.
    */
   public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
     if (Math.abs(denominator) * Geometry.largeFractionResult > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }
-  /** normally, return numerator/denominator.
-   * but if the ratio would exceed Geometry.largestResult, return undefined.
+  /**
+   * Return `numerator` divided by `denominator`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * return `defaultResult`.
    */
-  public static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult: number = Geometry.largeCoordinateResult): number | undefined {
+  public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
+    const a = Geometry.conditionalDivideFraction(numerator, denominator);
+    if (a !== undefined)
+      return a;
+    return defaultResult;
+  }
+  /**
+   * Return `numerator` divided by `denominator` (with a given `largestResult`), or `undefined`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @param largestResult the ratio threshold.
+   * @returns return `numerator/denominator` but if the ratio would exceed `largestResult`, return `undefined`.
+   */
+  public static conditionalDivideCoordinate(numerator: number, denominator: number,
+    largestResult: number = Geometry.largeCoordinateResult): number | undefined {
     if (Math.abs(denominator * largestResult) > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
@@ -747,15 +799,6 @@ export class Geometry {
       }
       return result;
     }
-  }
-  /** normally,  return the number result of conditionalDivideFraction.
-   * but if conditionalDivideFraction fails return specified default number.
-   */
-  public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
-    const a = Geometry.conditionalDivideFraction(numerator, denominator);
-    if (a !== undefined)
-      return a;
-    return defaultResult;
   }
   /** For a line f(x) whose function values at x0 and x1 are f0 and f1, return the x value at which f(x)=fTarget; */
   public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF: number = 0,

@@ -5,12 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { fireEvent, render } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@itwin/core-frontend";
 import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
-import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
 import { getQuantityFormatsSettingsManagerEntry } from "../../appui-react/settings/quantityformatting/QuantityFormat";
 import { ModalDialogRenderer } from "../../appui-react/dialog/ModalDialogManager";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
@@ -18,7 +15,6 @@ import { UiFramework } from "../../appui-react/UiFramework";
 
 describe("QuantityFormatSettingsPage", () => {
 
-  let presentationManagerMock: moq.IMock<PresentationManager>;
   const sandbox = sinon.createSandbox();
 
   before(async () => {
@@ -29,14 +25,10 @@ describe("QuantityFormatSettingsPage", () => {
   after(async () => {
     TestUtils.terminateUiFramework();
     await MockRender.App.shutdown();
-    Presentation.terminate();
   });
 
   beforeEach(async () => {
     await IModelApp.quantityFormatter.reinitializeFormatAndParsingsMaps(new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>(), "imperial");
-    presentationManagerMock = mockPresentationManager().presentationManager;
-    presentationManagerMock.setup((x) => x.activeUnitSystem).returns(() => "imperial");
-    Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
   afterEach(() => {
@@ -49,10 +41,8 @@ describe("QuantityFormatSettingsPage", () => {
     const settingsEntry = getQuantityFormatsSettingsManagerEntry(10);
     expect(settingsEntry.itemPriority).to.eql(10);
 
-    const unitSystemSpy = sandbox.spy();
-
-    // setup fake setter in the mocked object
-    sandbox.stub(Presentation.presentation, "activeUnitSystem").set(unitSystemSpy);
+    // setup a spy on unit system setter
+    const unitSystemSpy = sandbox.spy(IModelApp.quantityFormatter, "setActiveUnitSystem");
 
     const wrapper = render(settingsEntry.page);
 
@@ -92,11 +82,6 @@ describe("QuantityFormatSettingsPage", () => {
   it("will listen for external unit system changes", async () => {
     const settingsEntry = getQuantityFormatsSettingsManagerEntry(10, { initialQuantityType: QuantityType.Length });
     expect(settingsEntry.itemPriority).to.eql(10);
-
-    const unitSystemSpy = sandbox.spy();
-
-    // setup fake setter in the mocked object
-    sandbox.stub(Presentation.presentation, "activeUnitSystem").set(unitSystemSpy);
 
     const wrapper = render(settingsEntry.page);
     await IModelApp.quantityFormatter.setActiveUnitSystem("metric", false);

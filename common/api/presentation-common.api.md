@@ -9,12 +9,15 @@ import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
+import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public
@@ -368,6 +371,13 @@ export interface ContentModifiersList {
     propertyCategories?: PropertyCategorySpecification[];
     propertyOverrides?: PropertySpecification[];
     relatedProperties?: RelatedPropertiesSpecification[];
+}
+
+// @alpha (undocumented)
+export class ContentPropertyValueFormatter {
+    constructor(_propertyValueFormatter: PropertyValueFormatter, _unitSystem: UnitSystemKey);
+    // (undocumented)
+    formatContent(content: Content): Promise<Content>;
 }
 
 // @public
@@ -1026,6 +1036,14 @@ export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable =
 
 // @public
 export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>>;
+
+// @alpha (undocumented)
+export interface FormatOptions {
+    // (undocumented)
+    koqName: string;
+    // (undocumented)
+    unitSystem: UnitSystemKey;
+}
 
 // @internal (undocumented)
 export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
@@ -2480,6 +2498,17 @@ export enum PropertyValueFormat {
     Struct = "Struct"
 }
 
+// @alpha (undocumented)
+export class PropertyValueFormatter {
+    constructor(_schemaContext: SchemaContext);
+    // (undocumented)
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
+    // (undocumented)
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec | undefined>;
+    // (undocumented)
+    getParserSpec(options: FormatOptions): Promise<ParserSpec | undefined>;
+}
+
 // @public
 export type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
 
@@ -2693,13 +2722,11 @@ export interface RootNodeRule extends NavigationRuleBase {
 export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
 
 // @internal
-export class RpcRequestsHandler implements IDisposable {
+export class RpcRequestsHandler {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
     computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON>;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
@@ -2738,14 +2765,15 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
-    // (undocumented)
-    readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
+    readonly timeout: number;
 }
 
 // @internal
 export interface RpcRequestsHandlerProps {
     clientId?: string;
+    // (undocumented)
+    timeout?: number;
 }
 
 // @public

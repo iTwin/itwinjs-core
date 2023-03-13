@@ -231,6 +231,7 @@ exports[`ModelsTree #integration renders component with real data and no active 
             style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
           >
             <div
+              aria-selected="false"
               class="core-tree-node with-checkbox"
               data-testid="tree-node"
               role="treeitem"
@@ -277,6 +278,7 @@ exports[`ModelsTree #integration renders component with real data and no active 
             style="position: absolute; left: 0px; top: 25px; height: 25px; width: 100%;"
           >
             <div
+              aria-selected="false"
               class="core-tree-node with-checkbox"
               data-testid="tree-node"
               role="treeitem"
@@ -3721,6 +3723,7 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
               style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
             >
               <div
+                aria-selected="false"
                 class="core-tree-node with-checkbox"
                 data-testid="tree-node"
                 role="treeitem"

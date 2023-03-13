@@ -87,8 +87,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/rpcinterface-full-stack-tests/     @calebmshafer @wgoehrig
 /common/**/appui-*.*                          @iTwin/itwinjs-core-ui
 /common/**/appui-*/                           @iTwin/itwinjs-core-ui
-/common/**/*-react.*                          @iTwin/itwinjs-core-ui
-/common/**/*-react/                           @iTwin/itwinjs-core-ui
 /common/**/webgl-compatibility.*              @iTwin/itwinjs-core-display @Ellord207
 /common/**/webgl-compatibility/               @iTwin/itwinjs-core-display @Ellord207
 /common/**/core-webpack-tools/                @aruniverse @calebmshafer @wgoehrig
@@ -142,7 +140,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /full-stack-tests/presentation            @iTwin/itwinjs-core-presentation
 /full-stack-tests/rpc                     @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface           @calebmshafer @wgoehrig
-/full-stack-tests/ui                      @iTwin/itwinjs-core-ui
 
 /presentation                   @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
@@ -158,13 +155,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
 /test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
-/test-apps/ninezone-test-app                @iTwin/itwinjs-core-ui
-/test-apps/presentation-test-app            @iTwin/itwinjs-core-presentation
 /test-apps/synchro-schedule-importer        @iTwin/itwinjs-core-display
-/test-apps/ui-test-app                      @iTwin/itwinjs-core-ui
-/test-apps/ui-items-providers-test          @iTwin/itwinjs-core-ui
-/test-apps/appui-test-app                   @iTwin/itwinjs-core-ui
-
 
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
@@ -176,9 +167,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /tools/perf-tools @calebmshafer @wgoehrig
 
 /ui @iTwin/itwinjs-core-ui
-/ui/components/src/components-react/properties   @iTwin/itwinjs-core-ui @iTwin/itwinjs-core-presentation
-/ui/components/src/components-react/propertygrid @iTwin/itwinjs-core-ui @iTwin/itwinjs-core-presentation
-/ui/components/src/components-react/tree         @iTwin/itwinjs-core-ui @iTwin/itwinjs-core-presentation
 
 # These are at the end to override all previous reviews
 

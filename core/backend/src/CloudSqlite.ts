@@ -186,7 +186,10 @@ export namespace CloudSqlite {
     destroy(): void;
   }
 
-  /** A CloudSqlite container that may be connected to a CloudCache. */
+  /** A CloudSqlite container that may be connected to a CloudCache.
+   * @note All methods and accessors of this interface (other than `initializeContainer`) require that the `connect` method be successfully called first.
+   * Otherwise they will throw an exception or return meaningless values.
+   */
   export interface CloudContainer {
     readonly cache?: CloudCache;
     /** The ContainerId. */
@@ -216,12 +219,21 @@ export namespace CloudSqlite {
     initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize?: number }): void;
 
     /**
+     * Connect this CloudContainer to a CloudCache for reading or writing its manifest, write lock, and databases.
+     * @note A CloudCache is a local directory holding copies of information from the cloud. Its content is persistent across sessions,
+     * but this method must be called each session to (re)establish the connection to the cache. If the CloudCache was previously populated,
+     * this method may be called and will succeed *even when offline* or without a valid `accessToken`.
+     * @note all operations that access the contents of databases or the manifest require this method be successfully called (i.e. `isConnected === true`).
+     */
+    connect(cache: CloudCache): void;
+
+    /**
      * Attempt to acquire the write lock for this CloudContainer. For this to succeed:
      * 1. it must be connected to a `CloudCache`
      * 2. this CloudContainer must have been constructed with `writeable: true`
      * 3. the `accessToken` must authorize write access
      * 4. no other process may be holding an unexpired write lock
-     * @throws exception if any of the above conditions fail
+     * @throws if any of the above conditions fail
      * @note Write locks *expire* after the duration specified in the `durationSeconds` property of the constructor argument, in case a process
      * crashes or otherwise fails to release the lock. Calling `acquireWriteLock` with the lock already held resets the lock duration from the current time,
      * so long running processes should call this method periodically to ensure their lock doesn't expire (they should also make sure their accessToken is refreshed
@@ -254,17 +266,9 @@ export namespace CloudSqlite {
     abandonChanges(): void;
 
     /**
-     * Connect this CloudContainer to a CloudCache for reading or writing its manifest, write lock, and databases.
-     * @note A CloudCache is a local directory holding copies of information from the cloud. Its content is persistent across sessions,
-     * but this method must be called each session to (re)establish the connection to the cache. If the CloudCache was previously populated,
-     * this method may be called and will succeed *even when offline* or without a valid `accessToken`.
-     * @note all operations that access the contents of databases or the manifest require this method be called (`isConnected === true`).
-     */
-    connect(cache: CloudCache): void;
-
-    /**
      * Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container. Leaves the container attached to the
      * CloudCache so it is available for future sessions.
+     * @note This function does nothing (and does not throw) if the CloudContainer is not connected to a CloudCache.
      */
     disconnect(): void;
 
@@ -415,6 +419,7 @@ export namespace CloudSqlite {
     * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
     * @param container the CloudContainer for which the lock is to be acquired
     * @param busyHandler if present, function called when the write lock is currently held by another user.
+    * @throws if [[container]] is not connected to a CloudCache.
     */
   export async function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler) {
     if (container.hasWriteLock)

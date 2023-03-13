@@ -9,7 +9,6 @@ various utility classes, functions and React hooks for working with a UI.
 - [IconHelper]($core-react) - Icon Helper Class used to store the data needed to generate an `<Icon>` for use in any control that shows an icon
 - [NoChildrenProps]($core-react) - Props used by components that do not expect children to be passed in
 - [OmitChildrenProp]($core-react) - Omit children property
-- [PointProps]($core-react) - Describes 2d points
 - [RectangleProps]($core-react) - Describes 2d bounds
 - [SizeProps]($core-react) - Describes 2d dimensions
 - [Timer]($core-react) - Notifies handler after a set interval

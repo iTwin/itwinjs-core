@@ -231,4 +231,47 @@ describe("MapUrlDialog", () => {
     expect(allRadios.length).to.equals(2);
   });
 
+  it("attach a valid layer with a single non-visible sublayer", async () => {
+    const sampleLayerSettings = ImageMapLayerSettings.fromJSON({
+      formatId: "WMS",
+      name: "TestLayer",
+      visible: true,
+      transparentBackground: true,
+      subLayers: [{ name: "subLayer1", visible: false }],
+      accessKey: undefined,
+      transparency: 0,
+      url: "https://server/MapServer",
+    });
+
+    const spyMessage = sandbox.spy(IModelApp.notifications, "outputMessage");
+
+    sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
+      return Promise.resolve({ status: MapLayerSourceStatus.Valid, subLayers: sampleLayerSettings.subLayers });
+    });
+
+    const component = enzyme.mount(<MapUrlDialog isOverlay={false} activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
+    const layerTypeSelect = component.find(Select);
+    await (layerTypeSelect.props() as any).onChange("WMS");
+
+    const allInputs = component.find("input");
+    expect(allInputs.length).to.equals(2);
+    allInputs.at(0).simulate("change", { target: { value: sampleLayerSettings?.name } });
+    allInputs.at(1).simulate("change", { target: { value: sampleLayerSettings?.url } });
+
+    const okButton = component.find(".core-dialog-buttons").childAt(0);
+    expect(okButton.length).to.equals(1);
+    okButton.simulate("click");
+
+    await TestUtils.flushAsyncOperations();
+
+    // Check that single sub-layer visibility has been forced to true (was initially false)
+    const cloned = ImageMapLayerSettings.fromJSON({...sampleLayerSettings.toJSON(), subLayers:  [{ name: "subLayer1", visible: true }]});
+
+    displayStyleMock.verify((x) => x.attachMapLayer({settings:cloned, isOverlay:false}), moq.Times.once());
+
+    spyMessage.calledWithExactly(new NotifyMessageDetails(OutputMessagePriority.Info, "Messages.MapLayerAttached"));
+
+    component.unmount();
+  });
+
 });
