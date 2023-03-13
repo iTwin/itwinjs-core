@@ -46,7 +46,7 @@ function verifyMatchedPlaneAltitudeEvaluator(ck: Checker, planeA: PlaneEvaluator
     ck.testCoordinate(planeA.velocityXYZ(v.x, v.y, v.z), planeA.velocity(v), { velocityXYZ: v });
   }
 }
-describe.only("PlaneEvaluator", () => {
+describe("PlaneEvaluator", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
     const pointA = Point3d.create(1.2, 3);

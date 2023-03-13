@@ -142,6 +142,11 @@ export interface PlaneAltitudeEvaluator {
  * @public
  */
 export interface PlaneEvaluator extends PlaneAltitudeEvaluator {
+  /**
+   * Return the projection of spacePoint onto this plane(i.e. closest point on plane)
+   * @param spacePoint point to project to plane
+   * @param result projected point.
+   */
   projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
 }
 

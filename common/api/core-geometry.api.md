@@ -4173,7 +4173,6 @@ export class PlaneByOriginAndVectors4d {
 
 // @public
 export interface PlaneEvaluator extends PlaneAltitudeEvaluator {
-    // (undocumented)
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
 }
 
