@@ -337,6 +337,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
   },
   areEqual,
 );
+Node.displayName = "Node";
 
 function useNodeLoading(
   node: TreeModelNode | TreeModelNodePlaceholder,
