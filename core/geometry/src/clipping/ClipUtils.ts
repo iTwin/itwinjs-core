@@ -493,7 +493,9 @@ export class ClipUtilities {
     return false;
   }
 
-  private static _workTransform0?: Transform;
+  private static _workTransform?: Transform;
+  private static _workRange?: Range3d;
+  private static _workClipper?: ConvexClipPlaneSet;
 
   /** Test for intersection of two ranges in different local coordinates.
    * * Useful for clash detection of elements in iModels, using their stored (tight) local ranges and placement transforms.
@@ -501,26 +503,25 @@ export class ClipUtilities {
    * @param local0ToWorld placement transform for first geometry
    * @param range1 range in local coordinates of second geometry
    * @param local1ToWorld placement transform for second geometry. Assumed to be invertible.
-   * @param rangeMargin1 optional signed world distance to expand/contract the second range before intersection. Positive expands.
+   * @param range1Margin optional signed local distance to expand/contract the second range before intersection. Positive expands.
    * @return whether the local ranges are adjacent or intersect. Also returns false if local1ToWorld is singular.
    */
-  public static doLocalRangesIntersect(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, rangeMargin1?: number): boolean {
-    const worldToLocal1 = ClipUtilities._workTransform0 = local1ToWorld.inverse(ClipUtilities._workTransform0);
+  public static doLocalRangesIntersect(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, range1Margin?: number): boolean {
+    const worldToLocal1 = ClipUtilities._workTransform = local1ToWorld.inverse(ClipUtilities._workTransform);
     if (!worldToLocal1)
       return false;
-    if (rangeMargin1) {
-      const factors = worldToLocal1.matrix.factorRigidWithSignedScale();
-      if (factors)
-        rangeMargin1 *= Math.abs(factors.scale);  // convert margin to local1 coords if uniform scale
-      range1.expandInPlace(rangeMargin1);
+    let myRange1 = range1;
+    if (range1Margin) {
+      myRange1 = ClipUtilities._workRange = range1.clone(ClipUtilities._workRange);
+      myRange1.expandInPlace(range1Margin);
     }
     // convert range0 into a clipper in local1 coordinates, then intersect with range1
-    const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(local0ToWorld);
+    const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(local0ToWorld, worldToLocal1);
     const builder = PolyfaceBuilder.create();
     builder.addTransformedRangeMesh(local0ToLocal1, range0);
     const mesh0 = builder.claimPolyface();
-    const clipper = ConvexClipPlaneSet.createConvexPolyface(mesh0).clipper;
-    return ClipUtilities.doesClipperIntersectRange(clipper, range1);
+    const clipper = ClipUtilities._workClipper = ConvexClipPlaneSet.createConvexPolyface(mesh0, ClipUtilities._workClipper).clipper;
+    return ClipUtilities.doesClipperIntersectRange(clipper, myRange1);
   }
 
   /**

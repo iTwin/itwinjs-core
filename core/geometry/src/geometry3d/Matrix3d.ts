@@ -2671,21 +2671,21 @@ export class Matrix3d implements BeJSONFunctions {
    * Test if all rows and columns are perpendicular to each other and have equal length.
    * If so, the length (or its negative) is the `scale` factor from a set of `orthonormal axes` to
    * the set of axes created by columns of `this` matrix. Otherwise, returns `undefined`.
+   * @param result optional pre-allocated object to populate and return
    * @returns returns `{ rigidAxes, scale }` where `rigidAxes` is a Matrix3d with its columns as the rigid axes
    * (with the scale factor removed) and `scale` is the scale factor.
    * * Note that determinant of a rigid matrix is +1.
    * * The context for this method is to determine if the matrix is the product a `rotation` matrix and a uniform
    * `scale` matrix (diagonal matrix with all diagonal entries the same nonzero number).
    */
-  public factorRigidWithSignedScale(): { rigidAxes: Matrix3d, scale: number } | undefined {
+  public factorRigidWithSignedScale(result?: Matrix3d): { rigidAxes: Matrix3d, scale: number } | undefined {
     const product = this.multiplyMatrixMatrixTranspose(this);
     const scaleSquare = product.sameDiagonalScale();
     if (scaleSquare === undefined || scaleSquare <= 0.0)
       return undefined;
     const scale = this.determinant() > 0 ? Math.sqrt(scaleSquare) : -Math.sqrt(scaleSquare);
     const scaleInverse = 1.0 / scale;
-    const result = { rigidAxes: this.scaleColumns(scaleInverse, scaleInverse, scaleInverse), scale };
-    return result;
+    return { rigidAxes: this.scaleColumns(scaleInverse, scaleInverse, scaleInverse, result), scale };
   }
   /** Test if `this` matrix reorders and/or negates the columns of the `identity` matrix. */
   public get isSignedPermutation(): boolean {

@@ -255,7 +255,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[1], myFacet[2], false);
           this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[2], myFacet[3], false);
         } else {
-          this.addIndexedQuadPointIndexes(myFacet[0], myFacet[1], myFacet[2], myFacet[3], false);
+          this.addIndexedQuadPointIndexes(myFacet[0], myFacet[1], myFacet[3], myFacet[2], false);
         }
         this._polyface.terminateFacet();
       }
@@ -608,10 +608,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Announce a single quad facet's point indexes.
-   *
    * * The actual quad may be reversed or triangulated based on builder setup.
-   * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
-   * *  indexB0 and indexB1 are in the forward order at the "B" end of the quad.
+   * * indexA0 and indexA1 are in the forward order at the "A" end of the quad
+   * * indexB0 and indexB1 are in the forward order at the "B" end of the quad.
+   * * This means ccw/cw ordered vertices v[i] should be passed into this function as i=[0,1,3,2]
    */
   private addIndexedQuadPointIndexes(indexA0: number, indexA1: number, indexB0: number, indexB1: number, terminate: boolean = true) {
     if (this._reversed) {
