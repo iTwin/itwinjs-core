@@ -71,6 +71,12 @@ describe.only("PlaneEvaluator", () => {
       const planeA1 = Plane3dByOriginAndUnitNormal.createOriginAndTargets(pointA, pointU, pointV)!;
       const planeB1 = Plane3dByOriginAndVectors.createOriginAndTargets(pointA, pointU, pointV);
       verifyMatchedPlaneAltitudeEvaluator(ck, planeA1, planeB1);
+
+      for (const sourcePlane of [planeA, planeB, planeC, planeD, planeA1, planeB1]) {
+        const plane4d = Point4d.createPlaneFrom(sourcePlane);
+        if (ck.testType(plane4d, Point4d, "Convert to Point4d plane"))
+          verifyMatchedPlaneAltitudeEvaluator(ck, sourcePlane, plane4d);
+      }
     }
     expect(ck.getNumErrors()).equals(0);
   });

@@ -94,10 +94,10 @@ export interface TrigValues {
 }
 /**
  * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
- *
+ * NOTE: This interface is superseded by PlaneEvaluator.
  * Specific implementors are
- * * Plane3dByOriginAndUnitNormal
- * * Point4d (used for homogeneous plane coefficients)
+ * * Plane3dByOriginAndUnitNormal -- implicit plane with preferred origin
+ * * Plane3dByOriginAndVectors -- parametric plane (with skew-friendly, independently scaled grid directions)
  * * ClipPlane implicit plane as used in ConvexClipPlaneSet and UnionOfConvexClipPlaneSet
  * @public
  */
@@ -137,10 +137,12 @@ export interface PlaneAltitudeEvaluator {
   normalZ(): number;
 }
 /**
- * Additional plane evaluation methods.
+ * Plane Evaluation methods.
+ * This supersedes PlaneAltitudeEvaluators as the uniform method set for internal plane classes.
+ * @public
  */
 export interface PlaneEvaluator extends PlaneAltitudeEvaluator {
-  projectPointToPlane(spacePoint: Point3d): Point3d;
+  projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
 }
 
 /** Enumeration of possible locations of a point in the plane of a polygon.

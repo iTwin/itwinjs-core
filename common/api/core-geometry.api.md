@@ -1074,6 +1074,8 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     normalY(): number;
     normalZ(): number;
     offsetDistance(offset: number): void;
+    // (undocumented)
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
     setPlane4d(plane: Point4d): void;
@@ -4056,7 +4058,7 @@ export interface PerpParallelOptions {
 }
 
 // @public
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
+export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvaluator {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
     altitudeXY(x: number, y: number): number;
@@ -4065,7 +4067,9 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
     cloneTransformed(transform: Transform, inverse?: boolean): Plane3dByOriginAndUnitNormal | undefined;
     static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
+    static createOriginAndTargets(pointA: Point3d, pointB: Point3d, pointC: Point3d): Plane3dByOriginAndUnitNormal | undefined;
     static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
+    static createOriginAndVectors(pointA: Point3d, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
     static createPointPointVectorInPlane(pointA: Point3d, pointB: Point3d, vector: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
     static createXYAngle(x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
     static createXYPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
@@ -4093,7 +4097,11 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
 }
 
 // @public
-export class Plane3dByOriginAndVectors implements BeJSONFunctions {
+export class Plane3dByOriginAndVectors implements BeJSONFunctions, PlaneEvaluator {
+    // (undocumented)
+    altitude(xyz: XYAndZ): number;
+    // (undocumented)
+    altitudeXYZ(x: number, y: number, z: number): number;
     clone(): Plane3dByOriginAndVectors;
     static createCapture(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createFromTransformColumnsXYAndLengths(transform: Transform, xLength: number | undefined, yLength: number | undefined, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -4108,7 +4116,14 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     static fromJSON(json?: any): Plane3dByOriginAndVectors;
     isAlmostEqual(other: Plane3dByOriginAndVectors): boolean;
     normalizeInPlace(): boolean;
+    // (undocumented)
+    normalX(): number;
+    // (undocumented)
+    normalY(): number;
+    // (undocumented)
+    normalZ(): number;
     origin: Point3d;
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     setFromJSON(json?: any): void;
     setOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d): Plane3dByOriginAndVectors;
     setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors;
@@ -4119,6 +4134,12 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     unitNormalRay(result?: Ray3d): Ray3d | undefined;
     vectorU: Vector3d;
     vectorV: Vector3d;
+    // (undocumented)
+    velocity(xyzVector: XYAndZ): number;
+    // (undocumented)
+    velocityXYZ(x: number, y: number, z: number): number;
+    // (undocumented)
+    weightedAltitude(xyzw: Point4d): number;
 }
 
 // @public
@@ -4148,6 +4169,12 @@ export class PlaneByOriginAndVectors4d {
     setOriginAndVectorsXYZW(x0: number, y0: number, z0: number, w0: number, ux: number, uy: number, uz: number, uw: number, vx: number, vy: number, vz: number, vw: number): PlaneByOriginAndVectors4d;
     vectorU: Point4d;
     vectorV: Point4d;
+}
+
+// @public
+export interface PlaneEvaluator extends PlaneAltitudeEvaluator {
+    // (undocumented)
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
 }
 
 // @public
@@ -4303,7 +4330,7 @@ export class Point3dArrayPolygonOps {
 }
 
 // @public
-export class Point4d implements BeJSONFunctions {
+export class Point4d implements BeJSONFunctions, PlaneEvaluator {
     protected constructor(x?: number, y?: number, z?: number, w?: number);
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
@@ -4314,6 +4341,7 @@ export class Point4d implements BeJSONFunctions {
     static createFromPackedXYZW(data: Float64Array, xIndex?: number, result?: Point4d): Point4d;
     static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d;
     static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d;
+    static createPlaneFrom(source: PlaneAltitudeEvaluator): Point4d | undefined;
     static createPlanePointPointZ(pointA: Point4d, pointB: Point4d, result?: Point4d): Point4d;
     static createRealDerivativePlane3dByOriginAndVectorsDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, ddx: number, ddy: number, ddz: number, ddw: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createRealDerivativeRay3dDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, result?: Ray3d): Ray3d;
@@ -4350,6 +4378,7 @@ export class Point4d implements BeJSONFunctions {
     plus2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
     plus3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
     plusScaled(vector: Point4d, scaleFactor: number, result?: Point4d): Point4d;
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     radiansToPoint4dXYZW(other: Point4d): number | undefined;
     realDistanceXY(other: Point4d): number | undefined;
     realPoint(result?: Point3d): Point3d | undefined;
@@ -5119,6 +5148,7 @@ export class Ray3d implements BeJSONFunctions {
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
     intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
     isAlmostEqual(other: Ray3d): boolean;
+    isAlmostEqualPointSet(other: Ray3d): boolean;
     origin: Point3d;
     perpendicularPartOfVectorToTarget(targetPoint: XYAndZ, result?: Vector3d): Vector3d;
     pointToFraction(spacePoint: Point3d): number;
@@ -6134,6 +6164,7 @@ export class Vector3d extends XYZ {
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
     static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d;
     static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d;
+    static createUnitCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d | undefined;
     static createZero(result?: Vector3d): Vector3d;
     crossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d;
     crossProductMagnitude(vectorB: XYAndZ): number;
@@ -6304,6 +6335,7 @@ export class XYZ implements XYAndZ {
     indexOfMaxAbs(): number;
     isAlmostEqual(other: Readonly<XYAndZ>, tol?: number): boolean;
     isAlmostEqualMetric(other: XYAndZ): boolean;
+    isAlmostEqualPointPlusScaledVector(other: XYAndZ, vector: XYAndZ, scale: number, tol?: number): boolean;
     isAlmostEqualXY(other: XAndY, tol?: number): boolean;
     isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean;
     get isAlmostZero(): boolean;
