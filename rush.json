@@ -471,12 +471,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "presentation-test-app",
-      "projectFolder": "test-apps/presentation-test-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "backend-integration-tests",
       "projectFolder": "full-stack-tests/backend",
       "reviewCategory": "internal",
