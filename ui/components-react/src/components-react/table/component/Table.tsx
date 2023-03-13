@@ -969,6 +969,7 @@ export class Table extends React.Component<TableProps, TableState> {
     });
   });
 
+  /* eslint-disable react/display-name */
   private async renderCellContent(cellItem: CellItem, column: ReactDataGridColumn, displayValue: string): Promise<React.ComponentType<{ isSelected: boolean }>> {
     if (column.icon)
       return () => <TableIconCellContent iconName={displayValue} />;
@@ -1271,6 +1272,7 @@ export class Table extends React.Component<TableProps, TableState> {
     });
   }
 
+  /* eslint-disable react/display-name */
   private _createRowRenderer = () => {
     return (props: { row: RowProps, [k: string]: React.ReactNode }) => {
       // istanbul ignore next

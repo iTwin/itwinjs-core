@@ -23,6 +23,7 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
               style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
             >
               <div
+                aria-selected="false"
                 class="core-tree-node"
                 data-testid="tree-node"
                 role="treeitem"
