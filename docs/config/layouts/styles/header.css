@@ -151,7 +151,7 @@ header nav {
   font-size: 14px;
   text-decoration: none;
   margin-right: var(--space-unit);
-  height: 44px;
+  height: 30px;
 }
 
 .version-dropdown-toggle {
@@ -160,6 +160,8 @@ header nav {
   color: #ffffff;
   cursor: pointer;
   padding: 10px 0;
+  display: flex;
+  align-items: center;
 }
 
 .version-dropdown-toggle:after {
@@ -173,10 +175,6 @@ header nav {
 }
 
 
-.version-dropdown:hover .version-dropdown-toggle:after {
-  transform: rotate(180deg);
-}
-
 .version-dropdown-toggle:hover,
 .version-dropdown-toggle:focus {
   color: #e3e1e1;
@@ -184,6 +182,13 @@ header nav {
 
 .dropdown-header {
   font-weight: 600;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding-left: 10px;
+  color: #000000;
+
 }
 
 .version-dropdown-menu {
@@ -192,12 +197,13 @@ header nav {
   top: 100%;
   left: 0;
   z-index: 999;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  min-width: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  min-width: 120px;
   padding-top: 0;
-  padding-bottom: 0;
+  padding-bottom: 5px;
   margin-top: 0;
   background-color: white;
+  border-radius: 4px;
 }
 
 #main-nav .version-dropdown-menu a {
@@ -206,12 +212,15 @@ header nav {
   text-decoration: none;
   color: #000000;
   font-size: 14px;
+  text-align: left;
+  padding-top: 5px;
 }
 
 .version-dropdown-menu a:hover,
 .version-dropdown-menu a:focus {
-  background-color: rgb(209, 207, 207);
+  background-color: rgb(239, 239, 239);
   width: 100%;
+  border-radius: 4px;
 }
 
 .version-dropdown:hover .version-dropdown-menu {
