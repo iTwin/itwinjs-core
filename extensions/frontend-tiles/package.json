@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/frontend-tiles"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/frontend-tiles"
   },
   "keywords": [
     "Bentley",
