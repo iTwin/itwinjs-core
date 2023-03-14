@@ -577,7 +577,7 @@ export class Transform implements BeJSONFunctions {
   public multiplyInversePoint3dArrayInPlace(points: Point3d[]): boolean {
     if (!this._matrix.computeCachedInverse(true))
       return false;
-    for (let point of points)
+    for (const point of points)
       this._matrix.multiplyInverseXYZAsPoint3d(
         point.x - this.origin.x,
         point.y - this.origin.y,
