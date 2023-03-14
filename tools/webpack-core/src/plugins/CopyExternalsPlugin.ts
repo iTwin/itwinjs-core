@@ -8,6 +8,7 @@ import { Compilation, Compiler, ExternalModule, Module, WebpackError } from "web
 import { getAppRelativePath } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
+import { externalPrefix } from "./RequireMagicCommentsPlugin";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
@@ -86,7 +87,7 @@ export class CopyExternalsPlugin {
   }
 
   private pathToPackageName(p: string) {
-    const parts = p.replace(/^.*node_modules[\\\/]/, "").split(/[\\\/]/);
+    const parts = p.replace(/^.*node_modules[\\\/]/, "").replace(externalPrefix, "").split(/[\\\/]/);
     return (parts[0].startsWith("@")) ? `${parts[0]}/${parts[1]}` : parts[0];
   }
 }
