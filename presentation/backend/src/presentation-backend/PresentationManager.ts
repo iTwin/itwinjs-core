@@ -337,7 +337,10 @@ export interface PresentationManagerProps {
   addon?: NativePlatformDefinition;
 
   /**
-   * Localization function when only backend is used.
+   * Localization function to localize data returned by presentation manager when it's used directly on the backend (as opposed to when used through RPC, where
+   * data is localized on the frontend). Defaults to English localization.
+   *
+   * @see [Localization]($docs/presentation/advanced/Localization)
    * @beta
   */
   getLocalizedString?: (key: string) => string;
@@ -365,7 +368,7 @@ export class PresentationManager {
 
   /**
    * Get / set active locale used for localizing presentation data
-   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[PresentationManagerProps.getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   public activeLocale: string | undefined;
 
