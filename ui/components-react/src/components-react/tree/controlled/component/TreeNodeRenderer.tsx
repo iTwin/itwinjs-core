@@ -108,6 +108,7 @@ export const TreeNodeRenderer = React.memo((props: TreeNodeRendererProps) => {
     </TreeNode>
   );
 });
+TreeNodeRenderer.displayName = "TreeNodeRenderer";
 
 interface TreeNodeIconProps {
   node: TreeModelNode;

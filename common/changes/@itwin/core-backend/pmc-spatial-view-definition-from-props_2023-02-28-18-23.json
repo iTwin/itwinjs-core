@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add SpatialViewState.fromJSON.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
