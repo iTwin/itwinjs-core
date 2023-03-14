@@ -303,8 +303,8 @@ export interface PresentationManagerProps {
   mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
   /**
-   * The interval (in milliseconds) used to poll for presentation data changes. Only has
-   * effect in read-write mode (see [[mode]]).
+   * The interval (in milliseconds) used to poll for presentation data changes. If not set, presentation
+   * data changes are not tracked at all.
    *
    * @beta
    */
