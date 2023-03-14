@@ -472,13 +472,13 @@ describe("<QuantityNumberInput />", () => {
       const wrapper = render(<QuantityNumberInput persistenceValue={value} quantityType={QuantityType.Length} step={.25} onChange={handleChange} />);
       const input = wrapper.container.querySelector("input");
       expect(input).not.to.be.null;
-      expect((input as HTMLInputElement).value).to.eq("1.");
+      expect((input as HTMLInputElement).value).to.eq("1.0");
 
       fireEvent.change(input!, { target: { value: "2" } });
       expect((input as HTMLInputElement).value).to.eq("2");
       fireEvent.keyDown(input!, { key: SpecialKey.Enter });
       spyMethod.calledOnce.should.be.true;
-      expect((input as HTMLInputElement).value).to.eq("2.");
+      expect((input as HTMLInputElement).value).to.eq("2.0");
 
       await IModelApp.quantityFormatter.clearAllOverrideFormats();
     });
