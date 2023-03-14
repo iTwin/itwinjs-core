@@ -124,8 +124,8 @@ This attribute controls whether the particular property is present in the result
 
 | Ruleset variable values | Result                                                                                                                                                                      |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SHOW_LABEL = false`    | ![Example of using a "is displayed" attribute with ECExpression that evaluates to `false`](./media/propertyspecification-with-isdisplayed-attribute-ecexpression-false.jpg) |
-| `SHOW_LABEL = true`     | ![Example of using a "is displayed" attribute with ECExpression that evaluated to `true`](./media/propertyspecification-with-isdisplayed-attribute-ecexpression-true.jpg)   |
+| `SHOW_LABEL = false`    | ![Example of using a "is displayed" attribute with ECExpression that evaluates to `false`](./media/propertyspecification-with-isdisplayed-attribute-ecexpression-false.png) |
+| `SHOW_LABEL = true`     | ![Example of using a "is displayed" attribute with ECExpression that evaluated to `true`](./media/propertyspecification-with-isdisplayed-attribute-ecexpression-true.png)   |
 
 ### Attribute: `doNotHideOtherPropertiesOnDisplayOverride`
 
