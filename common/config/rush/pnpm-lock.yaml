@@ -2628,9 +2628,9 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
       '@opentelemetry/api': 1.0.4
-      '@opentelemetry/resources': ^1.5.0
-      '@opentelemetry/sdk-trace-base': ^1.5.0
-      '@opentelemetry/semantic-conventions': ^1.5.0
+      '@opentelemetry/resources': ~1.5.0
+      '@opentelemetry/sdk-trace-base': ~1.5.0
+      '@opentelemetry/semantic-conventions': ~1.5.0
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
@@ -2645,9 +2645,9 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../common
       '@opentelemetry/api': 1.0.4
-      '@opentelemetry/resources': 1.9.1_@opentelemetry+api@1.0.4
-      '@opentelemetry/sdk-trace-base': 1.9.1_@opentelemetry+api@1.0.4
-      '@opentelemetry/semantic-conventions': 1.9.1
+      '@opentelemetry/resources': 1.5.0_@opentelemetry+api@1.0.4
+      '@opentelemetry/sdk-trace-base': 1.5.0_@opentelemetry+api@1.0.4
+      '@opentelemetry/semantic-conventions': 1.5.0
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 18.14.1
@@ -7660,41 +7660,41 @@ packages:
     engines: {node: '>=8.0.0'}
     dev: false
 
-  /@opentelemetry/core/1.9.1_@opentelemetry+api@1.0.4:
-    resolution: {integrity: sha512-6/qon6tw2I8ZaJnHAQUUn4BqhTbTNRS0WP8/bA0ynaX+Uzp/DDbd0NS0Cq6TMlh8+mrlsyqDE7mO50nmv2Yvlg==}
+  /@opentelemetry/core/1.5.0_@opentelemetry+api@1.0.4:
+    resolution: {integrity: sha512-B3DIMkQN0DANrr7XrMLS4pR6d2o/jqT09x4nZJz6wSJ9SHr4eQIqeFBNeEUQG1I+AuOcH2UbJtgFm7fKxLqd+w==}
     engines: {node: '>=14'}
     peerDependencies:
-      '@opentelemetry/api': '>=1.0.0 <1.5.0'
+      '@opentelemetry/api': '>=1.0.0 <1.2.0'
     dependencies:
       '@opentelemetry/api': 1.0.4
-      '@opentelemetry/semantic-conventions': 1.9.1
+      '@opentelemetry/semantic-conventions': 1.5.0
     dev: true
 
-  /@opentelemetry/resources/1.9.1_@opentelemetry+api@1.0.4:
-    resolution: {integrity: sha512-VqBGbnAfubI+l+yrtYxeLyOoL358JK57btPMJDd3TCOV3mV5TNBmzvOfmesM4NeTyXuGJByd3XvOHvFezLn3rQ==}
+  /@opentelemetry/resources/1.5.0_@opentelemetry+api@1.0.4:
+    resolution: {integrity: sha512-YeEfC6IY54U3xL3P2+UAiom+r50ZF2jM0J47RV5uTFGF19Xjd5zazSwDPgmxtAd6DwLX0/5S5iqrsH4nEXMYoA==}
     engines: {node: '>=14'}
     peerDependencies:
-      '@opentelemetry/api': '>=1.0.0 <1.5.0'
+      '@opentelemetry/api': '>=1.0.0 <1.2.0'
     dependencies:
       '@opentelemetry/api': 1.0.4
-      '@opentelemetry/core': 1.9.1_@opentelemetry+api@1.0.4
-      '@opentelemetry/semantic-conventions': 1.9.1
+      '@opentelemetry/core': 1.5.0_@opentelemetry+api@1.0.4
+      '@opentelemetry/semantic-conventions': 1.5.0
     dev: true
 
-  /@opentelemetry/sdk-trace-base/1.9.1_@opentelemetry+api@1.0.4:
-    resolution: {integrity: sha512-Y9gC5M1efhDLYHeeo2MWcDDMmR40z6QpqcWnPCm4Dmh+RHAMf4dnEBBntIe1dDpor686kyU6JV1D29ih1lZpsQ==}
+  /@opentelemetry/sdk-trace-base/1.5.0_@opentelemetry+api@1.0.4:
+    resolution: {integrity: sha512-6lx7YDf67HSQYuWnvq3XgSrWikDJLiGCbrpUP6UWJ5Z47HLcJvwZPRH+cQGJu1DFS3dT2cV3GpAR75/OofPNHQ==}
     engines: {node: '>=14'}
     peerDependencies:
-      '@opentelemetry/api': '>=1.0.0 <1.5.0'
+      '@opentelemetry/api': '>=1.0.0 <1.2.0'
     dependencies:
       '@opentelemetry/api': 1.0.4
-      '@opentelemetry/core': 1.9.1_@opentelemetry+api@1.0.4
-      '@opentelemetry/resources': 1.9.1_@opentelemetry+api@1.0.4
-      '@opentelemetry/semantic-conventions': 1.9.1
+      '@opentelemetry/core': 1.5.0_@opentelemetry+api@1.0.4
+      '@opentelemetry/resources': 1.5.0_@opentelemetry+api@1.0.4
+      '@opentelemetry/semantic-conventions': 1.5.0
     dev: true
 
-  /@opentelemetry/semantic-conventions/1.9.1:
-    resolution: {integrity: sha512-oPQdbFDmZvjXk5ZDoBGXG8B4tSB/qW5vQunJWQMFUBp7Xe8O1ByPANueJ+Jzg58esEBegyyxZ7LRmfJr7kFcFg==}
+  /@opentelemetry/semantic-conventions/1.5.0:
+    resolution: {integrity: sha512-wlYG/U6ddW1ilXslnDLLQYJ8nd97W8JJTTfwkGhubx6dzW6SUkd+N4/MzTjjyZlrHQunxHtkHFvVpUKiROvFDw==}
     engines: {node: '>=14'}
     dev: true
 
