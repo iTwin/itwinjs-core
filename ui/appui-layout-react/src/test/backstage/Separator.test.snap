@@ -1,8 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`<BackstageSeparator /> renders correctly 1`] = `
-<li
-  className="nz-backstage-separator"
-  role="separator"
-/>
-`;

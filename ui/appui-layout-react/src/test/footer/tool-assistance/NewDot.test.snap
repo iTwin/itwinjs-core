@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`<NewDot /> renders correctly 1`] = `
-<span
-  className="nz-footer-toolAssistance-newDot"
-/>
-`;

@@ -45,7 +45,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "nightly",
     "@types/node": "^18.11.5",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
