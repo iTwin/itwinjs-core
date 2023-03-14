@@ -217,6 +217,10 @@ You can use these environment variables to alter the default behavior of various
   * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
 * IMJS_EXIT_AFTER_MODEL_OPENED
   * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
+* IMJS_NO_ELECTRON_AUTH
+  * If defined, the authorization client will not be initialized for the electron app, to work around a current bug that causes it to produce constant exceptions when attempting to obtain an access token.
+* IMJS_USE_FRONTEND_TILES
+  * If defined, the @itwin/frontend-tiles package will be used to obtain tile trees for spatial views, served over localhost.
 
 ## Key-ins
 
