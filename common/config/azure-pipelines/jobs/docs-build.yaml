@@ -20,6 +20,9 @@ parameters:
   - name: shouldPublish
     type: boolean
     default: false
+  - name: ignoreAudit
+    type: boolean
+    default: false
 
 jobs:
   - job:
@@ -52,6 +55,7 @@ jobs:
       - script: node common/scripts/install-run-rush.js audit
         displayName: rush audit
         workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.ignoreAudit }}', false))
 
       - script: node common/scripts/install-run-rush.js build:ci
         displayName: rush build
