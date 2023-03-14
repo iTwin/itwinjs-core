@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Added Format lookup in ECSchema for formatting properties with KindOfQuantity",
+      "comment": "Added `Format` lookup in `ECSchema` for formatting properties with `KindOfQuantity`",
       "type": "none"
     }
   ],
