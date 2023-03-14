@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "Fix KeepSingleZero format trait",
+      "comment": "Fixed KeepSingleZero format trait where zero wasn't being retained when fractional part was all zeroes.",
       "type": "none"
     }
   ],
