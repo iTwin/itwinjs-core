@@ -1,0 +1,4 @@
+sep=;
+Release Tag;API Item
+alpha;FrontendTilesOptions
+alpha;initializeFrontendTiles(options: FrontendTilesOptions): void
