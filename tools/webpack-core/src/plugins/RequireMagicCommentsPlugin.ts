@@ -115,7 +115,7 @@ export class RequireMagicCommentsPlugin {
   }
 }
 
-const externalPrefix = "BeWebpack-EXTERNAL:";
+export const externalPrefix = "BeWebpack-EXTERNAL:";
 export const addExternalPrefix = (req: string) => externalPrefix + req;
 
 export const handlePrefixedExternals = (
