@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { using } from "@itwin/core-bentley";
 import { IModelDb, IpcHost } from "@itwin/core-backend";
-import { PresentationIpcEvents, UpdateInfoJSON } from "@itwin/presentation-common";
+import { PresentationIpcEvents, UpdateInfo } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 
@@ -74,11 +74,10 @@ describe("UpdatesTracker", () => {
     });
 
     it("emits events if there are updates", () => {
-      const updates: UpdateInfoJSON = {
+      const updates: UpdateInfo = {
         ["imodel-File-Path"]: {
-          "a-ruleset": { hierarchy: [] },
-          "b-ruleset": { hierarchy: "FULL" },
-          "c-ruleset": { content: "FULL" },
+          "a-ruleset": { hierarchy: "FULL" },
+          "b-ruleset": { content: "FULL" },
         },
       };
       nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: updates }));
@@ -89,14 +88,14 @@ describe("UpdatesTracker", () => {
       clock.tick(1);
       nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
 
-      const expectedUpdateInfo: UpdateInfoJSON = {
+      const expectedUpdateInfo: UpdateInfo = {
         ["imodelKey"]: updates["imodel-File-Path"],
       };
       expect(spy).to.be.calledOnceWithExactly(PresentationIpcEvents.Update, expectedUpdateInfo);
     });
 
     it("does not emit events if imodelDb is not found", () => {
-      const updates: UpdateInfoJSON = {
+      const updates: UpdateInfo = {
         ["imodel-File-Path"]: {
           "a-ruleset": { hierarchy: "FULL" },
         },

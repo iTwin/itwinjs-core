@@ -15,14 +15,13 @@ import {
   DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key,
   KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset,
-  RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+  RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
-import { StateTracker } from "./StateTracker";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -93,9 +92,6 @@ export interface PresentationManagerProps {
 
   /** @internal */
   ipcRequestsHandler?: IpcRequestsHandler;
-
-  /** @internal */
-  stateTracker?: StateTracker;
 }
 
 /**
@@ -113,7 +109,6 @@ export class PresentationManager implements IDisposable {
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
   private _ipcRequestsHandler?: IpcRequestsHandler;
-  private _stateTracker?: StateTracker;
 
   /**
    * An event raised when hierarchies created using specific ruleset change
@@ -155,7 +150,6 @@ export class PresentationManager implements IDisposable {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
       this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
-      this._stateTracker = props?.stateTracker ?? new StateTracker(this._ipcRequestsHandler);
     }
   }
 
@@ -184,9 +178,9 @@ export class PresentationManager implements IDisposable {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUpdate = (_evt: Event, report: UpdateInfoJSON) => {
+  private onUpdate = (_evt: Event, report: UpdateInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.handleUpdateAsync(UpdateInfo.fromJSON(report));
+    this.handleUpdateAsync(report);
   };
 
   /** @note This is only called in native apps after changes in iModels */
@@ -230,9 +224,6 @@ export class PresentationManager implements IDisposable {
 
   /** @internal */
   public get ipcRequestsHandler() { return this._ipcRequestsHandler; }
-
-  /** @internal */
-  public get stateTracker() { return this._stateTracker; }
 
   /**
    * Get rulesets manager
