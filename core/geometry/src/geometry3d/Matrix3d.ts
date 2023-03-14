@@ -2096,17 +2096,21 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
   /**
-   * Multiply `this` Matrix3d (considered as a Transform with 0 translation) times `other` Transform.
+   * Multiply `this` Matrix3d (considered to be a Transform with 0 `origin`) times `other` Transform.
+   * **Note:** If `other = [B   b]`, then we promote `this` matrix to be a Transform [A   0].
+   * Then `this * other` is defined as [A*B   Aa]. That's because we create a 4x4 matrix for each Transform
+   * with the 3x3 `matrix` and `origin` as upper 3x4 part of a 4x4 matrix and 0001 as the final row. Then we
+   * multiply those two 4x4 matrixes:
    * ```
    * equation
    * \begin{matrix}
-   * \text{This matrix }\bold{A}\text{ promoted to block transform} & \blockTransform{A}{0} \\
-   * \text{other transform with matrix part }\bold{B}\text{ and translation }\bold{b} & \blockTransform{B}{b}\\
+   * \text{`this` matrix }\bold{A}\text{ promoted to block Transform} & \blockTransform{A}{0} \\
+   * \text{`other` Transform with `matrix` part }\bold{B}\text{ and `origin` part }\bold{b} & \blockTransform{B}{b}\\
    * \text{product}& \blockTransform{A}{0}\blockTransform{B}{b}=\blockTransform{AB}{Ab}
    * \end{matrix}
    * ```
-   * @param other Right hand Matrix3d for multiplication.
-   * @param result the Transform result (optional)
+   * @param other the `other` Transform to be multiplied to `this` matrix.
+   * @param result optional preallocated result to reuse.
    */
   public multiplyMatrixTransform(other: Transform, result?: Transform): Transform {
     if (!result)
@@ -2114,7 +2118,6 @@ export class Matrix3d implements BeJSONFunctions {
         this.multiplyXYZ(other.origin.x, other.origin.y, other.origin.z),
         this.multiplyMatrixMatrix(other.matrix)
       );
-    // be sure to do the point multiplication first before aliasing changes the matrix
     this.multiplyXYZtoXYZ(other.origin, result.origin);
     this.multiplyMatrixMatrix(other.matrix, result.matrix);
     return result;
