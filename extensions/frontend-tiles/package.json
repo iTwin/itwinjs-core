@@ -7,7 +7,7 @@
   "typings": "lib/cjs/frontend-tiles",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s copy:public && npm run -s build:cjs",
+    "build": "npm run -s build:cjs",
     "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
