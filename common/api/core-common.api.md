@@ -63,6 +63,7 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
+import { RequireAtLeastOne } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -9498,6 +9499,126 @@ export enum TileReadStatus {
     NewerMajorVersion = 6,
     // (undocumented)
     Success = 0
+}
+
+// @alpha
+export namespace Tileset3dSchema {
+    // (undocumented)
+    export interface Asset extends TilesetProperty {
+        // (undocumented)
+        tilesetVersion?: string;
+        // (undocumented)
+        version: string;
+    }
+    // (undocumented)
+    export type BoundingBox = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    uX: number,
+    uY: number,
+    uZ: number,
+    vX: number,
+    vY: number,
+    vZ: number,
+    wX: number,
+    wY: number,
+    wZ: number
+    ];
+    // (undocumented)
+    export type BoundingRegion = [
+    west: number,
+    south: number,
+    east: number,
+    north: number,
+    minHeight: number,
+    maxHeight: number
+    ];
+    // (undocumented)
+    export type BoundingSphere = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    radius: number
+    ];
+    // (undocumented)
+    export type BoundingVolume = RequireAtLeastOne<{
+        box?: BoundingBox;
+        sphere?: BoundingSphere;
+        region?: BoundingRegion;
+    }>;
+    // (undocumented)
+    export interface Content extends TilesetProperty {
+        // (undocumented)
+        boundingVolume?: BoundingVolume;
+        // (undocumented)
+        uri: string;
+    }
+    export interface Extensions {
+        // (undocumented)
+        [key: string]: any;
+    }
+    // (undocumented)
+    export type GeometricError = number;
+    // (undocumented)
+    export type Refinement = "ADD" | "REPLACE" | string;
+    // (undocumented)
+    export interface Tile extends TilesetProperty {
+        // (undocumented)
+        boundingVolume: BoundingVolume;
+        // (undocumented)
+        children?: Tile[];
+        // (undocumented)
+        content?: Content;
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        refine?: Refinement;
+        // (undocumented)
+        transform?: Transform;
+        // (undocumented)
+        viewerRequestVolume?: BoundingVolume;
+    }
+    // (undocumented)
+    export interface Tileset extends TilesetProperty {
+        // (undocumented)
+        asset: Asset;
+        // (undocumented)
+        extensionsRequired?: string[];
+        // (undocumented)
+        extensionsUsed?: string[];
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        properties: unknown;
+        // (undocumented)
+        root: Tile;
+    }
+    export interface TilesetProperty {
+        // (undocumented)
+        extensions?: Extensions;
+        // (undocumented)
+        extras?: any;
+    }
+    // (undocumented)
+    export type Transform = [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+    ];
 }
 
 // @internal
