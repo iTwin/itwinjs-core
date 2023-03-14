@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Fix KeepSingleZero format trait",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
