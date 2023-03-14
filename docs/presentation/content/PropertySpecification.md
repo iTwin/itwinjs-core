@@ -102,17 +102,30 @@ This attribute controls whether the particular property is present in the result
 - `false`: property is made hidden.
 - The value can be set using an [ECExpression](./ECExpressions.md#property-overrides). **Warning:** this will automatically hide all other properties of the same class, no matter what the expression evaluates to. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.
 
-|                   |             |
-| ----------------- | ----------- |
-| **Type**          | `boolean`   |
-| **Is Required**   | No          |
-| **Default Value** | No override |
+|                   |                                                                |
+| ----------------- | -------------------------------------------------------------- |
+| **Type**          | `boolean` \| [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                             |
+| **Default Value** | No override                                                    |
+
+#### Using `isDisplayed` attribute with `boolean` value
 
 ```ts
-[[include:Presentation.Content.Customization.PropertySpecification.IsDisplayed.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.IsDisplayedBoolean.Ruleset]]
 ```
 
-![Example of using a "is displayed" attribute](./media/propertyspecification-with-isdisplayed-attribute.png)
+![Example of using a "is displayed" attribute with boolean value](./media/propertyspecification-with-isdisplayed-attribute.png)
+
+#### Using `isDisplayed` attribute with `ECExpression` value
+
+```ts
+[[include:Presentation.Content.Customization.PropertySpecification.IsDisplayedECExpression.Ruleset]]
+```
+
+| Ruleset variable values | Result                                                                                                                                                                      |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SHOW_LABEL = false`    | ![Example of using a "is displayed" attribute with ECExpression that evaluates to `false`](./media/propertyspecification-with-isdisplayed-attribute-ecexpression-false.jpg) |
+| `SHOW_LABEL = true`     | ![Example of using a "is displayed" attribute with ECExpression that evaluated to `true`](./media/propertyspecification-with-isdisplayed-attribute-ecexpression-true.jpg)   |
 
 ### Attribute: `doNotHideOtherPropertiesOnDisplayOverride`
 

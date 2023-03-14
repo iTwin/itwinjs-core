@@ -148,8 +148,8 @@ describe("Learning Snippets", () => {
         }]);
       });
 
-      it("uses `isDisplayed` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.IsDisplayed.Ruleset
+      it("uses `isDisplayed` attribute with boolean value to force display property", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.IsDisplayedBoolean.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition,
         // the `LastMod` property, which is hidden using a custom attribute in ECSchema, is force-displayed
         // using a property override.
@@ -179,6 +179,64 @@ describe("Learning Snippets", () => {
         expect(content.descriptor.fields).to.containSubset([{
           label: "Last Modified",
         }]);
+      });
+
+      it("uses `isDisplayed` attribute with ECExpression value to control property display", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.IsDisplayedECExpression.Ruleset
+        // There's a content rule for returning content of given `bis.Subject` instance. In addition,
+        // the display of `UserLabel` property is controlled using a ruleset variable.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
+              propertyOverrides: [{
+                name: "UserLabel",
+                isDisplayed: `GetVariableBoolValue("SHOW_LABEL")`,
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // note: need to re-create the ruleset with different ID for each verification
+        // due to https://github.com/iTwin/imodel-native/issues/206
+
+        // Ensure the property is not displayed when value is not set
+        let contentRuleset = { ...ruleset, id: `${ruleset.id}-no-variable` };
+        let content = (await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: contentRuleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
+        expect(content.descriptor.fields).to.be.empty;
+
+        // Ensure the property is displayed when value is set to `true`
+        contentRuleset = { ...ruleset, id: `${ruleset.id}-truthy-variable` };
+        await Presentation.presentation.vars(contentRuleset.id).setBool("SHOW_LABEL", true);
+        content = (await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: contentRuleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
+        expect(content.descriptor.fields).to.containSubset([{
+          label: "User Label",
+        }]);
+
+        // Ensure the property is not displayed when value is set to `false`
+        contentRuleset = { ...ruleset, id: `${ruleset.id}-falsy-variable` };
+        await Presentation.presentation.vars(contentRuleset.id).setBool("SHOW_LABEL", false);
+        content = (await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: contentRuleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
+        expect(content.descriptor.fields).to.be.empty;
       });
 
       it("uses `doNotHideOtherPropertiesOnDisplayOverride` attribute", async () => {
