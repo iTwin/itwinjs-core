@@ -103,7 +103,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
 
   /**
-   * A directory for Presentation hierarchy cache. If set, the directory must exist.
+   * A directory for hierarchy caches. If set, the directory must exist. Relative paths start from `process.cwd()`.
    *
    * The default directory depends on the iModel and the way it's opened.
    */
@@ -198,11 +198,13 @@ export interface MultiElementPropertiesResponse {
 }
 
 /**
- * Configuration options for supplying asset directly paths to [[PresentationManager]].
+ * Configuration options for supplying asset paths to [[PresentationManager]].
  * @public
  */
 export interface PresentationAssetsRootConfig {
-  /** Path to `presentation-backend` assets */
+  /**
+   * Path to `presentation-backend` assets. Relative paths start from `process.cwd()`.
+   */
   backend: string;
 
   /**
@@ -238,12 +240,18 @@ export interface PresentationManagerProps {
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
   /**
-   * A list of directories containing application's presentation rulesets.
+   * A list of directories containing application's presentation rulesets. Relative
+   * paths start from `process.cwd()`. The directories are traversed recursively.
+   *
+   * @note Only files with `.PresentationRuleSet.json` are read.
    */
   rulesetDirectories?: string[];
 
   /**
-   * A list of directories containing application's supplemental presentation rulesets.
+   * A list of directories containing application's supplemental presentation rulesets. Relative
+   * paths start from `process.cwd()`. The directories are traversed recursively.
+   *
+   * @note Only files with `.PresentationRuleSet.json` are read.
    */
   supplementalRulesetDirectories?: string[];
 
