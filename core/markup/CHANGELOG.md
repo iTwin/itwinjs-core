@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-markup
 
-This log was last generated on Wed, 15 Feb 2023 18:37:37 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Mar 2023 13:42:10 GMT and should not be manually modified.
+
+## 2.19.52
+Tue, 14 Mar 2023 13:42:10 GMT
+
+_Version update only_
 
 ## 2.19.51
 Wed, 15 Feb 2023 18:37:37 GMT

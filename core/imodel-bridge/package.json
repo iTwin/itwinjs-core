@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodel-bridge",
-  "version": "2.19.51",
+  "version": "2.19.52",
   "description": "iModel.js bridge components",
   "main": "lib/imodel-bridge.js",
   "typings": "lib/imodel-bridge",
@@ -40,14 +40,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^2.19.51",
-    "@bentley/bentleyjs-core": "workspace:^2.19.51",
-    "@bentley/context-registry-client": "workspace:^2.19.51",
-    "@bentley/geometry-core": "workspace:^2.19.51",
-    "@bentley/imodelhub-client": "workspace:^2.19.51",
-    "@bentley/imodeljs-backend": "workspace:^2.19.51",
-    "@bentley/imodeljs-common": "workspace:^2.19.51",
-    "@bentley/rbac-client": "workspace:^2.19.51"
+    "@bentley/backend-itwin-client": "workspace:^2.19.52",
+    "@bentley/bentleyjs-core": "workspace:^2.19.52",
+    "@bentley/context-registry-client": "workspace:^2.19.52",
+    "@bentley/geometry-core": "workspace:^2.19.52",
+    "@bentley/imodelhub-client": "workspace:^2.19.52",
+    "@bentley/imodeljs-backend": "workspace:^2.19.52",
+    "@bentley/imodeljs-common": "workspace:^2.19.52",
+    "@bentley/rbac-client": "workspace:^2.19.52"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

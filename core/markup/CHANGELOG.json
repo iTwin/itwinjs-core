@@ -2,6 +2,12 @@
   "name": "@bentley/imodeljs-markup",
   "entries": [
     {
+      "version": "2.19.52",
+      "tag": "@bentley/imodeljs-markup_v2.19.52",
+      "date": "Tue, 14 Mar 2023 13:42:10 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.51",
       "tag": "@bentley/imodeljs-markup_v2.19.51",
       "date": "Wed, 15 Feb 2023 18:37:37 GMT",
