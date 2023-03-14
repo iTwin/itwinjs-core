@@ -5,9 +5,6 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-// cspell:word CWXY
-// cspell:word arctan
-// cspell:word Rodrigues
 
 import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
@@ -636,10 +633,12 @@ export class Point3d extends XYZ {
    * @param scaleB scale factor for pointB
    */
   public static createAdd2Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, result?: Point3d): Point3d {
-    return Point3d.create(pointA.x * scaleA + pointB.x * scaleB,
+    return Point3d.create(
+      pointA.x * scaleA + pointB.x * scaleB,
       pointA.y * scaleA + pointB.y * scaleB,
       pointA.z * scaleA + pointB.z * scaleB,
-      result);
+      result
+    );
   }
   /** Create a point that is a linear combination (weighted sum) of 3 input points.
    * @param pointA first input point
@@ -650,10 +649,12 @@ export class Point3d extends XYZ {
    * @param scaleC scale factor for pointC
    */
   public static createAdd3Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number, result?: Point3d): Point3d {
-    return Point3d.create(pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
+    return Point3d.create(
+      pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
       pointA.y * scaleA + pointB.y * scaleB + pointC.y * scaleC,
       pointA.z * scaleA + pointB.z * scaleB + pointC.z * scaleC,
-      result);
+      result
+    );
   }
   /**
    * Return the dot product of vectors from this to pointA and this to pointB.
@@ -825,9 +826,9 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return a vector defined by start and end points (end - start).
-   * @param start start point for vector
-   * @param end end point for vector
-   * @param result optional result
+   * @param start start point for vector.
+   * @param end end point for vector.
+   * @param result optional result.
    */
   public static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d {
     const zStart = XYZ.accessZ(start, 0.0) as number;
@@ -841,22 +842,22 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return a vector (optionally in preallocated result, otherwise newly created) from [x0,y0,z0] to [x1,y1,z1]
-   * @param x0 start point x coordinate
-   * @param y0 start point y coordinate
-   * @param z0 start point z coordinate
-   * @param x1 end point x coordinate
-   * @param y1 end point y coordinate
-   * @param z1 end point z coordinate
-   * @param result optional result vector
+   * @param x0 start point x coordinate.
+   * @param y0 start point y coordinate.
+   * @param z0 start point z coordinate.
+   * @param x1 end point x coordinate.
+   * @param y1 end point y coordinate.
+   * @param z1 end point z coordinate.
+   * @param result optional result vector.
    */
   public static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d {
     return this.create(x1 - x0, y1 - y0, z1 - z0, result);
   }
   /**
-   * Return a vector which is the input vector rotated around the axis vector.
-   * @param vector initial vector
-   * @param axis axis of rotation
-   * @param angle angle of rotation.  If undefined, 90 degrees is implied
+   * Return a vector which is the input `vector` rotated by `angle` around the `axis` vector.
+   * @param vector initial vector.
+   * @param axis axis of rotation.
+   * @param angle angle of rotation.  If undefined, 90 degrees is implied.
    * @param result optional result vector
    * @returns undefined if axis has no length.
    */
@@ -879,7 +880,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Set (replace) xyz components so they are a vector from point0 to point1
-   * @param point0 start point of computed vector
+   * @param point0 start point of computed vector.
    * @param point1 end point of computed vector.
    */
   public setStartEnd(point0: XYAndZ, point1: XYAndZ) {
@@ -1390,10 +1391,10 @@ export class Vector3d extends XYZ {
     return Vector3d.createCrossProduct(this.x, this.y, this.z, x, y, z, result);
   }
   /**
- * Return the (radians as a simple number, not strongly typed Angle) angle from this vector to vectorB.
- * * The returned angle is always positive and no larger than 180 degrees (PI radians)
- * * The returned angle is "in the plane containing the two vectors"
- * * Use `planarRadiansTo` and `signedRadiansTo` to take have angle measured in specific plane.
+ * Return the angle in radians (not as strongly typed Angle) from this vector to vectorB.
+ * * The returned angle is between 0 and `Math.PI`.
+ * * The returned angle is measured in the plane containing the two vectors.
+ * * Use `planarRadiansTo` and `signedRadiansTo` to return an angle measured in a specific plane.
  * @param vectorB target vector.
  */
   public radiansTo(vectorB: Vector3d): number {
@@ -1402,45 +1403,44 @@ export class Vector3d extends XYZ {
     return Math.atan2(this.crossProductMagnitude(vectorB), this.dotProduct(vectorB));
   }
   /**
-   * Return the (strongly typed) angle from this vector to vectorB.
-   * * The returned angle is always positive and no larger than 180 degrees (PI radians)
-   * * The returned angle is "in the plane containing the two vectors"
-   * * Use `planarAngleTo` and `signedAngleTo` to take have angle measured in specific plane.
+   * Return the (strongly-typed) angle from this vector to vectorB.
+   * * The returned angle is between 0 and 180 degrees.
+   * * The returned angle is measured in the plane containing the two vectors.
+   * * Use `planarAngleTo` and `signedAngleTo` to return an angle measured in a specific plane.
    * @param vectorB target vector.
    */
   public angleTo(vectorB: Vector3d): Angle {
     return Angle.createRadians(this.radiansTo(vectorB));
   }
   /**
-   * Return the (strongly typed) angle from this vector to the plane perpendicular to planeNormal.
-   * * The returned vector is signed
-   * * The returned vector is (as degrees) always between -90 and 90 degrees.
-   * * The function returns "PI/2 - angleTo(planeNormal)"
+   * Return the (strongly-typed) angle from this vector to the plane perpendicular to planeNormal.
+   * * The returned angle is between -90 and 90 degrees.
+   * * The returned angle is measured in the plane containing the two vectors.
+   * * The function returns PI/2 - angleTo(planeNormal).
    * @param planeNormal a normal vector to the plane.
    */
   public angleFromPerpendicular(planeNormal: Vector3d): Angle {
     return Angle.createAtan2(this.dotProduct(planeNormal), this.crossProductMagnitude(planeNormal));
   }
   /**
-   * Return the (Strongly typed) angle from this vector to vectorB, using only the xy parts.
-   * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180
-   * * degrees (positive PI radians), not closed on the negative side.
-   * * Use `planarAngleTo` and `signedAngleTo` to take have angle measured in other planes.
+   * Return the (strongly-typed) angle from this vector to vectorB, using only the xy parts.
+   * * The returned angle is between -180 and 180 degrees.
+   * * Use `planarAngleTo` and `signedAngleTo` to return an angle measured in a specific plane.
    * @param vectorB target vector.
    */
   public angleToXY(vectorB: Vector3d): Angle {
     return Angle.createAtan2(this.crossProductXY(vectorB), this.dotProductXY(vectorB));
   }
   /**
- * Return the (simple number of radians, not Strongly typed Angle) angle from this vector to vectorB, measured
- * in the plane containing both, with vectorW indicating which side to view to control sign of the angle.
- * * The returned angle can range from negative PI to positive PI (not closed on negative side)
- * * The returned angle is "in the plane containing the two vectors"
- * * The returned angle has the same sign as vectorW dot product (thisVector cross vectorB)
- * * vectorW does not have to be perpendicular to the plane.
- * * Use planarRadiansTo to measure the angle between vectors that are projected to another plane.
+ * Return the angle in radians (not as strongly-typed Angle) from this vector to vectorB, measured
+ * in their containing plane whose normal lies in the same half-space as vectorW.
+ * * The returned angle is between `-Math.PI` and `Math.PI`.
+ * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
+ * this function returns `radiansTo(vectorB)`; otherwise, it returns `-radiansTo(vectorB)`.
+ * * `vectorW` does not have to be perpendicular to the plane.
+ * * Use `planarRadiansTo` to measure the angle between vectors that are projected to another plane.
  * @param vectorB target vector.
- * @param vectorW distinguishes between the sides of the plane.
+ * @param vectorW determines the side of the plane in which the returned angle is measured
  */
   public signedRadiansTo(vectorB: Vector3d, vectorW: Vector3d): number {
     const p = this.crossProduct(vectorB);
@@ -1450,24 +1450,23 @@ export class Vector3d extends XYZ {
     else
       return theta;
   }
-  /** Return the (strongly typed Angle) angle from this vector to vectorB, measured in the plane containing both,
-  * with vectorW indicating which side to view to control sign of the angle.
-  * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180 degrees
-  * * (positive PI radians), not closed on the negative side.
-  * * The returned angle is "in the plane containing the two vectors"
-  * * `vectorW` distinguishes between the sides of the plane, but does not have to be perpendicular.
-  * * The returned angle has the same sign as vectorW dot product (thisVector cross vectorB)
-  * * Use planarRadiansTo to measure the angle between vectors that are projected to another plane.
+  /** Return the (strongly-typed) angle from this vector to vectorB, measured
+   * in their containing plane whose normal lies in the same half-space as vectorW.
+   * * The returned angle is between -180 and 180 degrees.
+   * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
+   * this function returns `angleTo(vectorB)`; otherwise, it returns `-angleTo(vectorB)`.
+   * * `vectorW` does not have to be perpendicular to the plane.
+   * * Use `planarAngleTo` to measure the angle between vectors that are projected to another plane.
    * @param vectorB target vector.
-  * @param vectorW distinguishes between the sides of the plane.
+   * @param vectorW determines the side of the plane in which the returned angle is measured
    */
   public signedAngleTo(vectorB: Vector3d, vectorW: Vector3d): Angle {
     return Angle.createRadians(this.signedRadiansTo(vectorB, vectorW));
   }
   /**
-   * Return the radians (as a simple number, not strongly typed Angle) from this vector to vectorB,
+   * Return the angle in radians (not as strongly-typed Angle) from this vector to vectorB,
    * measured between their projections to the plane with the given normal.
-   * * The returned angle can be positive or negative, with magnitude no larger than PI radians
+   * * The returned angle is between `-Math.PI` and `Math.PI`.
    * @param vectorB target vector
    * @param planeNormal the normal vector to the plane.
    */
@@ -1485,9 +1484,9 @@ export class Vector3d extends XYZ {
     return thisProj.signedRadiansTo(vectorBProj, planeNormal);
   }
   /**
-   * Return the angle (as strongly typed Angle) from this vector to vectorB,
+   * Return the (strongly-type) angle from this vector to vectorB,
    * measured between their projections to the plane with the given normal.
-   * * The returned angle can range from negative PI to positive PI (not closed on negative side)
+   * * The returned angle is between -180 and 180 degrees.
    * @param vectorB target vector.
    * @param planeNormal the normal vector to the plane.
    */
