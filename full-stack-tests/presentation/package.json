@@ -31,7 +31,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/oidc-signin-tool": "^3.2.2",
+    "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",

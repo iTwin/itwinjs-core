@@ -1,9 +1,0 @@
-{
-  "LABEL_General_DisplayLabel": "Label",
-  "LABEL_Category_General": "General",
-  "LABEL_Category_Favorite": "Favorite",
-  "FIELD_LABEL_DisplayLabel": "Label",
-  "CATEGORY_LABEL_SelectedItems": "Selected Item(s)",
-  "CATEGORY_DESCRIPTION_SelectedItems": "Contains properties of selected item(s)",
-  "ERROR_General_Unknown": "Unknown error"
-}
