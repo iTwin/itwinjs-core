@@ -9,8 +9,11 @@ Table of contents:
   - [Node.js](#nodejs)
   - [WebGL](#webgl)
   - [Electron](#electron)
-- [Mesh offset](#mesh-offset)
-- [Mesh intersection with ray](#mesh-intersection-with-ray)
+- [Geometry](#geometry)
+  - [Mesh offset](#mesh-offset)
+  - [Mesh intersection with ray](#mesh-intersection-with-ray)
+- [Display](#display)
+  - [glTF bounding boxes](#gltf-bounding-boxes)
 - [Presentation](#presentation)
   - [Active unit system](#active-unit-system)
   - [Handling of long-running requests](#handling-of-long-running-requests)
@@ -35,7 +38,9 @@ Over a year ago, support for WebGL 2 finally became [available in all major brow
 
 Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports only Electron 23.
 
-## Mesh offset
+## Geometry
+
+### Mesh offset
 
 The new static method [PolyfaceQuery.cloneOffset]($core-geometry) creates a mesh with facets offset by a given distance. The image below illustrates the basic concepts.
 
@@ -49,11 +54,17 @@ The image below illustrates results with a more complex cross section.
 
 The lower left is the original (smaller, inside) mesh with the (transparent) offset mesh around it with all sharp corners. At upper right the offset has chamfers, again due to setting the `chamferAngleBetweenNormals` to 120 degrees.
 
-## Mesh intersection with ray
+### Mesh intersection with ray
 
 New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with a [Polyface]($core-geometry). By default, [PolyfaceQuery.intersectRay3d]($core-geometry) returns a [FacetLocationDetail]($core-geometry) for the first found facet that intersects the infinite line parameterized by the ray. A callback can be specified in the optional [FacetIntersectOptions]($core-geometry) parameter to customize intersection processing, e.g., to filter and collect multiple intersections. Other options control whether to populate the returned detail with interpolated auxiliary vertex data: normals, uv parameters, colors, and/or the barycentric scale factors used to interpolate such data.
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
+
+## Display
+
+### glTF bounding boxes
+
+The exisiting [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
 
 ## Presentation
 

@@ -3978,6 +3978,13 @@ export interface GltfDocument extends GltfProperty {
 // @internal
 export type GltfExtensions = GltfStringMap<unknown>;
 
+// @public
+export interface GltfGraphic {
+    boundingBox: AxisAlignedBox3d;
+    graphic: RenderGraphic;
+    localBoundingBox: ElementAlignedBox3d;
+}
+
 // @internal
 export class GltfGraphicsReader extends GltfReader {
     constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs);
@@ -4303,6 +4310,8 @@ export class GltfReaderProps {
 
 // @internal
 export interface GltfReaderResult extends TileContent {
+    // (undocumented)
+    range?: AxisAlignedBox3d;
     // (undocumented)
     readStatus: TileReadStatus;
 }
@@ -8664,6 +8673,9 @@ export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): Gl
 
 // @public
 export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined>;
+
+// @public
+export function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined>;
 
 // @public
 export function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined>;

@@ -90,27 +90,12 @@ steps:
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
-    displayName: "Publish Presentation Components Test Results"
-    inputs:
-      testResultsFiles: "presentation/components/lib/test/junit_results.xml"
-      testRunTitle: "Presentation - Components Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
     displayName: "Publish Presentation Frontend Test Results"
     inputs:
       testResultsFiles: "presentation/frontend/lib/test/junit_results.xml"
       testRunTitle: "Presentation - Frontend Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Presentation Testing Test Results"
-    inputs:
-      testResultsFiles: "presentation/testing/lib/test/junit_results.xml"
-      testRunTitle: "Presentation - Testing Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-
   #-------
   # UI Tests
   #-------
@@ -121,35 +106,6 @@ steps:
       testRunTitle: "UI - Abstract Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish UI Components Test Results"
-    inputs:
-      testResultsFiles: "ui/components/lib/test/junit_results.xml"
-      testRunTitle: "UI - Components Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish UI Core Test Results"
-    inputs:
-      testResultsFiles: "ui/core/lib/test/junit_results.xml"
-      testRunTitle: "UI - Core Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish UI Framework Test Results"
-    inputs:
-      testResultsFiles: "ui/framework/lib/test/junit_results.xml"
-      testRunTitle: "UI - Framework Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish UI Ninezone Test Results"
-    inputs:
-      testResultsFiles: "ui/ninezone/lib/test/junit_results.xml"
-      testRunTitle: "UI - Ninezone Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-
   #-------
   # Full Stack Tests
   #-------
