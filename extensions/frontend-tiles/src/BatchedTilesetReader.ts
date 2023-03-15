@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  Angle, Matrix3d, Point3d, Range3d, Transform, Vector3d,
+  Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { Tileset3dSchema as schema } from "@itwin/core-common";
 import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
