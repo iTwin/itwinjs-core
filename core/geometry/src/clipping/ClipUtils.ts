@@ -122,10 +122,15 @@ export interface Clipper {
 export interface PolygonClipper {
   appendPolygonClip: AppendPolygonClipFunction;
 }
-/** Static class whose various methods are functions for clipping geometry
+/** Class whose various static methods are functions for clipping geometry
  * @public
  */
 export class ClipUtilities {
+  // on-demand scratch objects for method implementations. If you use one, make sure it isn't already being used in scope.
+  private static _workTransform?: Transform;
+  private static _workRange?: Range3d;
+  private static _workClipper?: ConvexClipPlaneSet;
+
   private static _selectIntervals01TestPoint = Point3d.create();
   /**
    * * Augment the unsortedFractionsArray with 0 and 1
@@ -492,10 +497,6 @@ export class ClipUtilities {
     }
     return false;
   }
-
-  private static _workTransform?: Transform;
-  private static _workRange?: Range3d;
-  private static _workClipper?: ConvexClipPlaneSet;
 
   /** Test for intersection of two ranges in different local coordinates.
    * * Useful for clash detection of elements in iModels, using their stored (tight) local ranges and placement transforms.
