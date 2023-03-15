@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Feature, FeatureTable, PackedFeatureTable } from "../FeatureTable";
+import { Id64 } from "@itwin/core-bentley";
+import { Feature, FeatureTable, PackedFeatureModelTable, PackedFeatureTable } from "../FeatureTable";
 
 function makeFeatureTable(numFeatures: number): FeatureTable {
   const table = new FeatureTable(numFeatures);
@@ -56,5 +57,65 @@ describe("PackedFeatureTable", () => {
       table.populateAnimationNodeIds(() => 0, 1);
       expect(table.animationNodeIds).to.be.undefined;
     });
+  });
+});
+
+describe("PackedFeatureModelTable", () => {
+  // models is [modelId, indexOfLastFeatureInModel] where modelId and indexOfLastFeatureInModel are both strictly increasing.
+  function makeModelTable(models: Array<[string, number]>): PackedFeatureModelTable {
+    const data = new Uint32Array(3 * models.length);
+    for (let i = 0; i < models.length; i++) {
+      const model = models[i];
+      const pair = Id64.getUint32Pair(model[0]);
+      const offset = 3 * i;
+      data[offset + 0] = model[1];
+      data[offset + 1] = pair.lower;
+      data[offset + 2] = pair.upper;
+    }
+
+    return new PackedFeatureModelTable(data);
+  }
+
+  it("computes model Id from feature index", () => {
+    const table = makeModelTable([
+      [Id64.invalid, 2],
+      ["0x2", 3],
+      ["0x321", 6],
+      ["0x20000000123", 8],
+      ["0x555555555555", 9],
+      ["0xffffffffffff", 13],
+    ]);
+
+    const modelByFeatureIndex = [
+      Id64.invalid, Id64.invalid, Id64.invalid,
+      "0x2",
+      "0x321", "0x321", "0x321",
+      "0x20000000123", "0x20000000123",
+      "0x555555555555",
+      "0xffffffffffff", "0xffffffffffff", "0xffffffffffff", "0xffffffffffff",
+    ];
+
+    for (let i = 0; i < modelByFeatureIndex.length; i++) {
+      const pair = table.getModelIdPair(i);
+      const id = Id64.fromUint32Pair(pair.lower, pair.upper);
+      expect(id).to.equal(modelByFeatureIndex[i]);
+    }
+  });
+
+  it("returns invalid model Id if feature index greater than the index of the last feature in the last model", () => {
+    const table = makeModelTable([
+      ["0x2", 3],
+      ["0x321", 6],
+      ["0x20000000123", 8],
+      ["0x555555555555", 9],
+      ["0xffffffffffff", 13],
+    ]);
+
+    expect(Id64.fromUint32PairObject(table.getModelIdPair(13))).to.equal("0xffffffffffff");
+    for (let i = 14; i < 20; i++) {
+      const pair = table.getModelIdPair(i);
+      expect(pair.lower).to.equal(0);
+      expect(pair.upper).to.equal(0);
+    }
   });
 });

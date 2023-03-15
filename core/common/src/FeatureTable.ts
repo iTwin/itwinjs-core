@@ -341,3 +341,61 @@ export class PackedFeatureTable {
     return Id64.fromUint32Pair(this._data[offset32], this._data[offset32 + 1]);
   }
 }
+
+/** A table of model Ids associated with a [[MultiModelPackedFeatureTable]].
+ * The feature indices in the packed feature table are grouped together by model, such that the first N features belong to model 1, the next M features to model 2, and so on.
+ * The model table itself consists of one entry per model, where each entry looks like:
+ *  indexOfLastFeatureInModel: u32
+ *  modelId: u64
+ * The modelId associated with a feature can therefore be derived by finding the entry in the model table with the highest indexOfLastFeatureInModel no greater than the feature index.
+ * This lookup can be optimized using binary search.
+ * Moreover, while iterating the feature table in sequence, the model table can be iterated in parallel so that no per-feature lookup of model Id is required.
+ * @internal
+ */
+export class PackedFeatureModelTable {
+  private readonly _data: Uint32Array;
+
+  public constructor(data: Uint32Array) {
+    this._data = data;
+    assert(this._data.length % 3 === 0);
+  }
+
+  /** The number of models in the table. */
+  public get length(): number {
+    return this._data.length / 3;
+  }
+
+  private getLastFeatureIndex(modelIndex: number): number {
+    return this._data[modelIndex * 3];
+  }
+
+  /** Get the Id of the model associated with the specified feature, or an invalid Id if the feature is not associated with any model. */
+  public getModelIdPair(featureIndex: number, result?: Id64.Uint32Pair): Id64.Uint32Pair {
+    if (!result)
+      result = { lower: 0, upper: 0 };
+    else
+      result.lower = result.upper = 0;
+
+    let first = 0;
+    let last = this.length;
+    let count = last;
+    while (count > 0) {
+      const step = Math.floor(count / 2);
+      const mid = first + step;
+      const lastFeatureIndex = this.getLastFeatureIndex(mid);
+      if (featureIndex > lastFeatureIndex) {
+        first = mid + 1;
+        count -= step + 1;
+      } else {
+        count = step;
+      }
+    }
+
+    if (first < last) {
+      result.lower = this._data[first * 3 + 1];
+      result.upper = this._data[first * 3 + 2];
+    }
+
+    return result;
+  }
+}
