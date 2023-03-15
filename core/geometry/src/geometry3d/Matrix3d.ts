@@ -54,7 +54,8 @@ export class PackedMatrix3dOps {
    */
   public static multiplyMatrixMatrix(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array {
     if (!result) result = new Float64Array(9);
-    PackedMatrix3dOps.loadMatrix(result,
+    PackedMatrix3dOps.loadMatrix(
+      result,
       (a[0] * b[0] + a[1] * b[3] + a[2] * b[6]),
       (a[0] * b[1] + a[1] * b[4] + a[2] * b[7]),
       (a[0] * b[2] + a[1] * b[5] + a[2] * b[8]),
@@ -63,7 +64,8 @@ export class PackedMatrix3dOps {
       (a[3] * b[2] + a[4] * b[5] + a[5] * b[8]),
       (a[6] * b[0] + a[7] * b[3] + a[8] * b[6]),
       (a[6] * b[1] + a[7] * b[4] + a[8] * b[7]),
-      (a[6] * b[2] + a[7] * b[5] + a[8] * b[8]));
+      (a[6] * b[2] + a[7] * b[5] + a[8] * b[8])
+    );
     return result;
   }
   /**
@@ -73,7 +75,8 @@ export class PackedMatrix3dOps {
    */
   public static multiplyMatrixMatrixTranspose(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array {
     if (!result) result = new Float64Array(9);
-    PackedMatrix3dOps.loadMatrix(result,
+    PackedMatrix3dOps.loadMatrix(
+      result,
       (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]),
       (a[0] * b[3] + a[1] * b[4] + a[2] * b[5]),
       (a[0] * b[6] + a[1] * b[7] + a[2] * b[8]),
@@ -82,7 +85,8 @@ export class PackedMatrix3dOps {
       (a[3] * b[6] + a[4] * b[7] + a[5] * b[8]),
       (a[6] * b[0] + a[7] * b[1] + a[8] * b[2]),
       (a[6] * b[3] + a[7] * b[4] + a[8] * b[5]),
-      (a[6] * b[6] + a[7] * b[7] + a[8] * b[8]));
+      (a[6] * b[6] + a[7] * b[7] + a[8] * b[8])
+    );
     return result;
   }
   /**
@@ -92,7 +96,8 @@ export class PackedMatrix3dOps {
    */
   public static multiplyMatrixTransposeMatrix(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array {
     if (!result) result = new Float64Array(9);
-    PackedMatrix3dOps.loadMatrix(result,
+    PackedMatrix3dOps.loadMatrix(
+      result,
       (a[0] * b[0] + a[3] * b[3] + a[6] * b[6]),
       (a[0] * b[1] + a[3] * b[4] + a[6] * b[7]),
       (a[0] * b[2] + a[3] * b[5] + a[6] * b[8]),
@@ -101,7 +106,8 @@ export class PackedMatrix3dOps {
       (a[1] * b[2] + a[4] * b[5] + a[7] * b[8]),
       (a[2] * b[0] + a[5] * b[3] + a[8] * b[6]),
       (a[2] * b[1] + a[5] * b[4] + a[8] * b[7]),
-      (a[2] * b[2] + a[5] * b[5] + a[8] * b[8]));
+      (a[2] * b[2] + a[5] * b[5] + a[8] * b[8])
+    );
     return result;
   }
   /** Transpose 3x3 matrix `a` in place */
@@ -523,7 +529,7 @@ export class Matrix3d implements BeJSONFunctions {
     this.setRowValues(0, 0, 0, 0, 0, 0, 0, 0, 0);
     this.inverseState = InverseMatrixState.singular;
   }
-  /** Copy contents from another matrix. */
+  /** Copy contents from the `other` matrix. If `other` is undefined, use identity matrix. */
   public setFrom(other: Matrix3d | undefined): void {
     if (other === undefined) {
       this.setIdentity();
@@ -700,6 +706,9 @@ export class Matrix3d implements BeJSONFunctions {
    * Construct a rigid matrix (orthogonal matrix with +1 determinant) using vectorA and its 2 perpendicular.
    * * If axisOrder is not passed then `AxisOrder = AxisOrder.ZXY` is used as default.
    * * This function internally uses createPerpendicularVectorFavorXYPlane and createRigidFromColumns.
+   * * If you want to rotate a given plane (which contains (0,0,0)) to the xy-plane, pass the normal vector of
+   * your plane into createRigidHeadsUp. The transpose of the returned Matrix3d can be used to rotate your plane
+   * to the xy-plane. If plane does not contain (0,0,0) then the plane is rotated to a plane parallel to the xy-plane.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/2PerpendicularVectorsTo1Vector
    */
   public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY,
@@ -1943,7 +1952,7 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * Multiply `matrixInverse * [x,y,z]` and return result as `Point4d` with given weight.
+   * Multiply `matrixInverse * [x,y,z]` and return result as `Point4d` the with given weight as last element.
    * * Equivalent to solving `matrix * result = [x,y,z]` for an unknown `result`.
    * * Result is `undefined` if the matrix is singular (e.g. has parallel columns or a zero magnitude column)
    * @return result as a Point4d with the same weight.
@@ -2495,6 +2504,10 @@ export class Matrix3d implements BeJSONFunctions {
    * * column 1 is perpendicular to both. It is the "up" vector on the view plane.
    * * Multiplying the returned matrix times a local (view) vector gives the world vector.
    * * Multiplying transpose of the returned matrix times a world vector gives the local (view) vector.
+   * * If you want to rotate a given plane (which contains (0,0,0)) to the xy-plane, pass coordinates of the normal
+   * vector of your plane into createRigidViewAxesZTowardsEye. The transpose of the returned Matrix3d can be used
+   * to rotate your plane to the xy-plane. If plane does not contain (0,0,0) then the plane is rotated to a plane
+   * parallel to the xy-plane.
    * @param x eye x coordinate
    * @param y eye y coordinate
    * @param z eye z coordinate
@@ -2712,6 +2725,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * columns are perpendicular and have unit length.
    * * transpose equals inverse.
    * * mirroring is removed.
+   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
    * @param axisOrder how to reorder the matrix columns
    * @return whether the adjusted matrix is `rigid` on return
    */
@@ -2724,9 +2738,11 @@ export class Matrix3d implements BeJSONFunctions {
     this.axisOrderCrossProductsInPlace(axisOrder);
     return this.normalizeColumnsInPlace();
   }
-  /** Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
+  /**
+   * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
    * * Columns are taken from the source Matrix3d in order indicated by the axis order.
    * * Mirroring in the matrix is removed.
+   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
    */
   public static createRigidFromMatrix3d(source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ,
     result?: Matrix3d): Matrix3d | undefined {
