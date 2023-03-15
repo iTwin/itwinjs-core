@@ -266,7 +266,7 @@ describe("HubMock", () => {
   it("HubMock report progress of changesets 'downloads'", async () => {
     const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const localHub = HubMock.findLocalHub(iModelId);
-    const briefcaseId = await HubMock.acquireNewBriefcaseId({iModelId});
+    const briefcaseId = await HubMock.acquireNewBriefcaseId({ iModelId });
 
     const cs1: ChangesetFileProps = {
       id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId, pushDate: "", index: 0,
@@ -280,9 +280,9 @@ describe("HubMock", () => {
     cs2.index = localHub.addChangeset(cs2);
 
     // Progress reporting of single changeset "download"
-    let progressReports: {downloaded: number, total: number}[] = [];
+    let progressReports: { downloaded: number, total: number }[] = [];
     let progressCallback: ProgressFunction = (downloaded, total) => {
-      progressReports.push({downloaded, total});
+      progressReports.push({ downloaded, total });
       return ProgressStatus.Continue;
     };
     let cProps = await HubMock.downloadChangeset({
@@ -293,8 +293,8 @@ describe("HubMock", () => {
       targetDir: tmpDir,
       progressCallback,
     });
-    let previousReport = {downloaded: 0, total: 0};
-    for (const report of progressReports){
+    let previousReport = { downloaded: 0, total: 0 };
+    for (const report of progressReports) {
       assert.isTrue(report.downloaded > previousReport.downloaded);
       assert.equal(report.total, cProps.size);
     }
@@ -306,9 +306,9 @@ describe("HubMock", () => {
       targetDir: tmpDir,
       progressCallback,
     });
-    previousReport = {downloaded: 0, total: 0};
+    previousReport = { downloaded: 0, total: 0 };
     const totalSize = cPropsSet.reduce((sum, props) => sum + (props.size ?? 0), 0);
-    for (const report of progressReports){
+    for (const report of progressReports) {
       assert.isTrue(report.downloaded > previousReport.downloaded);
       assert.equal(report.total, totalSize);
     }
@@ -316,7 +316,7 @@ describe("HubMock", () => {
     // Cancel single changeset "download"
     progressReports = [];
     progressCallback = (downloaded, total) => {
-      progressReports.push({downloaded, total});
+      progressReports.push({ downloaded, total });
       return downloaded > total / 2 ? ProgressStatus.Abort : ProgressStatus.Continue;
     };
     let errorThrown: boolean = false;

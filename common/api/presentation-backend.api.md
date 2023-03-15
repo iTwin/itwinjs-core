@@ -89,7 +89,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
 
 // @internal (undocumented)
-export function getLocalizedStringEN(key: string): any;
+export function getLocalizedStringEN(key: string): string;
 
 // @public
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
