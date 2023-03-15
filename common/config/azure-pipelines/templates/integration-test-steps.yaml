@@ -23,6 +23,9 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
+  - script: npx playwright install
+    displayName: npx playwright install
+
   - script: |
       # full-stack-tests/backend/package.json
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
