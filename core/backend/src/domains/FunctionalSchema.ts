@@ -27,7 +27,7 @@ export class FunctionalSchema extends Schema {
     }
   }
 
-  /** @deprecated in 2.x. Use [[schemaFilePath]] and IModelDb.importSchemas instead */
+  /** @public */
   public static async importSchema(iModelDb: IModelDb) {
     if (iModelDb.isBriefcaseDb())
       await iModelDb.acquireSchemaLock();
@@ -36,6 +36,5 @@ export class FunctionalSchema extends Schema {
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing Functional schema");
     }
-    // FunctionalDomain (C++) does not create Category or other Elements on import
   }
 }

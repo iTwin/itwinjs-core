@@ -372,6 +372,7 @@ export class Transform implements BeJSONFunctions {
    * Return as a new point or in the pre-allocated result (if result is given).
    */
   public multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d {
+    // Tx = Mx + o so we return Mx + o
     return Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
   /**
@@ -386,6 +387,7 @@ export class Transform implements BeJSONFunctions {
    * Return as a new point or in the pre-allocated result (if result is given).
    */
   public multiplyXYZ(x: number, y: number, z: number = 0, result?: Point3d): Point3d {
+    // Tx = Mx + o so we return Mx + o
     return Matrix3d.xyzPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
   }
   /**

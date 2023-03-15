@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Add a way to specify requests timeout when initializing `PresentationManager`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}

@@ -14,13 +14,13 @@ The localization function should translate:
 <details>
   <summary>List of translatable strings</summary>
 
-  * @RulesEngine:LABEL_General_NotSpecified@,
-  * @RulesEngine:LABEL_General_Other@,
-  * @RulesEngine:LABEL_General_Varies@,
-  * @RulesEngine:LABEL_General_MultipleInstances@,
-  * @ECPresentation:FIELD_LABEL_DisplayLabel@,
-  * @ECPresentation:CATEGORY_LABEL_SelectedItems@,
-  * @ECPresentation:CATEGORY_DESCRIPTION_SelectedItems@,
+  * @Presentation:label.notSpecified@,
+  * @Presentation:label.other@,
+  * @Presentation:label.varies@,
+  * @Presentation:label.multipleInstances@,
+  * @Presentation:field.label@,
+  * @Presentation:selectedItems.categoryLabel@,
+  * @Presentation:selectedItems.categoryDescription@,
 
 </details>
 

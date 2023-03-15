@@ -1,4 +1,0 @@
-# don't ignore node_modules since we need them for some fixtures
-!node_modules
-# do ignore known generated node_module links (see link.js)
-no-internal/workspace-pkg-1/node_modules/workspace-pkg-2

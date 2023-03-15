@@ -1,26 +1,22 @@
-# Channels
+# Working With Channels in iModels
 
-A "channel" is a tree of elements. The root of the tree is called the channel "root" element. The tree includes the root and all of its child elements and sub-models, recursively. Channels do not nest.
+A "channel" is a tree of models and elements below a *Channel Subject* element. Channels segregate the contents of an iModel into *sections* to provide access control over which applications may change which data. The concept is *cooperative* in that applications indicate the channels to which they pertain, and any attempt to modify data outside one of those channels is denied with a *channel constraint* exception at runtime.
 
-To be a channel root, an element must have a [ChannelRootAspect]($backend). (Legacy iModel connectors mark their channel roots with a special JSON property.)
-
-To help visualize what a channel is, imagine an iModel with the following breakdown:
+To help visualize how channels are used, imagine an iModel with the following breakdown:
 
 RootSubject
-
 - DictionaryModel
   - Elements ...
-- RealityModels ...
 - Subject0
   - PhysicalPartition01
-    - Elements ...
-- Subject1
-
-  - <span style="color:red">**_PhysicalParition11_**</span>
+    - Model01
+      - Elements ...
+- <span style="color:red;font-weight:bold">Subject1</span>
+  - <span style="color:red">PhysicalParition11</span>
     - <span style="color:red">Model11</span>
       - <span style="color:red">Elements ...</span>
 
-- <span style="color:blue">**_Subject2_**</span>
+- <span style="color:blue;font-weight:bold">Subject2</span>
   - <span style="color:blue">PhysicalParition21</span>
     - <span style="color:blue">Model21</span>
       - <span style="color:blue">Elements ...</span>
@@ -28,91 +24,58 @@ RootSubject
     - <span style="color:blue">PhysicalParition211</span>
       - <span style="color:blue">...</span>
 
-In this example, PhysicalPartition11 and Subject2 are the channel roots. They are shown in bold. All of the elements and models under them are in their respective channels. Color-coding is used to identify each tree. Everything in <span style="color:red">red</span> is in PhysicalPartition11's channel. Everything in <span style="color:blue">blue</span> is in Subject2's channel.
+In this example, <span style="color:red;font-weight:bold">Subject1</span> and <span style="color:blue;font-weight:bold">Subject2</span> are the channel roots. All of the elements and models under them are in their respective channels. Color-coding is used to identify each tree. Everything in <span style="color:red">red</span> is in Subject1's channel. Everything in <span style="color:blue">blue</span> is in Subject2's channel.
 
-Not everything in an iModel is in a channel. Everything that is not in a specially marked channel is, by default, assigned to the special "repository channel". In the diagram above, everything in black is in the repository channel.
+Not everything in an iModel is in a channel. Everything that is not below a Channel Subject is considered part of the *Shared Channel*. The Shared Channel may be modified by all applications. In the diagram above, everything in black is in the Shared Channel.
 
-## Channel Constraints
+## ChannelKeys
 
-A read-write app does not _have to_ create a channel before it can write to an iModel. The app must, nevertheless, follow the rules when regarding channels that were created by other apps.
+Every channel has a `channelKey` that is used for controlling write access to it.
 
-There are two fundamental rules that apply to (non-repository) channels:
+>Note: `channelKey` is distinct from the Code of the Channel Subject element. It is a key chosen by the application that creates a channel and is not visible to the user. More than one Channel Subject may use the same `channelKey`.
 
-1. Only the owner of a channel can write to it.
-1. All changes to a given channel must be isolated from changes to all other channels.
+## ChannelControl
 
-Additional rules follow from them:
+Every `IModelDb` has a member [IModelDb.channels]($backend) of type [ChannelControl]($backend) that supplies methods for controlling which channels are editable during a session.
 
-- An app must be _in_ a channel before attempting to lock the channel root or modify anything in it.
-- All changes to a given channel must be pushed before another channel can be changed.
-- A [Changeset](../Glossary.md#changeset) may contain changes for only a single channel.
+The method [ChannelControl.getChannelKey]($backend) will return the `channelKey` for an element given an `ElementId`.
 
-A [ChannelConstraintError]($backend) is thrown when an app breaks one of these rules. That happens most often when an app is "in" one channel and tries to write to another. The error in these cases look like this:
+### Allowed Channels
 
-- "cannot write to the channel owned by A while in the channel owned by B"
-- "cannot write to the channel owned by A while in the repository channel"
-- "cannot write to the repository channel while in the channel owned by B"
+The `ChannelControl` member of an IModelDb holds a set of allowed (i.e. editable) channels. Any attempt to add/delete/update an [Element]($backend), [ElementAspect]($backend), or [Model]($backend) whose `channelKey` is not in the set of Allowed Channels will generate a `ChannelConstraintViolation` exception.
 
-You will get this error if you try to change channels without pushing your changes first:
+After opening an `IModelDb` but before editing it, applications should call [ChannelControl.addAllowedChannel]($backend) one or more times with the `channelKey`(s) for which editing should be allowed. To stop editing a channel, call [ChannelControl.removeAllowedChannel]($backend).
 
-- "Must push changes before changing channel"
-
-## Channel Ownership
-
-> An app should not get into or try to modify a channel that it does not own.
-
-A channel has an owner. The owner is the app that created the channel and knows what it is for. The concept of a channel was first developed for connectors. A connector reads data from an external source and writes it to a channel that it owns. You might say that the channel is "tuned" to the external source and receives its data from there. It makes no sense for any other app to change the data in that channel, since the source of truth is the external source.
-
-The rules of locking are slightly different for channels:
-
-- When you lock a channel root element, you effectively lock everything in it.
-- You can only lock the channel that you are _in_.
-
-## Connectors and Channels
-
-A connector always works in a channel. A connector does not create channels or change the channel. A supervisor calls some connector methods in the repository channel and others in the connector's own private channel. The channel is locked by the supervisor.
-
-## Non-Connector Apps and Channels
-
-An app other than a connector _may_ create and work in a channel. That is not required. If your app wants to work in a channel, here is an example.
-
-The first example is how to create a channel and then get into it and write to it. Note how changes must be pushed in between changing channels.
+For example:
 
 ```ts
-// Get a briefcase
-const props = await BriefcaseManager.downloadBriefcase(user, { iTwinId: testProjectId, iModelId: readWriteTestIModel.id });
-const imodel1 = await BriefcaseDb.open(user, { fileName: props.fileName });
-
-// Create the channel root. Note that, initially, we are in the repository channel.
-const channel3 = imodel1.elements.insertElement(Subject.create(imodel1, imodel1.elements.getRootSubject().id, "channel3"));
-const channel3Info = "this is channel3"; // could be an object or anything you like
-ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iTwin.js apps would set them up.
-
-// Push the change to the repository channel.
-imodel1.saveChanges();
-await imodel1.pushChanges( {user, description: "channel3 root created"} );
-
-// Now enter channel3 and write to it.
-const m3 = createAndInsertPhysicalPartitionAndModel(imodel1, "m3", true, channel3; // some function that creates a model
-
-// Push the changes to channel3
-imodel1.saveChanges();
-await imodel1.pushChanges( {user, description:  "channel3 populated"});
+    imodel.channels.addAllowedChannel("structural-members");
 ```
 
-The next example is how to enter an existing channel and lock it in a pessimistic locking situation.
+Later, to disallow editing of that channel call:
 
 ```ts
-// Get the channel root element
-const channel3 = imodel1.elements.getElement<Subject>({code: "channel3"});
-
-
-// Lock that channel. That effectively locks everything in that channel.
-await iMode1.locks.acquireExclusiveLock(channel3);
-
-... make changes to elements and models in this channel.
-
-// Push the changes to channel3
-imodel1.saveChanges();
-await imodel1.pushChanges({ user, description: "channel3 populated"});
+    imodel.channels.removeAllowedChannel("structural-members");
 ```
+
+> Note: The "shared" channel is editable by default, so it is automatically in the set of allowed channels. To disallow writing to the shared channel, you can call `imodel.channels.removeAllowedChannel("shared")`
+
+### Creating New Channels
+
+To create a new Channel Subject element (and thereby a new channel), use [ChannelControl.insertChannelSubject]($backend).
+
+E.g.:
+
+```ts
+  imodel.channels.insertChannelSubject({ subjectName: "Chester", channelKey: "surface-stubs" });
+```
+
+Generally, Channel Subject elements are created as an child of the Root Subject. However,  `insertChannelSubject` accepts an optional `parentSubjectId` argument so that Channel Subjects can appear elsewhere in the Subject hierarchy. However, channels may not nest. Attempts to create a Channel Subject within an exiting channel will throw an exception.
+
+## Channels vs. Locks
+
+Locks and Channels are orthogonal concepts. To edit an element, its channel must be allowed AND its lock must be held.
+
+Each is possible without the other:
+  - If another user holds the lock on an element, editing is denied even though it is an allowed channel.
+  - An element may have been edited in a previous session or by another application in the same session. In that case the lock may be held, but further edits are denied if its channel is not allowed.
