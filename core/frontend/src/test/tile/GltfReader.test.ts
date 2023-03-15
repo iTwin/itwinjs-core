@@ -310,64 +310,64 @@ describe("GltfReader", () => {
     expectCycle(3);
   });
 
-  it("computes content range", async () => {
-    // https://github.com/KhronosGroup/glTF-Sample-Models/blob/master/2.0/TriangleWithoutIndices/glTF-Embedded/TriangleWithoutIndices.gltf
-    const gltf: GltfDocument = JSON.parse(`{
-      "scene" : 0,
-      "scenes" : [
-        {
-          "nodes" : [ 0 ]
-        }
-      ],
-
-      "nodes" : [
-        {
-          "mesh" : 0
-        }
-      ],
-
-      "meshes" : [
-        {
-          "primitives" : [ {
-            "attributes" : {
-              "POSITION" : 0
-            }
-          } ]
-        }
-      ],
-
-      "buffers" : [
-        {
-          "uri" : "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
-          "byteLength" : 36
-        }
-      ],
-      "bufferViews" : [
-        {
-          "buffer" : 0,
-          "byteOffset" : 0,
-          "byteLength" : 36,
-          "target" : 34962
-        }
-      ],
-      "accessors" : [
-        {
-          "bufferView" : 0,
-          "byteOffset" : 0,
-          "componentType" : 5126,
-          "count" : 3,
-          "type" : "VEC3",
-          "max" : [ 1.0, 1.0, 0.0 ],
-          "min" : [ 0.0, 0.0, 0.0 ]
-        }
-      ],
-
-      "asset" : {
-        "version" : "2.0"
+  // https://github.com/KhronosGroup/glTF-Sample-Models/blob/master/2.0/TriangleWithoutIndices/glTF-Embedded/TriangleWithoutIndices.gltf
+  const unindexedTriangle: GltfDocument = JSON.parse(`{
+    "scene" : 0,
+    "scenes" : [
+      {
+        "nodes" : [ 0 ]
       }
-    }`);
+    ],
 
-    const reader = createReader(gltf)!;
+    "nodes" : [
+      {
+        "mesh" : 0
+      }
+    ],
+
+    "meshes" : [
+      {
+        "primitives" : [ {
+          "attributes" : {
+            "POSITION" : 0
+          }
+        } ]
+      }
+    ],
+
+    "buffers" : [
+      {
+        "uri" : "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+        "byteLength" : 36
+      }
+    ],
+    "bufferViews" : [
+      {
+        "buffer" : 0,
+        "byteOffset" : 0,
+        "byteLength" : 36,
+        "target" : 34962
+      }
+    ],
+    "accessors" : [
+      {
+        "bufferView" : 0,
+        "byteOffset" : 0,
+        "componentType" : 5126,
+        "count" : 3,
+        "type" : "VEC3",
+        "max" : [ 1.0, 1.0, 0.0 ],
+        "min" : [ 0.0, 0.0, 0.0 ]
+      }
+    ],
+
+    "asset" : {
+      "version" : "2.0"
+    }
+  }`);
+
+  it("computes bounding boxes", async () => {
+    const reader = createReader(unindexedTriangle)!;
     expect(reader).not.to.be.undefined;
     const result = await reader.read();
     expect(result.graphic).not.to.be.undefined;

@@ -1690,9 +1690,15 @@ export interface ReadGltfGraphicsArgs {
   hasChildren?: boolean;
 }
 
+/** The output of [[readGltf]].
+ * @public
+ */
 export interface GltfGraphic {
+  /** The graphic created from the glTF model. */
   graphic: RenderGraphic;
+  /** The bounding box of the model, in local coordinates (y-axis up). */
   localBoundingBox: ElementAlignedBox3d;
+  /** The bounding box of the model, in world coordinates (z-axis up). */
   boundingBox: AxisAlignedBox3d;
 }
 
@@ -1702,6 +1708,7 @@ export interface GltfGraphic {
  * If a particular glTF asset fails to load and/or display properly, please
  * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
  * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
+ * @see [[readGltf]] to obtain more information about the glTF model.
  * @public
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
@@ -1709,6 +1716,15 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
   return result?.graphic;
 }
 
+/** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
+ * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
+ * The returned graphic also includes the bounding boxes of the glTF model in world and local coordiantes.
+ * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
+ * If a particular glTF asset fails to load and/or display properly, please
+ * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
+ * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
+ * @public
+ */
 export async function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined> {
   const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
   const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
