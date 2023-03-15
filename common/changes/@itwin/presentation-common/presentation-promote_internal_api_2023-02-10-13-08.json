@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Promote LabelDefinition APIs to public.",
+      "comment": "Promote `LabelDefinition` APIs to `@public`.",
       "type": "none"
     }
   ],

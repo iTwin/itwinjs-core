@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`<NineZone /> renders correctly 1`] = `
-<div
-  style="position: absolute; width: 100%; height: 100%; top: 0px; left: 0px; visibility: hidden;"
-/>
-`;
-
-exports[`<TestNineZoneProvider /> renders correctly 1`] = `9-Zone`;

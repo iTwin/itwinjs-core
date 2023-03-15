@@ -8,6 +8,7 @@ import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
+import { FormatTraits } from "../core-quantity";
 
 describe("Composite Formats tests:", () => {
   it("Bad Composite unit order", async () => {
@@ -137,6 +138,82 @@ describe("Composite Formats tests:", () => {
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+    }
+  });
+
+  it("Test FormatTrait combinations on trailing zeroes", async () => {
+    const unitsProvider = new TestUnitsProvider();
+    const unit = { name: "Units.M", label: "m", contextId: "Units.LENGTH" };
+
+    const testQuantityData = [
+      { testCaseNum: 1, keepSingleZero: false, keepDecimalPoint: false, trailZeroes: false, magnitude: 1, result: "1000 mm" },
+      { testCaseNum: 2, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: false, magnitude: 1, result: "1000. mm" },
+      { testCaseNum: 3, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: true, magnitude: 1, result: "1000.000000 mm" },
+      { testCaseNum: 4, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: false, magnitude: 1, result: "1000 mm" },
+      { testCaseNum: 5, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: true, magnitude: 1, result: "1000.000000 mm" },
+      { testCaseNum: 6, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: false, magnitude: 1, result: "1000.0 mm" },
+      { testCaseNum: 7, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: true, magnitude: 1, result: "1000.000000 mm" },
+
+      { testCaseNum: 8, keepSingleZero: false, keepDecimalPoint: false, trailZeroes: false, magnitude: 0.0254, result: "25.4 mm" },
+      { testCaseNum: 9, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: false, magnitude: 0.0254, result: "25.4 mm" },
+      { testCaseNum: 10, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: true, magnitude: 0.0254, result: "25.400000 mm" },
+      { testCaseNum: 11, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: false, magnitude: 0.0254, result: "25.4 mm" },
+      { testCaseNum: 12, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: true, magnitude: 0.0254, result: "25.400000 mm" },
+      { testCaseNum: 13, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: false, magnitude: 0.0254, result: "25.4 mm" },
+      { testCaseNum: 14, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: true, magnitude: 0.0254, result: "25.400000 mm" },
+
+      { testCaseNum: 15, keepSingleZero: false, keepDecimalPoint: false, trailZeroes: false, magnitude: 12.65, result: "12650 mm" },
+      { testCaseNum: 16, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: false, magnitude: 12.65, result: "12650. mm" },
+      { testCaseNum: 17, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: true, magnitude: 12.65, result: "12650.000000 mm" },
+      { testCaseNum: 18, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: false, magnitude: 12.65, result: "12650 mm" },
+      { testCaseNum: 19, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: true, magnitude: 12.65, result: "12650.000000 mm" },
+      { testCaseNum: 20, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: false, magnitude: 12.65, result: "12650.0 mm" },
+      { testCaseNum: 21, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: true, magnitude: 12.65, result: "12650.000000 mm" },
+
+      { testCaseNum: 22, keepSingleZero: false, keepDecimalPoint: false, trailZeroes: false, magnitude: 0.00000, result: "0 mm" },
+      { testCaseNum: 23, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: false, magnitude: 0.00000, result: "0. mm" },
+      { testCaseNum: 24, keepSingleZero: false, keepDecimalPoint: true, trailZeroes: true, magnitude: 0.00000, result: "0.000000 mm" },
+      { testCaseNum: 25, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: false, magnitude: 0.00000, result: "0 mm" },
+      { testCaseNum: 26, keepSingleZero: true, keepDecimalPoint: false, trailZeroes: true, magnitude: 0.00000, result: "0.000000 mm" },
+      { testCaseNum: 27, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: false, magnitude: 0.00000, result: "0.0 mm" },
+      { testCaseNum: 28, keepSingleZero: true, keepDecimalPoint: true, trailZeroes: true, magnitude: 0.00000, result: "0.000000 mm" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const formatData = {
+        composite: {
+          spacer: " ",
+          units: [
+            {
+              label: "mm",
+              name: "Units.MM",
+              contextId: "Units.LENGTH",
+            },
+          ],
+        },
+        formatTraits: ["showUnitLabel"],
+        precision: 6,
+        type: "Decimal",
+      };
+
+      if (testEntry.keepSingleZero)
+        formatData.formatTraits.push("keepSingleZero");
+      if (testEntry.keepDecimalPoint)
+        formatData.formatTraits.push("keepDecimalPoint");
+      if (testEntry.trailZeroes)
+        formatData.formatTraits.push("trailZeroes");
+
+      const format = new Format("test");
+      await format.fromJSON(unitsProvider, formatData).catch(() => { });
+      assert.isTrue(format.hasUnits, `Test case number ${testEntry.testCaseNum} failed`);
+      assert.equal(format.hasFormatTraitSet(FormatTraits.KeepSingleZero), testEntry.keepSingleZero, `Test case number ${testEntry.testCaseNum} failed`);
+      assert.equal(format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint), testEntry.keepDecimalPoint, `Test case number ${testEntry.testCaseNum} failed`);
+      assert.equal(format.hasFormatTraitSet(FormatTraits.TrailZeroes), testEntry.trailZeroes, `Test case number ${testEntry.testCaseNum} failed`);
+
+      const spec = await FormatterSpec.create("test", format, unitsProvider, new BasicUnit(unit.name, unit.label, unit.contextId));
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.equal(formattedValue, testEntry.result, `Test case number ${testEntry.testCaseNum} failed`);
+      assert.isTrue(formattedValue.length > 0, `Test case number ${testEntry.testCaseNum} failed`);
     }
   });
 
