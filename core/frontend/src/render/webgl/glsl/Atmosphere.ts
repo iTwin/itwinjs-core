@@ -280,7 +280,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 
     float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
     float averageDensityAcrossPartition = opticalDepthForCurrentPartition / stepSize;
-    vec3 outScatteredLight = u_scatteringCoefficients * totalOpticalDepthFromSunToCamera;
+    vec3 outScatteredLight = u_scatteringCoefficients * totalOpticalDepthFromSunToCamera * u_outScatteringIntensity;
 
     // The amount of light scattered towards the camera at a scatter point is related to the inverse exponential of the amount of light scattered away along its path
     //   In more intuitive terms: There's exponentially less light left to scatter towards the camera deeper in the atmosphere because it's all scattered away by the time it gets to the sample point.
@@ -306,11 +306,19 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 
 const calculateReflectedLightIntensity = `
 vec3 calculateReflectedLightIntensity(float opticalDepth) {
-    vec3 sunlightColor = vec3(1.0, 0.95, 0.925);
+    // Using only the wavelength-specific scattering to calculate surface scattering results in too much red light on the surface in areas experiencing sunset
+    //   This effect can be seen from space near the solar terminator line, but it most egregious when near the ground in an area affected by twilight.
+    //   To lessen the amount of red light in the surface scattering, I have chosen to adjust the overall scattering intensity of each wavelength toward the average scattering value between them.
+    //   This results in a more uniform scattering of light, producing sunsets that are still dark but without an overpowering red hue.
+    //   By rough visual inspection, an equal interpolation between the two extremes retains a bit of ambient red without removing it entirely.
+    //   Because this interpolation only occurs here during surface scattering, the vibrant sky color during sunset is unaffected.
 
     float averageScatteringValue = (u_scatteringCoefficients.x + u_scatteringCoefficients.y + u_scatteringCoefficients.z) / 3.0;
-    vec3 scatteringStrength = mix(vec3(averageScatteringValue), u_scatteringCoefficients, u_brightnessAdaptionStrength);
-    vec3 outScatteredLight = opticalDepth * u_inScatteringIntensity * scatteringStrength;
+    vec3 equalScatteringByWavelength = vec3(averageScatteringValue);
+    vec3 scatteringStrength = mix(equalScatteringByWavelength, u_scatteringCoefficients, u_inScatteringIntensity);
+    vec3 outScatteredLight = opticalDepth * u_outScatteringIntensity * scatteringStrength;
+
+    vec3 sunlightColor = vec3(1.0, 0.95, 0.925);
     vec3 reflectedLightIntensity = sunlightColor * exp(-outScatteredLight);
     return reflectedLightIntensity;
 }
@@ -350,7 +358,7 @@ mat3 computeAtmosphericScatteringFragment() {
 const applyHdr = `
 vec3 applyHdr(vec3 atmosphericScatteringColor, vec3 reflectedLightColor) {
   vec3 colorWithoutHdr = atmosphericScatteringColor + reflectedLightColor;
-  float exposure = u_outScatteringIntensity;
+  float exposure = u_brightnessAdaptionStrength;
   vec3 colorWithHdr = 1.0 - exp(-exposure * colorWithoutHdr);
 
   return colorWithHdr;
@@ -509,22 +517,22 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
       });
     }
   );
-  // shader.addUniform(
-  //   "u_outScatteringIntensity",
-  //   VariableType.Float,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-  //       params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
-  //     });
-  //   },
-  //   VariablePrecision.High
-  // );
   shader.addUniform(
     "u_inScatteringIntensity",
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
         params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  shader.addUniform(
+    "u_outScatteringIntensity",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
       });
     },
     VariablePrecision.High
@@ -584,16 +592,6 @@ export function addAtmosphericScatteringEffect(
   }
 
   builder.frag.addUniform(
-    "u_outScatteringIntensity",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  mainShader.addUniform(
     "u_brightnessAdaptionStrength",
     VariableType.Float,
     (prog) => {
