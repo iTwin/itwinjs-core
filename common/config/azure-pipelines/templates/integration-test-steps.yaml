@@ -23,7 +23,7 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
-  - script: npx playwright install
+  - script: npx playwright install --with-deps
     displayName: npx playwright install
 
   - script: |
