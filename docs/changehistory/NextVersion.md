@@ -13,7 +13,10 @@ Table of contents:
 - [Mesh intersection with ray](#mesh-intersection-with-ray)
 - [Presentation](#presentation)
   - [Active unit system](#active-unit-system)
+  - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
+  - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
+  - [Dependency updates](#dependency-updates)
 
 ## Updated minimum requirements
 
@@ -60,6 +63,23 @@ There is also new support for intersecting a `Ray3d` with a triangle or a polygo
 ### Active unit system
 
 [PresentationManager]($presentation-frontend) has a way to set active unit system either through props when initializing ([PresentationManagerProps.activeUnitSystem]($presentation-frontend)) or directly through a setter ([PresentationManager.activeUnitSystem]($presentation-frontend)). Both of these ways have been deprecated in favor of using [QuantityFormatter.activeUnitSystem]($core-frontend) (access `QuantityFormatter` through `IModelApp.quantityFormatter`) to avoid asking consumers set the active unit system in two places. For the time being, while we keep the deprecated unit system setters on the presentation manager, they act as an override to [QuantityFormatter.activeUnitSystem]($core-frontend), but the latter is now used by default, so setting active unit system on presentation manager is not necessary any more.
+
+### Hierarchy level filtering and limiting
+
+Two new features have been made available to help working with very large hierarchies - hierarchy level filtering and limiting. Filtering was already available since `3.6` and has been promoted to `@beta`, limiting has been newly added as `@beta`. See [hierarchy filtering and limiting page](../presentation/hierarchies/FilteringLimiting.md) for more details.
+
+### Stopped "eating" errors on the frontend
+
+The [PresentationManager]($presentation-frontend) used to "eat" errors and return default value instead of re-throwing and exposing them to consumers. This made it impossible for consumer code to know that an error occurred, which could cause it to make wrong decisions. The decision has been re-considered and now Presentation manager lets consumers catch the errors. This affects the following APIs:
+
+- [PresentationManager.getNodes]($presentation-frontend)
+- [PresentationManager.getNodesAndCount]($presentation-frontend)
+- [PresentationManager.getContent]($presentation-frontend)
+- [PresentationManager.getContentAndSize]($presentation-frontend)
+- [PresentationManager.getPagedDistinctValues]($presentation-frontend)
+- [PresentationManager.getDisplayLabelDefinitions]($presentation-frontend)
+
+Consumers of these APIs should make sure they're wrapped with try/catch blocks and the errors are handled appropriately.
 
 ### Handling of long-running requests
 
