@@ -144,7 +144,7 @@ header nav {
   text-decoration: none;
 }
 
-#main-nav .version-dropdown {
+.version-dropdown {
   position: relative;
   display: flex;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;

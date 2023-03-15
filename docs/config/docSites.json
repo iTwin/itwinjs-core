@@ -54,6 +54,7 @@
         "archivedPath": "/v2"
       }
     ],
+    "currentVersion": "4.x",
     "packageAliases": {
       "analytical-backend": "analytical-backend",
       "appui-abstract": "appui-abstract",
