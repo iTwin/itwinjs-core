@@ -85,10 +85,6 @@ spawn(require.resolve(".bin/typedoc"), args).then((code) => {
     cpx.copySync(path.join(source, argv.tsIndexFile), outputDir);
     fs.renameSync(path.join(outputDir, argv.tsIndexFile), path.join(outputDir, 'index.ts'));
   }
-  // Copy CHANGELOG.json to json output folder
-  if (fs.existsSync(path.join(process.cwd(), 'CHANGELOG.json'))) {
-    cpx.copySync(path.join(process.cwd(), 'CHANGELOG.json'), outputDir);
-  }
 
   // Append the directory of the package, version and repository URL to the output
   addPackageMetadata(json, process.cwd());
