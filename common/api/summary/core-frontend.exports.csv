@@ -242,6 +242,7 @@ internal;GltfDictionary
 internal;gltfDictionaryIterator
 internal;GltfDocument 
 internal;GltfExtensions = GltfStringMap
+public;GltfGraphic
 internal;GltfGraphicsReader 
 internal;GltfHeader 
 internal;GltfId = Gltf1Id | Gltf2Id
@@ -528,6 +529,7 @@ public;QueryVisibleFeaturesCallback = (features: Iterable
 public;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
+public;readGltf(args: ReadGltfGraphicsArgs): Promise
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
