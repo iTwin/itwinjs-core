@@ -47,6 +47,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/express-server/                    @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                @iTwin/itwinjs-core-display @Ellord207
 /common/**/frontend-devtools/                 @iTwin/itwinjs-core-display @Ellord207
+/common/**/frontend-tiles.*                   @iTwin/itwinjs-core-display @danieliborra
+/common/**/frontend-tiles/                    @iTwin/itwinjs-core-display @danieliborra
 /common/**/core-geometry.*                    @bbastings @dassaf4 @saeeedtorabi
 /common/**/core-geometry/                     @bbastings @dassaf4 @saeeedtorabi
 /common/**/hypermodeling-frontend.*           @iTwin/itwinjs-core-display @bbastings
@@ -59,8 +61,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/editor-*.*                         @bbastings @kabentley @pmconne
 /common/**/editor-*/                          @bbastings @kabentley @pmconne
-/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
-/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
+/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse
+/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse
 /common/**/core-frontend.*                    @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-frontend/                     @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-i18n.*                        @calebmshafer @wgoehrig
@@ -73,7 +75,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/linear-referencing-backend/        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/         @calebmshafer @diegoalexdiaz
-/common/**/map-layers/                        @mdastous-bentley @MarcBedard8
 /common/**/core-orbitgt.*                     @iTwin/itwinjs-core-display
 /common/**/core-orbitgt/                      @iTwin/itwinjs-core-display
 /common/**/perf-tools.*                       @calebmshafer @wgoehrig
@@ -102,6 +103,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
 /core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
+/core/frontend-tiles            @iTwin/itwinjs-core-display @danieliborra
 /core/geometry                  @bbastings @dassaf4 @saeeedtorabi
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
@@ -130,7 +132,6 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /extensions                           @aruniverse @calebmshafer
 /extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
-/extensions/map-layers                @mdastous-bentley @MarcBedard8
 
 /full-stack-tests/core                    @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface  @calebmshafer @ColinKerr @wgoehrig
@@ -152,7 +153,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
 /test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
-/test-apps/presentation-test-app            @iTwin/itwinjs-core-presentation
 /test-apps/synchro-schedule-importer        @iTwin/itwinjs-core-display
 
 /tools/backend-webpack @calebmshafer @wgoehrig
@@ -160,7 +160,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /tools/certa @calebmshafer @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig @aruniverse
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
-/tools/eslint-plugin @calebmshafer @paulius-valiunas
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 

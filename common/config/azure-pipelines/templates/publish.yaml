@@ -5,12 +5,14 @@ parameters:
 
 steps:
 - powershell: |
-    $commitMsg = '$(Build.SourceVersionMessage)'
+    $commitMsg = @"
+    $(Build.SourceVersionMessage)
+    "@
     if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
-      Write-Host `'$commitMsg`'` is a version bump
+      Write-Host $commitMsg is a version bump
       Write-Host '##vso[task.setvariable variable=ShouldPublish;]True'
     } else {
-      Write-Host `'$commitMsg`'` is not a version bump
+      Write-Host $commitMsg is not a version bump
       Write-Host '##vso[task.setvariable variable=ShouldPublish;]False'
     }
   displayName: Publish if version bump

@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { Gltf, GltfGraphicsReader, GltfId, GltfNode, GltfReaderProps, GltfSampler, GltfWrapMode } from "../../tile/GltfReader";
+import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../gltf/GltfSchema";
+import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
@@ -96,7 +98,7 @@ describe("GltfReader", () => {
     await IModelApp.shutdown();
   });
 
-  function createReader(gltf: Uint8Array | Gltf): GltfGraphicsReader | undefined {
+  function createReader(gltf: Uint8Array | GltfDocument): GltfGraphicsReader | undefined {
     const props = GltfReaderProps.create(gltf, true);
     return props ? new GltfGraphicsReader(props, { gltf, iModel }) : undefined;
   }
@@ -176,7 +178,7 @@ describe("GltfReader", () => {
   });
 
   it("identifies the scene nodes", () => {
-    const json: Gltf = {
+    const json: GltfDocument = {
       ...minimalJson,
       meshes: [] as any,
       nodes: [
@@ -220,7 +222,7 @@ describe("GltfReader", () => {
   });
 
   it("traverses scene nodes", () => {
-    const json: Gltf = {
+    const json: GltfDocument = {
       ...minimalJson,
       meshes: [] as any,
       nodes: [
@@ -276,7 +278,7 @@ describe("GltfReader", () => {
   });
 
   it("throws during traversal if scene contains cycles", () => {
-    const json: Gltf = {
+    const json: GltfDocument = {
       ...minimalJson,
       meshes: [] as any,
       nodes: {
@@ -306,6 +308,79 @@ describe("GltfReader", () => {
     expectCycle(1);
     expectCycle(2);
     expectCycle(3);
+  });
+
+  // https://github.com/KhronosGroup/glTF-Sample-Models/blob/master/2.0/TriangleWithoutIndices/glTF-Embedded/TriangleWithoutIndices.gltf
+  const unindexedTriangle: GltfDocument = JSON.parse(`{
+    "scene" : 0,
+    "scenes" : [
+      {
+        "nodes" : [ 0 ]
+      }
+    ],
+
+    "nodes" : [
+      {
+        "mesh" : 0
+      }
+    ],
+
+    "meshes" : [
+      {
+        "primitives" : [ {
+          "attributes" : {
+            "POSITION" : 0
+          }
+        } ]
+      }
+    ],
+
+    "buffers" : [
+      {
+        "uri" : "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+        "byteLength" : 36
+      }
+    ],
+    "bufferViews" : [
+      {
+        "buffer" : 0,
+        "byteOffset" : 0,
+        "byteLength" : 36,
+        "target" : 34962
+      }
+    ],
+    "accessors" : [
+      {
+        "bufferView" : 0,
+        "byteOffset" : 0,
+        "componentType" : 5126,
+        "count" : 3,
+        "type" : "VEC3",
+        "max" : [ 1.0, 1.0, 0.0 ],
+        "min" : [ 0.0, 0.0, 0.0 ]
+      }
+    ],
+
+    "asset" : {
+      "version" : "2.0"
+    }
+  }`);
+
+  it("computes bounding boxes", async () => {
+    const reader = createReader(unindexedTriangle)!;
+    expect(reader).not.to.be.undefined;
+    const result = await reader.read();
+    expect(result.graphic).not.to.be.undefined;
+
+    // Content range is in local coordinates (y-up)
+    expect(result.contentRange?.toJSON()).to.deep.equal({
+      low: [0, 0, 0],
+      high: [1, 1, 0],
+    });
+
+    // Range is in world coordinates (z-up). Transform introduces slight floating point fuzz.
+    expect(result.range).not.to.be.undefined;
+    expect(result.range!.isAlmostEqual(new Range3d(0, 0, -1, 1, 0, 0))).to.be.true;
   });
 
   describe("textures", () => {
