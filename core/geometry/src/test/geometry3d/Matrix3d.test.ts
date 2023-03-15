@@ -1839,3 +1839,27 @@ describe("Matrix3d.CreateDirectionalScale", () => {
     expect(expectedDirectionScale).to.deep.equal(returnedDirectionScale);
   });
 });
+
+describe("Matrix3d.createRigidHeadsUp", () => {
+  it("Matrix3d.createRigidHeadsUp", () => {
+    const ck = new bsiChecker.Checker();
+    const normal = Vector3d.create(1, 2, 3);
+    const matrix = Matrix3d.createRigidHeadsUp(normal);
+    // equation of plane with the given normal passing through (0,0,0): x + 2y + 3z = 0
+    const pointOnPlane = Vector3d.create(-5, 1, 1);
+    const point = matrix.multiplyTransposeVector(pointOnPlane);
+    ck.testCoordinate(point.z, 0);
+  });
+});
+
+describe("Matrix3d.createRigidViewAxesZTowardsEye", () => {
+  it("Matrix3d.createRigidViewAxesZTowardsEye", () => {
+    const ck = new bsiChecker.Checker();
+    const matrix = Matrix3d.createRigidViewAxesZTowardsEye(1, 2, 3); // plane normal is (1,2,3)
+    // equation of plane with the given normal passing through (0,0,0): x + 2y + 3z = 0
+    const pointOnPlane = Vector3d.create(-5, 1, 1);
+    const point = matrix.multiplyTransposeVector(pointOnPlane);
+    ck.testCoordinate(point.z, 0);
+  });
+});
+
