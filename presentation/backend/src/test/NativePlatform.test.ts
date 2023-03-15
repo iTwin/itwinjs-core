@@ -9,7 +9,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
-import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
+import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 
 describe("default NativePlatform", () => {
@@ -94,6 +94,13 @@ describe("default NativePlatform", () => {
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
+    });
+
+    it("throws on `ResultSetTooLarge` error response", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.ResultSetTooLarge, message: "test" } }), cancel: () => { } }));
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test").with.property("errorNumber", PresentationStatus.ResultSetTooLarge);
     });
 
     it("adds listener to cancel event and calls it only after first invocation", async () => {
