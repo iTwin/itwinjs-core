@@ -35,6 +35,9 @@ beta;ChangeSummary
 beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
+internal;ChannelAdmin 
+beta;ChannelControl
+beta;ChannelKey = string
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
 deprecated;CheckpointArg = DownloadRequest
