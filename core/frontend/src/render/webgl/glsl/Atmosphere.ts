@@ -592,11 +592,11 @@ export function addAtmosphericScatteringEffect(
   }
 
   builder.frag.addUniform(
-    "u_brightnessAdaptionStrength",
+    "u_exposure",
     VariableType.Float,
     (prog) => {
-      prog.addProgramUniform("u_brightnessAdaptionStrength", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindBrightnessAdaptationStrength(uniform);
+      prog.addProgramUniform("u_exposure", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindExposure(uniform);
       });
     },
     VariablePrecision.High

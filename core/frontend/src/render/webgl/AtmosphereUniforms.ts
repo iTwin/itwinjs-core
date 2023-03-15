@@ -19,7 +19,7 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   // computed values
   private _atmosphereHeightAboveEarth = 0.0;
   private _atmosphereScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
-  private _brightnessAdaptationStrength = 0.0;
+  private _exposure = 0.0;
   private _densityFalloff = 0.0;
   private _earthCenter = new Point3d();
   private _earthScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
@@ -61,7 +61,7 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
 
     this._updateAtmosphereHeightAboveEarth(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateAtmosphereScaleMatrix(this.atmosphere.atmosphereHeightAboveEarth);
-    this._updateBrightnessAdaptationStrength(this.atmosphere.brightnessAdaptationStrength);
+    this._updateExposure(this.atmosphere.brightnessAdaptationStrength);
     this._updateDensityFalloff(this.atmosphere.densityFalloff);
     this._updateEarthCenter(plan.ellipsoid.ellipsoidCenter, target.uniforms.frustum.viewMatrix);
     this._updateEarthScaleMatrix(plan.ellipsoid.ellipsoidRadii);
@@ -167,8 +167,8 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._numOpticalDepthPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numOpticalDepthPoints));
   }
 
-  private _updateBrightnessAdaptationStrength(brightnessAdaptationStrength: number) {
-    this._brightnessAdaptationStrength = brightnessAdaptationStrength;
+  private _updateExposure(exposure: number) {
+    this._exposure = exposure;
   }
 
   public bindIsEnabled(uniform: UniformHandle): void {
@@ -183,9 +183,9 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     }
   }
 
-  public bindBrightnessAdaptationStrength(uniform: UniformHandle): void {
+  public bindExposure(uniform: UniformHandle): void {
     if (!sync(this, uniform)) {
-      uniform.setUniform1f(this._brightnessAdaptationStrength);
+      uniform.setUniform1f(this._exposure);
     }
   }
 
