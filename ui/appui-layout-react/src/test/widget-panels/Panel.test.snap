@@ -35,6 +35,7 @@ exports[`WidgetPanelProvider should render captured 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -147,6 +148,7 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -259,6 +261,7 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -369,6 +372,7 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -448,6 +452,7 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
               data-item-id="t2"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -539,6 +544,7 @@ exports[`WidgetPanelProvider should render spanned 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -651,6 +657,7 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -763,6 +770,7 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />
@@ -875,6 +883,7 @@ exports[`WidgetPanelProvider should render with top spanned 1`] = `
               data-item-id="t1"
               data-item-type="widget-tab"
               role="tab"
+              tabindex="0"
               title=""
             >
               <span />

@@ -124,7 +124,6 @@ export const usePointerCaptor = <T extends HTMLElement>(
   const setRef = useRefEffect((instance: T | null) => {
     let touchTarget: EventTarget | null = null;
     const mouseDown = (e: MouseEvent) => {
-      e.preventDefault();
       onPointerDown && onPointerDown(e, e);
       isDown.current = true;
     };
