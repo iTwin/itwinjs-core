@@ -253,10 +253,10 @@ export function useTabInteractions<T extends HTMLElement>({
       }
     };
     const instance = ref.current;
-    instance?.addEventListener("keydown", keydown);
+    instance && instance.addEventListener("keydown", keydown);
     return () => {
       timer.setOnExecute(undefined);
-      instance?.removeEventListener("keydown", keydown);
+      instance && instance.removeEventListener("keydown", keydown);
     };
   }, [handleClick, handleDoubleClick]);
   return refs;
