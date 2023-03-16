@@ -80,10 +80,10 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
       if (ovrs.allHidden)
         continue;
 
+      const scratchFeature = PackedFeature.createWithIndex();
       const table = command.batch.featureTable;
       const modelIdParts = Id64.getUint32Pair(table.modelId);
-      for (let i = 0; i < table.numFeatures; i++) {
-        const feature = table.getPackedFeature(i);
+      for (const feature of table.iterable(scratchFeature)) {
         if (!ovrs.anyOverridden || isFeatureVisible(feature, features.target, modelIdParts, features.includeNonLocatable)) {
           yield {
             elementId: Id64.fromUint32PairObject(feature.elementId),

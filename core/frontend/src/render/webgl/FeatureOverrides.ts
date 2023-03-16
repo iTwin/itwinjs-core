@@ -65,6 +65,8 @@ export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isMod
 /** @internal */
 export type FeatureOverridesCleanup = () => void;
 
+const scratchPackedFeature = PackedFeature.createWithIndex();
+
 /** @internal */
 export class FeatureOverrides implements WebGLDisposable {
   public readonly target: Target;
@@ -176,8 +178,8 @@ export class FeatureOverrides implements WebGLDisposable {
     //  [1]
     //      RGB = rgb
     //      A = alpha
-    for (let i = 0; i < map.numFeatures; i++) {
-      const feature = map.getPackedFeature(i);
+    for (const feature of map.iterable(scratchPackedFeature)) {
+      const i = feature.index;
       const dataIndex = i * 4 * 2;
 
       const app = this.target.currentBranch.getFeatureAppearance(

@@ -65,6 +65,11 @@ export interface PackedFeature {
 }
 
 /** @internal */
+export interface PackedFeatureWithIndex extends PackedFeature {
+  index: number;
+}
+
+/** @internal */
 export namespace PackedFeature {
   export function create(): PackedFeature {
     const pair = { upper: 0, lower: 0 };
@@ -75,6 +80,12 @@ export namespace PackedFeature {
       geometryClass: GeometryClass.Primary,
       animationNodeId: 0,
     };
+  }
+
+  export function createWithIndex(): PackedFeatureWithIndex {
+    const result = create() as PackedFeatureWithIndex;
+    result.index = 0;
+    return result;
   }
 }
 
@@ -281,22 +292,27 @@ export class PackedFeatureTable {
   }
 
   /** @internal */
-  public getPackedFeature(featureIndex: number): PackedFeature {
+  public getPackedFeature(featureIndex: number, result?: PackedFeature): PackedFeature {
+    result = result ?? PackedFeature.create();
     assert(featureIndex < this.numFeatures);
 
     const index32 = 3 * featureIndex;
-    const elementId = { lower: this._data[index32], upper: this._data[index32 + 1] };
+    result.elementId.lower = this._data[index32];
+    result.elementId.upper = this._data[index32 + 1];
 
     const subCatIndexAndClass = this._data[index32 + 2];
-    const geometryClass = (subCatIndexAndClass >>> 24) & 0xff;
+    result.geometryClass = (subCatIndexAndClass >>> 24) & 0xff;
 
     let subCatIndex = (subCatIndexAndClass & 0x00ffffff) >>> 0;
     subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
-    const subCategoryId = { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
+    result.subCategoryId.lower = this._data[subCatIndex];
+    result.subCategoryId.upper = this._data[subCatIndex + 1];
 
-    const animationNodeId = this.getAnimationNodeId(featureIndex);
-    const modelId = this.batchModelIdPair;
-    return { modelId, elementId, subCategoryId, geometryClass, animationNodeId };
+    result.animationNodeId = this.getAnimationNodeId(featureIndex);
+    result.modelId.lower = this.batchModelIdPair.lower;
+    result.modelId.upper = this.batchModelIdPair.upper;
+
+    return result;
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
@@ -348,6 +364,20 @@ export class PackedFeatureTable {
 
     if (haveNodes)
       this._animationNodeIds = nodeIds;
+  }
+
+  public * iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
+    for (let i = 0; i < this.numFeatures; i++) {
+      this.getPackedFeature(i, output);
+      output.index = i;
+      yield output;
+    }
+  }
+
+  public iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex> {
+    return {
+      [Symbol.iterator]: () => this.iterator(output),
+    };
   }
 
   private get _subCategoriesOffset(): number { return this.numFeatures * 3; }
