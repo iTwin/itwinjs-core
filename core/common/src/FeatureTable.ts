@@ -399,3 +399,23 @@ export class PackedFeatureModelTable {
     return result;
   }
 }
+
+export class MultiModelPackedFeatureTable {
+  private readonly _features: PackedFeatureTable;
+  private readonly _models: PackedFeatureModelTable;
+
+  public constructor(features: PackedFeatureTable, models: PackedFeatureModelTable) {
+    this._features = features;
+    this._models = models;
+  }
+
+  public static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array): MultiModelPackedFeatureTable {
+    const featureData = data.subarray(0, 3 * numFeatures);
+    const features = new PackedFeatureTable(featureData, batchModelId, numFeatures, numFeatures, type, animationNodeIds);
+
+    const modelData = data.subarray(3 * numFeatures);
+    const models = new PackedFeatureModelTable(modelData);
+
+    return new MultiModelPackedFeatureTable(features, models);
+  }
+}
