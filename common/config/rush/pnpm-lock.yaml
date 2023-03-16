@@ -1,7 +1,5 @@
 lockfileVersion: 5.3
 
-packageExtensionsChecksum: f67d2c5c08a7620b9d601d262f6cbe8b
-
 importers:
 
   .:
@@ -2468,6 +2466,7 @@ importers:
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
+      react: ^18.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
       webpack: ^5.76.0
@@ -2492,7 +2491,7 @@ importers:
       '@itwin/reality-data-client': 0.9.0
       body-parser: 1.20.2
     devDependencies:
-      '@bentley/react-scripts': 5.0.4_typescript@4.4.4
+      '@bentley/react-scripts': 5.0.4_react@18.2.0+typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.30_eslint@7.32.0+typescript@4.4.4
       '@itwin/perf-tools': link:../../tools/perf-tools
@@ -2511,6 +2510,7 @@ importers:
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.76.1
+      react: 18.2.0
       rimraf: 3.0.2
       typescript: 4.4.4
       webpack: 5.76.1
@@ -2569,6 +2569,7 @@ importers:
       node-simctl: ~7.1.4
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
+      react: ^18.0.0
       rimraf: ^3.0.2
       semver: ^7.3.5
       ts-node: ^10.8.2
@@ -2608,7 +2609,7 @@ importers:
       body-parser: 1.20.2
       vhacd-js: 0.0.1
     devDependencies:
-      '@bentley/react-scripts': 5.0.4_ts-node@10.9.1+typescript@4.4.4
+      '@bentley/react-scripts': 5.0.4_8e30927a8f4f0a81f4d62530d7eccfdb
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
@@ -2630,6 +2631,7 @@ importers:
       node-simctl: 7.1.12
       npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.76.1
+      react: 18.2.0
       rimraf: 3.0.2
       semver: 7.3.8
       ts-node: 10.9.1_typescript@4.4.4
@@ -5303,16 +5305,14 @@ packages:
     resolution: {integrity: sha512-VN4q2W6hQ7NbEdPmfkD8/dH4xT81lN4PFx5QVUvtvGCdsoNVqy/KHaD3s6hGERnN4Y5nKkVOKjK8dkT1ca+F5Q==}
     dev: false
 
-  /@bentley/react-scripts/5.0.4_ts-node@10.9.1+typescript@4.4.4:
+  /@bentley/react-scripts/5.0.4_8e30927a8f4f0a81f4d62530d7eccfdb:
     resolution: {integrity: sha512-eRwAHDMYOmV03ZrjxgGxfKFvqwk2k6+bxDg2wW2rK+o+vHn6/r2MB8FFg7sNvpK1eFx3E9Opku6NTaK8GMsFWw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     peerDependencies:
-      react: '>= 16 || 17'
+      react: '>= 16'
       typescript: ^3.2.1 || ^4
     peerDependenciesMeta:
-      react:
-        optional: true
       typescript:
         optional: true
     dependencies:
@@ -5352,6 +5352,7 @@ packages:
       postcss-normalize: 10.0.1_4c5efe188e0429d1e746880ca12b2d0f
       postcss-preset-env: 7.8.3_postcss@8.4.21
       prompts: 2.4.2
+      react: 18.2.0
       react-app-polyfill: 3.0.0
       react-dev-utils: 12.0.1_f7037d29f7f26b37c05efcd131c24aba
       react-refresh: 0.11.0
@@ -5405,16 +5406,14 @@ packages:
       - webpack-plugin-serve
     dev: true
 
-  /@bentley/react-scripts/5.0.4_typescript@4.4.4:
+  /@bentley/react-scripts/5.0.4_react@18.2.0+typescript@4.4.4:
     resolution: {integrity: sha512-eRwAHDMYOmV03ZrjxgGxfKFvqwk2k6+bxDg2wW2rK+o+vHn6/r2MB8FFg7sNvpK1eFx3E9Opku6NTaK8GMsFWw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     peerDependencies:
-      react: '>= 16 || 17'
+      react: '>= 16'
       typescript: ^3.2.1 || ^4
     peerDependenciesMeta:
-      react:
-        optional: true
       typescript:
         optional: true
     dependencies:
@@ -5454,6 +5453,7 @@ packages:
       postcss-normalize: 10.0.1_4c5efe188e0429d1e746880ca12b2d0f
       postcss-preset-env: 7.8.3_postcss@8.4.21
       prompts: 2.4.2
+      react: 18.2.0
       react-app-polyfill: 3.0.0
       react-dev-utils: 12.0.1_f7037d29f7f26b37c05efcd131c24aba
       react-refresh: 0.11.0
@@ -16979,6 +16979,13 @@ packages:
   /react-refresh/0.11.0:
     resolution: {integrity: sha512-F27qZr8uUqwhWZboondsPx8tnC3Ct3SxZA3V5WyEvujRyyNv0VYPhoBg1gZ8/MV5tubQp76Trw8lTv9hzRBa+A==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /react/18.2.0:
+    resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      loose-envify: 1.4.0
     dev: true
 
   /read-cache/1.0.0:
