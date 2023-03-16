@@ -198,6 +198,25 @@ export class FeatureTable extends IndexMap<Feature> {
 /** @alpha */
 export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
 
+/** Interface common to PackedFeatureTable and MultiModelPackedFeatureTable.
+ * @internal
+ */
+export interface RenderFeatureTable {
+  readonly batchModelId: Id64String;
+  readonly batchModelIdPair: Id64.Uint32Pair;
+  /** The number of features in the table; equivalently, one more than the largest feature index. */
+  readonly numFeatures: number;
+  /** Strictly for reporting memory usage. */
+  readonly byteLength: number;
+  readonly type: BatchType;
+
+  getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+  findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+  getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+  getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+  iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+}
+
 const scratchPackedFeature = PackedFeature.create();
 
 /**
@@ -205,9 +224,11 @@ const scratchPackedFeature = PackedFeature.create();
  * wherein each feature occupies 3 32-bit integers.
  * @internal
  */
-export class PackedFeatureTable {
+export class PackedFeatureTable implements RenderFeatureTable {
   private readonly _data: Uint32Array;
+  /** @deprecated ###TODO delete in this PR. */
   public readonly modelId: Id64String;
+  public readonly batchModelId: Id64String;
   public readonly batchModelIdPair: Id64.Uint32Pair;
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
@@ -223,6 +244,7 @@ export class PackedFeatureTable {
    */
   public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
     this._data = data;
+    this.batchModelId = modelId;
     this.modelId = modelId;
     this.batchModelIdPair = Id64.getUint32Pair(modelId);
     this.numFeatures = numFeatures;
@@ -288,7 +310,7 @@ export class PackedFeatureTable {
   /** Retrieve the Feature associated with the specified index. */
   public getFeature(featureIndex: number, result: ModelFeature): ModelFeature {
     const packed = this.getPackedFeature(featureIndex, scratchPackedFeature);
-    result.modelId = this.modelId;
+    result.modelId = this.batchModelId;
     result.elementId = Id64.fromUint32Pair(packed.elementId.lower, packed.elementId.upper);
     result.subCategoryId = Id64.fromUint32Pair(packed.subCategoryId.lower, packed.subCategoryId.upper);
     result.geometryClass = packed.geometryClass;
