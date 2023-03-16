@@ -162,8 +162,8 @@ export class FeatureOverrides implements WebGLDisposable {
     const allowFlash = true !== this._options.noFlash;
     const allowEmphasis = true !== this._options.noEmphasis;
 
-    const modelIdParts = Id64.getUint32Pair(map.modelId);
-    const isModelHilited = allowHilite && hilites.models.hasPair(modelIdParts);
+    let isModelHilited = false;
+    const prevModelId = { lower: -1, upper: -1 };
 
     this._anyOpaque = this._anyTranslucent = this._anyViewIndependentTranslucent = this._anyHilited = false;
 
@@ -182,12 +182,18 @@ export class FeatureOverrides implements WebGLDisposable {
       const i = feature.index;
       const dataIndex = i * 4 * 2;
 
+      if (prevModelId.lower !== feature.modelId.lower || prevModelId.upper !== feature.modelId.upper) {
+        prevModelId.lower = feature.modelId.lower;
+        prevModelId.upper = feature.modelId.upper;
+        isModelHilited = allowHilite && hilites.models.hasPair(feature.modelId);
+      }
+
       const app = this.target.currentBranch.getFeatureAppearance(
         ovr,
         feature.elementId.lower, feature.elementId.upper,
         feature.subCategoryId.lower, feature.subCategoryId.upper,
         feature.geometryClass,
-        modelIdParts.lower, modelIdParts.upper,
+        feature.modelId.lower, feature.modelId.upper,
         map.type, feature.animationNodeId);
 
       // NB: If the appearance is fully transparent, then:
@@ -282,15 +288,9 @@ export class FeatureOverrides implements WebGLDisposable {
     const allowFlash = true !== this._options.noFlash;
     const intersect = "intersection" === hilites.modelSubCategoryMode;
 
-    let isModelHilited = false;
-    if (!hilites.models.isEmpty) {
-      const modelId = Id64.getUint32Pair(map.modelId);
-      isModelHilited = hilites.models.hasPair(modelId);
-    }
-
     this._anyOverridden = this._anyHilited = false;
-    for (let i = 0; i < map.numFeatures; i++) {
-      const dataIndex = i* 4 * 2;
+    for (const feature of map.iterable(scratchPackedFeature)) {
+      const dataIndex = feature.index * 4 * 2;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
         // If it's invisible, none of the other flags matter. We can't flash it and don't want to hilite it.
@@ -298,25 +298,18 @@ export class FeatureOverrides implements WebGLDisposable {
         continue;
       }
 
-      let elemId;
+      const isModelHilited = hilites.models.hasPair(feature.modelId);
       let isHilited = isModelHilited && !intersect;
-      if (!isHilited && !hilites.elements.isEmpty) {
-        elemId = map.getElementIdPair(i);
-        isHilited = hilites.elements.hasPair(elemId);
-      }
+      if (!isHilited)
+        isHilited = hilites.elements.hasPair(feature.elementId);
 
-      if (!isHilited && !hilites.subcategories.isEmpty) {
-        if (isModelHilited || !intersect) {
-          const subcat = map.getSubCategoryIdPair(i);
-          isHilited = hilites.subcategories.hasPair(subcat);
-        }
-      }
+      if (!isHilited)
+        if (isModelHilited || !intersect)
+          isHilited = hilites.subcategories.hasPair(feature.subCategoryId);
 
       let isFlashed = false;
-      if (flashed && allowFlash) {
-        elemId = elemId ?? map.getElementIdPair(i);
-        isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
-      }
+      if (flashed && allowFlash)
+        isFlashed = feature.elementId.lower == flashed.lower && feature.elementId.upper == flashed.upper;
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
@@ -336,7 +329,7 @@ export class FeatureOverrides implements WebGLDisposable {
       return;
 
     this._anyOverridden = false;
-
+    const elemId = { lower: 0, upper: 0 };
     for (let i = 0; i < map.numFeatures; i++) {
       const dataIndex = i * 4 * 2;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
@@ -348,7 +341,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
       let isFlashed = false;
       if (flashed) {
-        const elemId = map.getElementIdPair(i);
+        map.getElementIdPair(i, elemId);
         isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
       }
 
