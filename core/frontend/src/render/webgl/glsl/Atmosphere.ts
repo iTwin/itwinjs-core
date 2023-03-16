@@ -161,8 +161,7 @@ const densityAtPoint = `
 float densityAtPoint(vec3 point) {
   vec3 pointFromEarthCenter = u_inverseRotationInverseMinDensityScaleMatrix * (point - u_earthCenter);
 
-  // TODO: allow max density threshold to be specified instead of assuming it's equal to the earth's size (1.0)
-  if (length(pointFromEarthCenter) <= 1.0) { // point is below the max density threshold
+  if (length(pointFromEarthCenter) <= u_atmosphereMaxDensityThresholdScaleFactor) { // point is below the max density threshold
     return 1.0;
   }
   else if (length(pointFromEarthCenter) >= u_atmosphereRadiusScaleFactor) { // point is above the min density threshold
@@ -474,6 +473,16 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     (prog) => {
       prog.addProgramUniform("u_atmosphereRadiusScaleFactor", (uniform, params) => {
         params.target.uniforms.atmosphere.bindAtmosphereRadiusScaleFactor(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  shader.addUniform(
+    "u_atmosphereMaxDensityThresholdScaleFactor",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_atmosphereMaxDensityThresholdScaleFactor", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindAtmosphereMaxDensityThresholdScaleFactor(uniform);
       });
     },
     VariablePrecision.High

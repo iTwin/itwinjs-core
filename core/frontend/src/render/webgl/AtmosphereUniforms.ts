@@ -28,7 +28,9 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _inverseEllipsoidRotationMatrix = new Matrix3d();
   private _isCameraEnabled = true;
   private _minDensityScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
-  private _atmosphereRadiusScaleFactor: any;
+  private _atmosphereRadiusScaleFactor = 1.0;
+  /** Threshold is in relation to earth size, so a value of 1.0 means max density is reached exactly at the earth's surface */
+  private _atmosphereMaxDensityThresholdScaleFactor = 1.0;
   private _numInScatteringPoints = 0.0;
   private _numOpticalDepthPoints = 0.0;
   private _outScatteringIntensity = 1.0;
@@ -70,8 +72,8 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._updateInScatteringIntensity(this.atmosphere.inScatteringIntensity);
     this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
     this._updateIsCameraEnabled(target.uniforms.frustum.type);
-    this._updateMinDensityScaleMatrix(this.atmosphere.depthBelowEarthForMaxDensity); // TODO: try to remove depthBelowEarthForMaxDensity entirely
-    this._updateAtmosphereRadiusScaleFactor(this.atmosphere.atmosphereHeightAboveEarth, this.atmosphere.depthBelowEarthForMaxDensity);
+    this._updateAtmosphereRadiusScaleFactor(this.atmosphere.atmosphereHeightAboveEarth);
+    this._updateAtmosphereMaxDensityThresholdScaleFactor(this.atmosphere.depthBelowEarthForMaxDensity);
     this._updateNumInScatteringPoints(this.atmosphere.numInScatteringPoints);
     this._updateNumOpticalDepthPoints(this.atmosphere.numOpticalDepthPoints);
     this._updateOutScatteringIntensity(this.atmosphere.outScatteringIntensity);
@@ -129,19 +131,20 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._earthScaleMatrix.scale(scaleFactor, this._atmosphereScaleMatrix);
   }
 
-  private _updateMinDensityScaleMatrix(heightBellowSurface: number) {
-    const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
-    const scaleFactor = earthPolarRadius === 0 ? 1.0 : (earthPolarRadius - heightBellowSurface) / earthPolarRadius;
-    this._earthScaleMatrix.scale(scaleFactor, this._minDensityScaleMatrix);
-  }
-
-  private _updateAtmosphereRadiusScaleFactor(atmosphereHeightAboveEarth: number, maxDensityHeightBelowEarth: number) {
+  private _updateAtmosphereRadiusScaleFactor(atmosphereHeightAboveEarth: number) {
     const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
     const minDensityThresholdRadius = earthPolarRadius + atmosphereHeightAboveEarth;
-    const maxDensityThresholdRadius = earthPolarRadius - maxDensityHeightBelowEarth;
-    this._atmosphereRadiusScaleFactor = (earthPolarRadius === 0 || maxDensityThresholdRadius === 0)
+    this._atmosphereRadiusScaleFactor = (earthPolarRadius === 0)
       ? 1
-      : (minDensityThresholdRadius / maxDensityThresholdRadius);
+      : (minDensityThresholdRadius / earthPolarRadius);
+  }
+
+  private _updateAtmosphereMaxDensityThresholdScaleFactor(maxDensityDepthBelowEarth: number) {
+    const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
+    const maxDensityThresholdRadius = earthPolarRadius - maxDensityDepthBelowEarth;
+    this._atmosphereMaxDensityThresholdScaleFactor = (earthPolarRadius === 0)
+      ? 1
+      : (maxDensityThresholdRadius / earthPolarRadius);
   }
 
   private _updateDensityFalloff(densityFalloff: number) {
@@ -282,6 +285,11 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   public bindAtmosphereRadiusScaleFactor(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform1f(this._atmosphereRadiusScaleFactor);
+  }
+
+  public bindAtmosphereMaxDensityThresholdScaleFactor(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform1f(this._atmosphereMaxDensityThresholdScaleFactor);
   }
 
   public bindEllipsoidRotationMatrix(uniform: UniformHandle): void {
