@@ -558,17 +558,12 @@ async function createPagedGeneratorResponse<TPagedResponseItem>(props: PagedGene
 
 /** @internal */
 export const buildPagedArrayResponse = async <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>): Promise<PagedResponse<TItem>> => {
-  try {
-    const items = new Array<TItem>();
-    const gen = await createPagedGeneratorResponse({ page: requestedPage, get: getter });
-    for await (const item of gen.items()) {
-      items.push(item);
-    }
-    return { total: gen.total, items };
-  } catch {
-    // FIXME: we should propagate the error...
-    return { total: 0, items: [] };
+  const items = new Array<TItem>();
+  const gen = await createPagedGeneratorResponse({ page: requestedPage, get: getter });
+  for await (const item of gen.items()) {
+    items.push(item);
   }
+  return { total: gen.total, items };
 };
 
 const stripTransientElementKeys = (keys: KeySet) => {

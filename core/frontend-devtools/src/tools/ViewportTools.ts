@@ -62,6 +62,7 @@ const boundingVolumeNames = [
   "both",
   "children",
   "sphere",
+  "solid",
 ];
 
 /** Set the tile bounding volume decorations to display in the selected viewport.

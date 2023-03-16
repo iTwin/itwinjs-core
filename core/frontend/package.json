@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.0.0-dev.41",
+  "version": "4.0.0-dev.47",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -17,7 +17,7 @@
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
-    "extract-extension-api": "eslint --no-eslintrc -c \"../../tools/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
+    "extract-extension-api": "eslint --no-eslintrc -c \"./node_modules/@itwin/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
@@ -41,12 +41,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.0.0-dev.41",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.41",
-    "@itwin/core-common": "workspace:^4.0.0-dev.41",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.41",
-    "@itwin/core-orbitgt": "workspace:^4.0.0-dev.41",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.41"
+    "@itwin/appui-abstract": "workspace:^4.0.0-dev.47",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.47",
+    "@itwin/core-common": "workspace:^4.0.0-dev.47",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.47",
+    "@itwin/core-orbitgt": "workspace:^4.0.0-dev.47",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.47"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -61,7 +61,7 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "nightly",
     "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -85,7 +85,7 @@
     "sinon": "^9.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~4.4.0",
-    "webpack": "^5.64.4"
+    "webpack": "^5.76.0"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

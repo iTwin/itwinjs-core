@@ -217,6 +217,10 @@
         "Prompts": {
           "FirstPoint": "Identify view to unclip"
         }
+      },
+      "Message": {
+        "Clip": "View Clip",
+        "ModifyClip": "Modify View Clip"
       }
     },
     "SelectView": "Select view",

@@ -857,7 +857,7 @@ describe("PresentationManager", () => {
               type: "type1",
               pathFromRoot: ["p1", "p2", "p3"],
             },
-            labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
+            labelDefinition: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
             description: "description1",
             imageId: "img_1",
             foreColor: "foreColor1",
@@ -1515,11 +1515,11 @@ describe("PresentationManager", () => {
         // what the addon receives
         const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
         const fieldName = faker.random.word();
-        const category = createTestCategoryDescription({ label: "@RulesEngine:LABEL_General_NotSpecified@", description: "@ECPresentation:LABEL_Category_General@" });
+        const category = createTestCategoryDescription({ label: "@Presentation:label.notSpecified@" });
         const descriptor = createTestContentDescriptor({
           categories: [category],
           fields: [createTestSimpleContentField({
-            label: "@RulesEngine:LABEL_General_NotSpecified@",
+            label: "@Presentation:label.notSpecified@",
             category,
             name: fieldName,
           })],
@@ -1542,15 +1542,15 @@ describe("PresentationManager", () => {
             classInfo: createRandomECClassInfo(),
             labelDefinition: {
               typeName: "string",
-              rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
-              displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
+              rawValue: "@Presentation:label.notSpecified@",
+              displayValue: "@Presentation:label.notSpecified@",
             },
             imageId: faker.random.uuid(),
             values: {
-              [fieldName]: "@RulesEngine:LABEL_General_NotSpecified@",
+              [fieldName]: "@Presentation:label.notSpecified@",
             },
             displayValues: {
-              [fieldName]: "@RulesEngine:LABEL_General_NotSpecified@",
+              [fieldName]: "@Presentation:label.notSpecified@",
             },
             mergedFieldNames: [],
           } as ItemJSON],
@@ -1878,7 +1878,7 @@ describe("PresentationManager", () => {
           }),
           [
             createTestContentItem({
-              label: "@RulesEngine:LABEL_General_NotSpecified@",
+              label: "@Presentation:label.notSpecified@",
               classInfo: createTestECClassInfo({ label: "Test Class" }),
               primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
               values: {
@@ -2058,7 +2058,7 @@ describe("PresentationManager", () => {
           }),
           [
             createTestContentItem({
-              label: "@RulesEngine:LABEL_General_NotSpecified@",
+              label: "@Presentation:label.notSpecified@",
               classInfo: createTestECClassInfo({ label: "Test Class" }),
               primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
               values: {
@@ -2069,7 +2069,7 @@ describe("PresentationManager", () => {
               },
             }),
             createTestContentItem({
-              label: "@RulesEngine:LABEL_General_NotSpecified@",
+              label: "@Presentation:label.notSpecified@",
               classInfo: createTestECClassInfo({ label: "Test Class" }),
               primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
               values: {
@@ -2171,8 +2171,8 @@ describe("PresentationManager", () => {
         // what the addon returns
         const addonResponse = (): LabelDefinition => {
           return {
-            displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
-            rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
+            displayValue: "@Presentation:label.notSpecified@",
+            rawValue: "@Presentation:label.notSpecified@",
             typeName: "string",
           };
         };
@@ -2203,8 +2203,8 @@ describe("PresentationManager", () => {
         // what the addon returns
         const addonResponse = (): LabelDefinition => {
           return {
-            displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
-            rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
+            displayValue: "@Presentation:label.notSpecified@",
+            rawValue: "@Presentation:label.notSpecified@",
             typeName: "string",
           };
         };
@@ -2468,7 +2468,7 @@ describe("PresentationManager", () => {
               type: "type1",
               pathFromRoot: ["p1", "p2", "p3"],
             },
-            labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
+            labelDefinition: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
           }],
           supportsFiltering: true,
         };

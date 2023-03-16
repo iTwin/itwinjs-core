@@ -103,7 +103,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
 
   /**
-   * A directory for Presentation hierarchy cache. If set, the directory must exist.
+   * A directory for hierarchy caches. If set, the directory must exist. Relative paths start from `process.cwd()`.
    *
    * The default directory depends on the iModel and the way it's opened.
    */
@@ -198,11 +198,13 @@ export interface MultiElementPropertiesResponse {
 }
 
 /**
- * Configuration options for supplying asset directly paths to [[PresentationManager]].
+ * Configuration options for supplying asset paths to [[PresentationManager]].
  * @public
  */
 export interface PresentationAssetsRootConfig {
-  /** Path to `presentation-backend` assets */
+  /**
+   * Path to `presentation-backend` assets. Relative paths start from `process.cwd()`.
+   */
   backend: string;
 
   /**
@@ -238,12 +240,18 @@ export interface PresentationManagerProps {
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
   /**
-   * A list of directories containing application's presentation rulesets.
+   * A list of directories containing application's presentation rulesets. Relative
+   * paths start from `process.cwd()`. The directories are traversed recursively.
+   *
+   * @note Only files with `.PresentationRuleSet.json` are read.
    */
   rulesetDirectories?: string[];
 
   /**
-   * A list of directories containing application's supplemental presentation rulesets.
+   * A list of directories containing application's supplemental presentation rulesets. Relative
+   * paths start from `process.cwd()`. The directories are traversed recursively.
+   *
+   * @note Only files with `.PresentationRuleSet.json` are read.
    */
   supplementalRulesetDirectories?: string[];
 
@@ -303,8 +311,8 @@ export interface PresentationManagerProps {
   mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
   /**
-   * The interval (in milliseconds) used to poll for presentation data changes. Only has
-   * effect in read-write mode (see [[mode]]).
+   * The interval (in milliseconds) used to poll for presentation data changes. If not set, presentation
+   * data changes are not tracked at all.
    *
    * @beta
    */
@@ -337,7 +345,10 @@ export interface PresentationManagerProps {
   addon?: NativePlatformDefinition;
 
   /**
-   * Localization function when only backend is used.
+   * Localization function to localize data returned by presentation manager when it's used directly on the backend (as opposed to when used through RPC, where
+   * data is localized on the frontend). Defaults to English localization.
+   *
+   * @see [Localization]($docs/presentation/advanced/Localization)
    * @beta
   */
   getLocalizedString?: (key: string) => string;
@@ -365,7 +376,7 @@ export class PresentationManager {
 
   /**
    * Get / set active locale used for localizing presentation data
-   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[PresentationManagerProps.getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   public activeLocale: string | undefined;
 
