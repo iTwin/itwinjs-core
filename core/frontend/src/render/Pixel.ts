@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { BatchType, Feature, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
+import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
@@ -20,6 +20,7 @@ export namespace Pixel {
   export class Data {
     /** The feature that produced the pixel. */
     public readonly feature?: Feature;
+    public readonly modelId?: Id64String;
     /** The pixel's depth in [[CoordSystem.Npc]] coordinates (0 to 1), or -1 if depth was not written or not requested. */
     public readonly distanceFraction: number;
     /** The type of geometry that produced the pixel. */
@@ -27,38 +28,50 @@ export namespace Pixel {
     /** The planarity of the geometry that produced the pixel. */
     public readonly planarity: Planarity;
     /** @internal */
-    public readonly featureTable?: PackedFeatureTable;
+    public readonly batchType?: BatchType;
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
     /** @internal */
     public readonly tileId?: string;
     /** @internal */
-    public get isClassifier(): boolean { return undefined !== this.featureTable && BatchType.Primary !== this.featureTable.type; }
+    public get isClassifier(): boolean {
+      return undefined !== this.batchType && BatchType.Primary !== this.batchType;
+    }
 
     /** @internal */
-    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string) {
-      this.feature = feature;
-      this.distanceFraction = distanceFraction;
-      this.type = type;
-      this.planarity = planarity;
-      this.featureTable = featureTable;
-      this.iModel = iModel;
-      this.tileId = tileId;
+    public constructor(args?: {
+      feature?: ModelFeature;
+      distanceFraction?: number;
+      type?: GeometryType;
+      planarity?: Planarity;
+      batchType?: BatchType;
+      iModel?: IModelConnection;
+      tileId?: string;
+    }) {
+      if (args?.feature)
+        this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
+
+      this.modelId = args?.feature?.modelId;
+      this.distanceFraction = args?.distanceFraction ?? -1;
+      this.type = args?.type ?? GeometryType.Unknown;
+      this.planarity = args?.planarity ?? Planarity.Unknown;
+      this.iModel = args?.iModel;
+      this.tileId = args?.tileId;
     }
 
     /** The Id of the element that produced the pixel. */
     public get elementId(): Id64String | undefined {
-      return undefined !== this.feature ? this.feature.elementId : undefined;
+      return this.feature?.elementId;
     }
 
     /** The Id of the [SubCategory]($backend) that produced the pixel. */
     public get subCategoryId(): Id64String | undefined {
-      return undefined !== this.feature ? this.feature.subCategoryId : undefined;
+      return this.feature?.subCategoryId;
     }
 
     /** The class of geometry that produced the pixel. */
     public get geometryClass(): GeometryClass | undefined {
-      return undefined !== this.feature ? this.feature.geometryClass : undefined;
+      return this.feature?.geometryClass;
     }
   }
 

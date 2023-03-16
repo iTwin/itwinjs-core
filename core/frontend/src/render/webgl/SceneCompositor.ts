@@ -691,7 +691,7 @@ class PixelBuffer implements Pixel.Buffer {
     let planarity = px.planarity;
 
     const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
-    const modelFeature = haveFeatureIds ? this.getFeature(index, this._scratchModelFeature) : undefined;
+    const feature = haveFeatureIds ? this.getFeature(index, this._scratchModelFeature) : undefined;
     const batchInfo = haveFeatureIds ? this.getBatchInfo(index) : undefined;
     if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
@@ -738,8 +738,15 @@ class PixelBuffer implements Pixel.Buffer {
       tileId = batchInfo.tileId;
     }
 
-    const feature = new Feature(modelFeature?.elementId, modelFeature?.subCategoryId, modelFeature?.geometryClass);
-    return new Pixel.Data(feature, distanceFraction, geometryType, planarity, featureTable, iModel, tileId);
+    return new Pixel.Data({
+      feature,
+      distanceFraction,
+      type: geometryType,
+      planarity,
+      batchType: featureTable?.type,
+      iModel,
+      tileId,
+    });
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
