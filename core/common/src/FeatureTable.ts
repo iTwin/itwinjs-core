@@ -19,8 +19,8 @@ import { GeometryClass } from "./GeometryParams";
  * @public
  */
 export class Feature {
-  public readonly elementId: string;
-  public readonly subCategoryId: string;
+  public readonly elementId: Id64String;
+  public readonly subCategoryId: Id64String;
   public readonly geometryClass: GeometryClass;
 
   public constructor(elementId: Id64String = Id64.invalid, subCategoryId: Id64String = Id64.invalid, geometryClass: GeometryClass = GeometryClass.Primary) {
@@ -52,6 +52,35 @@ export class Feature {
     }
 
     return cmp;
+  }
+}
+
+/** A [[Feature]] with a modelId identifying the model containing the feature.
+ * Typically produced from a PackedFeature.
+ * Prior to the introduction of MultiModelPackedFeatureTable, every (Packed)FeatureTable was associated with exactly one model.
+ * Now, each feature in a table may be associated with a different model.
+ * @internal
+ */
+export interface ModelFeature {
+  modelId: Id64String;
+  elementId: Id64String;
+  subCategoryId: Id64String;
+  geometryClass: GeometryClass;
+}
+
+/** @internal */
+export namespace ModelFeature {
+  export function create(): ModelFeature {
+    return {
+      modelId: Id64.invalid,
+      elementId: Id64.invalid,
+      subCategoryId: Id64.invalid,
+      geometryClass: GeometryClass.Primary,
+    };
+  }
+
+  export function isDefined(feature: ModelFeature): boolean {
+    return !Id64.isInvalid(feature.modelId) || !Id64.isInvalid(feature.elementId) || !Id64.isInvalid(feature.subCategoryId) || feature.geometryClass !== GeometryClass.Primary;
   }
 }
 
@@ -205,7 +234,7 @@ export class PackedFeatureTable {
         this.anyDefined = false;
         break;
       case 1:
-        this.anyDefined = this.getFeature(0).isDefined;
+        this.anyDefined = ModelFeature.isDefined(this.getFeature(0, ModelFeature.create()));
         break;
       default:
         this.anyDefined = true;
@@ -257,16 +286,18 @@ export class PackedFeatureTable {
   }
 
   /** Retrieve the Feature associated with the specified index. */
-  public getFeature(featureIndex: number): Feature {
+  public getFeature(featureIndex: number, result: ModelFeature): ModelFeature {
     const packed = this.getPackedFeature(featureIndex, scratchPackedFeature);
-    const elemId = Id64.fromUint32Pair(packed.elementId.lower, packed.elementId.upper);
-    const subcatId = Id64.fromUint32Pair(packed.subCategoryId.lower, packed.subCategoryId.upper);
-    return new Feature(elemId, subcatId, packed.geometryClass);
+    result.modelId = this.modelId;
+    result.elementId = Id64.fromUint32Pair(packed.elementId.lower, packed.elementId.upper);
+    result.subCategoryId = Id64.fromUint32Pair(packed.subCategoryId.lower, packed.subCategoryId.upper);
+    result.geometryClass = packed.geometryClass;
+    return result;
   }
 
   /** Returns the Feature associated with the specified index, or undefined if the index is out of range. */
-  public findFeature(featureIndex: number): Feature | undefined {
-    return featureIndex < this.numFeatures ? this.getFeature(featureIndex) : undefined;
+  public findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined {
+    return featureIndex < this.numFeatures ? this.getFeature(featureIndex, result) : undefined;
   }
 
   /** @internal */
@@ -328,22 +359,13 @@ export class PackedFeatureTable {
   public get isUniform(): boolean { return 1 === this.numFeatures; }
 
   /** If this table contains exactly 1 feature, return it. */
-  public get uniform(): Feature | undefined { return this.isUniform ? this.getFeature(0) : undefined; }
+  public getUniform(result: ModelFeature): ModelFeature | undefined {
+    return this.isUniform ? this.getFeature(0, result) : undefined;
+  }
 
   public get isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
   public get isPlanarClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
   public get isClassifier(): boolean { return this.isVolumeClassifier || this.isPlanarClassifier; }
-
-  /** Unpack the features into a [[FeatureTable]]. */
-  public unpack(): FeatureTable {
-    const table = new FeatureTable(this.numFeatures, this.modelId);
-    for (let i = 0; i < this.numFeatures; i++) {
-      const feature = this.getFeature(i);
-      table.insertWithIndex(feature, i);
-    }
-
-    return table;
-  }
 
   public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
     assert(undefined === this._animationNodeIds);
