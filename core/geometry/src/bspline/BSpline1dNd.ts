@@ -179,7 +179,7 @@ export class BSpline1dNd {
     }
     this.knots.reflectKnots();
   }
-  /** @deprecated replaced by testClosablePolygon */
+  /** @deprecated in 4.x. Use testClosablePolygon instead. */
   public testCloseablePolygon(mode?: BSplineWrapMode): boolean {
     return this.testClosablePolygon(mode);
   }

@@ -28,7 +28,7 @@ import { BSplineWrapMode, KnotVector } from "./KnotVector";
 export enum UVSelect {
   /** index of u direction */
   uDirection = 0,
-  /** @deprecated replaced by vDirection */
+  /** @deprecated in 4.x. Use vDirection instead. */
   VDirection = 1,
   /** index of v direction */
   vDirection = 1,
@@ -364,7 +364,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
       kU += stepV;
     }
   }
-  /** @deprecated replaced by sumPoleBufferDerivativesForSpan */
+  /** @deprecated in 4.x. Use sumPoleBufferDerivativesForSpan instead. */
   public sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number) {
     return this.sumPoleBufferDerivativesForSpan(spanIndexU, spanIndexV);
   }
