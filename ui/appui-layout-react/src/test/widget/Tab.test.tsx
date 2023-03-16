@@ -11,6 +11,7 @@ import {
   WidgetContext, WidgetOverflowContext, WidgetStateContext, WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
+import { SpecialKey } from "@itwin/appui-abstract";
 
 describe("WidgetTab", () => {
   it("should render active", () => {
@@ -186,7 +187,7 @@ describe("WidgetTab", () => {
     container.firstChild!.should.matchSnapshot();
   });
 
-  it("should dispatch WIDGET_TAB_CLICK", () => {
+  it("should dispatch WIDGET_TAB_CLICK on click", () => {
     const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let state = createNineZoneState();
@@ -220,6 +221,106 @@ describe("WidgetTab", () => {
       widgetId: "w1",
       id: "t1",
     }));
+  });
+
+  it("should dispatch WIDGET_TAB_CLICK on 'Enter'", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    render(
+      <TestNineZoneProvider
+        state={state}
+        dispatch={dispatch}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetStateContext.Provider value={state.widgets.w1}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: false,
+            }}>
+              <WidgetTabProvider tab={state.tabs.t1} />
+            </WidgetTabsEntryContext.Provider>
+          </WidgetStateContext.Provider>
+        </PanelSideContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.keyDown(tab, { key: SpecialKey.Enter});
+      fakeTimers.tick(300);
+    });
+    sinon.assert.calledOnceWithExactly(dispatch, sinon.match({
+      type: "WIDGET_TAB_CLICK",
+      side: "left",
+      widgetId: "w1",
+      id: "t1",
+    }));
+  });
+
+  it("should dispatch WIDGET_TAB_CLICK on 'space'", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    render(
+      <TestNineZoneProvider
+        state={state}
+        dispatch={dispatch}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetStateContext.Provider value={state.widgets.w1}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: false,
+            }}>
+              <WidgetTabProvider tab={state.tabs.t1} />
+            </WidgetTabsEntryContext.Provider>
+          </WidgetStateContext.Provider>
+        </PanelSideContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.keyDown(tab, { key: SpecialKey.Space});
+      fakeTimers.tick(300);
+    });
+    sinon.assert.calledOnceWithExactly(dispatch, sinon.match({
+      type: "WIDGET_TAB_CLICK",
+      side: "left",
+      widgetId: "w1",
+      id: "t1",
+    }));
+  });
+
+  it("should not dispatch WIDGET_TAB_CLICK on other key", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    render(
+      <TestNineZoneProvider
+        state={state}
+        dispatch={dispatch}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetStateContext.Provider value={state.widgets.w1}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: false,
+            }}>
+              <WidgetTabProvider tab={state.tabs.t1} />
+            </WidgetTabsEntryContext.Provider>
+          </WidgetStateContext.Provider>
+        </PanelSideContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.keyDown(tab, { key: "a"});
+      fakeTimers.tick(300);
+    });
+    sinon.assert.notCalled(dispatch);
   });
 
   it("should dispatch WIDGET_TAB_DOUBLE_CLICK", () => {
