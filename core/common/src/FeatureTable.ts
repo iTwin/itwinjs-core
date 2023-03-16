@@ -82,6 +82,14 @@ export namespace ModelFeature {
   export function isDefined(feature: ModelFeature): boolean {
     return !Id64.isInvalid(feature.modelId) || !Id64.isInvalid(feature.elementId) || !Id64.isInvalid(feature.subCategoryId) || feature.geometryClass !== GeometryClass.Primary;
   }
+
+  export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature {
+    result.modelId = unpackedModelId ?? Id64.fromUint32PairObject(packed.modelId);
+    result.elementId = Id64.fromUint32PairObject(packed.elementId);
+    result.subCategoryId = Id64.fromUint32PairObject(packed.subCategoryId);
+    result.geometryClass = packed.geometryClass;
+    return result;
+  }
 }
 
 /** @internal */
@@ -308,11 +316,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
   /** Retrieve the Feature associated with the specified index. */
   public getFeature(featureIndex: number, result: ModelFeature): ModelFeature {
     const packed = this.getPackedFeature(featureIndex, scratchPackedFeature);
-    result.modelId = this.batchModelId;
-    result.elementId = Id64.fromUint32Pair(packed.elementId.lower, packed.elementId.upper);
-    result.subCategoryId = Id64.fromUint32Pair(packed.subCategoryId.lower, packed.subCategoryId.upper);
-    result.geometryClass = packed.geometryClass;
-    return result;
+    return ModelFeature.unpack(packed, result, this.batchModelId);
   }
 
   /** Returns the Feature associated with the specified index, or undefined if the index is out of range. */
@@ -430,6 +434,14 @@ export class PackedFeatureTable implements RenderFeatureTable {
   }
 }
 
+interface PackedFeatureModelEntry {
+  lastFeatureIndex: number;
+  idLower: number;
+  idUpper: number;
+}
+
+const scratchPackedFeatureModelEntry = { lastFeatureIndex: -1, idLower: -1, idUpper: -1 };
+
 /** A table of model Ids associated with a [[MultiModelPackedFeatureTable]].
  * The feature indices in the packed feature table are grouped together by model, such that the first N features belong to model 1, the next M features to model 2, and so on.
  * The model table itself consists of one entry per model, where each entry looks like:
@@ -453,8 +465,26 @@ export class PackedFeatureModelTable {
     return this._data.length / 3;
   }
 
+  public get byteLength(): number {
+    return this._data.byteLength;
+  }
+
   private getLastFeatureIndex(modelIndex: number): number {
     return this._data[modelIndex * 3];
+  }
+
+  public getEntry(modelIndex: number,  result: PackedFeatureModelEntry): PackedFeatureModelEntry {
+    if (modelIndex >= this.length) {
+      result.idLower = result.idUpper = 0;
+      result.lastFeatureIndex = Number.MAX_SAFE_INTEGER;
+      return result;
+    }
+
+    const index = modelIndex * 3;
+    result.lastFeatureIndex = this._data[index + 0];
+    result.idLower = this._data[index + 1];
+    result.idUpper = this._data[index + 2];
+    return result;
   }
 
   /** Get the Id of the model associated with the specified feature, or an invalid Id if the feature is not associated with any model. */
@@ -488,7 +518,7 @@ export class PackedFeatureModelTable {
   }
 }
 
-export class MultiModelPackedFeatureTable {
+export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   private readonly _features: PackedFeatureTable;
   private readonly _models: PackedFeatureModelTable;
 
@@ -505,5 +535,60 @@ export class MultiModelPackedFeatureTable {
     const models = new PackedFeatureModelTable(modelData);
 
     return new MultiModelPackedFeatureTable(features, models);
+  }
+
+  public get batchModelId() { return this._features.batchModelId; }
+  public get batchModelIdPair() { return this._features.batchModelIdPair; }
+  public get numFeatures() { return this._features.numFeatures; }
+  public get type() { return this._features.type; }
+
+  public get byteLength() {
+    return this._features.byteLength + this._models.byteLength;
+  }
+
+  public getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature {
+    this._features.getPackedFeature(featureIndex, result);
+    this._models.getModelIdPair(featureIndex, result.modelId);
+    return result;
+  }
+
+  public getFeature(featureIndex: number, result: ModelFeature): ModelFeature {
+    const packed = this.getPackedFeature(featureIndex, scratchPackedFeature);
+    return ModelFeature.unpack(packed, result);
+  }
+
+  public findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined {
+    return featureIndex < this.numFeatures ? this.getFeature(featureIndex, result) : undefined;
+  }
+
+  public getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair {
+    return this._features.getElementIdPair(featureIndex, out);
+  }
+
+  public findElementId(featureIndex: number): Id64String | undefined {
+    return this._features.findElementId(featureIndex);
+  }
+
+  public * iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
+    // Rather than perform a binary search on the model table to find each feature's model Id, traverse the model table in parallel with the feature table.
+    let modelIndex = 0;
+    const modelEntry = this._models.getEntry(modelIndex, scratchPackedFeatureModelEntry);
+
+    for (let featureIndex = 0; featureIndex < this.numFeatures; featureIndex++) {
+      if (featureIndex > modelEntry.lastFeatureIndex)
+        this._models.getEntry(++modelIndex, modelEntry);
+
+      this._features.getPackedFeature(featureIndex, output);
+      output.modelId.lower = modelEntry.idLower;
+      output.modelId.upper = modelEntry.idUpper;
+      output.index = featureIndex;
+      yield output;
+    }
+  }
+
+  public iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex> {
+    return {
+      [Symbol.iterator]: () => this.iterator(output),
+    };
   }
 }
