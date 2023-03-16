@@ -27,6 +27,10 @@ module.exports = {
     alias: { mocha$: "mocha/lib/mocha" }
   },
   module: {
+    // don't parse @bentley/imodeljs-native/NativeLibrary.js,
+    // we don't need to pull in the Native here as it gets loaded by the runtime
+    // via (process as any)._linkedBinding("iModelJsNative")
+    noParse: [/NativeLibrary.js$/],
     rules: [
       {
         test: /\.js$/,

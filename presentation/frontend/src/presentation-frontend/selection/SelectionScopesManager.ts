@@ -89,10 +89,10 @@ export class SelectionScopesManager {
 }
 
 /**
- * Normalizes given scope options and returns [[ComputeSelectionScopeProps]] that can be used for
+ * Normalizes given scope options and returns [[SelectionScopeProps]] that can be used for
  * calculating selection with scope.
  *
- * @internal
+ * @public
  */
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
   if (!scope)
@@ -106,7 +106,7 @@ export function createSelectionScopeProps(scope: SelectionScopeProps | Selection
  * Determines the scope id
  * @param scope Selection scope
  * @public
- * @deprecated This is an internal utility that should've never become public.
+ * @deprecated in 3.x. This is an internal utility that should've never become public.
  */
 // istanbul ignore next
 export function getScopeId(scope: SelectionScope | string | undefined): string {

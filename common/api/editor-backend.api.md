@@ -85,17 +85,13 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     updateProjectExtents(extents: Range3dProps): Promise<void>;
 }
 
-// @alpha
+// @beta
 export class EditCommand implements EditCommandIpc {
     constructor(iModel: IModelDb, ..._args: any[]);
     static commandId: string;
     // (undocumented)
     get ctor(): EditCommandType;
     readonly iModel: IModelDb;
-    // (undocumented)
-    onCleanup(): void;
-    // (undocumented)
-    onFinish(): void;
     // (undocumented)
     onStart(): Promise<any>;
     // (undocumented)
@@ -104,24 +100,27 @@ export class EditCommand implements EditCommandIpc {
         version: string;
         [propName: string]: any;
     }>;
+    requestFinish(): Promise<"done" | string>;
     // (undocumented)
     static version: string;
 }
 
-// @alpha
+// @beta
 export class EditCommandAdmin {
     // (undocumented)
     static get activeCommand(): EditCommand | undefined;
     // (undocumented)
     static readonly commands: Map<string, typeof EditCommand>;
+    // @internal (undocumented)
+    static finishCommand(): Promise<void>;
     static register(commandType: EditCommandType): void;
     static registerModule(moduleObj: any): void;
-    // (undocumented)
-    static runCommand(cmd?: EditCommand): Promise<any> | undefined;
+    // @internal
+    static runCommand(cmd: EditCommand): Promise<any>;
     static unRegister(commandId: string): void;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type EditCommandType = typeof EditCommand;
 
 // @alpha (undocumented)

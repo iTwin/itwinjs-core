@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.6.0-dev.31",
+  "version": "4.0.0-dev.47",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -46,8 +46,8 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "18.11.5",
+    "@itwin/eslint-plugin": "nightly",
+    "@types/node": "^18.11.5",
     "eslint": "^7.11.0"
   },
   "eslintConfig": {

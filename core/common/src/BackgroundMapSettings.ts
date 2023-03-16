@@ -67,11 +67,11 @@ export interface BackgroundMapProps {
 export interface DeprecatedBackgroundMapProps {
   /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider".
    * Default value: "BingProvider"
-   * @deprecated use MapImageryProps.backgroundBase.
+   * @deprecated in 3.x. use MapImageryProps.backgroundBase.
    */
   providerName?: string;
   /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used.
-   * @deprecated use MapImageryProps.backgroundBase
+   * @deprecated in 3.x. use MapImageryProps.backgroundBase
    */
   providerData?: {
     /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */

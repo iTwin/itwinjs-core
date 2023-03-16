@@ -1,12 +1,12 @@
 {
   "name": "@itwin/express-server",
-  "version": "3.6.0-dev.31",
+  "version": "4.0.0-dev.47",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
+    "node": "^18.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -38,12 +38,12 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "nightly",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "4.3.1",
     "@types/express": "^4.16.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.11.5",
+    "@types/node": "^18.11.5",
     "@types/sinon": "^9.0.0",
     "@types/supertest": "^2.0.4",
     "@types/express-ws": "^3.0.1",

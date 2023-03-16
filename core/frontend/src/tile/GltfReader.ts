@@ -13,7 +13,7 @@ import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Polyface, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
+  AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
@@ -34,483 +34,13 @@ import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { TextureImageSource } from "../render/RenderTexture";
 import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
+import {
+  DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
+  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material,
+  traverseGltfNodes,
+} from "../gltf/GltfSchema";
 
 /* eslint-disable no-restricted-syntax */
-
-/** Enumerates the types of [[GltfMeshPrimitive]] topologies. */
-enum GltfMeshMode {
-  Points = 0,
-  Lines = 1,
-  LineStrip = 3,
-  Triangles = 4,
-  /** Not currently supported. */
-  TriangleStrip = 5,
-  /** Not currently supported. */
-  TriangleFan = 6,
-}
-
-/** Enumerates the basic data types supported by accessors, material values, technique uniforms, etc.
- * @internal
- */
-export enum GltfDataType {
-  SignedByte = 0x1400,
-  UnsignedByte = 0x1401,
-  SignedShort = 5122,
-  UnsignedShort = 5123,
-  UInt32 = 5125,
-  Float = 5126,
-  Rgb = 6407,
-  Rgba = 6408,
-  IntVec2 = 0x8b53,
-  IntVec3 = 0x8b54,
-  FloatVec2 = 35664,
-  FloatVec3 = 35665,
-  FloatVec4 = 35666,
-  FloatMat3 = 35675,
-  FloatMat4 = 35676,
-  Sampler2d = 35678,
-}
-
-/** @internal */
-enum GltfMagFilter {
-  Nearest = 9728,
-  Linear = 9729,
-}
-
-/** @internal */
-enum GltfMinFilter {
-  Nearest = GltfMagFilter.Nearest,
-  Linear = GltfMagFilter.Linear,
-  NearestMipMapNearest = 9984,
-  LinearMipMapNearest = 9985,
-  NearestMipMapLinear = 9986,
-  LinearMipMapLinear = 9987,
-}
-
-/** Describes how texture coordinates outside of the range [0..1] are handled.
- * @internal
- */
-export enum GltfWrapMode {
-  ClampToEdge = 33071,
-  MirroredRepeat = 33648,
-  Repeat = 10497,
-}
-
-/** Describes the intended target of a [[GltfBufferViewProps]]. */
-enum GltfBufferTarget {
-  ArrayBuffer = 34962,
-  ElementArrayBuffer = 24963,
-}
-
-/** The type used to refer to an entry in a GltfDictionary in a glTF 1.0 asset. @internal */
-export type Gltf1Id = string;
-/** The type used to refer to an entry in a GltfDictionary in a glTF 2.0 asset. @internal */
-export type Gltf2Id = number;
-/** The type used to refer to an entry in a GltfDictionary. @internal */
-export type GltfId = Gltf1Id | Gltf2Id;
-
-/** A collection of resources of some type defined at the top-level of a [[Gltf]] asset.
- * In glTF 1.0, these are defined as objects; each resource is referenced and accessed by its string key.
- * In glTF 2.0, these are defined as arrays; each resource is referenced and accessed by its integer array index.
- */
-interface GltfDictionary<T extends GltfChildOfRootProperty> {
-  [key: GltfId]: T | undefined;
-}
-
-function * dictionaryIterator<T extends GltfChildOfRootProperty>(dict: GltfDictionary<T>): Iterable<T> {
-  if (Array.isArray(dict)) {
-    for (const elem of dict)
-      yield elem;
-  } else {
-    for (const key of Object.keys(dict)) {
-      const value = dict[key];
-      if (undefined !== value)
-        yield value;
-    }
-  }
-}
-
-/** Optional extensions applied to a [[GltfProperty]] to enable behavior not defined in the core specification. */
-interface GltfExtensions {
-  [key: string]: unknown | undefined;
-}
-
-/** The base interface provided by most objects in a glTF asset, permitting additional data to be associated with the object. */
-interface GltfProperty {
-  extensions?: GltfExtensions;
-  extras?: any;
-}
-
-/** The base interface provided by top-level properties of a [[Gltf]] asset. */
-interface GltfChildOfRootProperty extends GltfProperty {
-  /** Optional name, strictly for human consumption. */
-  name?: string;
-}
-
-interface DracoMeshCompression {
-  bufferView: GltfId;
-  // TEXCOORD_0, POSITION, etc
-  attributes: { [k: string]: number | undefined };
-}
-
-/** A unit of geometry belonging to a [[GltfMesh]]. */
-interface GltfMeshPrimitive extends GltfProperty {
-  /** Maps the name of each mesh attribute semantic to the Id of the [[GltfAccessor]] providing the attribute's data. */
-  attributes: { [k: string]: GltfId | undefined };
-  /** The Id of the [[GltfAccessor]] providing the vertex indices. */
-  indices?: GltfId;
-  /** The Id of the [[GltfMaterial]] to apply to the primitive when rendering. */
-  material?: GltfId;
-  /** The primitive topology type. */
-  mode?: GltfMeshMode;
-  /** Morph targets - currently unsupported. */
-  targets?: { [k: string]: GltfId | undefined };
-  extensions?: GltfExtensions & {
-    /** The [CESIUM_primitive_outline](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/CESIUM_primitive_outline) extension
-     * describes how to draw outline edges for a triangle mesh.
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    CESIUM_primitive_outline?: {
-      /** The Id of the [[GltfBufferViewProps]] supplying the endpoints of each edge as indices into the triangle mesh's vertex array.
-       * The number of indices must be even; each consecutive pair of indices describes one line segment. No connectivity between
-       * line segments is implied.
-       */
-      indices?: GltfId;
-    };
-    /** The [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md) extension
-     * allows glTF to support geometry compressed with Draco geometry compression.
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_draco_mesh_compression?: DracoMeshCompression;
-  };
-}
-
-/** A collection of [[GltfMeshPrimitive]]s to be rendered. Each mesh is referenced by a node. Multiple nodes can refer to the same mesh.
- * The node's transform is applied when rendering the mesh.
- */
-interface GltfMesh extends GltfChildOfRootProperty {
-  /** The collection of primitives to be rendered. */
-  primitives?: GltfMeshPrimitive[];
-  /** For morph targets - currently unsupported. */
-  weights?: number[];
-}
-
-/** Properties common to [[Gltf1Node]] and [[Gltf2Node]]. */
-interface GltfNodeBaseProps {
-  /** The Ids of the child nodes. @see [[GltfNode]]. */
-  children?: GltfId[];
-  /** Currently ignored. */
-  camera?: GltfId;
-  /** Currently ignored. */
-  skin?: GltfId;
-  /** A 4x4 column-major transformation matrix. Mutually exclusive with [[rotation]], [[scale]], and [[translation]]. */
-  matrix?: number[];
-  /** Unit quaternion as [x, y, z, w], where w is the scalar. */
-  rotation?: number[];
-  /** Non-uniform scale as [x, y, z]. */
-  scale?: number[];
-  /** Translation as [x, y, z]. */
-  translation?: number[];
-}
-
-/** glTF 1.0 representation of a [[GltfNode]]. Unlike a [[Gltf2Node]], a Gltf1Node may refer to any number of [[GltfMesh]]es. */
-interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
-  /** The Ids of the [[GltfMesh]]es to be rendered by this node.
-   * @note The spec defines this as an array of strings, but the original implementation of [[GltfReader]] was written to treat it as a string instead.
-   * In case this was because of non-spec-compliant glTF that placed a string here instead of an array, either is permitted.
-   */
-  meshes?: GltfId[] | string;
-  mesh?: never;
-  /** Currently ignored. */
-  jointName?: GltfId;
-  /** Currently ignored. */
-  skeletons?: GltfId[];
-}
-
-/** glTF 2.0 representation of a [[GltfNode]]. Unlike a [[Gltf1Node]], a Gltf2Node may refer to at most one [[GltfMesh]]. */
-interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
-  /** The Id of the [[GltfMesh]] to be rendered by this node. */
-  mesh?: GltfId;
-  meshes?: never;
-  /** Morph targets - currently ignored. */
-  weights?: number[];
-}
-
-/** Describes a node in a [[GltfScene]]. Each node may be associated with zero, one (glTF 2.0), or any number of (glTF 1.0) [[GltfMesh]]es.
- * Each node may define a transform. Each node may have any number of child nodes. A child node's transform is multiplied by its parent node's transform.
- * Some nodes may be associated with other types of data like cameras, skins, lights, etc - these types of data are currently unsupported.
- * Rendering a node means rendering its meshes and the meshes of all of its descendants, with transforms applied.
- * @internal
- */
-export type GltfNode = Gltf1Node | Gltf2Node;
-
-function getNodeMeshIds(node: GltfNode): GltfId[] {
-  if (undefined !== node.meshes)
-    return typeof node.meshes === "string" ? [node.meshes] : node.meshes;
-  else if (undefined !== node.mesh)
-    return [node.mesh];
-
-  return [];
-}
-
-/** Describes a scene graph that composes any number of [[GltfNode]]s to produce a rendering of the [[Gltf]] asset.
- * An asset may define any number of scenes; the default scene is specified by [[Gltf.scene]].
- */
-interface GltfScene extends GltfChildOfRootProperty {
-  /** The Ids of the nodes comprising the scene graph. */
-  nodes?: GltfId[];
-}
-
-/** Provides metadata about a [[Gltf]] asset. */
-interface GltfAsset extends GltfProperty {
-  /** A copyright message suitable for display to credit the content creator. */
-  copyright?: string;
-  /** The name of the tool that generated the asset. */
-  generator?: string;
-  /** The glTF version targeted by the asset, in the form "major.minor" where "major" and "minor" are integers. */
-  version: string;
-  /** The minimum glTF version required to properly load this asset, in the same form as [[version]].
-   * This minimum version must be no greater than [[version]].
-   */
-  minVersion?: string;
-}
-
-/** Describes an image such as one used for a [[GltfTexture]]. The image may be referenced by a [[uri]] or a [[bufferView]]. */
-interface GltfImage extends GltfChildOfRootProperty {
-  /** URI from which the image data can be obtained, either as a base-64-encoded data URI or an external resource.
-   * Mutually exclusive with [[bufferView]].
-   */
-  uri?: string;
-  /** The image's media type. This property is required if [[bufferView]] is defined. */
-  mimeType?: "image/jpeg" | "image/png";
-  /** The Id of the [[GltfBufferViewProps]] containing the image data. Mutually exclusive with [[uri]]. */
-  bufferView?: GltfId;
-  extensions?: GltfExtensions & {
-    /** The [KHR_binary_glTF](https://github.com/KhronosGroup/glTF/tree/main/extensions/1.0/Khronos/KHR_binary_glTF) allows an image to
-     * be embedded in a binary chunk appended to the glTF asset's JSON, instead of being referenced by an external URI.
-     * This is superseded in glTF 2.0 by support for the glb file format specification.
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_binary_glTF?: {
-      /** The Id of the [[GltfBufferViewProps]] that contains the binary image data. */
-      bufferView?: GltfId;
-      /** Required - @see [[GltfImage.mimeType]]. */
-      mimeType?: string;
-    };
-  };
-}
-
-/** Describes a reference to a [[GltfTexture]]. */
-interface GltfTextureInfo extends GltfProperty {
-  /** The Id of the [[GltfTexture]]. */
-  index: GltfId;
-  /** The set index of the texture's TEXCOORD attribute used for texture coordinate mapping.
-   * For example, if `texCoord` is `2`, an attribute named `TEXCOORD_2` must exist containing the texture coordinates.
-   * Default: 0.
-   */
-  texCoord?: number;
-}
-
-/** Describes a texture and its sampler.
- * @internal
- */
-interface GltfTexture extends GltfChildOfRootProperty {
-  /** The Id of the [[GltfSampler]] used by this texture.
-   * If undefined, a sampler with repeat wrapping and auto filtering should be used by default.
-   */
-  sampler?: GltfId;
-  /** The Id of the [[GltfImage]] used by this texture.
-   * If undefined, an extension or other mechanism should supply an alternate image source - otherwise, the behavior is undefined.
-   */
-  source?: GltfId;
-}
-
-/** Describes the filtering and wrapping behavior to be applied to a [[GltfTexture]].
- * @note The implementation currently does not support MirroredRepeat and does not support different wrapping for U and V;
- * effectively, unless `wrapS` or `wrapT` is set to ClampToEdge, the sampler will use GltfWrapMode.Repeat.
- * @internal
- */
-export interface GltfSampler extends  GltfChildOfRootProperty {
-  /** Magnification filter. */
-  magFilter?: GltfMagFilter;
-  /** Minification filter. */
-  minFilter?: GltfMinFilter;
-  /** S (U) wrapping mode. Default: Repeat. */
-  wrapS?: GltfWrapMode;
-  /** T (V) wrapping mode. Default: Repeat. */
-  wrapT?: GltfWrapMode;
-}
-
-/** GL states that can be enabled by a [[GltfTechnique]]. Only those queried by this implementation are enumerated. */
-enum GltfTechniqueState {
-  /** Enables alpha blending. */
-  Blend = 3042,
-}
-
-/** For glTF 1.0 only, describes shader programs and shader state associated with a [[Gltf1Material]], used to render meshes associated with the material.
- * This implementation uses it strictly to identify techniques that require alpha blending.
- */
-interface GltfTechnique extends GltfChildOfRootProperty {
-  /** GL render states to be applied by the technique. */
-  states?: {
-    /** An array of integers corresponding to boolean GL states that should be enabled using GL's `enable` function.
-     * For example, the value [[GltfTechniqueState.Blend]] (3042) indicates that blending should be enabled.
-     */
-    enable?: GltfTechniqueState[];
-  };
-}
-
-interface Gltf1Material extends GltfChildOfRootProperty {
-  diffuse?: string;
-  emission?: number[];
-  shininess?: number;
-  specular?: number[];
-  technique?: GltfId;
-  values?: {
-    texStep?: number[];
-    color?: number[];
-    tex?: number | string;
-  };
-}
-
-interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
-  baseColorFactor?: number[];
-  baseColorTexture?: GltfTextureInfo;
-  metallicFactor?: number;
-  metallicRoughnessTexture?: GltfTextureInfo;
-}
-
-interface Gltf2Material extends GltfChildOfRootProperty {
-  pbrMetallicRoughness?: GltfMaterialPbrMetallicRoughness;
-  normalTexture?: GltfTextureInfo;
-  occlusionTexture?: unknown;
-  emissiveTexture?: GltfTextureInfo;
-  emissiveFactor?: number[];
-  alphaMode?: "OPAQUE" | "MASK" | "BLEND";
-  alphaCutoff?: number;
-  doubleSided?: boolean;
-  extensions?: GltfExtensions & {
-    /** The [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_unlit) extension
-     * indicates that the material should be displayed without lighting. The extension adds no additional properties; it is effectively a boolean flag.
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_materials_unlit?: { };
-    /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
-     * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
-     * Here, it is only used to extract uniform values.
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_techniques_webgl?: {
-      technique?: number;
-      // An object containing uniform values. Each property name corresponds to a uniform in the material's technique and must conform to that uniform's type and count properties.
-      // A handful of uniforms referenced in this implementation by name are defined below.
-      values?: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        u_texStep?: number[];
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        u_color?: number[];
-        // Diffuse texture.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        u_diffuse?: { index: number, texCoord: number };
-        [k: string]: unknown | undefined;
-      };
-    };
-  };
-}
-
-type GltfMaterial = Gltf1Material | Gltf2Material;
-
-function isGltf1Material(material: GltfMaterial): material is Gltf1Material {
-  const mat1 = material as Gltf1Material;
-  return undefined !== mat1.technique || undefined !== mat1.values;
-}
-
-interface GltfBuffer extends GltfChildOfRootProperty {
-  uri?: string;
-  byteLength?: number;
-}
-
-interface GltfBufferViewProps extends GltfChildOfRootProperty {
-  buffer: GltfId;
-  byteLength?: number;
-  byteOffset?: number;
-  byteStride?: number;
-  target?: GltfBufferTarget;
-}
-
-interface GltfAccessor extends GltfChildOfRootProperty {
-  bufferView?: GltfId;
-  byteOffset?: number;
-  componentType?: GltfDataType.SignedByte | GltfDataType.UnsignedByte | GltfDataType.SignedShort | GltfDataType.UnsignedShort | GltfDataType.UInt32 | GltfDataType.Float;
-  normalized?: boolean;
-  count: number;
-  type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4";
-  max?: number[];
-  min?: number[];
-  sparse?: unknown; // ###TODO sparse accessors
-}
-
-/** Describes the top-level structure of a glTF asset.
- * This interface, along with all of the related Gltf* types defined in this file, is primarily based upon the [official glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html).
- * However, it can also represent a [glTF 1.0](https://github.com/KhronosGroup/glTF/tree/main/specification/1.0#reference-node) asset.
- * Some types are combined. For example, the top-level dictionaries in glTF 1.0 are objects, while in glTF 2.0 they are arrays; the GltfDictionary interface supports accessing
- * items using either strings or numeric indexes represented by [[GltfId]].
- * For types that differ significantly between the two specs, Gltf1* and Gltf2* versions are defined (e.g., GltfMaterial is a union of Gltf1Material and Gltf2Material).
- * These interfaces also accommodate some deviations from both specs that are known to exist in the wild.
- * Most aspects of the specifications that are not implemented here are omitted (e.g., skinning, animations).
- * @internal
- */
-export interface Gltf extends GltfProperty {
-  /** Metadata about the glTF asset.
-   * @note This property is required in glTF 2.0, but optional in 1.0.
-   */
-  asset?: GltfAsset;
-  /** The Id of the default [[GltfScene]] in [[scenes]]. */
-  scene?: GltfId;
-  extensions?: GltfExtensions & {
-    /** The [CESIUM_RTC extension](https://github.com/KhronosGroup/glTF/blob/main/extensions/1.0/Vendor/CESIUM_RTC/README.md) defines a centroid
-     * relative to which all coordinates in the asset are defined, to reduce floating-point precision errors for large coordinates.
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    CESIUM_RTC?: {
-      center?: number[];
-    };
-    /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
-     * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
-     * Here, it is only used to extract uniform values.
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_techniques_webgl?: {
-      techniques?: Array<{
-        uniforms?: {
-          [key: string]: { type: GltfDataType, value?: any } | undefined;
-        };
-      }>;
-    };
-  };
-  /** Names of glTF extensions used in the asset. */
-  extensionsUsed?: string[];
-  /** Names of glTF extensions required to properly load the asset. */
-  extensionsRequired?: string[];
-  accessors?: GltfDictionary<GltfAccessor>;
-  /** Not currently supported. */
-  animations?: GltfDictionary<any>;
-  buffers?: GltfDictionary<GltfBuffer>;
-  bufferViews?: GltfDictionary<GltfBufferViewProps>;
-  /** Not currently used. */
-  cameras?: GltfDictionary<any>;
-  images?: GltfDictionary<GltfImage>;
-  materials?: GltfDictionary<GltfMaterial>;
-  meshes?: GltfDictionary<GltfMesh>;
-  nodes?: GltfDictionary<GltfNode>;
-  samplers?: GltfDictionary<GltfSampler>;
-  scenes?: GltfDictionary<GltfScene>;
-  /** Not currently supported. */
-  skins?: GltfDictionary<any>;
-  textures?: GltfDictionary<GltfTexture>;
-  /** For glTF 1.0 only, techniques associated with [[Gltf1Material]]s. */
-  techniques?: GltfDictionary<GltfTechnique>;
-}
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
@@ -616,6 +146,7 @@ class GltfBufferView {
  */
 export interface GltfReaderResult extends TileContent {
   readStatus: TileReadStatus;
+  range?: AxisAlignedBox3d;
 }
 
 /** Data required for creating a [[GltfReader]] capable of deserializing [glTF](https://www.khronos.org/gltf/).
@@ -623,12 +154,12 @@ export interface GltfReaderResult extends TileContent {
  */
 export class GltfReaderProps {
   public readonly version: number;
-  public readonly glTF: Gltf;
+  public readonly glTF: GltfDocument;
   public readonly yAxisUp: boolean;
   public readonly binaryData?: Uint8Array;
-  public readonly baseUrl?: string;
+  public readonly baseUrl?: URL;
 
-  private constructor(glTF: Gltf, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined, baseUrl?: string | undefined) {
+  private constructor(glTF: GltfDocument, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined, baseUrl?: URL | undefined) {
     this.version = version;
     this.glTF = glTF;
     this.binaryData = binaryData;
@@ -637,9 +168,9 @@ export class GltfReaderProps {
   }
 
   /** Attempt to construct a new GltfReaderProps from the binary data beginning at the supplied stream's current read position. */
-  public static create(source: Uint8Array | Gltf, yAxisUp: boolean = false, baseUrl?: string): GltfReaderProps | undefined {
+  public static create(source: Uint8Array | GltfDocument, yAxisUp: boolean = false, baseUrl?: URL): GltfReaderProps | undefined {
     let version: number;
-    let json: Gltf;
+    let json: GltfDocument;
     let binaryData: Uint8Array | undefined;
 
     if (source instanceof Uint8Array) {
@@ -687,7 +218,7 @@ export class GltfReaderProps {
     if (version === 2 && !asset)
       return undefined;
 
-    const glTF: Gltf = {
+    const glTF: GltfDocument = {
       asset,
       scene: JsonUtils.asString(json.scene),
       extensions: JsonUtils.asObject(json.extensions),
@@ -852,23 +383,6 @@ export interface GltfReaderArgs {
   vertexTableRequired?: boolean;
 }
 
-function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>, traversed: Set<GltfId>): Iterable<GltfNode> {
-  for (const id of ids) {
-    if (traversed.has(id))
-      throw new Error("Cycle detected while traversing glTF nodes");
-
-    const node = nodes[id];
-    if (!node)
-      continue;
-
-    traversed.add(id);
-    yield node;
-    if (node.children)
-      for (const child of traverseNodes(node.children, nodes, traversed))
-        yield child;
-  }
-}
-
 interface TextureKey {
   readonly id: GltfId;
   readonly isTransparent: boolean;
@@ -893,14 +407,14 @@ function compareTextureKeys(lhs: TextureKey, rhs: TextureKey): number {
  * @internal
  */
 export abstract class GltfReader {
-  protected readonly _glTF: Gltf;
+  protected readonly _glTF: GltfDocument;
   protected readonly _version: number;
   protected readonly _iModel: IModelConnection;
   protected readonly _is3d: boolean;
   protected readonly _system: RenderSystem;
   protected readonly _returnToCenter?: Point3d;
   protected readonly _yAxisUp: boolean;
-  protected readonly _baseUrl?: string;
+  protected readonly _baseUrl?: URL;
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
   protected readonly _vertexTableRequired: boolean;
@@ -943,7 +457,7 @@ export abstract class GltfReader {
    * @throws Error if a node appears more than once during traversal
    */
   public traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode> {
-    return traverseNodes(nodeIds, this._nodes, new Set<GltfId>());
+    return traverseGltfNodes(nodeIds, this._nodes, new Set<GltfId>());
   }
 
   /** Traverse the nodes specified by their scene, recursing into their child nodes.
@@ -1026,6 +540,7 @@ export abstract class GltfReader {
       readStatus,
       isLeaf,
       contentRange,
+      range,
       graphic: renderGraphic,
     };
   }
@@ -1093,7 +608,7 @@ export abstract class GltfReader {
     if (undefined !== pseudoRtcBias)
       thisBias = (undefined === thisTransform) ? pseudoRtcBias : thisTransform.matrix.multiplyInverse(pseudoRtcBias);
 
-    for (const meshKey of getNodeMeshIds(node)) {
+    for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
         const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias);
@@ -1389,7 +904,7 @@ export abstract class GltfReader {
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfMeshData[] {
     const meshes: GltfMeshData[] = [];
-    for (const meshKey of getNodeMeshIds(node)) {
+    for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
         for (const primitive of nodeMesh.primitives) {
@@ -1411,7 +926,7 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
-    const material = 0 < materialName.length ? this._materials[materialName] : undefined;
+    const material = 0 < materialName.length ? this._materials[materialName] : { };
     if (!material)
       return undefined;
 
@@ -1455,27 +970,30 @@ export abstract class GltfReader {
 
     const mesh = new GltfMeshData(meshPrimitive);
 
-    // We don't have real colormap - just load material color.  This will be used if non-Bentley
-    // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
-    // uv parameters to pick the colors out of the color map texture.
-    meshPrimitive.colorMap.insert(displayParams.fillColor.tbgr);   // White...
+    // ###TODO_GLTF: There can be more than one color attribute; COLOR_0 might not be the one we want.
+    if (!this.readColors(mesh, primitive.attributes, "COLOR_0")) {
+      // We don't have real colormap - just load material color.  This will be used if non-Bentley
+      // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
+      // uv parameters to pick the colors out of the color map texture.
+      meshPrimitive.colorMap.insert(displayParams.fillColor.tbgr);   // White...
+      // _COLORINDEX is an ancient holdover from glTF 1.0 and Bimium...unlikely to actually encounter it in the wild.
+      const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
+      if (undefined !== colorIndices && material) {
+        let texStep;
+        if (isGltf1Material(material))
+          texStep = material.values?.texStep;
+        else
+          texStep = material.extensions?.KHR_techniques_webgl?.values?.u_texStep;
 
-    const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
-    if (undefined !== colorIndices && material) {
-      let texStep;
-      if (isGltf1Material(material))
-        texStep = material.values?.texStep;
-      else
-        texStep = material.extensions?.KHR_techniques_webgl?.values?.u_texStep;
+        if (texStep) {
+          const uvParams = [];
+          for (let i = 0; i < colorIndices.count; i++)
+            uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
 
-      if (texStep) {
-        const uvParams = [];
-        for (let i = 0; i < colorIndices.count; i++)
-          uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
-
-        const paramList = QPoint2dList.fromPoints(uvParams);
-        mesh.uvs = paramList.toTypedArray();
-        mesh.uvQParams = paramList.params;
+          const paramList = QPoint2dList.fromPoints(uvParams);
+          mesh.uvs = paramList.toTypedArray();
+          mesh.uvQParams = paramList.params;
+        }
       }
     }
 
@@ -1484,6 +1002,15 @@ export abstract class GltfReader {
       return this.readDracoMeshPrimitive(mesh.primitive, draco) ? mesh : undefined;
 
     this.readBatchTable(mesh.primitive, primitive);
+    if (mesh.primitive.features) {
+      const features = this.readPrimitiveFeatures(primitive);
+      if (features) {
+        if (features instanceof Feature)
+          mesh.primitive.features.add(features, 1);
+        else
+          mesh.primitive.features.setIndices(features);
+      }
+    }
 
     if (!this.readVertices(mesh, primitive, pseudoRtcBias))
       return undefined;
@@ -1681,16 +1208,13 @@ export abstract class GltfReader {
       if (GltfDataType.UnsignedShort !== view.type)
         return false;
 
-      const extensions = JsonUtils.asObject(view.accessor.extensions);
-      const quantized = undefined !== extensions ? JsonUtils.asObject(extensions.WEB3D_quantized_attributes) : undefined;
-      if (undefined === quantized)
+      const quantized = view.accessor.extensions?.WEB3D_quantized_attributes;
+      const rangeMin = quantized?.decodedMin;
+      const rangeMax = quantized?.decodedMax;
+      if (!rangeMin || !rangeMax) // required by spec...
         return false;
 
-      const rangeMin = JsonUtils.asArray(quantized.decodedMin);
-      const rangeMax = JsonUtils.asArray(quantized.decodedMax);
-      if (undefined === rangeMin || undefined === rangeMax)
-        return false;
-
+      // ###TODO apply WEB3D_quantized_attributes.decodeMatrix? Have not encountered in the wild; glTF 1.0 only.
       const buffer = view.toBufferData(GltfDataType.UnsignedShort);
       if (undefined === buffer || !(buffer.buffer instanceof Uint16Array))
         return false;
@@ -1730,7 +1254,11 @@ export abstract class GltfReader {
     return indices;
   }
 
-  protected readBatchTable(_mesh: Mesh, _json: any) {
+  protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive) {
+  }
+
+  protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined {
+    return undefined;
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
@@ -1797,6 +1325,31 @@ export abstract class GltfReader {
     }
   }
 
+  protected readColors(mesh: GltfMeshData, attribute: { [k: string]: any }, accessorName: string): boolean {
+    const view = this.getBufferView(attribute, accessorName);
+    if (!view || (GltfDataType.Float !== view.type && GltfDataType.UnsignedByte !== view.type && GltfDataType.SignedByte !== view.type))
+      return false;
+
+    const data = view.toBufferData(view.type);
+    if (!data)
+      return false;
+
+    const hasAlpha = "VEC4" === view.accessor.type;
+    const factor = view.type === GltfDataType.Float ? 255 : 1;
+    const rgbt = new Uint8Array(4);
+    const color = new Uint32Array(rgbt.buffer);
+    for (let i = 0; i < data.count; i++) {
+      const index = view.stride * i;
+      rgbt[0] = data.buffer[index] * factor;
+      rgbt[1] = data.buffer[index + 1] * factor;
+      rgbt[2] = data.buffer[index + 2] * factor;
+      rgbt[3] = hasAlpha ? (255 - data.buffer[index + 3] * factor) : 0;
+      mesh.primitive.colors.push(mesh.primitive.colorMap.insert(color[0]));
+    }
+
+    return true;
+  }
+
   private readUVParams(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
 
@@ -1826,13 +1379,9 @@ export abstract class GltfReader {
       }
 
       case GltfDataType.UnsignedShort: {
-        const extensions = JsonUtils.asObject(view.accessor.extensions);
-        const quantized = undefined !== extensions ? JsonUtils.asObject(extensions.WEB3D_quantized_attributes) : undefined;
-        if (undefined === quantized)
-          return false;
-
-        const rangeMin = JsonUtils.asArray(quantized.decodedMin);
-        const rangeMax = JsonUtils.asArray(quantized.decodedMax);
+        const quantized = view.accessor.extensions?.WEB3D_quantized_attributes;
+        const rangeMin = quantized?.decodedMin;
+        const rangeMax = quantized?.decodedMax;
         if (undefined === rangeMin || undefined === rangeMax)
           return false;
 
@@ -1900,7 +1449,7 @@ export abstract class GltfReader {
     const dracoMeshes: DracoMeshCompression[] = [];
 
     for (const node of this.traverseScene()) {
-      for (const meshId of getNodeMeshIds(node)) {
+      for (const meshId of getGltfNodeMeshIds(node)) {
         const mesh = this._meshes[meshId];
         if (mesh?.primitives)
           for (const primitive of mesh.primitives)
@@ -1926,7 +1475,7 @@ export abstract class GltfReader {
     // be required for the scene.
     const promises: Array<Promise<void>> = [];
     try {
-      for (const buffer of dictionaryIterator(this._buffers))
+      for (const buffer of gltfDictionaryIterator(this._buffers))
         if (!buffer.resolvedBuffer)
           promises.push(this.resolveBuffer(buffer));
 
@@ -1935,7 +1484,7 @@ export abstract class GltfReader {
         return;
 
       promises.length = 0;
-      for (const image of dictionaryIterator(this._images))
+      for (const image of gltfDictionaryIterator(this._images))
         if (!image.resolvedImage)
           promises.push(this.resolveImage(image));
 
@@ -1962,7 +1511,9 @@ export abstract class GltfReader {
 
   private resolveUrl(uri: string): string | undefined {
     try {
-      return new URL(uri, this._baseUrl).toString();
+      const resolved = new URL(uri, this._baseUrl);
+      resolved.search = this._baseUrl?.search ?? "";
+      return resolved.toString();
     } catch (_) {
       return undefined;
     }
@@ -2089,13 +1640,15 @@ export abstract class GltfReader {
 
     let nMap;
     if (normalMap) {
+      const greenUp = true;
       if (texture) {
         nMap = {
           normalMap,
+          greenUp,
         };
       } else {
         texture = normalMap;
-        nMap = {};
+        nMap = { greenUp };
       }
     }
 
@@ -2128,7 +1681,7 @@ export interface ReadGltfGraphicsArgs {
   /** The base URL for any relative URIs in the glTF. Typically, this is the same as the URL for the glTF asset itself.
    * If not supplied, relative URIs cannot be resolved. For glTF assets containing no relative URIs, this is not required.
    */
-  baseUrl?: string;
+  baseUrl?: URL | string;
   /** @alpha */
   contentRange?: ElementAlignedBox3d;
   /** @alpha */
@@ -2137,22 +1690,60 @@ export interface ReadGltfGraphicsArgs {
   hasChildren?: boolean;
 }
 
+/** The output of [[readGltf]].
+ * @public
+ */
+export interface GltfGraphic {
+  /** The graphic created from the glTF model. */
+  graphic: RenderGraphic;
+  /** The bounding box of the model, in local coordinates (y-axis up). */
+  localBoundingBox: ElementAlignedBox3d;
+  /** The bounding box of the model, in world coordinates (z-axis up). */
+  boundingBox: AxisAlignedBox3d;
+}
+
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
  * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
  * If a particular glTF asset fails to load and/or display properly, please
  * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
  * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
+ * @see [[readGltf]] to obtain more information about the glTF model.
  * @public
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
-  const props = GltfReaderProps.create(args.gltf, true, args.baseUrl); // glTF supports exactly one coordinate system with y axis up.
+  const result = await readGltf(args);
+  return result?.graphic;
+}
+
+/** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
+ * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
+ * The returned graphic also includes the bounding boxes of the glTF model in world and local coordiantes.
+ * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
+ * If a particular glTF asset fails to load and/or display properly, please
+ * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
+ * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
+ * @public
+ */
+export async function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined> {
+  const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
+  const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader)
     return undefined;
 
   const result = await reader.read();
-  return result.graphic;
+  if (!result.graphic)
+    return undefined;
+
+  assert(result.contentRange !== undefined, "readGltf always computes content range");
+  assert(result.range !== undefined, "readGltf always computes world range");
+
+  return {
+    graphic: result.graphic,
+    localBoundingBox: result.contentRange ?? Range3d.createNull(),
+    boundingBox: result.range ?? Range3d.createNull(),
+  };
 }
 
 /** Implements [[readGltfGraphics]]. Exported strictly for tests.

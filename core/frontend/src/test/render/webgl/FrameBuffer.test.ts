@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Capabilities } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { Debug } from "../../../render/webgl/Diagnostics";
 import { FrameBuffer } from "../../../render/webgl/FrameBuffer";
 import { GL } from "../../../render/webgl/GL";
 import { RenderBuffer } from "../../../render/webgl/RenderBuffer";
 import { TextureHandle } from "../../../render/webgl/Texture";
-import { System } from "../../../render/webgl/System";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameBuffer tests", () => {
@@ -45,11 +43,6 @@ describe("FrameBuffer tests", () => {
     if (!IModelApp.hasRenderSystem)
       return;
 
-    const caps: Capabilities = System.instance.capabilities;
-    if (caps.maxColorAttachments < 2) {
-      return;
-    }
-
     const texture0: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
     assert(undefined !== texture0);
     if (undefined === texture0) {
@@ -76,11 +69,6 @@ describe("FrameBuffer tests", () => {
   it("should produce and bind a valid framebuffer with two color attachments (if available) and one depth renderbuffer", () => {
     if (!IModelApp.hasRenderSystem)
       return;
-
-    const caps: Capabilities = System.instance.capabilities;
-    if (caps.maxColorAttachments < 2) {
-      return;
-    }
 
     const texture0: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
     assert(undefined !== texture0);

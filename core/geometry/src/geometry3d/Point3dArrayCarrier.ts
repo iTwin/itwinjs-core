@@ -48,7 +48,6 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * * This returns the xyz value but NOT reference to the point in the "carried" array.
    * @param index index of point within the array
    * @param result caller-allocated destination
-   * @returns undefined if the index is out of bounds
    */
   public getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d {
     const source = this.data[index];
@@ -219,11 +218,8 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   }
   /**
    * Return distance squared between indicated points.
-   * * Concrete classes may be able to implement this without creating a temporary.
    * @param index0 first point index
    * @param index1 second point index
-   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
-   *
    */
   public distanceSquaredIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
@@ -234,10 +230,8 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   }
   /**
    * Return distance between indicated points.
-   * * Concrete classes may be able to implement this without creating a temporary.
    * @param index0 first point index
    * @param index1 second point index
-   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
    */
   public distanceIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;

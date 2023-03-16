@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "rename members of @alpha CodeService interfaces",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -41,6 +41,7 @@ export enum TextureMapUnits {
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /** As part of a [[RenderMaterialAssetProps]], describes how to map a [[RenderTexture]]'s image to the triangles of a mesh to which the material is applied.
+ * @see [[RenderMaterialAssetMapsProps]] for the supported types of texture mappings.
  * @public
  * @extensions
  */
@@ -65,7 +66,45 @@ export interface TextureMapProps {
   TextureId: Id64String;
 }
 
+/** Flags applied to a [[NormalMapProps]]. The enum values can be combined using bitwise operators.
+ * @public
+ */
+export enum NormalMapFlags {
+  /** No special flags. */
+  None = 0,
+  /** Indicates that the Y component of each vector - stored in the texture's green channel - points upward along the positive Y axis and should
+   * be negated. By default it points downward.
+   */
+  GreenUp = 1 << 0,
+}
+
+/** Describes how to apply [normal mapping](https://en.wikipedia.org/wiki/Normal_mapping) to a surface material.
+ * @see [[RenderMaterialAssetMapsProps.Normal]] to define a normal map for a [[RenderMaterialAssetProps]].
+ * @public
+ */
+export interface NormalMapProps extends TextureMapProps {
+  /** Flags controlling how the normal map is applied. Default: [[NormalMapFlags.None]]. */
+  NormalFlags?: NormalMapFlags;
+}
+
+/** Describes different types of textures to be applied to a surface material to alter its appearance.
+ * @note While technically both [[Pattern]] and [[Normal]] can define their own mapping parameters (`pattern_angle`, `pattern_mapping`, etc), in practice
+ * if both maps are present they are expected to have identical mapping parameters, with the exception of `TextureId`.
+ * @see [[RenderMaterialAssetProps.Map]] to define the texture maps for a material asset.
+ * @public
+ */
+export interface RenderMaterialAssetMapsProps {
+  /** Maps an image describing the diffuse color of the surface, replacing or mixing with the surface's own color. */
+  Pattern?: TextureMapProps;
+  /** Maps a [normal map](https://en.wikipedia.org/wiki/Normal_mapping) to the surface, simulating more complex surface details than are
+   * present in the surface's geometry.
+   */
+  Normal?: NormalMapProps;
+}
+
 /** Describes the graphical properties of a [RenderMaterialElement]($backend) as part of a [[RenderMaterialProps]].
+ * This representation is used to persist the material properties into the [IModelDb]($backend), but is unwieldy and verbose.
+ * @see [RenderMaterialElementParams]($backend) for a somewhat more ergonomic representation.
  * @public
  * @extensions
  */
@@ -80,7 +119,7 @@ export interface RenderMaterialAssetProps {
   specular_color?: RgbFactorProps;
   /** If true, this material has a specular exponent; if undefined, defaults to false */
   HasFinish?: boolean;
-  /** Specular exponent (surface shininess); range is 0 to 128; if undefined, defaults to 15.0 * 0.9 */
+  /** Specular exponent (surface shininess); range is 0 to 128; if undefined, defaults to 13.5 */
   finish?: number;
   /** If true, this material has surface transparency; if undefined, defaults to false */
   HasTransmit?: boolean;
@@ -102,13 +141,12 @@ export interface RenderMaterialAssetProps {
   HasReflectColor?: boolean;
   /** Surface reflectance color; if undefined, defaults to black */
   reflect_color?: RgbFactorProps;
-  /** An optional set of texture maps associated with this material.
-   * A large variety of map types may be present (e.g., bump maps, specular maps, fur, etc), but currently only the pattern map is used.
+  /** A scale by which to multiply the components of the normals read from [[Map.Normal]], if a normal map is defined.
+   * Default: 1.0
    */
-  Map?: {
-    /** Optional pattern map. */
-    Pattern?: TextureMapProps;
-  };
+  pbr_normal?: number;
+  /** An optional set of texture maps associated with this material. */
+  Map?: RenderMaterialAssetMapsProps;
 }
 
 /** Properties that define a [RenderMaterialElement]($backend).

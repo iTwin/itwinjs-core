@@ -1,6 +1,6 @@
 {
   "name": "@itwin/backend-webpack-tools",
-  "version": "3.6.0-dev.31",
+  "version": "4.0.0-dev.47",
   "description": "Configuration and scripts for iTwin.js agents and backends.",
   "license": "MIT",
   "repository": {
@@ -31,7 +31,7 @@
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
     "nodemon": "^2.0.4",
-    "webpack": "^5.64.4",
+    "webpack": "^5.76.0",
     "yargonaut": "^1.1.2",
     "yargs": "^17.4.0"
   },

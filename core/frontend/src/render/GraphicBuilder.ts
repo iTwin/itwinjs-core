@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+  AnyCurvePrimitive, Arc3d, Box, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, GeometryClass, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -310,7 +310,7 @@ export abstract class GraphicBuilder {
 
   /** The Id to be associated with the graphic for picking.
    * @see [[GraphicBuilderOptions.pickable]] for more options.
-   * @deprecated This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
+   * @deprecated in 3.x. This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
    */
   public get pickId(): Id64String | undefined {
     return this.pickable?.id;
@@ -518,9 +518,19 @@ export abstract class GraphicBuilder {
     }
   }
 
-  /** Add Range3d edges. Useful for debugging. */
-  public addRangeBox(range: Range3d) {
-    this.addFrustum(Frustum.fromRange(range));
+  /** Add a box representing a volume of space. Typically used for debugging purposes.
+   * @param range The volume of space.
+   * @param solid If true, a [[Box]] solid primitive will be added; otherwise, a wireframe outline of the box will be added.
+   */
+  public addRangeBox(range: Range3d, solid = false): void {
+    if (!solid) {
+      this.addFrustum(Frustum.fromRange(range));
+      return;
+    }
+
+    const box = Box.createRange(range, true);
+    if (box)
+      this.addSolidPrimitive(box);
   }
 
   /** Add Frustum edges. Useful for debugging. */

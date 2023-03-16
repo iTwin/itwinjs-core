@@ -51,8 +51,11 @@ export enum PropertyEditorParameterTypes {
  * @public
  */
 export interface PropertyEditorParametersBase {
-  /** Used for serializing to JSON. */
-  paramsType: PropertyEditorParameterTypes;
+  /**
+   * Used for serializing to JSON.
+   * @see PropertyEditorParameterTypes
+   */
+  paramsType: `${PropertyEditorParameterTypes}`;
 }
 
 /**
@@ -61,7 +64,7 @@ export interface PropertyEditorParametersBase {
  */
 export interface PropertyEditorJsonParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
-  paramsType: PropertyEditorParameterTypes.Json;
+  paramsType: "Json";
 
   /** Arbitrary JSON that can be handled by a property editor */
   json: any;
@@ -73,7 +76,7 @@ export interface PropertyEditorJsonParameters extends PropertyEditorParametersBa
  */
 export interface PropertyEditorMultilineParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
-  paramsType: PropertyEditorParameterTypes.Multiline;
+  paramsType: "Multiline";
 
   /**
    * Number of lines. Defaults to `1`.
@@ -90,7 +93,7 @@ export interface PropertyEditorMultilineParameters extends PropertyEditorParamet
  */
 export interface PropertyEditorRangeParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
-  paramsType: PropertyEditorParameterTypes.Range;
+  paramsType: "Range";
 
   /** Minimum value of the range. */
   min?: number;
@@ -105,7 +108,7 @@ export interface PropertyEditorRangeParameters extends PropertyEditorParametersB
  */
 export interface PropertyEditorSliderParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
-  paramsType: PropertyEditorParameterTypes.Slider;
+  paramsType: "Slider";
 
   /** Minimum value that can be set. */
   min: number;

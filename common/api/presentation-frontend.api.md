@@ -24,6 +24,7 @@ import { ElementProperties } from '@itwin/presentation-common';
 import { Field } from '@itwin/presentation-common';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
+import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
@@ -91,7 +92,7 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
-// @internal
+// @public
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps;
 
 // @public
@@ -287,7 +288,6 @@ export class Presentation {
     static initialize(props?: PresentationProps): Promise<void>;
     static get localization(): Localization;
     static get presentation(): PresentationManager;
-    // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
     static get selection(): SelectionManager;
     // @internal (undocumented)
@@ -311,7 +311,9 @@ export enum PresentationFrontendLoggerCategory {
 export class PresentationManager implements IDisposable {
     get activeLocale(): string | undefined;
     set activeLocale(locale: string | undefined);
-    activeUnitSystem: UnitSystemKey | undefined;
+    // @deprecated
+    get activeUnitSystem(): UnitSystemKey;
+    set activeUnitSystem(value: UnitSystemKey | undefined);
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
@@ -321,17 +323,14 @@ export class PresentationManager implements IDisposable {
         size: number;
     } | undefined>;
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    // @beta
     getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{
         total: number;
         items: () => AsyncGenerator<InstanceKey>;
     }>;
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
-    // @beta
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition[]>;
-    // @beta
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
@@ -341,6 +340,8 @@ export class PresentationManager implements IDisposable {
         nodes: Node_2[];
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
+    // @beta
+    getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
@@ -361,10 +362,12 @@ export class PresentationManager implements IDisposable {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
+    // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
     // @internal (undocumented)
     ipcRequestsHandler?: IpcRequestsHandler;
+    requestTimeout?: number;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
     // @internal (undocumented)
@@ -386,9 +389,9 @@ export interface RulesetManager {
     add(ruleset: Ruleset): Promise<RegisteredRuleset>;
     clear(): Promise<void>;
     get(id: string): Promise<RegisteredRuleset | undefined>;
-    // @alpha
+    // @beta
     modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
-    // @alpha (undocumented)
+    // @beta
     onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }
@@ -503,7 +506,7 @@ export interface SelectionHandlerProps {
     rulesetId?: string;
 }
 
-// @internal (undocumented)
+// @public
 export class SelectionHelper {
     static getKeysForSelection(keys: Readonly<Keys>): Key[];
 }

@@ -208,11 +208,11 @@ export namespace CodeService {
    * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
    */
   export function makeScopeAndSpec(iModel: IModelDb, code: CodeProps): CodeService.ScopeAndSpec {
-    const scope = iModel.elements.getElementProps({ id: code.scope, onlyBaseProperties: true }).federationGuid;
-    if (undefined === scope)
+    const scopeGuid = iModel.elements.getElementProps({ id: code.scope, onlyBaseProperties: true }).federationGuid;
+    if (undefined === scopeGuid)
       throw new CodeService.Error("MissingGuid", IModelStatus.InvalidCode, "code scope element has no federationGuid");
 
-    return { scope, spec: iModel.codeSpecs.getById(code.spec).name };
+    return { scopeGuid, specName: iModel.codeSpecs.getById(code.spec).name };
   }
 
   /** Turn a `CodeProps` and  `ProposedCodeProps` into a `ProposedCode` for use with a CodeService.
@@ -331,8 +331,8 @@ export namespace CodeService {
 
   /** A code Scope guid, and code spec name. */
   export interface ScopeAndSpec {
-    readonly spec: CodeSpecName;
-    readonly scope: ScopeGuid;
+    readonly specName: CodeSpecName;
+    readonly scopeGuid: ScopeGuid;
   }
 
   /** A code Scope guid, code spec, and code value. */
@@ -343,9 +343,9 @@ export namespace CodeService {
   /** The data held in a code index for a single code. */
   export interface CodeEntry {
     /** The name of the code spec for this code. */
-    readonly spec: CodeSpecName;
+    readonly specName: CodeSpecName;
     /** The guid of the entity that provides the scope for this code. */
-    readonly scope: ScopeGuid;
+    readonly scopeGuid: ScopeGuid;
     /** The value of this code. */
     readonly value: CodeValue;
     /** The guid of the entity this code identifies. */
@@ -375,9 +375,9 @@ export namespace CodeService {
   /** A filter to limit and/or sort the values for the [[CodeIndex.forAllCodes]] iteration. */
   export interface CodeFilter extends ValueFilter {
     /** If supplied, limit results to only those with this spec */
-    readonly spec?: CodeSpecName;
+    readonly specName?: CodeSpecName;
     /** If supplied, limit results to only those with this scope Guid */
-    readonly scope?: ScopeGuid;
+    readonly scopeGuid?: ScopeGuid;
     /** If supplied, limit results to only those with this origin */
     readonly origin?: CodeOriginName;
   }

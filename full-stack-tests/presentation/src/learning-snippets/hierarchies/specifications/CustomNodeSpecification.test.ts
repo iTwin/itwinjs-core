@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -13,12 +13,12 @@ describe("Learning Snippets", () => {
 
   let imodel: IModelConnection;
 
-  beforeEach(async () => {
+  before(async () => {
     await initialize();
     imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
-  afterEach(async () => {
+  after(async () => {
     await imodel.close();
     await terminate();
   });
@@ -34,17 +34,17 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "T_ROOT_NODE",
               label: "My Root Node",
             }],
           }, {
-            ruleType: RuleTypes.ChildNodes,
+            ruleType: "ChildNodes",
             condition: `ParentNode.Type = "T_ROOT_NODE"`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "T_CHILD_NODE",
               label: "My Child Node",
             }],
@@ -70,9 +70,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "T_MY_NODE",
               label: "My Node",
             }],
@@ -94,9 +94,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "T_MY_NODE",
               label: "My Node",
               description: "My node's description",
@@ -119,9 +119,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "T_MY_NODE",
               label: "My Node",
               imageId: "my-icon-identifier",
@@ -147,18 +147,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "parent",
               label: "Parent",
               hideNodesInHierarchy: true,
             }],
           }, {
-            ruleType: RuleTypes.ChildNodes,
+            ruleType: "ChildNodes",
             condition: `ParentNode.Type = "parent"`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "child",
               label: "Child",
             }],

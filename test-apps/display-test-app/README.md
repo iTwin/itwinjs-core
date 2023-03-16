@@ -154,10 +154,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* IMJS_ENABLE_MAP_TEXTURE_FILTER
-  * If defined, the anisotropic filtering will be used for (planar) map tiles.
-* IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER
-  * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
 * IMJS_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
 * IMJS_DEVICE_PIXEL_RATIO_OVERRIDE
@@ -217,6 +213,10 @@ You can use these environment variables to alter the default behavior of various
   * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
 * IMJS_EXIT_AFTER_MODEL_OPENED
   * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
+* IMJS_NO_ELECTRON_AUTH
+  * If defined, the authorization client will not be initialized for the electron app, to work around a current bug that causes it to produce constant exceptions when attempting to obtain an access token.
+* IMJS_USE_FRONTEND_TILES
+  * If defined, the @itwin/frontend-tiles package will be used to obtain tile trees for spatial views, served over localhost.
 
 ## Key-ins
 

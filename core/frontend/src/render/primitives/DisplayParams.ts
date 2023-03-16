@@ -12,8 +12,10 @@ import { ColorDef, FillFlags, Gradient, GraphicParams, LinePixels, RenderMateria
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
   return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);
 }
+
 function compareTextureMappings(_lhs?: TextureMapping, _rhs?: TextureMapping): number {
-  // ###TODO
+  // ###TODO we don't have a way of ordering the textures from the pattern/normal map(s) - not all textures have keys defined.
+  // For now this will only work if the GraphicBuilder uses a single material for all geometry.
   // return comparePossiblyUndefined((lhTex: TextureMapping, rhTex: TextureMapping) => lhTex === rhTex ? 0 : compareStringsOrUndefined(lhTex.texture.key, rhTex.texture.key), lhs, rhs);
   return 0;
 }

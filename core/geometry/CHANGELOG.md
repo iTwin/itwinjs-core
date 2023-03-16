@@ -1,6 +1,42 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+- allow tolerance to be specified for curve-curve xy intersection
+- BSplineCurve3d.create validates input knots
+- Expose PathFragments to callers. Removal of some duplicated code.
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+### Updates
+
+- PolyfaceQuery method to test for convexity
 
 ## 3.5.1
 Thu, 15 Dec 2022 16:38:28 GMT
@@ -996,7 +1032,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -1127,7 +1163,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 

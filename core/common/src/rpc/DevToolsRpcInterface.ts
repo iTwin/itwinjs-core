@@ -25,7 +25,7 @@ export enum DevToolsStatsOptions {
  * Note that this should NOT be used in production environments.
  * @internal
  */
-export abstract class DevToolsRpcInterface extends RpcInterface {
+export abstract class DevToolsRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** Returns the IModelReadRpcInterface instance for the frontend. */
   public static getClient(): DevToolsRpcInterface { return RpcManager.getClientForInterface(DevToolsRpcInterface); }
 
@@ -35,7 +35,7 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
   /** The semantic version of the interface.
    * @note The DevToolsRpcInterface will remain at 0.x since it is for testing only and not intended for production.
    */
-  public static interfaceVersion = "0.6.0";
+  public static interfaceVersion = "0.7.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -48,7 +48,11 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
   public async stats(_iModelToken: IModelRpcProps, _options: DevToolsStatsOptions): Promise<any> { return this.forward(arguments); }
 
   // Returns JSON object with backend versions (application and iModelJs)
-  public async versions(_iModelToken: IModelRpcProps): Promise<any> { return this.forward(arguments); }
+  public async versions(_iModelToken: IModelRpcProps): Promise<any> {
+    const versions = await this.forward(arguments) || {};
+    versions.availableRpcs = await RpcManager.describeAvailableEndpoints();
+    return versions;
+  }
 
   // Sets a new log level for the specified category and returns the old log level
   public async setLogLevel(_iModelToken: IModelRpcProps, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined> { return this.forward(arguments); }

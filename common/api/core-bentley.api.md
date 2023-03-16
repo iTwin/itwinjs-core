@@ -15,7 +15,7 @@ import type { Tracer } from '@opentelemetry/api';
 export class AbandonedError extends Error {
 }
 
-// @beta
+// @public
 export type AccessToken = string;
 
 // @public
@@ -34,14 +34,6 @@ export type AsyncFunction = (...args: any) => Promise<any>;
 export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
 }[keyof T];
-
-// @alpha
-export class AsyncMutex {
-    lock(): Promise<AsyncMutexUnlockFnType>;
-}
-
-// @alpha
-export type AsyncMutexUnlockFnType = () => void;
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -337,6 +329,7 @@ export enum DbResult {
     BE_SQLITE_ERROR_BadDbProfile = 100663306,
     BE_SQLITE_ERROR_ChangeTrackError = 218103818,
     BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = 352321546,
+    BE_SQLITE_ERROR_DataTransformRequired = 385875978,
     BE_SQLITE_ERROR_FileExists = 16777226,
     BE_SQLITE_ERROR_FileNotFound = 67108874,
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
@@ -537,9 +530,6 @@ export abstract class ErrorCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
-
-// @beta
-export type ExtractLiterals<T, U extends T> = Extract<T, U>;
 
 // @public
 export enum GeoServiceStatus {
@@ -1461,6 +1451,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
         equal: boolean;
     };
     protected _remove(value: T): number;
+    slice(start?: number, end?: number): ReadonlySortedArray<T>;
 }
 
 // @alpha
@@ -1494,6 +1485,11 @@ export enum RepositoryStatus {
     SyncError = 86019
 }
 
+// @public
+export type RequireAtLeastOne<T> = {
+    [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];
+
 // @beta
 export enum RpcInterfaceStatus {
     IncompatibleVersion = 135168,
@@ -1513,6 +1509,7 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     extractArray(): T[];
     insert(value: T, onInsert?: (value: T) => any): number;
     remove(value: T): number;
+    slice(start?: number, end?: number): SortedArray<T>;
 }
 
 // @alpha
@@ -1586,6 +1583,7 @@ export class TransientIdSequence {
     getNext(): Id64String;
     // @deprecated
     get next(): Id64String;
+    peekNext(): Id64String;
 }
 
 // @public

@@ -1,6 +1,9 @@
 # This defines the core steps for building and validating iTwin.js Core
 
 parameters:
+  - name: nodeVersion # name of the parameter; required
+    type: string # data type of the parameter; required
+
   - name: workingDir
     type: string
     default: $(System.DefaultWorkingDirectory)
@@ -10,12 +13,13 @@ parameters:
   - name: buildIos
     type: boolean
     default: false
-  - name: nodeVersion
-    default: ""
   - name: currentBranch
     default: $(Build.SourceBranch)
   - name: targetBranch
     default: $(System.PullRequest.TargetBranch)
+  - name: runRushAudit
+    type: boolean
+    default: true
 
 steps:
   - task: NodeTool@0
@@ -38,7 +42,7 @@ steps:
 
       Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
     displayName: Set build number
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'))
 
   - script: node common/scripts/set-rush-write-cache-variables.js
     displayName: "Set Rush Write Cache Variables"
@@ -59,7 +63,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), eq('${{ parameters.runRushAudit }}', 'true'), ne('${{ parameters.targetBranch }}', 'imodel02'))
   - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
@@ -87,12 +91,16 @@ steps:
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
+    env:
+      NODE_ENV: development
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
   - script: node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
+    env:
+      NODE_ENV: development
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: node common/scripts/install-run-rush.js docs

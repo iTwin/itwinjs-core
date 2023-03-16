@@ -9,6 +9,8 @@
 import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@itwin/core-common";
 import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
 
+/* eslint-disable deprecation/deprecation */
+
 const PUSH = "__push__";
 
 /** @internal */

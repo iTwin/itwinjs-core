@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes, GroupingSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes, StandardNodeTypes,
-} from "@itwin/presentation-common";
+import { Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -15,12 +13,12 @@ describe("Learning Snippets", () => {
 
   let imodel: IModelConnection;
 
-  beforeEach(async () => {
+  before(async () => {
     await initialize();
     imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
-  afterEach(async () => {
+  after(async () => {
     await imodel.close();
     await terminate();
   });
@@ -34,30 +32,30 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
             groupByClass: false,
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.IsOfClass("Model", "BisCore")`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+            specType: "RelatedInstanceNodes",
             relationshipPaths: [{
               relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-              direction: RelationshipDirection.Forward,
+              direction: "Forward",
             }],
             groupByClass: false,
             groupByLabel: false,
           }],
           customizationRules: [{
-            ruleType: RuleTypes.Grouping,
+            ruleType: "Grouping",
             class: { schemaName: "BisCore", className: "Element" },
             condition: `ParentNode.ECInstance.IsPrivate`,
             groups: [{
-              specType: GroupingSpecificationTypes.Property,
+              specType: "Property",
               propertyName: "CodeValue",
               createGroupForSingleItem: true,
             }],
@@ -110,17 +108,17 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
             groupByClass: false,
           }],
           customizationRules: [{
-            ruleType: RuleTypes.Grouping,
+            ruleType: "Grouping",
             class: { schemaName: "BisCore", className: "Element" },
             groups: [{
-              specType: GroupingSpecificationTypes.Property,
+              specType: "Property",
               propertyName: "CodeValue",
               createGroupForSingleItem: true,
             }],

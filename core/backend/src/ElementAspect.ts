@@ -18,6 +18,8 @@ import { DbResult, Id64String } from "@itwin/core-bentley";
 export interface OnAspectArg {
   /** The iModel for the aspect affected by this event. */
   iModel: IModelDb;
+  /** The model for the aspect affected by this event */
+  model: Id64String;
 }
 /** Argument for the `ElementAspect.onXxx` static methods that supply the properties of an aspect to be inserted or updated.
  * @beta
@@ -62,7 +64,9 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onInsert(_arg: OnAspectPropsArg): void { }
+  protected static onInsert(arg: OnAspectPropsArg): void {
+    arg.iModel.channels.verifyChannel(arg.model);
+  }
 
   /** Called after a new ElementAspect was inserted.
    * @note If you override this method, you must call super.
@@ -75,7 +79,9 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onUpdate(_arg: OnAspectPropsArg): void { }
+  protected static onUpdate(arg: OnAspectPropsArg): void {
+    arg.iModel.channels.verifyChannel(arg.model);
+  }
 
   /** Called after an ElementAspect was updated.
    * @note If you override this method, you must call super.
@@ -88,7 +94,9 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onDelete(_arg: OnAspectIdArg): void { }
+  protected static onDelete(arg: OnAspectIdArg): void {
+    arg.iModel.channels.verifyChannel(arg.model);
+  }
 
   /** Called after an ElementAspect was deleted.
    * @note If you override this method, you must call super.
@@ -113,37 +121,17 @@ export class ElementMultiAspect extends ElementAspect {
   public static override get className(): string { return "ElementMultiAspect"; }
 }
 
-/** A ChannelRootAspect identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
- * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+/**
  * @public
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
   /** @internal */
   public static override get className(): string { return "ChannelRootAspect"; }
-
-  /** The owner of the channel */
-  public owner: string;
-
-  /** @internal */
-  constructor(props: ChannelRootAspectProps, iModel: IModelDb) {
-    super(props, iModel);
-    this.owner = props.owner;
-  }
-
-  /** @internal */
-  public override toJSON(): ChannelRootAspectProps {
-    const val = super.toJSON() as ChannelRootAspectProps;
-    val.owner = this.owner;
-    return val;
-  }
-
-  /** Insert a ChannelRootAspect on the specified element. */
-  public static insert(iModel: IModelDb, ownerId: Id64String, ownerDescription: string) {
-    const props: ChannelRootAspectProps = {
-      classFullName: ChannelRootAspect.classFullName,
-      element: { id: ownerId },
-      owner: ownerDescription,
-    };
+  /** Insert a ChannelRootAspect on the specified element.
+   * @deprecated in 4.0 use [[ChannelControl.insertChannelSubject]]
+   */
+  public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
+    const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
     iModel.elements.insertAspect(props);
   }
 }
@@ -172,7 +160,10 @@ export class ExternalSourceAspect extends ElementMultiAspect {
    * If present, this value must be guaranteed to change when any of the source object's content changes.
    */
   public version?: string;
-  /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
+  /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process.
+   * @note Warning: in a future major release, the type of `jsonProperties` will be changed to object, and itwin.js will automatically stringify it when writing to the iModel.
+   * This will be a breaking change, since application code will have to change from supplying a string to supplying an object.
+   */
   public jsonProperties?: string;
   /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   public source?: RelatedElement;
@@ -189,7 +180,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /** @deprecated findAllBySource */
+  /** @deprecated in 3.x. findAllBySource */
   public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     let elementId: Id64String | undefined;

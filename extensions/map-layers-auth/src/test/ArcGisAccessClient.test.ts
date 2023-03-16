@@ -62,32 +62,6 @@ describe("ArcGisUtilities tests", () => {
     expect(clientId === undefined);
 
   });
-
-  it("should validate oauth2 endpoint", async () => {
-
-    let result = (fakeAccessClient as any)!.validateOAuth2Endpoint("https://xyz.com");
-    expect(result === false);
-
-    let fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
-
-      return Promise.resolve((({
-        status: 400,
-      } as unknown) as Response));
-    });
-
-    result = (fakeAccessClient as any)!.validateOAuth2Endpoint(sampleOnPremiseHostName);
-    expect(result === true);
-    expect(fetchStub.calledOnce).to.be.true;
-    fetchStub.restore();
-
-    fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
-      return Promise.reject((({} as unknown)));
-    });
-    result = (fakeAccessClient as any)!.validateOAuth2Endpoint(sampleOnPremiseHostName);
-    expect(fetchStub.calledOnce).to.be.true;
-    expect(result === undefined);
-  });
-
   it("should construct the proper login Url from a enterprise token url", async () => {
 
     const loginURl = (fakeAccessClient as any).constructLoginUrl(sampleOnPremiseMapServerAuthorizeUrl, false);
@@ -118,9 +92,6 @@ describe("ArcGisUtilities tests", () => {
       return Promise.resolve(new URL(sampleOnPremiseMapServerRestUrl));
     });
 
-    sandbox.stub(ArcGisAccessClient.prototype, "validateOAuth2Endpoint" as any).callsFake(async function _(_url: string) {
-      return Promise.resolve(true);
-    });
     const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
     let acOnPremiseEndpoint;
     if (onPremiseEndpoint instanceof ArcGisOAuth2Endpoint)
@@ -135,20 +106,13 @@ describe("ArcGisUtilities tests", () => {
   it("should build proper OAuth2 enterprise endpoint URL if no generateTokenUrl response", async () => {
 
     sandbox.stub(ArcGisUrl, "getRestUrlFromGenerateTokenUrl").callsFake(async function _(_url: URL) {
-      return Promise.resolve(new URL(sampleOnPremiseMapServerRestUrl));
-    });
-
-    sandbox.stub(ArcGisAccessClient.prototype, "validateOAuth2Endpoint" as any).callsFake(async function _(url: string) {
-      if (url.startsWith(sampleOnPremiseMapServerAuthorizeUrl))
-        return Promise.resolve(false);    // Simulate that endpoint derived from generateToken is invalid
-      else
-        return Promise.resolve(true);
+      return Promise.resolve(undefined);
     });
 
     const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
     let acOnPremiseEndpoint;
     if (onPremiseEndpoint instanceof ArcGisOAuth2Endpoint)
-      acOnPremiseEndpoint = onPremiseEndpoint ;
+      acOnPremiseEndpoint = onPremiseEndpoint;
 
     expect(acOnPremiseEndpoint).to.not.undefined;
     expect(acOnPremiseEndpoint?.isArcgisOnline).to.false;
@@ -156,27 +120,4 @@ describe("ArcGisUtilities tests", () => {
 
   });
 
-  it("should build proper OAuth2 enterprise endpoint URL if no generateTokenUrl response", async () => {
-
-    sandbox.stub(ArcGisUrl, "getRestUrlFromGenerateTokenUrl").callsFake(async function _(_url: URL) {
-      return Promise.resolve(new URL(sampleOnPremiseMapServerRestUrl));
-    });
-
-    sandbox.stub(ArcGisAccessClient.prototype, "validateOAuth2Endpoint" as any).callsFake(async function _(url: string) {
-      if (url.startsWith(sampleOnPremiseMapServerAuthorizeUrl))
-        return Promise.resolve(false);    // Simulate that endpoint derived from generateToken is invalid
-      else
-        return Promise.resolve(true);
-    });
-
-    const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
-    let acOnPremiseEndpoint;
-    if (onPremiseEndpoint instanceof ArcGisOAuth2Endpoint)
-      acOnPremiseEndpoint = onPremiseEndpoint ;
-
-    expect(acOnPremiseEndpoint).to.not.undefined;
-    expect(acOnPremiseEndpoint?.isArcgisOnline).to.false;
-    expect(acOnPremiseEndpoint?.getUrl()).to.equals(sampleOnPremiseMapServerFallbackAuthorizeUrl);
-
-  });
 });

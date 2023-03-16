@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records).
@@ -16,7 +16,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  */
 export interface ExtendedDataRule extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.ExtendedData;
+  ruleType: "ExtendedData";
 
   /**
    * Defines a condition which needs to be met in order for the rule to be used. The condition
