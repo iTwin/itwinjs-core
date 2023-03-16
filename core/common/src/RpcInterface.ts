@@ -21,10 +21,17 @@ import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @public */
+/**
+ * Specifies the required static properties of an RpcInterface class.
+ * These properties are used to identify RPC requests and responses.
+ * @public
+ */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 
-/** @public */
+/**
+ * A class that implements the operations of an RPC interface.
+ * @public
+ */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,

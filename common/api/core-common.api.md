@@ -567,38 +567,23 @@ export class BentleyCloudRpcConfigurationHolder {
     configuration: BentleyCloudRpcConfiguration;
 }
 
-// @internal
-export interface BentleyCloudRpcInternalParams extends BentleyCloudRpcParams {
-    pendingRequestListener?: RpcRequestEventHandler;
-    protocol?: typeof BentleyCloudRpcProtocol;
-}
-
-// @internal (undocumented)
-export namespace BentleyCloudRpcInternalParams {
-    // (undocumented)
-    export function wrap(params: BentleyCloudRpcInternalParams): BentleyCloudRpcParamsHolder;
-}
-
 // @public
 export class BentleyCloudRpcManager extends RpcManager {
     // @beta
-    static initializeClient(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfigurationHolder;
+    static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfigurationHolder;
     // @beta
-    static initializeImpl(params: BentleyCloudRpcParams | BentleyCloudRpcParamsHolder, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfigurationHolder;
+    static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfigurationHolder;
 }
 
 // @public
 export interface BentleyCloudRpcParams {
     info: OpenAPIInfo;
-    uriPrefix?: string;
-}
-
-// @beta
-export class BentleyCloudRpcParamsHolder {
+    pathPrefix?: string;
     // @internal
-    constructor(params: BentleyCloudRpcInternalParams);
-    // @internal (undocumented)
-    params: BentleyCloudRpcInternalParams;
+    pendingRequestListener?: RpcRequestEventHandler;
+    // @internal
+    protocol?: typeof BentleyCloudRpcProtocol;
+    uriPrefix?: string;
 }
 
 // @internal
@@ -7838,7 +7823,7 @@ export abstract class RpcInterface {
     readonly routing: RpcRoutingToken;
 }
 
-// @public (undocumented)
+// @public
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     // (undocumented)
     interfaceName: string;
@@ -7860,7 +7845,7 @@ export interface RpcInterfaceEndpoints {
     operationNames: string[];
 }
 
-// @public (undocumented)
+// @public
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 // @internal

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, Assertion, util } from "chai";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
 
@@ -106,14 +106,18 @@ Assertion.addMethod(
 );
 
 if (!ProcessDetector.isElectronAppFrontend) {
-  const configHolder = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
-  configHolder.configuration.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
+  const params: BentleyCloudRpcParams = {
+    info: { title: "full-stack-test", version: "v1.0" },
+    pathPrefix: `http://${window.location.hostname}:${Number(window.location.port) + 2000}`,
+  };
+
+  BentleyCloudRpcManager.initializeClient(params, rpcInterfaces);
 
   // This is a web-only test
   describe("Web Test Fixture", () => {
     it("Backend server should be accessible", async () => {
       const req = new XMLHttpRequest();
-      req.open("GET", `${configHolder.configuration.protocol.pathPrefix}/v3/swagger.json`);
+      req.open("GET", `${params.pathPrefix}/v3/swagger.json`);
       const loaded = new Promise((resolve) => req.addEventListener("load", resolve));
       req.send();
       await loaded;
