@@ -227,8 +227,6 @@ const scratchPackedFeature = PackedFeature.create();
  */
 export class PackedFeatureTable implements RenderFeatureTable {
   private readonly _data: Uint32Array;
-  /** @deprecated ###TODO delete in this PR. */
-  public readonly modelId: Id64String;
   public readonly batchModelId: Id64String;
   public readonly batchModelIdPair: Id64.Uint32Pair;
   public readonly numFeatures: number;
@@ -246,7 +244,6 @@ export class PackedFeatureTable implements RenderFeatureTable {
   public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
     this._data = data;
     this.batchModelId = modelId;
-    this.modelId = modelId;
     this.batchModelIdPair = Id64.getUint32Pair(modelId);
     this.numFeatures = numFeatures;
     this.type = type;
