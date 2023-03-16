@@ -1447,6 +1447,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.maybeInvalidateScene();
   }
 
+  /** @internal */
+  public invalidateSymbologyOverrides(): void {
+    this.setFeatureOverrideProviderChanged();
+  }
+
   /** The [[TiledGraphicsProvider]]s currently registered with this viewport.
    * @see [[addTiledGraphicsProvider]].
    */
