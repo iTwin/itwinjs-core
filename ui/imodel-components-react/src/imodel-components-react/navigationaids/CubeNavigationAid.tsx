@@ -596,6 +596,11 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
 
 /** @internal */
 export class NavCubeFace extends React.Component<NavCubeFaceProps> {
+  private includeCell(vector: Vector3d): boolean {
+    const { x, y, z } = vector;
+    const omittedCell = (y === 0 && x !== 0 && z !== 0) || (y !== 0 && x === 0 && z !== 0) || (y !== 0 && x !== 0 && z === 0);
+    return !omittedCell;
+  }
   public override render(): React.ReactNode {
     const { face, hoverMap, onFaceCellClick, onFaceCellHoverChange, label } = this.props;
     return (
@@ -604,19 +609,32 @@ export class NavCubeFace extends React.Component<NavCubeFaceProps> {
           return (
             <FaceRow key={y} center={y === 0}>
               {[-1, 0, 1].map((x: number) => {
-                return (
-                  <FaceCell
-                    key={x}
-                    onFaceCellHoverChange={onFaceCellHoverChange}
-                    onFaceCellClick={onFaceCellClick}
-                    hoverMap={hoverMap}
-                    vector={NavCubeFace.faceCellToPos(face, x, y)}
-                    face={face}
-                    center={x === 0}>
-                    {x === 0 && y === 0 &&
+                const vector = NavCubeFace.faceCellToPos(face, x, y);
+                if (this.includeCell(vector)) {
+                  // return a fully functional cell
+                  return (
+                    <FaceCell
+                      key={x}
+                      onFaceCellHoverChange={onFaceCellHoverChange}
+                      onFaceCellClick={onFaceCellClick}
+                      hoverMap={hoverMap}
+                      vector={vector}
+                      face={face}
+                      center={x === 0}>
+                      {x === 0 && y === 0 &&
                        label}
-                  </FaceCell>
-                );
+                    </FaceCell>
+                  );
+                } else {
+                  // return a placeholder cell
+                  return (
+                    <FaceCell
+                      key={x}
+                      vector={vector}
+                      face={face}
+                      center={x === 0}/>
+                  );
+                }
               })}
             </FaceRow>
           );
@@ -656,9 +674,9 @@ class FaceRow extends React.Component<FaceRowProps> {
 /** @internal */
 export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   center?: boolean;
-  onFaceCellClick: (vector: Vector3d, face: Face) => void;
-  onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
-  hoverMap: { [key: string]: CubeHover };
+  onFaceCellClick?: (vector: Vector3d, face: Face) => void;
+  onFaceCellHoverChange?: (vector: Vector3d, state: CubeHover) => void;
+  hoverMap?: { [key: string]: CubeHover };
   vector: Vector3d;
   face: Face;
 }
@@ -670,8 +688,8 @@ export class FaceCell extends React.Component<FaceCellProps> {
     const { center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, vector, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const { x, y, z } = vector;
     const n = `${x}-${y}-${z}`;
-    const hover = hoverMap[n] === CubeHover.Hover;
-    const active = hoverMap[n] === CubeHover.Active;
+    const hover = hoverMap && hoverMap[n] === CubeHover.Hover;
+    const active = hoverMap && hoverMap[n] === CubeHover.Active;
     const classNames = classnames(
       "face-cell",
       center && "cube-center",
@@ -697,11 +715,11 @@ export class FaceCell extends React.Component<FaceCellProps> {
   }
   private _handleMouseOver = () => {
     const { vector } = this.props;
-    this.props.onFaceCellHoverChange(vector, CubeHover.Hover);
+    this.props.onFaceCellHoverChange && this.props.onFaceCellHoverChange(vector, CubeHover.Hover);
   };
   private _handleMouseOut = () => {
     const { vector } = this.props;
-    this.props.onFaceCellHoverChange(vector, CubeHover.None);
+    this.props.onFaceCellHoverChange && this.props.onFaceCellHoverChange(vector, CubeHover.None);
   };
   private _handleMouseDown = (event: React.MouseEvent) => {
     const { clientX, clientY } = event;
@@ -725,16 +743,16 @@ export class FaceCell extends React.Component<FaceCellProps> {
   private handlePointerDown(x: number, y: number) {
     const { vector } = this.props;
     this._startMouse = Point2d.create(x, y);
-    this.props.onFaceCellHoverChange(vector, CubeHover.Active);
+    this.props.onFaceCellHoverChange && this.props.onFaceCellHoverChange(vector, CubeHover.Active);
   }
 
   private handlePointerUp(x: number, y: number) {
     const { vector, face } = this.props;
-    this.props.onFaceCellHoverChange(vector, CubeHover.None);
+    this.props.onFaceCellHoverChange && this.props.onFaceCellHoverChange(vector, CubeHover.None);
     const mouse = Point2d.create(x, y);
     if (this._startMouse && this._startMouse.isAlmostEqual(mouse)) {
       const isFace = Math.abs(vector.x) + Math.abs(vector.y) + Math.abs(vector.z) === 1;
-      this.props.onFaceCellClick(vector, isFace ? face : Face.None);
+      this.props.onFaceCellClick && this.props.onFaceCellClick(vector, isFace ? face : Face.None);
     }
   }
 }
