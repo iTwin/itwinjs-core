@@ -851,6 +851,7 @@ export interface GroupColumnProps extends CommonProps {
 // @alpha @deprecated
 export interface GroupProps extends CommonProps, NoChildrenProps {
     columns?: React_2.ReactNode;
+    header?: React_2.ReactNode;
     title?: string;
 }
 

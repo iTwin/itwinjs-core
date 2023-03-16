@@ -5,6 +5,7 @@
 
 import * as React from "react";
 import "./ViewSelectorPanel.scss";
+<<<<<<< HEAD
 import { ContentViewManager, getListPanel, ListItem, ListItemType, SupportsViewSelectorChange, UiFramework, useActiveViewport, ViewUtilities } from "@itwin/appui-react";
 import { IModelApp, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { CustomToolbarItem } from "@itwin/components-react";
@@ -144,14 +145,17 @@ function ViewSelectorPanel() {
   );
 }
 
+=======
+import { IModelConnectedViewSelector } from "@itwin/appui-react";
+import { CustomToolbarItem } from "@itwin/components-react";
+
+>>>>>>> ea1a90c459 (Add ViewSelector Search Functionality (#5175))
 export function getCustomViewSelectorPopupItem(itemPriority: number, groupPriority: number): CustomToolbarItem {
   return {
     isCustom: true,
     id: "appui-test-providers:viewSelector",
     itemPriority,
-    icon: "icon-saved-view",
-    label: "Load selected view into active content view",
-    panelContentNode: <ViewSelectorPanel />,
+    buttonNode: <IModelConnectedViewSelector />,
     keepContentsLoaded: true,
     groupPriority,
   };
