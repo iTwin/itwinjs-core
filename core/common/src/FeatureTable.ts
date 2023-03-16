@@ -57,10 +57,25 @@ export class Feature {
 
 /** @internal */
 export interface PackedFeature {
+  modelId: Id64.Uint32Pair;
   elementId: Id64.Uint32Pair;
   subCategoryId: Id64.Uint32Pair;
   geometryClass: GeometryClass;
   animationNodeId: number;
+}
+
+/** @internal */
+export namespace PackedFeature {
+  export function create(): PackedFeature {
+    const pair = { upper: 0, lower: 0 };
+    return {
+      modelId: { ...pair },
+      elementId: { ...pair },
+      subCategoryId: { ...pair },
+      geometryClass: GeometryClass.Primary,
+      animationNodeId: 0,
+    };
+  }
 }
 
 /** Describes the type of a 'batch' of graphics representing multiple [[Feature]]s.
@@ -151,6 +166,7 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) =
 export class PackedFeatureTable {
   private readonly _data: Uint32Array;
   public readonly modelId: Id64String;
+  public readonly batchModelIdPair: Id64.Uint32Pair;
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
@@ -166,6 +182,7 @@ export class PackedFeatureTable {
   public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
     this._data = data;
     this.modelId = modelId;
+    this.batchModelIdPair = Id64.getUint32Pair(modelId);
     this.numFeatures = numFeatures;
     this.type = type;
     this._animationNodeIds = animationNodeIds;
@@ -278,7 +295,8 @@ export class PackedFeatureTable {
     const subCategoryId = { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
 
     const animationNodeId = this.getAnimationNodeId(featureIndex);
-    return { elementId, subCategoryId, geometryClass, animationNodeId };
+    const modelId = this.batchModelIdPair;
+    return { modelId, elementId, subCategoryId, geometryClass, animationNodeId };
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
