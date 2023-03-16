@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-  Feature, ModelFeature, PackedFeatureTable, PointCloudDisplaySettings, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  Feature, ModelFeature, RenderFeatureTable, PointCloudDisplaySettings, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
@@ -597,7 +597,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 }
 
 interface BatchInfo {
-  featureTable: PackedFeatureTable;
+  featureTable: RenderFeatureTable;
   iModel?: IModelConnection;
   tileId?: string;
 }

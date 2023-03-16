@@ -212,6 +212,7 @@ export interface RenderFeatureTable {
 
   getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
   findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+  findElementId(featureIndex: number): Id64String | undefined;
   getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
   getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
   iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;

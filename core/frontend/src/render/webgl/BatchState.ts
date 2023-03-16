@@ -61,6 +61,7 @@ export class BatchState {
     this._curBatch = undefined;
   }
 
+  private static readonly _scratchElementIdPair = { lower: 0, upper: 0 };
   public getElementId(featureId: number): Id64String {
     const batch = this.find(featureId);
     if (undefined === batch)
@@ -69,7 +70,7 @@ export class BatchState {
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 
-    const parts = batch.featureTable.getElementIdPair(featureIndex);
+    const parts = batch.featureTable.getElementIdPair(featureIndex, BatchState._scratchElementIdPair);
     return Id64.fromUint32Pair(parts.lower, parts.upper);
   }
 
