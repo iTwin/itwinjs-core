@@ -23,7 +23,7 @@ export enum CubeNavigationHitBoxX {
   Left = -1,
 }
 /** @internal
- * @deprecated in 2.x. Use [[CubeNavigationHitBoxX]] */
+  * @deprecated in 2.x. Use [[CubeNavigationHitBoxX]] */
 export enum HitBoxX {
   None = 0,
   Right = 1,
@@ -37,7 +37,7 @@ export enum CubeNavigationHitBoxY {
   Front = -1,
 }
 /** @internal
- * @deprecated in 2.x. Use [[CubeNavigationHitBoxY]] */
+  * @deprecated in 2.x. Use [[CubeNavigationHitBoxY]] */
 export enum HitBoxY {
   None = 0,
   Back = 1,
@@ -51,7 +51,7 @@ export enum CubeNavigationHitBoxZ {
   Bottom = -1,
 }
 /** @internal
- * @deprecated in 2.x. [[CubeNavigationHitBoxZ]] */
+  * @deprecated in 2.x. [[CubeNavigationHitBoxZ]] */
 export enum HitBoxZ {
   None = 0,
   Top = 1,
@@ -104,8 +104,8 @@ export enum CubeHover {
 }
 
 /** Properties for the [[CubeNavigationAid]] component
- * @public
- */
+  * @public
+  */
 export interface CubeNavigationAidProps extends CommonProps {
   iModelConnection: IModelConnection;
   viewport?: Viewport;
@@ -129,8 +129,8 @@ interface CubeNavigationAidState {
 }
 
 /** Cube Navigation Aid Component
- * @public
- */
+  * @public
+  */
 export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
   private _start: Vector2d = Vector2d.createZero();
   /** @internal */
@@ -218,9 +218,23 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     }
   };
 
+  private static _animationFn = (t: number) => t < .5 ? 2 * t ** 2 : -1 + (4 - 2 * t) * t;
+
+  private static _isMatrixFace = (matrix: Matrix3d): boolean => {
+    let sum = 0;
+    for (const coff of matrix.coffs) {
+      if (Geometry.isAlmostEqualNumber(Math.abs(coff), 1))
+        sum++;
+    }
+    // Assuming matrix is a proper rotation matrix:
+    // if matrix viewing a face, there will be a total of 3 values either almost -1, or almost 1.
+    return sum === 3;
+  };
+
   public override render(): React.ReactNode {
-    const { startRotMatrix, endRotMatrix } = this.state;
-    const rotMatrix = endRotMatrix;
+    const { animation, startRotMatrix, endRotMatrix } = this.state;
+    const visible = CubeNavigationAid._isMatrixFace(endRotMatrix) && animation === 1.0;
+    const rotMatrix = CubeNavigationAid._interpolateRotMatrix(startRotMatrix, animation, endRotMatrix);
     if (rotMatrix !== startRotMatrix && rotMatrix !== endRotMatrix)
       ViewportComponentEvents.setCubeMatrix(rotMatrix, Face.None);
 
@@ -231,12 +245,12 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
         const f = key as Face;
         const label = this._labels[f];
         faces[f] =
-          <NavCubeFace
-            face={f}
-            label={label}
-            hoverMap={this.state.hoverMap}
-            onFaceCellClick={this._handleFaceCellClick}
-            onFaceCellHoverChange={this._handleCellHoverChange} />;
+           <NavCubeFace
+             face={f}
+             label={label}
+             hoverMap={this.state.hoverMap}
+             onFaceCellClick={this._handleFaceCellClick}
+             onFaceCellHoverChange={this._handleCellHoverChange} />;
       }
     }
 
@@ -244,6 +258,11 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       "nav-cube",
       this.state.dragging && "cube-dragging",
     );
+
+    const upTitle = this.getArrowTitle(Pointer.Up);
+    const downTitle = this.getArrowTitle(Pointer.Down);
+    const leftTitle = this.getArrowTitle(Pointer.Left);
+    const rightTitle = this.getArrowTitle(Pointer.Right);
 
     return (
       <div className={classnames("components-cube-container", this.props.className)}
@@ -259,6 +278,14 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
             rotMatrix={rotMatrix}
             faces={faces} />
         </div>
+        <PointerButton data-testid="cube-pointer-button-up"
+          visible={visible} pointerType={Pointer.Up} onArrowClick={this._onArrowClick} title={upTitle} />
+        <PointerButton data-testid="cube-pointer-button-down"
+          visible={visible} pointerType={Pointer.Down} onArrowClick={this._onArrowClick} title={downTitle} />
+        <PointerButton data-testid="cube-pointer-button-left"
+          visible={visible} pointerType={Pointer.Left} onArrowClick={this._onArrowClick} title={leftTitle} />
+        <PointerButton data-testid="cube-pointer-button-right"
+          visible={visible} pointerType={Pointer.Right} onArrowClick={this._onArrowClick} title={rightTitle} />
       </div>
     );
   }
@@ -274,12 +301,153 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   };
 
   private _isInteractionLocked = () => {
-    // Locked by markup-+
+    // Locked by markup
     if(undefined !== this.props.viewport && this.props.viewport === IModelApp.toolAdmin.markupView) {
       return true;
     }
     return false;
   };
+
+  private static _getMatrixFace = (rotMatrix: Matrix3d): Face => {
+    if (!CubeNavigationAid._isMatrixFace(rotMatrix)) {
+      return Face.None;
+    }
+
+    let matrixFace = Face.None;
+
+    for (const face in cubeNavigationFaceRotations) {
+      // istanbul ignore else
+      if (face in cubeNavigationFaceRotations) {
+        const loc = cubeNavigationFaceRotations[face];
+        if (rotMatrix.isAlmostEqual(loc)) {
+          matrixFace = face as Face;
+          break;
+        }
+      }
+    }
+
+    return matrixFace;
+  };
+
+  private static _interpolateRotMatrix = (start: Matrix3d, anim: number, end: Matrix3d): Matrix3d => {
+    if (anim === 0)
+      return start;
+    if (anim === 1 || start.isAlmostEqual(end))
+      return end;
+    const startInverse = start.transpose();
+    const diff = end.multiplyMatrixMatrix(startInverse);
+    const angleAxis = diff.getAxisAndAngleOfRotation();
+    // istanbul ignore else
+    if (angleAxis.ok) {
+      const angle = Angle.createRadians(angleAxis.angle.radians * CubeNavigationAid._animationFn(anim));
+      const newDiff = Matrix3d.createRotationAroundVector(angleAxis.axis, angle);
+      // istanbul ignore else
+      if (newDiff) {
+        const newMatrix = newDiff.multiplyMatrixMatrix(start);
+        return newMatrix;
+      }
+    }
+    // istanbul ignore next
+    return end;
+  };
+
+  private static correctSmallNumber(value: number, tolerance: number): number {
+    return Math.abs(value) < tolerance ? 0 : value;
+  }
+
+  /**
+    * Snap coordinates of a vector to zero and to each other so that the vector prefers to be
+    * * perpendicular to a face of the unit cube.
+    * * or pass through a nearby vertex or edge of the unit cube.
+    * @param zVector existing z vector.
+    * @param tolerance tolerance to determine if a z vector component is close to zero or 1.
+    */
+  private static snapVectorToCubeFeatures(zVector: XYAndZ, tolerance: number): Vector3d {
+    const x = CubeNavigationAid.correctSmallNumber(zVector.x, tolerance);
+    let y = CubeNavigationAid.correctSmallNumber(zVector.y, tolerance);
+    let z = CubeNavigationAid.correctSmallNumber(zVector.z, tolerance);
+
+    const xx = Math.abs(x);
+    const yy = Math.abs(y);
+    const zz = Math.abs(z);
+
+    // adjust any adjacent pair of near equal values to the first.
+    // istanbul ignore next
+    if (Geometry.isSameCoordinate(xx, yy, tolerance)) {
+      y = Geometry.split3WaySign(y, -xx, xx, xx);
+    }
+    if (Geometry.isSameCoordinate(yy, zz, tolerance)) {
+      z = Geometry.split3WaySign(z, -yy, yy, yy);
+    }
+    if (Geometry.isSameCoordinate(xx, zz, tolerance)) {
+      z = Geometry.split3WaySign(z, -xx, xx, xx);
+    }
+    return Vector3d.create(x, y, z);
+  }
+
+  /**
+    * Adjust a worldToView matrix to favor both
+    * * direct view at faces, edges, and corners of a view cube.
+    * * heads up
+    * @param worldToView candidate matrix
+    * @param tolerance tolerance for cleaning up fuzz.  The default (1.0e-6) is appropriate if very dirty viewing operations are expected.
+    * @param result optional result.
+    */
+  private static snapWorldToViewMatrixToCubeFeatures(worldToView: Matrix3d, tolerance: number, result?: Matrix3d): Matrix3d {
+    const oldZ = worldToView.rowZ();
+    const newZ = CubeNavigationAid.snapVectorToCubeFeatures(oldZ, tolerance);
+    // If newZ is true up or down, it will have true 0 for x and y.
+    // special case this to take x direction from the input.
+    // istanbul ignore next
+    if (newZ.x === 0.0 && newZ.y === 0) {
+      const perpVector = worldToView.rowX();
+      result = Matrix3d.createRigidFromColumns(newZ, perpVector, AxisOrder.ZXY, result)!;
+    } else {
+      result = Matrix3d.createRigidViewAxesZTowardsEye(newZ.x, newZ.y, newZ.z, result);
+    }
+    // istanbul ignore else
+    if (result)
+      result.transposeInPlace();
+    return result;
+  }
+
+  private getArrowRotationAndFace(arrow: Pointer): { newRotation: Matrix3d, face: Face } {
+    const localRotationAxis = Vector3d.create(0, 0, 0);
+    switch (arrow) {
+      case Pointer.Up:
+        localRotationAxis.x = -1.0;
+        break;
+      case Pointer.Down:
+        localRotationAxis.x = 1.0;
+        break;
+      case Pointer.Left:
+        localRotationAxis.y = -1.0;
+        break;
+      default:
+        localRotationAxis.y = 1.0;
+        break;
+    }
+    const localRotation = Matrix3d.createRotationAroundVector(localRotationAxis, Angle.createDegrees(-90))!;
+    const newRotation = localRotation.multiplyMatrixMatrix(this.state.endRotMatrix);
+    CubeNavigationAid.snapWorldToViewMatrixToCubeFeatures(newRotation, DEFAULT_TOLERANCE, newRotation);
+    const face = CubeNavigationAid._getMatrixFace(newRotation);
+    return { newRotation, face };
+  }
+
+  private _onArrowClick = (arrow: Pointer) => {
+    if (this._isInteractionLocked()) {
+      // istanbul ignore next
+      this.props.onAnimationEnd?.();
+      return;
+    }
+    const { newRotation, face } = this.getArrowRotationAndFace(arrow);
+    this._animateRotation(newRotation, face);
+  };
+
+  private getArrowTitle(arrow: Pointer) {
+    const { face } = this.getArrowRotationAndFace(arrow);
+    return this._labels[face];
+  }
 
   private _lastClientXY: Vector2d = Vector2d.createZero();
   private _processDrag(mousePos: Vector2d) {
@@ -295,7 +463,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       const matZ = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, yaw);
 
       const mat = matX.multiplyMatrixMatrix(this.state.startRotMatrix).multiplyMatrixMatrix(matZ);
-      this._setRotation(mat, Face.None);
+      this._setRotation(mat, CubeNavigationAid._getMatrixFace(mat));
       if (!this.state.dragging)
         this.setState({ dragging: true });
     }
@@ -323,7 +491,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   private _onMouseUp = () => {
     if (this.state.dragging) {
       this.setState({ dragging: false });
-      ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, Face.None, true);
+      ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
     }
 
     // remove so event only triggers after this.onMouseStartDrag
@@ -360,7 +528,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
 
     if (this.state.dragging) {
       this.setState({ dragging: false });
-      ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, Face.None, true);
+      ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
     }
 
     window.removeEventListener("touchmove", this._onTouchMove);
@@ -372,10 +540,24 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       this.props.onAnimationEnd?.();
       return;
     }
-    const rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
+    const { endRotMatrix } = this.state;
+    let rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
     // istanbul ignore else
-    if (rotMatrix)
+    if (rotMatrix) {
+      // if isMatrixFace and user is clicking on top/bottom, the current matrix face must be top or bottom
+      if (!CubeNavigationAid._isMatrixFace(endRotMatrix) && (face === Face.Top || face === Face.Bottom)) {
+        const angleAxis = endRotMatrix.getAxisAndAngleOfRotation();
+        // istanbul ignore else
+        if (angleAxis.ok) {
+          const xAx = endRotMatrix.columnX();
+          const a = Math.atan2(xAx.y, xAx.x);
+          const r = Math.round(a * 2 / Math.PI) * Math.PI / 2; // round to quarter turn intervals
+          const rot = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(r));
+          rotMatrix = rot.multiplyMatrixMatrix(rotMatrix);
+        }
+      }
       this._animateRotation(rotMatrix, face);
+    }
     window.removeEventListener("mousemove", this._onMouseMove);
   };
 
@@ -417,19 +599,28 @@ export class NavCubeFace extends React.Component<NavCubeFaceProps> {
   public override render(): React.ReactNode {
     const { face, hoverMap, onFaceCellClick, onFaceCellHoverChange, label } = this.props;
     return (
-      <div className="nav-cube-face" data-testid={"nav-cube-face"}>
-        <FaceRow key={0} center={true}>
-          <FaceCell
-            key={0}
-            onFaceCellHoverChange={onFaceCellHoverChange}
-            onFaceCellClick={onFaceCellClick}
-            hoverMap={hoverMap}
-            vector={NavCubeFace.faceCellToPos(face, 0, 0)}
-            face={face}
-            center={true}>
-            {label}
-          </FaceCell>
-        </FaceRow>
+      <div className="nav-cube-face" data-testid="nav-cube-face">
+        {[-1, 0, 1].map((y: number) => {
+          return (
+            <FaceRow key={y} center={y === 0}>
+              {[-1, 0, 1].map((x: number) => {
+                return (
+                  <FaceCell
+                    key={x}
+                    onFaceCellHoverChange={onFaceCellHoverChange}
+                    onFaceCellClick={onFaceCellClick}
+                    hoverMap={hoverMap}
+                    vector={NavCubeFace.faceCellToPos(face, x, y)}
+                    face={face}
+                    center={x === 0}>
+                    {x === 0 && y === 0 &&
+                       label}
+                  </FaceCell>
+                );
+              })}
+            </FaceRow>
+          );
+        })}
       </div>
     );
   }
@@ -554,4 +745,49 @@ enum Pointer {
   Down,
   Left,
   Right,
+}
+
+const pointerIconClass: { [key: number]: string } = {
+  [Pointer.Up]: "icon-caret-down",
+  [Pointer.Down]: "icon-caret-up",
+  [Pointer.Left]: "icon-caret-right",
+  [Pointer.Right]: "icon-caret-left",
+};
+
+const pointerClass: { [key: number]: string } = {
+  [Pointer.Up]: "cube-up",
+  [Pointer.Down]: "cube-down",
+  [Pointer.Left]: "cube-left",
+  [Pointer.Right]: "cube-right",
+};
+
+interface PointerProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  visible: boolean;
+  pointerType: Pointer;
+  onArrowClick(pointer: Pointer): void;
+  title: string;
+  ["data-testid"]?: string;
+}
+
+class PointerButton extends React.Component<PointerProps> {
+  public override render(): React.ReactNode {
+    const { visible, pointerType, onArrowClick, title, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const classes = classnames(
+      "cube-pointer", "icon",
+      pointerClass[pointerType],
+      pointerIconClass[pointerType],
+      visible && "cube-visible",
+    );
+
+    return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+      <div className={classes} role="button" tabIndex={-1} title={title} {...props}
+        onClick={this._handleClick} />
+    );
+  }
+  private _handleClick = (event: React.MouseEvent) => {
+    const { pointerType } = this.props;
+    event.preventDefault();
+    this.props.onArrowClick(pointerType);
+  };
 }
