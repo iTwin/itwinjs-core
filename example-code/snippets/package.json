@@ -32,8 +32,8 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/oidc-signin-tool": "^3.2.2",
+    "@itwin/eslint-plugin": "nightly",
+    "@itwin/oidc-signin-tool": "~3.6.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",

@@ -17,6 +17,9 @@ parameters:
     default: $(Build.SourceBranch)
   - name: targetBranch
     default: $(System.PullRequest.TargetBranch)
+  - name: runRushAudit
+    type: boolean
+    default: true
 
 steps:
   - task: NodeTool@0
@@ -39,7 +42,7 @@ steps:
 
       Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
     displayName: Set build number
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'))
 
   - script: node common/scripts/set-rush-write-cache-variables.js
     displayName: "Set Rush Write Cache Variables"
@@ -60,7 +63,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), eq('${{ parameters.runRushAudit }}', 'true'), ne('${{ parameters.targetBranch }}', 'imodel02'))
   - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}

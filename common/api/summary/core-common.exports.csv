@@ -806,6 +806,7 @@ internal;TileOptions
 internal;TileProps
 internal;TileReadError 
 internal;TileReadStatus
+alpha;Tileset3dSchema
 internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps

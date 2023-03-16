@@ -106,6 +106,7 @@ public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 alpha;RealityDataStatus
 internal;RepositoryStatus
+public;RequireAtLeastOne
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray

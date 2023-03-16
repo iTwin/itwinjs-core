@@ -52,7 +52,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodels-access-backend": "^2.2.1",
     "@itwin/imodels-client-authoring": "^2.2.1",
-    "@itwin/oidc-signin-tool": "^3.2.2",
+    "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/perf-tools": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
     "sinon": "^9.0.2",
@@ -69,7 +69,7 @@
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "nightly",
     "@itwin/build-tools": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

@@ -37,7 +37,6 @@ import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
-import { ChannelRootAspectProps } from '@itwin/core-common';
 import { ClipVector } from '@itwin/core-geometry';
 import { CloudStorageContainerDescriptor } from '@itwin/core-common';
 import { CloudStorageContainerUrl } from '@itwin/core-common';
@@ -664,16 +663,56 @@ export class ChangeSummaryManager {
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
-// @public
+// @internal (undocumented)
+export class ChannelAdmin implements ChannelControl {
+    constructor(_iModel: IModelDb);
+    // (undocumented)
+    addAllowedChannel(channelKey: ChannelKey): void;
+    // (undocumented)
+    static readonly channelClassName = "bis:ChannelRootAspect";
+    // (undocumented)
+    getChannelKey(elementId: Id64String): ChannelKey;
+    // (undocumented)
+    get hasChannels(): boolean;
+    // (undocumented)
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    // (undocumented)
+    removeAllowedChannel(channelKey: ChannelKey): void;
+    static readonly sharedChannel = "shared";
+    // (undocumented)
+    verifyChannel(modelId: Id64String): void;
+}
+
+// @beta
+export interface ChannelControl {
+    addAllowedChannel(channelKey: ChannelKey): void;
+    getChannelKey(elementId: Id64String): ChannelKey;
+    get hasChannels(): boolean;
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    removeAllowedChannel(channelKey: ChannelKey): void;
+    // @internal (undocumented)
+    verifyChannel(modelId: Id64String): void;
+}
+
+// @beta
+export type ChannelKey = string;
+
+// @public (undocumented)
 export class ChannelRootAspect extends ElementUniqueAspect {
-    // @internal
-    constructor(props: ChannelRootAspectProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static insert(iModel: IModelDb, ownerId: Id64String, ownerDescription: string): void;
-    owner: string;
-    // @internal (undocumented)
-    toJSON(): ChannelRootAspectProps;
+    // @deprecated
+    static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
 }
 
 // @internal @deprecated (undocumented)
@@ -1778,15 +1817,15 @@ export class ElementAspect extends Entity {
     // (undocumented)
     element: RelatedElement;
     // @beta
-    protected static onDelete(_arg: OnAspectIdArg): void;
+    protected static onDelete(arg: OnAspectIdArg): void;
     // @beta
     protected static onDeleted(_arg: OnAspectIdArg): void;
     // @beta
-    protected static onInsert(_arg: OnAspectPropsArg): void;
+    protected static onInsert(arg: OnAspectPropsArg): void;
     // @beta
     protected static onInserted(_arg: OnAspectPropsArg): void;
     // @beta
-    protected static onUpdate(_arg: OnAspectPropsArg): void;
+    protected static onUpdate(arg: OnAspectPropsArg): void;
     // @beta
     protected static onUpdated(_arg: OnAspectPropsArg): void;
     // @internal (undocumented)
@@ -2366,7 +2405,7 @@ export class FunctionalPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class FunctionalSchema extends Schema {
-    // @deprecated (undocumented)
+    // (undocumented)
     static importSchema(iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
@@ -2749,6 +2788,8 @@ export abstract class IModelDb extends IModel {
     protected beforeClose(): void;
     // @internal
     cancelSnap(sessionId: string): void;
+    // @beta (undocumented)
+    readonly channels: ChannelControl;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
@@ -3965,6 +4006,7 @@ export { NativeLoggerCategory }
 // @beta
 export interface OnAspectArg {
     iModel: IModelDb;
+    model: Id64String;
 }
 
 // @beta
@@ -4000,7 +4042,9 @@ export interface OnElementArg {
 
 // @beta
 export interface OnElementIdArg extends OnElementArg {
+    federationGuid: GuidString;
     id: Id64String;
+    model: Id64String;
 }
 
 // @beta
