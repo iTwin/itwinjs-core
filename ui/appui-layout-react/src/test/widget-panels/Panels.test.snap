@@ -69,6 +69,7 @@ exports[`WidgetPanels should render widget content 1`] = `
                 data-item-id="t1"
                 data-item-type="widget-tab"
                 role="tab"
+                tabindex="0"
                 title=""
               >
                 <span />
