@@ -169,6 +169,8 @@ export class FeatureTable extends IndexMap<Feature> {
 /** @alpha */
 export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
 
+const scratchPackedFeature = PackedFeature.create();
+
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
  * wherein each feature occupies 3 32-bit integers.
@@ -256,7 +258,7 @@ export class PackedFeatureTable {
 
   /** Retrieve the Feature associated with the specified index. */
   public getFeature(featureIndex: number): Feature {
-    const packed = this.getPackedFeature(featureIndex);
+    const packed = this.getPackedFeature(featureIndex, scratchPackedFeature);
     const elemId = Id64.fromUint32Pair(packed.elementId.lower, packed.elementId.upper);
     const subcatId = Id64.fromUint32Pair(packed.subCategoryId.lower, packed.subCategoryId.upper);
     return new Feature(elemId, subcatId, packed.geometryClass);
@@ -292,8 +294,7 @@ export class PackedFeatureTable {
   }
 
   /** @internal */
-  public getPackedFeature(featureIndex: number, result?: PackedFeature): PackedFeature {
-    result = result ?? PackedFeature.create();
+  public getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature {
     assert(featureIndex < this.numFeatures);
 
     const index32 = 3 * featureIndex;
