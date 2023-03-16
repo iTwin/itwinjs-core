@@ -160,7 +160,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Return a modified copy of `this` Transform so that its `matrix` part is rigid (`origin` part is untouched).
-   * * For details of how the matrix is modified to rigid, see documentation of `Matrix3d.axisOrderCrossProductsInPlace`
+   * * @see [[Matrix3d.axisOrderCrossProductsInPlace]] documentation for details of how the matrix is modified to rigid.
    */
   public cloneRigid(axisOrder: AxisOrder = AxisOrder.XYZ): Transform | undefined {
     const modifiedMatrix = Matrix3d.createRigidFromMatrix3d(this.matrix, axisOrder);
@@ -168,7 +168,7 @@ export class Transform implements BeJSONFunctions {
       return undefined;
     return new Transform(this.origin.cloneAsPoint3d(), modifiedMatrix);
   }
-  /** Create a Transform with the given `origin` and `matrix`. */
+  /** Create a Transform with the given `origin` and `matrix`. Inputs are captured, not cloned. */
   public static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform {
     if (!origin)
       origin = Point3d.createZero();
@@ -179,7 +179,7 @@ export class Transform implements BeJSONFunctions {
     }
     return new Transform(origin, matrix);
   }
-  /** Create a Transform with complete contents given */
+  /** Create a Transform with complete contents given. `q` inputs make the matrix and `a` inputs make the origin */
   public static createRowValues(
     qxx: number, qxy: number, qxz: number, ax: number,
     qyx: number, qyy: number, qyz: number, ay: number,
@@ -202,6 +202,8 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Create a Transform with translation provided by x,y,z parts.
+   * * Translation Transform maps any vector `v` to `v + p` where `p = (x,y,z)`
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/MoveCube
    * @param x x part of translation
    * @param y y part of translation
    * @param z z part of translation
@@ -213,6 +215,8 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Create a Transform with specified `translation` part.
+   * * Translation Transform maps any vector `v` to `v + translation`
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/MoveCube
    * @param translation x,y,z parts of the translation
    * @param result optional pre-allocated Transform
    * @returns new or updated transform
@@ -259,6 +263,7 @@ export class Transform implements BeJSONFunctions {
    * local-to-world mapping.
    * * This function is a closely related to `createFixedPointAndMatrix` whose point input is the fixed point
    * of the world-to-world transformation.
+   * * If origin is `undefined`, (0,0,0) is used. If matrix is `undefined` the identity matrix is used.
    */
   public static createOriginAndMatrix(
     origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform
@@ -294,7 +299,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Create a Transform such that its `matrix` part is rigid.
-   * * For details of how the matrix is created to be rigid, see documentation of `Matrix3d.createRigidFromColumns`
+   * @see [[Matrix3d.createRigidFromColumns]] for details of how the matrix is created to be rigid.
    */
   public static createRigidFromOriginAndColumns(
     origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform
@@ -308,10 +313,10 @@ export class Transform implements BeJSONFunctions {
       return result;
     }
     /**
-     * We don't want to pass "origin" to createRefs because createRefs does not clone "origin" and use its reference.
-     * That means if "origin" is changed via Transform at any point, the initial "origin" passed by the user is also
-     * changed. To avoid that, we pass undefined to createRefs. This would cause createRefs to create a new "origin"
-     * equals (0,0,0) which then we set it to the "origin" passed by user in the next line.
+     * We don't want to pass "origin" to createRefs because createRefs does not clone "origin". That means if "origin"
+     * is changed via Transform at any point, the initial "origin" passed by the user is also changed. To avoid that,
+     * we pass "undefined" to createRefs so that it allocates a new point which then we set it to the "origin" which
+     * is passed by user in the next line.
      */
     result = Transform.createRefs(undefined, matrix);
     result._origin.setFromPoint3d(origin);
@@ -336,20 +341,21 @@ export class Transform implements BeJSONFunctions {
     return Transform.createRefs(undefined, matrix.clone());
   }
   /**
-   * Create a transform with the specified `matrix` and points `a` and `b`. The returned Transform, transforms
-   * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`) so transforms point `a` to 'b'.
+   * Create a transform with the specified `matrix` and points `a` and `b`. The returned Transform, maps
+   * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`), so maps `a` to 'b'.
    */
   public static createMatrixPickupPutdown(
     matrix: Matrix3d, a: Point3d, b: Point3d, result?: Transform
   ): Transform {
-    // we define the origin o = b - M*a so Tp = M*p + o = M*p + (b - M*a) = M*(x-a) + b
+    // we define the origin o = b - M*a so Tp = M*p + o = M*p + (b - M*a) = M*(p-a) + b
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(b, matrix, a);
     return Transform.createRefs(origin, matrix.clone(), result);
   }
   /**
    * Create a Transform which leaves the fixedPoint unchanged and scales everything else around it by
-   * a single scale factor. The returned Transform, transforms a point `p` to `M*p + (f - M*f)`
+   * a single scale factor. The returned Transform, maps a point `p` to `M*p + (f - M*f)`
    * where `f` is the fixedPoint and M is the scale matrix (i.e., `Tp = M*(p-f) + f`).
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ScaleCube
    */
   public static createScaleAboutPoint(fixedPoint: Point3d, scale: number, result?: Transform): Transform {
     const matrix = Matrix3d.createScale(scale, scale, scale);
@@ -391,8 +397,7 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
   }
   /**
-   * Multiply a specific row (component) of the transform matrix times xyz and add it to the origin element
-   * at the same row. Return the result.
+   * Multiply a specific row (component) of the transform 3x4 instance times (x,y,z,1). Return the result.
    */
   public multiplyComponentXYZ(componentIndex: number, x: number, y: number, z: number = 0): number {
     const coffs = this._matrix.coffs;
@@ -400,8 +405,7 @@ export class Transform implements BeJSONFunctions {
     return this.origin.at(componentIndex) + (coffs[idx] * x) + (coffs[idx + 1] * y) + (coffs[idx + 2] * z);
   }
   /**
-   * Multiply a specific row (component) of the transform matrix times xyz and add it to the origin element
-   * at the same row times w. Return the result.
+   * Multiply a specific row (component) of the transform 3x4 instance times (x,y,z,w). Return the result.
    */
   public multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number {
     const coffs = this._matrix.coffs;
@@ -409,31 +413,38 @@ export class Transform implements BeJSONFunctions {
     return (this.origin.at(componentIndex) * w) + (coffs[idx] * x) + (coffs[idx + 1] * y) + (coffs[idx + 2] * z);
   }
   /**
-   * If `p = (x,y,z)` then transform is `Tp = M*p + o*w`. This function returns the transformed point as a new
-   * point4d (`Tp` as first 3 elements and `w` as last element) or in the pre-allocated result (if result is given).
+   * Transform the homogeneous point. Return as a new `Point4d`, or in the pre-allocated result (if result is given).
+   * * If `p = (x,y,z)` then this method computes `Tp = M*p + o*w` and returns the `Point4d` formed by `Tp` in the
+   * first three coordinates, and `w` in the fourth.
+   * * Logically, this is multiplication by the 4x4 matrix formed from the 3x4 instance augmented with fourth row 0001.
    */
   public multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     return Matrix3d.xyzPlusMatrixTimesWeightedCoordinates(this._origin, this._matrix, x, y, z, w, result);
   }
   /**
-   * If `p = (x,y,z)` then transform is `Tp = M*p + o*w`. This function returns the transformed point as a new
-   * Float64Array with size 4 (`Tp` as first 3 elements and `w` as last element) or in the pre-allocated result
-   * (if result is given).
+   * Transform the homogeneous point. Return as new `Float64Array` with size 4, or in the pre-allocated result (if
+   * result is given).
+   * * If `p = (x,y,z)` then this method computes `Tp = M*p + o*w` and returns the `Float64Array` formed by `Tp`
+   * in the first 3 numbers of the array, and `w` as the fourth.
+   * * Logically, this is multiplication by the 4x4 matrix formed from the 3x4 instance augmented with fourth row 0001.
    */
   public multiplyXYZWToFloat64Array(x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array {
     return Matrix3d.xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, w, result);
   }
   /**
-   * If `p = (x,y,z)` then transform is `Tp = M*p + o`. This function returns the transformed point as a new
-   * Float64Array with size 3 (`Tp` as 3 elements) or in the pre-allocated result (if result is given).
+   * * Transform the point. Return as new `Float64Array` with size 3, or in the pre-allocated result (if result is given).
+   * * If `p = (x,y,z)` then this method computes `Tp = M*p + o` and returns it as 3 elements of the array.
    */
   public multiplyXYZToFloat64Array(x: number, y: number, z: number, result?: Float64Array): Float64Array {
     return Matrix3d.xyzPlusMatrixTimesCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, result);
   }
   /**
-   * Treat the 3x3 `matrix` and `origin` as upper 3x4 part of a 4x4 matrix, with 0001 as the final row. Now multiply
-   * the transposed of this 4x4 matrix by Point4d given as xyzw. Return as a new point4d (`M*p` as first 3 elements
-   * and `o*p + w` as last element where `p = (x,y,z)`) or in the pre-allocated result (if result is given).
+   * Multiply the homogeneous point by the transpose if `this` Transform. Return as a new `Point4d` or in the
+   * pre-allocated result (if result is given).
+   * * If `p = (x,y,z)` then this method computes `M^t*p` and returns it in the first three coordinates of the `Point4d`,
+   * and `o*p + w` in the fourth.
+   * * Logically, this is multiplication by the transpose of the 4x4 matrix formed from the 3x4 instance augmented with
+   * fourth row 0001.
    */
   public multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     const coffs = this._matrix.coffs;
@@ -458,9 +469,9 @@ export class Transform implements BeJSONFunctions {
       this.multiplyPoint3dArrayInPlace(chain);
   }
   /**
-   * If for a point `p` we have `Tp = M*p + o = point` (where `point` is the transformed point), then
-   * `p = MInverse * (point - o)`. This function returns the original point `p` if `point` is the
-   * transformed point (`Tp = point`).
+   * Multiply the point by the inverse Transform.
+   * * If for a point `p` we have `Tp = M*p + o = q`, then `p = MInverse*(q - o) = TInverse q` so `TInverse`
+   * Transform has matrix part `MInverse` and origin part `-MInverse*o`.
    * * Return as a new point or in the optional `result`.
    * * Returns `undefined` if the `matrix` part if this Transform is singular.
    */
@@ -473,9 +484,13 @@ export class Transform implements BeJSONFunctions {
     );
   }
   /**
-   * If for a point `p` we have `Tp = M*p + w*o = weightedPoint` (where `weightedPoint` is the transformed point), then
-   * `p = MInverse * (weightedPoint - w*o)`. This function returns a Point4d where first 3 elements are the original
-   *  point `p` if `weightedPoint` is the transformed point (`Tp = weightedPoint`) and the last element is `w`.
+   * Multiply the homogenous point by the inverse Transform.
+   * * If for a point `p` we have `Tp = M*p + o = q`, then `p = MInverse*(q - o) = TInverse q` so `TInverse` Transform
+   * has matrix part `MInverse` and origin part `-MInverse*o`.
+   * * This method computes `TInverse p = MInverse*p - w*MInverse*o` and returns the `Point4d` formed by `TInverse*p`
+   * in the first three coordinates, and `w` in the fourth.
+   * * Logically, this is multiplication by the inverse of the 4x4 matrix formed from the 3x4 instance augmented with
+   * fourth row 0001. This is equivalent to the 4x4 matrix formed in similar fashion from the inverse of this instance.
    * * Return as a new point or in the optional `result`.
    * * Returns `undefined` if the `matrix` part if this Transform is singular.
    */
@@ -490,9 +505,9 @@ export class Transform implements BeJSONFunctions {
     );
   }
   /**
-   * If for a point `p = (x,y,z)` we have `Tp = M*p + o = point` (where `point` is the transformed point), then
-   * `p = MInverse * (point - o)`. This function returns the original point `p` if `point` is the transformed
-   * point (`Tp = point`).
+   * Multiply the point by the inverse Transform.
+   * * If for a point `p` we have `Tp = M*p + o = q`, then `p = MInverse*(q - o) = TInverse q` so `TInverse` Transform
+   * has matrix part `MInverse` and origin part `-MInverse*o`.
    * * Return as a new point or in the optional `result`.
    * * Returns `undefined` if the `matrix` part if this Transform is singular.
    */
@@ -535,46 +550,46 @@ export class Transform implements BeJSONFunctions {
     return numSource;
   }
   /**
-   * If for each point `p` we have `Tp = M*p + o = point` (where `point` is the transformed point), then
-   * `p = MInverse * (point - o)`. This function returns the array of original points `p[]` if `points`
-   * is the array of transformed point (`Tp = point` for each `p` and `point`).
-   * * If `results` is given, resize it to match the input `points` array and update it with original points `p[]`.
-   * * If `results` is not given, return a new array.
+   * Multiply each point in the array by the inverse of `this` Transform.
+   * * For a transform `T = [M o]` the inverse transform `T' = [M' -M'o]` exists if and only if `M` has an inverse
+   * `M'`. Indeed, for any point `p`, we have `T'Tp = T'(Mp + o) = M'(Mp + o) - M'o = M'Mp + M'o - M'o = p.`
+   * * If `result` is given, resize it to match the input `points` array and update it with original points `p[]`.
+   * * If `result` is not given, return a new array.
    * * Returns `undefined` if the `matrix` part if this Transform is singular.
    */
-  public multiplyInversePoint3dArray(points: Point3d[], results?: Point3d[]): Point3d[] | undefined {
+  public multiplyInversePoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[] | undefined {
     if (!this._matrix.computeCachedInverse(true))
       return undefined;
     const originX = this.origin.x;
     const originY = this.origin.y;
     const originZ = this.origin.z;
-    if (results) {
-      const n = Transform.matchArrayLengths(points, results, Point3d.createZero);
+    if (result) {
+      const n = Transform.matchArrayLengths(points, result, Point3d.createZero);
       for (let i = 0; i < n; i++)
         this._matrix.multiplyInverseXYZAsPoint3d(
           points[i].x - originX,
           points[i].y - originY,
           points[i].z - originZ,
-          results[i]
+          result[i]
         );
+      return result;
     }
-    results = [];
+    result = [];
     for (const point of points)
-      results.push(
+      result.push(
         this._matrix.multiplyInverseXYZAsPoint3d(
           point.x - originX,
           point.y - originY,
           point.z - originZ
         )!
       );
-    return results;
+    return result;
   }
   /**
-   * If for each point `p` we have `Tp = M*p + o = point` (where `point` is the transformed point), then
-   * `p = MInverse * (point - o)`. This function calculates the array of original points `p[]` if `points`
-   * is the array of transformed point (`Tp = point` for each `p` and `point`) and replaces `points`
-   * with the array of original points.
-   * * Returns `true` if the `matrix` part if this Transform is invertible and `false if singular.
+   * Multiply each point in the array by the inverse of `this` Transform in place.
+   * * For a transform `T = [M o]` the inverse transform `T' = [M' -M'o]` exists if and only if `M` has an inverse
+   * `M'`. Indeed, for any point `p`, we have `T'Tp = T'(Mp + o) = M'(Mp + o) - M'o = M'Mp + M'o - M'o = p.`
+   * * Returns `true` if the `matrix` part if this Transform is invertible and `false` if singular.
    */
   public multiplyInversePoint3dArrayInPlace(points: Point3d[]): boolean {
     if (!this._matrix.computeCachedInverse(true))
@@ -648,7 +663,8 @@ export class Transform implements BeJSONFunctions {
   /**
    * Calculate `transformA * transformB` and store it into the calling instance (`this`).
    * * **Note:** If `transformA = [A   a]` and `transformB = [B   b]` then `transformA * transformB` is defined as
-   * `[A*B   Ab+a]`. See `multiplyTransformTransform` doc for math details.
+   * `[A*B   Ab+a]`.
+   * * @see [[multiplyTransformTransform]] documentation for math details.
    * @param transformA first operand
    * @param transformB second operand
    */
@@ -663,19 +679,17 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Multiply `this` Transform times `other` Transform.
-   * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as [A*B   Ab+a].
-   * That's because we create a 4x4 matrix for each Transform with the 3x3 `matrix` and `origin`
-   * as upper 3x4 part of a 4x4 matrix and 0001 as the final row. Then we multiply those two 4x4 matrixes:
+   * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as [A*B   Ab+a] because:
    * ```
    * equation
    * \begin{matrix}
-   *    \text{`this` Transform with `matrix` part }\bold{A}\text{ and `origin` part }\bold{a} & \blockTransform{A}{a}\\
-   *    \text{`other` Transform with `matrix` part }\bold{B}\text{ and `origin` part }\bold{b} & \blockTransform{B}{b} \\
+   *    \text{this Transform with matrix part }\bold{A}\text{ and origin part }\bold{a} & \blockTransform{A}{a}\\
+   *    \text{other Transform with matrix part }\bold{B}\text{ and origin part }\bold{b} & \blockTransform{B}{b} \\
    * \text{product}& \blockTransform{A}{a}\blockTransform{B}{b}=\blockTransform{AB}{Ab + a}
    * \end{matrix}
    * ```
    * @param other the 'other` Transform to be multiplied to `this` Transform.
-   * @param result optional preallocated result to reuse.
+   * @param result optional preallocated `result` to reuse.
    */
   public multiplyTransformTransform(other: Transform, result?: Transform) {
     if (!result)
@@ -688,20 +702,17 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Multiply `this` Transform times `other` Matrix3d (considered to be a Transform with 0 `origin`).
-   * **Note:** If `this = [A   a]`, then we promote `other` matrix to be a Transform [B   0].
-   * Then `this * other` is defined as [A*B   a]. That's because we create a 4x4 matrix for each Transform
-   * with the 3x3 `matrix` and `origin` as upper 3x4 part of a 4x4 matrix and 0001 as the final row. Then we
-   * multiply those two 4x4 matrixes:
+   * * **Note:** If `this = [A   a]` and `other = [B   0]`, then `this * other` is defined as [A*B   a] because:
    * ```
    * equation
    * \begin{matrix}
-   *    \text{`this` Transform with `matrix` part }\bold{A}\text{ and `origin` part }\bold{a} & \blockTransform{A}{a}\\
-   *    \text{`other` matrix }\bold{B}\text{ promoted to block Transform} & \blockTransform{B}{0} \\
+   *    \text{this Transform with matrix part }\bold{A}\text{ and origin part }\bold{a} & \blockTransform{A}{a}\\
+   *    \text{other matrix }\bold{B}\text{ promoted to block Transform} & \blockTransform{B}{0} \\
    * \text{product}& \blockTransform{A}{a}\blockTransform{B}{0}=\blockTransform{AB}{a}
    * \end{matrix}
    * ```
    * @param other the `other` Matrix3d to be multiplied to `this` Transform.
-   * @param result optional preallocated result to reuse.
+   * @param result optional preallocated `result` to reuse.
    */
   public multiplyTransformMatrix3d(other: Matrix3d, result?: Transform): Transform {
     if (!result)
@@ -714,13 +725,13 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * Return the Range of the transformed corners.
+   * Return the range of the transformed corners.
    * * The 8 corners are transformed individually.
    * * **Note:** Suppose you have a geometry, a range box around that geometry, and your Transform is a rotation.
    * If you rotate the range box and recompute a new range box around the rotated range box, then the new range
    * box will have a larger volume than the original range box. However, if you rotate the geometry itself and
    * then recompute the range box, it will be a tighter range box around the rotated geometry. `multiplyRange`
-   * function creates the larger range box because it only has access to the range box and the geometry itself.
+   * function creates the larger range box because it only has access to the range box and not the geometry itself.
    */
   public multiplyRange(range: Range3d, result?: Range3d): Range3d {
     if (range.isNull)
@@ -744,7 +755,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Return a Transform which is the inverse of `this` Transform.
-   * * If `transform = [M   o]` then `transformInverse = [MInverse   MInverse*-o]`
+   * * If `transform = [M   o]` then `transformInverse = [MInverse   -MInverse*o]`
    * * Return `undefined` if this Transform's matrix is singular.
    */
   public inverse(result?: Transform): Transform | undefined {
@@ -762,14 +773,14 @@ export class Transform implements BeJSONFunctions {
     );
   }
   /**
-   * Initialize 2 Transforms: First Transform maps a box (axis aligned) specified by `min` and `max` to
-   * the unit box specified by 000 and 111 and inverse of it. Second Transform is the reverse of first.
-   * @param min the min corner of the box
-   * @param max the max corner of the box
-   * @param npcToGlobal maps global (the unit box specified by 000 and 111) to NPC (a box specified by `min`
-   * and `max`). Object created by caller, re-initialized here.
-   * @param globalToNpc maps NPC (a box specified by `min` and `max`) to global (the unit box specified by
-   * 000 and 111). Object created by caller, re-initialized here.
+   * Initialize 2 Transforms that map between the unit box (specified by 000 and 111) and the range box specified
+   * by the input points.
+   * @param min the min corner of the range box
+   * @param max the max corner of the range box
+   * @param npcToGlobal maps NPC coordinates into range box coordinates. Specifically, maps 000 to `min` and maps
+   * 111 to `max`. This Transform is the inverse of `globalToNpc`. Object created by caller, re-initialized here.
+   * @param globalToNpc maps range box coordinates into NPC coordinates. Specifically, maps `min` to 000 and maps
+   * `max` to 111. This Transform is the inverse of `npcToGlobal`. Object created by caller, re-initialized here.
    * * NPC stands for `Normalized Projection Coordinate`
    */
   public static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform): void {

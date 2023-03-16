@@ -13,7 +13,7 @@ import { Matrix3d } from "./Matrix3d";
 /* cspell:word cxcz, cxsz, cxcy, cxsy, sxcz, sxsz, sxcy, sxsy, cycz, cysz, sycz, sysz */
 
 /**
- * represents a non-trivial rotation using three simple axis rotation angles and an order in which to apply them.
+ * Represents a non-trivial rotation using three simple axis rotation angles and an order in which to apply them.
  * * This class accommodates application-specific interpretation of "multiplying 3 rotation matrices" with regard to
  *   * Whether a "vector" is a "row" or a "column"
  *   * The order in which the X,Y,Z rotations are applied.
@@ -81,7 +81,7 @@ export class OrderedRotationAngles {
   public get zRadians(): number {
     return this._z.radians;
   }
-  /** the flag controlling whether vectors are treated as rows or as columns */
+  /** The flag controlling whether vectors are treated as rows or as columns */
   public static get treatVectorsAsColumns(): boolean {
     return OrderedRotationAngles._sTreatVectorsAsColumns;
   }
@@ -186,7 +186,7 @@ export class OrderedRotationAngles {
    * * In the failure case the method's return value is `undefined`.
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with
    * a set of angles.
-   * */
+   */
   public static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles):
     OrderedRotationAngles | undefined {
     // treat vector as columns

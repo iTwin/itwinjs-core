@@ -249,6 +249,7 @@ export class Checker {
 
     return false;
   }
+  /** fails if dataA is undefined */
   public testDefined(dataA: any, ...params: any[]): boolean {
     if (dataA !== undefined)
       return this.announceOK();
@@ -434,6 +435,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
+  /** fails if value is undefined, null, NaN, empty string, 0, or false. */
   public testPointer<T extends any>(value: T | undefined, ...params: any[]): value is T {
     if (value)
       return this.announceOK();
