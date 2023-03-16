@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  IModelConnection, SpatialTileTreeReferences, TileTreeReference,
+  AttachToViewportArgs, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeReference,
 } from "@itwin/core-frontend";
-import { createBatchedTileTreeReference } from "./BatchedTileTreeReference";
+import { BatchedTileTreeReference } from "./BatchedTileTreeReference";
 
 class TreeRefs implements SpatialTileTreeReferences {
-  private readonly _treeRef: TileTreeReference;
+  private readonly _treeRef: BatchedTileTreeReference;
 
-  public constructor(treeRef: TileTreeReference) {
+  public constructor(treeRef: BatchedTileTreeReference) {
     this._treeRef = treeRef;
   }
 
@@ -20,6 +20,15 @@ class TreeRefs implements SpatialTileTreeReferences {
   }
 
   public update(): void {
+    this._treeRef.onModelSelectorChanged();
+  }
+
+  public attachToViewport(args: AttachToViewportArgs): void {
+    this._treeRef.attachToViewport(args);
+  }
+
+  public detachFromViewport(): void {
+    this._treeRef.detachFromViewport();
   }
 
   public setDeactivated(): void {
@@ -28,7 +37,7 @@ class TreeRefs implements SpatialTileTreeReferences {
 }
 
 /** @internal */
-export function createBatchedSpatialTileTreeReferences(iModel: IModelConnection, computeBaseUrl: (iModel: IModelConnection) => URL): SpatialTileTreeReferences {
-  const treeRef = createBatchedTileTreeReference(iModel, computeBaseUrl(iModel));
+export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: (iModel: IModelConnection) => URL): SpatialTileTreeReferences {
+  const treeRef = BatchedTileTreeReference.create(view, computeBaseUrl(view.iModel));
   return new TreeRefs(treeRef);
 }
