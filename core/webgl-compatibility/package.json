@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.7.0-dev.1",
+  "version": "3.7.0-dev.2",
   "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -54,7 +54,7 @@
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~4.4.0",
-    "webpack": "^5.64.4"
+    "webpack": "^5.76.0"
   },
   "eslintConfig": {
     "plugins": [
