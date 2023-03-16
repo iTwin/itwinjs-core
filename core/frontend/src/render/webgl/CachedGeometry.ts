@@ -788,6 +788,95 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
+export class EDLCalcBasicGeometry extends TexturedViewportQuadGeometry {
+  public readonly texInfo = new Float32Array(3);
+
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, width: number, height: number) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EDLCalcBasicGeometry(params, [colorBuffer, depthBuffer], width, height);
+  }
+
+  public get colorTexture() { return this._textures[0]; }
+  public get depthTexture() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], width: number, height: number) {
+    super(params, TechniqueId.EDLCalcBasic, textures);
+    this.texInfo[0] = 1.0 / width;
+    this.texInfo[1] = 1.0 / height;
+    this.texInfo[2] = 1.0;
+  }
+}
+
+/** @internal */
+export class EDLCalcFullGeometry extends TexturedViewportQuadGeometry {
+  public readonly texInfo = new Float32Array(3);
+
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number, width: number, height: number) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EDLCalcFullGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
+  }
+
+  public get colorTexture() { return this._textures[0]; }
+  public get depthTexture() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number, width: number, height: number) {
+    super(params, TechniqueId.EDLCalcFull, textures);
+    this.texInfo[0] = 1.0 / width;
+    this.texInfo[1] = 1.0 / height;
+    this.texInfo[2] = scale;
+  }
+}
+
+/** @internal */
+export class EDLFilterGeometry extends TexturedViewportQuadGeometry {
+  public readonly texInfo = new Float32Array(3);
+
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number, width: number, height: number) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EDLFilterGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
+  }
+
+  public get colorTexture() { return this._textures[0]; }
+  public get depthTexture() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number, width: number, height: number) {
+    super(params, TechniqueId.EDLFilter, textures);
+    this.texInfo[0] = 1.0 / width;
+    this.texInfo[1] = 1.0 / height;
+    this.texInfo[2] = scale;
+  }
+}
+
+/** @internal */
+export class EDLMixGeometry extends TexturedViewportQuadGeometry {
+
+  public static createGeometry(colorTexture1: WebGLTexture, colorTexture2: WebGLTexture, colorTexture4: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EDLMixGeometry(params, [colorTexture1, colorTexture2, colorTexture4]);
+  }
+
+  public get colorTexture1() { return this._textures[0]; }
+  public get colorTexture2() { return this._textures[1]; }
+  public get colorTexture4() { return this._textures[2]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.EDLMix, textures);
+  }
+}
+
+/** @internal */
 export class EVSMGeometry extends TexturedViewportQuadGeometry {
   public readonly stepSize = new Float32Array(2);
 

@@ -40,12 +40,16 @@ export interface OnElementPropsArg extends OnElementArg {
   props: ElementProps;
 }
 
-/** Argument for the `Element.onXxx` static methods that only supply the Id of the affected Element.
+/** Argument for the `Element.onXxx` static methods that notify of operations to an existing Element supplying its Id, ModelId and FederationGuid.
  * @beta
  */
 export interface OnElementIdArg extends OnElementArg {
   /** The Id of the Element affected by this method */
   id: Id64String;
+  /** The ModelId of the element affected by this method */
+  model: Id64String;
+  /** The federationGuid of the element affected by this method */
+  federationGuid: GuidString;
 }
 
 /** Argument for the `Element.onChildXxx` static methods
@@ -144,9 +148,11 @@ export class Element extends Entity {
    */
   protected static onInsert(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
-    iModel.locks.checkSharedLock(props.model, "model", "insert"); // inserting requires shared lock on model
+    const operation = "insert";
+    iModel.channels.verifyChannel(arg.props.model);
+    iModel.locks.checkSharedLock(props.model, "model", operation); // inserting requires shared lock on model
     if (props.parent)   // inserting requires shared lock on parent, if present
-      iModel.locks.checkSharedLock(props.parent.id, "parent", "insert");
+      iModel.locks.checkSharedLock(props.parent.id, "parent", operation);
     iModel.codeService?.verifyCode(arg);
   }
 
@@ -166,8 +172,10 @@ export class Element extends Entity {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
-    arg.iModel.codeService?.verifyCode(arg);
+    const { iModel, props } = arg;
+    iModel.channels.verifyChannel(props.model);
+    iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    iModel.codeService?.verifyCode(arg);
   }
 
   /** Called after an Element was updated.
@@ -184,6 +192,7 @@ export class Element extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
+    arg.iModel.channels.verifyChannel(arg.model);
     arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
 
@@ -330,8 +339,10 @@ export class Element extends Entity {
       val.code = this.code;
 
     val.model = this.model;
-    val.userLabel = this.userLabel;
-    val.federationGuid = this.federationGuid;
+    if (undefined !== this.userLabel) // NOTE: blank string should be included in JSON
+      val.userLabel = this.userLabel;
+    if (this.federationGuid)
+      val.federationGuid = this.federationGuid;
     if (this.parent)
       val.parent = this.parent;
 
@@ -342,7 +353,7 @@ export class Element extends Entity {
   }
 
   /** Collect the Ids of this element's *references* at this level of the class hierarchy.
-   * @deprecated use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   * @deprecated in 3.x. use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    * @beta
    */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
@@ -362,7 +373,7 @@ export class Element extends Entity {
   /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
    * This is important for cloning operations but can be useful in other situations as well.
    * @beta
-   * @deprecated use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   * @deprecated in 3.x. use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    */
   public getPredecessorIds(): Id64Set {
     return this.getReferenceIds();
@@ -427,8 +438,17 @@ export class Element extends Entity {
     return msg;
   }
 
-  /** Insert this Element into the iModel. */
-  public insert() { return this.id = this.iModel.elements.insertElement(this.toJSON()); }
+  /**
+   * Insert this Element into the iModel.
+   * @see [[IModelDb.Elements.insertElement]]
+   * @note For convenience, the value of `this.id` is updated to reflect the resultant element's id.
+   * However when `this.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
+   * the value of `this.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[IModelDb.Elements.getElement]])
+   * if you intend to continue working with it. That will ensure its values reflect the persistent state.
+   */
+  public insert() {
+    return this.id = this.iModel.elements.insertElement(this.toJSON());
+  }
   /** Update this Element in the iModel. */
   public update() { this.iModel.elements.updateElement(this.toJSON()); }
   /** Delete this Element from the iModel. */
@@ -774,6 +794,7 @@ export class Subject extends InformationReferenceElement {
     };
     return new Subject(subjectProps, iModelDb);
   }
+
   /** Insert a Subject
    * @param iModelDb Insert into this IModelDb
    * @param parentSubjectId The new Subject will be inserted as a child of this Subject

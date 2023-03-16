@@ -29,8 +29,11 @@ export enum ContentSpecificationTypes {
  * @public
  */
 export interface ContentSpecificationBase extends ContentModifiersList {
-  /** Used for serializing to JSON. */
-  specType: ContentSpecificationTypes;
+  /**
+   * Used for serializing to JSON.
+   * @see [[ContentSpecificationTypes]]
+   */
+  specType: `${ContentSpecificationTypes}`;
 
   /**
    * Controls the order in which specifications are handled — specification with higher priority value is handled
@@ -44,7 +47,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
    * Should image IDs be calculated for the returned instances. When `true`, [[ImageIdOverride]] rules get applied when
    * creating the content.
    *
-   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   showImages?: boolean;
 

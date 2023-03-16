@@ -1282,7 +1282,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  public override async onExportSchema(schema: Schema): Promise<void> {
+  public override async onExportSchema(schema: Schema) {
     this.writeLine(`[Schema] ${schema.name}`);
     return super.onExportSchema(schema);
   }
@@ -1471,4 +1471,37 @@ export async function runWithCpuProfiler<F extends () => any>(
   await invokeFunc(session, "Profiler.disable");
   session.disconnect();
   return result;
+}
+
+export function getProfileVersion(db: IModelDb): ProfileVersion {
+  const rows = db.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db' AND Name='SchemaVersion'", (s) => [...s]);
+  const profile = JSON.parse(rows[0].strData);
+  assert(profile.major !== undefined);
+  assert(profile.minor !== undefined);
+  assert(profile.sub1 !== undefined);
+  assert(profile.sub2 !== undefined);
+  return profile;
+}
+
+export interface ProfileVersion {
+  major: number;
+  minor: number;
+  sub1: number;
+  sub2: number;
+}
+
+/**
+ * Compare two profile versions, returning
+ * a positive integer if the first is greater than the second,
+ * 0 if they are equal,
+ * or a negative integer if the first is less than the second
+ */
+export function cmpProfileVersion(a: ProfileVersion, b: ProfileVersion): number {
+  for (const subKey of ["major", "minor", "sub1", "sub2"] as const) {
+    if (a[subKey] > b[subKey])
+      return 1;
+    else if (a[subKey] < b[subKey])
+      return -1;
+  }
+  return 0;
 }

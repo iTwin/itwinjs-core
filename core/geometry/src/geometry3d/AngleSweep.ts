@@ -22,6 +22,8 @@ import { GrowableFloat64Array } from "./GrowableFloat64Array";
  * *  Angles beyond 360 are fine as endpoints.
  * *  (350,370) covers the same unit angles as (-10,10).
  * *  (370,350) covers the same unit angles as (10,-10).
+ * *  math details related fraction API can be found at docs/learning/geometry/Angle.md
+ *  * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/AngleSweep
  * @public
  */
 export class AngleSweep implements BeJSONFunctions {

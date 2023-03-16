@@ -272,7 +272,7 @@ export class TileDrawArgs {
     this.graphics.animationId = tree.modelId;
 
     this.viewingSpace = context.viewingSpace;
-    this._frustumPlanes = new FrustumPlanes(this.viewingSpace.getFrustum());
+    this._frustumPlanes = FrustumPlanes.fromFrustum(this.viewingSpace.getFrustum());
 
     this.planarClassifier = context.getPlanarClassifierForModel(tree.modelId);
     this.drape = context.getTextureDrapeForModel(tree.modelId);

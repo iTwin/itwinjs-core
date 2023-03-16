@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // Note: only import *types* from electron so this file can be imported by apps that sometimes use Electron and sometimes not.
-import type { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import type { BrowserWindow, BrowserWindowConstructorOptions, WebPreferences } from "electron";
 import type * as ElectronModule from "electron";
 
 import * as fs from "fs";
@@ -84,6 +84,9 @@ export interface WindowSizeAndPositionProps {
  * @beta
  */
 export class ElectronHost {
+  private static readonly _deprecatedSizeAndPosStoreKey = "windowPos";
+  private static readonly _sizeAndPosStoreKey = "windowSizeAndPos";
+
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
   private static _electron: typeof ElectronModule;
@@ -126,23 +129,24 @@ export class ElectronHost {
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
+    const webPreferences: WebPreferences = {
+      ...options?.webPreferences,
+
+      // These web preference variables should not be overriden by the ElectronHostWindowOptions
+      preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
+      experimentalFeatures: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      nodeIntegrationInWorker: false,
+      nodeIntegrationInSubFrames: false,
+    };
+
     const opts: BrowserWindowConstructorOptions = {
       ...options,
       autoHideMenuBar: true,
       icon: this.appIconPath,
-      webPreferences: {
-        ...options?.webPreferences,
-
-        // These web preference variables should not be overriden by the ElectronHostWindowOptions
-        preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
-        experimentalFeatures: false,
-        nodeIntegration: false,
-        contextIsolation: true,
-        sandbox: true,
-        nativeWindowOpen: true,
-        nodeIntegrationInWorker: false,
-        nodeIntegrationInSubFrames: false,
-      },
+      webPreferences,
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
@@ -154,38 +158,51 @@ export class ElectronHost {
     if (options?.storeWindowName) {
       const mainWindow = this._mainWindow;
       const name = options.storeWindowName;
-      const saveWindowPosition = () => {
-        const resolution = mainWindow.getSize();
-        const position = mainWindow.getPosition();
-        const pos: WindowSizeAndPositionProps = {
-          width: resolution[0],
-          height: resolution[1],
-          x: position[0],
-          y: position[1],
-        };
-        NativeHost.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
+      const saveWindowPosition = (key: string) => {
+        const bounds: WindowSizeAndPositionProps = mainWindow.getBounds();
+        NativeHost.settingsStore.setData(`${key}-${name}`, JSON.stringify(bounds));
       };
       const saveMaximized = (maximized: boolean) => {
         if (!maximized)
-          saveWindowPosition();
+          saveWindowPosition(this._deprecatedSizeAndPosStoreKey);
         NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
       };
 
-      mainWindow.on("resized", () => saveWindowPosition());
-      mainWindow.on("moved", () => saveWindowPosition());
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
-
       saveMaximized(mainWindow.isMaximized());
+
+      mainWindow.on("resized", () => saveWindowPosition(this._deprecatedSizeAndPosStoreKey));
+      mainWindow.on("moved", () => saveWindowPosition(this._deprecatedSizeAndPosStoreKey));
+
+      const debouncedSaveWindowSizeAndPos = debounce(() => saveWindowPosition(this._sizeAndPosStoreKey));
+      mainWindow.on("resize", () => debouncedSaveWindowSizeAndPos());
+      mainWindow.on("move", () => debouncedSaveWindowSizeAndPos());
+      saveWindowPosition(this._sizeAndPosStoreKey);
     }
   }
 
   /** The "main" BrowserWindow for this application. */
   public static get mainWindow() { return this._mainWindow; }
 
-  /** Gets window size and position for a window, by name, from settings file, if present */
+  /**
+   * Gets window size and position for a window, by name, from settings file, if present.
+   * @note Size and position values in the settings file will be updated differently depending on platform.
+   *       On Linux values are only updated on window "unmaximize".
+   *       On Windows and MacOS values are also updated on window manual resize or move.
+   *       To get consistent behavior across different platforms, use [[ElectronHost.getWindowSizeAndPositionSetting]].
+   * @deprecated in 3.6. Use [[ElectronHost.getWindowSizeAndPositionSetting]].
+   */
   public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
-    const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
+    const saved = NativeHost.settingsStore.getString(`${this._deprecatedSizeAndPosStoreKey}-${windowName}`);
+    return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
+  }
+
+  /**
+   * Gets window size and position for a window, by name, from settings file, if present.
+   */
+  public static getWindowSizeAndPositionSetting(windowName: string): WindowSizeAndPositionProps | undefined {
+    const saved = NativeHost.settingsStore.getString(`${this._sizeAndPosStoreKey}-${windowName}`);
     return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
   }
 
@@ -292,4 +309,14 @@ class ElectronDialogHandler extends IpcHandler {
 
     return dialogMethod.call(dialog, ...args);
   }
+}
+
+function debounce(func: Function, ms: number = 200) {
+  let timeout: NodeJS.Timeout;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func.apply(this, args);
+    }, ms);
+  };
 }

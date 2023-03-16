@@ -20,8 +20,6 @@ export interface DtaBooleanConfiguration {
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
-  filterMapTextures?: boolean;  // default OFF
-  filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   dpiAwareViewports?: boolean; // default ON
   dpiAwareLOD?: boolean; // default OFF
   disableEdges?: boolean; // default OFF
@@ -34,6 +32,8 @@ export interface DtaBooleanConfiguration {
   devTools?: boolean; // default true
   cacheTileMetadata?: boolean; // default false
   ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
+  noElectronAuth?: boolean; // if true, don't initialize auth client. It currently has a bug that produces an exception on every attempt to obtain access token, i.e., every RPC call.
+  useFrontendTiles?: boolean; // if true, use @itwin/frontend-tiles to obtain tile trees for spatial views
 }
 
 export interface DtaStringConfiguration {
@@ -153,6 +153,8 @@ export const getConfig = (): DtaConfiguration => {
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
   configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;
   configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
+  configuration.noElectronAuth = undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
+  configuration.useFrontendTiles = undefined !== process.env.IMJS_USE_FRONTEND_TILES;
 
   const parseSeconds = (key: string) => {
     const env = process.env[key];
@@ -182,12 +184,6 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
-
-  if (undefined !== process.env.IMJS_ENABLE_MAP_TEXTURE_FILTER)
-    configuration.filterMapTextures = true;
-
-  if (undefined !== process.env.IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER)
-    configuration.filterMapDrapeTextures = false;
 
   if (undefined !== process.env.IMJS_PRESERVE_SHADER_SOURCE_CODE)
     configuration.preserveShaderSourceCode = true;

@@ -53,11 +53,11 @@ function nextChunk(stream: ByteStream): Chunk | undefined {
   }
 
   // Type codes are a sequence of four uppercase ASCII letters.
-  const chars = [stream.nextUint8, stream.nextUint8, stream.nextUint8, stream.nextUint8];
+  const chars = [stream.readUint8(), stream.readUint8(), stream.readUint8(), stream.readUint8()];
   if (chars.some((c) => c < 65 || c > 90))
     return undefined;
 
-  const dataLength = stream.nextUint32;
+  const dataLength = stream.readUint32();
   const data = dataLength > 0 ? stream.nextBytes(dataLength) : undefined;
   return {
     type: String.fromCharCode(...chars),

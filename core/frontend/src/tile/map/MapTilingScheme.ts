@@ -19,7 +19,7 @@ import { MapCartoRectangle } from "../internal";
  * An X fraction of 0 corresponds to the easternmost longitude and an X fraction of 1 to the westernmost longitude.
  * The scheme can choose to correlate a Y fraction of 0 with either the north or south pole, as specified by [[rowZeroAtNorthPole]].
  * Implementing a tiling scheme only requires implementing the abstract method [[yFractionToLatitude]] and its inverse, [[latitudeToYFraction]].
- * @beta
+ * @public
  */
 export abstract class MapTilingScheme {
   /** If true, the fractional Y coordinate 0 corresponds to the north pole and 1 to the south pole; otherwise,

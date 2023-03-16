@@ -50,8 +50,8 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
   for (const p of points) {
     frame.multiplyPoint3d(p, q);
     // ck.testTrue(rangeA.containsPoint(p));
-    ck.testTrue(rangeA.containsPoint(q));
     ck.testCoordinate(0, rangeA.distanceToPoint(q));
+    ck.testTrue(rangeA.containsPoint(q));
     ck.testTrue(rangeA.containsPointXY(q));
     ck.testTrue(rangeA.containsPointXY(q.plusXYZ(0, 0, 2.0 * rangeA.zLength() + 1)));
     rangeA1.extendTransformedPoint(frame, p);

@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import com.bentley.itwin.IModelJsHost
-import com.bentley.itwin.MobileFrontend
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -72,7 +71,7 @@ fun JSONObject.optStringNotEmpty(name: String): String? {
 
 typealias PickUriContractType = ActivityResultContract<Nothing?, Uri?>
 
-class PickUriContract(val destDir: String) : PickUriContractType() {
+class PickUriContract(private val destDir: String) : PickUriContractType() {
     private lateinit var context: Context
 
     override fun createIntent(context: Context, input: Nothing?): Intent {
@@ -136,32 +135,12 @@ class MainActivity : AppCompatActivity() {
         host = IModelJsHost(this, alwaysExtractAssets, true)
         host.startup()
 
-        var args = "&standalone=true"
-        loadEnvJson()
-        env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
-            // ensure fileName already exists in the external files
-            getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
-                val fullPath = File(filesDir, fileName)
-                if (fullPath.exists())
-                    args += "&iModelName=${Uri.encode(fullPath.toString())}"
-            }
-        }
-
-        if (env.has("IMJS_IGNORE_CACHE"))
-            args += "&ignoreCache=true"
-
-        val frontend = object : MobileFrontend(host, args) {
-            override fun supplyEntryPoint(): String {
-                // Connect to a local dev server if specified in the env JSON, otherwise use the embedded frontend
-                return env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html"
-            }
-        }
-
+        val webView = WebView(this)
         // using a WebViewAssetLoader so that the localization json files load properly
         // the version of i18next-http-backend we're using tries to use the fetch API with file URL's (apparently fixed in version 2.0.1)
         val assetLoader = WebViewAssetLoader.Builder().addPathHandler("/assets/", AssetsPathHandler(this)).build()
 
-        frontend.webViewClient = object : WebViewClientCompat() {
+        webView.webViewClient = object : WebViewClientCompat() {
             override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest): WebResourceResponse? {
                 return assetLoader.shouldInterceptRequest(request.url)
             }
@@ -171,12 +150,12 @@ class MainActivity : AppCompatActivity() {
             if (uri != null && promiseName.isNotEmpty()) {
                 val js = "if (window.$promiseName) window.$promiseName(\"$uri\"); else console.log('Error: window.$promiseName is not defined!');"
                 MainScope().launch {
-                    frontend.evaluateJavascript(js, null)
+                    webView.evaluateJavascript(js, null)
                 }
             }
         }
 
-        frontend.addJavascriptInterface(
+        webView.addJavascriptInterface(
             object {
                 @JavascriptInterface
                 @Suppress("unused")
@@ -192,9 +171,24 @@ class MainActivity : AppCompatActivity() {
                 }
             }, "DTA_Android")
 
-        host.setFrontend(frontend)
-        setContentView(frontend)
-        frontend.loadEntryPoint()
+        host.webView = webView
+        setContentView(webView)
+
+        var args = "&standalone=true"
+        loadEnvJson()
+        env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
+            // ensure fileName already exists in the external files
+            getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
+                val fullPath = File(filesDir, fileName)
+                if (fullPath.exists())
+                    args += "&iModelName=${Uri.encode(fullPath.toString())}"
+            }
+        }
+
+        if (env.has("IMJS_IGNORE_CACHE"))
+            args += "&ignoreCache=true"
+
+        host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html", args)
     }
 
     private fun loadEnvJson() {
@@ -205,16 +199,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Intentionally commented out until we can resolve why pausing and resuming the host causes the backend to apparently shutdown or possibly crash.
-    // This doesn't happen on the iTwin MobileSDK sample (https://github.com/iTwin/mobile-samples/tree/main/Android/iTwinStarter)
+    override fun onResume() {
+        host.onResume()
+        super.onResume()
+    }
 
-//    override fun onResume() {
-//        host.onResume()
-//        super.onResume()
-//    }
-
-//    override fun onPause() {
-//        host.onPause()
-//        super.onPause()
-//    }
+    override fun onPause() {
+        host.onPause()
+        super.onPause()
+    }
 }

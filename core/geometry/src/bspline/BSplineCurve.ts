@@ -550,9 +550,8 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    *    * number[][], with inner dimension 3
    *
    * * Two count conditions are recognized:
-   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
-   *      extraneous knots of classic clamping.
-   *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
+   *    * If poleArray.length + order === knotArray.length, the first and last are assumed to be the extraneous knots of classic clamping.
+   *    * If poleArray.length + order === knotArray.length + 2, the knots are in modern form.
    */
   public static create(poleArray: Float64Array | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined {
     if (order < 2)

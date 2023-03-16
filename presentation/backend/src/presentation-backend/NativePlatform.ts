@@ -10,7 +10,7 @@ import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
-  DiagnosticsScopeLogs, NodeKeyJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
+  DiagnosticsScopeLogs, NodeKey, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { HierarchyCacheMode } from "./PresentationManager";
 
@@ -20,6 +20,7 @@ export enum NativePlatformRequestTypes {
   GetRootNodesCount = "GetRootNodesCount",
   GetChildren = "GetChildren",
   GetChildrenCount = "GetChildrenCount",
+  GetNodesDescriptor = "GetNodesDescriptor",
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
   GetContentSources = "GetContentSources",
@@ -53,7 +54,7 @@ export interface NativePresentationDefaultUnitFormats {
 /** @internal */
 export interface NativePresentationKeySetJSON {
   instanceKeys: Array<[string, string[]]>;
-  nodeKeys: NodeKeyJSON[];
+  nodeKeys: NodeKey[];
 }
 
 /** @internal */
@@ -83,7 +84,7 @@ export interface NativePlatformDefinition extends IDisposable {
   unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
   getUpdateInfo(): NativePlatformResponse<UpdateInfoJSON | undefined>;
-  updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string): NativePlatformResponse<void>;
+  updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKey, isExpanded?: boolean, instanceFilters?: string[] }>): NativePlatformResponse<void>;
 }
 
 /** @internal */
@@ -109,12 +110,13 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
       this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
     }
-    private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
+    private getErrorStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
+        case IModelJsNative.ECPresentationStatus.ResultSetTooLarge: return PresentationStatus.ResultSetTooLarge;
         case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
-        default: return PresentationStatus.Error;
       }
+      return PresentationStatus.Error;
     }
     private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
@@ -138,12 +140,12 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     private handleResult<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
       if (response.error)
-        throw new PresentationError(this.getStatus(response.error.status), response.error.message);
+        throw new PresentationError(this.getErrorStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
       if (response.error)
-        throw new PresentationError(this.getStatus(response.error.status), response.error.message);
+        throw new PresentationError(this.getErrorStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
     public dispose() {
@@ -196,8 +198,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
     }
-    public updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string) {
-      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, changeType, serializedKeys));
+    public updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKey, isExpanded?: boolean, instanceFilter?: string }>) {
+      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, stateChanges));
     }
   };
 };

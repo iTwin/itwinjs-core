@@ -86,7 +86,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
-  public get length() { return this._xyInUse; }
+  public override get length() { return this._xyInUse; }
   public set length(newLength: number) { this.resize(newLength, true); }
 
   /** Return the number of float64 in use. */
@@ -237,15 +237,15 @@ export class GrowableXYArray extends IndexedXYCollection {
    * Get x coordinate by point index, with no index checking
    * @param pointIndex index to access
    */
-  public getXAtUncheckedPointIndex(pointIndex: number): number {
+  public override getXAtUncheckedPointIndex(pointIndex: number): number {
     return this._data[2 * pointIndex];
   }
 
   /**
-   * Get y coordinate by index, with no index checking
+   * Get y coordinate by point index, with no index checking
    * @param pointIndex index to access
    */
-  public getYAtUncheckedPointIndex(pointIndex: number): number {
+  public override getYAtUncheckedPointIndex(pointIndex: number): number {
     return this._data[2 * pointIndex + 1];
   }
 
@@ -262,7 +262,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xy into strongly typed Point2d */
-  public getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
+  public override getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
     if (this.isIndexValid(pointIndex)) {
       const index = 2 * pointIndex;
       return Point2d.create(this._data[index], this._data[index + 1], result);
@@ -271,7 +271,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xy into strongly typed Vector2d */
-  public getVector2dAtCheckedVectorIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined {
+  public override getVector2dAtCheckedVectorIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined {
     if (this.isIndexValid(vectorIndex)) {
       const index = 2 * vectorIndex;
       return Vector2d.create(this._data[index], this._data[index + 1], result);
@@ -409,7 +409,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
   /**
    * Set the coordinates of a single point given as coordinates.
-   * @deprecated Use setXYAtCheckedPointIndex instead
+   * @deprecated in 3.x. Use setXYAtCheckedPointIndex instead
    */
    public setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean {
     return this.setXYAtCheckedPointIndex(pointIndex, x, y);
@@ -566,7 +566,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute a vector from index origin i to indexed target j  */
-  public vectorIndexIndex(i: number, j: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorIndexIndex(i: number, j: number, result?: Vector2d): Vector2d | undefined {
     if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
     const data = this._data;
@@ -576,7 +576,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute a vector from origin to indexed target j */
-  public vectorXAndYIndex(origin: XAndY, j: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorXAndYIndex(origin: XAndY, j: number, result?: Vector2d): Vector2d | undefined {
     if (this.isIndexValid(j)) {
       const data = this._data;
       j = 2 * j;
@@ -588,7 +588,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute the cross product of vectors from from indexed origin to indexed targets i and j */
-  public crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined {
+  public override crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined {
     if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const i = originIndex * 2;
       const j = targetAIndex * 2;
@@ -602,7 +602,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute the cross product of vectors from from origin to indexed targets i and j */
-  public crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined {
+  public override crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined {
     if (this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const j = targetAIndex * 2;
       const k = targetBIndex * 2;

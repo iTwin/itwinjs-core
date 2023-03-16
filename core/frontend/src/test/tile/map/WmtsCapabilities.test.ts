@@ -213,6 +213,7 @@ describe("WmtsCapabilities", () => {
     //  Check the layer styles
     expect(capabilities?.contents?.layers).to.not.undefined;
     expect(capabilities?.contents?.layers.length).to.equal(1);  // this sample capabilities has 2 layers
+    expect(capabilities?.contents?.layers[0].title).to.equal("Base of Hooray Sandstone and Equivalents");
     expect(capabilities?.contents?.layers[0].styles.length).to.equal(2);
     expect(capabilities?.contents?.layers[0].styles[0].identifier).to.equal("gab:gab_formation_elevation_equalised_histogram");
     expect(capabilities?.contents?.layers[0].styles[0].isDefault).to.equal(false);

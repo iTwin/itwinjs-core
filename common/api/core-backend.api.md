@@ -37,7 +37,6 @@ import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
-import { ChannelRootAspectProps } from '@itwin/core-common';
 import { ClipVector } from '@itwin/core-geometry';
 import { CloudStorageContainerDescriptor } from '@itwin/core-common';
 import { CloudStorageContainerUrl } from '@itwin/core-common';
@@ -150,6 +149,7 @@ import { NativeCloudSqlite } from '@bentley/imodeljs-native';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@itwin/core-common';
 import { NavigationValue } from '@itwin/core-common';
+import { NormalMapProps } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
 import { Optional } from '@itwin/core-bentley';
@@ -179,7 +179,9 @@ import { RenderSchedule } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
+import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
+import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -661,16 +663,56 @@ export class ChangeSummaryManager {
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
-// @public
+// @internal (undocumented)
+export class ChannelAdmin implements ChannelControl {
+    constructor(_iModel: IModelDb);
+    // (undocumented)
+    addAllowedChannel(channelKey: ChannelKey): void;
+    // (undocumented)
+    static readonly channelClassName = "bis:ChannelRootAspect";
+    // (undocumented)
+    getChannelKey(elementId: Id64String): ChannelKey;
+    // (undocumented)
+    get hasChannels(): boolean;
+    // (undocumented)
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    // (undocumented)
+    removeAllowedChannel(channelKey: ChannelKey): void;
+    static readonly sharedChannel = "shared";
+    // (undocumented)
+    verifyChannel(modelId: Id64String): void;
+}
+
+// @beta
+export interface ChannelControl {
+    addAllowedChannel(channelKey: ChannelKey): void;
+    getChannelKey(elementId: Id64String): ChannelKey;
+    get hasChannels(): boolean;
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    removeAllowedChannel(channelKey: ChannelKey): void;
+    // @internal (undocumented)
+    verifyChannel(modelId: Id64String): void;
+}
+
+// @beta
+export type ChannelKey = string;
+
+// @public (undocumented)
 export class ChannelRootAspect extends ElementUniqueAspect {
-    // @internal
-    constructor(props: ChannelRootAspectProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static insert(iModel: IModelDb, ownerId: Id64String, ownerDescription: string): void;
-    owner: string;
-    // @internal (undocumented)
-    toJSON(): ChannelRootAspectProps;
+    // @deprecated
+    static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
 }
 
 // @internal @deprecated (undocumented)
@@ -688,13 +730,14 @@ export class CheckpointManager {
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
-    static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: LocalFileName): boolean;
 }
 
 // @public
 export interface CheckpointProps extends TokenArg {
+    readonly allowPreceding?: boolean;
     readonly changeset: ChangesetIdWithIndex;
     // (undocumented)
     readonly expectV2?: boolean;
@@ -955,15 +998,15 @@ export namespace CodeService {
         readonly guid: CodeGuid;
         readonly json?: SettingObject;
         readonly origin: CodeOriginName;
-        readonly scope: ScopeGuid;
-        readonly spec: CodeSpecName;
+        readonly scopeGuid: ScopeGuid;
+        readonly specName: CodeSpecName;
         readonly state?: CodeState;
         readonly value: CodeValue;
     }
     export interface CodeFilter extends ValueFilter {
         readonly origin?: CodeOriginName;
-        readonly scope?: ScopeGuid;
-        readonly spec?: CodeSpecName;
+        readonly scopeGuid?: ScopeGuid;
+        readonly specName?: CodeSpecName;
     }
     export type CodeGuid = GuidString;
     export interface CodeGuidStateJson {
@@ -1041,9 +1084,9 @@ export namespace CodeService {
     }
     export interface ScopeAndSpec {
         // (undocumented)
-        readonly scope: ScopeGuid;
+        readonly scopeGuid: ScopeGuid;
         // (undocumented)
-        readonly spec: CodeSpecName;
+        readonly specName: CodeSpecName;
     }
     export type ScopeGuid = GuidString;
     export interface ScopeSpecAndValue extends ScopeAndSpec {
@@ -1083,6 +1126,7 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
+    updateProperties(codeSpec: CodeSpec): void;
 }
 
 // @public
@@ -1217,10 +1261,11 @@ export class DevTools {
     static ping(): boolean;
     static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined;
     static stats(): DevToolsStats;
-    static versions(): {
+    static versions(): Promise<{
         application: string;
         iTwinJs: any;
-    };
+        availableRpcs: RpcInterfaceEndpoints[];
+    }>;
 }
 
 // @internal
@@ -1444,6 +1489,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     // @internal (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition;
+    static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): DrawingViewDefinition;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
 }
 
@@ -1552,6 +1598,7 @@ export class ECSqlBinder {
 // @public
 export interface ECSqlColumnInfo {
     getAccessString(): string;
+    getOriginPropertyName(): string | undefined;
     getPropertyName(): string;
     getRootClassAlias(): string;
     getRootClassName(): string;
@@ -1770,15 +1817,15 @@ export class ElementAspect extends Entity {
     // (undocumented)
     element: RelatedElement;
     // @beta
-    protected static onDelete(_arg: OnAspectIdArg): void;
+    protected static onDelete(arg: OnAspectIdArg): void;
     // @beta
     protected static onDeleted(_arg: OnAspectIdArg): void;
     // @beta
-    protected static onInsert(_arg: OnAspectPropsArg): void;
+    protected static onInsert(arg: OnAspectPropsArg): void;
     // @beta
     protected static onInserted(_arg: OnAspectPropsArg): void;
     // @beta
-    protected static onUpdate(_arg: OnAspectPropsArg): void;
+    protected static onUpdate(arg: OnAspectPropsArg): void;
     // @beta
     protected static onUpdated(_arg: OnAspectPropsArg): void;
     // @internal (undocumented)
@@ -2358,7 +2405,7 @@ export class FunctionalPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class FunctionalSchema extends Schema {
-    // @deprecated (undocumented)
+    // (undocumented)
     static importSchema(iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
@@ -2741,6 +2788,8 @@ export abstract class IModelDb extends IModel {
     protected beforeClose(): void;
     // @internal
     cancelSnap(sessionId: string): void;
+    // @beta (undocumented)
+    readonly channels: ChannelControl;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
@@ -2788,7 +2837,7 @@ export abstract class IModelDb extends IModel {
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
-    importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;
+    importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
@@ -2826,6 +2875,7 @@ export abstract class IModelDb extends IModel {
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb;
     get pathName(): LocalFileName;
+    performCheckpoint(): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
@@ -3002,7 +3052,6 @@ export class IModelHost {
     static set applicationVersion(version: string);
     // @beta
     static get appWorkspace(): Workspace;
-    // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
@@ -3071,7 +3120,6 @@ export class IModelHost {
 export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     appAssetsDir?: LocalDirName;
-    // @beta (undocumented)
     authorizationClient?: AuthorizationClient;
     // (undocumented)
     cacheDir?: LocalDirName;
@@ -3110,7 +3158,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
 // @public
 export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
-    // @beta
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
@@ -3959,6 +4006,7 @@ export { NativeLoggerCategory }
 // @beta
 export interface OnAspectArg {
     iModel: IModelDb;
+    model: Id64String;
 }
 
 // @beta
@@ -3994,7 +4042,9 @@ export interface OnElementArg {
 
 // @beta
 export interface OnElementIdArg extends OnElementArg {
+    federationGuid: GuidString;
     id: Id64String;
+    model: Id64String;
 }
 
 // @beta
@@ -4298,31 +4348,39 @@ export class RenderMaterialElement extends DefinitionElement {
     constructor(props: RenderMaterialProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     description?: string;
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     paletteName: string;
     // @internal (undocumented)
     toJSON(): RenderMaterialProps;
 }
 
-// @public
+// @public (undocumented)
 export namespace RenderMaterialElement {
+    // @deprecated
     export class Params {
         constructor(paletteName: string);
-        color?: number[];
+        color?: RgbFactorProps;
         description?: string;
         diffuse?: number;
         finish?: number;
+        normalMap?: NormalMapProps & {
+            scale?: number;
+        };
         paletteName: string;
         patternMap?: TextureMapProps;
         reflect?: number;
         reflectColor?: number[];
         specular?: number;
-        specularColor?: number[];
+        specularColor?: RgbFactorProps;
         transmit?: number;
     }
+}
+
+// @public
+export interface RenderMaterialElementParams extends RenderMaterialElement.Params {
 }
 
 // @public
@@ -4405,6 +4463,12 @@ export class Schema {
     static get schemaName(): string;
     // @beta
     static toSemverString(paddedVersion: string): string;
+}
+
+// @public
+export interface SchemaImportOptions {
+    // @internal
+    ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
 // @internal (undocumented)
@@ -4744,6 +4808,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
+    static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
@@ -4751,7 +4816,6 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
-    // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
 

@@ -15,12 +15,17 @@ import { Point4d } from "./geometry4d/Point4d";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
-/** Enumeration of the 6 possible orderings of XYZ axis order
+/**
+ * Enumeration of the 6 possible orderings of XYZ axis order
+ * * **Note:** There are 3 axis order with right hand system (XYZ = 0, YZX = 1, ZXY = 2) and 3 axis order with
+ * left hand system (XZY = 4, YXZ = 5, ZYX = 6). Note that AxisOrder is encoding the handedness as well. Cross
+ * product of the i_th axis in an ordering (i=0,1,2), with the i+1_th in that ordering, will produce the i+2_th
+ * axis in that ordering.
  * @public
  */
 export enum AxisOrder {
   /** Right handed system, X then Y then Z */
-  XYZ = 0, // eslint-disable-line @typescript-eslint/no-shadow
+  XYZ = 0, /* eslint-disable-line @typescript-eslint/no-shadow */
   /** Right handed system, Y then Z then X */
   YZX = 1,
   /** Right handed system, Z then X then Y */
@@ -32,7 +37,8 @@ export enum AxisOrder {
   /** Left handed system, Z then Y then X */
   ZYX = 6,
 }
-/** Enumeration of numeric indices of 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
+/**
+ * Enumeration of numeric indices of 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
  * @public
  */
 export enum AxisIndex {
@@ -43,8 +49,7 @@ export enum AxisIndex {
   /** 2 axis is index 2 */
   Z = 2,
 }
-
-/** Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+/** Standard views. Used in `Matrix3d.createStandardViewAxes(index: StandardViewIndex, invert: boolean)`
  * @public
  */
 export enum StandardViewIndex {
@@ -60,12 +65,11 @@ export enum StandardViewIndex {
   Front = 5,
   /** negative X to right, Z up */
   Back = 6,
-  /** View towards origin from (-1,-1,1) */
-  Iso = 7,
-  /** View towards origin from (1,-1,1) */
+  /** isometric: view towards origin from (-1,-1,1) */
+  Iso = 7, //
+  /** right isometric: view towards origin from (1,-1,1) */
   RightIso = 8,
 }
-
 /** Enumeration among choice for how a coordinate transformation should incorporate scaling.
  * @public
  */
@@ -114,7 +118,6 @@ export interface PlaneAltitudeEvaluator {
    * @param point point for evaluation
    */
   velocity(vector: Vector3d): number;
-
   /**
    * Return the derivative of altitude wrt motion along a vector given by components
    * @param point point for evaluation
@@ -131,8 +134,32 @@ export interface PlaneAltitudeEvaluator {
   normalY(): number;
   /** x part of normal vector */
   normalZ(): number;
-
 }
+
+/** Enumeration of possible locations of a point in the plane of a polygon.
+ * @public
+ */
+export enum PolygonLocation {
+  /** No location specified. */
+  Unknown = 0,
+  /** Point is at a vertex. */
+  OnPolygonVertex = 1,
+  /** Point is on an edge (but not a vertex). */
+  OnPolygonEdgeInterior = 2,
+  /** Point is strictly inside the polygon with unknown projection. */
+  InsidePolygon = 3,
+  /** Point is strictly inside the polygon and projects to a vertex. */
+  InsidePolygonProjectsToVertex = 4,
+  /** Point is strictly inside the polygon and projects to an edge (but not a vertex). */
+  InsidePolygonProjectsToEdgeInterior = 5,
+  /** Point is strictly outside the polygon with unknown projection. */
+  OutsidePolygon = 6,
+  /** Point is strictly outside the polygon and projects to a vertex. */
+  OutsidePolygonProjectsToVertex = 7,
+  /** Point is strictly outside the polygon and projects to an edge (but not a vertex). */
+  OutsidePolygonProjectsToEdgeInterior = 8,
+}
+
 /**
  * Interface for `toJSON` and `setFromJSON` methods
  * @public
@@ -146,14 +173,17 @@ export interface BeJSONFunctions {
   /** Return a json object with this object's contents. */
   toJSON(): any;
 }
-
 /** The Properties for a JSON representation of an Angle.
  * If value is a number, it is in *degrees*.
  * If value is an object, it can have either degrees or radians.
  * @public
  */
-export type AngleProps = { degrees: number } | { radians: number } | { _radians: number } | { _degrees: number } | number;
-
+export type AngleProps =
+  { degrees: number } |
+  { radians: number } |
+  { _radians: number } |
+  { _degrees: number } |
+  number;
 /** The Properties for a JSON representation of an AngleSweep.
  * * The json data is always start and end angles as a pair in an array.
  * If AngleProps data is an array of two numbers, it is an angle in degrees.
@@ -237,7 +267,10 @@ export class Geometry {
   public static inverseMetricDistanceSquared(a: number): number | undefined {
     return (Math.abs(a) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / a;
   }
-  /** Boolean test for metric coordinate near-equality */
+  /**
+   * Boolean test for metric coordinate near-equality (i.e., if x and y are almost equal). If tolerance is not passed,
+   * `Geometry.smallMetricDistance` is used as tolerance.
+   */
   public static isSameCoordinate(x: number, y: number, tol?: number): boolean {
     if (tol)
       return Math.abs(x - y) < Math.abs(tol);
@@ -247,7 +280,6 @@ export class Geometry {
   public static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean {
     return Geometry.isSameCoordinate(x, y, toleranceFactor * Geometry.smallMetricDistance);
   }
-
   /** Boolean test for metric coordinate near-equality of x, y pair */
   public static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tol: number = Geometry.smallMetricDistance): boolean {
     let d = x1 - x0;
@@ -278,7 +310,6 @@ export class Geometry {
   public static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
   /** boolean test for small `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSameVector2d(dataA: Vector2d, dataB: Vector2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
-
   /**
    * Lexical comparison of (a.x,a.y) (b.x,b.y) with x as first test, y second.
    * * This is appropriate for a horizontal sweep in the plane.
@@ -365,10 +396,9 @@ export class Geometry {
     const tolerance = Geometry.smallAngleRadians * sumAbs;
     return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
   }
-
   /**
    * Toleranced equality test, using caller-supplied tolerance.
-   * If no tolerance is given, use smallMetricDistance
+   * If no tolerance is given, use smallMetricDistance.
    */
   public static isDistanceWithinTol(distance: number, tol?: number): boolean {
     if (tol !== undefined)
@@ -403,18 +433,23 @@ export class Geometry {
     return 2 - ((-axis - 1) % 3);
   }
   /** Return the AxisOrder for which axisIndex is the first named axis.
-   * * `axisIndex===0`returns AxisOrder.XYZ
-   * * `axisIndex===1`returns AxisOrder.YZX
-   * * `axisIndex===2`returns AxisOrder.ZXY
+   * * `axisIndex === 0` returns `AxisOrder.XYZ`
+   * * `axisIndex === 1` returns `AxisOrder.YZX`
+   * * `axisIndex === 2` returns `AxisOrder.ZXY`
    */
   public static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder {
-    if (axisIndex === 0) return AxisOrder.XYZ;
-    if (axisIndex === 1) return AxisOrder.YZX;
-    if (axisIndex === 2) return AxisOrder.ZXY;
+    if (axisIndex === 0)
+      return AxisOrder.XYZ;
+    if (axisIndex === 1)
+      return AxisOrder.YZX;
+    if (axisIndex === 2)
+      return AxisOrder.ZXY;
     return Geometry.axisIndexToRightHandedAxisOrder(Geometry.cyclic3dAxis(axisIndex));
   }
   /** Return the largest absolute distance from a to either of b0 or b1 */
-  public static maxAbsDiff(a: number, b0: number, b1: number): number { return Math.max(Math.abs(a - b0), Math.abs(a - b1)); }
+  public static maxAbsDiff(a: number, b0: number, b1: number): number {
+    return Math.max(Math.abs(a - b0), Math.abs(a - b1));
+  }
   /** Return the largest absolute absolute value among x,y,z */
   public static maxAbsXYZ(x: number, y: number, z: number): number {
     return Geometry.maxXYZ(Math.abs(x), Math.abs(y), Math.abs(z));
@@ -423,7 +458,6 @@ export class Geometry {
   public static maxAbsXY(x: number, y: number): number {
     return Geometry.maxXY(Math.abs(x), Math.abs(y));
   }
-
   /** Return the largest signed value among a, b, c */
   public static maxXYZ(a: number, b: number, c: number): number {
     let q = a;
@@ -431,7 +465,8 @@ export class Geometry {
     if (c > q) q = c;
     return q;
   }
-  /** Examine the value (particularly sign) of x.
+  /**
+   * Examine the value (particularly sign) of x.
    * * If x is negative, return outNegative.
    * * If x is true zero, return outZero
    * * If x is positive, return outPositive
@@ -443,14 +478,12 @@ export class Geometry {
       return outPositive;
     return outZero;
   }
-
   /** Return the largest signed value among a, b */
   public static maxXY(a: number, b: number): number {
     let q = a;
     if (b > q) q = b;
     return q;
   }
-
   /** Return the smallest signed value among a, b */
   public static minXY(a: number, b: number): number {
     let q = a;
@@ -458,20 +491,33 @@ export class Geometry {
     return q;
   }
   /** Return the hypotenuse `sqrt(x*x + y*y)`. This is much faster than `Math.hypot(x,y)`. */
-  public static hypotenuseXY(x: number, y: number): number { return Math.sqrt(x * x + y * y); }
+  public static hypotenuseXY(x: number, y: number): number {
+    return Math.sqrt(x * x + y * y);
+  }
   /** Return the squared `hypotenuse (x*x + y*y)`. */
-  public static hypotenuseSquaredXY(x: number, y: number): number { return x * x + y * y; }
+  public static hypotenuseSquaredXY(x: number, y: number): number {
+    return x * x + y * y;
+  }
   /** Return the square of x */
-  public static square(x: number): number { return x * x; }
-
+  public static square(x: number): number {
+    return x * x;
+  }
   /** Return the hypotenuse `sqrt(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseXYZ(x: number, y: number, z: number): number { return Math.sqrt(x * x + y * y + z * z); }
+  public static hypotenuseXYZ(x: number, y: number, z: number): number {
+    return Math.sqrt(x * x + y * y + z * z);
+  }
   /** Return the squared hypotenuse `(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseSquaredXYZ(x: number, y: number, z: number): number { return x * x + y * y + z * z; }
+  public static hypotenuseSquaredXYZ(x: number, y: number, z: number): number {
+    return x * x + y * y + z * z;
+  }
   /** Return the (full 4d) hypotenuse `sqrt(x*x + y*y + z*z + w*w)`. This is much faster than `Math.hypot(x,y,z,w)`. */
-  public static hypotenuseXYZW(x: number, y: number, z: number, w: number): number { return Math.sqrt(x * x + y * y + z * z + w * w); }
+  public static hypotenuseXYZW(x: number, y: number, z: number, w: number): number {
+    return Math.sqrt(x * x + y * y + z * z + w * w);
+  }
   /** Return the squared hypotenuse `(x*x + y*y + z*z+w*w)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number): number { return x * x + y * y + z * z + w * w; }
+  public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number): number {
+    return x * x + y * y + z * z + w * w;
+  }
   /**
    * Return the distance between xy points given as numbers.
    * @param x0 x coordinate of point 0
@@ -496,17 +542,16 @@ export class Geometry {
   }
   /** Returns Returns the triple product of 3 vectors provided as x,y,z number sequences.
    *
-   * * The triple product is the determinant of the 3x3 matrix with the 9 numbers placed in either row or column order.
+   * * The triple product is the determinant of the 3x3 matrix with the 9 numbers (3 vectors placed in 3 rows).
    * * The triple product is positive if the 3 vectors form a right handed coordinate system.
    * * The triple product is negative if the 3 vectors form a left handed coordinate system.
    * * Treating the 9 numbers as 3 vectors U, V, W, any of these formulas gives the same result:
-   *
-   * ** U dot (V cross W)
-   * ** V dot (W cross U)
-   * ** W dot (U cross V)
-   * **  (-U dot (W cross V))  -- (note the negative -- reversing cross product order changes the sign)
-   * ** (-V dot (U cross W)) -- (note the negative -- reversing cross product order changes the sign)
-   * ** (-W dot (V cross U)) -- (note the negative -- reversing cross product order changes the sign)
+   *     * U dot (V cross W)
+   *     * V dot (W cross U)
+   *     * W dot (U cross V)
+   *     * (-U dot (W cross V))  -- (note the negative -- reversing cross product order changes the sign)
+   *     * (-V dot (U cross W)) -- (note the negative -- reversing cross product order changes the sign)
+   *     * (-W dot (V cross U)) -- (note the negative -- reversing cross product order changes the sign)
    * * the triple product is 6 times the (signed) volume of the tetrahedron with the three vectors as edges from a common vertex.
    */
   public static tripleProduct(
@@ -562,7 +607,6 @@ export class Geometry {
       return b / aaa;
     return 0; // hm.. maybe should be infinite?
   }
-
   /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
    *
    */
@@ -575,7 +619,6 @@ export class Geometry {
       columnA.y, columnB.y, columnC.y,
       weightA, weightB, weightC);
   }
-
   /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
    *
    */
@@ -592,7 +635,6 @@ export class Geometry {
   public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
     return ux * vy - uy * vx;
   }
-
   /** 3D cross product of vectors layed out as scalars. */
   public static crossProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d {
     return Vector3d.create(
@@ -600,7 +642,6 @@ export class Geometry {
       uz * vx - ux * vz,
       ux * vy - uy * vx, result);
   }
-
   /** magnitude of 3D cross product of vectors, with the vectors presented as */
   public static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return Geometry.hypotenuseXYZ(
@@ -651,13 +692,18 @@ export class Geometry {
   public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
     return value === targetValue ? undefined : value;
   }
-
-  /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
+  /** Simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
   }
-
-  /** given an axisOrder (e.g. XYZ, YZX, ZXY, XZYLeftHanded etc) and an (integer) offset, resolve to an axis index. */
+  /**
+   * Given an axisOrder (e.g. XYZ, YZX, etc) and an index, returns the axis index at the given index.
+   * * For example, if axisOrder = XYZ, then for index 0 returns X (or axis index 0), for index 1 returns
+   * Y (or axis index 1), and for index 2 returns Z (or axis index 2). For indexes greater than 2 or smaller
+   * than 0, it returns cyclic axis index. See Geometry.cyclic3dAxis for more info.
+   * * Another example: if axisOrder = ZYX, then for index 0 returns Z (or axis index 2), for index 1 returns
+   * Y (or axis index 1), and for index 2 returns X (or axis index 0).
+   * */
   public static axisOrderToAxis(order: AxisOrder, index: number): number {
     const axis = order <= AxisOrder.ZXY ? order + index : (order - AxisOrder.XZY) - index;
     return Geometry.cyclic3dAxis(axis);
@@ -685,24 +731,44 @@ export class Geometry {
   }
   /** return 0 if the value is undefined, 1 if defined. */
   public static defined01(value: any): number { return value === undefined ? 0 : 1; }
-  /** normally, return numerator/denominator.
-   * but if the ratio would exceed Geometry.largeFractionResult, return undefined.
+  /**
+   * Return `numerator` divided by `denominator`, or `undefined`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * return `undefined`.
    */
   public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
     if (Math.abs(denominator) * Geometry.largeFractionResult > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }
-
-  /** normally, return numerator/denominator.
-   * but if the ratio would exceed Geometry.largestResult, return undefined.
+  /**
+   * Return `numerator` divided by `denominator`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * return `defaultResult`.
    */
-  public static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult: number = Geometry.largeCoordinateResult): number | undefined {
+  public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
+    const a = Geometry.conditionalDivideFraction(numerator, denominator);
+    if (a !== undefined)
+      return a;
+    return defaultResult;
+  }
+  /**
+   * Return `numerator` divided by `denominator` (with a given `largestResult`), or `undefined`.
+   * @param numerator the numerator
+   * @param denominator the denominator
+   * @param largestResult the ratio threshold.
+   * @returns return `numerator/denominator` but if the ratio would exceed `largestResult`, return `undefined`.
+   */
+  public static conditionalDivideCoordinate(numerator: number, denominator: number,
+    largestResult: number = Geometry.largeCoordinateResult): number | undefined {
     if (Math.abs(denominator * largestResult) > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }
-
   /** return the 0, 1, or 2 pairs of (c,s) values that solve
    * {constCoff + cosCoff * c + sinCoff * s = 0}
    * with the constraint {c*c+s*s = 1}
@@ -733,16 +799,6 @@ export class Geometry {
       }
       return result;
     }
-  }
-
-  /** normally,  return the number result of conditionalDivideFraction.
-   * but if conditionalDivideFraction fails return specified default number.
-   */
-  public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
-    const a = Geometry.conditionalDivideFraction(numerator, denominator);
-    if (a !== undefined)
-      return a;
-    return defaultResult;
   }
   /** For a line f(x) whose function values at x0 and x1 are f0 and f1, return the x value at which f(x)=fTarget; */
   public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF: number = 0,
@@ -780,7 +836,6 @@ export class Geometry {
     }
     return false;
   }
-
   /** return the number of steps to take so that numSteps * stepSize >= total.
    * minCount is returned for both (a) setSize 0 or less and (b) stepSize > total.
    * A small tolerance is applied for almost
@@ -850,7 +905,6 @@ export class Geometry {
     }
     return false;
   }
-
   /** test for  match of XYZ arrays. */
   public static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined,
     testFunction: (p: T, q: T) => boolean): boolean {
@@ -871,7 +925,6 @@ export class Geometry {
     }
     return false;
   }
-
   /** test for  match of typed arrays (e.g. Float64Array). */
   public static almostEqualNumberArrays(a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
     testFunction: (p: number, q: number) => boolean): boolean {
@@ -892,7 +945,6 @@ export class Geometry {
     }
     return false;
   }
-
   /**
    * Return
    * * true if both values are defined and equal (with ===).
@@ -911,7 +963,6 @@ export class Geometry {
       return a === b;
     return false;
   }
-
   /** clone an array whose members have a clone method.
    * * undefined return from clone is forced into the output array.
   */
@@ -925,7 +976,6 @@ export class Geometry {
     return b;
   }
 }
-
 /**
  * interface for method with a clone operation
  * @public
@@ -934,7 +984,6 @@ export interface Cloneable<T> {
   /** required method to return a deep clone. */
   clone(): T | undefined;
 }
-
 /** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
  * @public
  */

@@ -51,7 +51,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
       return;
 
     if (undefined === this._snapGeomId)
-      this._snapGeomId = this.iModel.transientIds.next;
+      this._snapGeomId = this.iModel.transientIds.getNext();
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
 

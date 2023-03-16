@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
-import { Cartographic, EcefLocation } from "@itwin/core-common";
+import { Cartographic, EcefLocation, EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { StandardViewId } from "../StandardView";
@@ -17,7 +17,7 @@ describe("Look At", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("look-at-test");
     imodel.ecefLocation = EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({latitude: 39.144703, longitude: -75.703054}));
   });

@@ -7,7 +7,7 @@
  */
 
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
-import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
+import { ContentSpecificationBase } from "./ContentSpecification";
 
 /**
  * This specification creates content for all instances of specific ECClasses.
@@ -17,7 +17,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  */
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
+  specType: "ContentInstancesOfSpecificClasses";
 
   /**
    * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that specify which
@@ -35,7 +35,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
    * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]
    * attributes should be polymorphic or not.
    *
-   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
+   * @deprecated in 2.x. Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
    */
   handleInstancesPolymorphically?: boolean;
 

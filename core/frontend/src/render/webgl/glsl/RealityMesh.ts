@@ -14,7 +14,7 @@ import { Matrix4 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addVaryingColor } from "./Color";
@@ -216,7 +216,7 @@ const mixFeatureColor = `
   `;
 
 function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: TextureUnit) {
-  addNormalMatrix(builder.vert, IsInstanced.No);
+  addNormalMatrix(builder.vert);
   builder.vert.addFunction(octDecodeNormal);
   builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
@@ -283,13 +283,8 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
   frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
   frag.addGlobal("classifierId", VariableType.Vec4);
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
-  let textureCount = System.instance.maxRealityImageryLayers;
-  let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
-  const caps = System.instance.capabilities;
-  if (Math.min(caps.maxFragTextureUnits, caps.maxVertTextureUnits) < 16 && IsThematic.Yes === flags.isThematic) {
-    textureCount--; // steal the last bg map layer texture for thematic gradient (just when thematic display is applied)
-    gradientTextureUnit = -1; // is dependent on drawing mode so will set later
-  }
+  const textureCount = System.instance.maxRealityImageryLayers;
+  const gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
 
   const feat = flags.featureMode;
   let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;

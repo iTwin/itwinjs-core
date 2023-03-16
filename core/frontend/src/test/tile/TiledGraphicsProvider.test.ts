@@ -13,6 +13,7 @@ import {
   Tile, TileContent, TiledGraphicsProvider, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
+import { EmptyLocalization } from "@itwin/core-common";
 
 class TestTile extends Tile {
   public constructor(tree: TileTree) {
@@ -137,7 +138,7 @@ describe("TiledGraphicsProvider", () => {
     viewDiv.style.width = viewDiv.style.height = "100px";
     document.body.appendChild(viewDiv);
 
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
 

@@ -99,9 +99,7 @@ export interface ViewFlagProps {
   ambientOcclusion?: boolean;
   /** If true, apply [[ThematicDisplay]]. */
   thematicDisplay?: boolean;
-  /** If true, overlay surfaces with wiremesh to reveal their triangulation.
-   * @beta
-   */
+  /** If true, overlay surfaces with wiremesh to reveal their triangulation. */
   wiremesh?: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
@@ -206,9 +204,7 @@ export class ViewFlags {
   public readonly ambientOcclusion: boolean;
   /** Whether to apply [[ThematicDisplay]]. Default: false. */
   public readonly thematicDisplay: boolean;
-  /** If true, overlay surfaces with wiremesh to reveal their triangulation.
-   * @beta
-   */
+  /** If true, overlay surfaces with wiremesh to reveal their triangulation. */
   public readonly wiremesh: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with

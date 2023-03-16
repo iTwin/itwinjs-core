@@ -8,6 +8,7 @@ import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vect
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
+import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 
 function setFocusToHome(): void {
   const element = document.activeElement as HTMLElement;
@@ -40,6 +41,7 @@ export class SectionsPanel extends ToolBarDropDown {
         { name: "Range", value: "ViewClip.ByRange" },
         { name: "Element", value: "ViewClip.ByElement" },
         { name: "Shape", value: "ViewClip.ByShape" },
+        { name: "Geometry", value: ViewClipByElementGeometryTool.toolId },
       ],
     });
 

@@ -639,7 +639,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     if (this.drawForReadPixels) {
       this.beginReadPixels(Pixel.Selector.Feature);
-      this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
+      this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay, this.graphics.decorations?.viewOverlay);
       this.endReadPixels();
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
@@ -909,7 +909,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.beginReadPixels(selector, rectFrust);
 
     // Draw the scene
-    this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
+    this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay, this.graphics.decorations?.viewOverlay);
 
     if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation

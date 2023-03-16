@@ -2051,6 +2051,8 @@ export interface Slider {
     // (undocumented)
     label: HTMLLabelElement;
     // (undocumented)
+    readout: HTMLLabelElement;
+    // (undocumented)
     slider: HTMLInputElement;
 }
 
@@ -2071,6 +2073,8 @@ export interface SliderProps {
     name: string;
     // (undocumented)
     parent?: HTMLElement;
+    // (undocumented)
+    readout?: "right" | false;
     // (undocumented)
     step: string;
     // (undocumented)

@@ -135,11 +135,11 @@ class GeometryDecorator {
     const points = [
       new Point3d(ox, oy, 0), new Point3d(ox + 1, oy, 0), new Point3d(ox + 1, oy + 1, 1), new Point3d(ox, oy + 1, 1), new Point3d(ox, oy, 0),
     ];
-    this._decorators.set(this._iModel.transientIds.next, (builder) => builder.addShape(points));
+    this._decorators.set(this._iModel.transientIds.getNext(), (builder) => builder.addShape(points));
   }
 
   private addDecorator(decorate: (builder: GraphicBuilder) => void): void {
-    this._decorators.set(this._iModel.transientIds.next, decorate);
+    this._decorators.set(this._iModel.transientIds.getNext(), decorate);
   }
 
   private addBox(cx: number, cy: number = 0): void {
@@ -161,11 +161,11 @@ class GeometryDecorator {
 
   private addMultiFeatureDecoration(): void {
     const y = 9;
-    const boxId = this._iModel.transientIds.next,
-      sphereId = this._iModel.transientIds.next,
-      coneId = this._iModel.transientIds.next;
+    const boxId = this._iModel.transientIds.getNext(),
+      sphereId = this._iModel.transientIds.getNext(),
+      coneId = this._iModel.transientIds.getNext();
 
-    this._decorators.set(this._iModel.transientIds.next, (builder) => {
+    this._decorators.set(this._iModel.transientIds.getNext(), (builder) => {
       builder.addShape([ new Point3d(0, y, 0), new Point3d(1, y, 0), new Point3d(1, y + 1, 1), new Point3d(0, y + 1, 1), new Point3d(0, y, 0) ]);
 
       builder.activatePickableId(boxId);

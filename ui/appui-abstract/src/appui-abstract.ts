@@ -22,13 +22,10 @@ export * from "./appui-abstract/dialogs/UiDataProvider";
 
 export * from "./appui-abstract/items/AbstractItemProps";
 export * from "./appui-abstract/items/AbstractMenuItemProps";
-export * from "./appui-abstract/items/ProvidedItem";
 export * from "./appui-abstract/items/AbstractToolbarProps";
 export * from "./appui-abstract/items/BadgeType";
-
 export * from "./appui-abstract/items/ConditionalBooleanValue";
 export * from "./appui-abstract/items/ConditionalStringValue";
-export * from "./appui-abstract/items/RelativePosition";
 export * from "./appui-abstract/items/ProvidedItem";
 export * from "./appui-abstract/items/RelativePosition";
 export * from "./appui-abstract/items/StageUsage";

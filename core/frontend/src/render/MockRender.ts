@@ -5,7 +5,7 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
+import { ElementAlignedBox3d, EmptyLocalization, PackedFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { ViewRect } from "../ViewRect";
@@ -172,6 +172,7 @@ export namespace MockRender {
     public static async startup(opts?: IModelAppOptions): Promise<void> {
       opts = opts ? opts : {};
       opts.renderSys = this.systemFactory();
+      opts.localization = opts.localization ?? new EmptyLocalization();
       await IModelApp.startup(opts);
     }
     public static async shutdown(): Promise<void> {

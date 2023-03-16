@@ -35,6 +35,9 @@ beta;ChangeSummary
 beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
+internal;ChannelAdmin 
+beta;ChannelControl
+beta;ChannelKey = string
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
 deprecated;CheckpointArg = DownloadRequest
@@ -310,6 +313,7 @@ public;Relationship
 public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
+public;RenderMaterialElementParams 
 public;RenderMaterialOwnsRenderMaterials 
 public;RenderTimeline 
 public;RepositoryLink 
@@ -319,6 +323,7 @@ public;class RoleElement
 public;RoleModel 
 public;RpcTrace
 public;Schema
+public;SchemaImportOptions
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas

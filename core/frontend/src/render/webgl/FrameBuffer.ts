@@ -57,6 +57,16 @@ export class FrameBuffer implements WebGLDisposable {
     return this._colorTextures[ndx];
   }
 
+  public getColorTargets(useMSBuffers: boolean, ndx: number): { tex: TextureHandle, msBuf: RenderBufferMultiSample | undefined } {
+    let msBuf;
+    if (useMSBuffers) {
+      assert (ndx < this._colorMsBuffers.length);
+      msBuf =  this._colorMsBuffers[ndx];
+    }
+    assert(ndx < this._colorTextures.length);
+    return { tex: this._colorTextures[ndx], msBuf };
+  }
+
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer,
     colorMsBuffers?: RenderBufferMultiSample[], msFilters?: GL.MultiSampling.Filter[], depthBufferMs?: DepthBuffer) {
     this._fbo = fbo;
@@ -192,7 +202,7 @@ export class FrameBuffer implements WebGLDisposable {
     if (!this._fboMs)
       return;
     System.instance.frameBufferStack.suspend();
-    const gl2 = System.instance.context as WebGL2RenderingContext;
+    const gl2 = System.instance.context;
     const attachments = [];
     const max = (undefined === ndx ? this._colorMsBuffers.length : ndx + 1);
     for (let i = 0; i < max; ++i) {
