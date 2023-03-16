@@ -151,7 +151,6 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) =
 export class PackedFeatureTable {
   private readonly _data: Uint32Array;
   public readonly modelId: Id64String;
-  public readonly maxFeatures: number;
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
@@ -164,10 +163,9 @@ export class PackedFeatureTable {
    * This is used internally when deserializing Tiles in iMdl format.
    * @internal
    */
-  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
+  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
     this._data = data;
     this.modelId = modelId;
-    this.maxFeatures = maxFeatures;
     this.numFeatures = numFeatures;
     this.type = type;
     this._animationNodeIds = animationNodeIds;
@@ -185,7 +183,6 @@ export class PackedFeatureTable {
     }
 
     assert(this._data.length >= this._subCategoriesOffset);
-    assert(this.maxFeatures >= this.numFeatures);
     assert(undefined === this._animationNodeIds || this._animationNodeIds.length === this.numFeatures);
   }
 
@@ -226,7 +223,7 @@ export class PackedFeatureTable {
       uint32s[index32 + 1] = Id64.getUpperUint32(id);
     });
 
-    return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.maxFeatures, featureTable.type);
+    return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.type);
   }
 
   /** Retrieve the Feature associated with the specified index. */
@@ -304,7 +301,7 @@ export class PackedFeatureTable {
 
   /** Unpack the features into a [[FeatureTable]]. */
   public unpack(): FeatureTable {
-    const table = new FeatureTable(this.maxFeatures, this.modelId);
+    const table = new FeatureTable(this.numFeatures, this.modelId);
     for (let i = 0; i < this.numFeatures; i++) {
       const feature = this.getFeature(i);
       table.insertWithIndex(feature, i);
@@ -411,7 +408,7 @@ export class MultiModelPackedFeatureTable {
 
   public static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array): MultiModelPackedFeatureTable {
     const featureData = data.subarray(0, 3 * numFeatures);
-    const features = new PackedFeatureTable(featureData, batchModelId, numFeatures, numFeatures, type, animationNodeIds);
+    const features = new PackedFeatureTable(featureData, batchModelId, numFeatures, type, animationNodeIds);
 
     const modelData = data.subarray(3 * numFeatures);
     const models = new PackedFeatureModelTable(modelData);

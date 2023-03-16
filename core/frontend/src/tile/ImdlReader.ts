@@ -864,7 +864,7 @@ export class ImdlReader {
 
     this._buffer.curPos = startPos + header.length;
 
-    return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
+    return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, this._type, animNodesArray);
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
