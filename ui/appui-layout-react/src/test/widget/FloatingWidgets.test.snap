@@ -24,6 +24,7 @@ exports[`FloatingWidgets should render 1`] = `
         data-item-id="t1"
         data-item-type="widget-tab"
         role="tab"
+        tabindex="0"
         title=""
       >
         <span />
