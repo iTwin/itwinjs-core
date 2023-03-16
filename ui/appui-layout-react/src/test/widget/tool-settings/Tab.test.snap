@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`<ToolSettingsTab /> renders correctly 1`] = `
-<button
-  className="nz-widget-toolSettings-tab"
-/>
-`;

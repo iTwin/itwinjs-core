@@ -1485,6 +1485,11 @@ export enum RepositoryStatus {
     SyncError = 86019
 }
 
+// @public
+export type RequireAtLeastOne<T> = {
+    [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];
+
 // @beta
 export enum RpcInterfaceStatus {
     IncompatibleVersion = 135168,

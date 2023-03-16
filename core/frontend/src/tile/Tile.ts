@@ -144,7 +144,7 @@ export abstract class Tile {
       this.setIsReady();
 
     this._isLeaf = true === params.isLeaf;
-    this._childrenLoadStatus = (undefined !== tree.maxDepth && this.depth < tree.maxDepth) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
+    this._childrenLoadStatus = (undefined === tree.maxDepth || this.depth < tree.maxDepth) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
   }
 
   /** Free memory-consuming resources owned by this tile to reduce memory pressure.
@@ -444,10 +444,17 @@ export abstract class Tile {
         return TileVisibility.Visible;
     }
 
+    return this.meetsScreenSpaceError(args) ? TileVisibility.Visible : TileVisibility.TooCoarse;
+  }
+
+  /** Returns true if this tile is of at least high enough resolution to be displayed, per the supplied [[TileDrawArgs]]; or false if
+   * a higher-resolution tile should be substituted for it.
+   * This method is called by [[computeVisibility]] if the tile has passed all culling checks.
+   */
+  protected meetsScreenSpaceError(args: TileDrawArgs): boolean {
     const pixelSize = args.getPixelSize(this) * args.pixelSizeScaleFactor;
     const maxSize = this.maximumSize * args.tileSizeModifier;
-
-    return pixelSize > maxSize ? TileVisibility.TooCoarse : TileVisibility.Visible;
+    return pixelSize <= maxSize;
   }
 
   /** @internal */
@@ -541,6 +548,14 @@ export abstract class Tile {
       builder.addArc(Arc3d.create(this.center, x, y), false, false);
       builder.addArc(Arc3d.create(this.center, x, z), false, false);
       builder.addArc(Arc3d.create(this.center, y, z), false, false);
+    } else if (TileBoundingBoxes.SolidBox === type) {
+      const range = this.range;
+      let color = this.rangeGraphicColor;
+      builder.setSymbology(color, color, 1);
+      addRangeGraphic(builder, range, this.tree.is2d);
+      color = color.withTransparency(0xcf);
+      builder.setSymbology(color, color, 1);
+      builder.addRangeBox(range, true);
     } else {
       const color = this.rangeGraphicColor;
       builder.setSymbology(color, color, 1);
@@ -634,6 +649,10 @@ export enum TileBoundingBoxes {
   ChildVolumes,
   /** Display bounding sphere. */
   Sphere,
+  /** Display a transparent solid box representing the tile's full volume.
+   * @alpha To be replaced with a separate option that applies to any of the other TileBoundingBoxes modes.
+   */
+  SolidBox,
 }
 
 // TileLoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.

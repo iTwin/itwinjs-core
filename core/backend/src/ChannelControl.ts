@@ -19,7 +19,7 @@ export type ChannelKey = string;
 /**
  * Controls which channels of an iModel are permitted for write operations. An implementation of this interface is
  * available via [[IModelDb.channels]].
- * @see [Working With Channels]($docs/learning/backend/channels.md) for details
+ * @see [Working With Channels]($docs/learning/backend/Channel.md) for details
  * @beta
  */
 export interface ChannelControl {

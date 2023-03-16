@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
-import { IModelConnection, IpcApp } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
@@ -63,8 +63,11 @@ export interface PresentationManagerProps {
 
   /**
    * Sets the active unit system to use for formatting property values with
-   * units. Default presentation units are used if this is not specified. The active unit
-   * system can later be changed through [[PresentationManager]] or overriden for each request.
+   * units. The  value can later be changed through [[PresentationManager.activeUnitSystem]] setter or
+   * overriden for each request through request parameters. If not set, `IModelApp.quantityFormatter.activeUnitSystem`
+   * is used by default.
+   *
+   * @deprecated in 4.0. Use [IModelApp.quantityFormatter]($core-frontend) to set the active unit system.
    */
   activeUnitSystem?: UnitSystemKey;
 
@@ -76,6 +79,14 @@ export interface PresentationManagerProps {
    * Defaults to a unique GUID as a client id.
    */
   clientId?: string;
+
+  /**
+   * Timeout (in milliseconds) for how long we're going to wait for RPC request to be fulfilled before throwing
+   * a timeout error.
+   *
+   * Defaults to 10 minutes.
+   */
+  requestTimeout?: number;
 
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
@@ -97,6 +108,7 @@ export class PresentationManager implements IDisposable {
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _localizationHelper: FrontendLocalizationHelper;
+  private _explicitActiveUnitSystem: UnitSystemKey | undefined;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
@@ -115,15 +127,25 @@ export class PresentationManager implements IDisposable {
    */
   public onIModelContentChanged = new BeEvent<(args: IModelContentChangeEventArgs) => void>();
 
-  /** Get / set active unit system used to format property values with units */
-  public activeUnitSystem: UnitSystemKey | undefined;
+  /**
+   * Get / set active unit system used to format property values with units.
+   *
+   * @deprecated in 4.0. `IModelApp.quantityFormatter` should be used to get/set the active unit system. At the moment
+   * [[PresentationManager]] allows overriding it, but returns `IModelApp.quantityFormatter.activeUnitSystem` if override
+   * is not set.
+   */
+  public get activeUnitSystem(): UnitSystemKey {
+    return this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem;
+  }
+  public set activeUnitSystem(value: UnitSystemKey | undefined) { this._explicitActiveUnitSystem = value; }
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
-      this.activeUnitSystem = props.activeUnitSystem;
+      // eslint-disable-next-line deprecation/deprecation
+      this._explicitActiveUnitSystem = props.activeUnitSystem;
     }
 
-    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
+    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
@@ -142,7 +164,6 @@ export class PresentationManager implements IDisposable {
   public set activeLocale(locale: string | undefined) { this._localizationHelper.locale = locale; }
 
   public dispose() {
-    this._requestsHandler.dispose();
     if (this._clearEventListener) {
       this._clearEventListener();
       this._clearEventListener = undefined;
@@ -190,8 +211,9 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  /** Function that is called when a new IModelConnection is used to retrieve data.
-   *  @internal
+  /**
+   * Function that is called when a new IModelConnection is used to retrieve data.
+   * @internal
    */
   public async onNewiModelConnection(_: IModelConnection) { }
 
@@ -236,8 +258,7 @@ export class PresentationManager implements IDisposable {
     const defaultOptions: Pick<TOptions, "locale" | "unitSystem"> = {};
     if (this.activeLocale)
       defaultOptions.locale = this.activeLocale;
-    if (this.activeUnitSystem)
-      defaultOptions.unitSystem = this.activeUnitSystem;
+    defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line deprecation/deprecation
 
     const { imodel, rulesetVariables, ...rpcRequestOptions } = requestOptions;
     return {

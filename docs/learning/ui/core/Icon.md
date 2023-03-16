@@ -18,9 +18,6 @@ The [Icon]($core-react) will automatically use the svg-loader in IconWebComponen
 The formatted svg icon string begins with "webSvg:".
 The `IconSpecUtilities.createWebComponentIconSpec` can be used to format the SVG string. See example usage below.
 
-The sprite SVG loader has been deprecated.
-The [SvgSprite]($core-react) React component has been deprecated.
-
 ## Examples
 
 We will demonstrate four different ways to display an icon.

@@ -14,6 +14,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */
+// cSpell:words Jcross CCWXY CWXY
 describe("Point3d", () => {
   it("zeros", () => {
     const ck = new bsiChecker.Checker();
@@ -278,6 +279,7 @@ it("NormalizeWithDefault", () => {
   ck.checkpoint("Point3dArray.HelloWorld");
   expect(ck.getNumErrors()).equals(0);
 });
+
 it("RotateVectorAroundVector", () => {
   const ck = new bsiChecker.Checker();
   const vectorA = Vector3d.create(1, 2, 3);

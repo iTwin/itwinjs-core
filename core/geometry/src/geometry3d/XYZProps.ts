@@ -8,8 +8,9 @@
  */
 
 import { Geometry } from "../Geometry";
+
 /**
- * interface for class with `x` and `y` as number properties.
+ * Interface for class with `x` and `y` as number properties.
  * @public
  */
 export interface WritableXAndY {
@@ -19,7 +20,7 @@ export interface WritableXAndY {
   y: number;
 }
 /**
- * interface for class with `z` as number property.
+ * Interface for class with `z` as number property.
  * @public
  */
 export interface WriteableHasZ {
@@ -27,50 +28,51 @@ export interface WriteableHasZ {
   z: number;
 }
 /**
- * interface for class with `x`, `y`, `z` as number property.
+ * Interface for class with `x`, `y`, `z` as number property.
  * @public
  */
 export interface WritableXYAndZ extends WritableXAndY, WriteableHasZ {
 }
 /**
- * interface for class with named properties `low` and `high`, both being `WriteableXAndY`
+ * Interface for class with named properties `low` and `high`, both being `WriteableXAndY`
  * @public
  */
 export interface WritableLowAndHighXY {
-  /** low x,y coordinates */
+  /** Low x,y coordinates */
   low: WritableXAndY;
-  /** high x,y,z coordinates */
+  /** High x,y,z coordinates */
   high: WritableXAndY;
 }
 /**
- * interface for class with named properties `low` and `high`, both being `WriteableXYAndZ`
+ * Interface for class with named properties `low` and `high`, both being `WriteableXYAndZ`
  * @public
  */
 export interface WritableLowAndHighXYZ {
-  /** low x,y,z coordinates */
+  /** Low x,y,z coordinates */
   low: WritableXYAndZ;
   /** High x,y,z coordinates */
   high: WritableXYAndZ;
 }
 /**
- * interface for readable `z` number members.
+ * Interface for readable `z` number members.
  * @public
  */
 export type HasZ = Readonly<WriteableHasZ>;
 /**
- * interface for readable `x` and `y` number members.
+ * Interface for readable `x` and `y` number members.
  * @public
  */
 export type XAndY = Readonly<WritableXAndY>;
 /**
- * interface for type with readable `x`, `y`, `z` number members.
+ * Interface for type with readable `x`, `y`, `z` number members.
  * @public
  */
 export type XYAndZ = Readonly<WritableXYAndZ>;
 
 /** @public */
 export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
-  /** Return true if two XYAndZs have equal x,y,z parts within a specified tolerance.
+  /**
+   * Return true if two XYAndZs have equal x,y,z parts within a specified tolerance.
    * @param a The first XYAndZ to compare
    * @param b The second XYAndZ to compare
    * @param The tolerance for comparison. If undefined, [[Geometry.smallMetricDistance]] is used.
@@ -84,17 +86,17 @@ export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
 }
 
 /**
- * interface for type with readable `low` and `high` members which have `x` and `y` number members.
+ * Interface for type with readable `low` and `high` members which have `x` and `y` number members.
  * @public
  */
 export type LowAndHighXY = Readonly<WritableLowAndHighXY>;
 /**
- * interface for type with readable `low` and `high` members which have `x`, `y`, and `z` number members.
+ * Interface for type with readable `low` and `high` members which have `x`, `y`, and `z` number members.
  * @public
  */
 export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 /**
- * interface for variant json (one of)
+ * Interface for variant json (one of)
  * * (individually optional) `x`, `y`, `z`
  * * number array
  * @public
@@ -105,7 +107,7 @@ export type XYZProps = {
   z?: number;
 } | number[];
 /**
- * interface for variant json (one of)
+ * Interface for variant json (one of)
  * * (individually optional) `x`, `y`
  * * number array
  * @public
@@ -115,7 +117,7 @@ export type XYProps = {
   y?: number;
 } | number[];
 /**
- * interface for variant json (one of)
+ * Interface for variant json (one of)
  * * array of number arrays, with one matrix row in each array
  * * flat array of numbers, in row-mor order
  * * `Matrix3d` object
@@ -123,7 +125,7 @@ export type XYProps = {
  */
 export type Matrix3dProps = number[][] | number[];
 /**
- * interface for variant json (one of)
+ * Interface for variant json (one of)
  * * array of number arrays, with each low level array containing 4 numbers of a transform row (qx, qy, qz, ax)
  * * flat array of 12 numbers, in row-major order for the 3 rows of 4 values
  * * `Transform` object
@@ -134,7 +136,7 @@ export type TransformProps = number[][] | number[] | {
   matrix: Matrix3dProps;
 };
 /**
- *  interface for variant json representing a Range3d
+ *  Interface for variant json representing a Range3d
  * * pair of `XYZProps` named `low` and `high`
  * * array of `XYZProps`
  * @public
@@ -144,7 +146,7 @@ export type Range3dProps = {
   high: XYZProps;
 } | XYZProps[];
 /**
- *  interface for variant json representing a Range2d
+ *  Interface for variant json representing a Range2d
  * * pair of `XYProps` named `low` and `high`
  * * array of `XYProps`
  * @public
@@ -154,7 +156,7 @@ export type Range2dProps = {
   high: XYProps;
 } | XYProps[];
 /**
- *  interface for variant json representing a Range1d
+ *  Interface for variant json representing a Range1d
  * * pair of `number` named `low` and `high`
  * * array of `number`
  * @public

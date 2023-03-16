@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as faker from "faker";
 import { Guid, Id64, using } from "@itwin/core-bentley";
@@ -12,8 +13,8 @@ import {
   KeySet, Node, NodeKey, PresentationError, PropertyValueFormat, RegisteredRuleset, RelationshipDirection, Ruleset, RulesetVariable, RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { buildTestIModel, TestIModelBuilder } from "@itwin/presentation-testing";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
+import { buildTestIModel, IModelBuilder } from "../Utils";
 
 describe("Hierarchies", () => {
 
@@ -1267,7 +1268,7 @@ async function validateHierarchy(props: {
   return resultHierarchy;
 }
 
-function insertDocumentPartition(builder: TestIModelBuilder, code: string, label?: string) {
+function insertDocumentPartition(builder: IModelBuilder, code: string, label?: string) {
   const id = builder.insertElement({
     classFullName: "BisCore:DocumentPartition",
     model: IModel.repositoryModelId,
