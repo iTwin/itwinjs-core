@@ -49,9 +49,8 @@ const useResizeObserver = <T extends HTMLElement>(
   return [elementRef, resizeObserver.current] as const;
 };
 
-/**
- Mimic processing of `react-resize-detector` to return width and height.
-* @internal
+/** Mimic processing of `react-resize-detector` to return width and height.
+ * @internal
  */
 function useResizeDetector(): { width: number | undefined, height: number | undefined, ref: React.Ref<HTMLDivElement> } {
   const [width, setWidth] = React.useState<number>();
@@ -111,7 +110,7 @@ function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: bo
     showSubLayers: true,
     isOverlay,
     layerIndex,
-    provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(settings),
+    provider: IModelApp.viewManager.selectedView?.getMapLayerImageryProvider(layerIndex, isOverlay),
     treeVisibility,
   };
 }
@@ -368,10 +367,6 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
             this.cascadeStateToAllChildren(model, change.nodeItem.id);
           });
         });
-
-        // Called in displayStyle.changeMapSubLayerProps(), does it need to be called again after the cascadeState?
-        if (vp)
-          vp.invalidateRenderPlan();
       },
     });
     // stop handling selection when checkboxes handling is stopped

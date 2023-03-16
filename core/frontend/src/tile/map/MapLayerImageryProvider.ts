@@ -27,6 +27,7 @@ export enum MapLayerImageryProviderStatus {
 
 /** Base class for map layer imagery providers.
  * Map layer imagery providers request tiles from their URLs and provide images and other tile data.
+ * @beta
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
@@ -40,6 +41,7 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   private _status =  MapLayerImageryProviderStatus.Valid;
 
+  /** @beta */
   public get status() { return this._status;}
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid);}
 
@@ -62,6 +64,7 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   protected get _filterByCartoRange() { return true; }
+
   constructor(protected readonly _settings: ImageMapLayerSettings, protected _usesCachedTiles: boolean) {
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._geographicTilingScheme = new GeographicTilingScheme(2, 1, true);
@@ -73,7 +76,9 @@ export abstract class MapLayerImageryProvider {
         this._missingTileData = tileData.data as Uint8Array;
     });
   }
+
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
 
   /** @internal */
@@ -81,13 +86,14 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   protected _missingTileData?: Uint8Array;
+
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
   protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
+
   public getPotentialChildIds(tile: ImageryMapTile): QuadId[] {
     const childLevel = tile.quadId.level + 1;
     return tile.quadId.getChildIds(this.tilingScheme.getNumberOfXChildrenAtLevel(childLevel), this.tilingScheme.getNumberOfYChildrenAtLevel(childLevel));
-
   }
 
   protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {

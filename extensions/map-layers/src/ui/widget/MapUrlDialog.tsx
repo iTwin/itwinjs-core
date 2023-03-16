@@ -227,10 +227,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     provider?.resetStatus();
     vp.resetMapLayer(layerRequiringCredentialsIdx, isOverlay);
 
-    // But does it need to be called again after this?
-    // Can't find any calls to invalidateRenderPlan() in vp.resetMapLayer()
-    vp.invalidateRenderPlan();
-
     // This handler will close the layer source handler, and therefore the MapUrl dialog.
     // don't call it if the dialog needs to remains open.
     onOkResult();
