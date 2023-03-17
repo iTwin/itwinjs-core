@@ -434,7 +434,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
-  public testPointer<T extends any>(value: T | undefined, ...params: any[]): value is T {
+  public testPointer<T>(value: T | undefined, ...params: any[]): value is T {
     if (value)
       return this.announceOK();
     return this.announceError("Expect pointer", value, params);
