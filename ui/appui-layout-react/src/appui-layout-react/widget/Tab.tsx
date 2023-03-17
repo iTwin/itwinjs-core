@@ -23,6 +23,7 @@ import { TabIdContext } from "./ContentRenderer";
 import { TabTarget } from "../target/TabTarget";
 import { WidgetMenuTab } from "./MenuTab";
 import { WidgetOverflowContext } from "./Overflow";
+import { SpecialKey } from "@itwin/appui-abstract";
 
 /** @internal */
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
@@ -105,6 +106,7 @@ const WidgetTabComponent = React.memo<WidgetTabProps>(function WidgetTabComponen
       role="tab"
       style={props.style}
       title={tab.label}
+      tabIndex={0}
     >
       {(showWidgetIcon || showIconOnly) && tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
       {showLabel && <span>{tab.label}</span>}
@@ -245,8 +247,16 @@ export function useTabInteractions<T extends HTMLElement>({
         handleDoubleClick();
       clickCount.current = 0;
     });
+    const keydown = (e: KeyboardEvent) => {
+      if(e.key === SpecialKey.Space || e.key === SpecialKey.Enter) {
+        handleClick();
+      }
+    };
+    const instance = ref.current;
+    instance && instance.addEventListener("keydown", keydown);
     return () => {
       timer.setOnExecute(undefined);
+      instance && instance.removeEventListener("keydown", keydown);
     };
   }, [handleClick, handleDoubleClick]);
   return refs;

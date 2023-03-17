@@ -15,6 +15,7 @@ import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ListItem, ListItemType, ListPicker } from "./ListPicker";
+import { debounce } from "lodash";
 
 // cSpell:ignore Spatials
 
@@ -44,6 +45,7 @@ export interface ViewSelectorProps {
   showDrawings: boolean;
   showSheets: boolean;
   showUnknown: boolean;
+  searchBox?: boolean;
 }
 
 /** State for the [[ViewSelector]] component
@@ -57,6 +59,7 @@ interface ViewSelectorState {
   showDrawings: boolean;
   showSheets: boolean;
   showUnknown: boolean;
+  searchBox: boolean;
 }
 
 /** Default properties of [[ViewSelector]] component.
@@ -85,6 +88,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   private static readonly _onViewSelectorShowUpdateEvent = new ViewSelectorShowUpdateEvent();
   private _removeShowUpdateListener?: () => void;
   private _isMounted = false;
+  private _searchInput = "";
 
   public static readonly defaultProps: ViewSelectorDefaultProps = {
     showSpatials: true,
@@ -114,6 +118,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       showDrawings: props.showDrawings,
       showSheets: props.showSheets,
       showUnknown: props.showUnknown,
+      searchBox: props.searchBox! ? props.searchBox : true,
     };
   }
 
@@ -146,13 +151,14 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     this.setState(args, async () => this.loadViews());
   };
 
-  private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[]) {
+  private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[],
+    views3dFiltered?: ListItem[], views2dFiltered?: ListItem[], sheetsFiltered?: ListItem[], unknownFiltered?: ListItem[]) {
     const views3dContainer: ListItem = {
       key: "views3dContainer",
       name: UiFramework.translate("viewTypes.spatialViews"),
       enabled: false,
       type: ListItemType.Container,
-      children: views3d,
+      children: views3dFiltered ? views3dFiltered : views3d,
     };
 
     const views2dContainer: ListItem = {
@@ -160,7 +166,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       name: UiFramework.translate("viewTypes.drawings"),
       enabled: false,
       type: ListItemType.Container,
-      children: views2d,
+      children: views2dFiltered ? views2dFiltered : views2d,
     };
 
     const sheetContainer: ListItem = {
@@ -168,7 +174,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       name: UiFramework.translate("viewTypes.sheets"),
       enabled: false,
       type: ListItemType.Container,
-      children: sheets,
+      children: sheetsFiltered ? sheetsFiltered : sheets,
     };
 
     const containers = [views3dContainer, views2dContainer, sheetContainer];
@@ -181,7 +187,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
         name: UiFramework.translate("viewTypes.others"),
         enabled: false,
         type: ListItemType.Container,
-        children: unknown,
+        children: unknownFiltered ? unknownFiltered : unknown,
       };
 
       if (unknown.length !== 0)
@@ -207,6 +213,10 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     const views2d: ListItem[] = [];
     const sheets: ListItem[] = [];
     const unknown: ListItem[] = [];
+    let views3dFiltered: ListItem[] | undefined;
+    let views2dFiltered: ListItem[] | undefined;
+    let sheetsFiltered: ListItem[] | undefined;
+    let unknownFiltered: ListItem[] | undefined;
 
     // istanbul ignore if
     if (this.props.imodel && this.props.imodel.views.getViewList) {
@@ -232,9 +242,16 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
         else if (this.state.showUnknown)
           unknown.push(viewItem);
       });
+
+      if(this._searchInput.length > 0){
+        views3dFiltered = views3d.filter((view) => view.name?.toLowerCase().includes(this._searchInput.toLowerCase()));
+        views2dFiltered = views2d.filter((view) => view.name?.toLowerCase().includes(this._searchInput.toLowerCase()));
+        sheetsFiltered = sheets.filter((view) => view.name?.toLowerCase().includes(this._searchInput.toLowerCase()));
+        unknownFiltered = unknown.filter((view) => view.name?. toLowerCase().includes(this._searchInput.toLowerCase()));
+      }
     }
 
-    this.setStateContainers(views3d, views2d, sheets, unknown);
+    this.setStateContainers(views3d, views2d, sheets, unknown, views3dFiltered, views2dFiltered, sheetsFiltered, unknownFiltered);
   }
 
   /**
@@ -341,6 +358,11 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
         items={this.state.items}
         iconSpec={"icon-saved-view"}
         onExpanded={this._onExpanded}
+        searchBox={this.state.searchBox}
+        onSearchValueChange={debounce((search: string) => {
+          this._searchInput = search;
+          void this.loadViews();
+        }, 300)}
       />
     );
   }
