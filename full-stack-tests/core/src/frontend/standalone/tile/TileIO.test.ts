@@ -275,7 +275,7 @@ describe("TileIO (WebGL)", () => {
   });
 
   function getFeatureTable(batch: Batch): PackedFeatureTable {
-    expect(batch.featureTable).instanceof(PackedFeatureTable).to.be.true;
+    expect(batch.featureTable).instanceof(PackedFeatureTable);
     return batch.featureTable as PackedFeatureTable;
   }
 
@@ -453,7 +453,7 @@ describe("TileIO (mock render)", () => {
   });
 
   function getFeatureTable(batch: MockRender.Batch): PackedFeatureTable {
-    expect(batch.featureTable).instanceof(PackedFeatureTable).to.be.true;
+    expect(batch.featureTable).instanceof(PackedFeatureTable);
     return batch.featureTable as PackedFeatureTable;
   }
 
