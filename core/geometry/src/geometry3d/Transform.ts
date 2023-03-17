@@ -722,12 +722,18 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * * Return a Transform which is the inverse of this transform.
-   * * Return undefined if this Transform's matrix is singular.
+   * @param result optional pre-allocated result
+   * @return the inverse Transform, or undefined if the matrix is singular
    */
-  public inverse(): Transform | undefined {
-    const matrixInverse = this._matrix.inverse();
+  public inverse(result?: Transform): Transform | undefined {
+    const matrixInverse = this._matrix.inverse(result ? result._matrix : undefined);
     if (!matrixInverse)
       return undefined;
+    if (result) {
+      // result._matrix is already defined
+      matrixInverse.multiplyXYZ(-this._origin.x, -this._origin.y, -this._origin.z, result._origin as Vector3d);
+      return result;
+    }
     return Transform.createRefs(
       matrixInverse.multiplyXYZ(-this._origin.x, -this._origin.y, -this._origin.z),
       matrixInverse

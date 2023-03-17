@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "intersect local ranges",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
