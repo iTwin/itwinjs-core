@@ -24,7 +24,3 @@ If the app has a custom backend, you must write a [Web-specific main](../learnin
 
 - [Configure the backend interfaces](./RpcInterface.md#configure-interfaces) to serve clients over the Web.
 - [Write a simple Web server](./RpcInterface.md#serve-the-interfaces) to serve the backend interfaces.
-
-## 3. Package and Deploy
-
-[Package and deploy to the Web](./PackageAndDeployToTheWeb.md)
