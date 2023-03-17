@@ -7,6 +7,7 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
+import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
@@ -14,20 +15,21 @@ import { Loop } from "../curve/Loop";
 import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { Transform } from "../geometry3d/Transform";
+import { XAndY } from "../geometry3d/XYZProps";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPrimitive } from "./ClipPrimitive";
 import { ClipVector } from "./ClipVector";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOffsetClipperContext";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { XAndY } from "../geometry3d/XYZProps";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { CurveFactory } from "../curve/CurveFactory";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
@@ -120,10 +122,15 @@ export interface Clipper {
 export interface PolygonClipper {
   appendPolygonClip: AppendPolygonClipFunction;
 }
-/** Static class whose various methods are functions for clipping geometry
+/** Class whose various static methods are functions for clipping geometry
  * @public
  */
 export class ClipUtilities {
+  // on-demand scratch objects for method implementations. If you use one, make sure it isn't already being used in scope.
+  private static _workTransform?: Transform;
+  private static _workRange?: Range3d;
+  private static _workClipper?: ConvexClipPlaneSet;
+
   private static _selectIntervals01TestPoint = Point3d.create();
   /**
    * * Augment the unsortedFractionsArray with 0 and 1
@@ -490,6 +497,34 @@ export class ClipUtilities {
     }
     return false;
   }
+
+  /** Test for intersection of two ranges in different local coordinates.
+   * * Useful for clash detection of elements in iModels, using their stored (tight) local ranges and placement transforms.
+   * @param range0 range in local coordinates of first geometry
+   * @param local0ToWorld placement transform for first geometry
+   * @param range1 range in local coordinates of second geometry
+   * @param local1ToWorld placement transform for second geometry. Assumed to be invertible.
+   * @param range1Margin optional signed local distance to expand/contract the second range before intersection. Positive expands.
+   * @return whether the local ranges are adjacent or intersect. Also returns false if local1ToWorld is singular.
+   */
+  public static doLocalRangesIntersect(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, range1Margin?: number): boolean {
+    const worldToLocal1 = ClipUtilities._workTransform = local1ToWorld.inverse(ClipUtilities._workTransform);
+    if (!worldToLocal1)
+      return false;
+    let myRange1 = range1;
+    if (range1Margin) {
+      myRange1 = ClipUtilities._workRange = range1.clone(ClipUtilities._workRange);
+      myRange1.expandInPlace(range1Margin);
+    }
+    // convert range0 into a clipper in local1 coordinates, then intersect with range1
+    const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(local0ToWorld, worldToLocal1);
+    const builder = PolyfaceBuilder.create();
+    builder.addTransformedRangeMesh(local0ToLocal1, range0);
+    const mesh0 = builder.claimPolyface();
+    const clipper = ClipUtilities._workClipper = ConvexClipPlaneSet.createConvexPolyface(mesh0, ClipUtilities._workClipper).clipper;
+    return ClipUtilities.doesClipperIntersectRange(clipper, myRange1);
+  }
+
   /**
    * Test if `obj` is a `Clipper` object.
    * * This is implemented by testing for each of the methods in the `Clipper` interface.
