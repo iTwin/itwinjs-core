@@ -11,4 +11,3 @@ Typically, an Agent will not implement and expose RpcInterfaces, although it may
 To develop a Web Agent, you will also:
 
 - [Register for iModelHub events](./iModelHub/Events.md)
-- [Package and deploy to the Web](./PackageAndDeployToTheWeb.md)

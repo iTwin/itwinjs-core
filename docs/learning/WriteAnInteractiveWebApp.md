@@ -1,7 +1,5 @@
 # Write An Interactive Web App
 
-[Simple Viewer App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app) is a complete example of an interactive app that can be configured as a Web app.
-
 ## 1. Write the Portable Components
 
 See [how to write an interactive app](./WriteAnInteractiveApp.md) for a guide to writing the portable and reusable [frontend](./Glossary.md#frontend) and [backend](./Glossary.md#backend) code.
@@ -26,7 +24,3 @@ If the app has a custom backend, you must write a [Web-specific main](../learnin
 
 - [Configure the backend interfaces](./RpcInterface.md#configure-interfaces) to serve clients over the Web.
 - [Write a simple Web server](./RpcInterface.md#serve-the-interfaces) to serve the backend interfaces.
-
-## 3. Package and Deploy
-
-[Package and deploy to the Web](./PackageAndDeployToTheWeb.md)
