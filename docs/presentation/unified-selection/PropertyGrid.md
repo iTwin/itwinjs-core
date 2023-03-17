@@ -10,7 +10,7 @@ The `@itwin/presentation-components` package delivers [usePropertyDataProviderWi
 
 ## Example
 
-The below example shows how to create a very basic presentation rules driven Property GRid component and hook it into Unified Selection. The latter part is achieved by using [usePropertyDataProviderWithUnifiedSelection]($presentation-components) on the data provider.
+The below example shows how to create a very basic presentation rules driven Property Grid component and hook it into Unified Selection. The latter part is achieved by using [usePropertyDataProviderWithUnifiedSelection]($presentation-components) on the data provider.
 
 ```tsx
 [[include:Presentation.Components.UnifiedSelection.PropertyGrid]]
