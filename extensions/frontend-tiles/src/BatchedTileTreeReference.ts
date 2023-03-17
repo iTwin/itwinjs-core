@@ -33,7 +33,7 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   }
 
   public attachToViewport(args: AttachToViewportArgs): void {
-    this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides;
+    this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides();
     this.updateViewedModels();
   }
 
