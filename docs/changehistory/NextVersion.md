@@ -9,11 +9,17 @@ Table of contents:
   - [Node.js](#nodejs)
   - [WebGL](#webgl)
   - [Electron](#electron)
-- [Mesh offset](#mesh-offset)
-- [Mesh intersection with ray](#mesh-intersection-with-ray)
+- [Geometry](#geometry)
+  - [Mesh offset](#mesh-offset)
+  - [Mesh intersection with ray](#mesh-intersection-with-ray)
+- [Display](#display)
+  - [glTF bounding boxes](#gltf-bounding-boxes)
 - [Presentation](#presentation)
   - [Active unit system](#active-unit-system)
+  - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
+  - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
+  - [Dependency updates](#dependency-updates)
 
 ## Updated minimum requirements
 
@@ -35,7 +41,9 @@ Over a year ago, support for WebGL 2 finally became [available in all major brow
 
 Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports only Electron 23.
 
-## Mesh offset
+## Geometry
+
+### Mesh offset
 
 The new static method [PolyfaceQuery.cloneOffset]($core-geometry) creates a mesh with facets offset by a given distance. The image below illustrates the basic concepts.
 
@@ -49,17 +57,40 @@ The image below illustrates results with a more complex cross section.
 
 The lower left is the original (smaller, inside) mesh with the (transparent) offset mesh around it with all sharp corners. At upper right the offset has chamfers, again due to setting the `chamferAngleBetweenNormals` to 120 degrees.
 
-## Mesh intersection with ray
+### Mesh intersection with ray
 
 New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with a [Polyface]($core-geometry). By default, [PolyfaceQuery.intersectRay3d]($core-geometry) returns a [FacetLocationDetail]($core-geometry) for the first found facet that intersects the infinite line parameterized by the ray. A callback can be specified in the optional [FacetIntersectOptions]($core-geometry) parameter to customize intersection processing, e.g., to filter and collect multiple intersections. Other options control whether to populate the returned detail with interpolated auxiliary vertex data: normals, uv parameters, colors, and/or the barycentric scale factors used to interpolate such data.
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
+
+## Display
+
+### glTF bounding boxes
+
+The exisiting [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
 
 ## Presentation
 
 ### Active unit system
 
 [PresentationManager]($presentation-frontend) has a way to set active unit system either through props when initializing ([PresentationManagerProps.activeUnitSystem]($presentation-frontend)) or directly through a setter ([PresentationManager.activeUnitSystem]($presentation-frontend)). Both of these ways have been deprecated in favor of using [QuantityFormatter.activeUnitSystem]($core-frontend) (access `QuantityFormatter` through `IModelApp.quantityFormatter`) to avoid asking consumers set the active unit system in two places. For the time being, while we keep the deprecated unit system setters on the presentation manager, they act as an override to [QuantityFormatter.activeUnitSystem]($core-frontend), but the latter is now used by default, so setting active unit system on presentation manager is not necessary any more.
+
+### Hierarchy level filtering and limiting
+
+Two new features have been made available to help working with very large hierarchies - hierarchy level filtering and limiting. Filtering was already available since `3.6` and has been promoted to `@beta`, limiting has been newly added as `@beta`. See [hierarchy filtering and limiting page](../presentation/hierarchies/FilteringLimiting.md) for more details.
+
+### Stopped "eating" errors on the frontend
+
+The [PresentationManager]($presentation-frontend) used to "eat" errors and return default value instead of re-throwing and exposing them to consumers. This made it impossible for consumer code to know that an error occurred, which could cause it to make wrong decisions. The decision has been re-considered and now Presentation manager lets consumers catch the errors. This affects the following APIs:
+
+- [PresentationManager.getNodes]($presentation-frontend)
+- [PresentationManager.getNodesAndCount]($presentation-frontend)
+- [PresentationManager.getContent]($presentation-frontend)
+- [PresentationManager.getContentAndSize]($presentation-frontend)
+- [PresentationManager.getPagedDistinctValues]($presentation-frontend)
+- [PresentationManager.getDisplayLabelDefinitions]($presentation-frontend)
+
+Consumers of these APIs should make sure they're wrapped with try/catch blocks and the errors are handled appropriately.
 
 ### Handling of long-running requests
 

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -307,6 +308,79 @@ describe("GltfReader", () => {
     expectCycle(1);
     expectCycle(2);
     expectCycle(3);
+  });
+
+  // https://github.com/KhronosGroup/glTF-Sample-Models/blob/master/2.0/TriangleWithoutIndices/glTF-Embedded/TriangleWithoutIndices.gltf
+  const unindexedTriangle: GltfDocument = JSON.parse(`{
+    "scene" : 0,
+    "scenes" : [
+      {
+        "nodes" : [ 0 ]
+      }
+    ],
+
+    "nodes" : [
+      {
+        "mesh" : 0
+      }
+    ],
+
+    "meshes" : [
+      {
+        "primitives" : [ {
+          "attributes" : {
+            "POSITION" : 0
+          }
+        } ]
+      }
+    ],
+
+    "buffers" : [
+      {
+        "uri" : "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+        "byteLength" : 36
+      }
+    ],
+    "bufferViews" : [
+      {
+        "buffer" : 0,
+        "byteOffset" : 0,
+        "byteLength" : 36,
+        "target" : 34962
+      }
+    ],
+    "accessors" : [
+      {
+        "bufferView" : 0,
+        "byteOffset" : 0,
+        "componentType" : 5126,
+        "count" : 3,
+        "type" : "VEC3",
+        "max" : [ 1.0, 1.0, 0.0 ],
+        "min" : [ 0.0, 0.0, 0.0 ]
+      }
+    ],
+
+    "asset" : {
+      "version" : "2.0"
+    }
+  }`);
+
+  it("computes bounding boxes", async () => {
+    const reader = createReader(unindexedTriangle)!;
+    expect(reader).not.to.be.undefined;
+    const result = await reader.read();
+    expect(result.graphic).not.to.be.undefined;
+
+    // Content range is in local coordinates (y-up)
+    expect(result.contentRange?.toJSON()).to.deep.equal({
+      low: [0, 0, 0],
+      high: [1, 1, 0],
+    });
+
+    // Range is in world coordinates (z-up). Transform introduces slight floating point fuzz.
+    expect(result.range).not.to.be.undefined;
+    expect(result.range!.isAlmostEqual(new Range3d(0, 0, -1, 1, 0, 0))).to.be.true;
   });
 
   describe("textures", () => {

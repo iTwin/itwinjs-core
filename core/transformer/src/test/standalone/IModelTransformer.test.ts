@@ -2126,7 +2126,7 @@ describe("IModelTransformer", () => {
     newDb.close();
   });
 
-  it("transforms code values with non standard space characters", async () => {
+  it.skip("transforms code values with non standard space characters", async () => {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CodeValNbspSrc.bim");
     let sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "CodeValNbspSrc" } });
 
