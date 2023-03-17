@@ -25,7 +25,7 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
 
   public async getAccessToken(): Promise<AccessToken> {
     if (this._fetchingToken) {
-      // NOTE: This function is from the AuthorizationClient protocol. That protocol documents
+      // NOTE: This function is from the AuthorizationClient interface. That interface documents
       // this function to return an empty string if no token is available, NOT throw an exception.
       return ""; // short-circuits any recursive use of this function
     }
