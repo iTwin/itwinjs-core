@@ -542,6 +542,7 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
@@ -567,6 +568,7 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
@@ -652,6 +654,7 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         result.push(row);
       }

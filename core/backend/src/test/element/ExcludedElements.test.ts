@@ -42,6 +42,7 @@ describe("ExcludedElements", () => {
       imodel.saveChanges();
 
       const rows: any[] = [];
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of imodel.query("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
         rows.push(row);
 
