@@ -16,6 +16,7 @@ import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { MomentData } from "../geometry4d/MomentData";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
@@ -214,6 +215,38 @@ export class GeometryCoreTestIO {
   }
 
   /**
+   * Create transformed edges of a range.
+   * * For 3d range, capture all the edges with various linestrings.
+   * * For 2d range, capture single linestring loop.
+   * @param collection growing array of geometry
+   * @param range Range
+   * @param placement range-to-world transform, applied to range points before shift
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static captureTransformedRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, placement?: Transform, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (range !== undefined && !range.isNull) {
+      if (range instanceof Range3d) {
+        const corners = range.corners();
+        if (placement)
+          placement.multiplyPoint3dArrayInPlace(corners);
+        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+        }
+      } else if (range instanceof Range2d) {
+        const corners = range.corners3d(true, 0);
+        if (placement)
+          placement.multiplyPoint3dArrayInPlace(corners);
+        this.captureGeometry(collection, LineString3d.create(corners), dx, dy, dz);
+      }
+    }
+  }
+
+  /**
    * Create edges of a range.
    * * For 3d range, capture all the edges with various linestrings.
    * * For 2d range, capture single linestring loop.
@@ -223,22 +256,10 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureRangeEdges(collection: GeometryQuery[],
-    range: Range2d | Range3d | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (range !== undefined && !range.isNull) {
-      if (range instanceof Range3d) {
-        const corners = range.corners();
-        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
-        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
-        }
-      } else if (range instanceof Range2d) {
-        this.captureGeometry(collection, LineString3d.create(range.corners3d(true, 0)), dx, dy, dz);
-      }
-    }
+  public static captureRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
+    this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
   }
+
   public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (momentData) {
       const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);
