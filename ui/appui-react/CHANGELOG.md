@@ -1,6 +1,13 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Fri, 24 Feb 2023 22:00:48 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Mar 2023 17:52:32 GMT and should not be manually modified.
+
+## 3.6.2
+Fri, 17 Mar 2023 17:52:32 GMT
+
+### Updates
+
+- Add search functionality to ViewSelector
 
 ## 3.6.1
 Fri, 24 Feb 2023 22:00:48 GMT
