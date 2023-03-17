@@ -1,6 +1,6 @@
 function readPackage(pkg) {
   if (
-    (pkg.name == "typedoc" || pkg.name == "@microsoft/api-extractor") &&
+    (pkg.name == "typedoc") &&
     pkg.dependencies &&
     pkg.dependencies["typescript"]
   ) {
