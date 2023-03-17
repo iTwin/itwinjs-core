@@ -20,7 +20,7 @@ class TreeRefs implements SpatialTileTreeReferences {
   }
 
   public update(): void {
-    this._treeRef.onModelSelectorChanged();
+    this._treeRef.updateViewedModels();
   }
 
   public attachToViewport(args: AttachToViewportArgs): void {

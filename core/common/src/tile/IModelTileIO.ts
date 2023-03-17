@@ -23,6 +23,8 @@ export enum ImdlFlags {
   Incomplete = 1 << 2,
   /** The tile must be refined by sub-division, not magnification. */
   DisallowMagnification = 1 << 3,
+  /** The tile's feature table contains features from multiple models. */
+  MultiModelFeatureTable = 1 << 4,
 }
 
 /** Describes the maximum major and minor version of the iMdl tile format supported by this version of this package.

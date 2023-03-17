@@ -33,14 +33,15 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   }
 
   public attachToViewport(args: AttachToViewportArgs): void {
-    this._onModelSelectorChanged = args.invalidateSymbologyOverrides;
+    this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides;
+    this.updateViewedModels();
   }
 
   public detachFromViewport(): void {
     this._onModelSelectorChanged = undefined;
   }
 
-  public onModelSelectorChanged(): void {
+  public updateViewedModels(): void {
     this._viewedModels.clear();
     this._viewedModels.addIds(this._view.modelSelector.models);
     if (this._onModelSelectorChanged)
@@ -60,7 +61,8 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     type: BatchType,
     animationNodeId: number
   ): FeatureAppearance | undefined {
-    if (!this._viewedModels.has(modelLo, modelHi))
+    // ###TODO: Until MultiModelPackedFeatureTable is hooked up we'll always get the transient model Id - remove check after that.
+    if (modelHi !== 0xffffff00 && !this._viewedModels.has(modelLo, modelHi))
       return undefined;
 
     return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);

@@ -10,8 +10,8 @@ import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
-  ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
-  RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  ImageSource, ImageSourceFormat, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d,
+  readTileContentDescription, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -526,6 +526,7 @@ export class ImdlReader {
   private readonly _containsTransformNodes: boolean;
   private readonly _timeline?: RenderSchedule.ModelTimeline;
   private readonly _rtcCenter?: Point3d;
+  private readonly _hasMultiModelFeatureTable: boolean;
 
   private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
@@ -567,15 +568,16 @@ export class ImdlReader {
         rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
       };
 
-      return undefined !== imdl.meshes ? new ImdlReader(imdl, gltfHeader.binaryPosition, args) : undefined;
+      return undefined !== imdl.meshes ? new ImdlReader(imdl, gltfHeader.binaryPosition, args, 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable)) : undefined;
     } catch (_) {
       return undefined;
     }
   }
 
-  private constructor(imdl: Imdl, binaryPosition: number, args: ImdlReaderCreateArgs) {
+  private constructor(imdl: Imdl, binaryPosition: number, args: ImdlReaderCreateArgs, hasMultiModelFeatureTable: boolean) {
     this._buffer = args.stream;
     this._binaryData = new Uint8Array(this._buffer.arrayBuffer, binaryPosition);
+    this._hasMultiModelFeatureTable = hasMultiModelFeatureTable;
 
     this._animationNodes = JsonUtils.asObject(imdl.animationNodes);
     this._bufferViews = imdl.bufferViews;
@@ -824,7 +826,7 @@ export class ImdlReader {
   }
 
   /** @internal */
-  protected readFeatureTable(startPos: number): PackedFeatureTable | undefined {
+  protected readFeatureTable(startPos: number): RenderFeatureTable | undefined {
     this._buffer.curPos = startPos;
     const header = FeatureTableHeader.readFrom(this._buffer);
     if (undefined === header || 0 !== header.length % 4)
@@ -836,35 +838,41 @@ export class ImdlReader {
     if (this._buffer.isPastTheEnd)
       return undefined;
 
-    let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
-    const animationNodes = this._animationNodes;
-    if (undefined !== animationNodes) {
-      const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
-      const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
-      const bufferViewJson = this._bufferViews[bufferViewId];
-      if (undefined !== bufferViewJson) {
-        const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
-        const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-        const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
-        switch (bytesPerId) {
-          case 1:
-            animNodesArray = new Uint8Array(bytes);
-            break;
-          case 2:
-            // NB: A *copy* of the subarray.
-            animNodesArray = Uint16Array.from(new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2));
-            break;
-          case 4:
-            // NB: A *copy* of the subarray.
-            animNodesArray = Uint32Array.from(new Uint32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4));
-            break;
+    let featureTable: RenderFeatureTable;
+    if (this._hasMultiModelFeatureTable) {
+      featureTable = MultiModelPackedFeatureTable.create(packedFeatureArray, this._modelId, header.count, this._type);
+    } else {
+      let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
+      const animationNodes = this._animationNodes;
+      if (undefined !== animationNodes) {
+        const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
+        const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
+        const bufferViewJson = this._bufferViews[bufferViewId];
+        if (undefined !== bufferViewJson) {
+          const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+          const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+          const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+          switch (bytesPerId) {
+            case 1:
+              animNodesArray = new Uint8Array(bytes);
+              break;
+            case 2:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint16Array.from(new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2));
+              break;
+            case 4:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint32Array.from(new Uint32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4));
+              break;
+          }
         }
       }
+
+      featureTable = new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, this._type, animNodesArray);
     }
 
     this._buffer.curPos = startPos + header.length;
-
-    return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, this._type, animNodesArray);
+    return featureTable;
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
@@ -1393,7 +1401,7 @@ export class ImdlReader {
       output.push(this._system.createBranch(branch, Transform.createIdentity()));
   }
 
-  private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
+  private finishRead(isLeaf: boolean, featureTable: RenderFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
     const graphics: RenderGraphic[] = [];
 
     if (undefined === this._nodes.Node_Root) {
@@ -1422,6 +1430,7 @@ export class ImdlReader {
         if ("Node_Root" === nodeKey) {
           if (this._timeline) {
             // Split up the root node into transform nodes.
+            assert(featureTable instanceof PackedFeatureTable, "multi-model feature tables never include animation branches");
             this.readAnimationBranches(graphics, meshValue, featureTable);
           } else if (this._containsTransformNodes) {
             // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
