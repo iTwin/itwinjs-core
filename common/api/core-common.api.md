@@ -6204,6 +6204,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
+    unpack(): FeatureTable;
 }
 
 // @internal (undocumented)

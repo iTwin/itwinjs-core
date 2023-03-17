@@ -402,6 +402,17 @@ export class PackedFeatureTable implements RenderFeatureTable {
   public get isPlanarClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
   public get isClassifier(): boolean { return this.isVolumeClassifier || this.isPlanarClassifier; }
 
+  /** Unpack the features into a [[FeatureTable]]. */
+  public unpack(): FeatureTable {
+    const table = new FeatureTable(this.numFeatures, this.batchModelId);
+    const feature = ModelFeature.create();
+    for (let i = 0; i < this.numFeatures; i++) {
+      this.getFeature(i, feature);
+      table.insertWithIndex(new Feature(feature.elementId, feature.subCategoryId, feature.geometryClass), i);
+    }
+
+    return table;
+  }
   public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
     assert(undefined === this._animationNodeIds);
     assert(maxNodeId > 0);

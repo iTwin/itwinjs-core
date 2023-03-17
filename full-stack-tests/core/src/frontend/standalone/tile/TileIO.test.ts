@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
@@ -274,12 +274,23 @@ describe("TileIO (WebGL)", () => {
     await TestUtility.shutdownFrontend();
   });
 
+  function getFeatureTable(batch: Batch): PackedFeatureTable {
+    expect(batch.featureTable).instanceof(PackedFeatureTable).to.be.true;
+    return batch.featureTable as PackedFeatureTable;
+  }
+
+  function expectNumFeatures(batch: Batch, expected: number): void {
+    const table = getFeatureTable(batch);
+    expect(table.numFeatures).to.equal(expected);
+    expect(table.isUniform).to.equal(expected === 1);
+  }
+
   it("should read an iModel tile containing a single rectangle", async () => {
     if (IModelApp.initialized) {
       await processEachRectangle(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.true;
+        expectNumFeatures(batch, 1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
         const mg = batch.graphic as MeshGraphic;
@@ -302,8 +313,7 @@ describe("TileIO (WebGL)", () => {
       await processEachTriangles(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.false;
-        expect(batch.featureTable.numFeatures).to.equal(6);
+        expectNumFeatures(batch, 6);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
@@ -343,8 +353,7 @@ describe("TileIO (WebGL)", () => {
       await processEachLineString(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.true;
-        expect(batch.featureTable.numFeatures).to.equal(1);
+        expectNumFeatures(batch, 1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(Primitive);
         const plinePrim = batch.graphic as Primitive;
@@ -368,8 +377,7 @@ describe("TileIO (WebGL)", () => {
       await processEachLineStrings(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.false;
-        expect(batch.featureTable.numFeatures).to.equal(3);
+        expectNumFeatures(batch, 3);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
@@ -411,7 +419,7 @@ describe("TileIO (WebGL)", () => {
       await processEachCylinder(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.true;
+        expectNumFeatures(batch, 1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
         const mg = batch.graphic as MeshGraphic;
@@ -443,6 +451,17 @@ describe("TileIO (mock render)", () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
+
+  function getFeatureTable(batch: MockRender.Batch): PackedFeatureTable {
+    expect(batch.featureTable).instanceof(PackedFeatureTable).to.be.true;
+    return batch.featureTable as PackedFeatureTable;
+  }
+
+  function expectNumFeatures(batch: MockRender.Batch, expected: number): void {
+    const table = getFeatureTable(batch);
+    expect(table.numFeatures).to.equal(expected);
+    expect(table.isUniform).to.equal(expected === 1);
+  }
 
   it("should support canceling operation", async () => {
     if (IModelApp.initialized) {
@@ -486,7 +505,7 @@ describe("TileIO (mock render)", () => {
     await processEachRectangle(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.true;
+      expectNumFeatures(batch, 1);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).instanceof(MockRender.Graphic);
     });
@@ -496,8 +515,7 @@ describe("TileIO (mock render)", () => {
     await processEachTriangles(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.false;
-      expect(batch.featureTable.numFeatures).to.equal(6);
+      expectNumFeatures(batch, 6);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).instanceof(MockRender.List);
       const list = batch.graphic as MockRender.List;
@@ -509,8 +527,7 @@ describe("TileIO (mock render)", () => {
     await processEachLineString(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.true;
-      expect(batch.featureTable.numFeatures).to.equal(1);
+      expectNumFeatures(batch, 1);
       expect(batch.graphic).not.to.be.undefined;
     });
   });
@@ -519,8 +536,7 @@ describe("TileIO (mock render)", () => {
     await processEachLineStrings(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.false;
-      expect(batch.featureTable.numFeatures).to.equal(3);
+      expectNumFeatures(batch, 3);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).to.be.instanceOf(MockRender.List);
       const list = batch.graphic as MockRender.List;
@@ -532,7 +548,7 @@ describe("TileIO (mock render)", () => {
     await processEachCylinder(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.true;
+      expectNumFeatures(batch, 1);
       expect(batch.graphic).not.to.be.undefined;
     });
   });
