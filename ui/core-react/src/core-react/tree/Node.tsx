@@ -148,6 +148,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         onMouseMove={this.props.onMouseMove}
         role="treeitem"
         tabIndex={-1}
+        aria-selected="false"
       >
         <div
           className="contents"
