@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
-import { Feature } from "@itwin/core-common";
+import { ModelFeature } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { BranchStack } from "./BranchStack";
 import { Batch } from "./Graphic";
@@ -61,6 +61,7 @@ export class BatchState {
     this._curBatch = undefined;
   }
 
+  private static readonly _scratchElementIdPair = { lower: 0, upper: 0 };
   public getElementId(featureId: number): Id64String {
     const batch = this.find(featureId);
     if (undefined === batch)
@@ -69,11 +70,11 @@ export class BatchState {
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 
-    const parts = batch.featureTable.getElementIdPair(featureIndex);
+    const parts = batch.featureTable.getElementIdPair(featureIndex, BatchState._scratchElementIdPair);
     return Id64.fromUint32Pair(parts.lower, parts.upper);
   }
 
-  public getFeature(featureId: number): Feature | undefined {
+  public getFeature(featureId: number, result: ModelFeature): ModelFeature | undefined {
     const batch = this.find(featureId);
     if (undefined === batch)
       return undefined;
@@ -81,7 +82,7 @@ export class BatchState {
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 
-    return batch.featureTable.findFeature(featureIndex);
+    return batch.featureTable.findFeature(featureIndex, result);
   }
 
   public get numFeatureIds() { return this.nextBatchId; }

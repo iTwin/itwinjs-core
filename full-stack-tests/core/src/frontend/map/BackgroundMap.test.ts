@@ -81,8 +81,8 @@ describe("Background map (#integration)", () => {
         }
 
         expect(actualPixel.type).to.equal(Pixel.GeometryType.Surface);
-        expect(actualPixel.featureTable).not.to.be.undefined;
-        expect(Id64.isTransient(actualPixel.featureTable!.modelId)).to.equal("map" === expectedPixel);
+        expect(actualPixel.modelId).not.to.be.undefined;
+        expect(Id64.isTransient(actualPixel.modelId!)).to.equal("map" === expectedPixel);
       };
 
       expectPixel(cx, cy, expectedCenterFeature);
