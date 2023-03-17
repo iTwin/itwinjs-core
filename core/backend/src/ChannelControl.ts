@@ -106,7 +106,8 @@ export class ChannelAdmin implements ChannelControl {
     return this.getChannelKey(parentId);
   }
   public verifyChannel(modelId: Id64String): void {
-    if (!this.hasChannels || this._allowedModels.has(modelId))
+    // Note: indirect changes are permitted to change any channel
+    if (!this.hasChannels || this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges())
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);

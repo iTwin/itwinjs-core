@@ -747,10 +747,15 @@ export class Transform implements BeJSONFunctions {
    * * If `transform = [M   o]` then `transformInverse = [MInverse   MInverse*-o]`
    * * Return `undefined` if this Transform's matrix is singular.
    */
-  public inverse(): Transform | undefined {
-    const matrixInverse = this._matrix.inverse();
+  public inverse(result?: Transform): Transform | undefined {
+    const matrixInverse = this._matrix.inverse(result ? result._matrix : undefined);
     if (!matrixInverse)
       return undefined;
+    if (result) {
+      // result._matrix is already defined
+      matrixInverse.multiplyXYZ(-this._origin.x, -this._origin.y, -this._origin.z, result._origin as Vector3d);
+      return result;
+    }
     return Transform.createRefs(
       matrixInverse.multiplyXYZ(-this._origin.x, -this._origin.y, -this._origin.z),
       matrixInverse
