@@ -527,11 +527,12 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     this._models = models;
   }
 
-  public static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType): MultiModelPackedFeatureTable {
-    const featureData = data.subarray(0, 3 * numFeatures);
+  public static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType, numSubCategories: number): MultiModelPackedFeatureTable {
+    const modelTableOffset = 3 * numFeatures + 2 * numSubCategories;
+    const featureData = data.subarray(0, modelTableOffset);
     const features = new PackedFeatureTable(featureData, batchModelId, numFeatures, type);
 
-    const modelData = data.subarray(3 * numFeatures);
+    const modelData = data.subarray(modelTableOffset);
     const models = new PackedFeatureModelTable(modelData);
 
     return new MultiModelPackedFeatureTable(features, models);

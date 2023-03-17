@@ -840,7 +840,7 @@ export class ImdlReader {
 
     let featureTable: RenderFeatureTable;
     if (this._hasMultiModelFeatureTable) {
-      featureTable = MultiModelPackedFeatureTable.create(packedFeatureArray, this._modelId, header.count, this._type);
+      featureTable = MultiModelPackedFeatureTable.create(packedFeatureArray, this._modelId, header.count, this._type, header.numSubCategories);
     } else {
       let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
       const animationNodes = this._animationNodes;
