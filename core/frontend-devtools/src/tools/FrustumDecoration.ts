@@ -76,7 +76,7 @@ class FrustumDecoration {
 
   public static drawPreloadFrustum(builder: GraphicBuilder, frustum: Frustum) {
     const preloadColor = ColorDef.create(ColorByName.coral);
-    builder.setSymbology(preloadColor, preloadColor, 1, 2);
+    builder.setSymbology(preloadColor, preloadColor, 1, 2 as LinePixels);
     builder.addFrustum(frustum);
   }
 
