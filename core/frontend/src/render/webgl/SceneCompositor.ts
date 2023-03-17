@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-  Feature, ModelFeature, RenderFeatureTable, PointCloudDisplaySettings, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  ModelFeature, PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";

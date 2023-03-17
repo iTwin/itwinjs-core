@@ -506,7 +506,7 @@ export class PackedFeatureModelTable {
       result.lower = result.upper = 0;
 
     let first = 0;
-    let last = this.length;
+    const last = this.length;
     let count = last;
     while (count > 0) {
       const step = Math.floor(count / 2);

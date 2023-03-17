@@ -309,7 +309,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
       let isFlashed = false;
       if (flashed && allowFlash)
-        isFlashed = feature.elementId.lower == flashed.lower && feature.elementId.upper == flashed.upper;
+        isFlashed = feature.elementId.lower === flashed.lower && feature.elementId.upper === flashed.upper;
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
