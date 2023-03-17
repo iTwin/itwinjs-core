@@ -210,7 +210,12 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) =
  * @internal
  */
 export interface RenderFeatureTable {
+  /** The "model Id" of the tile tree containing the tile from which this feature table originated.
+   * It may be a transient Id if, for example, the tile tree represents a reality model or represents the geometry of multiple
+   * persistent models batched together.
+   */
   readonly batchModelId: Id64String;
+  /** Split representation of batchModelId, so we're not constantly having to parse the string. */
   readonly batchModelIdPair: Id64.Uint32Pair;
   /** The number of features in the table; equivalently, one more than the largest feature index. */
   readonly numFeatures: number;
@@ -218,11 +223,17 @@ export interface RenderFeatureTable {
   readonly byteLength: number;
   readonly type: BatchType;
 
+  /** Get the feature at the specified index. Caller is responsible for validating featureIndex less than numFeatures. */
   getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+  /** Find the specified feature. Returns undefined if featureIndex >= numFeatures. */
   findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+  /** Find the Id of the element of the specified feature. */
   findElementId(featureIndex: number): Id64String | undefined;
+  /** Get the Id of the element of the specified feature as a pair of 32-bit integers, asserting that feature index < numFeatures. */
   getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+  /** Get the feature at the specified index. Caller is responsible for validating featureIndex less than numFeatures. */
   getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+  /** Get an object that provides iteration over all features, in order. `output` is reused as the current value on each iteration. */
   iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
 }
 
@@ -518,6 +529,9 @@ export class PackedFeatureModelTable {
   }
 }
 
+/** A PackedFeatureTable with a PackedFeatureModelTable appended to it, capable of storing features belonging to more than one model.
+ * @internal
+ */
 export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   private readonly _features: PackedFeatureTable;
   private readonly _models: PackedFeatureModelTable;

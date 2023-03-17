@@ -100,7 +100,11 @@ export class BatchedTile extends Tile {
   }
 
   public override get channel(): TileRequestChannel {
-    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-batched-models");
+    // ###TODO revert this hackery.
+    const channel = IModelApp.tileAdmin.channels.getForHttp("itwinjs-batched-models");
+    (channel as any)._concurrency = 20;
+    assert(channel.concurrency === 20);
+    return channel;
   }
 
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
