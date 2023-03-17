@@ -106,11 +106,11 @@ class BearingParserSpec extends ParserSpec {
     let adjustedString = inString.toLocaleUpperCase().trimStart().trimEnd();
     if (adjustedString.startsWith("S") || adjustedString.startsWith("N")) {
       prefix = adjustedString.slice(0, 1);
-      adjustedString = adjustedString.substr(1);
+      adjustedString = adjustedString.substring(1);
     }
     if (adjustedString.endsWith("E") || adjustedString.endsWith("W")) {
       suffix = adjustedString.slice(adjustedString.length - 1);
-      adjustedString = adjustedString.substr(0, adjustedString.length - 1);
+      adjustedString = adjustedString.substring(0, adjustedString.length - 1);
       adjustedString = adjustedString.trimStart().trimEnd();
     }
 
