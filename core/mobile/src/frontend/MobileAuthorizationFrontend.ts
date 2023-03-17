@@ -25,19 +25,28 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
 
   public async getAccessToken(): Promise<AccessToken> {
     if (this._fetchingToken) {
-      return Promise.reject(); // short-circuits any recursive use of this function
+      // NOTE: This function is from the AuthorizationClient protocol. That protocol documents
+      // this function to return an empty string if no token is available, NOT throw an exception.
+      return ""; // short-circuits any recursive use of this function
     }
 
     if (this._accessToken && !this._hasExpired) {
       return this._accessToken;
     } else {
-      this._fetchingToken = true;
-      const result = await MobileApp.callBackend("getAccessToken");
-      this._accessToken = result[0];
-      if (result[1])
-        this._expirationDate = new Date(result[1]);
-      this._fetchingToken = false;
-      return this._accessToken;
+      try {
+        this._fetchingToken = true;
+        const result = await MobileApp.callBackend("getAccessToken");
+        this._accessToken = result[0];
+        if (result[1])
+          this._expirationDate = new Date(result[1]);
+        else
+          this._expirationDate = undefined;
+        return this._accessToken;
+      } catch (_ex) {
+        return "";
+      } finally {
+        this._fetchingToken = false;
+      }
     }
   }
 
