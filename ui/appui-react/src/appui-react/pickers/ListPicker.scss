@@ -299,3 +299,10 @@ $item-height: 32px;
 
   @include title;
 }
+
+.core-searchbox.ListPickerSearchBox {
+  width: inherit;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px
+}
