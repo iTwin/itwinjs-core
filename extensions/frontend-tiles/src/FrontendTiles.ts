@@ -20,5 +20,5 @@ export interface FrontendTilesOptions {
  * @alpha
  */
 export function initializeFrontendTiles(options: FrontendTilesOptions): void {
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view.iModel, options.computeSpatialTilesetBaseUrl);
+  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, options.computeSpatialTilesetBaseUrl);
 }
