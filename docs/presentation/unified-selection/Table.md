@@ -12,7 +12,7 @@ As stated in the documentation of [usePresentationTableWithUnifiedSelection]($pr
 
 ## Example
 
-The below example shows how to create a very basic presentation rules driven Table component and hook it into Unified Selection. The latter part is achieved by using [usePresentationTableWithUnifiedSelection]($presentation-components) to create the data for the component, as opposed to using the general [usePresentationTable]($components-react).
+The below example shows how to create a very basic presentation rules driven Table component and hook it into Unified Selection. The latter part is achieved by using [usePresentationTableWithUnifiedSelection]($presentation-components) to create the data for the component, as opposed to using the general [usePresentationTable]($presentation-components).
 
 ```tsx
 [[include:Presentation.Components.UnifiedSelection.Table]]
