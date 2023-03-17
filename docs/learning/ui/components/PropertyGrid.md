@@ -8,7 +8,7 @@ classes and components for working with a PropertyGrid control.
 The following React components comprise the PropertyGrid control.
 
 - [VirtualizedPropertyGridWithDataProvider]($components-react) - renders categorized properties.
-- [PropertyRenderer]($components-react) - renders a [PropertyRecord]($appui-react).
+- [PropertyRenderer]($components-react) - renders a [PropertyRecord]($appui-abstract).
 - [PropertyView]($components-react) - renders a property as a label/value pair.
 - [IPropertyValueRenderer]($components-react) - renders a property value.
 
