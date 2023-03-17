@@ -145,6 +145,19 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     }
     return undefined;
   }
+  /** Create a clip plane
+   * @param origin any point on the plane.
+   * @param vectorA any vector in the plane
+   * @param vectorB any vector in the plane
+   * * returns undefined if the vectors are not independent.
+   * * The stored inward normal is vectorB.crossProduct(vectorA).
+   */
+  public static createOriginAndVectors(origin: Point3d,
+    vectorA: Vector3d, vectorB: Vector3d,
+    invisible: boolean = false, interior: boolean = false, result?: ClipPlane): ClipPlane | undefined {
+    const normalized = vectorB.crossProduct(vectorA);
+    return this.createNormalAndPoint(normalized, origin, invisible, interior, result);
+  }
 
   /** Create a ClipPlane
    * * "normal" (normalX, normalY, nz) is the inward normal of the plane.

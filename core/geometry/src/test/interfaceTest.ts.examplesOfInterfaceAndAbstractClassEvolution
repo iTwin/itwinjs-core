@@ -1,0 +1,90 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+// import { expect } from "chai";
+
+// Experiments with adding a method to a class (a) as part of a larger interface and (b) as part of a new abstract base class.
+
+// An original interface with one methodA
+interface InterfaceA {
+  methodA(a: number): number;
+}
+
+// expanded by addition of methodB
+interface InterfaceB extends InterfaceA {
+  methodB(a: number): number;
+}
+
+// a base class with both interfaces
+abstract class BaseClassWithBothInterfaces {
+  public abstract methodA(a: number): number;
+  public abstract methodB(b: number): number;
+}
+
+export class ConcreteImplementorInterfaceA implements InterfaceA {
+  public methodA(a: number): number { return a; }
+}
+
+export class ConcreteImplementorInterfaceB implements InterfaceB {
+  public methodA(a: number): number { return a; }
+  public methodB(a: number): number { return -a; }
+}
+
+export class ConcreteDerived extends BaseClassWithBothInterfaces {
+  public methodA(a: number): number { return a; }
+  public methodB(a: number): number { return -a; }
+}
+
+export class ConcreteMethodsAB {
+  public methodA(a: number): number { return a; }
+  public methodB(a: number): number { return -a; }
+}
+
+export class ConcreteMethodA {
+  public methodA(a: number): number { return a; }
+}
+
+export function functionWithInterfaceAParameter(interfaceParameter: InterfaceA, a: number): number[] {
+  return [interfaceParameter.methodA(a)];
+}
+
+export function functionWithInterfaceBParameter(interfaceParameter: InterfaceB, a: number): number[] {
+  return [interfaceParameter.methodA(a), interfaceParameter.methodB(a)];
+}
+
+export function functionWithBaseClassParameter(interfaceParameter: InterfaceB, a: number): number[] {
+  return [interfaceParameter.methodA(a), interfaceParameter.methodB(a)];
+}
+
+export function makeSomeCalls() {
+  const objectWithInterfaceA = new ConcreteImplementorInterfaceA();
+  const objectWithInterfaceB = new ConcreteImplementorInterfaceB();
+  const objectWithMethodA = new ConcreteMethodA();
+  const objectWithMethodsAB = new ConcreteMethodsAB();
+  const objectWithBaseClass = new ConcreteDerived();
+
+  // We have 5 implementations and 3 functions ....
+
+  functionWithInterfaceAParameter(objectWithInterfaceA, 1);
+  functionWithInterfaceAParameter(objectWithInterfaceB, 3);
+  functionWithInterfaceAParameter(objectWithMethodA, 1);
+  functionWithInterfaceAParameter(objectWithMethodsAB, 1);
+  functionWithInterfaceAParameter(objectWithBaseClass, 2);
+
+  // FAIL AS EXPECTED  functionWithInterfaceBParameter(objectWithInterfaceA, 1);
+  functionWithBaseClassParameter(objectWithInterfaceB, 3);
+  // FAIL AS EXPECTED  functionWithInterfaceBParameter(objectWithMethodA, 1);
+  functionWithInterfaceBParameter(objectWithMethodsAB, 1);
+  functionWithInterfaceBParameter(objectWithBaseClass, 2);
+
+  // When function demands base class, all the classes interface or method but no base class fail
+  // FAIL AS EXPECTED functionWithBaseClassParameter(objectWithInterfaceA, 1);
+  // FAIL AS EXPECTED functionWithBaseClassParameter(objectWithInterfaceB, 3);
+  // FAIL AS EXPECTED functionWithBaseClassParameter(objectWithMethodA, 1);
+  // FAIL AS EXPECTED functionWithBaseClassParameter(objectWithMethodsAB, 1);
+  functionWithBaseClassParameter(objectWithBaseClass, 2);
+
+}
+

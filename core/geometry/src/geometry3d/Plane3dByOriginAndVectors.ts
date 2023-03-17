@@ -33,7 +33,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions, PlaneEvaluato
     this.vectorU = vectorU;
     this.vectorV = vectorV;
   }
-  /** create a new plane from origin and vectors. */
+  /** create a new plane from origin and 2 in-plane vectors. */
   public static createOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     if (result) {
       result.origin.setFrom(origin);

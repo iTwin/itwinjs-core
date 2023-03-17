@@ -492,6 +492,19 @@ export class Geometry {
       return outPositive;
     return outZero;
   }
+  /**
+   * Examine the value (particularly sign) of x.
+   * * If x is negative, return -1
+   * * If x is true zero, return 0
+   * * If x is positive, return 1
+   */
+  public static split3Way01(x: number, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
+    if (x > tolerance)
+      return 1;
+    if (x < -tolerance)
+      return -1;
+    return 0;
+  }
   /** Return the largest signed value among a, b */
   public static maxXY(a: number, b: number): number {
     let q = a;

@@ -281,4 +281,18 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvalu
   }
   /** Returns true of spacePoint is within distance tolerance of the plane. */
   public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
+  /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced alitutde pf the point is
+   *    negative, near zero, or positive.
+   *
+  */
+  public classifyAltitude(point: Point3d, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
+    return Geometry.split3Way01(this.altitude(point), tolerance);
+  }
+  /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced alitutde pf the point is
+   *    negative, near zero, or positive.
+   *
+  */
+  public classifyAltitudeXYZ(x: number, y: number, z: number, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
+    return Geometry.split3Way01(this.altitudeXYZ(x, y, z), tolerance);
+  }
 }
