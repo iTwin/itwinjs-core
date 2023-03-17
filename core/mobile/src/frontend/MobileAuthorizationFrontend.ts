@@ -37,10 +37,7 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
         this._fetchingToken = true;
         const result = await MobileApp.callBackend("getAccessToken");
         this._accessToken = result[0];
-        if (result[1])
-          this._expirationDate = new Date(result[1]);
-        else
-          this._expirationDate = undefined;
+        this._expirationDate = result[1] ? new Date(result[1]) : undefined;
         return this._accessToken;
       } catch (_ex) {
         return "";
