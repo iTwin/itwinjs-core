@@ -624,6 +624,8 @@ export enum AccuDrawFlags {
     // (undocumented)
     LockDistance = 256,
     // (undocumented)
+    None = 0,
+    // (undocumented)
     OrientACS = 131072,
     // (undocumented)
     OrientDefault = 16384,
@@ -1421,7 +1423,7 @@ export class BackgroundMapGeometry {
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
     constructor(_quantityFormatter: QuantityFormatter, _maintainOverridesPerIModel?: boolean | undefined);
     // (undocumented)
-    protected applyQuantityFormattingSettingsForIModel: (imodel?: IModelConnection | undefined) => Promise<void>;
+    protected applyQuantityFormattingSettingsForIModel: (imodel?: IModelConnection) => Promise<void>;
     protected buildQuantityFormatOverridesMap(): Promise<Map<UnitSystemKey, Map<string, FormatProps>>>;
     // (undocumented)
     protected get imodelConnection(): IModelConnection | undefined;
