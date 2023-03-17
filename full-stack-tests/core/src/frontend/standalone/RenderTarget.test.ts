@@ -130,7 +130,12 @@ describe("RenderTarget", () => {
       expect(pixels.length).to.equal(1);
 
       // Background pixels have distanceFraction = 0 indicating far plane.
-      const backgroundPixel = new Pixel.Data({ distanceFraction: 0 });
+      const backgroundPixel = new Pixel.Data({
+        distanceFraction: 0,
+        type: Pixel.GeometryType.None,
+        planarity: Pixel.Planarity.None,
+      });
+
       expect(comparePixelData(backgroundPixel, pixels.array[0])).to.equal(0);
 
       // Ensure reading out-of-bounds rects returns empty pixel array
