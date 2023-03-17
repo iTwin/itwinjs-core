@@ -4,7 +4,7 @@ function readPackage(pkg) {
     pkg.dependencies &&
     pkg.dependencies["typescript"]
   ) {
-    pkg.dependencies["typescript"] = "~4.4.0";
+    pkg.dependencies["typescript"] = "~5.0.2";
   }
 
   // Hacky mess: For external packages to this monorepo that have peer dependencies on packages

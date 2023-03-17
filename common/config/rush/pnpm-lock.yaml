@@ -49,7 +49,7 @@ importers:
       semver: ^7.3.5
       sinon: ^9.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
@@ -115,7 +115,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.30_eslint@7.32.0+typescript@5.0.2
@@ -152,7 +152,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^7.3.5
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/object-storage-core': 1.5.0
       flatbuffers: 1.12.0
@@ -201,7 +201,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@bentley/units-schema': 1.0.7
       '@itwin/build-tools': link:../../tools/build
@@ -251,7 +251,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@xmldom/xmldom': 0.8.6
       fs-extra: 8.1.0
@@ -301,7 +301,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       almost-equal: 1.1.0
     devDependencies:
@@ -339,7 +339,7 @@ importers:
       '@itwin/eslint-plugin': nightly
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../bentley
@@ -363,7 +363,7 @@ importers:
       '@itwin/eslint-plugin': nightly
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../backend
@@ -398,7 +398,7 @@ importers:
       open: ^7.0.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       username: ^5.1.0
       webpack: ^5.76.0
     dependencies:
@@ -449,7 +449,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       supertest: ^3.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
@@ -538,7 +538,7 @@ importers:
       sinon: ^9.0.2
       source-map-loader: ^4.0.0
       superagent: ^7.1.5
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
     dependencies:
@@ -605,7 +605,7 @@ importers:
       eslint: ^7.11.0
       file-saver: ^2.0.2
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
@@ -639,7 +639,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^7.3.5
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/core-bentley': link:../bentley
       flatbuffers: 1.12.0
@@ -682,7 +682,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -731,7 +731,7 @@ importers:
       i18next-http-backend: ^1.4.4
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       i18next: 21.10.0
@@ -780,7 +780,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@svgdotjs/svg.js': 3.0.13
@@ -838,7 +838,7 @@ importers:
       qs: ^6.5.3
       rimraf: ^3.0.2
       superagent: ^7.1.5
-      typescript: 5.0.2
+      typescript: ~5.0.2
       ws: ^7.5.3
     dependencies:
       deep-assign: 2.0.0
@@ -889,7 +889,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^7.3.5
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -925,7 +925,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -960,7 +960,7 @@ importers:
       mocha: ^10.0.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@itwin/core-bentley': link:../bentley
@@ -1005,7 +1005,7 @@ importers:
       rimraf: ^3.0.2
       semver: ^7.3.5
       sinon: ^9.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       semver: 7.3.8
     devDependencies:
@@ -1050,7 +1050,7 @@ importers:
       mocha: ^10.0.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@itwin/core-bentley': link:../bentley
@@ -1091,7 +1091,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^7.3.5
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       semver: 7.3.8
     devDependencies:
@@ -1131,7 +1131,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
@@ -1165,7 +1165,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../../core/bentley
@@ -1197,7 +1197,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
@@ -1226,7 +1226,7 @@ importers:
       '@itwin/eslint-plugin': nightly
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/editor-common': link:../common
     devDependencies:
@@ -1255,7 +1255,7 @@ importers:
       eslint: ^7.11.0
       mocha: ^10.0.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -1286,7 +1286,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/editor-common': link:../common
     devDependencies:
@@ -1323,7 +1323,7 @@ importers:
       eslint: ^7.11.0
       mocha: ^10.0.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1374,7 +1374,7 @@ importers:
       fs-extra: ^8.1.0
       mocha: ^10.0.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1416,7 +1416,7 @@ importers:
       '@types/node': ^18.11.5
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -1450,7 +1450,7 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -1500,7 +1500,7 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       google-protobuf: 3.20.1
     devDependencies:
@@ -1539,7 +1539,7 @@ importers:
       esbuild: ^0.13.8
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       url: ^0.11.0
     dependencies:
       '@itwin/core-extension': link:../../core/extension
@@ -1605,7 +1605,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@azure/storage-blob': 12.13.0
       '@bentley/aec-units-schema': 1.0.3
@@ -1722,7 +1722,7 @@ importers:
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
       stream-http: ^3.2.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
       webpack-cli: ^4.10.0
     dependencies:
@@ -1836,7 +1836,7 @@ importers:
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
       webpack-cli: ^4.10.0
     dependencies:
@@ -1938,7 +1938,7 @@ importers:
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -2023,7 +2023,7 @@ importers:
       source-map-loader: ^4.0.0
       spdy: ^4.0.1
       stream-browserify: ^3.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
       webpack-cli: ^4.10.0
     dependencies:
@@ -2107,7 +2107,7 @@ importers:
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
       webpack-cli: ^4.10.0
     dependencies:
@@ -2199,7 +2199,7 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       object-hash: 1.3.1
       semver: 7.3.8
@@ -2276,7 +2276,7 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       typescript-json-schema: ^0.55.0
       yargs: ^17.4.0
     devDependencies:
@@ -2352,7 +2352,7 @@ importers:
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -2407,7 +2407,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.30_eslint@7.32.0+typescript@5.0.2
@@ -2468,7 +2468,7 @@ importers:
       null-loader: ^4.0.1
       react: ^18.0.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -2573,7 +2573,7 @@ importers:
       rimraf: ^3.0.2
       semver: ^7.3.5
       ts-node: ^10.8.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       vhacd-js: ^0.0.1
       webpack: ^5.76.0
     dependencies:
@@ -2650,7 +2650,7 @@ importers:
       '@types/yargs': 17.0.19
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2683,7 +2683,7 @@ importers:
       eslint: ^7.11.0
       mocha: ^10.0.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2719,7 +2719,7 @@ importers:
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2753,7 +2753,7 @@ importers:
       '@types/yargs': 17.0.19
       eslint: ^7.11.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2787,7 +2787,7 @@ importers:
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2833,7 +2833,7 @@ importers:
       internal-tools: workspace:*
       mocha: ^10.0.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2908,7 +2908,7 @@ importers:
       tree-kill: ^1.2.0
       typedoc: ^0.22.11
       typedoc-plugin-merge-modules: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       wtfnode: ^0.9.1
       yargs: ^17.4.0
     dependencies:
@@ -2954,7 +2954,7 @@ importers:
       puppeteer: 15.5.0
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       detect-port: 1.3.0
@@ -3008,7 +3008,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3057,7 +3057,7 @@ importers:
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
     dependencies:
       fs-extra: 8.1.0
     devDependencies:
@@ -3097,7 +3097,7 @@ importers:
       resolve: 1.19.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: 5.0.2
+      typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       chalk: 3.0.0
@@ -3161,7 +3161,7 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-node: ^10.8.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
@@ -3211,7 +3211,7 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       rimraf: ^3.0.2
-      typescript: 5.0.2
+      typescript: ~5.0.2
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -6500,7 +6500,7 @@ packages:
       resolve: 1.17.0
       semver: 7.3.8
       source-map: 0.6.1
-      typescript: 4.4.4
+      typescript: 5.0.2
     dev: false
 
   /@microsoft/tsdoc-config/0.16.2:
@@ -9583,7 +9583,7 @@ packages:
     dev: true
 
   /concat-map/0.0.1:
-    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
+    resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
 
   /concurrently/3.6.1:
     resolution: {integrity: sha512-/+ugz+gwFSEfTGUxn0KHkY+19XPRTXR8+7oUK/HxgiN1n7FjeJmkrbSiXAJfyQ0zORgJYPaenmymwon51YXH9Q==}
@@ -18976,12 +18976,6 @@ packages:
       - '@swc/core'
       - '@swc/wasm'
     dev: true
-
-  /typescript/4.4.4:
-    resolution: {integrity: sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
-    dev: false
 
   /typescript/4.8.4:
     resolution: {integrity: sha512-QCh+85mCy+h0IGff8r5XWzOVSbBO+KfeYrMQh7NJ58QujwcE22u+NUSmUxqF+un70P9GXKxa2HCNiTTMJknyjQ==}

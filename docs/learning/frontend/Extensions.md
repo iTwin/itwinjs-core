@@ -48,7 +48,7 @@ Next, you'll want to add [TypeScript](https://www.typescriptlang.org/), and the 
     "@itwin/core-extension": "^3.2.0"
   },
   "devDependencies": {
-    "typescript": "5.0.2",
+    "typescript": "~5.0.2",
     "@itwin/build-tools": "^3.2.0",
   },
 ```

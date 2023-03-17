@@ -45,7 +45,7 @@
     "@itwin/eslint-plugin": "nightly",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "5.0.2"
+    "typescript": "~5.0.2"
   },
   "eslintConfig": {
     "plugins": [
