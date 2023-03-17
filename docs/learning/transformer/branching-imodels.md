@@ -69,6 +69,7 @@ The process of transferring change history between iModels is called *synchroniz
 
 ![synchronization diagram](./iModelBranching.drawio.svg)
 
+TODO: 9/22 - Update/remove Link
 In the above diagram you can see an example change history of a master and its branch. Each arrow is an application submitting
 [ChangeSets](/learning/imodelhub/briefcases) to the iModel, and each vertical connection (notably an arrow with with two sources) is
 a transformation reading both iModels and submitting a [ChangeSet](/learning/glossary/#changeset) to one of them, *synchronizing* them.
@@ -78,6 +79,7 @@ synchronization, as shown in the samples below.
 
 ### Squashing changesets
 
+TODO: 9/22 - Update/remove Link
 In the above diagram, the synchronizations occur after several [ChangeSets](/learning/imodelhub/briefcases), each synchronization here *squashes* several changesets
 from the synchronization source into the synchronization target. Alternatively, one could run a synchronization per changeset
 in the source of the synchronization, so that the synchronization target has a changeset corresponding to each one in the

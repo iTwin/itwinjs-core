@@ -16,6 +16,7 @@ Locks are associated with a briefcase while it is making changes and are (option
 ## Background
 
 This article assumes that you already know that:
+TODO: 9/22 - Update Links
 
 - An iModel is a multi-user database
 - An app works with a [briefcase](../Glossary.md#Briefcase) using the [BriefcaseDb]($backend) class.
