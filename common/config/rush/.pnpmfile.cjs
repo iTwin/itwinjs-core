@@ -1,10 +1,9 @@
 function readPackage(pkg) {
   if (
     (pkg.name == "typedoc") &&
-    pkg.dependencies &&
-    pkg.dependencies["typescript"]
+    pkg.dependencies
   ) {
-    pkg.dependencies["typescript"] = "~5.0.2";
+    pkg.dependencies["typescript"] = "~4.7.0";
   }
 
   // Hacky mess: For external packages to this monorepo that have peer dependencies on packages
