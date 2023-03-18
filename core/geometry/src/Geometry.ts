@@ -92,13 +92,13 @@ export interface TrigValues {
   /** the radians value */
   radians: number;
 }
+
 /**
- * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
- * NOTE: This interface is superseded by PlaneEvaluator.
- * Specific implementors are
- * * Plane3dByOriginAndUnitNormal -- implicit plane with preferred origin
- * * Plane3dByOriginAndVectors -- parametric plane (with skew-friendly, independently scaled grid directions)
- * * ClipPlane implicit plane as used in ConvexClipPlaneSet and UnionOfConvexClipPlaneSet
+ * Plane Evaluation methods.
+ * * These provide the necessary queries to implement clipping operations without knowing if the plane in use
+ * is [ClipPlane], [Plane3dByOriginAndNormal], [Plane3dByOriginAndVectors], [Plane4d].
+ * * The AbstractPlane3d class declares obligation to implement these methods, and
+ * passes the obligation on to concrete implementations by declaring them as abstract members which the particular classes can implement.
  * @public
  */
 export interface PlaneAltitudeEvaluator {
@@ -135,13 +135,6 @@ export interface PlaneAltitudeEvaluator {
   normalY(): number;
   /** x part of normal vector */
   normalZ(): number;
-}
-/**
- * Plane Evaluation methods.
- * This supersedes PlaneAltitudeEvaluators as the uniform method set for internal plane classes.
- * @public
- */
-export interface PlaneEvaluator extends PlaneAltitudeEvaluator {
   /**
    * Return the projection of spacePoint onto this plane(i.e. closest point on plane)
    * @param spacePoint point to project to plane

@@ -6,7 +6,8 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, BeJSONFunctions, Geometry, PlaneEvaluator } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
+import { AbstractPlane3d } from "./AbstractPlane3d";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
@@ -21,11 +22,12 @@ import { XAndY } from "./XYZProps";
  * * a unit normal.
  * @public
  */
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvaluator {
+export class Plane3dByOriginAndUnitNormal extends AbstractPlane3d implements BeJSONFunctions {
   private _origin: Point3d;
   private _normal: Vector3d;
   // constructor captures references !!!
   private constructor(origin: Point3d, normal: Vector3d) {
+    super();
     this._origin = origin;
     this._normal = normal;
   }
@@ -255,7 +257,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvalu
     return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint);
   }
 
-  /** return a point at specified (signed) altitude */
+  /** return any point at specified (signed) altitude. */
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {
     return this._origin.plusScaled(this._normal, altitude, result);
   }
@@ -280,19 +282,5 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvalu
     return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
   /** Returns true of spacePoint is within distance tolerance of the plane. */
-  public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
-  /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced alitutde pf the point is
-   *    negative, near zero, or positive.
-   *
-  */
-  public classifyAltitude(point: Point3d, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
-    return Geometry.split3Way01(this.altitude(point), tolerance);
-  }
-  /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced alitutde pf the point is
-   *    negative, near zero, or positive.
-   *
-  */
-  public classifyAltitudeXYZ(x: number, y: number, z: number, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
-    return Geometry.split3Way01(this.altitudeXYZ(x, y, z), tolerance);
-  }
+  public override  isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
 }

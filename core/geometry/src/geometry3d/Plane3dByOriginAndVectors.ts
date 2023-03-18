@@ -6,7 +6,8 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, BeJSONFunctions, Geometry, PlaneEvaluator } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
+import { AbstractPlane3d } from "./AbstractPlane3d";
 import { Point4d } from "../geometry4d/Point4d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
@@ -21,7 +22,7 @@ import { XYAndZ } from "./XYZProps";
  *   * are NOT required to be perpendicular vectors.
  * @public
  */
-export class Plane3dByOriginAndVectors implements BeJSONFunctions, PlaneEvaluator {
+export class Plane3dByOriginAndVectors extends AbstractPlane3d implements BeJSONFunctions {
   /** origin of plane grid */
   public origin: Point3d;
   /** u direction in plane grid */
@@ -29,6 +30,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions, PlaneEvaluato
   /** v direction in plane grid */
   public vectorV: Vector3d;
   private constructor(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d) {
+    super();
     this.origin = origin;
     this.vectorU = vectorU;
     this.vectorV = vectorV;

@@ -9,7 +9,7 @@
 
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { XYZProps } from "../geometry3d/XYZProps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -25,6 +25,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { AnalyticRoots } from "../numerics/Polynomials";
 import { Clipper, ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { AbstractPlane3d } from "../geometry3d/AbstractPlane3d";
 
 /** Wire format describing a [[ClipPlane]].
  * If either [[normal]] or [[dist]] are omitted, defaults to a normal of [[Vector3d.unitZ]] and a distance of zero.
@@ -54,7 +55,7 @@ export interface ClipPlaneProps {
  * * Given a point and inward normal, the signedDistance is (point DOT normal)
  * @public
  */
-export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClipper {
+export class ClipPlane extends AbstractPlane3d implements Clipper, PolygonClipper {
   private _inwardNormal: Vector3d;
   /** Construct a parallel plane through the origin.
    * * Move it to the actual position.
@@ -65,6 +66,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
   private _interior: boolean;
 
   private constructor(normal: Vector3d, distance: number, invisible: boolean, interior: boolean) {
+    super();
     this._invisible = invisible;
     this._interior = interior;
     this._inwardNormal = normal;
@@ -151,6 +153,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
    * @param vectorB any vector in the plane
    * * returns undefined if the vectors are not independent.
    * * The stored inward normal is vectorB.crossProduct(vectorA).
+   * * That is, the vectors are considered as a right-handed pair when viewed from the outside.
    */
   public static createOriginAndVectors(origin: Point3d,
     vectorA: Vector3d, vectorB: Vector3d,

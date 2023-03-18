@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { AxisOrder, PlaneEvaluator } from "../../Geometry";
+import { AxisOrder } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -13,12 +13,13 @@ import { Checker } from "../Checker";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Point4d } from "../../geometry4d/Point4d";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { AbstractPlane3d } from "../../geometry3d/AbstractPlane3d";
 
 /**
  * Check that planeA and planeB have matched PlaneAltitudeEvaluator results (other than bit loss)
  * Note that this is a strong set of orientation and scaling expectations.
  */
-function verifyMatchedPlaneAltitudeEvaluator(ck: Checker, planeA: PlaneEvaluator, planeB: PlaneEvaluator) {
+function verifyMatchedPlaneAltitudeEvaluator(ck: Checker, planeA: AbstractPlane3d, planeB: AbstractPlane3d) {
   const points = Sample.point3d;
   const vectors = Sample.createNonZeroVectors();
   ck.testCoordinate(planeA.normalX(), planeB.normalX(), "normalX");

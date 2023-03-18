@@ -207,7 +207,6 @@ public;Plane3dByOriginAndUnitNormal
 public;Plane3dByOriginAndVectors 
 public;PlaneAltitudeEvaluator
 public;PlaneByOriginAndVectors4d
-public;PlaneEvaluator 
 public;Point2d 
 public;Point2dArray
 public;Point2dArrayCarrier 

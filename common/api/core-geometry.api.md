@@ -1037,7 +1037,7 @@ export interface Clipper {
 }
 
 // @public
-export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClipper {
+export class ClipPlane extends AbstractPlane3d implements Clipper, PolygonClipper {
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1052,6 +1052,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     static createNormalAndDistance(normal: Vector3d, distance: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPoint(normal: Vector3d, point: Point3d, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number, originX: number, originY: number, originZ: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
+    static createOriginAndVectors(origin: Point3d, vectorA: Vector3d, vectorB: Vector3d, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
     get distance(): number;
     dotProductPlaneNormalPoint(point: Point3d): number;
@@ -2159,6 +2160,7 @@ export class Geometry {
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
     static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined;
+    static split3Way01(x: number, tolerance?: number): -1 | 0 | 1;
     static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number;
     static square(x: number): number;
     static stepCount(stepSize: number, total: number, minCount?: number, maxCount?: number): number;
@@ -4058,7 +4060,7 @@ export interface PerpParallelOptions {
 }
 
 // @public
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvaluator {
+export class Plane3dByOriginAndUnitNormal extends AbstractPlane3d implements BeJSONFunctions {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
     altitudeXY(x: number, y: number): number;
@@ -4097,7 +4099,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneEvalu
 }
 
 // @public
-export class Plane3dByOriginAndVectors implements BeJSONFunctions, PlaneEvaluator {
+export class Plane3dByOriginAndVectors extends AbstractPlane3d implements BeJSONFunctions {
     // (undocumented)
     altitude(xyz: XYAndZ): number;
     // (undocumented)
@@ -4149,6 +4151,7 @@ export interface PlaneAltitudeEvaluator {
     normalX(): number;
     normalY(): number;
     normalZ(): number;
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     velocity(vector: Vector3d): number;
     velocityXYZ(x: number, y: number, z: number): number;
     weightedAltitude(point: Point4d): number;
@@ -4169,11 +4172,6 @@ export class PlaneByOriginAndVectors4d {
     setOriginAndVectorsXYZW(x0: number, y0: number, z0: number, w0: number, ux: number, uy: number, uz: number, uw: number, vx: number, vy: number, vz: number, vw: number): PlaneByOriginAndVectors4d;
     vectorU: Point4d;
     vectorV: Point4d;
-}
-
-// @public
-export interface PlaneEvaluator extends PlaneAltitudeEvaluator {
-    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
 }
 
 // @public
@@ -4329,7 +4327,7 @@ export class Point3dArrayPolygonOps {
 }
 
 // @public
-export class Point4d implements BeJSONFunctions, PlaneEvaluator {
+export class Point4d extends AbstractPlane3d implements BeJSONFunctions {
     protected constructor(x?: number, y?: number, z?: number, w?: number);
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
