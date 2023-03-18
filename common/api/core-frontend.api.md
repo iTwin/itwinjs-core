@@ -185,6 +185,7 @@ import { MeshPolylineList } from '@itwin/core-common';
 import { MessagePresenter } from '@itwin/appui-abstract';
 import { MessageSeverity } from '@itwin/appui-abstract';
 import { ModelExtentsProps } from '@itwin/core-common';
+import { ModelFeature } from '@itwin/core-common';
 import { ModelGeometryChanges } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
@@ -259,6 +260,7 @@ import { RealityModelDisplaySettings } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
+import { RenderFeatureTable } from '@itwin/core-common';
 import { RenderMaterial } from '@itwin/core-common';
 import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
@@ -1263,6 +1265,7 @@ export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocation
 export interface AttachToViewportArgs {
     drawingToSheetTransform?: Transform;
     invalidateDecorations: () => void;
+    invalidateSymbologyOverrides: () => void;
 }
 
 // @public
@@ -5202,7 +5205,7 @@ export class ImdlReader {
     protected materialFromJson(key: string): RenderMaterial | undefined;
     read(): Promise<ImdlReaderResult>;
     // (undocumented)
-    protected readFeatureTable(startPos: number): PackedFeatureTable | undefined;
+    protected readFeatureTable(startPos: number): RenderFeatureTable | undefined;
 }
 
 // @internal
@@ -7484,11 +7487,11 @@ export namespace MockRender {
     }
     // (undocumented)
     export class Batch extends Graphic {
-        constructor(graphic: RenderGraphic, featureTable: PackedFeatureTable, range: ElementAlignedBox3d);
+        constructor(graphic: RenderGraphic, featureTable: RenderFeatureTable, range: ElementAlignedBox3d);
         // (undocumented)
         dispose(): void;
         // (undocumented)
-        readonly featureTable: PackedFeatureTable;
+        readonly featureTable: RenderFeatureTable;
         // (undocumented)
         readonly graphic: RenderGraphic;
         // (undocumented)
@@ -7555,7 +7558,7 @@ export namespace MockRender {
         // (undocumented)
         createAreaPattern(): AreaPattern;
         // (undocumented)
-        createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): Batch;
+        createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
         createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): Builder;
         // (undocumented)
@@ -8350,16 +8353,26 @@ export namespace Pixel {
     }
     export class Data {
         // @internal
-        constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string);
+        constructor(args?: {
+            feature?: ModelFeature;
+            distanceFraction?: number;
+            type?: GeometryType;
+            planarity?: Planarity;
+            batchType?: BatchType;
+            iModel?: IModelConnection;
+            tileId?: string;
+        });
+        // @internal (undocumented)
+        readonly batchType?: BatchType;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
         readonly feature?: Feature;
-        // @internal (undocumented)
-        readonly featureTable?: PackedFeatureTable;
         get geometryClass(): GeometryClass | undefined;
         readonly iModel?: IModelConnection;
         // @internal (undocumented)
         get isClassifier(): boolean;
+        // (undocumented)
+        readonly modelId?: Id64String;
         readonly planarity: Planarity;
         get subCategoryId(): Id64String | undefined;
         // @internal (undocumented)
@@ -9662,7 +9675,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
-    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
+    abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
@@ -10745,6 +10758,8 @@ export class SpatialModelState extends GeometricModel3dState {
 // @internal
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
     [Symbol.iterator](): Iterator<TileTreeReference>;
+    attachToViewport(args: AttachToViewportArgs): void;
+    detachFromViewport(): void;
     setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
     update(): void;
 }
@@ -14042,6 +14057,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal (undocumented)
     invalidateRenderPlan(): void;
     invalidateScene(): void;
+    // @internal (undocumented)
+    invalidateSymbologyOverrides(): void;
     // @internal (undocumented)
     protected _inViewChangedEvent: boolean;
     get isAlwaysDrawnExclusive(): boolean;
