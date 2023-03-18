@@ -185,6 +185,7 @@ import { MeshPolylineList } from '@itwin/core-common';
 import { MessagePresenter } from '@itwin/appui-abstract';
 import { MessageSeverity } from '@itwin/appui-abstract';
 import { ModelExtentsProps } from '@itwin/core-common';
+import { ModelFeature } from '@itwin/core-common';
 import { ModelGeometryChanges } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
@@ -259,6 +260,7 @@ import { RealityModelDisplaySettings } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
+import { RenderFeatureTable } from '@itwin/core-common';
 import { RenderMaterial } from '@itwin/core-common';
 import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
@@ -1261,6 +1263,7 @@ export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocation
 export interface AttachToViewportArgs {
     drawingToSheetTransform?: Transform;
     invalidateDecorations: () => void;
+    invalidateSymbologyOverrides: () => void;
 }
 
 // @public
@@ -1363,7 +1366,7 @@ export class B3dmReader extends GltfReader {
     // (undocumented)
     read(): Promise<GltfReaderResult>;
     // (undocumented)
-    protected readBatchTable(mesh: Mesh, json: any): void;
+    protected readBatchTable(mesh: Mesh, json: GltfMeshPrimitive): void;
 }
 
 // @internal
@@ -2662,6 +2665,14 @@ export interface DownloadProgressInfo {
     total: number;
 }
 
+// @internal (undocumented)
+export interface DracoMeshCompression {
+    // (undocumented)
+    attributes: GltfStringMap<number>;
+    // (undocumented)
+    bufferView: GltfId;
+}
+
 // @internal
 export interface DrawClipOptions {
     color?: ColorDef;
@@ -3615,6 +3626,9 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
 // @internal
 export function getGcsConverterAvailable(iModel: IModelConnection): Promise<boolean>;
 
+// @internal
+export function getGltfNodeMeshIds(node: GltfNode): GltfId[];
+
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
 
@@ -3703,58 +3717,132 @@ export class GlobeAnimator implements Animator {
 }
 
 // @internal
-export interface Gltf extends GltfProperty {
+export type Gltf1Id = string;
+
+// @internal (undocumented)
+export interface Gltf1Material extends GltfChildOfRootProperty {
     // (undocumented)
-    accessors?: GltfDictionary<GltfAccessor>;
-    animations?: GltfDictionary<any>;
-    asset?: GltfAsset;
+    diffuse?: string;
     // (undocumented)
-    buffers?: GltfDictionary<GltfBuffer>;
+    emission?: number[];
     // (undocumented)
-    bufferViews?: GltfDictionary<GltfBufferViewProps>;
-    cameras?: GltfDictionary<any>;
+    shininess?: number;
     // (undocumented)
-    extensions?: GltfExtensions & {
-        CESIUM_RTC?: {
-            center?: number[];
-        };
-        KHR_techniques_webgl?: {
-            techniques?: Array<{
-                uniforms?: {
-                    [key: string]: {
-                        type: GltfDataType;
-                        value?: any;
-                    } | undefined;
-                };
-            }>;
-        };
+    specular?: number[];
+    // (undocumented)
+    technique?: GltfId;
+    // (undocumented)
+    values?: {
+        texStep?: number[];
+        color?: number[];
+        tex?: number | string;
     };
-    extensionsRequired?: string[];
-    extensionsUsed?: string[];
-    // (undocumented)
-    images?: GltfDictionary<GltfImage>;
-    // (undocumented)
-    materials?: GltfDictionary<GltfMaterial>;
-    // (undocumented)
-    meshes?: GltfDictionary<GltfMesh>;
-    // (undocumented)
-    nodes?: GltfDictionary<GltfNode>;
-    // (undocumented)
-    samplers?: GltfDictionary<GltfSampler>;
-    scene?: GltfId;
-    // (undocumented)
-    scenes?: GltfDictionary<GltfScene>;
-    skins?: GltfDictionary<any>;
-    techniques?: GltfDictionary<GltfTechnique>;
-    // (undocumented)
-    textures?: GltfDictionary<GltfTexture>;
 }
 
 // @internal
-export type Gltf1Id = string;
+export interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
+    jointName?: GltfId;
+    // (undocumented)
+    mesh?: never;
+    meshes?: GltfId[] | string;
+    skeletons?: GltfId[];
+}
 
 // @internal
 export type Gltf2Id = number;
+
+// @internal (undocumented)
+export interface Gltf2Material extends GltfChildOfRootProperty {
+    // (undocumented)
+    alphaCutoff?: number;
+    // (undocumented)
+    alphaMode?: GltfAlphaMode;
+    // (undocumented)
+    doubleSided?: boolean;
+    // (undocumented)
+    emissiveFactor?: number[];
+    // (undocumented)
+    emissiveTexture?: GltfTextureInfo;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        KHR_materials_unlit?: {};
+        KHR_techniques_webgl?: {
+            technique?: number;
+            values?: {
+                u_texStep?: number[];
+                u_color?: number[];
+                u_diffuse?: {
+                    index: number;
+                    texCoord: number;
+                };
+                [k: string]: unknown | undefined;
+            };
+        };
+    };
+    // (undocumented)
+    normalTexture?: GltfTextureInfo;
+    // (undocumented)
+    occlusionTexture?: unknown;
+    // (undocumented)
+    pbrMetallicRoughness?: GltfMaterialPbrMetallicRoughness;
+}
+
+// @internal
+export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
+    mesh?: GltfId;
+    // (undocumented)
+    meshes?: never;
+    weights?: number[];
+}
+
+// @internal (undocumented)
+export interface GltfAccessor extends GltfChildOfRootProperty {
+    // (undocumented)
+    bufferView?: GltfId;
+    // (undocumented)
+    byteOffset?: number;
+    // (undocumented)
+    componentType?: GltfDataType.SignedByte | GltfDataType.UnsignedByte | GltfDataType.SignedShort | GltfDataType.UnsignedShort | GltfDataType.UInt32 | GltfDataType.Float;
+    // (undocumented)
+    count: number;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        WEB3D_quantized_attributes?: {
+            decodedMin: number[];
+            decodedMax: number[];
+            decodeMatrix: number[];
+        };
+    };
+    // (undocumented)
+    max?: number[];
+    // (undocumented)
+    min?: number[];
+    // (undocumented)
+    normalized?: boolean;
+    // (undocumented)
+    sparse?: unknown;
+    // (undocumented)
+    type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4";
+}
+
+// @internal (undocumented)
+export type GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND";
+
+// @internal
+export interface GltfAsset extends GltfProperty {
+    copyright?: string;
+    generator?: string;
+    minVersion?: string;
+    version: string;
+}
+
+// @internal (undocumented)
+export interface GltfBuffer extends GltfChildOfRootProperty {
+    // (undocumented)
+    byteLength?: number;
+    // (undocumented)
+    uri?: string;
+}
 
 // @internal
 export class GltfBufferData {
@@ -3764,6 +3852,33 @@ export class GltfBufferData {
     // (undocumented)
     readonly count: number;
     static create(bytes: Uint8Array, actualType: GltfDataType, expectedType: GltfDataType, count: number): GltfBufferData | undefined;
+}
+
+// @internal
+export enum GltfBufferTarget {
+    // (undocumented)
+    ArrayBuffer = 34962,
+    // (undocumented)
+    ElementArrayBuffer = 24963
+}
+
+// @internal (undocumented)
+export interface GltfBufferViewProps extends GltfChildOfRootProperty {
+    // (undocumented)
+    buffer: GltfId;
+    // (undocumented)
+    byteLength?: number;
+    // (undocumented)
+    byteOffset?: number;
+    // (undocumented)
+    byteStride?: number;
+    // (undocumented)
+    target?: GltfBufferTarget;
+}
+
+// @internal
+export interface GltfChildOfRootProperty extends GltfProperty {
+    name?: string;
 }
 
 // @internal (undocumented)
@@ -3806,6 +3921,74 @@ export enum GltfDataType {
 }
 
 // @internal
+export interface GltfDictionary<T extends GltfChildOfRootProperty> {
+    // (undocumented)
+    [key: GltfId]: T | undefined;
+}
+
+// @internal
+export function gltfDictionaryIterator<T extends GltfChildOfRootProperty>(dict: GltfDictionary<T>): Iterable<T>;
+
+// @internal
+export interface GltfDocument extends GltfProperty {
+    // (undocumented)
+    accessors?: GltfDictionary<GltfAccessor>;
+    animations?: GltfDictionary<any>;
+    asset?: GltfAsset;
+    // (undocumented)
+    buffers?: GltfDictionary<GltfBuffer>;
+    // (undocumented)
+    bufferViews?: GltfDictionary<GltfBufferViewProps>;
+    cameras?: GltfDictionary<any>;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        CESIUM_RTC?: {
+            center?: number[];
+        };
+        KHR_techniques_webgl?: {
+            techniques?: Array<{
+                uniforms?: {
+                    [key: string]: {
+                        type: GltfDataType;
+                        value?: any;
+                    } | undefined;
+                };
+            }>;
+        };
+        EXT_structural_metadata?: GltfStructuralMetadata.Extension;
+    };
+    extensionsRequired?: string[];
+    extensionsUsed?: string[];
+    // (undocumented)
+    images?: GltfDictionary<GltfImage>;
+    // (undocumented)
+    materials?: GltfDictionary<GltfMaterial>;
+    // (undocumented)
+    meshes?: GltfDictionary<GltfMesh>;
+    // (undocumented)
+    nodes?: GltfDictionary<GltfNode>;
+    // (undocumented)
+    samplers?: GltfDictionary<GltfSampler>;
+    scene?: GltfId;
+    // (undocumented)
+    scenes?: GltfDictionary<GltfScene>;
+    skins?: GltfDictionary<any>;
+    techniques?: GltfDictionary<GltfTechnique>;
+    // (undocumented)
+    textures?: GltfDictionary<GltfTexture>;
+}
+
+// @internal
+export type GltfExtensions = GltfStringMap<unknown>;
+
+// @public
+export interface GltfGraphic {
+    boundingBox: AxisAlignedBox3d;
+    graphic: RenderGraphic;
+    localBoundingBox: ElementAlignedBox3d;
+}
+
+// @internal
 export class GltfGraphicsReader extends GltfReader {
     constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs);
     // (undocumented)
@@ -3841,6 +4024,51 @@ export class GltfHeader extends TileHeader {
 export type GltfId = Gltf1Id | Gltf2Id;
 
 // @internal
+export interface GltfImage extends GltfChildOfRootProperty {
+    bufferView?: GltfId;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        KHR_binary_glTF?: {
+            bufferView?: GltfId;
+            mimeType?: string;
+        };
+    };
+    mimeType?: "image/jpeg" | "image/png";
+    uri?: string;
+}
+
+// @internal (undocumented)
+export enum GltfMagFilter {
+    // (undocumented)
+    Linear = 9729,
+    // (undocumented)
+    Nearest = 9728
+}
+
+// @internal (undocumented)
+export type GltfMaterial = Gltf1Material | Gltf2Material;
+
+// @internal (undocumented)
+export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
+    // (undocumented)
+    baseColorFactor?: number[];
+    // (undocumented)
+    baseColorTexture?: GltfTextureInfo;
+    // (undocumented)
+    metallicFactor?: number;
+    // (undocumented)
+    metallicRoughnessTexture?: GltfTextureInfo;
+    // (undocumented)
+    roughnessFactor?: number;
+}
+
+// @internal
+export interface GltfMesh extends GltfChildOfRootProperty {
+    primitives?: GltfMeshPrimitive[];
+    weights?: number[];
+}
+
+// @internal
 export class GltfMeshData {
     constructor(props: Mesh);
     // (undocumented)
@@ -3864,7 +4092,73 @@ export class GltfMeshData {
 }
 
 // @internal
+export enum GltfMeshMode {
+    // (undocumented)
+    Lines = 1,
+    // (undocumented)
+    LineStrip = 3,
+    // (undocumented)
+    Points = 0,
+    TriangleFan = 6,
+    // (undocumented)
+    Triangles = 4,
+    TriangleStrip = 5
+}
+
+// @internal
+export interface GltfMeshPrimitive extends GltfProperty {
+    attributes: GltfStringMap<GltfId>;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        CESIUM_primitive_outline?: {
+            indices?: GltfId;
+        };
+        KHR_draco_mesh_compression?: DracoMeshCompression;
+        EXT_mesh_features?: MeshFeatures;
+    };
+    indices?: GltfId;
+    material?: GltfId;
+    mode?: GltfMeshMode;
+    targets?: GltfStringMap<GltfId>;
+}
+
+// @internal (undocumented)
+export enum GltfMinFilter {
+    // (undocumented)
+    Linear = 9729,
+    // (undocumented)
+    LinearMipMapLinear = 9987,
+    // (undocumented)
+    LinearMipMapNearest = 9985,
+    // (undocumented)
+    Nearest = 9728,
+    // (undocumented)
+    NearestMipMapLinear = 9986,
+    // (undocumented)
+    NearestMipMapNearest = 9984
+}
+
+// @internal
 export type GltfNode = Gltf1Node | Gltf2Node;
+
+// @internal
+export interface GltfNodeBaseProps {
+    camera?: GltfId;
+    children?: GltfId[];
+    matrix?: number[];
+    rotation?: number[];
+    scale?: number[];
+    skin?: GltfId;
+    translation?: number[];
+}
+
+// @internal
+export interface GltfProperty {
+    // (undocumented)
+    extensions?: GltfExtensions;
+    // (undocumented)
+    extras?: any;
+}
 
 // @internal
 export abstract class GltfReader {
@@ -3872,7 +4166,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected get _accessors(): GltfDictionary<GltfAccessor>;
     // (undocumented)
-    protected readonly _baseUrl?: string;
+    protected readonly _baseUrl?: URL;
     // (undocumented)
     protected get _buffers(): GltfDictionary<GltfBuffer & {
         resolvedBuffer?: Uint8Array;
@@ -3894,7 +4188,7 @@ export abstract class GltfReader {
     }, accessorName: string): GltfBufferView | undefined;
     getTextureType(sampler?: GltfSampler): RenderTexture.Type;
     // (undocumented)
-    protected readonly _glTF: Gltf;
+    protected readonly _glTF: GltfDocument;
     // (undocumented)
     protected get _images(): GltfDictionary<GltfImage & {
         resolvedImage?: TextureImageSource;
@@ -3915,7 +4209,7 @@ export abstract class GltfReader {
     protected get _nodes(): GltfDictionary<GltfNode>;
     abstract read(): Promise<GltfReaderResult>;
     // (undocumented)
-    protected readBatchTable(_mesh: Mesh, _json: any): void;
+    protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive): void;
     // (undocumented)
     protected readBufferData(json: {
         [k: string]: any;
@@ -3936,6 +4230,10 @@ export abstract class GltfReader {
     readBufferDataFloat(json: {
         [k: string]: any;
     }, accessorName: string): GltfBufferData | undefined;
+    // (undocumented)
+    protected readColors(mesh: GltfMeshData, attribute: {
+        [k: string]: any;
+    }, accessorName: string): boolean;
     // (undocumented)
     protected readFeatureIndices(_json: any): number[] | undefined;
     // (undocumented)
@@ -3960,6 +4258,8 @@ export abstract class GltfReader {
     protected readPolylines(polylines: MeshPolylineList, json: {
         [k: string]: any;
     }, accessorName: string, disjoint: boolean): boolean;
+    // (undocumented)
+    protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined;
     // (undocumented)
     protected resolveResources(): Promise<void>;
     // (undocumented)
@@ -3999,12 +4299,12 @@ export interface GltfReaderArgs {
 // @internal
 export class GltfReaderProps {
     // (undocumented)
-    readonly baseUrl?: string;
+    readonly baseUrl?: URL;
     // (undocumented)
     readonly binaryData?: Uint8Array;
-    static create(source: Uint8Array | Gltf, yAxisUp?: boolean, baseUrl?: string): GltfReaderProps | undefined;
+    static create(source: Uint8Array | GltfDocument, yAxisUp?: boolean, baseUrl?: URL): GltfReaderProps | undefined;
     // (undocumented)
-    readonly glTF: Gltf;
+    readonly glTF: GltfDocument;
     // (undocumented)
     readonly version: number;
     // (undocumented)
@@ -4013,6 +4313,8 @@ export class GltfReaderProps {
 
 // @internal
 export interface GltfReaderResult extends TileContent {
+    // (undocumented)
+    range?: AxisAlignedBox3d;
     // (undocumented)
     readStatus: TileReadStatus;
 }
@@ -4023,6 +4325,175 @@ export interface GltfSampler extends GltfChildOfRootProperty {
     minFilter?: GltfMinFilter;
     wrapS?: GltfWrapMode;
     wrapT?: GltfWrapMode;
+}
+
+// @internal
+export interface GltfScene extends GltfChildOfRootProperty {
+    nodes?: GltfId[];
+}
+
+// @internal (undocumented)
+export interface GltfStringMap<T> {
+    // (undocumented)
+    [key: string]: T | undefined;
+}
+
+// @internal (undocumented)
+export namespace GltfStructuralMetadata {
+    // (undocumented)
+    export interface Class extends GltfProperty {
+        // (undocumented)
+        description?: string;
+        // (undocumented)
+        name?: string;
+        // (undocumented)
+        properties?: {
+            [propertyId: string]: ClassProperty | undefined;
+        };
+    }
+    // (undocumented)
+    export interface ClassProperty extends GltfProperty {
+        // (undocumented)
+        array?: boolean;
+        // (undocumented)
+        componentType?: ClassPropertyComponentType;
+        // (undocumented)
+        count?: number;
+        // (undocumented)
+        default?: unknown;
+        // (undocumented)
+        description?: string;
+        // (undocumented)
+        enumType?: string;
+        // (undocumented)
+        max?: number;
+        // (undocumented)
+        min?: number;
+        // (undocumented)
+        name?: string;
+        // (undocumented)
+        noData?: unknown;
+        // (undocumented)
+        normalized?: boolean;
+        // (undocumented)
+        offset?: number;
+        // (undocumented)
+        required?: boolean;
+        // (undocumented)
+        scale?: number;
+        // (undocumented)
+        semantic?: string;
+        // (undocumented)
+        type: ClassPropertyType;
+    }
+    // (undocumented)
+    export type ClassPropertyComponentType = "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | "FLOAT32" | "FLOAT64" | string;
+    // (undocumented)
+    export type ClassPropertyType = "SCALAR" | "STRING" | "BOOLEAN" | "ENUM" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
+    // (undocumented)
+    export interface Enum extends GltfProperty {
+        // (undocumented)
+        description?: string;
+        // (undocumented)
+        name?: string;
+        // (undocumented)
+        values: EnumValue[];
+        // (undocumented)
+        valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;
+    }
+    // (undocumented)
+    export interface EnumValue extends GltfProperty {
+        // (undocumented)
+        description?: string;
+        // (undocumented)
+        name: string;
+        // (undocumented)
+        value: number;
+    }
+    // (undocumented)
+    export interface Extension extends GltfProperty {
+        // (undocumented)
+        propertyAttributes?: unknown;
+        // (undocumented)
+        propertyTables?: PropertyTable[];
+        // (undocumented)
+        propertyTextures?: unknown;
+        // (undocumented)
+        schema?: Schema;
+        // (undocumented)
+        schemaUri?: string;
+    }
+    // (undocumented)
+    export interface PropertyTable {
+        // (undocumented)
+        class: string;
+        // (undocumented)
+        count: number;
+        // (undocumented)
+        properties?: {
+            [propertyId: string]: PropertyTableProperty | undefined;
+        };
+    }
+    // (undocumented)
+    export interface PropertyTableProperty extends GltfProperty {
+        // (undocumented)
+        arrayOffsets?: GltfId;
+        // (undocumented)
+        arrayOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
+        // (undocumented)
+        max?: number;
+        // (undocumented)
+        min?: number;
+        // (undocumented)
+        offset?: number;
+        // (undocumented)
+        scale?: number;
+        // (undocumented)
+        stringOffsets?: GltfId;
+        // (undocumented)
+        stringOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
+        // (undocumented)
+        values: GltfId;
+    }
+    // (undocumented)
+    export interface Schema extends GltfProperty {
+        // (undocumented)
+        classes?: Class[];
+        // (undocumented)
+        description?: string;
+        // (undocumented)
+        enums?: Enum[];
+        // (undocumented)
+        id: string;
+        // (undocumented)
+        name?: string;
+        // (undocumented)
+        version?: string;
+    }
+}
+
+// @internal
+export interface GltfTechnique extends GltfChildOfRootProperty {
+    states?: {
+        enable?: GltfTechniqueState[];
+    };
+}
+
+// @internal
+export enum GltfTechniqueState {
+    Blend = 3042
+}
+
+// @internal
+export interface GltfTexture extends GltfChildOfRootProperty {
+    sampler?: GltfId;
+    source?: GltfId;
+}
+
+// @internal
+export interface GltfTextureInfo extends GltfProperty {
+    index: GltfId;
+    texCoord?: number;
 }
 
 // @internal
@@ -4171,7 +4642,7 @@ export abstract class GraphicBuilder {
     abstract addPointString2d(points: Point2d[], zDepth: number): void;
     abstract addPolyface(meshData: Polyface, filled: boolean): void;
     addPrimitive(primitive: GraphicPrimitive): void;
-    addRangeBox(range: Range3d): void;
+    addRangeBox(range: Range3d, solid?: boolean): void;
     addRangeBoxFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
@@ -4732,7 +5203,7 @@ export class ImdlReader {
     protected materialFromJson(key: string): RenderMaterial | undefined;
     read(): Promise<ImdlReaderResult>;
     // (undocumented)
-    protected readFeatureTable(startPos: number): PackedFeatureTable | undefined;
+    protected readFeatureTable(startPos: number): RenderFeatureTable | undefined;
 }
 
 // @internal
@@ -5408,6 +5879,9 @@ export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) 
 
 // @public
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
+
+// @internal (undocumented)
+export function isGltf1Material(material: GltfMaterial): material is Gltf1Material;
 
 // @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
@@ -6905,6 +7379,28 @@ export class MeasureVolumeTool extends MeasureElementTool {
     static toolId: string;
 }
 
+// @internal (undocumented)
+export interface MeshFeature extends GltfProperty {
+    // (undocumented)
+    attribute?: number;
+    // (undocumented)
+    featureCount: number;
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    nullFeatureId?: number;
+    // (undocumented)
+    propertyTable?: number;
+    // (undocumented)
+    texture?: unknown;
+}
+
+// @internal (undocumented)
+export interface MeshFeatures {
+    // (undocumented)
+    featureIds: MeshFeature[];
+}
+
 // @public
 export enum MessageBoxIconType {
     // (undocumented)
@@ -6989,11 +7485,11 @@ export namespace MockRender {
     }
     // (undocumented)
     export class Batch extends Graphic {
-        constructor(graphic: RenderGraphic, featureTable: PackedFeatureTable, range: ElementAlignedBox3d);
+        constructor(graphic: RenderGraphic, featureTable: RenderFeatureTable, range: ElementAlignedBox3d);
         // (undocumented)
         dispose(): void;
         // (undocumented)
-        readonly featureTable: PackedFeatureTable;
+        readonly featureTable: RenderFeatureTable;
         // (undocumented)
         readonly graphic: RenderGraphic;
         // (undocumented)
@@ -7060,7 +7556,7 @@ export namespace MockRender {
         // (undocumented)
         createAreaPattern(): AreaPattern;
         // (undocumented)
-        createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): Batch;
+        createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
         createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): Builder;
         // (undocumented)
@@ -7855,16 +8351,26 @@ export namespace Pixel {
     }
     export class Data {
         // @internal
-        constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string);
+        constructor(args?: {
+            feature?: ModelFeature;
+            distanceFraction?: number;
+            type?: GeometryType;
+            planarity?: Planarity;
+            batchType?: BatchType;
+            iModel?: IModelConnection;
+            tileId?: string;
+        });
+        // @internal (undocumented)
+        readonly batchType?: BatchType;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
         readonly feature?: Feature;
-        // @internal (undocumented)
-        readonly featureTable?: PackedFeatureTable;
         get geometryClass(): GeometryClass | undefined;
         readonly iModel?: IModelConnection;
         // @internal (undocumented)
         get isClassifier(): boolean;
+        // (undocumented)
+        readonly modelId?: Id64String;
         readonly planarity: Planarity;
         get subCategoryId(): Id64String | undefined;
         // @internal (undocumented)
@@ -8182,11 +8688,14 @@ export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): Gl
 export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined>;
 
 // @public
+export function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined>;
+
+// @public
 export function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined>;
 
 // @public
 export interface ReadGltfGraphicsArgs {
-    baseUrl?: string;
+    baseUrl?: URL | string;
     // @alpha (undocumented)
     contentRange?: ElementAlignedBox3d;
     gltf: Uint8Array | Object;
@@ -9164,7 +9673,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
-    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
+    abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
@@ -10247,6 +10756,8 @@ export class SpatialModelState extends GeometricModel3dState {
 // @internal
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
     [Symbol.iterator](): Iterator<TileTreeReference>;
+    attachToViewport(args: AttachToViewportArgs): void;
+    detachFromViewport(): void;
     setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
     update(): void;
 }
@@ -11040,6 +11551,7 @@ export abstract class Tile {
     get loadStatus(): TileLoadStatus;
     get maximumSize(): number;
     protected _maximumSize: number;
+    protected meetsScreenSpaceError(args: TileDrawArgs): boolean;
     // @internal
     next?: LRUTileListNode;
     readonly parent: Tile | undefined;
@@ -11317,6 +11829,8 @@ export enum TileBoundingBoxes {
     ChildVolumes = 4,
     Content = 2,
     None = 0,
+    // @alpha
+    SolidBox = 6,
     Sphere = 5,
     Volume = 1
 }
@@ -12336,6 +12850,9 @@ export class TraversalSelectionContext {
     // (undocumented)
     selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
 }
+
+// @internal (undocumented)
+export function traverseGltfNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>, traversed: Set<GltfId>): Iterable<GltfNode>;
 
 // @public
 export function tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement | undefined>;
@@ -13538,6 +14055,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal (undocumented)
     invalidateRenderPlan(): void;
     invalidateScene(): void;
+    // @internal (undocumented)
+    invalidateSymbologyOverrides(): void;
     // @internal (undocumented)
     protected _inViewChangedEvent: boolean;
     get isAlwaysDrawnExclusive(): boolean;

@@ -49,12 +49,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/eslint-plugin",
-      "projectFolder": "tools/eslint-plugin",
-      "reviewCategory": "tools",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@itwin/core-telemetry",
       "projectFolder": "core/telemetry",
       "reviewCategory": "common",
@@ -146,6 +140,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/frontend-tiles",
+      "projectFolder": "extensions/frontend-tiles",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@itwin/webgl-compatibility",
       "projectFolder": "core/webgl-compatibility",
       "reviewCategory": "frontend",
@@ -209,12 +210,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/presentation-components",
-      "projectFolder": "presentation/components",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@itwin/presentation-opentelemetry",
       "projectFolder": "presentation/opentelemetry",
       "reviewCategory": "common",
@@ -222,47 +217,11 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/presentation-testing",
-      "projectFolder": "presentation/testing",
-      "reviewCategory": "tools",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@itwin/appui-abstract",
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/core-react",
-      "projectFolder": "ui/core-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/components-react",
-      "projectFolder": "ui/components-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/imodel-components-react",
-      "projectFolder": "ui/imodel-components-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-layout-react",
-      "projectFolder": "ui/appui-layout-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-react",
-      "projectFolder": "ui/appui-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
     },
     {
       "packageName": "@itwin/ecschema-metadata",
@@ -380,13 +339,6 @@
       "packageName": "@itwin/perf-tools",
       "projectFolder": "tools/perf-tools",
       "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/map-layers",
-      "projectFolder": "extensions/map-layers",
-      "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },

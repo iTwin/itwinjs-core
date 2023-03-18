@@ -6,6 +6,9 @@
 /* eslint-disable no-console */
 
 import { expect } from "chai";
+import * as fs from "fs";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
 import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
@@ -13,6 +16,7 @@ import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveColle
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { OffsetOptions, PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -31,6 +35,7 @@ import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -41,10 +46,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
-import * as fs from "fs";
-import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 
 const diegoPathA = [
   {
@@ -1121,6 +1122,7 @@ describe("RegionOps2", () => {
     const testCases = [
       "./src/test/testInputs/curve/arcGisLoops.imjs",
       "./src/test/testInputs/curve/loopWithHole.imjs", // aka, split washer polygon
+      "./src/test/testInputs/curve/michelLoops.imjs",  // has a small island in a hole
     ];
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
@@ -1132,8 +1134,17 @@ describe("RegionOps2", () => {
           const builder = PolyfaceBuilder.create();
           builder.addGeometryQuery(region);
           const mesh = builder.claimPolyface();
-          if (ck.testFalse(mesh.isEmpty, "triangulation not empty"))
+          if (ck.testFalse(mesh.isEmpty, "triangulation not empty")) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+            // verify no degenerate triangles
+            const visitor = mesh.createVisitor() as IndexedPolyfaceVisitor;
+            for (; visitor.moveToNextFacet();) {
+              ck.testExactNumber(3, visitor.numEdgesThisFacet, "facet is triangular");
+              ck.testFalse(visitor.pointIndex[0] === visitor.pointIndex[1], "first two point indices are different");
+              ck.testFalse(visitor.pointIndex[0] === visitor.pointIndex[2], "first and last point indices are different");
+              ck.testFalse(visitor.pointIndex[1] === visitor.pointIndex[2], "last two point indices are different");
+            }
+          }
         }
       }
     }

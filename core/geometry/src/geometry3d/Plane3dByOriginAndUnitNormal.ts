@@ -17,7 +17,6 @@ import { XAndY } from "./XYZProps";
 
 /**
  * A plane defined by
- *
  * * Any point on the plane.
  * * a unit normal.
  * @public

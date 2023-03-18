@@ -189,6 +189,8 @@ export interface AttachToViewportArgs {
    * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
    */
   drawingToSheetTransform?: Transform;
+  /** A function that can be invoked to notify the viewport that its feature symbology overrides should be recreated. */
+  invalidateSymbologyOverrides: () => void;
 }
 
 /** The front-end state of a [[ViewDefinition]] element.

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+
 import { AxisOrder } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
@@ -12,7 +13,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
 /* eslint-disable no-console */
-
 describe("Transform", () => {
   it("CreateInvertible", () => {
     const ck = new Checker();
@@ -51,9 +51,7 @@ describe("Transform", () => {
         ck.testCoordinate(xyz.y, point2dB[i].y);
       }
       point2dE = point2dE1; // capture for reuse
-
     }
-
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -79,7 +77,6 @@ describe("Transform", () => {
         worldToNpc.multiplyPoint3d(xyz, npc);
         const interpolated = cornerA.interpolateXYZ(npc.x, npc.y, npc.z, cornerB);
         ck.testPoint3d(xyz, interpolated);
-
       }
     }
     const xyz0 = Point3d.create(0, 0, 0);
@@ -150,7 +147,7 @@ describe("Transform", () => {
     const matrixB = Matrix3d.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
     const transformB = Transform.createOriginAndMatrix(undefined, matrixB);
     const transformC = transformA.multiplyTransformMatrix3d(matrixB);
-    // inplace update of uninvolved transform . .
+    // in place update of uninvolved transform . .
     const transformD = transformA.multiplyTransformMatrix3d(matrixB, Transform.createIdentity());
     const transformE = transformA.multiplyTransformTransform(transformB);
     ck.testTransform(transformC, transformD);
@@ -160,7 +157,7 @@ describe("Transform", () => {
       const productCp = transformC.multiplyPoint3d(p);
       ck.testPoint3d(productABp, productCp);
     }
-    // inplace update of primary transform
+    // in place update of primary transform
     const transformA1 = transformA.clone();
     ck.testTransform(transformA, transformA1, "clone transform");
     transformA1.multiplyTransformMatrix3d(matrixB, transformA1);
@@ -176,22 +173,21 @@ describe("Transform", () => {
     const transformA = Transform.createOriginAndMatrix(undefined, matrixA);
     const transformB = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11));
-
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11)
+    );
     const transformC = matrixA.multiplyMatrixTransform(transformB);
-    // inplace update of uninvolved transform . .
+    // in place update of uninvolved transform . .
     const transformD = matrixA.multiplyMatrixTransform(transformB, Transform.createIdentity());
     const transformE = transformA.multiplyTransformTransform(transformB);
     ck.testTransform(transformC, transformD);
     ck.testTransform(transformC, transformE);
     for (const p of points) {
-
       const productABp = Point3d.create();
       matrixA.multiplyXYZtoXYZ(transformB.multiplyPoint3d(p), productABp);
       const productCp = transformC.multiplyPoint3d(p);
       ck.testPoint3d(productABp, productCp);
     }
-    // inplace update of primary transform
+    // in place update of primary transform
     const transformB1 = transformB.clone();
     ck.testTransform(transformB, transformB1, "clone transform");
     matrixA.multiplyMatrixTransform(transformB1, transformB1);
@@ -259,6 +255,7 @@ describe("Transform", () => {
     ck.testTransform(translateA, translateB);
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("createRigidFromOriginAndColumns", () => {
     const ck = new Checker();
     const origin = Point3d.create(5, 6, 7);
@@ -281,5 +278,4 @@ describe("Transform", () => {
     ck.testUndefined(Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorU, AxisOrder.XYZ));
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

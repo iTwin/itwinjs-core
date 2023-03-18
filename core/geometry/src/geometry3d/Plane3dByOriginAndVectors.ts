@@ -15,7 +15,7 @@ import { Transform } from "./Transform";
 import { XYAndZ } from "./XYZProps";
 
 /**
- * A Point3dVector3dVector3d is an origin and a pair of vectors.
+ * A Plane3dByOriginAndVectors is an origin and a pair of vectors.
  * This defines a plane with a (possibly skewed) uv coordinate grid
  * * The grid directions (`vectorU` and `vectorV`)
  *   * are NOT required to be unit vectors.

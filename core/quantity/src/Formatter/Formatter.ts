@@ -310,7 +310,7 @@ export class Formatter {
           formattedValue = formattedValue + spec.format.decimalSeparator + fractionString;
         else {
           if (spec.format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint))
-            formattedValue = formattedValue + spec.format.decimalSeparator;
+            formattedValue = formattedValue + spec.format.decimalSeparator + (isKeepSingleZero ? "0" : "");
         }
       }
 

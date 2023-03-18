@@ -1167,6 +1167,8 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
     // @beta
     instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
+    // @beta
+    sizeLimit?: number;
 }
 
 // @public
@@ -2233,6 +2235,7 @@ export enum PresentationStatus {
     Error = 65536,
     InvalidArgument = 65539,
     NotInitialized = 65537,
+    ResultSetTooLarge = 65538,
     Success = 0
 }
 
