@@ -329,6 +329,7 @@ export enum DbResult {
     BE_SQLITE_ERROR_BadDbProfile = 100663306,
     BE_SQLITE_ERROR_ChangeTrackError = 218103818,
     BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = 352321546,
+    BE_SQLITE_ERROR_DataTransformRequired = 385875978,
     BE_SQLITE_ERROR_FileExists = 16777226,
     BE_SQLITE_ERROR_FileNotFound = 67108874,
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
@@ -1483,6 +1484,11 @@ export enum RepositoryStatus {
     Success = 0,
     SyncError = 86019
 }
+
+// @public
+export type RequireAtLeastOne<T> = {
+    [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];
 
 // @beta
 export enum RpcInterfaceStatus {

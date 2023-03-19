@@ -5,6 +5,7 @@
 export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangeSummaryManager";
+export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CloudSqlite";

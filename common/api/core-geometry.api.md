@@ -1218,6 +1218,7 @@ export class ClipUtilities {
     static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets;
     static doesClipperIntersectRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): boolean;
     static doesConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): boolean;
+    static doLocalRangesIntersect(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, range1Margin?: number): boolean;
     static doPolygonClipParitySequence(xyz: GrowableXYZArray, clippers: Clipper[], acceptedIn: GrowableXYZArray[] | undefined, acceptedOut: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache | undefined): void;
     static doPolygonClipSequence(xyz: GrowableXYZArray, clippers: Clipper[], acceptedIn: GrowableXYZArray[] | undefined, acceptedOut: GrowableXYZArray[] | undefined, finalCandidates: GrowableXYZArray[] | undefined, inAction: ClipStepAction, outAction: ClipStepAction, finalFragmentAction: ClipStepAction, arrayCache: GrowableXYZArrayCache | undefined): void;
     static isClipper(obj: any): boolean;
@@ -3462,10 +3463,12 @@ export class Matrix3d implements BeJSONFunctions {
     columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number): number;
     columnX(result?: Vector3d): Vector3d;
     columnXDotColumnY(): number;
+    columnXDotColumnZ(): number;
     columnXMagnitude(): number;
     columnXMagnitudeSquared(): number;
     columnXYCrossProductMagnitude(): number;
     columnY(result?: Vector3d): Vector3d;
+    columnYDotColumnZ(): number;
     columnYMagnitude(): number;
     columnYMagnitudeSquared(): number;
     columnZ(result?: Vector3d): Vector3d;
@@ -3511,8 +3514,8 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowZ(vector: XYZ): number;
     dotRowZXYZ(x: number, y: number, z: number): number;
     factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
-    factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean;
-    factorRigidWithSignedScale(): {
+    factorPerpendicularColumns(matrixVD: Matrix3d, matrixU: Matrix3d): boolean;
+    factorRigidWithSignedScale(result?: Matrix3d): {
         rigidAxes: Matrix3d;
         scale: number;
     } | undefined;
@@ -3540,9 +3543,11 @@ export class Matrix3d implements BeJSONFunctions {
     get isDiagonal(): boolean;
     isExactEqual(other: Matrix3d): boolean;
     get isIdentity(): boolean;
+    get isLowerTriangular(): boolean;
     isRigid(allowMirror?: boolean): boolean;
     get isSignedPermutation(): boolean;
     isSingular(): boolean;
+    isSymmetric(): boolean;
     get isUpperTriangular(): boolean;
     get isXY(): boolean;
     makeRigid(axisOrder?: AxisOrder): boolean;
@@ -3569,8 +3574,8 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyXY(x: number, y: number, result?: Vector3d): Vector3d;
     multiplyXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     multiplyXYZtoXYZ(xyz: XYZ, result: XYZ): XYZ;
-    normalizeColumnsInPlace(originalRowMagnitudes?: Vector3d): boolean;
-    normalizeRowsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
+    normalizeColumnsInPlace(originalColumnMagnitudes?: Vector3d): boolean;
+    normalizeRowsInPlace(originalRowMagnitudes?: Vector3d): boolean;
     static numComputeCache: number;
     static numUseCache: number;
     originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d;
@@ -3585,6 +3590,7 @@ export class Matrix3d implements BeJSONFunctions {
     scaleColumns(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
     scaleColumnsInPlace(scaleX: number, scaleY: number, scaleZ: number): void;
     scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d;
+    scaleRowsInPlace(scaleX: number, scaleY: number, scaleZ: number): void;
     setAt(row: number, column: number, value: number): void;
     setColumn(columnIndex: number, value: Vector3d | undefined): void;
     setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d): void;
@@ -4518,6 +4524,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     handleRuledSweep(g: RuledSweep): any;
     handleSphere(g: Sphere): any;
     handleTorusPipe(g: TorusPipe): any;
+    handleUnionRegion(g: UnionRegion): any;
     get options(): StrokeOptions;
     static pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined;
     static polygonToTriangulatedPolyface(points: Point3d[], localToWorld?: Transform): IndexedPolyface | undefined;
@@ -5249,7 +5256,7 @@ export class RegionOps {
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
     // @alpha
-    static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType): AnyRegion | undefined;
+    static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance?: number): AnyRegion | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion;
@@ -5787,7 +5794,7 @@ export class Transform implements BeJSONFunctions {
     computeCachedInverse(useCached?: boolean): boolean;
     static createFixedPointAndMatrix(fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
     static createIdentity(result?: Transform): Transform;
-    static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform;
+    static createMatrixPickupPutdown(matrix: Matrix3d, a: Point3d, b: Point3d, result?: Transform): Transform;
     static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform;
     static createOriginAndMatrixColumns(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d, result?: Transform): Transform;
     static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
@@ -5799,11 +5806,12 @@ export class Transform implements BeJSONFunctions {
     static createZero(result?: Transform): Transform;
     freeze(): Readonly<this>;
     static fromJSON(json?: TransformProps): Transform;
+    getMatrix(): Matrix3d;
     getOrigin(): Point3d;
     getTranslation(): Vector3d;
     static get identity(): Transform;
     static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform): void;
-    inverse(): Transform | undefined;
+    inverse(result?: Transform): Transform | undefined;
     isAlmostEqual(other: Readonly<Transform>): boolean;
     isAlmostEqualAllowZRotation(other: Transform): boolean;
     get isIdentity(): boolean;
@@ -5816,7 +5824,7 @@ export class Transform implements BeJSONFunctions {
     multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean;
     multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;
     multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
-    multiplyPoint2d(source: XAndY, result?: Point2d): Point2d;
+    multiplyPoint2d(point: XAndY, result?: Point2d): Point2d;
     multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[];
     multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d;
     multiplyPoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[];

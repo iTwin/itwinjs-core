@@ -53,13 +53,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/eslint-plugin",
-      "projectFolder": "tools/eslint-plugin",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/core-telemetry",
       "projectFolder": "core/telemetry",
       "reviewCategory": "common",
@@ -151,6 +144,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/frontend-tiles",
+      "projectFolder": "extensions/frontend-tiles",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@itwin/webgl-compatibility",
       "projectFolder": "core/webgl-compatibility",
       "reviewCategory": "frontend",
@@ -214,12 +214,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/presentation-components",
-      "projectFolder": "presentation/components",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@itwin/presentation-opentelemetry",
       "projectFolder": "presentation/opentelemetry",
       "reviewCategory": "common",
@@ -227,46 +221,11 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/presentation-testing",
-      "projectFolder": "presentation/testing",
-      "reviewCategory": "tools",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@itwin/appui-abstract",
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/core-react",
-      "projectFolder": "ui/core-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/components-react",
-      "projectFolder": "ui/components-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/imodel-components-react",
-      "projectFolder": "ui/imodel-components-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-layout-react",
-      "projectFolder": "ui/appui-layout-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-react",
-      "projectFolder": "ui/appui-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/ecschema-metadata",
@@ -388,13 +347,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/map-layers",
-      "projectFolder": "extensions/map-layers",
-      "reviewCategory": "extensions",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/map-layers-auth",
       "projectFolder": "extensions/map-layers-auth",
       "reviewCategory": "extensions",
@@ -451,30 +403,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@itwin/ui-items-providers-test",
-      "projectFolder": "test-apps/ui-items-providers-test",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "appui-connected-app",
-      "projectFolder": "test-apps/appui-test-app/connected",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "appui-standalone-app",
-      "projectFolder": "test-apps/appui-test-app/standalone",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-test-providers",
-      "projectFolder": "test-apps/appui-test-app/appui-test-providers",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "display-test-app",
       "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",
@@ -495,18 +423,6 @@
     {
       "packageName": "imodel-from-orbitgt-pointcloud",
       "projectFolder": "test-apps/imodel-from-orbitgt",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "presentation-test-app",
-      "projectFolder": "test-apps/presentation-test-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "ui-test-app",
-      "projectFolder": "test-apps/ui-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -540,12 +456,6 @@
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "ui-end-to-end-tests",
-      "projectFolder": "full-stack-tests/ui",
-      "reviewCategory": "internal",
-      "shouldPublish": false
     }
   ]
 }

@@ -1,0 +1,60 @@
+{
+  "name": "@itwin/frontend-tiles",
+  "version": "4.0.0-dev.50",
+  "description": "Experimental alternative technique for visualizing the contents of iModels",
+  "main": "lib/cjs/frontend-tiles.js",
+  "module": "lib/esm/frontend-tiles.js",
+  "typings": "lib/cjs/frontend-tiles",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "",
+    "extract-api": "betools extract-api --entry=frontend-tiles",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/frontend-tiles"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "UI",
+    "Widget"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/eslint-plugin": "nightly",
+    "@types/node": "^18.11.5",
+    "eslint": "^7.11.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.4.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@itwin"
+    ],
+    "extends": "plugin:@itwin/itwinjs-recommended"
+  }
+}

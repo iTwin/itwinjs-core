@@ -17,7 +17,7 @@ import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
 import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
-import { UnitsProvider } from '@itwin/core-quantity';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public
@@ -374,7 +374,8 @@ export interface ContentModifiersList {
 }
 
 // @alpha (undocumented)
-export class ContentPropertyValueFormatter extends PropertyValueFormatter {
+export class ContentPropertyValueFormatter {
+    constructor(_propertyValueFormatter: PropertyValueFormatter, _unitSystem: UnitSystemKey);
     // (undocumented)
     formatContent(content: Content): Promise<Content>;
 }
@@ -1039,9 +1040,9 @@ export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptio
 // @alpha (undocumented)
 export interface FormatOptions {
     // (undocumented)
-    formatProps: FormatProps;
+    koqName: string;
     // (undocumented)
-    persistenceUnitName: string;
+    unitSystem: UnitSystemKey;
 }
 
 // @internal (undocumented)
@@ -1166,6 +1167,8 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
     // @beta
     instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
+    // @beta
+    sizeLimit?: number;
 }
 
 // @public
@@ -2232,6 +2235,7 @@ export enum PresentationStatus {
     Error = 65536,
     InvalidArgument = 65539,
     NotInitialized = 65537,
+    ResultSetTooLarge = 65538,
     Success = 0
 }
 
@@ -2499,13 +2503,13 @@ export enum PropertyValueFormat {
 
 // @alpha (undocumented)
 export class PropertyValueFormatter {
-    constructor(_unitsProvider: UnitsProvider);
+    constructor(_schemaContext: SchemaContext);
     // (undocumented)
-    format(value: number, options: FormatOptions): Promise<string>;
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
     // (undocumented)
-    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec>;
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec | undefined>;
     // (undocumented)
-    getParserSpec(options: FormatOptions): Promise<ParserSpec>;
+    getParserSpec(options: FormatOptions): Promise<ParserSpec | undefined>;
 }
 
 // @public
@@ -2721,13 +2725,11 @@ export interface RootNodeRule extends NavigationRuleBase {
 export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
 
 // @internal
-export class RpcRequestsHandler implements IDisposable {
+export class RpcRequestsHandler {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
     computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON>;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
@@ -2766,14 +2768,15 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
-    // (undocumented)
-    readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
+    readonly timeout: number;
 }
 
 // @internal
 export interface RpcRequestsHandlerProps {
     clientId?: string;
+    // (undocumented)
+    timeout?: number;
 }
 
 // @public
