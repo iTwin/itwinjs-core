@@ -62,8 +62,8 @@ export namespace Atmosphere {
     display?: boolean;
     /** See [[Settings.atmosphereHeightAboveEarth]] */
     atmosphereHeightAboveEarth?: number;
-    /** See [[Settings.brightnessAdaptationStrength]] */
-    brightnessAdaptationStrength?: number;
+    /** See [[Settings.exposure]] */
+    exposure?: number;
     /** See [[Settings.densityFalloff]] */
     densityFalloff?: number;
     /** See [[Settings.inScatteringIntensity]] */
@@ -85,7 +85,7 @@ export namespace Atmosphere {
   /** Describes the properties with which the atmospheric scattering effect should be drawn. Theses properties correspond to a physics-based approximation of atmospheric scattering phenomenons. */
   export class Settings implements Props {
     private static _defaultAtmosphereHeightAboveEarth: number = 100000.0;
-    private static _defaultBrightnessAdaptationStrength: number = 0.1;
+    private static _defaultExposure: number = 2.5;
     private static _defaultDensityFalloff: number = 1.0;
     private static _defaultInScatteringIntensity: number = 6.0;
     private static _defaultMinDensityHeightBelowEarth: 0.0;
@@ -100,7 +100,7 @@ export namespace Atmosphere {
     /** If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
     /** If defined, this value can be used to modulate the overall brightness of the effect to compensate for very low and very high inScatteringIntensity values. Defaults to 0.1. */
-    public readonly brightnessAdaptationStrength: number;
+    public readonly exposure: number;
     /** If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 1.0. */
     public readonly densityFalloff: number;
     /** If defined, multiplies the amount of light redirected by the atmosphere toward the viewing eye by this value. A higher value increases perceived overall brightness and thickness of the atmosphere. Defaults to 6.0. */
@@ -121,7 +121,7 @@ export namespace Atmosphere {
     public equals(other: Settings): boolean {
       if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth)
         return false;
-      if (this.brightnessAdaptationStrength !== other.brightnessAdaptationStrength)
+      if (this.exposure !== other.exposure)
         return false;
       if (this.densityFalloff !== other.densityFalloff)
         return false;
@@ -144,7 +144,7 @@ export namespace Atmosphere {
 
     private constructor(json: Props = {}) {
       this.atmosphereHeightAboveEarth = JsonUtils.asDouble(json.atmosphereHeightAboveEarth, Settings._defaultAtmosphereHeightAboveEarth);
-      this.brightnessAdaptationStrength = JsonUtils.asDouble(json.brightnessAdaptationStrength, Settings._defaultBrightnessAdaptationStrength);
+      this.exposure = JsonUtils.asDouble(json.exposure, Settings._defaultExposure);
       this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings._defaultDensityFalloff);
       this.inScatteringIntensity = JsonUtils.asDouble(json.inScatteringIntensity, Settings._defaultInScatteringIntensity);
       this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(json.depthBelowEarthForMaxDensity, Settings._defaultMinDensityHeightBelowEarth);
@@ -162,7 +162,7 @@ export namespace Atmosphere {
     public toJSON(display?: boolean): Props {
       const json: Props = {
         atmosphereHeightAboveEarth: this.atmosphereHeightAboveEarth,
-        brightnessAdaptationStrength: this.brightnessAdaptationStrength,
+        exposure: this.exposure,
         densityFalloff: this.densityFalloff,
         inScatteringIntensity: this.inScatteringIntensity,
         depthBelowEarthForMaxDensity: this.depthBelowEarthForMaxDensity,

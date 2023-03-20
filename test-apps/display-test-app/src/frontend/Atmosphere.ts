@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { createButton, createCheckBox, createLabeledNumericInput, LabeledNumericInput } from "@itwin/frontend-devtools";
+import { createButton, createCheckBox, createLabeledNumericInput, createNestedMenu, LabeledNumericInput } from "@itwin/frontend-devtools";
 import { Atmosphere } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
 export class AtmosphereEditor {
+  private static _expandAtmosphereEditor: boolean = false;
 
   private readonly _vp: Viewport;
   private readonly _update: (view: ViewState) => void;
@@ -25,17 +26,29 @@ export class AtmosphereEditor {
   private readonly _wavelengthB: LabeledNumericInput;
   private readonly _numInScatteringPoints: LabeledNumericInput;
   private readonly _numOpticalDepthPoints: LabeledNumericInput;
-  private readonly _brightnessAdaptationStrength: LabeledNumericInput;
+  private readonly _exposure: LabeledNumericInput;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
 
     const isAtmosphereSupported = (view: ViewState) => view.is3d();
     const isAtmosphereEnabled = (view: ViewState) => view.is3d() ? view.getDisplayStyle3d().environment.displayAtmosphere : false;
-    const div = document.createElement("div");
+
+    const atmosphereMenu = createNestedMenu({
+      id: "atmosphere_menu",
+      label: "Atmosphere",
+      parent,
+      // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
+      expand: AtmosphereEditor._expandAtmosphereEditor,
+      handler: (expanded) => {
+        AtmosphereEditor._expandAtmosphereEditor = expanded;
+        atmosphereMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
+    });
+    (atmosphereMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
+    atmosphereMenu.label.style.fontWeight = AtmosphereEditor._expandAtmosphereEditor ? "bold" : "500";
 
     const atmosphereControlsDiv = document.createElement("div")!;
-
     const showHideControls = (show: boolean) => {
       const display = show ? "block" : "none";
       atmosphereControlsDiv.style.display = display;
@@ -48,6 +61,13 @@ export class AtmosphereEditor {
       this.sync();
     };
 
+    const enableAtmosphereCheckbox = createCheckBox({
+      parent: atmosphereMenu.body,
+      handler: (cb) => enableAtmosphere(cb.checked),
+      name: "Enable Atmosphere",
+      id: "cbx_Atmosphere",
+    });
+
     const resetButton = createButton({
       parent: atmosphereControlsDiv,
       id: "atmosphere_reset",
@@ -56,14 +76,19 @@ export class AtmosphereEditor {
     });
     resetButton.div.style.textAlign = "center";
 
-    const checkboxInterface = createCheckBox({
-      parent: div,
-      handler: (cb) => enableAtmosphere(cb.checked),
-      name: "Atmosphere",
-      id: "cbx_Atmosphere",
-    });
-    const checkbox = checkboxInterface.checkbox;
-    const checkboxLabel = checkboxInterface.label;
+    this._update = (view) => {
+      const visible = isAtmosphereSupported(view);
+      atmosphereMenu.div.style.display = visible ? "block" : "none";
+      if (!visible) {
+        return;
+      }
+
+      enableAtmosphereCheckbox.checkbox.checked = isAtmosphereEnabled(view);
+      enableAtmosphereCheckbox.label.style.fontWeight = enableAtmosphereCheckbox.checkbox.checked ? "bold" : "500";
+      showHideControls(enableAtmosphereCheckbox.checkbox.checked);
+
+      this.updateAtmosphereUI(view);
+    };
 
     const spanIntensity = document.createElement("span");
     spanIntensity.style.display = "flex";
@@ -81,7 +106,7 @@ export class AtmosphereEditor {
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "inScatteringIntensity: ",
+      name: "In-Scattering Intensity: ",
     });
     this._outScatteringIntensity = createLabeledNumericInput({
       id: "atmosphere_outScatteringIntensity",
@@ -96,22 +121,22 @@ export class AtmosphereEditor {
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "outScatteringIntensity: ",
+      name: "Out-Scattering Intensity: ",
     });
-    this._brightnessAdaptationStrength = createLabeledNumericInput({
-      id: "atmosphere_brightnessAdaptationStrength",
+    this._exposure = createLabeledNumericInput({
+      id: "atmosphere_exposure",
       parent: spanIntensity,
       value: 1.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
-        props.brightnessAdaptationStrength = value;
+        props.exposure = value;
         return props;
       }),
       min: 0.0,
-      max: 1000.0,
+      max: 100.0,
       step: 0.1,
       parseAsFloat: true,
-      name: "brightness Adaptation Strength: ",
+      name: "Exposure: ",
     });
 
     const spanAtmosphereScale = document.createElement("span");
@@ -130,7 +155,7 @@ export class AtmosphereEditor {
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "Atmosphere Height Above Earth: ",
+      name: "Atmosphere Min Density Height: ",
     });
     this._depthBelowEarthForMaxDensity = createLabeledNumericInput({
       id: "atmosphere_depthBelowEarthForMaxDensity",
@@ -145,7 +170,7 @@ export class AtmosphereEditor {
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "Depth Below Earth For Max Density",
+      name: "Atmosphere Max Density Depth",
     });
 
     const spanScattering = document.createElement("span");
@@ -273,26 +298,13 @@ export class AtmosphereEditor {
       name: "Optical Depth Points: ",
     });
 
-    this._update = (view) => {
-      const visible = isAtmosphereSupported(view);
-      div.style.display = visible ? "block" : "none";
-      if (!visible)
-        return;
+    atmosphereMenu.body.appendChild(atmosphereControlsDiv);
 
-      checkbox.checked = isAtmosphereEnabled(view);
-      checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
-      showHideControls(checkbox.checked);
+    // const hr = document.createElement("hr");
+    // hr.style.borderColor = "grey";
+    // atmosphereMenu.body.appendChild(hr);
 
-      this.updateAtmosphereUI(view);
-    };
-
-    div.appendChild(atmosphereControlsDiv);
-
-    const hr = document.createElement("hr");
-    hr.style.borderColor = "grey";
-    div.appendChild(hr);
-
-    parent.appendChild(div);
+    this.update(this._vp.view);
   }
 
   public update(view: ViewState): void {
@@ -323,7 +335,7 @@ export class AtmosphereEditor {
     this._wavelengthB.input.value = settings.wavelengths.b.toString();
     this._numInScatteringPoints.input.value = settings.numInScatteringPoints.toString();
     this._numOpticalDepthPoints.input.value = settings.numOpticalDepthPoints.toString();
-    this._brightnessAdaptationStrength.input.value = settings.brightnessAdaptationStrength.toString();
+    this._exposure.input.value = settings.exposure.toString();
   }
 
   private updateAtmosphere(updateFunction: (view: ViewState) => Atmosphere.Props) {

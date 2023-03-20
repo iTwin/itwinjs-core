@@ -63,7 +63,7 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
 
     this._updateAtmosphereHeightAboveEarth(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateAtmosphereScaleMatrix(this.atmosphere.atmosphereHeightAboveEarth);
-    this._updateExposure(this.atmosphere.brightnessAdaptationStrength);
+    this._updateExposure(this.atmosphere.exposure);
     this._updateDensityFalloff(this.atmosphere.densityFalloff);
     this._updateEarthCenter(plan.ellipsoid.ellipsoidCenter, target.uniforms.frustum.viewMatrix);
     this._updateEarthScaleMatrix(plan.ellipsoid.ellipsoidRadii);

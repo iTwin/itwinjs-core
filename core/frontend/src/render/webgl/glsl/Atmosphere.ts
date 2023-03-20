@@ -357,8 +357,7 @@ mat3 computeAtmosphericScatteringFragment() {
 const applyHdr = `
 vec3 applyHdr(vec3 atmosphericScatteringColor, vec3 reflectedLightColor) {
   vec3 colorWithoutHdr = atmosphericScatteringColor + reflectedLightColor;
-  float exposure = u_brightnessAdaptionStrength;
-  vec3 colorWithHdr = 1.0 - exp(-exposure * colorWithoutHdr);
+  vec3 colorWithHdr = 1.0 - exp(-u_exposure * colorWithoutHdr);
 
   return colorWithHdr;
 }
