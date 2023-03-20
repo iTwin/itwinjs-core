@@ -43,7 +43,7 @@ import { UnionRegion } from "./UnionRegion";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { ParityRegion } from "./ParityRegion";
 /**
- * Possible return types from
+ * Possible return types from [[splitToPathsBetweenBreaks]], [[collectInsideAndOutsideOffsets]] and [[collectChains]].
  * @public
  */
 export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
@@ -70,13 +70,14 @@ export enum RegionBinaryOpType {
 }
 
 /**
- * class `RegionOps` has static members for calculations on regions (areas).
+ * Class `RegionOps` has static members for calculations on regions (areas).
  * * Regions are represented by these `CurveCollection` subclasses:
- * * `Loop` -- a single loop
- * * `ParityRegion` -- a collection of loops, interpreted by parity rules.
- *    * The common "One outer loop and many Inner loops" is a parity region.
- * * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
- * @beta
+ *   * `Loop` -- a single loop
+ *   * `ParityRegion` -- a collection of loops, interpreted by parity rules.
+ * The common "One outer loop and many Inner loops" is a parity region.
+ *   * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
+ * * Most of the methods in this class ignore z-coordinates, so callers should ensure that input geometry has been rotated parallel to the xy-plane.
+ * @public
  */
 export class RegionOps {
   /**
@@ -98,7 +99,7 @@ export class RegionOps {
    * @param range range of planar region to tolerance
    * @param distanceTolerance optional absolute distance tolerance
   */
-  public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number=Geometry.smallMetricDistance): number {
+  public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number = Geometry.smallMetricDistance): number {
     // if A = bh and e is distance tolerance, then A' := (b+e/2)(h+e/2) = A + e/2(b+h+e/2), so A'-A = e/2(b+h+e/2).
     const halfDistTol = 0.5 * distanceTolerance;
     return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
@@ -120,6 +121,7 @@ export class RegionOps {
   /** Return MomentData with the sums of wire moments.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
    *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   * @param root any CurveCollection or CurvePrimitive.
    */
   public static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined {
     const handler = new CurveWireMomentsXYZ();
@@ -204,12 +206,13 @@ export class RegionOps {
     return undefined;
   }
   /**
-   * return a polyface containing the area union of two XY regions.
+   * Return a polyface containing the area intersection of two XY regions.
    * * Within each region, in and out is determined by parity rules.
    *   * Any face that is an odd number of crossings from the far outside is IN
    *   * Any face that is an even number of crossings from the far outside is OUT
    * @param loopsA first set of loops
    * @param loopsB second set of loops
+   * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(loopsA, loopsB,
@@ -219,12 +222,13 @@ export class RegionOps {
   }
 
   /**
-   * return a polyface containing the area union of two XY regions.
+   * Return a polyface containing the area union of two XY regions.
    * * Within each region, in and out is determined by parity rules.
    *   * Any face that is an odd number of crossings from the far outside is IN
    *   * Any face that is an even number of crossings from the far outside is OUT
    * @param loopsA first set of loops
    * @param loopsB second set of loops
+   * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(loopsA, loopsB,
@@ -233,12 +237,13 @@ export class RegionOps {
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
-   * return a polyface containing the area difference of two XY regions.
+   * Return a polyface containing the area difference of two XY regions.
    * * Within each region, in and out is determined by parity rules.
    *   * Any face that is an odd number of crossings from the far outside is IN
    *   * Any face that is an even number of crossings from the far outside is OUT
    * @param loopsA first set of loops
    * @param loopsB second set of loops
+   * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(loopsA, loopsB,
@@ -248,14 +253,14 @@ export class RegionOps {
   }
 
   /**
-   * return areas defined by a boolean operation.
+   * Return areas defined by a boolean operation.
    * * If there are multiple regions in loopsA, they are treated as a union.
    * * If there are multiple regions in loopsB, they are treated as a union.
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
    * @param mergeTolerance absolute distance tolerance for merging loops
-   * @alpha
+   * @returns a region resulting from merging input loops and the boolean operation. May contain bridge edges connecting interior loops to exterior loops.
    */
   public static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance: number = Geometry.smallMetricDistance): AnyRegion | undefined {
     const result = UnionRegion.create();
@@ -280,14 +285,16 @@ export class RegionOps {
   }
 
   /**
-   * return a polyface whose facets area a boolean operation between the input regions.
+   * Return a polyface whose facets are a boolean operation between the input regions.
    * * Each of the two inputs is an array of multiple loops or parity regions.
    *   * Within each of these input arrays, the various entries (loop or set of loops) are interpreted as a union.
    * * In each "array of loops and parity regions", each entry inputA[i] or inputB[i] is one of:
    *    * A simple loop, e.g. array of Point3d.
    *    * Several simple loops, each of which is an array of Point3d.
-   * @param loopsA first set of loops
-   * @param loopsB second set of loops
+   * @param inputA first set of loops
+   * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
+   * @param inputB second set of loops
+   * @param triangulate whether to triangulate the result
    */
   public static polygonBooleanXYToPolyface(inputA: MultiLineStringDataVariant[], operation: RegionBinaryOpType,
     inputB: MultiLineStringDataVariant[], triangulate: boolean = false): Polyface | undefined {
@@ -298,14 +305,15 @@ export class RegionOps {
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
-   * return loops of linestrings around areas of a boolean operation between the input regions.
+   * Return loops of linestrings around areas of a boolean operation between the input regions.
    * * Each of the two inputs is an array of multiple loops or parity regions.
    *   * Within each of these input arrays, the various entries (loop or set of loops) are interpreted as a union.
    * * In each "array of loops and parity regions", each entry inputA[i] or inputB[i] is one of:
    *    * A simple loop, e.g. array of Point3d.
    *    * Several simple loops, each of which is an array of Point3d.
-   * @param loopsA first set of loops
-   * @param loopsB second set of loops
+   * @param inputA first set of loops
+   * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
+   * @param inputB second set of loops
    */
   public static polygonBooleanXYToLoops(
     inputA: MultiLineStringDataVariant[],
@@ -343,29 +351,29 @@ export class RegionOps {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
   }
-    /**
-   * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
-   * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
-   * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to single intersection point.
-   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are:
-   *      * outside the arc
-   *      * have uniform turn angle less than `options.maxChamferDegrees`
-   *      * each line segment (except first and last) touches the arc at its midpoint.
-   * @param curves base curves.
-   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
-   */
+  /**
+ * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
+ * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
+ * * If offsetDistance is given as a number, default OffsetOptions are applied.
+ * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
+ *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
+ *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to single intersection point.
+ *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are:
+ *      * outside the arc
+ *      * have uniform turn angle less than `options.maxChamferDegrees`
+ *      * each line segment (except first and last) touches the arc at its midpoint.
+ * @param curves base curves.
+ * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
+ */
   public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined {
     return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
   }
   /**
-   * Test if point (x,y) is IN, OUT or ON a polygon.
+   * Test if point (x,y) is IN, OUT or ON a region.
    * @return (1) for in, (-1) for OUT, (0) for ON
-   * @param x x coordinate
-   * @param y y coordinate
-   * @param points array of xy coordinates.
+   * @param curves input region
+   * @param x x coordinate of point to test
+   * @param y y coordinate of point to test
    */
   public static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number {
     return PointInOnOutContext.testPointInOnOutRegionXY(curves, x, y);
@@ -375,6 +383,9 @@ export class RegionOps {
    * * If all curves connect head-to-tail except for closure, return a `Path`.
    * * If there are internal gaps, return a `BagOfCurves`
    * * If input array has zero length, return undefined.
+   * @param curves input curves
+   * @param wrap whether to create a Loop (true) or Path (false) if maximum gap is minimal
+   * @param consolidateAdjacentPrimitives whether to simplify the result by calling [[consolidateAdjacentPrimitives]]
    */
   public static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap: boolean = true, consolidateAdjacentPrimitives: boolean = false): CurveCollection | undefined {
     const n = curves.length;
@@ -407,25 +418,25 @@ export class RegionOps {
    */
   public static setCheckPointFunction(f?: GraphCheckPointFunction) { this._graphCheckPointFunction = f; }
   /**
-   * * Find all intersections among curves in `curvesToCut` and `cutterCurves`
-   * * Return fragments of `curvesToCut`.
-   * * For a  `Loop`, `ParityRegion`, or `UnionRegion` in `curvesToCut`
+   * Find all intersections among curves in `curvesToCut` and `cutterCurves` and return fragments of `curvesToCut`.
+   * * For a `Loop`, `ParityRegion`, or `UnionRegion` in `curvesToCut`:
    *    * if it is never cut by any `cutter` curve, it will be left unchanged.
    *    * if cut, the input is downgraded to a set of `Path` curves joining at the cut points.
    * * All cutting is "as viewed in the xy plane"
+   * @param curvesToCut input curves to be fragmented at intersections with `cutterCurves`
+   * @param cutterCurves input curves to intersect with `curvesToCut`
    */
-  public static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined {
-    return CurveSplitContext.cloneCurvesWithXYSplitFlags(curvesToCut, cutterCurves);
-
+  public static cloneCurvesWithXYSplits(curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection): AnyCurve | undefined {
+    return CurveSplitContext.cloneCurvesWithXYSplits(curvesToCut, cutterCurves);
   }
   /**
    * Create paths assembled from many curves.
-   * * Assemble consecutive curves NOT separated by either end flags or gaps into paths.
+   * * Assemble paths from consecutive curves NOT separated by either startCut/endCut details or gaps.
+   * * Recognizes startCut/endCut curve annotations set by cloneCurvesWithXYSplits.
    * * Return simplest form -- single primitive, single path, or bag of curves.
-   * @param curves
+   * @internal
    */
-  public static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined,
-    makeClones: boolean): BagOfCurves | Path | CurvePrimitive | Loop | undefined {
+  public static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes {
     if (source === undefined)
       return undefined;
     if (source instanceof CurvePrimitive)
@@ -439,34 +450,35 @@ export class RegionOps {
     return chainCollector.grabResult();
   }
   /**
-   * * Restructure curve fragments as chains and offsets
-   * * Return object with named chains, insideOffsets, outsideOffsets
-   * * BEWARE that if the input is not a loop the classification of outputs is suspect.
-   * @param fragments fragments to be chained
-   * @param offsetDistance offset distance.
+   * Restructure curve fragments as chains, and construct (left and right) chain offsets in the xy-plane.
+   * * BEWARE that if the input is not a loop, the classification of outputs is suspect.
+   * @param fragments fragments to be chained, z-coordinates ignored
+   * @param offsetDistance offset distance
+   * @param gapTolerance absolute endpoint tolerance for computing chains
+   * @returns object with named chains, insideOffsets, outsideOffsets
    */
-  public static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): { insideOffsets: GeometryQuery[], outsideOffsets: GeometryQuery[], chains: ChainTypes } {
+  public static collectInsideAndOutsideOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains: ChainTypes } {
     return OffsetHelpers.collectInsideAndOutsideOffsets(fragments, offsetDistance, gapTolerance);
   }
   /**
-   * * Restructure curve fragments as chains
-   * * Return the chains, possibly wrapped in BagOfCurves if there multiple chains.
+   * Restructure curve fragments as chains.
    * @param fragments fragments to be chained
-   * @param offsetDistance offset distance.
+   * @param gapTolerance absolute endpoint tolerance for computing chains
+   * @returns chains, possibly wrapped in BagOfCurves if there multiple chains
    */
-  public static collectChains(fragments: GeometryQuery[], gapTolerance: number = Geometry.smallMetricDistance): ChainTypes {
+  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance): ChainTypes {
     return OffsetHelpers.collectChains(fragments, gapTolerance);
   }
 
   /**
-   * * Find intersections of `curvesToCut` with boundaries of `region`.
+   * Find all intersections among curves in `curvesToCut` against the boundaries of `region` and return fragments of `curvesToCut`.
    * * Break `curvesToCut` into parts inside, outside, and coincident.
-   * * Return all fragments, split among `insideParts`, `outsideParts`, and `coincidentParts` in the output object.
+   * @returns output object with all fragments split among `insideParts`, `outsideParts`, and `coincidentParts`
    */
-  public static splitPathsByRegionInOnOutXY(curvesToCut: CurveCollection | CurvePrimitive | undefined, region: AnyRegion): { insideParts: AnyCurve[], outsideParts: AnyCurve[], coincidentParts: AnyCurve[] } {
+  public static splitPathsByRegionInOnOutXY(curvesToCut: AnyCurve | undefined, region: AnyRegion): { insideParts: AnyCurve[], outsideParts: AnyCurve[], coincidentParts: AnyCurve[] } {
     const result = { insideParts: [], outsideParts: [], coincidentParts: [] };
-    const pathWithIntersectionMarkup = RegionOps.cloneCurvesWithXYSplitFlags(curvesToCut, region);
-    const splitPaths = RegionOps.splitToPathsBetweenFlagBreaks(pathWithIntersectionMarkup, true);
+    const pathWithIntersectionMarkup = RegionOps.cloneCurvesWithXYSplits(curvesToCut, region);
+    const splitPaths = RegionOps.splitToPathsBetweenBreaks(pathWithIntersectionMarkup, true);
     if (splitPaths instanceof CurveCollection) {
       for (const child of splitPaths.children) {
         const pointOnChild = CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(child);
@@ -484,23 +496,18 @@ export class RegionOps {
     }
     return result;
   }
-  /** Test if `data` is one of several forms of a rectangle.
-   * * If so, return transform with
-   *   * origin at one corner
-   *   * x and y columns extend along two adjacent sides
-   *   * z column is unit normal.
-   * * The recognized data forms for simple analysis of points are:
+  /** If `data` is one of several forms of a rectangle, return its edge Transform.
+   * * Points are considered a rectangle if, within the first 4 points:
+   *     * vectors from 0 to 1 and 0 to 3 are perpendicular and have a non-zero cross product
+   *     * vectors from 0 to 3 and 1 to 2 are the same
+   * @param data points in one of several formats:
    *   * LineString
    *   * Loop containing rectangle content
    *   * Path containing rectangle content
    *   * Array of Point3d[]
    *   * IndexedXYZCollection
-   * * Points are considered a rectangle if
-   *   * Within the first 4 points
-   *     * vectors from 0 to 1 and 0 to 3 are perpendicular and have a non-zero cross product
-   *     * vectors from 0 to 3 and 1 to 2 are the same
-   *  * optionally require a 5th point that closes back to point0
-   *  * If there are other than the basic number of points (4 or 5) the data
+   * @param requireClosurePoint whether to require a 5th point equal to the 1st point.
+   * @returns Transform with origin at one corner, x and y columns extending along two adjacent sides, and unit normal in z column. If not a rectangle, return undefined.
    */
   public static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint: boolean = true): Transform | undefined {
     if (data instanceof LineString3d) {
@@ -511,15 +518,16 @@ export class RegionOps {
         if (!Geometry.isSmallMetricDistance(data.distanceIndexIndex(0, 4)!))
           return undefined;
         dataToUse = data;
-      } else if (!requireClosurePoint && data.length === 4)
+      } else if (!requireClosurePoint && data.length === 4) {
         dataToUse = data;
-      else if (data.length < (requireClosurePoint ? 5 : 4)) {
+      } else if (data.length < (requireClosurePoint ? 5 : 4)) {
         return undefined;
       } else {
         dataToUse = GrowableXYZArray.create(data);
         PolylineCompressionContext.compressInPlaceByShortEdgeLength(dataToUse, Geometry.smallMetricDistance);
+        if (dataToUse.length < (requireClosurePoint ? 5 : 4))
+          return undefined;
       }
-
       const vector01 = dataToUse.vectorIndexIndex(0, 1)!;
       const vector03 = dataToUse.vectorIndexIndex(0, 3)!;
       const vector12 = dataToUse.vectorIndexIndex(1, 2)!;
@@ -552,7 +560,7 @@ export class RegionOps {
    *   * collect all points
    *   * eliminate duplicated points
    *   * eliminate points colinear with surrounding points.
-   *  * Contiguous concentric circular or elliptic arcs
+   *   * Contiguous concentric circular or elliptic arcs
    *   * combine angular ranges
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.
@@ -569,7 +577,7 @@ export class RegionOps {
    * * `ParityRegion` if input consists of exactly one outer loop with at least one hole loop.
    * Its first child is an outer loop oriented counterclockwise; all subsequent children are holes oriented clockwise.
    * * `UnionRegion` if any other input configuration. Its children are individually ordered/oriented as in the above cases.
-   * @see PolygonOps.sortOuterAndHoleLoopsXY
+   * @see [[PolygonOps.sortOuterAndHoleLoopsXY]]
    */
   public static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion {
     const loopAndArea: SortablePolygon[] = [];
@@ -585,19 +593,15 @@ export class RegionOps {
   }
   /**
    * Find all areas bounded by the unstructured, possibly intersecting curves.
-   * * In `curvesAndRegions`, Loop/ParityRegion/UnionRegion contribute curve primitives.
-   * * Each returned [[SignedLoops]] object describes faces in a single connected component.
-   * * Within the [[SignedLoops]]:
-   *    * positiveAreaLoops contains typical "interior" loops with positive area loop ordered counterclockwise
-   *    * negativeAreaLoops contains (probably just one) "exterior" loop which is ordered clockwise and
-   *    * slivers contains sliver areas such as appear between coincident curves.
-   *    * edges contains [[LoopCurveLoopCurve]] about each edge within the component. In each edge object
-   *        * loopA = a loop on one side of the edge
-   *        * curveA = a curve that appears as one of loopA.children.
-   *        * loopB = the loop on the other side
-   *        * curveB = a curve that appears as one of loopB.children
-   * @param curvesAndRegions Any collection of curves.
-   * @alpha
+   * @remarks This method performs no merging of nearly coincident edges and vertices, which can lead to unexpected results
+   * given sufficiently imprecise input. Input geometry consisting of regions can be merged for better results: call
+   * [[regionBooleanXY]](regions, undefined, RegionBinaryOpType.Union) and pass the merged region into [[constructAllXYRegionLoops]].
+   * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve primitives.
+   * @returns array of [[SignedLoop]], each entry of which describes the faces in a single connected component:
+   *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have positive area and counterclockwise orientation.
+   *    * `negativeAreaLoops` contains (probably just one) "exterior" loop which is ordered clockwise.
+   *    * `slivers` contains sliver loops that have zero area, such as appear between coincident curves.
+   *    * `edges` contains a [[LoopCurveLoopCurve]] object for each component edge, collecting both loops adjacent to the edge and a constituent curve in each.
    */
   public static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[] {
     const primitivesA = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true);
@@ -610,12 +614,13 @@ export class RegionOps {
   }
 
   /**
-   * collect all `CurvePrimitives` in loosely typed input.
-   * * This (always) recurses into primitives within collections (Path, Loop, ParityRegion, UnionRegion)
-   * * It (optionally) recurses to hidden primitives within primitives (i.e. CurveChainWithDistanceIndex)
-   * * If collectorArray is given, it is NOT cleared -- primitives are appended.
-   * @param candidates array of various CurvePrimitive and CurveCollection
-   * @param smallestPossiblePrimitives if false, leave CurveChainWithDistanceIndex as single primitives.  If true, recurse to their children.
+   * Collect all `CurvePrimitives` in loosely typed input.
+   * * Always recurses into primitives within explicit collections (Path, Loop, ParityRegion, UnionRegion).
+   * * Optionally recurses into hidden primitives if `smallestPossiblePrimitives` is true.
+   * @param candidates input curves
+   * @param collectorArray optional pre-defined output array. If defined, it is NOT cleared: primitives are appended.
+   * @param smallestPossiblePrimitives if true, recurse into the children of a [[CurveChainWithDistanceIndex]]. If false, push the [[CurveChainWithDistanceIndex]] instead.
+   * @param explodeLinestrings if true, push a [[LineSegment3d]] for each segment of a [[LineString3d]]. If false, push the [[LineString3d]] instead.
    */
   public static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[],
     smallestPossiblePrimitives: boolean = false,
@@ -633,10 +638,9 @@ export class RegionOps {
     return results;
   }
   /**
-   * Copy primitive pointers from candidates to result array.
-   * * replace LineString3d by individual LineSegment3d.
-   * * all others unchanged.
-   * @param candidates
+   * Copy primitive pointers from candidates to result array, replacing each [[LineString3d]] by newly constructed instances of [[LineSegment3d]].
+   * @param candidates input curves
+   * @return copied (captured) inputs except for the linestrings, which are exploded
    */
   public static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[] {
     const result: CurvePrimitive[] = [];
@@ -655,7 +659,8 @@ export class RegionOps {
   }
   /**
    * Return the overall range of given curves.
-   * @param curves candidate curves
+   * @param data candidate curves
+   * @param worldToLocal transform to apply to data before computing its range
    */
   public static curveArrayRange(data: any, worldToLocal?: Transform): Range3d {
     const range = Range3d.create();
@@ -677,6 +682,7 @@ export class RegionOps {
   }
 }
 
+/** @internal */
 function pushToInOnOutArrays(curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[]) {
   if (select > 0)
     arrayPositive.push(curve);

@@ -11,8 +11,8 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point4d } from "./Point4d";
 
 /**
- * A Plane4dByOriginAndVectors is a 4d origin and pair of 4d "vectors" defining a 4d plane.
- * * The parameterization of the plane is    `X = origin + vectorU*u + vectorV * v`
+ * A PlaneByOriginAndVectors4d is a 4d origin and pair of 4d "vectors" defining a 4d plane.
+ * * The parameterization of the plane is    `X = origin + vectorU * u + vectorV * v`
  * * With particular weight values `origin.w === 1, vectorU.w === 0, vectorV.w === 0` this is like `Plane3dByOriginAndVectors`
  * * With other weights, the deweighted xyz coordinates of points on the 4d plane still form a 3d plane.
  * @public

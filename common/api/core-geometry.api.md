@@ -1818,15 +1818,15 @@ export class CutLoopMergeContext {
     sortAndMergeLoops(): void;
 }
 
-// @internal
+// @public
 export class DeepCompare {
     constructor(numberRelTol?: number);
     compare(a: any, b: any, tolerance?: number): boolean;
-    compareNumber(_a: number, _b: number): boolean;
+    compareNumber(a: number, b: number): boolean;
     errorTracker: any[];
     numberRelTol: number;
     propertyCounts: {
-        [key: string]: any;
+        [key: string]: number;
     };
     typeCounts: {
         numbers: number;
@@ -5223,18 +5223,18 @@ export class RegionMomentsXY extends NullGeometryHandler {
     handleUnionRegion(region: UnionRegion): MomentData | undefined;
 }
 
-// @beta
+// @public
 export class RegionOps {
     // @internal
     static addLoopsToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, announceIsolatedLoop: (graph: HalfEdgeGraph, seed: HalfEdge) => void): void;
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
-    static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined;
-    static collectChains(fragments: GeometryQuery[], gapTolerance?: number): ChainTypes;
+    static cloneCurvesWithXYSplits(curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection): AnyCurve | undefined;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number): ChainTypes;
     static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
-    static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): {
-        insideOffsets: GeometryQuery[];
-        outsideOffsets: GeometryQuery[];
+    static collectInsideAndOutsideOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
+        insideOffsets: AnyCurve[];
+        outsideOffsets: AnyCurve[];
         chains: ChainTypes;
     };
     static computeXYArea(root: AnyRegion): number | undefined;
@@ -5242,7 +5242,6 @@ export class RegionOps {
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
-    // @alpha
     static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
@@ -5255,17 +5254,17 @@ export class RegionOps {
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
-    // @alpha
     static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance?: number): AnyRegion | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion;
-    static splitPathsByRegionInOnOutXY(curvesToCut: CurveCollection | CurvePrimitive | undefined, region: AnyRegion): {
+    static splitPathsByRegionInOnOutXY(curvesToCut: AnyCurve | undefined, region: AnyRegion): {
         insideParts: AnyCurve[];
         outsideParts: AnyCurve[];
         coincidentParts: AnyCurve[];
     };
-    static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined, makeClones: boolean): BagOfCurves | Path | CurvePrimitive | Loop | undefined;
+    // @internal
+    static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
 }
 
