@@ -9377,8 +9377,9 @@ export interface RenderMaterialSource {
     iModel: IModelConnection;
 }
 
-// @internal
+// @public
 export namespace RenderMemory {
+    // @internal
     export class Buffers extends Consumers {
         constructor();
         // (undocumented)
@@ -9410,7 +9411,7 @@ export namespace RenderMemory {
         // (undocumented)
         get visibleEdges(): Consumers;
     }
-    // (undocumented)
+    // @internal (undocumented)
     export enum BufferType {
         // (undocumented)
         COUNT = 11,
@@ -9437,11 +9438,12 @@ export namespace RenderMemory {
         // (undocumented)
         VisibleEdges = 1
     }
-    // (undocumented)
+    // @internal (undocumented)
     export interface Consumer {
         // (undocumented)
         collectStatistics(stats: Statistics): void;
     }
+    // @internal
     export class Consumers {
         // (undocumented)
         addConsumer(numBytes: number): void;
@@ -9454,7 +9456,7 @@ export namespace RenderMemory {
         // (undocumented)
         totalBytes: number;
     }
-    // (undocumented)
+    // @internal (undocumented)
     export enum ConsumerType {
         // (undocumented)
         ClipVolumes = 5,
@@ -9479,82 +9481,82 @@ export namespace RenderMemory {
         // (undocumented)
         VertexTables = 1
     }
-    // (undocumented)
     export class Statistics {
+        // @internal
         constructor();
-        // (undocumented)
+        // @internal (undocumented)
         addBuffer(type: BufferType, numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addClipVolume(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addConsumer(type: ConsumerType, numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addEdgeTable(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addFeatureOverrides(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addFeatureTable(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addIndexedEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addInstances(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPlanarClassifier(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPointCloud(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPointString(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPolyline(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPolylineEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addRealityMesh(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addShadowMap(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addSilhouetteEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addSurface(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addTerrain(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addTexture(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addTextureAttachment(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addThematicTexture(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addVertexTable(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addVisibleEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         readonly buffers: Buffers;
-        // (undocumented)
+        // @internal (undocumented)
         clear(): void;
-        // (undocumented)
+        // @internal (undocumented)
         get clipVolumes(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         readonly consumers: Consumers[];
-        // (undocumented)
+        static create(): Statistics;
+        // @internal (undocumented)
         get edgeTables(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get featureOverrides(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get featureTables(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get planarClassifiers(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get shadowMaps(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get textureAttachments(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get textures(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get thematicTextures(): Consumers;
-        // (undocumented)
         get totalBytes(): number;
-        // (undocumented)
+        // @internal (undocumented)
         get vertexTables(): Consumers;
     }
 }
