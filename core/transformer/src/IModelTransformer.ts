@@ -7,6 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
+import * as nodeAssert from "assert";
 import {
   AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired,
   OpenMode, YieldManager,
@@ -15,7 +16,7 @@ import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChangeSummaryManager,
-  ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
+  ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSchemaXmlContext, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
   ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
@@ -25,7 +26,7 @@ import {
   ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel, IModelError, ModelProps,
   Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
-import { IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
+import { ExportSchemaResult, IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReference, PendingReferenceMap } from "./PendingReferenceMap";
@@ -162,7 +163,7 @@ class PartiallyCommittedEntity {
      */
     private _missingReferences: EntityReferenceSet,
     private _onComplete: () => void
-  ) {}
+  ) { }
   public resolveReference(id: EntityReference) {
     this._missingReferences.delete(id);
     if (this._missingReferences.size === 0)
@@ -958,7 +959,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Import elements that were deferred in a prior pass.
    * @deprecated in 3.x. This method is no longer necessary since the transformer no longer needs to defer elements
    */
-  public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
+  public async processDeferredElements(_numRetries: number = 3): Promise<void> { }
 
   private finalizeTransformation() {
     if (this._partiallyCommittedEntities.size > 0) {
@@ -1135,10 +1136,44 @@ export class IModelTransformer extends IModelExportHandler {
     return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
   }
 
+  private _longNamedSchemasMap = new Map<string, string>();
+
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
-   * the target iModel when it is exported from the source iModel. */
-  public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
-    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
+   * the target iModel when it is exported from the source iModel.
+   * @returns {Promise<ExportSchemaResult>} Although the type is possibly void for backwards compatibility of subclasses,
+   *                                        `IModelTransformer.onExportSchema` always returns an[[IModelExportHandler.ExportSchemaResult]]
+   *                                        with a defined `schemaPath` property, for subclasses to know where the schema was written.
+   *                                        Schemas are *not* guaranteed to be written to [[IModelTransformer._schemaExportDir]] by a
+   *                                        known pattern derivable from the schema's name, so you must use this to find it.
+   */
+  public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void | ExportSchemaResult> {
+    const ext = ".ecschema.xml";
+    let schemaFileName = schema.name + ext;
+    // many file systems have a max file-name/path-segment size of 255, so we workaround that on all systems
+    const systemMaxPathSegmentSize = 255;
+    if (schemaFileName.length > systemMaxPathSegmentSize) {
+      // this name should be well under 255 bytes
+      // ( 100 + (Number.MAX_SAFE_INTEGER.toString().length = 16) + (ext.length = 13) ) = 129 which is less than 255
+      // You'd have to be past 2**53-1 (Number.MAX_SAFE_INTEGER) long named schemas in order to hit decimal formatting,
+      // and that's on the scale of at least petabytes. `Map.prototype.size` shouldn't return floating points, and even
+      // if they do they're in scientific notation, size bound and contain no invalid windows path chars
+      schemaFileName = `${schema.name.slice(0, 100)}${this._longNamedSchemasMap.size}${ext}`;
+      nodeAssert(schemaFileName.length <= systemMaxPathSegmentSize, "Schema name was still long. This is a bug.");
+      this._longNamedSchemasMap.set(schema.name, schemaFileName);
+    }
+    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir, schemaFileName);
+    return { schemaPath: path.join(this._schemaExportDir, schemaFileName) };
+  }
+
+  private _makeLongNameResolvingSchemaCtx(): ECSchemaXmlContext {
+    const result = new ECSchemaXmlContext();
+    result.setSchemaLocater((key) => {
+      const match = this._longNamedSchemasMap.get(key.name);
+      if (match !== undefined)
+        return path.join(this._schemaExportDir, match);
+      return undefined;
+    });
+    return result;
   }
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
@@ -1149,14 +1184,19 @@ export class IModelTransformer extends IModelExportHandler {
     // we do not need to initialize for this since no entities are exported
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
+      this._longNamedSchemasMap.clear();
       await this.exporter.exportSchemas();
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
       const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
-      return await this.targetDb.importSchemas(schemaFullPaths);
+      const maybeLongNameResolvingSchemaCtx = this._longNamedSchemasMap.size > 0
+        ? this._makeLongNameResolvingSchemaCtx()
+        : undefined;
+      return await this.targetDb.importSchemas(schemaFullPaths, { ecSchemaXmlContext: maybeLongNameResolvingSchemaCtx });
     } finally {
       IModelJsFs.removeSync(this._schemaExportDir);
+      this._longNamedSchemasMap.clear();
     }
   }
 
@@ -1300,29 +1340,28 @@ export class IModelTransformer extends IModelExportHandler {
       // ignore provenance check if it's null since we can't bind those ids
       !Id64.isValidId64(lastProvenanceEntityInfo.aspectId) ||
       !Id64.isValidId64(lastProvenanceEntityInfo.entityId) ||
-      this.provenanceDb.withPreparedStatement(`
-        SELECT Version FROM ${ExternalSourceAspect.classFullName}
+      this.provenanceDb.withPreparedStatement(
+        `SELECT Version FROM ${ExternalSourceAspect.classFullName}
         WHERE Scope.Id=:scopeId
           AND ECInstanceId=:aspectId
           AND Kind=:kind
-          AND Element.Id=:entityId
-      `,
-      (statement: ECSqlStatement): boolean => {
-        statement.bindId("scopeId", this.targetScopeElementId);
-        statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
-        statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
-        statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
-        const stepResult = statement.step();
-        switch (stepResult) {
-          case DbResult.BE_SQLITE_ROW:
-            const version = statement.getValue(0).getString();
-            return version === lastProvenanceEntityInfo.aspectVersion;
-          case DbResult.BE_SQLITE_DONE:
-            return false;
-          default:
-            throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
-        }
-      });
+          AND Element.Id=:entityId`,
+        (statement: ECSqlStatement): boolean => {
+          statement.bindId("scopeId", this.targetScopeElementId);
+          statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
+          statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
+          statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
+          const stepResult = statement.step();
+          switch (stepResult) {
+            case DbResult.BE_SQLITE_ROW:
+              const version = statement.getValue(0).getString();
+              return version === lastProvenanceEntityInfo.aspectVersion;
+            case DbResult.BE_SQLITE_DONE:
+              return false;
+            default:
+              throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
+          }
+        });
     if (!targetHasCorrectLastProvenance)
       throw Error([
         "Target for resuming from does not have the expected provenance ",
@@ -1356,7 +1395,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @param constructorArgs remaining arguments that you would normally pass to the Transformer subclass you are using, usually (sourceDb, targetDb)
    * @note custom transformers with custom state may need to override this method in order to handle loading their own custom state somewhere
    */
-  public static resumeTransformation<SubClass extends new(...a: any[]) => IModelTransformer = typeof IModelTransformer>(
+  public static resumeTransformation<SubClass extends new (...a: any[]) => IModelTransformer = typeof IModelTransformer>(
     this: SubClass,
     statePath: string,
     ...constructorArgs: ConstructorParameters<SubClass>
@@ -1384,7 +1423,7 @@ export class IModelTransformer extends IModelExportHandler {
    * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
    * @see [[IModelTransformer.loadStateFromFile]]
    */
-  protected loadAdditionalStateJson(_additionalState: any): void {}
+  protected loadAdditionalStateJson(_additionalState: any): void { }
 
   /**
    * Save the state of the active transformation to an open SQLiteDb

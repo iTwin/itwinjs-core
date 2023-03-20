@@ -1447,6 +1447,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.maybeInvalidateScene();
   }
 
+  /** @internal */
+  public invalidateSymbologyOverrides(): void {
+    this.setFeatureOverrideProviderChanged();
+  }
+
   /** The [[TiledGraphicsProvider]]s currently registered with this viewport.
    * @see [[addTiledGraphicsProvider]].
    */
@@ -2513,7 +2518,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
     const viewRect = this.viewRect;
-    if (this.isDisposed || !rect.isContained(viewRect))
+    if (this.isDisposed || rect.isNull || !rect.isContained(viewRect))
       receiver(undefined);
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
@@ -2521,13 +2526,13 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @internal */
   public isPixelSelectable(pixel: Pixel.Data) {
-    if (undefined === pixel.featureTable || undefined === pixel.elementId)
+    if (undefined === pixel.modelId || undefined === pixel.elementId)
       return false;
 
-    if (pixel.featureTable.modelId === pixel.elementId)
+    if (pixel.modelId === pixel.elementId)
       return false;    // Reality Models not selectable
 
-    return undefined === this.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
+    return undefined === this.mapLayerFromIds(pixel.modelId, pixel.elementId);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.
@@ -2651,7 +2656,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       if (!preserveModelDisplayTransforms) {
         const pixel = pixels.getPixel(x, y);
-        const modelId = pixel.featureTable?.modelId;
+        const modelId = pixel.modelId;
         if (undefined !== modelId) {
           const transform = this.view.computeDisplayTransform({ modelId, elementId: pixel.feature?.elementId });
           transform?.multiplyInversePoint3d(npc, npc);

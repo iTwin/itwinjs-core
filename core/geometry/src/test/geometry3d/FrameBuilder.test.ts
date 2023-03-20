@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
@@ -218,13 +219,15 @@ describe("FrameBuilder", () => {
         AxisScaleSelect.NonUniformRangeContainment]) {
         const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(range, select, 0, 0, 0, 2.0);
         if (ck.testPointer(localToWorld)) {
-          MatrixTests.checkProperties(ck,
+          MatrixTests.checkProperties(
+            ck,
             localToWorld.matrix,
             select === AxisScaleSelect.Unit,  // unit axes in range are identity
             select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
             select === AxisScaleSelect.Unit,  // and of course rigid.
             true, // always invertible
-            true);  // always diagonal
+            true // always diagonal
+          );
           const worldCorners = range.corners();
           worldCorners.push(range.fractionToPoint(0.5, 0.5, 0.5));
         }

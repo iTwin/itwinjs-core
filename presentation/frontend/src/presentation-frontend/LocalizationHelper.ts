@@ -5,7 +5,7 @@
 import { LocalizationHelper } from "@itwin/presentation-common";
 import { Presentation } from "./Presentation";
 
-const NAMESPACES = ["BisCore", "ECPresentation", "RulesEngine"];
+const NAMESPACES = ["Presentation"];
 
 /** @internal */
 export class FrontendLocalizationHelper extends LocalizationHelper {

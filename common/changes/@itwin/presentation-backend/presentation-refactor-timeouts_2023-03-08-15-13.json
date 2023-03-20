@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Reduce default backend response timeout from 90 seconds to 5 seconds",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

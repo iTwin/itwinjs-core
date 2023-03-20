@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "PolyfaceBuilder for UnionRegions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

@@ -14,10 +14,19 @@ parameters:
   - name: outputDir
     type: string
     default: $(Pipeline.Workspace)/tempDocsBuild
+  - name: useCurrentAppUIDocsArtifact
+    type: boolean
+    default: false
   - name: useCurrentBisDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentPresentationDocsArtifact
+    type: boolean
+    default: false
   - name: shouldPublish
+    type: boolean
+    default: false
+  - name: ignoreAudit
     type: boolean
     default: false
 
@@ -52,6 +61,7 @@ jobs:
       - script: node common/scripts/install-run-rush.js audit
         displayName: rush audit
         workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.ignoreAudit }}', false))
 
       - script: node common/scripts/install-run-rush.js build:ci --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
@@ -69,7 +79,9 @@ jobs:
         parameters:
           workingDir: ${{ parameters.workingDir }}
           stagingDir: ${{ parameters.stagingDir }}
+          useCurrentAppUIDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
           useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
+          useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
       - script: npm install @bentley/bemetalsmith@4.3.x --legacy-peer-deps
