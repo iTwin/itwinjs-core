@@ -431,10 +431,8 @@ export class RegionOps {
   }
   /**
    * Create paths assembled from many curves.
-   * * Assemble paths from consecutive curves NOT separated by either startCut/endCut details or gaps.
-   * * Recognizes startCut/endCut curve annotations set by cloneCurvesWithXYSplits.
+   * * Assemble paths from consecutive curves NOT separated by either gaps or the split markup set by [[cloneCurvesWithXYSplits]].
    * * Return simplest form -- single primitive, single path, or bag of curves.
-   * @internal
    */
   public static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes {
     if (source === undefined)

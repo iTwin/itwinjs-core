@@ -5263,7 +5263,6 @@ export class RegionOps {
         outsideParts: AnyCurve[];
         coincidentParts: AnyCurve[];
     };
-    // @internal
     static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
 }
