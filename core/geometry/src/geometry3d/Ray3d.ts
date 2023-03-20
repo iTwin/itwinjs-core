@@ -68,8 +68,13 @@ export class Ray3d implements BeJSONFunctions {
     if (!this.direction.isParallelTo(other.direction, true))
       return false;
     // In exact math, it is not possible for one origin to be on the other ray but not vice versa.  But we'll test both ways.
-    const otherPointOnThis = this.projectPointToRay(other.origin);
-    return other.origin.isAlmostEqualMetric(otherPointOnThis);
+    const workPoint = this.projectPointToRay(other.origin);
+    if (!other.origin.isAlmostEqualMetric(workPoint))
+      return false;
+    other.projectPointToRay(this.origin);
+    if (!this.origin.isAlmostEqualMetric(workPoint))
+      return false;
+    return true;
   }
   /** Create a ray from origin and direction. */
   public static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d {
