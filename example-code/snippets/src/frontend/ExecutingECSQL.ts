@@ -8,6 +8,7 @@ import { IModelConnection } from "@itwin/core-frontend";
 
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable deprecation/deprecation */
 
 async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void> {
   {
