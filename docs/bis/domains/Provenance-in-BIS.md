@@ -62,9 +62,9 @@ One real-world use case is the appearance of the same "Wall", with the same "uni
 
 ### SynchronizationConfigLink
 
-A [SynchronizationConfigLink](./BisCore.ecschema.md#synchronizationconfiglink) represents a link to the configuration of a synchronization job in a BIS repository. `SynchronizationConfigLink`s specify the associated [ExternalSource](#externalsource) instances that were processed during its execution via the [SynchronizationConfigLinkProcessesSources](./BisCore.ecschema.md#synchronizationconfigprocessessources) relationship.
+A [SynchronizationConfigLink](./BisCore.ecschema.md#synchronizationconfiglink) represents a link to the configuration of a synchronization job in a BIS repository. `SynchronizationConfigLink`s specify the associated [ExternalSource](#externalsource) instances that were processed during its execution via the [SynchronizationConfigProcessesSources](./BisCore.ecschema.md#synchronizationconfigprocessessources) relationship.
 
-When the associated `ExternalSource` is the root of a synchronization job, which means that it is used to discover other referenced sources, the [SynchronizationConfigLinkSpecifiesRootSources](./BisCore.ecschema.md#synchronizationconfigspecifiesrootsources) relationship shall be used instead.
+When the associated `ExternalSource` is the root of a synchronization job, which means that it is used to discover other referenced sources, the [SynchronizationConfigSpecifiesRootSources](./BisCore.ecschema.md#synchronizationconfigspecifiesrootsources) relationship shall be used instead.
 
 The following instance diagram shows an example of a hierarchy of `ExternalSource`s, starting at an instance specified by a `SynchronizationConfigLink`. See [Instance-diagram Conventions](../guide/references/instance-diagram-conventions.md) for details about the conventions used.
 
