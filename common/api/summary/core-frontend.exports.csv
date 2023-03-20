@@ -443,13 +443,7 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
-public;MockRender
-internal;AreaPattern 
-internal;Builder 
-internal;Geometry 
-internal;OffScreenTarget 
-internal;OnScreenTarget 
-internal;class Target 
+internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
 beta;ModelDisplayTransformProvider

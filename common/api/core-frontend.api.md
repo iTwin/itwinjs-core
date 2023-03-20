@@ -7464,7 +7464,7 @@ export enum MessageBoxValue {
 // @internal
 export function metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number;
 
-// @public
+// @internal
 export namespace MockRender {
     export class App {
         // (undocumented)
@@ -7476,7 +7476,7 @@ export namespace MockRender {
         // (undocumented)
         static systemFactory: SystemFactory;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export class AreaPattern implements RenderAreaPattern {
         // (undocumented)
         collectStatistics(): void;
@@ -7507,11 +7507,11 @@ export namespace MockRender {
         // (undocumented)
         readonly transform: Transform;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export class Builder extends PrimitiveBuilder {
         constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions);
     }
-    // @internal (undocumented)
+    // (undocumented)
     export class Geometry implements RenderGeometry {
         // (undocumented)
         collectStatistics(): void;
@@ -7534,7 +7534,7 @@ export namespace MockRender {
         // (undocumented)
         readonly graphics: RenderGraphic[];
     }
-    // @internal (undocumented)
+    // (undocumented)
     export class OffScreenTarget extends Target {
         constructor(system: RenderSystem, _viewRect: ViewRect);
         // (undocumented)
@@ -7542,7 +7542,7 @@ export namespace MockRender {
         // (undocumented)
         get viewRect(): ViewRect;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export class OnScreenTarget extends Target {
         constructor(system: RenderSystem, _canvas: HTMLCanvasElement);
         // (undocumented)
@@ -7553,7 +7553,7 @@ export namespace MockRender {
     // (undocumented)
     export class System extends RenderSystem {
         constructor();
-        // @internal (undocumented)
+        // (undocumented)
         createAreaPattern(): AreaPattern;
         // (undocumented)
         createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d): Batch;
@@ -7563,29 +7563,29 @@ export namespace MockRender {
         createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
         // (undocumented)
         createGraphicList(primitives: RenderGraphic[]): List;
-        // @internal (undocumented)
+        // (undocumented)
         createMesh(_params: MeshParams): Graphic;
-        // @internal (undocumented)
+        // (undocumented)
         createMeshGeometry(): Geometry;
-        // @internal (undocumented)
+        // (undocumented)
         createOffscreenTarget(rect: ViewRect): RenderTarget;
-        // @internal (undocumented)
+        // (undocumented)
         createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): Graphic;
-        // @internal (undocumented)
+        // (undocumented)
         createPointString(_params: PointStringParams): Graphic;
-        // @internal (undocumented)
+        // (undocumented)
         createPointStringGeometry(): Geometry;
-        // @internal (undocumented)
+        // (undocumented)
         createPolyline(_params: PolylineParams): Graphic;
-        // @internal (undocumented)
+        // (undocumented)
         createPolylineGeometry(): Geometry;
         // (undocumented)
         createRenderGraphic(): Graphic;
-        // @internal (undocumented)
+        // (undocumented)
         createTarget(canvas: HTMLCanvasElement): OnScreenTarget;
         // (undocumented)
         dispose(): void;
-        // @internal (undocumented)
+        // (undocumented)
         doIdleWork(): boolean;
         // (undocumented)
         get isValid(): boolean;
@@ -7594,7 +7594,7 @@ export namespace MockRender {
     }
     // (undocumented)
     export type SystemFactory = () => RenderSystem;
-    // @internal (undocumented)
+    // (undocumented)
     export abstract class Target extends RenderTarget {
         protected constructor(_system: RenderSystem);
         // (undocumented)

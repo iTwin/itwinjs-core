@@ -39,7 +39,7 @@ import { Scene } from "./Scene";
  *  (2) Call MockRender.App.startup() instead of IModelApp.startup() before tests begin.
  *  (3) Likewise call MockRender.App.shutdown() when finished. This resets the SystemFactory to its default.
  * @note The APIs within this namespace are intended *strictly* for use with unit tests.
- * @public
+ * @internal
  */
 export namespace MockRender {
   /** @internal */
