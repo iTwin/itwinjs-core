@@ -122,7 +122,7 @@ There is also new support for intersecting a `Ray3d` with a triangle or a polygo
     }
     ```
 
-- [IModelConnection.queryRowCount]($backend) is deprecated. Use a subquery to count rows instead.<br>E.g.,
+- [IModelConnection.queryRowCount]($frontend) is deprecated. Use a subquery to count rows instead.<br>E.g.,
 
     ```ts
     const reader = myIModelConnection.createQueryReader(`SELECT count(*) FROM (<query-whose-rows-to-count>)`)
@@ -130,4 +130,4 @@ There is also new support for intersecting a `Ray3d` with a triangle or a polygo
     const numRows: number = reader.current[0];
     ```
 
-- [IModelConnection.restartQuery]($backend) is deprecated. Instead, create a new ECSqlReader using `createQueryReader` and pass in the restart token as part of the `config` argument: E.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
+- [IModelConnection.restartQuery]($frontend) is deprecated. Instead, create a new ECSqlReader using `createQueryReader` and pass in the restart token as part of the `config` argument: E.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
