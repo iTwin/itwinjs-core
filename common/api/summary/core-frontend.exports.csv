@@ -443,7 +443,13 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
-internal;MockRender
+public;MockRender
+internal;AreaPattern 
+internal;Builder 
+internal;Geometry 
+internal;OffScreenTarget 
+internal;OnScreenTarget 
+internal;class Target 
 internal;ModalOptions
 internal;ModalReturn
 beta;ModelDisplayTransformProvider
@@ -733,7 +739,7 @@ public;ToolSettings
 internal;ToolSettingsState
 internal;ToolState
 public;ToolTipOptions
-internal;ToolTipProvider
+public;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
 internal;TraversalChildrenDetails

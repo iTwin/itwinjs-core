@@ -2636,7 +2636,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     set viewFlags(flags: ViewFlags);
     // @internal
     viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean>;
-    // @internal (undocumented)
     get wantShadows(): boolean;
 }
 
@@ -2718,9 +2717,7 @@ export class DrawingViewState extends ViewState2d {
     detachFromViewport(): void;
     // @internal (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
-    // @internal (undocumented)
     getExtents(): Vector3d;
-    // @internal (undocumented)
     getOrigin(): Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
@@ -7464,7 +7461,7 @@ export enum MessageBoxValue {
 // @internal
 export function metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number;
 
-// @internal
+// @public
 export namespace MockRender {
     export class App {
         // (undocumented)
@@ -7476,7 +7473,7 @@ export namespace MockRender {
         // (undocumented)
         static systemFactory: SystemFactory;
     }
-    // (undocumented)
+    // @internal (undocumented)
     export class AreaPattern implements RenderAreaPattern {
         // (undocumented)
         collectStatistics(): void;
@@ -7507,11 +7504,11 @@ export namespace MockRender {
         // (undocumented)
         readonly transform: Transform;
     }
-    // (undocumented)
+    // @internal (undocumented)
     export class Builder extends PrimitiveBuilder {
         constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions);
     }
-    // (undocumented)
+    // @internal (undocumented)
     export class Geometry implements RenderGeometry {
         // (undocumented)
         collectStatistics(): void;
@@ -7534,7 +7531,7 @@ export namespace MockRender {
         // (undocumented)
         readonly graphics: RenderGraphic[];
     }
-    // (undocumented)
+    // @internal (undocumented)
     export class OffScreenTarget extends Target {
         constructor(system: RenderSystem, _viewRect: ViewRect);
         // (undocumented)
@@ -7542,7 +7539,7 @@ export namespace MockRender {
         // (undocumented)
         get viewRect(): ViewRect;
     }
-    // (undocumented)
+    // @internal (undocumented)
     export class OnScreenTarget extends Target {
         constructor(system: RenderSystem, _canvas: HTMLCanvasElement);
         // (undocumented)
@@ -7553,39 +7550,39 @@ export namespace MockRender {
     // (undocumented)
     export class System extends RenderSystem {
         constructor();
-        // (undocumented)
+        // @internal (undocumented)
         createAreaPattern(): AreaPattern;
         // (undocumented)
         createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
-        createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): Builder;
+        createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
         // (undocumented)
         createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
         // (undocumented)
         createGraphicList(primitives: RenderGraphic[]): List;
-        // (undocumented)
+        // @internal (undocumented)
         createMesh(_params: MeshParams): Graphic;
-        // (undocumented)
+        // @internal (undocumented)
         createMeshGeometry(): Geometry;
-        // (undocumented)
+        // @internal (undocumented)
         createOffscreenTarget(rect: ViewRect): RenderTarget;
-        // (undocumented)
+        // @internal (undocumented)
         createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): Graphic;
-        // (undocumented)
+        // @internal (undocumented)
         createPointString(_params: PointStringParams): Graphic;
-        // (undocumented)
+        // @internal (undocumented)
         createPointStringGeometry(): Geometry;
-        // (undocumented)
+        // @internal (undocumented)
         createPolyline(_params: PolylineParams): Graphic;
-        // (undocumented)
+        // @internal (undocumented)
         createPolylineGeometry(): Geometry;
         // (undocumented)
         createRenderGraphic(): Graphic;
-        // (undocumented)
+        // @internal (undocumented)
         createTarget(canvas: HTMLCanvasElement): OnScreenTarget;
         // (undocumented)
         dispose(): void;
-        // (undocumented)
+        // @internal (undocumented)
         doIdleWork(): boolean;
         // (undocumented)
         get isValid(): boolean;
@@ -7594,7 +7591,7 @@ export namespace MockRender {
     }
     // (undocumented)
     export type SystemFactory = () => RenderSystem;
-    // (undocumented)
+    // @internal (undocumented)
     export abstract class Target extends RenderTarget {
         protected constructor(_system: RenderSystem);
         // (undocumented)
@@ -10199,7 +10196,6 @@ export class ScreenViewport extends Viewport {
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
-    // @internal (undocumented)
     synchWithView(options?: ViewChangeOptions): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
@@ -12755,7 +12751,7 @@ export interface ToolTipOptions {
     placement?: string;
 }
 
-// @internal
+// @public
 export interface ToolTipProvider {
     augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
 }
@@ -13694,7 +13690,6 @@ export abstract class ViewingToolHandle {
 export class ViewManager implements Iterable<ScreenViewport> {
     [Symbol.iterator](): Iterator<ScreenViewport>;
     addDecorator(decorator: Decorator): () => void;
-    // @internal
     addToolTipProvider(provider: ToolTipProvider): () => void;
     addViewport(newVp: ScreenViewport): BentleyStatus;
     // @internal (undocumented)
@@ -13709,7 +13704,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     // @internal (undocumented)
     get doesHostHaveFocus(): boolean;
     dropDecorator(decorator: Decorator): boolean;
-    // @internal
     dropToolTipProvider(provider: ToolTipProvider): void;
     dropViewport(vp: ScreenViewport, disposeOfViewport?: boolean): BentleyStatus;
     // (undocumented)
@@ -13930,7 +13924,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     get analysisFractionValid(): boolean;
     get antialiasSamples(): number;
     set antialiasSamples(numSamples: number);
-    // @internal
     applyViewState(val: ViewState): void;
     get areAllTileTreesLoaded(): boolean;
     // @internal
@@ -14006,7 +13999,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
     protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
-    // @internal (undocumented)
     forEachTileTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal
     get freezeScene(): boolean;
@@ -14049,10 +14041,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
     get iModel(): IModelConnection;
-    // @internal (undocumented)
     invalidateController(): void;
     invalidateDecorations(): void;
-    // @internal (undocumented)
     invalidateRenderPlan(): void;
     invalidateScene(): void;
     // @internal (undocumented)
@@ -14418,7 +14408,6 @@ export abstract class ViewState extends ElementState {
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal
     abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
-    // @internal
     forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
@@ -14549,7 +14538,6 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
-    // @internal (undocumented)
     is3d(): this is ViewState3d;
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
@@ -14642,7 +14630,6 @@ export abstract class ViewState3d extends ViewState {
     getTargetPoint(result?: Point3d): Point3d;
     get globalScopeFactor(): number;
     globalViewTransition(): number;
-    // @internal (undocumented)
     is3d(): this is ViewState3d;
     // (undocumented)
     get isCameraOn(): boolean;
