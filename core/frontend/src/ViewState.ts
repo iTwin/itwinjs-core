@@ -513,7 +513,6 @@ export abstract class ViewState extends ElementState {
 
   /** Execute a function against each [[TileTreeReference]] associated with this view.
    * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
-   * @internal
    */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
     this.forEachModelTreeRef(func);
@@ -1470,7 +1469,7 @@ export abstract class ViewState3d extends ViewState {
     return val;
   }
 
-  /** @internal */
+  /** See [[ViewState.is3d]]. */
   public is3d(): this is ViewState3d { return true; }
 
   /** @internal */
@@ -2291,7 +2290,7 @@ export abstract class ViewState2d extends ViewState {
     return val;
   }
 
-  /** @internal */
+  /** See [[ViewState.is3d]]. */
   public is3d(): this is ViewState3d { return false; }
 
   /** @internal */
