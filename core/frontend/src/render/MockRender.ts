@@ -34,7 +34,8 @@ import { Scene } from "./Scene";
  *  (1) If overriding anything in the implementation supplied herein, pass a SystemFactory function to MockRender.App.systemFactory.
  *  (2) Call MockRender.App.startup() instead of IModelApp.startup() before tests begin.
  *  (3) Likewise call MockRender.App.shutdown() when finished. This resets the SystemFactory to its default.
- * @internal
+ * @note The APIs within this namespace are intended *strictly* for use with unit tests.
+ * @public
  */
 export namespace MockRender {
   /** @internal */
@@ -79,7 +80,6 @@ export namespace MockRender {
     }
   }
 
-  /** @internal */
   export class Graphic extends RenderGraphic {
     public constructor() { super(); }
 
@@ -87,7 +87,6 @@ export namespace MockRender {
     public collectStatistics(_stats: RenderMemory.Statistics): void { }
   }
 
-  /** @internal */
   export class List extends Graphic {
     public constructor(public readonly graphics: RenderGraphic[]) { super(); }
 
@@ -99,14 +98,12 @@ export namespace MockRender {
     }
   }
 
-  /** @internal */
   export class Branch extends Graphic {
     public constructor(public readonly branch: GraphicBranch, public readonly transform: Transform, public readonly options?: GraphicBranchOptions) { super(); }
 
     public override dispose() { this.branch.dispose(); }
   }
 
-  /** @internal */
   export class Batch extends Graphic {
     public constructor(public readonly graphic: RenderGraphic, public readonly featureTable: RenderFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
 
@@ -127,7 +124,6 @@ export namespace MockRender {
     public collectStatistics(): void { }
   }
 
-  /** @internal */
   export class System extends RenderSystem {
     public get isValid() { return true; }
     public dispose(): void { }
@@ -135,37 +131,45 @@ export namespace MockRender {
 
     public constructor() { super(); }
 
-    public doIdleWork(): boolean { return false; }
+    /** @internal */
+    public override doIdleWork(): boolean { return false; }
 
-    public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
-    public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
+    /** @internal */
+    public override createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
+    /** @internal */
+    public override createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
-    public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
+    public override createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
       return new Builder(this, options);
     }
 
-    public createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
-    public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) { return new Branch(branch, transform, options); }
-    public createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
+    public override createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
+    public override createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) { return new Branch(branch, transform, options); }
+    public override createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
 
+    /** @internal */
     public override createMesh(_params: MeshParams) { return new Graphic(); }
+    /** @internal */
     public override createPolyline(_params: PolylineParams) { return new Graphic(); }
+    /** @internal */
     public override createPointString(_params: PointStringParams) { return new Graphic(); }
+    /** @internal */
     public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
     public override createRenderGraphic() { return new Graphic(); }
 
+    /** @internal */
     public override createMeshGeometry() { return new Geometry(); }
+    /** @internal */
     public override createPolylineGeometry() { return new Geometry(); }
+    /** @internal */
     public override createPointStringGeometry() { return new Geometry(); }
+    /** @internal */
     public override createAreaPattern() { return new AreaPattern(); }
   }
 
-  /** @internal */
   export type SystemFactory = () => RenderSystem;
 
-  /** An implementation of IModelApp which uses a MockRender.System by default.
-   * @internal
-   */
+  /** An implementation of IModelApp which uses a MockRender.System by default. */
   export class App {
     public static systemFactory: SystemFactory = () => App.createDefaultRenderSystem();
 
@@ -175,6 +179,7 @@ export namespace MockRender {
       opts.localization = opts.localization ?? new EmptyLocalization();
       await IModelApp.startup(opts);
     }
+
     public static async shutdown(): Promise<void> {
       this.systemFactory = () => App.createDefaultRenderSystem();
       await IModelApp.shutdown();
