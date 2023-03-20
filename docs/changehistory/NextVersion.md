@@ -8,6 +8,9 @@ Table of contents:
 - [AppUi](#appui)
   - [Static manager classes](#static-manager-classes)
 - [Mesh intersection with ray](#mesh-intersection-with-ray)
+- [Deprecations](#deprecations)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-frontend](#itwincore-frontend)
 
 ## AppUi
 
@@ -82,3 +85,49 @@ Below is a list of the changes from this move, some of these new access point ma
 New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with a [Polyface]($core-geometry). By default, [PolyfaceQuery.intersectRay3d]($core-geometry) returns a [FacetLocationDetail]($core-geometry) for the first found facet that intersects the infinite line parameterized by the ray. A callback can be specified in the optional [FacetIntersectOptions]($core-geometry) parameter to customize intersection processing, e.g., to filter and collect multiple intersections. Other options control whether to populate the returned detail with interpolated auxiliary vertex data: normals, uv parameters, colors, and/or the barycentric scale factors used to interpolate such data.
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
+
+## Deprecations
+
+### @itwin/core-backend
+
+- [IModelDb.query]($backend) and [ECDb.query]($backend) is deprecated in favor of using [IModelDb.createQueryReader]($backend) and [ECDb.createQueryReader]($backend), respectively, and iterating over the query using the returned [ECSqlReader]($common). The `createQueryReader` methods accept the same parameters as the now deprecated `query` methods. <br>E.g.,
+
+    ```ts
+    const reader = myIModelDb.createQueryReader("SELECT ECInstanceId FROM bis.Element", undefined, undefined);
+    while (await reader.step()) {
+        currentId = reader.current.ecinstanceid;
+        // do something with the id
+    }
+    ```
+
+- [IModelDb.queryRowCount]($backend) and [ECDb.queryRowCount]($backend) are deprecated. Use a subquery to count rows instead.<br>E.g.,
+
+    ```ts
+    const reader = myDb.createQueryReader(`SELECT count(*) FROM (<query-whose-rows-to-count>)`)
+    await reader.step();
+    const numRows: number = reader.current[0];
+    ```
+
+- [IModelDb.restartQuery]($backend) and [ECDb.restartQuery]($backend) are deprecated. Instead, create a new ECSqlReader using `createQueryReader` and pass in the restart token as part of the `config` argument: E.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
+
+### @itwin/core-frontend
+
+- [IModelConnection.query]($frontend) is deprecated in favor of using [IModelConnection.createQueryReader]($frontend) and iterating over the query using the returned [ECSqlReader]($common). `createQueryReader` accepts the same parameters as the now deprecated `query` method. <br>E.g.,
+
+    ```ts
+    const reader = myIModelConnection.createQueryReader("SELECT ECInstanceId FROM bis.Element", undefined, undefined);
+    while (await reader.step()) {
+        currentId = reader.current.ecinstanceid;
+        // do something with the id
+    }
+    ```
+
+- [IModelConnection.queryRowCount]($frontend) is deprecated. Use a subquery to count rows instead.<br>E.g.,
+
+    ```ts
+    const reader = myIModelConnection.createQueryReader(`SELECT count(*) FROM (<query-whose-rows-to-count>)`)
+    await reader.step();
+    const numRows: number = reader.current[0];
+    ```
+
+- [IModelConnection.restartQuery]($frontend) is deprecated. Instead, create a new ECSqlReader using `createQueryReader` and pass in the restart token as part of the `config` argument: E.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.

@@ -101,6 +101,7 @@ class SubjectModelIdsCache {
   private async initSubjectsHierarchy() {
     this._subjectsHierarchy = new Map();
     const ecsql = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
+    // eslint-disable-next-line deprecation/deprecation
     const result = this._imodel.query(ecsql, undefined, { limit: { count: 1000 } });
     for await (const row of result) {
       let list = this._subjectsHierarchy.get(row.parentId);
@@ -115,6 +116,7 @@ class SubjectModelIdsCache {
   private async initSubjectModels() {
     this._subjectModels = new Map();
     const ecsql = `SELECT p.ECInstanceId id, p.Parent.Id subjectId FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
+    // eslint-disable-next-line deprecation/deprecation
     const result = this._imodel.query(ecsql, undefined, { limit: { count: 1000 } });
     for await (const row of result) {
       let list = this._subjectModels.get(row.subjectId);

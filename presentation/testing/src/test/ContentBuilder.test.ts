@@ -301,6 +301,7 @@ describe("ContentBuilder", () => {
     before(() => {
       imodelMock.reset();
       const f = createQueryFunc(testInstances);
+      // eslint-disable-next-line deprecation/deprecation
       imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(f);
     });
 
@@ -344,6 +345,7 @@ describe("ContentBuilder", () => {
 
       it("returns all required instances with empty records", async () => {
         imodelMock.reset();
+        // eslint-disable-next-line deprecation/deprecation
         imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
@@ -369,6 +371,7 @@ describe("ContentBuilder", () => {
 
       it("throws when id query throws an unexpected error", async () => {
         imodelMock.reset();
+        // eslint-disable-next-line deprecation/deprecation
         imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createThrowingQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
@@ -388,6 +391,7 @@ describe("ContentBuilder", () => {
 
       before(() => {
         imodelMock.reset();
+        // eslint-disable-next-line deprecation/deprecation
         imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
       });
 

@@ -87,6 +87,7 @@ describe("PresentationInstanceFilter", () => {
     async function* generator() {
       return;
     }
+    // eslint-disable-next-line deprecation/deprecation
     imodelMock.setup((x) => x.query(moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny())).returns(() => generator());
     imodelMock.setup((x) => x.key).returns(() => "test_imodel");
     imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);

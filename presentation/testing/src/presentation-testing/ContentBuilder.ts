@@ -115,6 +115,7 @@ export class ContentBuilder {
 
   private async getECClassNames(): Promise<Array<{ schemaName: string, className: string }>> {
     const rows = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this._iModel.query(`
       SELECT s.Name schemaName, c.Name className FROM meta.ECClassDef c
       INNER JOIN meta.ECSchemaDef s ON c.Schema.id = s.ECInstanceId
@@ -134,6 +135,7 @@ export class ContentBuilder {
     for (const nameEntry of classNameEntries) {
       // try {
       const instanceIds = [];
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of this._iModel.query(`
       SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
       ORDER BY ECInstanceId`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: limitInstances ? 1 : 4000 } })) {
