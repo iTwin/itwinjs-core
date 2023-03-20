@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module Utils
+ */
+
 import { dispose } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
