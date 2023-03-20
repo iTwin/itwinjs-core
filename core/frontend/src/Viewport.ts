@@ -2682,7 +2682,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return queryVisibleFeatures(this, options, callback);
   }
 
-  /** @internal */
+  /** Record graphics memory consumed by this viewport. */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);

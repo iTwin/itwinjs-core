@@ -12276,7 +12276,6 @@ export abstract class TileTreeReference {
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     get castsShadows(): boolean;
-    // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // @beta
     collectTileGeometry?: (collector: TileGeometryCollector) => void;
@@ -13956,7 +13955,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     clearNeverDrawn(): void;
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
-    // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     computeViewRange(): Range3d;
     get continuousRendering(): boolean;
