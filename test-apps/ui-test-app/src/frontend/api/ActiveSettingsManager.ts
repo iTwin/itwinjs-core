@@ -45,6 +45,7 @@ export class ModelNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement ${wh}`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       this.cache.push({ id: result.id, name: result.name });
     }
@@ -57,6 +58,7 @@ export class CategoryNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.Category ${wh}`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       this.cache.push({ id: result.id, name: result.name });
     }

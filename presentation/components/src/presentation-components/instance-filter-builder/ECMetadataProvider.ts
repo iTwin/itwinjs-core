@@ -124,6 +124,7 @@ const metadataProviders = new Map<string, ECMetadataProvider>();
 export function getIModelMetadataProvider(imodel: IModelConnection) {
   let metadataProvider = metadataProviders.get(imodel.key);
   if (!metadataProvider) {
+    // eslint-disable-next-line deprecation/deprecation
     metadataProvider = new ECMetadataProvider(imodel.query.bind(imodel));
     metadataProviders.set(imodel.key, metadataProvider);
     // istanbul ignore next

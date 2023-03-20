@@ -244,6 +244,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
     const rows = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this.props.iModelConnection.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
@@ -253,6 +254,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
+    // eslint-disable-next-line deprecation/deprecation
     for await (const model of this.props.iModelConnection.query(ecsql2, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";

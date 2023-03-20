@@ -380,6 +380,7 @@ describe("convertToInstanceFilterDefinition", () => {
     beforeEach(() => {
       imodelMock.setup((x) => x.key).returns(() => "test_imodel");
       imodelMock.setup((x) => x.onClose).returns(() => onClose);
+      // eslint-disable-next-line deprecation/deprecation
       imodelMock.setup((x) => x.query).returns(() => () => asyncGenerator());
 
       // stub metadataProvider for test imodel
