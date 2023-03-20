@@ -140,6 +140,7 @@ export * from "./geometry3d/IndexedXYCollection";
 export * from "./geometry3d/IndexedXYZCollection";
 export * from "./geometry3d/Matrix3d";
 export * from "./geometry3d/OrderedRotationAngles";
+export * from "./geometry3d/Plane3d";
 export * from "./geometry3d/Plane3dByOriginAndUnitNormal";
 export * from "./geometry3d/Plane3dByOriginAndVectors";
 export * from "./geometry3d/Point2dArrayCarrier";

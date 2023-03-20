@@ -48,7 +48,7 @@ function verifyMatchedPlaneAltitudeEvaluator(ck: Checker, planeA: Plane3d, plane
   }
 }
 describe("PlaneEvaluator", () => {
-  it("HelloWorld", () => {
+  it.only("HelloWorld", () => {
     const ck = new Checker();
     const pointA = Point3d.create(1.2, 3);
     for (const normal of [Vector3d.createNormalized(0, 0, 1)!,

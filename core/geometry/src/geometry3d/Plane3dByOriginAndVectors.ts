@@ -20,6 +20,11 @@ import { XYAndZ } from "./XYZProps";
  * * The grid directions (`vectorU` and `vectorV`)
  *   * are NOT required to be unit vectors.
  *   * are NOT required to be perpendicular vectors.
+ * * The skewed, non-uniform scaling of the grid directions is the primary focus of this class.
+ * * Queries of altitude, velocity, normalX, normalY, and normalZ use the NORMALIZED cross product of vectorU and vectorV as plane normal.
+ *   * Hence these are cartesian distances.
+ *   * If numerous calls to these are expected, the repeated normalization may be a performance issue.
+ *   * Using a Plane3dByOriginAndUnitNormal or the rigid transform returned by [[toRigidFrame]]would provide better performance.
  * @public
  */
 export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunctions {
@@ -207,7 +212,7 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
       && this.vectorU.isAlmostEqual(other.vectorU)
       && this.vectorV.isAlmostEqual(other.vectorV);
   }
-  /** Normalize both `vectorU` and `vectorV` in place.
+  /** Normalize both `vectorU` and `vectorV` in place.  This does NOT make them perpendicular.
    * * Return true if both succeeded.
    */
   public normalizeInPlace(): boolean {
@@ -255,36 +260,69 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     transform.multiplyVector(this.vectorV, this.vectorV);
   }
   // Implement PlaneAltitudeEvaluator methods . . .
-  // These turn the parametric UV plane into an implicit plane
-  //         altitude = (xyz - origin) DOT (vectorU Cross vectorV) = xyz DOT vectorU cross vectorV - origin DOT vectorU CROSS vectorV
-  // This essentially uses vectorU CROSS vectorV as the plane normal.  This is a NON-UNIT normal.
-  public normalX(): number { return Geometry.crossProductXYXY(this.vectorU.y, this.vectorU.z, this.vectorV.y, this.vectorV.z); }
-  public normalY(): number { return Geometry.crossProductXYXY(this.vectorU.z, this.vectorU.x, this.vectorV.z, this.vectorV.x); }
-  public normalZ(): number { return Geometry.crossProductXYXY(this.vectorU.x, this.vectorU.y, this.vectorV.x, this.vectorV.y); }
+  /**
+   * Return x component of the (normalized!) {vectorU CROSS vectorV}.
+   * Return 0 if the cross product is zero.
+   * */
+  public normalX(): number {
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    return unitNormal !== undefined ? unitNormal.x : 0.0;
+  }
+  /**
+* Return y component of the (normalized!) {vectorU CROSS vectorV}.
+* Return 0 if the cross product is zero.
+* */
+  public normalY(): number {
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    return unitNormal !== undefined ? unitNormal.y : 0.0;
+  }
+  /**
+   * Return z component of the (normalized!) {vectorU CROSS vectorV}.
+   * Return 0 if the cross product is zero.
+   * */
+  public normalZ(): number {
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    return unitNormal !== undefined ? unitNormal.z : 0.0;
+  }
+  /** Return signed cartesian altitude perpendicular to the plane.  This uses the normalized cross product as normal. */
   public altitude(xyz: XYAndZ): number {
-    return Geometry.tripleProduct(
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    if (unitNormal === undefined)
+      return 0.0;
+    return Geometry.dotProductXYZXYZ(
       (xyz.x - this.origin.x), (xyz.y - this.origin.y), (xyz.z - this.origin.z),
-      this.vectorU.x, this.vectorU.y, this.vectorU.z,
-      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+      unitNormal.x, unitNormal.y, unitNormal.z);
   }
+  /** Return signed cartesian altitude perpendicular to the plane.  This uses the normalized cross product as normal. */
   public altitudeXYZ(x: number, y: number, z: number): number {
-    return Geometry.tripleProduct(
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    if (unitNormal === undefined)
+      return 0.0;
+    return Geometry.dotProductXYZXYZ(
       (x - this.origin.x), (y - this.origin.y), (z - this.origin.z),
-      this.vectorU.x, this.vectorU.y, this.vectorU.z,
-      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+      unitNormal.x, unitNormal.y, unitNormal.z);
   }
+  /** Return signed projection of the input vector to the plane normal.  This uses the normalized cross product as normal. */
   public velocity(xyzVector: XYAndZ): number {
-    return Geometry.tripleProduct(
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    if (unitNormal === undefined)
+      return 0.0;
+    return Geometry.dotProductXYZXYZ(
       xyzVector.x, xyzVector.y, xyzVector.z,
-      this.vectorU.x, this.vectorU.y, this.vectorU.z,
-      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+      unitNormal.x, unitNormal.y, unitNormal.z);
   }
+  /** Return signed projection of the input vector to the plane normal.  This uses the normalized cross product as normal. */
   public velocityXYZ(x: number, y: number, z: number): number {
-    return Geometry.tripleProduct(
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
+    if (unitNormal === undefined)
+      return 0.0;
+    return Geometry.dotProductXYZXYZ(
       x, y, z,
-      this.vectorU.x, this.vectorU.y, this.vectorU.z,
-      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+      unitNormal.x, unitNormal.y, unitNormal.z);
   }
+  /** Return triple product of homogeneous difference {(xyzw - w * origin)} with vectorU and vectorV.
+   * * In the usual manner of homogeneous calculations, this is proportional to true cartesian distance from the plane but is not a physical distance.
+   */
   public weightedAltitude(xyzw: Point4d) {
     const w = xyzw.w;
     return Geometry.tripleProduct(
@@ -292,7 +330,8 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
       this.vectorU.x, this.vectorU.y, this.vectorU.z,
       this.vectorV.x, this.vectorV.y, this.vectorV.z);
   }
-  /** Return the projection of spacePoint onto the plane.
+  /**
+   * Return the projection of spacePoint onto the plane.
    * If the plane is degenerate to a ray, project to the ray.
    * If the plane is degenerate to its origin, return the point
    */

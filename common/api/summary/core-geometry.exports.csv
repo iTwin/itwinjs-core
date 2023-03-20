@@ -203,6 +203,7 @@ internal;PascalCoefficients
 public;Path 
 public;PathFragment
 public;PerpParallelOptions
+public;class Plane3d 
 public;Plane3dByOriginAndUnitNormal 
 public;Plane3dByOriginAndVectors 
 public;PlaneAltitudeEvaluator

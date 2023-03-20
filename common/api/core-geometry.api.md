@@ -1075,7 +1075,6 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     normalY(): number;
     normalZ(): number;
     offsetDistance(offset: number): void;
-    // (undocumented)
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
@@ -4061,6 +4060,22 @@ export interface PerpParallelOptions {
 }
 
 // @public
+export abstract class Plane3d implements PlaneAltitudeEvaluator {
+    abstract altitude(spacePoint: Point3d): number;
+    abstract altitudeXYZ(x: number, y: number, z: number): number;
+    classifyAltitude(point: Point3d, tolerance?: number): -1 | 0 | 1;
+    classifyAltitudeXYZ(x: number, y: number, z: number, tolerance?: number): -1 | 0 | 1;
+    isPointInPlane(spacePoint: Point3d, tolerance?: number): boolean;
+    abstract normalX(): number;
+    abstract normalY(): number;
+    abstract normalZ(): number;
+    abstract projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+    abstract velocity(spaceVector: Vector3d): number;
+    abstract velocityXYZ(x: number, y: number, z: number): number;
+    abstract weightedAltitude(spacePoint: Point4d): number;
+}
+
+// @public
 export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunctions {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
@@ -4101,9 +4116,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
 
 // @public
 export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunctions {
-    // (undocumented)
     altitude(xyz: XYAndZ): number;
-    // (undocumented)
     altitudeXYZ(x: number, y: number, z: number): number;
     clone(): Plane3dByOriginAndVectors;
     static createCapture(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -4119,11 +4132,8 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     static fromJSON(json?: any): Plane3dByOriginAndVectors;
     isAlmostEqual(other: Plane3dByOriginAndVectors): boolean;
     normalizeInPlace(): boolean;
-    // (undocumented)
     normalX(): number;
-    // (undocumented)
     normalY(): number;
-    // (undocumented)
     normalZ(): number;
     origin: Point3d;
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
@@ -4137,11 +4147,8 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     unitNormalRay(result?: Ray3d): Ray3d | undefined;
     vectorU: Vector3d;
     vectorV: Vector3d;
-    // (undocumented)
     velocity(xyzVector: XYAndZ): number;
-    // (undocumented)
     velocityXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
     weightedAltitude(xyzw: Point4d): number;
 }
 

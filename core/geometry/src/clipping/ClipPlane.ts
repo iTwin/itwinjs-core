@@ -588,6 +588,9 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     ClipUtilities.captureOrDrop(newInside, 3, insideFragments, arrayCache);
     ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
   }
+  /**
+   * Project a point in space to the plane.
+   */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     const d = -this.altitude(spacePoint);
     return spacePoint.plusXYZ(d * this._inwardNormal.x, d * this._inwardNormal.y, d * this._inwardNormal.z, result);

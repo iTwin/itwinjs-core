@@ -251,7 +251,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    */
   public normalZ(): number { return this._normal.z; }
 
-  /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
+  /** Return the signed altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {
     return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint);
   }
