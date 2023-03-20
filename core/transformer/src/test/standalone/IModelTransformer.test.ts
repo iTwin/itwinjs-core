@@ -1134,6 +1134,7 @@ describe("IModelTransformer", () => {
   /** gets a mapping of element ids to their invariant content */
   async function getAllElementsInvariants(db: IModelDb, filterPredicate?: (element: Element) => boolean) {
     const result: Record<Id64String, any> = {};
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of db.query("SELECT * FROM bis.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       if (!filterPredicate || filterPredicate(db.elements.getElement(row.id))) {
         const { lastMod: _lastMod, ...invariantPortion } = row;
@@ -1149,6 +1150,7 @@ describe("IModelTransformer", () => {
     filterPredicate?: (rel: { sourceId: string, targetId: string }) => boolean
   ): Promise<{ sourceId: Id64String, targetId: Id64String }[]> {
     const result = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of db.query("SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       if (!filterPredicate || filterPredicate(row)) {
         const { id: _id, ...invariantPortion } = row;

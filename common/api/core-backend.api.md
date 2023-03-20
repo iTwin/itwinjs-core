@@ -1480,10 +1480,13 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
+    // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    // @deprecated
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
+    // @deprecated
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     saveChanges(changesetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
@@ -2835,11 +2838,13 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
+    // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
+    // @deprecated
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
     // @internal
@@ -2853,6 +2858,7 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
+    // @deprecated
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
