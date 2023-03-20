@@ -11,7 +11,9 @@ import * as assert from "assert";
 import { ConcreteEntityTypes, DbResult,  EntityReference, IModelError } from "@itwin/core-common";
 import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, EntityReferences, IModelDb, Relationship } from "@itwin/core-backend";
 
-/** @internal */
+/** @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
+ */
 export namespace EntityUnifier {
   export function getReadableType(entity: ConcreteEntity) {
     if (entity instanceof Element)

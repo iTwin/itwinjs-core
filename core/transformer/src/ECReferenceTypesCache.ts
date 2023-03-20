@@ -14,6 +14,7 @@ import { IModelDb } from "@itwin/core-backend";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class SchemaNotInCacheErr extends Error {
   public constructor() { super("Schema was not in cache, initialize that schema"); }
@@ -26,6 +27,7 @@ export class SchemaNotInCacheErr extends Error {
  * Using multiple of these usually performs redundant computation, for static schemas at least. A possible future optimization
  * would be to seed the computation from a global cache of non-dynamic schemas, but dynamic schemas can collide willy-nilly
  * @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class ECReferenceTypesCache {
   /** nesting based tuple map keyed by qualified property path tuple [schemaName, className, propName] */

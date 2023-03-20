@@ -47,6 +47,7 @@ type EntityTransformHandler = (entity: ConcreteEntity) => ElementProps | ModelPr
 
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  * @note if adding an option, you must explicitly add its serialization to [[IModelTransformer.saveStateToFile]]!
  */
 export interface IModelTransformOptions {
@@ -212,6 +213,7 @@ function mapId64<R>(
 
 /** Arguments you can pass to [[IModelTransformer.initExternalSourceAspects]]
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export interface InitFromExternalSourceAspectsArgs {
   accessToken?: AccessToken;
@@ -221,6 +223,7 @@ export interface InitFromExternalSourceAspectsArgs {
 /** Base class used to transform a source iModel into a different target iModel.
  * @see [iModel Transformation and Data Exchange]($docs/learning/transformer/index.md), [IModelExporter]($transformer), [IModelImporter]($transformer)
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class IModelTransformer extends IModelExportHandler {
   /** The IModelExporter that will export from the source iModel. */
@@ -1534,6 +1537,7 @@ interface TransformationJsonState {
 
 /** IModelTransformer that clones the contents of a template model.
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class TemplateModelCloner extends IModelTransformer {
   /** The Placement to apply to the template. */

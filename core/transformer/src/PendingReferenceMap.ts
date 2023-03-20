@@ -13,6 +13,7 @@ import { EntityMap } from "./EntityMap";
 /**
  * A reference relationships from an element, "referencer", to an element or its submodel, "referenced"
  * @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export interface PendingReference {
   referencer: EntityReference;

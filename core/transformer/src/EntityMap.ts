@@ -8,10 +8,14 @@
 import { EntityReference } from "@itwin/core-common";
 import { ConcreteEntity, EntityReferences } from "@itwin/core-backend";
 
-/** @internal */
+/** @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
+ */
 export type EntityKey = EntityReference;
 
-/** @internal */
+/** @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
+ */
 export class EntityMap<V> {
   private _map = new Map<EntityKey, V>();
 

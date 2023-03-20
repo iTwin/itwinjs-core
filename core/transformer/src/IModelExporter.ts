@@ -20,6 +20,7 @@ const loggerCategory = TransformerLoggerCategory.IModelExporter;
 
 /**
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  * The (optional) result of [[IModelExportHandler.onExportSchema]]
  */
 export interface ExportSchemaResult {
@@ -32,6 +33,7 @@ export interface ExportSchemaResult {
  * @note The handler is intended to be owned by (registered with) and called from the IModelExporter exclusively
  * @see [iModel Transformation and Data Exchange]($docs/learning/transformer/index.md), [IModelExporter]($transformer)
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export abstract class IModelExportHandler {
   /** If `true` is returned, then the CodeSpec will be exported.
@@ -142,6 +144,7 @@ export abstract class IModelExportHandler {
  * @note Most uses cases will not require a custom subclass of `IModelExporter`. Instead, it is more typical to subclass/customize [IModelExportHandler]($transformer).
  * @see [iModel Transformation and Data Exchange]($docs/learning/transformer/index.md), [[registerHandler]], [IModelTransformer]($transformer), [IModelImporter]($transformer)
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class IModelExporter {
   /** The read-only source iModel. */
@@ -806,6 +809,7 @@ export class IModelExporter {
  *
  * @note Must be kept synchronized with IModelExporter
  * @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export interface IModelExporterState {
   exporterClass: string;
@@ -825,7 +829,8 @@ export interface IModelExporterState {
 
 /** Class for holding change information.
  * @beta
-*/
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
+ */
 export class ChangedInstanceOps {
   public insertIds = new Set<Id64String>();
   public updateIds = new Set<Id64String>();
@@ -849,6 +854,7 @@ export class ChangedInstanceOps {
 /**
  * Class for discovering modified elements between 2 versions of an iModel.
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class ChangedInstanceIds {
   public codeSpec = new ChangedInstanceOps();

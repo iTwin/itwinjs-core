@@ -19,6 +19,7 @@ import { EntityUnifier } from "./EntityUnifier";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class IModelCloneContext extends IModelElementCloneContext {
 
@@ -148,6 +149,7 @@ export class IModelCloneContext extends IModelElementCloneContext {
 
   /** Clone the specified source Element into ElementProps for the target iModel.
    * @internal
+   * @deprecated in 4.x, Use the @itwin/transformer package instead
    */
   public cloneElementAspect(sourceElementAspect: ElementAspect): ElementAspectProps {
     const targetElementAspectProps: ElementAspectProps = sourceElementAspect.toJSON();

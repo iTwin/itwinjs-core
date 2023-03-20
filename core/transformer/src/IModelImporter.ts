@@ -19,6 +19,7 @@ const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
 /** Options provided to [[IModelImporter.optimizeGeometry]] specifying post-processing optimizations to be applied to the iModel's geometry.
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export interface OptimizeGeometryOptions {
   /** If true, identify any [GeometryPart]($backend)s that are referenced exactly once. For each such part,
@@ -29,6 +30,7 @@ export interface OptimizeGeometryOptions {
 
 /** Options provided to the [[IModelImporter]] constructor.
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export interface IModelImportOptions {
   /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
@@ -50,6 +52,7 @@ export interface IModelImportOptions {
  * @see [IModelExporter]($transformer)
  * @see [IModelTransformer]($transformer)
  * @beta
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export class IModelImporter implements Required<IModelImportOptions> {
   /** The read/write target iModel. */
@@ -608,6 +611,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
  *
  * @note Must be kept synchronized with IModelImxporter
  * @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export interface IModelImporterState {
   importerClass: string;
@@ -622,6 +626,7 @@ export interface IModelImporterState {
  * @param entityProps The new EntityProps to compare against
  * @note This method should only be called if changeset information is not available.
  * @internal
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean {
   let changed: boolean = false;

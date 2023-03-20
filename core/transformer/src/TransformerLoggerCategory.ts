@@ -10,6 +10,7 @@
  * @note All logger categories in this package start with the `core-backend` prefix.
  * @see [Logger]($bentley)
  * @public
+ * @deprecated in 4.x, Use the @itwin/transformer package instead
  */
 export enum TransformerLoggerCategory {
   /** The logger category used by the [IModelExporter]($transformer) class.
