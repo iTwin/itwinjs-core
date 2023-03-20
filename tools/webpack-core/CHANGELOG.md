@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-webpack-tools
 
-This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Mar 2023 17:52:32 GMT and should not be manually modified.
+
+## 3.6.2
+Fri, 17 Mar 2023 17:52:32 GMT
+
+_Version update only_
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:40 GMT
@@ -579,7 +589,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Add function to check versions semantically
+- Add function to check versions semantically 
 - Changed the way CopyExternalsPlugin works to grab more dependencies
 
 ## 2.10.3
@@ -594,7 +604,7 @@ Fri, 08 Jan 2021 14:52:02 GMT
 
 ### Updates
 
-- Add function to check versions semantically
+- Add function to check versions semantically 
 
 ## 2.10.1
 Tue, 22 Dec 2020 00:53:38 GMT

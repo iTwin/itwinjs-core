@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-extension
 
-This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Mar 2023 17:52:32 GMT and should not be manually modified.
+
+## 3.6.2
+Fri, 17 Mar 2023 17:52:32 GMT
+
+_Version update only_
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:39 GMT
@@ -112,7 +122,7 @@ Thu, 18 Aug 2022 19:08:02 GMT
 
 ### Updates
 
--
+-  
 
 ## 3.2.9
 Fri, 26 Aug 2022 14:21:40 GMT
