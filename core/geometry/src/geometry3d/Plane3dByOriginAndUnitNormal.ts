@@ -125,7 +125,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
     return undefined;
   }
 
-  /** Create a plane defined by three points and an in-plane vector.
+  /** Create a plane defined by three points.
    * @param pointA any point in the plane.  This will be the origin.
    * @param pointB any other point in the plane
    * @param pointC any third point in the plane but not on the line of pointA and pointB
