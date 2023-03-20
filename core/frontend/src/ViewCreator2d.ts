@@ -239,6 +239,7 @@ export class ViewCreator2d {
   private async _addSheetViewProps(modelId: Id64String, props: ViewStateProps) {
     let width = 0;
     let height = 0;
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this._imodel.query(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       width = row.width as number;
       height = row.height as number;
@@ -327,6 +328,7 @@ export class ViewCreator2d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row.id);
 
