@@ -20,7 +20,7 @@ See [CodeValue](./codes.md#codevalue-property)
 
 ### FederationGuid
 
-Every BIS `Element` has an optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) called `FederationGuid`. It is really identifying the real-world Entity that the Element represents, not the Element itself. Generally it is intended that FederationGuid are assigned by external systems to *federate* Elements to their external meaning.
+See [FederationGuids](./federationGuids.md)
 
 ### UserLabel
 

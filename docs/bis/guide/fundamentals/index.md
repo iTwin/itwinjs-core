@@ -2,6 +2,7 @@
 
 - [Element Fundamentals](./element-fundamentals.md)
 - [Codes](./codes.md)
+- [FederationGuids](./federationGuids.md)
 - [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
 - [Mixins](./mixins.md)
 - [Model Fundamentals](./model-fundamentals.md)

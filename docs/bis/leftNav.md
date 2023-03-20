@@ -14,6 +14,7 @@
 #### Fundamentals
 - [Element Fundamentals](./guide/fundamentals/element-fundamentals.md)
 - [Codes](./guide/fundamentals/codes.md)
+- [FederationGuids](./guide/fundamentals/federationGuids.md)
 - [ElementAspect Fundamentals](./guide/fundamentals/elementaspect-fundamentals.md)
 - [Mixins](./guide/fundamentals/mixins.md)
 - [Model Fundamentals](./guide/fundamentals/model-fundamentals.md)
