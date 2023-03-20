@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "",
+      "comment": "Localize tooltips for view clip decorations.",
       "type": "none"
     }
   ],

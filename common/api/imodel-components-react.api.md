@@ -485,13 +485,13 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
     // (undocumented)
     face: Face;
     // (undocumented)
-    hoverMap: {
+    hoverMap?: {
         [key: string]: CubeHover;
     };
     // (undocumented)
-    onFaceCellClick: (vector: Vector3d, face: Face) => void;
+    onFaceCellClick?: (vector: Vector3d, face: Face) => void;
     // (undocumented)
-    onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
+    onFaceCellHoverChange?: (vector: Vector3d, state: CubeHover) => void;
     // (undocumented)
     vector: Vector3d;
 }

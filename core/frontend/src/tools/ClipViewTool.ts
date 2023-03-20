@@ -1816,7 +1816,11 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   public testDecorationHit(id: string): boolean { return (id === this._clipId || this._controlIds.includes(id)); }
-  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> { return (hit.sourceId === this._clipId ? "View Clip" : "Modify View Clip"); }
+  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    if (hit.sourceId === this._clipId)
+      return CoreTools.translate("ViewClip.Message.Clip");
+    return CoreTools.translate("ViewClip.Message.ModifyClip");
+  }
   protected override updateDecorationListener(_add: boolean): void { super.updateDecorationListener(undefined !== this._clipId); } // Decorator isn't just for resize controls...
 
   public override decorate(context: DecorateContext): void {
