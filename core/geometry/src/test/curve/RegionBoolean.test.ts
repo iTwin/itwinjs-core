@@ -10,7 +10,7 @@ import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline
 import { UnionRegion } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
-import { CurveCollection } from "../../curve/CurveCollection";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
@@ -665,14 +665,15 @@ describe("RegionBoolean", () => {
       expectedNumComponents: number;
       tolerance?: number;
     }
-    // try various combinations of the loops in the original test case, which contains:
-    // * null faces,
-    // * duplicate geometry,
-    // * multiple connected components,
-    // * almost-equal vertices,
-    // * holes, and
+    // try various combinations of loops:
+    // * null faces
+    // * duplicate geometry
+    // * multiple connected components
+    // * almost-equal vertices
+    // * holes
     // * polygons with vertices of degree > 2
     // * nearly-intersecting edges larger than default tol
+    // * island-in-hole
     const testCases: TestInput[] = [
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1 },
@@ -689,9 +690,10 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 }, // 0.0001 has 2 neg area loops!
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 }, // 0.0001 yields 2 neg area loops!
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
     ];
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
@@ -718,6 +720,35 @@ describe("RegionBoolean", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "BridgeEdgesAndDegenerateLoops");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("OverlappingArcs", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    let xDelta = 0;
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/overlappingArcs.imjs", "utf8"))) as BagOfCurves[];
+    if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      for (const arcPair of inputs) {
+        ck.testType(arcPair, BagOfCurves, "have BagOfCurves");
+        ck.testExactNumber(2, arcPair.children.length, "have 2 curves in bag");
+        ck.testType(arcPair.getChild(0), Arc3d, "first curve is arc");
+        ck.testType(arcPair.getChild(1), Arc3d, "second curve is arc");
+        x0 = 0;
+        xDelta = 1.5 * arcPair.range().xLength();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPair, x0, y0);
+        const signedLoops = RegionOps.constructAllXYRegionLoops(arcPair);
+        if (ck.testExactNumber(1, signedLoops.length, "Overlapping arcs yield one connected component.")) {
+          if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "SignedLoop has one outer loop.")) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops[0], x0 += xDelta, y0);
+          }
+        }
+        y0 += 1.5 * arcPair.range().yLength();
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "OverlappingArcs");
     expect(ck.getNumErrors()).equals(0);
   });
 });

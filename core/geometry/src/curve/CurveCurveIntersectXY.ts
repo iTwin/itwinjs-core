@@ -452,13 +452,13 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   ) {
     const inverseA = matrixA.inverse();
     if (inverseA) {
-      const localB = inverseA.multiplyMatrixMatrix(matrixB);
+      const localB = inverseA.multiplyMatrixMatrix(matrixB);  // localB->localA transform
       const ellipseRadians: number[] = [];
       const circleRadians: number[] = [];
       TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection(
         localB.coffs[2], localB.coffs[5], localB.coffs[8],  // center xyw
-        localB.coffs[0], localB.coffs[3], localB.coffs[6],  // center xyw
-        localB.coffs[1], localB.coffs[4], localB.coffs[7],  // center xyw
+        localB.coffs[0], localB.coffs[3], localB.coffs[6],  // vector0 xyw
+        localB.coffs[1], localB.coffs[4], localB.coffs[7],  // vector90 xyw
         ellipseRadians, circleRadians);
       for (let i = 0; i < ellipseRadians.length; i++) {
         const fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);

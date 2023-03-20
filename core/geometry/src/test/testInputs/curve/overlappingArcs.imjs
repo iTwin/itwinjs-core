@@ -1,0 +1,47 @@
+[
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[180,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[0,180]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[190,-10]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[0,180]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[180,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[-10,190]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[190,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[0,180]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[180,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[-10,180]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[180,10]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[0,180]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[180,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[10,180]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[190,10]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[0,180]}}
+	]},
+{"bagOfCurves":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[180,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[10,190]}}
+	]}
+]

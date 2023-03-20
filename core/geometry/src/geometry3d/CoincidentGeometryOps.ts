@@ -202,6 +202,7 @@ export class CoincidentGeometryQuery {
             if (fractionSweepBWrap.clampDirectedTo01())
               result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, fractionSweepBWrap, fractionB0, fractionB1, fractionSpacesReversed));
           }
+          // START HERE: endpoint intersection
         }
       }
     }
