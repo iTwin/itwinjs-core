@@ -356,7 +356,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   }
   /**
    * * Return xyz projection of spacePoint to the plane of the DPoint4d (understood as coefficients, not point coordinates)
-   * * If the xyz part of this are ll zero, (a clone of) spacePOint is returned.
+   * * If the xyz part of `this` are all zero, (a clone of) `spacePoint` is returned.
    */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     const h = this.altitude(spacePoint);
