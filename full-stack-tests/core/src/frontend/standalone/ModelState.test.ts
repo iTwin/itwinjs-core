@@ -102,6 +102,7 @@ describe("ModelState", () => {
     assert.isNotTrue(modelProps[1].isTemplate);
 
     let propsCount = 0;
+    // eslint-disable-next-line deprecation/deprecation
     for await (const props of imodel.models.query({ from: "BisCore:DictionaryModel", wantPrivate: true, wantTemplate: true, limit: 1 })) {
       propsCount++;
       assert.equal(props.classFullName, "BisCore:DictionaryModel");
