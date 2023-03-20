@@ -485,6 +485,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
@@ -503,6 +504,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
@@ -593,6 +595,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
@@ -610,6 +613,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
@@ -633,6 +637,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
@@ -677,6 +682,7 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
