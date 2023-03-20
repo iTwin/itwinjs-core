@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { AbstractPlane3d } from "./AbstractPlane3d";
+import { Plane3d } from "./Plane3d";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
@@ -21,7 +21,7 @@ import { XAndY } from "./XYZProps";
  * * a unit normal.
  * @public
  */
-export class Plane3dByOriginAndUnitNormal extends AbstractPlane3d implements BeJSONFunctions {
+export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunctions {
   private _origin: Point3d;
   private _normal: Vector3d;
   // constructor captures references !!!
@@ -280,6 +280,11 @@ export class Plane3dByOriginAndUnitNormal extends AbstractPlane3d implements BeJ
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
-  /** Returns true of spacePoint is within distance tolerance of the plane. */
-  public override  isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
+  /** Returns true of spacePoint is within distance tolerance of the plane.
+   * @remark This logic is identical to the abstract Plane3d but avoids a level of function call.
+  */
+  public override  isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
+    const altitude = this._normal.dotProductStartEnd(this._origin, spacePoint);
+    return Math.abs(altitude) <= tolerance;
+  }
 }

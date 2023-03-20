@@ -1037,7 +1037,7 @@ export interface Clipper {
 }
 
 // @public
-export class ClipPlane extends AbstractPlane3d implements Clipper, PolygonClipper {
+export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -4061,7 +4061,7 @@ export interface PerpParallelOptions {
 }
 
 // @public
-export class Plane3dByOriginAndUnitNormal extends AbstractPlane3d implements BeJSONFunctions {
+export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunctions {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
     altitudeXY(x: number, y: number): number;
@@ -4085,7 +4085,7 @@ export class Plane3dByOriginAndUnitNormal extends AbstractPlane3d implements BeJ
     getOriginRef(): Point3d;
     getProjectionToPlane(): Transform;
     isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean;
-    isPointInPlane(spacePoint: Point3d): boolean;
+    isPointInPlane(spacePoint: Point3d, tolerance?: number): boolean;
     normalX(): number;
     normalY(): number;
     normalZ(): number;
@@ -4100,7 +4100,7 @@ export class Plane3dByOriginAndUnitNormal extends AbstractPlane3d implements BeJ
 }
 
 // @public
-export class Plane3dByOriginAndVectors extends AbstractPlane3d implements BeJSONFunctions {
+export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunctions {
     // (undocumented)
     altitude(xyz: XYAndZ): number;
     // (undocumented)
@@ -4328,7 +4328,7 @@ export class Point3dArrayPolygonOps {
 }
 
 // @public
-export class Point4d extends AbstractPlane3d implements BeJSONFunctions {
+export class Point4d extends Plane3d implements BeJSONFunctions {
     protected constructor(x?: number, y?: number, z?: number, w?: number);
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;

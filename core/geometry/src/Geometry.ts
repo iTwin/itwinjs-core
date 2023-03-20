@@ -97,9 +97,10 @@ export interface TrigValues {
  * Plane Evaluation methods.
  * * These provide the necessary queries to implement clipping operations without knowing if the plane in use
  * is [ClipPlane], [Plane3dByOriginAndNormal], [Plane3dByOriginAndVectors], [Plane4d].
- * * The AbstractPlane3d class declares obligation to implement these methods, and
+ * * The Plane3d class declares obligation to implement these methods, and
  * passes the obligation on to concrete implementations by declaring them as abstract members which the particular classes can implement.
  * @public
+ * @remark It is intended that this interface be deprecated because its implementation by [Plane3d] provides all of its functionality and allows more to be added.
  */
 export interface PlaneAltitudeEvaluator {
   /**

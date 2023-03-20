@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { AbstractPlane3d } from "./AbstractPlane3d";
+import { Plane3d } from "./Plane3d";
 import { Point4d } from "../geometry4d/Point4d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
@@ -22,7 +22,7 @@ import { XYAndZ } from "./XYZProps";
  *   * are NOT required to be perpendicular vectors.
  * @public
  */
-export class Plane3dByOriginAndVectors extends AbstractPlane3d implements BeJSONFunctions {
+export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunctions {
   /** origin of plane grid */
   public origin: Point3d;
   /** u direction in plane grid */

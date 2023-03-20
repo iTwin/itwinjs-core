@@ -25,7 +25,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { AnalyticRoots } from "../numerics/Polynomials";
 import { Clipper, ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { AbstractPlane3d } from "../geometry3d/AbstractPlane3d";
+import { Plane3d } from "../geometry3d/Plane3d";
 
 /** Wire format describing a [[ClipPlane]].
  * If either [[normal]] or [[dist]] are omitted, defaults to a normal of [[Vector3d.unitZ]] and a distance of zero.
@@ -55,7 +55,7 @@ export interface ClipPlaneProps {
  * * Given a point and inward normal, the signedDistance is (point DOT normal)
  * @public
  */
-export class ClipPlane extends AbstractPlane3d implements Clipper, PolygonClipper {
+export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   private _inwardNormal: Vector3d;
   /** Construct a parallel plane through the origin.
    * * Move it to the actual position.
