@@ -273,13 +273,13 @@ export class GeoConverter {
   }
 
   /** Convert the specified geographic coordinates into iModel coordinates. */
-  public async geoCoordsToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]> {
+  public async convertToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]> {
     const result = await this.getIModelCoordinatesFromGeoCoordinates(geoPoints);
     return result.iModelCoords;
   }
 
   /** Convert the specified iModel coordinates into geographic coordinates. */
-  public async iModelCoordsToGeoCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]> {
+  public async convertFromIModelCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]> {
     const result = await this.getGeoCoordinatesFromIModelCoordinates(iModelCoords);
     return result.geoCoords;
   }
