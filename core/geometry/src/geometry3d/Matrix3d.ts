@@ -2569,7 +2569,7 @@ export class Matrix3d implements BeJSONFunctions {
    * almost independent and matrix is invertible).
    */
   public conditionNumber(): number {
-    const determinant = this.determinant();
+    const determinant = Math.abs(this.determinant());
     const columnMagnitudeSum =
       Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6])
       + Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7])
