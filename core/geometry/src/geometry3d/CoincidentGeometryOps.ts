@@ -183,10 +183,10 @@ export class CoincidentGeometryQuery {
         if (Geometry.isAlmostEqualNumber(ru, 1.0)
           && Geometry.isAlmostEqualNumber(rv, 1.0)
           && Geometry.isAlmostEqualNumber(0, dot)) {
-          const alphaB0Radians = Math.atan2(uy, ux);       // angular position of arcB 0 point in A sweep
-          const sweepDirection = cross > 0 ? 1.0 : -1.0;   // 1 if arcB's parameter space sweeps forward, -1 if reverse
-          const betaStartRadians = alphaB0Radians + sweepDirection * arcB.sweep.startRadians;
-          const betaEndRadians = alphaB0Radians + sweepDirection * arcB.sweep.endRadians;
+          const alphaB0Radians = Math.atan2(uy, ux);     // angular position of arcB 0 point in arcA sweep
+          const sweepDirection = cross > 0 ? 1.0 : -1.0;    // 1 if arcB parameter space sweeps in same direction as arcA, -1 if opposite
+          const betaStartRadians = alphaB0Radians + sweepDirection * arcB.sweep.startRadians;   // arcB start in arcA parameter space
+          const betaEndRadians = alphaB0Radians + sweepDirection * arcB.sweep.endRadians;       // arcB end in arcA parameter space
           const fractionSpacesReversed = (sweepDirection * arcA.sweep.sweepRadians * arcB.sweep.sweepRadians) < 0;
           const sweepB = AngleSweep.createStartEndRadians(betaStartRadians, betaEndRadians);
           const sweepA = arcA.sweep;

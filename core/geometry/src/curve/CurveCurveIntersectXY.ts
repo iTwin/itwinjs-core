@@ -465,8 +465,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
         const fractionB = cpB.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
         // hm .. do we really need to check the fractions?  We know they are internal to the beziers
         if (this.acceptFraction(extendA, fractionA, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
-          this.recordPointWithLocalFractions(fractionA, cpA, 0, 1,
-            fractionB, cpB, 0, 1, reversed);
+          this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
         }
       }
     }
