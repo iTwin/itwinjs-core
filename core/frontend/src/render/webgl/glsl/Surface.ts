@@ -40,11 +40,47 @@ import { addTranslucency } from "./Translucency";
 import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
+import { Npc } from "@itwin/core-common";
+
+const constantLodTextureLookup = `
+vec4 constantLodTextureLookup(sampler2D textureSampler) {
+  float logDepth = log2(v_uvCustom.z);
+  float f = fract(logDepth);
+  float p = floor(logDepth);
+  // When p changes, both tc1 and tc2 jumped by a power of 2 at that transition (and f goes from ~1 to 0).
+  // This caused a line to show up with incorrect tex coords, we believe due to a problem with the derivative
+  // that is auto calculated on the tex coords for the mip-map.  The below approach attempts to "smooth"
+  // the transition of the coord in use at the transition by only changing the coord that is not in use
+  // (but by 2 powers of 2) and switching the mix selector to account for it.  It does this by using whether
+  // p is odd or even to select which way it is going, so it alternates at the boundaries.  This fixes the
+  // line problem.
+  float p1, p2;
+  if (0u == (uint(p) & 1u)) { // p is even
+    p1 = p;
+    p2 = p + 1.0;
+  } else { // p is odd
+    p1 = p + 1.0;
+    p2 = p;
+    f = 1.0 - f;
+  }
+
+  vec2 tc1 = v_uvCustom.xy / clamp(pow(2.0, p1), float(u_constantLodFParams.x), float(u_constantLodFParams.y)) * u_constantLodFParams.z;
+  vec2 tc2 = v_uvCustom.xy / clamp(pow(2.0, p2), float(u_constantLodFParams.x), float(u_constantLodFParams.y)) * u_constantLodFParams.z;
+  return mix(TEXTURE(textureSampler, tc1), TEXTURE(textureSampler, tc2), f);
+}
+`;
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
 vec4 sampleSurfaceTexture() {
-  return TEXTURE(s_texture, v_texCoord);
+  vec4 clr;
+  if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
+    clr = vec4(1.0, 1.0, 1.0, 1.0);
+  else if (u_surfaceFlags[kSurfaceBitIndex_UseConstantLodTextureMapping])
+    clr = constantLodTextureLookup(s_texture);
+  else
+    clr =  TEXTURE(s_texture, v_texCoord);
+  return clr;
 }
 `;
 
@@ -214,6 +250,9 @@ const adjustEyeSpace = `
 `;
 
 const computePositionPostlude = `
+  vec2 worldpos = (u_modelToWorld * vec4(rawPos.xyz, 0.0)).xy;
+  v_uvCustom = vec3((u_constantLodVParams.xy + worldpos) * vec2(1.0, -1.0), kFrustumType_Perspective == u_frustum.z ? -v_eyeSpace.z : u_constantLodVParams.z);
+
   return u_proj * pos;
 `;
 
@@ -231,6 +270,25 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
+
+  vert.addUniform("u_modelToWorld", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_modelToWorld", (uniform, params) => {
+      if (undefined !== params.geometry.asSurface?.mesh.constantLodVParams)
+        params.target.uniforms.branch.bindModelToWorldTransform(uniform, params.geometry, false);
+    });
+  });
+
+  builder.addVarying("v_uvCustom", VariableType.Vec3);
+
+  vert.addUniform("u_constantLodVParams", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_constantLodVParams", (uniform, params) => {
+      const vParams = params.geometry.asSurface?.mesh.constantLodVParams;
+      if (undefined !== vParams) {
+        vParams[2] = params.target.planFrustum.points[Npc.LeftTopRear].distance(params.target.planFrustum.points[Npc.RightTopRear]);
+        uniform.setUniform3fv(vParams);
+      }
+    });
+  });
 
   let computePosition;
   if (isHiliter && !System.instance.supportsLogZBuffer) {
@@ -281,6 +339,8 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBitIndex_OverrideRgb", VariableType.Int, SurfaceBitIndex.OverrideRgb.toString());
   builder.addConstant("kSurfaceBitIndex_HasNormalMap", VariableType.Int, SurfaceBitIndex.HasNormalMap.toString());
   builder.addConstant("kSurfaceBitIndex_HasMaterialAtlas", VariableType.Int, SurfaceBitIndex.HasMaterialAtlas.toString());
+  builder.addConstant("kSurfaceBitIndex_UseConstantLodTextureMapping", VariableType.Int, SurfaceBitIndex.UseConstantLodTextureMapping.toString());
+  builder.addConstant("kSurfaceBitIndex_UseConstantLodNormalMapMapping", VariableType.Int, SurfaceBitIndex.UseConstantLodNormalMapMapping.toString());
 
   // Surface flags which get modified in vertex shader are still passed to fragment shader as a single float & are thus
   // used differently there & so require different constants.  Unused constants are commented out.
@@ -377,7 +437,11 @@ const finalizeNormalNormalMap = `
     vec3 biTangent = cross (normal, tangent);
     if (flip)
       biTangent = -biTangent;
-    vec3 normM = TEXTURE(s_normalMap, v_texCoord).xyz;
+    vec3 normM;
+    if (u_surfaceFlags[kSurfaceBitIndex_UseConstantLodNormalMapMapping])
+      normM = constantLodTextureLookup(s_normalMap).xyz;
+    else
+      normM = TEXTURE(s_normalMap, v_texCoord).xyz;
     if (length (normM) > 0.0001) { // check for empty normal texture
       normM = (normM - 0.5) * 2.0;
       normM = normalize (normM);
@@ -485,17 +549,19 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
   let finalizeNormal = finalizeNormalPrelude;
 
   finalizeNormal += finalizeNormalNormalMap;
+  builder.frag.addFunction(constantLodTextureLookup);
   builder.frag.addUniform("u_normalMapScale", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_normalMapScale", (uniform, params) => {
-      let normalMapScale = 1.0;
-      if (undefined !== params.geometry.materialInfo && !params.geometry.materialInfo.isAtlas &&
-          undefined !== params.geometry.materialInfo.textureMapping &&
-          undefined !== params.geometry.materialInfo.textureMapping.normalMapParams) {
-        normalMapScale = params.geometry.materialInfo.textureMapping.normalMapParams.scale ?? 1.0;
-        if (params.geometry.materialInfo.textureMapping.normalMapParams.greenUp)
-          normalMapScale = -normalMapScale;
+      if (undefined !== params.geometry.materialInfo && !params.geometry.materialInfo.isAtlas) {
+        const normalMapParams = params.geometry.materialInfo.textureMapping?.normalMapParams;
+        if (undefined !== normalMapParams) {
+          let normalMapScale = 1.0;
+          normalMapScale = normalMapParams.scale ?? 1.0;
+          if (normalMapParams.greenUp)
+            normalMapScale = -normalMapScale;
+          uniform.setUniform1f(normalMapScale);
+        }
       }
-      uniform.setUniform1f(normalMapScale);
     });
   });
 
@@ -535,7 +601,6 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
         }
       });
     });
-    builder.frag.addFunction(sampleSurfaceTexture);
   }
 
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
@@ -671,6 +736,16 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
         addAltPickBufferOutputs(builder.frag);
     }
   }
+
+  builder.frag.addUniform("u_constantLodFParams", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_constantLodFParams", (uniform, params) => {
+      const fParams = params.geometry.asSurface?.mesh.constantLodFParams;
+      if (undefined !== fParams)
+        uniform.setUniform3fv(fParams);
+    });
+  });
+  builder.frag.addFunction(constantLodTextureLookup);
+  builder.frag.addFunction(sampleSurfaceTexture);
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, (flags.isThematic === IsThematic.No) ? computeBaseColor : "return getSurfaceColor();");

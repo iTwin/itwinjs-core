@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d } from "@itwin/core-geometry";
+import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { RenderTexture } from "./RenderTexture";
 
 /** Defines normal map parameters.
@@ -21,6 +21,8 @@ export interface NormalMapParams {
   greenUp?: boolean;
   /** Scale factor by which to multiply the components of the normal extracted from [[normalMap]]. */
   scale?: number;
+  /** True if want to use constant LOD texture mapping for the normal map texture. */
+  useConstantLod?: boolean;
 }
 
 /** Describes how to map a [[RenderTexture]]'s image onto a surface as part of a [[RenderMaterial]].
@@ -96,6 +98,31 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     public static readonly identity = new Trans2x3();
   }
 
+  /** Properties used to construct a [[TextureMapping.ConstantLodParams]]. */
+  export interface ConstantLodParamProps {
+    /** The number of times the texture is repeated.  Increasing this will make the texture pattern appear smaller, decreasing it will make it larger. Defaults to 1. */
+    repetitions?: number;
+    /** An offset in world units used to shift the texture. Defaults to (0, 0). */
+    offset?: XAndY;
+    /** The minimum distance (from the eye to the surface) at which to clamp the texture. Defaults to 1.*/
+    minDistClamp?: number;
+    /** The maximum distance (from the eye to the surface) at which to clamp the texture. Defaults to 2^32. */
+    maxDistClamp?: number;
+  }
+
+  /** Parameters to define consant level of detail mapping mode, a mode of texture coordinate generation which dynamically creates
+   * texture cooprdinates so that the level of detail of the texture in the rendered image remains somewhat constant. */
+  export interface ConstantLodParams {
+    /** The number of times the texture is repeated.  Increasing this will make the texture pattern appear smaller, decreasing it will make it larger. */
+    repetitions: number;
+    /** An offset in world units used to shift the texture. */
+    offset: XAndY;
+    /** The minimum distance (from the eye to the surface) at which to clamp the texture. */
+    minDistClamp: number;
+    /** The maximum distance (from the eye to the surface) at which to clamp the texture. */
+    maxDistClamp: number;
+  }
+
   /** Properties used to construct a [[TextureMapping.Params]]. */
   export interface ParamProps {
     /** The matrix used to map the image to a surface. */
@@ -112,6 +139,10 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     mapMode?: TextureMapping.Mode;
     /** @internal */
     worldMapping?: boolean;
+    /** True if want to use constant LOD texture mapping for the surface texture. */
+    useConstantLod?: boolean;
+    /** Parameters for constantLod mapping mode. */
+    constantLodParams?: ConstantLodParamProps;
   }
 
   /** Parameters describing how a [[RenderTexture]]'s image is mapped to a surface. */
@@ -126,12 +157,23 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     public mode: TextureMapping.Mode;
     /** @internal */
     public worldMapping: boolean;
+    /** True if want to use constant LOD texture mapping for the surface texture. */
+    public useConstantLod: boolean;
+    /** Parameters for constantLod mapping mode. */
+    public constantLodParams: ConstantLodParams;
 
     public constructor(props?: TextureMapping.ParamProps) {
       this.textureMatrix = props?.textureMat2x3 ?? Trans2x3.identity;
       this.weight = props?.textureWeight ?? 1;
       this.mode = props?.mapMode ?? Mode.Parametric;
       this.worldMapping = props?.worldMapping ?? false;
+      this.useConstantLod = props?.useConstantLod ?? false;
+      this.constantLodParams = {
+        repetitions: props?.constantLodParams?.repetitions ?? 1,
+        offset: props?.constantLodParams?.offset ?? { x: 0, y: 0 },
+        minDistClamp: props?.constantLodParams?.minDistClamp ?? 1,
+        maxDistClamp: props?.constantLodParams?.maxDistClamp ?? 4096 * 1024 * 1024,
+      };
     }
 
     /**
