@@ -50,7 +50,6 @@ export interface OsmBuildingDisplayOptions {
  * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  /** The name of the BIS class associated with this class. */
   public static override get className() { return "DisplayStyle"; }
   private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
@@ -851,7 +850,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
-  /** The name of the BIS class associated with this class. */
   public static override get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -877,7 +875,6 @@ export class DisplayStyle2dState extends DisplayStyleState {
  * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  /** The name of the BIS class associated with this class. */
   public static override get className() { return "DisplayStyle3d"; }
   private _settings: DisplayStyle3dSettings;
 

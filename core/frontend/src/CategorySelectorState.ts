@@ -21,7 +21,6 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export class CategorySelectorState extends ElementState {
-  /** The name of the BIS class associated with this class. */
   public static override get className() { return "CategorySelector"; }
 
   private readonly _categories = new ObservableSet<string>();

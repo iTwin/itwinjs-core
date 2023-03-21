@@ -203,7 +203,6 @@ export interface AttachToViewportArgs {
  * @extensions
  */
 export abstract class ViewState extends ElementState {
-  /** The name of the BIS class associated with this class. */
   public static override get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
@@ -1383,7 +1382,6 @@ export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
   private _environmentDecorations?: EnvironmentDecorations;
-  /** The name of the BIS class associated with this class. */
   public static override get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
   protected _cameraOn: boolean;
@@ -2255,7 +2253,6 @@ export abstract class ViewState3d extends ViewState {
  */
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
-  /** The name of the BIS class associated with this class. */
   public static override get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
   public readonly delta: Point2d;
