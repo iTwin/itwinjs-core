@@ -2,6 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// This entire package is deprecated
+/* eslint-disable deprecation/deprecation */
 import { join } from "path";
 import { tmpdir } from "os";
 import { ProcessDetector } from "@itwin/core-bentley";

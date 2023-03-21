@@ -2,6 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// This entire package is deprecated
+/* eslint-disable deprecation/deprecation */
 
 import { assert } from "chai";
 import * as path from "path";
