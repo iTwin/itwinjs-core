@@ -1168,6 +1168,10 @@ export abstract class ViewState extends ElementState {
     return allowView;
   }
 
+  /** Compute the vector in the "up" direction of a specific point in world space.
+   * This is typically a unit Z vector. However, if the point is outside of the iModel's project extents and using ellipsoid [[globeMode]], an up-vector
+   * will be computed relative to the surface of the ellipsoid at that point.
+   */
   public getUpVector(point: Point3d): Vector3d {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.iModel.projectExtents.containsPoint(point))
       return Vector3d.unitZ();
