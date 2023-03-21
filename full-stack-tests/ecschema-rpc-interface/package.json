@@ -40,7 +40,7 @@
     "@itwin/imodels-access-frontend": "^2.2.1",
     "@itwin/imodels-client-authoring": "^2.2.1",
     "@itwin/imodels-client-management": "^2.2.1",
-    "@itwin/oidc-signin-tool": "^3.2.2",
+    "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.1.2",

@@ -1319,7 +1319,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
@@ -1364,7 +1364,7 @@ importers:
       '@itwin/ecschema-editing': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/projects-client': ^0.6.0
       '@itwin/service-authorization': ^0.6.3
       '@types/chai': 4.3.1
@@ -1667,7 +1667,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodels-access-backend': ^2.2.1
       '@itwin/imodels-client-authoring': ^2.2.1
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.6.0
       '@types/chai': 4.3.1
@@ -1772,7 +1772,7 @@ importers:
       '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/imodels-client-management': ^2.2.1
       '@itwin/object-storage-core': ~1.4.0
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.9.0
       '@types/chai': 4.3.1
@@ -1895,7 +1895,7 @@ importers:
       '@itwin/imodels-access-frontend': ^2.2.1
       '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/imodels-client-management': ^2.2.1
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.6.0
@@ -1987,7 +1987,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -2191,7 +2191,7 @@ importers:
       '@itwin/imodels-access-frontend': ^2.2.1
       '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/imodels-client-management': ^2.2.1
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -3193,7 +3193,7 @@ importers:
       '@itwin/imodels-access-frontend': ^2.2.1
       '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/imodels-client-management': ^2.2.1
-      '@itwin/oidc-signin-tool': ^3.2.2
+      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 0.9.0
       '@types/body-parser': ^1.17.0
