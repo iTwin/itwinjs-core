@@ -677,7 +677,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
       // If we have an active volume classifier then force all batches for the reality data being classified into a special render pass.
       let savedForcedRenderPass = RenderPass.None;
-      if (undefined !== this.target.activeVolumeClassifierModelId && batch.featureTable.modelId === this.target.activeVolumeClassifierModelId) {
+      if (undefined !== this.target.activeVolumeClassifierModelId && batch.featureTable.batchModelId === this.target.activeVolumeClassifierModelId) {
         savedForcedRenderPass = this._forcedRenderPass;
         this._forcedRenderPass = RenderPass.VolumeClassifiedRealityData;
       }

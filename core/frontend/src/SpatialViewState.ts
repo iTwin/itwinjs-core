@@ -218,11 +218,13 @@ export class SpatialViewState extends ViewState3d {
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     this.registerModelSelectorListeners();
+    this._treeRefs.attachToViewport(args);
   }
 
   /** @internal */
   public override detachFromViewport(): void {
     super.detachFromViewport();
+    this._treeRefs.detachFromViewport();
     this.unregisterModelSelectorListeners();
   }
 

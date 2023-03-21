@@ -127,6 +127,7 @@ export class RulesetEmbedder {
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this._imodel.query(query, QueryBinder.from({ rulesetId: ruleset.id }), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const existingRulesetElementId: Id64String = row.id;
       const existingRuleset: Ruleset = JSON.parse(row.jsonProperties).jsonProperties;
