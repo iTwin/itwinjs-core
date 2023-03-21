@@ -70,7 +70,7 @@ A new abstract base class [Plane3d]($core-geometry) is defined to provide shared
 - The following classes now declare that they _extend_ [Plane3d]($core-geometry):
   - [Plane3dByOriginAndNormal]($core-geometry) extends [Plane3d]($core-geometry)
   - [Plane3dByOriginAndVectors]($core-geometry) extends [Plane3d]($core-geometry)
-  - [Plane4d]($core-geometry) extends [Plane3d]($core-geometry)
+  - [Point4d]($core-geometry) extends [Plane3d]($core-geometry)
   - [ClipPlane]($core-geometry) extends [Plane3d]($core-geometry)
 
 This will provide more consistency and functionality than previously provided by the _interface_ [PlaneAltitudeEvaluator]($core-geometry).   API compatibility with the weaker [PlaneAltitudeEvaluator]($core-geometry) is maintained as follows:
