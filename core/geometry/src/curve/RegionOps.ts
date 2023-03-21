@@ -595,7 +595,7 @@ export class RegionOps {
    * given sufficiently imprecise input. Input geometry consisting of regions can be merged for better results: call
    * [[regionBooleanXY]](regions, undefined, RegionBinaryOpType.Union) and pass the merged region into [[constructAllXYRegionLoops]].
    * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve primitives.
-   * @returns array of [[SignedLoop]], each entry of which describes the faces in a single connected component:
+   * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have positive area and counterclockwise orientation.
    *    * `negativeAreaLoops` contains (probably just one) "exterior" loop which is ordered clockwise.
    *    * `slivers` contains sliver loops that have zero area, such as appear between coincident curves.
