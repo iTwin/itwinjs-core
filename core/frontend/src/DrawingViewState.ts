@@ -384,6 +384,7 @@ export class DrawingViewState extends ViewState2d {
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of this.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         spatialView = Id64.fromJSON(row.spatialView?.id);
         displaySpatialView = !!row.displaySpatialView;
@@ -444,7 +445,7 @@ export class DrawingViewState extends ViewState2d {
   /** @internal */
   public override isDrawingView(): this is DrawingViewState { return true; }
 
-  /** @internal */
+  /** See [[ViewState.getOrigin]]. */
   public override getOrigin() {
     const origin = super.getOrigin();
     if (this._attachment)
@@ -453,7 +454,7 @@ export class DrawingViewState extends ViewState2d {
     return origin;
   }
 
-  /** @internal */
+  /** See [[ViewState.getExtents]]. */
   public override getExtents() {
     const extents = super.getExtents();
     if (this._attachment)

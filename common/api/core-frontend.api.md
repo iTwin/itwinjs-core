@@ -2636,7 +2636,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     set viewFlags(flags: ViewFlags);
     // @internal
     viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean>;
-    // @internal (undocumented)
     get wantShadows(): boolean;
 }
 
@@ -2718,9 +2717,7 @@ export class DrawingViewState extends ViewState2d {
     detachFromViewport(): void;
     // @internal (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
-    // @internal (undocumented)
     getExtents(): Vector3d;
-    // @internal (undocumented)
     getOrigin(): Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
@@ -5436,14 +5433,17 @@ export abstract class IModelConnection extends IModel {
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
     get projectCenterAltitude(): number | undefined;
+    // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
+    // @deprecated
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
+    // @deprecated
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
@@ -7558,7 +7558,7 @@ export namespace MockRender {
         // (undocumented)
         createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
-        createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): Builder;
+        createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
         // (undocumented)
         createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
         // (undocumented)
@@ -9380,8 +9380,9 @@ export interface RenderMaterialSource {
     iModel: IModelConnection;
 }
 
-// @internal
+// @public
 export namespace RenderMemory {
+    // @internal
     export class Buffers extends Consumers {
         constructor();
         // (undocumented)
@@ -9413,7 +9414,7 @@ export namespace RenderMemory {
         // (undocumented)
         get visibleEdges(): Consumers;
     }
-    // (undocumented)
+    // @internal (undocumented)
     export enum BufferType {
         // (undocumented)
         COUNT = 11,
@@ -9440,11 +9441,12 @@ export namespace RenderMemory {
         // (undocumented)
         VisibleEdges = 1
     }
-    // (undocumented)
+    // @internal (undocumented)
     export interface Consumer {
         // (undocumented)
         collectStatistics(stats: Statistics): void;
     }
+    // @internal
     export class Consumers {
         // (undocumented)
         addConsumer(numBytes: number): void;
@@ -9457,7 +9459,7 @@ export namespace RenderMemory {
         // (undocumented)
         totalBytes: number;
     }
-    // (undocumented)
+    // @internal (undocumented)
     export enum ConsumerType {
         // (undocumented)
         ClipVolumes = 5,
@@ -9482,82 +9484,82 @@ export namespace RenderMemory {
         // (undocumented)
         VertexTables = 1
     }
-    // (undocumented)
     export class Statistics {
+        // @internal
         constructor();
-        // (undocumented)
+        // @internal (undocumented)
         addBuffer(type: BufferType, numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addClipVolume(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addConsumer(type: ConsumerType, numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addEdgeTable(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addFeatureOverrides(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addFeatureTable(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addIndexedEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addInstances(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPlanarClassifier(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPointCloud(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPointString(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPolyline(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addPolylineEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addRealityMesh(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addShadowMap(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addSilhouetteEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addSurface(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addTerrain(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addTexture(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addTextureAttachment(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addThematicTexture(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addVertexTable(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         addVisibleEdges(numBytes: number): void;
-        // (undocumented)
+        // @internal (undocumented)
         readonly buffers: Buffers;
-        // (undocumented)
+        // @internal (undocumented)
         clear(): void;
-        // (undocumented)
+        // @internal (undocumented)
         get clipVolumes(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         readonly consumers: Consumers[];
-        // (undocumented)
+        static create(): Statistics;
+        // @internal (undocumented)
         get edgeTables(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get featureOverrides(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get featureTables(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get planarClassifiers(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get shadowMaps(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get textureAttachments(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get textures(): Consumers;
-        // (undocumented)
+        // @internal (undocumented)
         get thematicTextures(): Consumers;
-        // (undocumented)
         get totalBytes(): number;
-        // (undocumented)
+        // @internal (undocumented)
         get vertexTables(): Consumers;
     }
 }
@@ -10199,7 +10201,6 @@ export class ScreenViewport extends Viewport {
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
-    // @internal (undocumented)
     synchWithView(options?: ViewChangeOptions): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
@@ -12278,7 +12279,6 @@ export abstract class TileTreeReference {
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     get castsShadows(): boolean;
-    // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // @beta
     collectTileGeometry?: (collector: TileGeometryCollector) => void;
@@ -12755,7 +12755,7 @@ export interface ToolTipOptions {
     placement?: string;
 }
 
-// @internal
+// @public
 export interface ToolTipProvider {
     augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
 }
@@ -13694,7 +13694,6 @@ export abstract class ViewingToolHandle {
 export class ViewManager implements Iterable<ScreenViewport> {
     [Symbol.iterator](): Iterator<ScreenViewport>;
     addDecorator(decorator: Decorator): () => void;
-    // @internal
     addToolTipProvider(provider: ToolTipProvider): () => void;
     addViewport(newVp: ScreenViewport): BentleyStatus;
     // @internal (undocumented)
@@ -13709,7 +13708,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     // @internal (undocumented)
     get doesHostHaveFocus(): boolean;
     dropDecorator(decorator: Decorator): boolean;
-    // @internal
     dropToolTipProvider(provider: ToolTipProvider): void;
     dropViewport(vp: ScreenViewport, disposeOfViewport?: boolean): BentleyStatus;
     // (undocumented)
@@ -13930,7 +13928,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     get analysisFractionValid(): boolean;
     get antialiasSamples(): number;
     set antialiasSamples(numSamples: number);
-    // @internal
     applyViewState(val: ViewState): void;
     get areAllTileTreesLoaded(): boolean;
     // @internal
@@ -13961,7 +13958,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     clearNeverDrawn(): void;
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
-    // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     computeViewRange(): Range3d;
     get continuousRendering(): boolean;
@@ -14006,7 +14002,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
     protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
-    // @internal (undocumented)
     forEachTileTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal
     get freezeScene(): boolean;
@@ -14049,10 +14044,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
     get iModel(): IModelConnection;
-    // @internal (undocumented)
     invalidateController(): void;
     invalidateDecorations(): void;
-    // @internal (undocumented)
     invalidateRenderPlan(): void;
     invalidateScene(): void;
     // @internal (undocumented)
@@ -14418,7 +14411,6 @@ export abstract class ViewState extends ElementState {
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal
     abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
-    // @internal
     forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
@@ -14549,7 +14541,6 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
-    // @internal (undocumented)
     is3d(): this is ViewState3d;
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
@@ -14642,7 +14633,6 @@ export abstract class ViewState3d extends ViewState {
     getTargetPoint(result?: Point3d): Point3d;
     get globalScopeFactor(): number;
     globalViewTransition(): number;
-    // @internal (undocumented)
     is3d(): this is ViewState3d;
     // (undocumented)
     get isCameraOn(): boolean;

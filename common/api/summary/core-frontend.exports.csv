@@ -577,7 +577,12 @@ internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
 internal;RenderMaterialSource
-internal;RenderMemory
+public;RenderMemory
+internal;Buffers 
+internal;BufferType
+internal;Consumer
+internal;Consumers
+internal;ConsumerType
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
@@ -733,7 +738,7 @@ public;ToolSettings
 internal;ToolSettingsState
 internal;ToolState
 public;ToolTipOptions
-internal;ToolTipProvider
+public;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
 internal;TraversalChildrenDetails
