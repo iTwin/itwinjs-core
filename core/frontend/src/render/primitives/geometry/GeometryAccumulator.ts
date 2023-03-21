@@ -215,7 +215,7 @@ export class GeometryAccumulator {
           assert(transformOrigin.isAlmostEqual(verts.params.origin));
           verts.params.origin.setZero();
         } else {
-          assert(transformOrigin.isAlmostEqual(verts.range.center));
+          assert(verts.range.center.isAlmostZero);
         }
       }
 
