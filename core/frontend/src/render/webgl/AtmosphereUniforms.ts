@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { Atmosphere } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { desync, sync, SyncTarget } from "./Sync";
@@ -15,35 +15,34 @@ export const MAX_SAMPLE_POINTS = 20; // Maximum number of sample points to be us
 
 export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _atmosphere?: Atmosphere.Settings;
+  public get atmosphere(): Atmosphere.Settings | undefined {
+    return this._atmosphere;
+  }
 
-  // computed values
-  private _atmosphereHeightAboveEarth = 0.0;
-  private _atmosphereScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
-  private _exposure = 0.0;
-  private _densityFalloff = 0.0;
+  // Atmosphere effect parameters
   private _earthCenter = new Point3d();
   private _earthScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
-  private _ellipsoidToEye = new Vector3d();
-  private _inScatteringIntensity = 1.0;
-  private _inverseEllipsoidRotationMatrix = new Matrix3d();
-  private _isCameraEnabled = true;
+  private _inverseEllipsoidRotationMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
   private _atmosphereRadiusScaleFactor = 1.0;
+  private _atmosphereScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
   private _atmosphereMaxDensityThresholdScaleFactor = 1.0;
+  private _densityFalloff = 0.0;
+  private _inScatteringIntensity = 1.0;
+  private _outScatteringIntensity = 1.0;
+  private _exposure = 0.0;
+  private _scatteringCoefficients = new Float32Array(3);
+
+  // Iteration parameters
   private _numInScatteringPoints = 0.0;
   private _numOpticalDepthPoints = 0.0;
-  private _outScatteringIntensity = 1.0;
-  private _scatteringCoefficients = new Float32Array(3);
-  private readonly _ellipsoidRotationMatrix = new Matrix3d();
+
+  // Misc parameters
+  private _isCameraEnabled = true;
   private _isEnabled = false;
 
   // utility
   public syncKey = 0;
-  private _scratchVector3d = new Vector3d();
   private _scratchMatrix3d = new Matrix3d();
-
-  public get atmosphere(): Atmosphere.Settings | undefined {
-    return this._atmosphere;
-  }
 
   public update(target: Target): void {
     desync(this);
@@ -59,14 +58,11 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
       return;
     }
 
-    this._updateAtmosphereHeightAboveEarth(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateAtmosphereScaleMatrix(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateExposure(this.atmosphere.exposure);
     this._updateDensityFalloff(this.atmosphere.densityFalloff);
     this._updateEarthCenter(plan.ellipsoid.ellipsoidCenter, target.uniforms.frustum.viewMatrix);
     this._updateEarthScaleMatrix(plan.ellipsoid.ellipsoidRadii);
-    this._updateEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation);
-    this._updateEllipsoidToEye();
     this._updateInScatteringIntensity(this.atmosphere.inScatteringIntensity);
     this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
     this._updateIsCameraEnabled(target.uniforms.frustum.type);
@@ -90,19 +86,9 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     viewMatrix.multiplyPoint3d(earthCenter, this._earthCenter);
   }
 
-  private _updateEllipsoidRotationMatrix(earthRotation: Matrix3d) {
-    this._ellipsoidRotationMatrix.setFrom(earthRotation);
-  }
-
   private _updateInverseEllipsoidRotationMatrix(ellipsoidRotation: Matrix3d, viewRotation: Matrix3d) {
     viewRotation.inverse(this._scratchMatrix3d);
     ellipsoidRotation.multiplyMatrixInverseMatrix(this._scratchMatrix3d, this._inverseEllipsoidRotationMatrix);
-  }
-
-  private _updateEllipsoidToEye() {
-    Vector3d.createFrom(this._earthCenter, this._scratchVector3d);
-    this._scratchVector3d.negate(this._scratchVector3d);
-    this._inverseEllipsoidRotationMatrix.multiplyVector(this._scratchVector3d, this._ellipsoidToEye);
   }
 
   private _updateInScatteringIntensity(inScatteringIntensity: number) {
@@ -118,11 +104,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._earthScaleMatrix.setAt(1, 1, earthRadii.y);
     this._earthScaleMatrix.setAt(2, 2, earthRadii.z);
   }
-
-  private _updateAtmosphereHeightAboveEarth(atmosphereHeightAboveEarth: number) {
-    this._atmosphereHeightAboveEarth = atmosphereHeightAboveEarth;
-  }
-
   private _updateAtmosphereScaleMatrix(heightAboveSurface: number) {
     const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
     const scaleFactor =  earthPolarRadius === 0 ? 1.0 : (earthPolarRadius + heightAboveSurface) / earthPolarRadius;
@@ -153,7 +134,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     // Rayleigh scattering strength is inversely related to the 4th power of the wavelength -> 1/pow(wavelength, 4)
     // Because this produces very small values when the wavelengths are taken in nanometers,
     //   we attempt to normalize them around 1 by taking the smallest wavelength of visible light as a baseline (violet light - 400nm)
-
     const violetLightWavelength = 400.0;
     this._scatteringCoefficients[0] = ((violetLightWavelength / wavelengths.r) ** 4.0) * scatteringStrength;
     this._scatteringCoefficients[1] = ((violetLightWavelength / wavelengths.g) ** 4.0) * scatteringStrength;
@@ -214,21 +194,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
       uniform.setUniform1f(this._outScatteringIntensity);
   }
 
-  public bindAtmosphereHeightAboveEarth(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform1f(this._atmosphereHeightAboveEarth);
-  }
-
-  public bindInverseEllipsoidRotationMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix3(Matrix3.fromMatrix3d(this._inverseEllipsoidRotationMatrix));
-  }
-
-  public bindEllipsoidToEye(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform3fv(this._ellipsoidToEye.toArray());
-  }
-
   public bindEarthScaleMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setMatrix3(Matrix3.fromMatrix3d(this._earthScaleMatrix));
@@ -249,20 +214,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
       uniform.setMatrix3(Matrix3.fromMatrix3d(this._atmosphereScaleMatrix.inverse()!));
   }
 
-  public bindEarthToEyeInverseScaled(uniform: UniformHandle): void {
-    if (!sync(this, uniform)) {
-      this._earthScaleMatrix.multiplyInverse(this._ellipsoidToEye, this._scratchVector3d);
-      uniform.setUniform3fv(this._scratchVector3d.toArray());
-    }
-  }
-
-  public bindAtmosphereToEyeInverseScaled(uniform: UniformHandle): void {
-    if (!sync(this, uniform)) {
-      this._atmosphereScaleMatrix.multiplyInverse(this._ellipsoidToEye, this._scratchVector3d);
-      uniform.setUniform3fv(this._scratchVector3d.toArray());
-    }
-  }
-
   public bindAtmosphereRadiusScaleFactor(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform1f(this._atmosphereRadiusScaleFactor);
@@ -271,11 +222,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   public bindAtmosphereMaxDensityThresholdScaleFactor(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform1f(this._atmosphereMaxDensityThresholdScaleFactor);
-  }
-
-  public bindEllipsoidRotationMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix3(Matrix3.fromMatrix3d(this._ellipsoidRotationMatrix));
   }
 
   public bindEarthCenter(uniform: UniformHandle): void {

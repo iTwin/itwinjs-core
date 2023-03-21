@@ -111,8 +111,9 @@ const raySphere = `
  * 2. The length from the first point where the ray intersects with the ellipsoid, to the second point where it intersects with the ellipsoid.
  *
  * First, the coordinates (rayOrigin, rayDir) are transformed such that the ellipsoid is axis-aligned and at (0, 0, 0).
- * Then, the coordinate space is scaled down by the ellipsoidScaleMatrix such that it becomes a unit sphere.
- * Finally, intersection with the unit sphere is computed and coordinates transformed back to their original scale to return the desired lengths.
+ * Next, the coordinate space is scaled down by the ellipsoidScaleMatrix such that it becomes a unit sphere.
+ * Then, intersection with the unit sphere is computed
+ * Finally, the coordinates are transformed back to their original scale and returned.
  *
  * @param ellipsoidCenter - Center of the ellipsoid in view coordinates.
  * @param rayOrigin - The starting point of the ray in view coordinates.
