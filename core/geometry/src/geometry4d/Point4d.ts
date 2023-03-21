@@ -527,17 +527,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   }
   /** Treating this Point4d as plane coefficients, convert to origin and normal form. */
   public toPlane3dByOriginAndUnitNormal(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
-    const a = Math.sqrt(this.magnitudeSquaredXYZ());
-    const direction = Vector3d.create(this.x, this.y, this.z);
-    const w = this.w;
-    const divA = Geometry.conditionalDivideFraction(1.0, a);
-    if (divA !== undefined) {
-      const divASquared = divA * divA;
-      const b = -w * divASquared;
-      direction.scaleInPlace(divASquared);
-      return Plane3dByOriginAndUnitNormal.create(Point3d.create(this.x * b, this.y * b, this.z * b), direction, result);
-    }
-    return undefined;
+    return Plane3dByOriginAndUnitNormal.createFrom(this, result);
   }
   /** Normalize so sum of squares of all 4 coordinates is 1. */
   public normalizeQuaternion() {

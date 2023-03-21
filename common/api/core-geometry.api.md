@@ -4065,6 +4065,8 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
     abstract altitudeXYZ(x: number, y: number, z: number): number;
     classifyAltitude(point: Point3d, tolerance?: number): -1 | 0 | 1;
     classifyAltitudeXYZ(x: number, y: number, z: number, tolerance?: number): -1 | 0 | 1;
+    getAnyPointOnPlane(result?: Point3d): Point3d;
+    getUnitNormal(result?: Vector3d): Vector3d | undefined;
     isPointInPlane(spacePoint: Point3d, tolerance?: number): boolean;
     abstract normalX(): number;
     abstract normalY(): number;
@@ -4085,6 +4087,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
     clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
     cloneTransformed(transform: Transform, inverse?: boolean): Plane3dByOriginAndUnitNormal | undefined;
     static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
+    static createFrom(source: Plane3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
     static createOriginAndTargets(pointA: Point3d, pointB: Point3d, pointC: Point3d): Plane3dByOriginAndUnitNormal | undefined;
     static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
     static createOriginAndVectors(pointA: Point3d, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
@@ -4095,10 +4098,12 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
     static createYZPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
     static createZXPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
     static fromJSON(json?: any): Plane3dByOriginAndUnitNormal;
+    getAnyPointOnPlane(result?: Point3d): Point3d;
     getLocalToWorld(): Transform;
     getNormalRef(): Vector3d;
     getOriginRef(): Point3d;
     getProjectionToPlane(): Transform;
+    getUnitNormal(result?: Vector3d): Vector3d | undefined;
     isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean;
     isPointInPlane(spacePoint: Point3d, tolerance?: number): boolean;
     normalX(): number;
@@ -4118,8 +4123,9 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
 export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunctions {
     altitude(xyz: XYAndZ): number;
     altitudeXYZ(x: number, y: number, z: number): number;
-    clone(): Plane3dByOriginAndVectors;
+    clone(result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createCapture(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+    static createFrom(source: Plane3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     static createFromTransformColumnsXYAndLengths(transform: Transform, xLength: number | undefined, yLength: number | undefined, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndTargets(origin: Point3d, targetU: Point3d, targetV: Point3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -4130,6 +4136,8 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     fractionToPoint(u: number, v: number, result?: Point3d): Point3d;
     fractionToVector(u: number, v: number, result?: Vector3d): Vector3d;
     static fromJSON(json?: any): Plane3dByOriginAndVectors;
+    getAnyPointOnPlane(result?: Point3d): Point3d;
+    getUnitNormal(result?: Vector3d): Vector3d | undefined;
     isAlmostEqual(other: Plane3dByOriginAndVectors): boolean;
     normalizeInPlace(): boolean;
     normalX(): number;
@@ -4159,7 +4167,6 @@ export interface PlaneAltitudeEvaluator {
     normalX(): number;
     normalY(): number;
     normalZ(): number;
-    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     velocity(vector: Vector3d): number;
     velocityXYZ(x: number, y: number, z: number): number;
     weightedAltitude(point: Point4d): number;

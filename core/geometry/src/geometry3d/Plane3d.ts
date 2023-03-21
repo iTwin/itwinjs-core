@@ -46,7 +46,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
  *       * the normal is the cross product of the defining vectors.
  *       * that cross product is not typically unit
  *       * normalization adds to the cost of computing off-plane distances
- *       * Since a main purpose of using this class is often to navigate a skewable, non-unit grid, occasional off-plane queries are not important.
+ *       * Since a main purpose of using this class is often to navigate a skewed, non-unit grid, occasional off-plane queries are not likely to be important.
  *  * "4 dimensional" (homogeneous coordinate planes) ([[Point4d]] and [[PlaneByOriginAndVectors4d]])
  *     * typically do _not_ force their coefficients to any distance-based normalization
  *     * are typically used for calculations in spaces with skewing effects do to perspective, and true distances are not required.
@@ -95,7 +95,24 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
     * * See [[Plane3d]] note about scaling.
    */
   public abstract normalZ(): number;
-
+  /**
+   * Return the unit normal for the plane.
+   * * The abstract base class implementation assembles the normal from normalX, normalY, normalZ calls.
+   * * Derived classes should (but are not required to) override for maximum efficiency if the separate normal calls cause repeated normalization.
+   * @param result
+   */
+  public getUnitNormal(result?: Vector3d): Vector3d | undefined {
+    return Vector3d.createNormalized(this.normalX(), this.normalY(), this.normalZ(), result);
+  }
+  /**
+   * Return any point on the plane.
+   * * Default implementation projects the origin (0,0,0) to the plane.
+   * * Classes that have a preferred origin for their plane should override.
+   * * Classes with a purely implicit equation of their plane can accept the default implementation
+   * */
+  public getAnyPointOnPlane(result?: Point3d): Point3d {
+    return this.projectPointToPlane(Point3d.create(0, 0, 0), result);
+  }
   /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative)
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
     * * See [[Plane3d]] note about scaling.

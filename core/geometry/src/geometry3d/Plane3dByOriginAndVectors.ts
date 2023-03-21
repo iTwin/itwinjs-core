@@ -13,6 +13,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
 import { Transform } from "./Transform";
 import { XYAndZ } from "./XYZProps";
+import { Matrix3d } from "./Matrix3d";
 
 /**
  * A Plane3dByOriginAndVectors is an origin and a pair of vectors.
@@ -51,8 +52,28 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     return new Plane3dByOriginAndVectors(origin.clone(), vectorU.clone(), vectorV.clone());
   }
   /** clone to a new plane. */
-  public clone(): Plane3dByOriginAndVectors {
+  public clone(result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    if (result !== undefined)
+      result.setOriginAndVectors(this.origin, this.vectorU, this.vectorV);
     return new Plane3dByOriginAndVectors(this.origin.clone(), this.vectorU.clone(), this.vectorV.clone());
+  }
+  /** create a new  Plane3dByOriginAndUnitNormal from a variety of plane types.
+   * * The input is NOT captured.
+   */
+  public static createFrom(source: Plane3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined {
+    if (source instanceof Plane3dByOriginAndVectors)
+      return source.clone(result);
+    const normal = source.getUnitNormal();
+    if (normal === undefined)
+      return undefined;
+    const origin = source.getAnyPointOnPlane();
+    const vectorU = Matrix3d.createPerpendicularVectorFavorXYPlane(normal);
+    if (vectorU.tryNormalizeInPlace()) {
+      const vectorV = normal.unitCrossProduct(vectorU);
+      if (vectorV !== undefined)
+        return new Plane3dByOriginAndVectors(origin, vectorU, vectorV);
+    }
+    return undefined;
   }
 
   /**
@@ -223,8 +244,22 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
   /**
    * Return (if possible) a unit normal to the plane.
    */
+  public override getUnitNormal(result?: Vector3d): Vector3d | undefined {
+    return this.vectorU.unitCrossProduct(this.vectorV, result);
+  }
+  /**
+   * Return (if possible) a unit normal to the plane.
+   * * This method is the same as getUnitNormal, which was created later as part of the abstract base class Plane3d.
+   */
   public unitNormal(result?: Vector3d): Vector3d | undefined {
     return this.vectorU.unitCrossProduct(this.vectorV, result);
+  }
+
+  /**
+   * Return some point on the plane.
+   */
+  public override getAnyPointOnPlane(result?: Point3d): Point3d {
+    return this.origin.clone(result);
   }
   private static _workVector: Vector3d;
   /**

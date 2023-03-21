@@ -47,6 +47,7 @@ function verifyMatchedPlaneAltitudeEvaluator(ck: Checker, planeA: Plane3d, plane
     ck.testCoordinate(planeA.velocityXYZ(v.x, v.y, v.z), planeA.velocity(v), { velocityXYZ: v });
   }
 }
+
 describe("PlaneEvaluator", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -77,6 +78,16 @@ describe("PlaneEvaluator", () => {
         const plane4d = Point4d.createPlaneFrom(sourcePlane);
         if (ck.testType(plane4d, Point4d, "Convert to Point4d plane"))
           verifyMatchedPlaneAltitudeEvaluator(ck, sourcePlane, plane4d);
+        // test specific conversions
+        const planeM = Plane3dByOriginAndUnitNormal.createFrom(sourcePlane);
+        if (ck.testType(planeM, Plane3dByOriginAndUnitNormal, "Convert to Plane3dByOriginAndUnitNormal")) {
+          verifyMatchedPlaneAltitudeEvaluator(ck, sourcePlane, planeM);
+        }
+
+        const planeN = Plane3dByOriginAndVectors.createFrom(sourcePlane);
+        if (ck.testType(planeN, Plane3dByOriginAndVectors, "Convert to Plane3dByOriginAndVectors")) {
+          verifyMatchedPlaneAltitudeEvaluator(ck, sourcePlane, planeN);
+        }
       }
     }
     expect(ck.getNumErrors()).equals(0);

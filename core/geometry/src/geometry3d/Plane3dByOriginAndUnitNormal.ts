@@ -75,6 +75,20 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
     }
     return new Plane3dByOriginAndUnitNormal(origin.clone(), normalized);
   }
+  /** create a new  Plane3dByOriginAndUnitNormal from a variety of plane types.
+   * * The inputs are NOT captured.
+   * * Returns undefined if the normal vector is all zeros.
+   */
+  public static createFrom(source: Plane3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
+    if (source instanceof Plane3dByOriginAndUnitNormal)
+      return source.clone(result);
+    const normal = source.getUnitNormal();
+    if (normal === undefined)
+      return undefined;
+    const origin = source.getAnyPointOnPlane();
+    return this.create(origin, normal, result);
+  }
+
   /** create a new  Plane3dByOriginAndUnitNormal with direct coordinates of origin and normal.
    * * Returns undefined if the normal vector is all zeros.
    * * If unable to normalize return undefined. (And if result is given it is left unchanged)
@@ -250,7 +264,18 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * Return the z component of the normal used to evaluate altitude.
    */
   public normalZ(): number { return this._normal.z; }
-
+  /**
+   * Return (a clone of) the unit normal.
+   */
+  public override getUnitNormal(result?: Vector3d): Vector3d | undefined {
+    return this._normal.clone(result);
+  }
+  /**
+   * Return (a clone of) the origin.
+   */
+  public override getAnyPointOnPlane(result?: Point3d): Point3d {
+    return this._origin.clone(result);
+  }
   /** Return the signed altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {
     return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint);
@@ -280,8 +305,9 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
-  /** Returns true of spacePoint is within distance tolerance of the plane.
-   * @remark This logic is identical to the abstract Plane3d but avoids a level of function call.
+  /**
+   * Returns true of spacePoint is within distance tolerance of the plane.
+   * * This logic is identical to the abstract Plane3d but avoids a level of function call.
   */
   public override  isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     const altitude = this._normal.dotProductStartEnd(this._origin, spacePoint);
