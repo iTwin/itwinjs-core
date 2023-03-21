@@ -18,11 +18,11 @@ const rootPackageJsonPath = require.resolve(rootPackageJson);
 //Find the package.json of the project and retrieve the version and repository URL
 const packageJsonPath = path.join(process.cwd(), "package.json");
 const packageJson = JSON.parse(FS.readFileSync(packageJsonPath));
-const version = packageJson.version ?? throwError("Package version is missing");
-const repositoryUrl = packageJson.repository?.url ?? throwError("Package repository URL is missing");
+const version = packageJson.version;
+const repositoryUrl = packageJson.repository?.url;
 
-function throwError(message) {
-  throw new Error(message);
+if (!version || !repositoryUrl) {
+  throw new Error('version or repositoryUrl not found in package.json');
 }
 
 // Appends the directory of the package root to the Typedoc JSON output
