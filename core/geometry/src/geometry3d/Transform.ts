@@ -341,7 +341,7 @@ export class Transform implements BeJSONFunctions {
     return Transform.createRefs(undefined, matrix.clone());
   }
   /**
-   * Create a transform with the specified `matrix` and points `a` and `b`. The returned Transform, maps
+   * Create a transform with the specified `matrix` and points `a` and `b`. The returned Transform maps
    * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`), so maps `a` to 'b'.
    */
   public static createMatrixPickupPutdown(
@@ -353,7 +353,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Create a Transform which leaves the fixedPoint unchanged and scales everything else around it by
-   * a single scale factor. The returned Transform, maps a point `p` to `M*p + (f - M*f)`
+   * a single scale factor. The returned Transform maps a point `p` to `M*p + (f - M*f)`
    * where `f` is the fixedPoint and M is the scale matrix (i.e., `Tp = M*(p-f) + f`).
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ScaleCube
    */
@@ -397,7 +397,7 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
   }
   /**
-   * Multiply a specific row (component) of the transform 3x4 instance times (x,y,z,1). Return the result.
+   * Multiply a specific row (component) of the 3x4 instance times (x,y,z,1). Return the result.
    */
   public multiplyComponentXYZ(componentIndex: number, x: number, y: number, z: number = 0): number {
     const coffs = this._matrix.coffs;
@@ -405,7 +405,7 @@ export class Transform implements BeJSONFunctions {
     return this.origin.at(componentIndex) + (coffs[idx] * x) + (coffs[idx + 1] * y) + (coffs[idx + 2] * z);
   }
   /**
-   * Multiply a specific row (component) of the transform 3x4 instance times (x,y,z,w). Return the result.
+   * Multiply a specific row (component) of the 3x4 instance times (x,y,z,w). Return the result.
    */
   public multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number {
     const coffs = this._matrix.coffs;
@@ -425,7 +425,7 @@ export class Transform implements BeJSONFunctions {
    * Transform the homogeneous point. Return as new `Float64Array` with size 4, or in the pre-allocated result (if
    * result is given).
    * * If `p = (x,y,z)` then this method computes `Tp = M*p + o*w` and returns the `Float64Array` formed by `Tp`
-   * in the first 3 numbers of the array, and `w` as the fourth.
+   * in the first 3 numbers of the array and `w` as the fourth.
    * * Logically, this is multiplication by the 4x4 matrix formed from the 3x4 instance augmented with fourth row 0001.
    */
   public multiplyXYZWToFloat64Array(x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array {
@@ -433,13 +433,13 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * * Transform the point. Return as new `Float64Array` with size 3, or in the pre-allocated result (if result is given).
-   * * If `p = (x,y,z)` then this method computes `Tp = M*p + o` and returns it as 3 elements of the array.
+   * * If `p = (x,y,z)` then this method computes `Tp = M*p + o` and returns it as the first 3 elements of the array.
    */
   public multiplyXYZToFloat64Array(x: number, y: number, z: number, result?: Float64Array): Float64Array {
     return Matrix3d.xyzPlusMatrixTimesCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, result);
   }
   /**
-   * Multiply the homogeneous point by the transpose if `this` Transform. Return as a new `Point4d` or in the
+   * Multiply the homogeneous point by the transpose of `this` Transform. Return as a new `Point4d` or in the
    * pre-allocated result (if result is given).
    * * If `p = (x,y,z)` then this method computes `M^t*p` and returns it in the first three coordinates of the `Point4d`,
    * and `o*p + w` in the fourth.
