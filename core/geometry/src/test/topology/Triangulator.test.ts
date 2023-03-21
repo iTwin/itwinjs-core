@@ -1035,8 +1035,8 @@ const _messyShape = [
   }
 
   /**
+   * Caller should precede with Triangulator.clearAndEnableDebugGraphCapture(true);
    * @return whether tests succeeded
-   * @remarks Caller should precede with Triangulator.clearAndEnableDebugGraphCapture(true);
    */
   function tryExpandConvex2(ck: Checker, allGeometry: GeometryQuery[], graph1: HalfEdgeGraph | undefined, graph2: HalfEdgeGraph | undefined, position: Point2d): boolean {
     if (ck.testDefined(graph1, "Triangulation failed") && graph1) {
