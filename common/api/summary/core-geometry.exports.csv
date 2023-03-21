@@ -107,7 +107,7 @@ public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve
 public;CurveSearchStatus
 internal;CutLoop
 internal;CutLoopMergeContext
-internal;DeepCompare
+public;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
@@ -250,7 +250,7 @@ public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 
 public;RegionBinaryOpType
 internal;RegionMomentsXY 
-beta;RegionOps
+public;RegionOps
 public;RotationalSweep 
 public;RuledSweep 
 alpha;Sample

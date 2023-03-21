@@ -388,10 +388,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
   /**
    * Return an array containing only the curve primitives.
-   * * This DEFAULT simply pushes `this` to the collectorArray.
-   * * CurvePrimitiveWithDistanceIndex optionally collects its members.
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
-   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   * @param smallestPossiblePrimitives if true, recurse on the (otherwise hidden) children. If false, only push `this`.
+   * @param explodeLinestrings (if smallestPossiblePrimitives is true) whether to push a [[LineSegment3d]] for each segment of a [[LineString3d]] child. If false, push only the [[LineString3d]].
    */
   public override collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLineStrings: boolean = false) {
     if (smallestPossiblePrimitives) {

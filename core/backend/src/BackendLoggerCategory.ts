@@ -22,7 +22,6 @@ export enum BackendLoggerCategory {
 
   /** The logger category used by the following classes:
    * - [[CustomViewState3dCreator]]
-   * @internal
    */
   CustomViewState3dCreator = "core-backend.CustomViewState3dCreator",
 

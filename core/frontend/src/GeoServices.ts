@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module IModelConnection
+ */
+
 // cspell:ignore GCRS
 import {
   assert, BeEvent, Dictionary, Logger, SortedArray,
@@ -235,13 +239,16 @@ export interface CachedIModelCoordinatesResponseProps {
   missing?: XYZProps[];
 }
 
-/** The GeoConverter class communicates with the backend to convert longitude/latitude coordinates to iModel coordinates and vice-versa
- * @internal
+/** An object capable of communicating with the backend to convert between coordinates in a geographic coordinate system and coordinates in an [[IModelConnection]]'s own coordinate system.
+ * @see [[GeoServices.getConverter]] to obtain a converter.
+ * @see [GeographicCRS]($common) for more information about geographic coordinate reference systems.
+ * @public
  */
 export class GeoConverter {
   private readonly _geoToIModel: CoordinateConverter;
   private readonly _iModelToGeo: CoordinateConverter;
 
+  /** @internal */
   constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps) {
     const datum = typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS;
 
@@ -266,6 +273,19 @@ export class GeoConverter {
     });
   }
 
+  /** Convert the specified geographic coordinates into iModel coordinates. */
+  public async convertToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]> {
+    const result = await this.getIModelCoordinatesFromGeoCoordinates(geoPoints);
+    return result.iModelCoords;
+  }
+
+  /** Convert the specified iModel coordinates into geographic coordinates. */
+  public async convertFromIModelCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]> {
+    const result = await this.getGeoCoordinatesFromIModelCoordinates(iModelCoords);
+    return result.geoCoords;
+  }
+
+  /** @internal */
   public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
     const result = await this._geoToIModel.convert(geoPoints);
     return {
@@ -274,6 +294,7 @@ export class GeoConverter {
     };
   }
 
+  /** @internal */
   public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
     const result = await this._iModelToGeo.convert(iModelPoints);
     return {
@@ -282,21 +303,29 @@ export class GeoConverter {
     };
   }
 
+  /** @internal */
   public getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps {
     return this._geoToIModel.findCached(geoPoints);
   }
 }
 
 /** The Geographic Services available for an [[IModelConnection]].
- * @internal
+ * @see [[IModelConnection.geoServices]] to obtain the GeoServices for a specific iModel.
+ * @public
  */
 export class GeoServices {
   private _iModel: IModelConnection;
 
+  /** @internal */
   constructor(iModel: IModelConnection) {
     this._iModel = iModel;
   }
 
+  /** Obtain a converter that can convert between a geographic coordinate system and the iModel's own coordinate system.
+   * @param datumOrGCRS The name or JSON representation of the geographic coordinate system datum - for example, "WGS84".
+   * @returns a converter, or `undefined` if the iModel is not open.
+   * @note A [[BlankConnection]] has no connection to a backend, so it is never "open"; therefore it always returns `undefined`.
+   */
   public getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined {
     return this._iModel.isOpen ? new GeoConverter(this._iModel, datumOrGCRS ? datumOrGCRS : "") : undefined;
   }
