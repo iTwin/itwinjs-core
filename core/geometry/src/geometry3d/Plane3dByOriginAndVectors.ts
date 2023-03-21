@@ -25,7 +25,7 @@ import { Matrix3d } from "./Matrix3d";
  * * Queries of altitude, velocity, normalX, normalY, and normalZ use the NORMALIZED cross product of vectorU and vectorV as plane normal.
  *   * Hence these are cartesian distances.
  *   * If numerous calls to these are expected, the repeated normalization may be a performance issue.
- *   * Using a Plane3dByOriginAndUnitNormal or the rigid transform returned by [[toRigidFrame]]would provide better performance.
+ *   * Using a [[Plane3dByOriginAndUnitNormal]] or the rigid transform returned by [[toRigidFrame]] would provide better performance.
  * @public
  */
 export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunctions {
@@ -381,7 +381,7 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     const dotUU = this.vectorU.magnitudeSquared();
     const dotVV = this.vectorV.magnitudeSquared();
     if (dotUU >= dotVV) {
-      const dotUW = this.vectorV.dotProductStartEnd(this.origin, spacePoint);
+      const dotUW = this.vectorU.dotProductStartEnd(this.origin, spacePoint);
       const f = Geometry.conditionalDivideCoordinate(dotUW, dotUU, 0.0);
       if (f !== undefined)
         return spacePoint.plusScaled(this.vectorU, f, result);

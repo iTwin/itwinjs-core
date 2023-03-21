@@ -305,11 +305,10 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
-  /**
-   * Returns true of spacePoint is within distance tolerance of the plane.
-   * * This logic is identical to the abstract Plane3d but avoids a level of function call.
+  /** Returns true if spacePoint is within distance tolerance of the plane.
+   * * This logic is identical to the [[Plane3d]] method but avoids a level of function call.
   */
-  public override  isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
+  public override isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     const altitude = this._normal.dotProductStartEnd(this._origin, spacePoint);
     return Math.abs(altitude) <= tolerance;
   }

@@ -70,14 +70,14 @@ A new abstract base class [Plane3d]($core-geometry) is defined to provide shared
 - The following classes now declare that they _extend_ [Plane3d]($core-geometry):
   - [Plane3dByOriginAndNormal]($core-geometry) extends [Plane3d]($core-geometry)
   - [Plane3dByOriginAndVectors]($core-geometry) extends [Plane3d]($core-geometry)
-  - [Plane4d]($core-geometry) extends [Plane3d]($core-geometry)
+  - [Point4d]($core-geometry) extends [Plane3d]($core-geometry)
   - [ClipPlane]($core-geometry) extends [Plane3d]($core-geometry)
 
 This will provide more consistency and functionality than previously provided by the _interface_ [PlaneAltitudeEvaluator]($core-geometry).   API compatibility with the weaker [PlaneAltitudeEvaluator]($core-geometry) is maintained as follows:
 
-- The abstract base class [Plane3d]($core-geometry) declares that it implements_the interface. Hence the classes the_extend_ the abstract base class
-  - inherit the _extends_ declaration of the base class (compatibility "by interface name")
-- inherit the various _abstract_ method obligations and (non-abstract) method implementations from the base class (compatibility "by collected list of methods")
+- The abstract base class [Plane3d]($core-geometry) declares that it implements the [PlaneAltitudeEvaluator]($core-geometry).
+- Classes that _extend_ [Plane3d]($core-geometry) inherit the _extended_ declaration of the base class (compatibility "by interface name").
+- Classes that _extend_ [Plane3d]($core-geometry) inherit the various _abstract_ method obligations and (non-abstract) method implementations from the base class (compatibility "by collected list of methods").
 
 With these changes the [PlaneAltitudeEvaluator]($core-geometry) can be deprecated.
 
