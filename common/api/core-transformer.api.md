@@ -35,7 +35,7 @@ import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SQLiteDb } from '@itwin/core-backend';
 
-// @beta
+// @beta @deprecated
 export class ChangedInstanceIds {
     // (undocumented)
     aspect: ChangedInstanceOps;
@@ -52,7 +52,7 @@ export class ChangedInstanceIds {
     relationship: ChangedInstanceOps;
 }
 
-// @beta
+// @beta @deprecated
 export class ChangedInstanceOps {
     addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void;
     // (undocumented)
@@ -63,15 +63,15 @@ export class ChangedInstanceOps {
     updateIds: Set<string>;
 }
 
-// @beta
+// @beta @deprecated (undocumented)
 export interface ExportSchemaResult {
     schemaPath?: string;
 }
 
-// @internal
+// @internal @deprecated
 export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean;
 
-// @beta
+// @beta @deprecated
 export class IModelExporter {
     constructor(sourceDb: IModelDb);
     excludeCodeSpec(codeSpecName: string): void;
@@ -115,7 +115,7 @@ export class IModelExporter {
     wantTemplateModels: boolean;
 }
 
-// @internal
+// @internal @deprecated
 export interface IModelExporterState {
     // (undocumented)
     additionalState?: any;
@@ -145,7 +145,7 @@ export interface IModelExporterState {
     wantTemplateModels: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export abstract class IModelExportHandler {
     onDeleteElement(_elementId: Id64String): void;
     onDeleteModel(_modelId: Id64String): void;
@@ -168,7 +168,7 @@ export abstract class IModelExportHandler {
     shouldExportSchema(_schemaKey: SchemaKey): boolean;
 }
 
-// @beta
+// @beta @deprecated
 export class IModelImporter implements Required<IModelImportOptions> {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
     // @deprecated
@@ -216,7 +216,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     readonly targetDb: IModelDb;
 }
 
-// @internal
+// @internal @deprecated
 export interface IModelImporterState {
     // (undocumented)
     additionalState?: any;
@@ -230,7 +230,7 @@ export interface IModelImporterState {
     targetDbId: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean | {
         excludeOutliers: boolean;
@@ -239,7 +239,7 @@ export interface IModelImportOptions {
     simplifyElementGeometry?: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
@@ -310,7 +310,7 @@ export class IModelTransformer extends IModelExportHandler {
     get targetScopeElementId(): Id64String;
 }
 
-// @beta
+// @beta @deprecated
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
     // @deprecated
@@ -326,7 +326,7 @@ export interface IModelTransformOptions {
     wasSourceIModelCopiedToTarget?: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export interface InitFromExternalSourceAspectsArgs {
     // (undocumented)
     accessToken?: AccessToken;
@@ -334,12 +334,12 @@ export interface InitFromExternalSourceAspectsArgs {
     startChangesetId?: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface OptimizeGeometryOptions {
     inlineUniqueGeometryParts?: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export class TemplateModelCloner extends IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     onTransformElement(sourceElement: Element_2): ElementProps;
@@ -347,7 +347,7 @@ export class TemplateModelCloner extends IModelTransformer {
     placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>>;
 }
 
-// @public
+// @public @deprecated
 export enum TransformerLoggerCategory {
     // @beta
     IModelExporter = "core-backend.IModelExporter",

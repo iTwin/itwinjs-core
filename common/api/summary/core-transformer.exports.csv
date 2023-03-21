@@ -1,18 +1,34 @@
 sep=;
 Release Tag;API Item
 beta;ChangedInstanceIds
+deprecated;ChangedInstanceIds
 beta;ChangedInstanceOps
+deprecated;ChangedInstanceOps
 beta;ExportSchemaResult
+deprecated;ExportSchemaResult
 internal;hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set
+deprecated;hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set
 beta;IModelExporter
+deprecated;IModelExporter
 internal;IModelExporterState
+deprecated;IModelExporterState
 beta;class IModelExportHandler
+deprecated;class IModelExportHandler
 beta;IModelImporter 
+deprecated;IModelImporter 
 internal;IModelImporterState
+deprecated;IModelImporterState
 beta;IModelImportOptions
+deprecated;IModelImportOptions
 beta;IModelTransformer 
+deprecated;IModelTransformer 
 beta;IModelTransformOptions
+deprecated;IModelTransformOptions
 beta;InitFromExternalSourceAspectsArgs
+deprecated;InitFromExternalSourceAspectsArgs
 beta;OptimizeGeometryOptions
+deprecated;OptimizeGeometryOptions
 beta;TemplateModelCloner 
+deprecated;TemplateModelCloner 
 public;TransformerLoggerCategory
+deprecated;TransformerLoggerCategory
