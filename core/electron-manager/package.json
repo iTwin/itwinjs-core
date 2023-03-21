@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.19.52",
+  "version": "2.19.53",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -30,12 +30,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.52",
-    "@bentley/imodeljs-backend": "workspace:^2.19.52",
-    "@bentley/imodeljs-common": "workspace:^2.19.52",
-    "@bentley/imodeljs-frontend": "workspace:^2.19.52",
-    "@bentley/itwin-client": "workspace:^2.19.52",
-    "@bentley/presentation-common": "workspace:^2.19.52",
+    "@bentley/bentleyjs-core": "workspace:^2.19.53",
+    "@bentley/imodeljs-backend": "workspace:^2.19.53",
+    "@bentley/imodeljs-common": "workspace:^2.19.53",
+    "@bentley/imodeljs-frontend": "workspace:^2.19.53",
+    "@bentley/itwin-client": "workspace:^2.19.53",
+    "@bentley/presentation-common": "workspace:^2.19.53",
     "electron": "^11.1.0"
   },
   "devDependencies": {
