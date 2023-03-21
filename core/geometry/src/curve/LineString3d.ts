@@ -1345,10 +1345,9 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
   }
   /**
    * Return an array containing only the curve primitives.
-   * * This DEFAULT simply pushes `this` to the collectorArray.
-   * * CurvePrimitiveWithDistanceIndex optionally collects its members.
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
-   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   * @param _smallestPossiblePrimitives unused
+   * @param explodeLinestrings if true, push a [[LineSegment3d]] for each segment. If false, only push `this`.
    */
   public override collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false) {
     if (explodeLinestrings) {
