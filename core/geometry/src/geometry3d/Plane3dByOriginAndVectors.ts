@@ -346,7 +346,7 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     const dotUU = this.vectorU.magnitudeSquared();
     const dotVV = this.vectorV.magnitudeSquared();
     if (dotUU >= dotVV) {
-      const dotUW = this.vectorV.dotProductStartEnd(this.origin, spacePoint);
+      const dotUW = this.vectorU.dotProductStartEnd(this.origin, spacePoint);
       const f = Geometry.conditionalDivideCoordinate(dotUW, dotUU, 0.0);
       if (f !== undefined)
         return spacePoint.plusScaled(this.vectorU, f, result);
