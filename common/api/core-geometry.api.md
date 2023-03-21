@@ -5854,14 +5854,14 @@ export class Transform implements BeJSONFunctions {
     multiplyComponentXYZ(componentIndex: number, x: number, y: number, z?: number): number;
     multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number;
     multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined;
-    multiplyInversePoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[] | undefined;
-    multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean;
+    multiplyInversePoint3dArray(points: Point3d[], results?: Point3d[]): Point3d[] | undefined;
+    multiplyInversePoint3dArrayInPlace(points: Point3d[]): boolean;
     multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;
     multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
     multiplyPoint2d(point: XAndY, result?: Point2d): Point2d;
-    multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[];
+    multiplyPoint2dArray(points: Point2d[], result?: Point2d[]): Point2d[];
     multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d;
-    multiplyPoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[];
+    multiplyPoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[];
     multiplyPoint3dArrayArrayInPlace(chains: Point3d[][]): void;
     multiplyPoint3dArrayInPlace(points: Point3d[]): void;
     multiplyRange(range: Range3d, result?: Range3d): Range3d;

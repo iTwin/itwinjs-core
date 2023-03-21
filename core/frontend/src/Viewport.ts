@@ -371,7 +371,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     IModelApp.requestNextAnimation();
   }
 
-  /** Mark the viewport's scene as invalid, so that the next call to [[renderFrame]] will recreate it.
+  /** Mark the viewport's scene as having changed, so that the next call to [[renderFrame]] will recreate it.
    * This method is not typically invoked directly - the scene is automatically invalidated in response to events such as moving the viewing frustum,
    * changing the set of viewed models, new tiles being loaded, etc.
    */
@@ -381,13 +381,18 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.invalidateDecorations();
   }
 
-  /** @internal */
+  /** Mark the viewport's "render plan" as having changed, so that the next call to [[renderFrame]] will recreate it.
+   * This method is not typically invoked directly - the render plan is automatically invalidated in response to events such as changing aspects
+   * of the viewport's [[displayStyle]].
+   */
   public invalidateRenderPlan(): void {
     this._renderPlanValid = false;
     this.invalidateScene();
   }
 
-  /** @internal */
+  /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
+   * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   */
   public invalidateController(): void {
     this._controllerValid = this._analysisFractionValid = false;
     this.invalidateRenderPlan();
@@ -1268,10 +1273,10 @@ export abstract class Viewport implements IDisposable, TileUser {
         IModelApp.requestNextAnimation();
     }
   }
-  /** This gives each Viewport a unique Id, which can be used for comparing and sorting Viewport objects inside collections.
-   * @internal
+
+  /** A unique integer Id assigned to this Viewport upon construction.
+   * It can be useful for comparing and sorting Viewport objects inside of collections like [SortedArray]($core-bentley).
    */
-  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($core-bentley)s. */
   public get viewportId(): number {
     return this._viewportId;
   }
@@ -1477,7 +1482,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
-  /** @internal */
+  /** Apply a function to every [[TileTreeReference]] displayed by this viewport. */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.view.forEachTileTreeRef(func);
     this.forEachTiledGraphicsProviderTree(func);
@@ -2123,9 +2128,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.animate();
   }
 
-  /** Used strictly by TwoWayViewportSync to change the reactive viewport's view to a clone of the active viewport's ViewState.
-   * Does *not* trigger "ViewState changed" events.
-   * @internal
+  /** Replace this viewport's [[ViewState]] **without** triggering events like [[onChangeView]].
+   * This is chiefly useful when you are synchronizing the states of two or more viewports, as in [[TwoWayViewportSync]], to avoid triggering unwanted "echo"
+   * events during synchronization.
+   * In all other scenarios, [[changeView]] is the correct method to use.
    */
   public applyViewState(val: ViewState) {
     this.updateChangeFlags(val);
@@ -2676,7 +2682,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return queryVisibleFeatures(this, options, callback);
   }
 
-  /** @internal */
+  /** Record graphics memory consumed by this viewport. */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);
@@ -3288,7 +3294,7 @@ export class ScreenViewport extends Viewport {
     this.canvas.style.cursor = cursor;
   }
 
-  /** @internal */
+  /** See [[Viewport.synchWithView]]. */
   public override synchWithView(options?: ViewChangeOptions): void {
     options = options ?? {};
 
