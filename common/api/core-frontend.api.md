@@ -3502,15 +3502,18 @@ export interface GenericAbortSignal {
     removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
 }
 
-// @internal
+// @public
 export class GeoConverter {
+    // @internal
     constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
-    // (undocumented)
+    geoCoordsToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]>;
+    // @internal (undocumented)
     getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps;
-    // (undocumented)
+    // @internal (undocumented)
     getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps>;
-    // (undocumented)
+    // @internal (undocumented)
     getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps>;
+    iModelCoordsToGeoCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]>;
 }
 
 // @beta
@@ -3575,10 +3578,10 @@ export interface GeometryTileTreeReference extends TileTreeReference {
     collectTileGeometry: (collector: TileGeometryCollector) => void;
 }
 
-// @internal
+// @public
 export class GeoServices {
+    // @internal
     constructor(iModel: IModelConnection);
-    // (undocumented)
     getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined;
 }
 
@@ -5383,7 +5386,6 @@ export abstract class IModelConnection extends IModel {
     generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array>;
     // @internal
     get geodeticToSeaLevel(): number | undefined;
-    // @internal
     readonly geoServices: GeoServices;
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
