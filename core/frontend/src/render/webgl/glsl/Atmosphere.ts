@@ -159,7 +159,9 @@ vec2 rayEllipsoidIntersection(
  */
 const densityAtPoint = `
 float densityAtPoint(vec3 point) {
-  vec3 pointFromEarthCenter = u_inverseRotationInverseMinDensityScaleMatrix * (point - u_earthCenter);
+  // Scaling by the inverse earth scale matrix produces a vector with length 1 when the sample point lies on the earth's surface.
+  //   This allows us to directly compare the vector's length to the atmosphere scale factors to determine its relative altitude.
+  vec3 pointFromEarthCenter = u_inverseEarthScaleInverseRotationMatrix * (point - u_earthCenter);
 
   if (length(pointFromEarthCenter) <= u_atmosphereMaxDensityThresholdScaleFactor) { // point is below the max density threshold
     return 1.0;
@@ -168,8 +170,8 @@ float densityAtPoint(vec3 point) {
     return 0.0;
   }
 
-  float atmosphereDistanceFromMaxDensityThreshold = u_atmosphereRadiusScaleFactor - 1.0;
-  float samplePointDistanceFromMaxDensityThreshold = length(pointFromEarthCenter) - 1.0;
+  float atmosphereDistanceFromMaxDensityThreshold = u_atmosphereRadiusScaleFactor - u_atmosphereMaxDensityThresholdScaleFactor;
+  float samplePointDistanceFromMaxDensityThreshold = length(pointFromEarthCenter) - u_atmosphereMaxDensityThresholdScaleFactor;
   float heightFrom0to1 = samplePointDistanceFromMaxDensityThreshold / atmosphereDistanceFromMaxDensityThreshold;
   float result = exp(-heightFrom0to1 * u_densityFalloff) * (1.0 - heightFrom0to1);
 
@@ -357,7 +359,8 @@ mat3 computeAtmosphericScatteringFragment() {
 const applyHdr = `
 vec3 applyHdr(vec3 atmosphericScatteringColor, vec3 reflectedLightColor) {
   vec3 colorWithoutHdr = atmosphericScatteringColor + reflectedLightColor;
-  vec3 colorWithHdr = 1.0 - exp(-u_exposure * colorWithoutHdr);
+  float exposure = u_exposure;
+  vec3 colorWithHdr = 1.0 - exp(-exposure * colorWithoutHdr);
 
   return colorWithHdr;
 }
@@ -446,16 +449,6 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     },
     VariablePrecision.High
   );
-  // shader.addUniform(
-  //   "u_inverseEllipsoidRotationMatrix",
-  //   VariableType.Mat3,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_inverseEllipsoidRotationMatrix", (uniform, params) => {
-  //       params.target.uniforms.atmosphere.bindInverseEllipsoidRotationMatrix(uniform);
-  //     });
-  //   },
-  //   VariablePrecision.High
-  // );
   shader.addUniform(
     "u_atmosphereScaleMatrix",
     VariableType.Mat3,
@@ -502,16 +495,6 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     (prog) => {
       prog.addProgramUniform("u_inverseEarthScaleInverseRotationMatrix", (uniform, params) => {
         params.target.uniforms.atmosphere.bindInverseRotationInverseEarthScaleMatrix(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  shader.addUniform(
-    "u_inverseRotationInverseMinDensityScaleMatrix",
-    VariableType.Mat3,
-    (prog) => {
-      prog.addProgramUniform("u_inverseRotationInverseMinDensityScaleMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindInverseRotationInverseMinDensityScaleMatrix(uniform);
       });
     },
     VariablePrecision.High

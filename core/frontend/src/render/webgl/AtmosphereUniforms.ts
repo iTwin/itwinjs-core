@@ -27,9 +27,7 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _inScatteringIntensity = 1.0;
   private _inverseEllipsoidRotationMatrix = new Matrix3d();
   private _isCameraEnabled = true;
-  private _minDensityScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
   private _atmosphereRadiusScaleFactor = 1.0;
-  /** Threshold is in relation to earth size, so a value of 1.0 means max density is reached exactly at the earth's surface */
   private _atmosphereMaxDensityThresholdScaleFactor = 1.0;
   private _numInScatteringPoints = 0.0;
   private _numOpticalDepthPoints = 0.0;
@@ -206,13 +204,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     }
   }
 
-  public bindInverseRotationInverseMinDensityScaleMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform)) {
-      this._minDensityScaleMatrix.multiplyMatrixInverseMatrix(this._inverseEllipsoidRotationMatrix, this._scratchMatrix3d);
-      uniform.setMatrix3(Matrix3.fromMatrix3d(this._scratchMatrix3d));
-    }
-  }
-
   public bindInScatteringIntensity(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform1f(this._inScatteringIntensity);
@@ -256,16 +247,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   public bindInverseAtmosphereScaleMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setMatrix3(Matrix3.fromMatrix3d(this._atmosphereScaleMatrix.inverse()!));
-  }
-
-  public bindMinDensityScaleMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix3(Matrix3.fromMatrix3d(this._minDensityScaleMatrix));
-  }
-
-  public bindInverseMinDensityScaleMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix3(Matrix3.fromMatrix3d(this._minDensityScaleMatrix.inverse()!));
   }
 
   public bindEarthToEyeInverseScaled(uniform: UniformHandle): void {

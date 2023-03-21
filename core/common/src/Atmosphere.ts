@@ -99,7 +99,7 @@ export namespace Atmosphere {
 
     /** If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
-    /** If defined, this value can be used to modulate the overall brightness of the effect to compensate for very low and very high inScatteringIntensity values. Defaults to 0.1. */
+    /** If defined, this value can be used to simulate the aperture of a camera. Higher values allow more light in. Defaults to 2.5 */
     public readonly exposure: number;
     /** If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 1.0. */
     public readonly densityFalloff: number;
