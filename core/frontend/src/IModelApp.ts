@@ -116,7 +116,7 @@ export interface IModelAppOptions {
   sessionId?: GuidString;
   /** @internal */
   locateManager?: ElementLocateManager;
-  /** If present, supplies the [[TenativePoint]] for this session. */
+  /** If present, supplies the [[TentativePoint]] for this session. */
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
