@@ -57,7 +57,7 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
       result.setOriginAndVectors(this.origin, this.vectorU, this.vectorV);
     return new Plane3dByOriginAndVectors(this.origin.clone(), this.vectorU.clone(), this.vectorV.clone());
   }
-  /** create a new  Plane3dByOriginAndUnitNormal from a variety of plane types.
+  /** create a new Plane3dByOriginAndVectors from a variety of plane types.
    * * The input is NOT captured.
    */
   public static createFrom(source: Plane3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined {
