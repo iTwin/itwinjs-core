@@ -297,7 +297,7 @@ class SectionAttachment {
  * @extensions
  */
 export class DrawingViewState extends ViewState2d {
-  /** @internal */
+  /** The name of the BIS class associated with this class. */
   public static override get className() { return "DrawingViewDefinition"; }
 
   /** Exposed strictly for testing and debugging. Indicates that when loading the view, the spatial view should be displayed even

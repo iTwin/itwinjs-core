@@ -62,7 +62,7 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
  * @extensions
  */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
-  /** @internal */
+  /** The name of the BIS class associated with this class. */
   public static override get className() { return "AuxCoordSystem"; }
   public type: number;
   public description?: string;
@@ -304,7 +304,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
-  /** @internal */
+  /** The name of the BIS class associated with this class. */
   public static override get className() { return "AuxCoordSystem2d"; }
   public readonly origin: Point2d;
   public angle: number; // in degrees
@@ -339,7 +339,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
-  /** @internal */
+  /** The name of the BIS class associated with this class. */
   public static override get className() { return "AuxCoordSystem3d"; }
   public readonly origin: Point3d;
   public yaw: number; // in degrees
@@ -383,6 +383,6 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
-  /** @internal */
+  /** The name of the BIS class associated with this class. */
   public static override get className() { return "AuxCoordSystemSpatial"; }
 }

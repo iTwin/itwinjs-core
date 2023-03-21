@@ -329,7 +329,7 @@ export class SheetViewState extends ViewState2d {
     return this._attachmentsInfo.toJSON();
   }
 
-  /** @internal */
+  /** The name of the BIS class associated with this class. */
   public static override get className() { return "SheetViewDefinition"; }
 
   public static override createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {

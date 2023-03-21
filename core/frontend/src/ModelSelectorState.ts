@@ -17,7 +17,7 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export class ModelSelectorState extends ElementState {
-  /** @internal */
+  /** The name of the BIS class associated with this class. */
   public static override get className() { return "ModelSelector"; }
 
   private readonly _models = new ObservableSet<string>();
