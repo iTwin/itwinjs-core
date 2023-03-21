@@ -121,7 +121,7 @@ export class Tracing {
 
   /**
    * Enable logging to OpenTelemetry. [[Tracing.withSpan]] will be enabled, all log entries will be attached to active span as span events.
-   * [[IModelHost.startup]] will call this automatically if the `enableOpenTelemetry` option is enabled and it succeeds in requiring `@opentelemetry/api`.
+   * [IModelHost.startup]($backend) will call this automatically if the `enableOpenTelemetry` option is enabled and it succeeds in requiring `@opentelemetry/api`.
    * @note Node.js OpenTelemetry SDK should be initialized by the user.
    */
   public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
