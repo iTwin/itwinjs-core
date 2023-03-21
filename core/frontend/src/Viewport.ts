@@ -3007,9 +3007,7 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport
-   * @beta
-   */
+  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport. */
   public get logo() { return this._logo; }
 
   /** @internal */

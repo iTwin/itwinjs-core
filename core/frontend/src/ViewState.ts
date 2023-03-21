@@ -203,7 +203,6 @@ export interface AttachToViewportArgs {
  * @extensions
  */
 export abstract class ViewState extends ElementState {
-  /** @internal */
   public static override get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
@@ -1168,6 +1167,10 @@ export abstract class ViewState extends ElementState {
     return allowView;
   }
 
+  /** Compute the vector in the "up" direction of a specific point in world space.
+   * This is typically a unit Z vector. However, if the point is outside of the iModel's project extents and using ellipsoid [[globeMode]], an up-vector
+   * will be computed relative to the surface of the ellipsoid at that point.
+   */
   public getUpVector(point: Point3d): Vector3d {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.iModel.projectExtents.containsPoint(point))
       return Vector3d.unitZ();
@@ -1379,7 +1382,6 @@ export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
   private _environmentDecorations?: EnvironmentDecorations;
-  /** @internal */
   public static override get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
   protected _cameraOn: boolean;
@@ -2250,7 +2252,6 @@ export abstract class ViewState3d extends ViewState {
  */
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
-  /** @internal */
   public static override get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
   public readonly delta: Point2d;
