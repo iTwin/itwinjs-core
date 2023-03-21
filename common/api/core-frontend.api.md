@@ -1271,6 +1271,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
     constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection);
     // (undocumented)
     angle: number;
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     getOrigin(result?: Point3d): Point3d;
@@ -1289,6 +1290,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
 // @public
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelConnection);
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     getOrigin(result?: Point3d): Point3d;
@@ -1312,12 +1314,14 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
 
 // @public
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
     constructor(props: AuxCoordSystemProps, iModel: IModelConnection);
+    // (undocumented)
     static get className(): string;
     static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState;
     // (undocumented)
@@ -1819,6 +1823,7 @@ export class CategorySelectorState extends ElementState {
     get categories(): Set<string>;
     set categories(categories: Set<string>);
     changeCategoryDisplay(arg: Id64Arg, add: boolean): void;
+    // (undocumented)
     static get className(): string;
     dropCategories(arg: Id64Arg): void;
     equalState(other: CategorySelectorState): boolean;
@@ -2487,6 +2492,7 @@ export class DisclosedTileTreeSet implements Iterable<TileTree> {
 // @public
 export class DisplayStyle2dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    // (undocumented)
     static get className(): string;
     // @internal (undocumented)
     overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
@@ -2497,6 +2503,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
 // @public
 export class DisplayStyle3dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState);
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     get environment(): Environment;
@@ -2552,6 +2559,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
     changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
+    // (undocumented)
     static get className(): string;
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
@@ -2678,6 +2686,7 @@ export interface DrawClipOptions {
 
 // @public
 export class DrawingModelState extends GeometricModel2dState {
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2696,6 +2705,7 @@ export class DrawingViewState extends ViewState2d {
     attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
@@ -2986,6 +2996,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
 // @public
 export class ElementState extends EntityState implements ElementProps {
     constructor(props: ElementProps, iModel: IModelConnection);
+    // (undocumented)
     static get className(): string;
     readonly code: Code;
     readonly federationGuid?: GuidString;
@@ -3530,6 +3541,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
     constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState);
     // @internal (undocumented)
     get asGeometricModel2d(): GeometricModel2dState;
+    // (undocumented)
     static get className(): string;
     // @internal (undocumented)
     readonly globalOrigin: Point2d;
@@ -3544,6 +3556,7 @@ export class GeometricModel3dState extends GeometricModelState {
     constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState);
     // @internal (undocumented)
     get asGeometricModel3d(): GeometricModel3dState;
+    // (undocumented)
     static get className(): string;
     // @internal (undocumented)
     get is3d(): boolean;
@@ -3559,6 +3572,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     constructor(props: GeometricModelProps, iModel: IModelConnection, state?: GeometricModelState);
     // @internal (undocumented)
     get asGeometricModel(): GeometricModelState;
+    // (undocumented)
     static get className(): string;
     // @internal (undocumented)
     createTileTreeReference(view: ViewState): TileTreeReference;
@@ -7647,6 +7661,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
 export class ModelSelectorState extends ElementState {
     constructor(props: ModelSelectorProps, iModel: IModelConnection);
     addModels(arg: Id64Arg): void;
+    // (undocumented)
     static get className(): string;
     containsModel(modelId: Id64String): boolean;
     dropModels(arg: Id64Arg): void;
@@ -7669,6 +7684,7 @@ export class ModelState extends EntityState implements ModelProps {
     get asGeometricModel2d(): GeometricModel2dState | undefined;
     get asGeometricModel3d(): GeometricModel3dState | undefined;
     get asSpatialModel(): SpatialModelState | undefined;
+    // (undocumented)
     static get className(): string;
     // @internal
     getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
@@ -8083,6 +8099,7 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     supportsCamera(): boolean;
@@ -8307,6 +8324,7 @@ export namespace PerModelCategoryVisibility {
 
 // @public
 export class PhysicalModelState extends SpatialModelState {
+    // (undocumented)
     static get className(): string;
 }
 
@@ -10215,6 +10233,7 @@ export interface SectionDrawingInfo {
 
 // @public
 export class SectionDrawingModelState extends DrawingModelState {
+    // (undocumented)
     static get className(): string;
 }
 
@@ -10534,6 +10553,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
 
 // @public
 export class SheetModelState extends GeometricModel2dState {
+    // (undocumented)
     static get className(): string;
 }
 
@@ -10550,6 +10570,7 @@ export class SheetViewState extends ViewState2d {
     attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
+    // (undocumented)
     static get className(): string;
     // @internal (undocumented)
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
@@ -10716,6 +10737,7 @@ export interface SpatialLocationAndExtents {
 
 // @public
 export class SpatialLocationModelState extends SpatialModelState {
+    // (undocumented)
     static get className(): string;
 }
 
@@ -10725,6 +10747,7 @@ export class SpatialModelState extends GeometricModel3dState {
     // @internal (undocumented)
     get asSpatialModel(): SpatialModelState;
     readonly classifiers?: SpatialClassifiers;
+    // (undocumented)
     static get className(): string;
     get isRealityModel(): boolean;
 }
@@ -10750,6 +10773,7 @@ export class SpatialViewState extends ViewState3d {
     addViewedModel(id: Id64String): void;
     // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
@@ -14344,6 +14368,7 @@ export abstract class ViewState extends ElementState {
     calculateFrustum(result?: Frustum): Frustum | undefined;
     get categorySelector(): CategorySelectorState;
     set categorySelector(selector: CategorySelectorState);
+    // (undocumented)
     static get className(): string;
     // @internal
     collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void;
@@ -14493,6 +14518,7 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     protected _baseModelId: Id64String;
     changeViewedModel(newViewedModelId: Id64String): Promise<void>;
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     computeFitRange(): Range3d;
@@ -14561,6 +14587,7 @@ export abstract class ViewState3d extends ViewState {
     changeFocusDistance(newDist: number): ViewStatus;
     // @internal
     changeFocusFromPoint(pt: Point3d): ViewStatus;
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
