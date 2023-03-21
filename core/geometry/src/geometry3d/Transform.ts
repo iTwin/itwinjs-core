@@ -21,20 +21,18 @@ import { TransformProps, XAndY, XYAndZ } from "./XYZProps";
  * * The math for a Transform `T` consisting of a Matrix3d `M` and a Point3d `o` on a Vector3d `p` is: `Tp = M*p + o`.
  * In other words, `T` is a combination of two operations on `p`: the action of matrix multiplication, followed by a
  * translation. `Origin` is a traditional term for `o`, because `T` can be interpreted as a change of basis from the
- * global axes centered at the global origin, to a new set of axes centered at `o`.
- * * Beware that for common transformations (e.g. scale about point, rotate around an axis, mirror across a
- * plane) the "fixed point" that is used when describing the transform is NOT the "origin" stored in the
- * transform. Setup methods (e.g createFixedPointAndMatrix, createScaleAboutPoint) take care of determining
- * the appropriate origin coordinates.
+ * global axes centered at the global origin, to a new set of axes specified by matrix M columns centered at `o`.
+ * * Beware that for common transformations (e.g. scale about point, rotate around an axis) the `fixed point` that
+ * is used when describing the transform is NOT the `origin` stored in the transform. Setup methods (e.g
+ * createFixedPointAndMatrix, createScaleAboutPoint) take care of determining the appropriate origin coordinates.
+ * * If `T` is a translation, no point is fixed by `T`.
+ * * If `T` is the identity, all points are fixed by `T`.
+ * * If `T` is a scale about a point, one point is fixed by `T`.
+ * * If `T` is a rotation about an axis, a line is fixed by `T`.
+ * * If `T` is a projection to the plane, a plane is fixed by `T`.
  * @public
  */
 export class Transform implements BeJSONFunctions {
-  // static (one per class) vars for temporaries in computation.
-  // ASSUME any user of these vars needs them only within its own scope
-  // ASSUME no calls to other methods that use the same scratch.
-  // When Transform was in the same file with Point3d, this was initialized right here.
-  // But when split, there is a load order issue, so it has to be initialized at point-of-use
-  private static _scratchPoint: Point3d;
   private _origin: XYZ;
   private _matrix: Matrix3d;
   // Constructor accepts and uses pointer to content (no copy is done here).
@@ -362,22 +360,32 @@ export class Transform implements BeJSONFunctions {
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
     return Transform.createRefs(origin, matrix, result);
   }
-  /** Transform the input 2d point. Return as a new point or in the pre-allocated result (if result is given). */
+  /**
+   * Transform the input 2d point (using `Tp = M*p + o`).
+   * Return as a new point or in the pre-allocated result (if result is given).
+   */
   public multiplyPoint2d(point: XAndY, result?: Point2d): Point2d {
-    // Tx = Mx + o so we return Mx + o
     return Matrix3d.xyPlusMatrixTimesXY(this._origin, this._matrix, point, result);
   }
-  /** Transform the input 3d point. Return as a new point or in the pre-allocated result (if result is given). */
+  /**
+   * Transform the input 3d point (using `Tp = M*p + o`).
+   * Return as a new point or in the pre-allocated result (if result is given).
+   */
   public multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d {
     // Tx = Mx + o so we return Mx + o
     return Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
-  /** Transform the input 3d point in place (override the input point by the transformed point). */
+  /**
+   * Transform the input 3d point in place (using `Tp = M*p + o`).
+   * Return as a new point or in the pre-allocated result (if result is given).
+   */
   public multiplyXYAndZInPlace(point: XYAndZ): void {
-    // Tx = Mx + o so we override x by Mx + o
     return Matrix3d.xyzPlusMatrixTimesXYZInPlace(this._origin, this._matrix, point);
   }
-  /** Transform the input point. Return as a new point or in the pre-allocated result (if result is given). */
+  /**
+   * Transform the input 3d point (using `Tp = M*p + o`).
+   * Return as a new point or in the pre-allocated result (if result is given).
+   */
   public multiplyXYZ(x: number, y: number, z: number = 0, result?: Point3d): Point3d {
     // Tx = Mx + o so we return Mx + o
     return Matrix3d.xyzPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
@@ -423,7 +431,7 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, result);
   }
   /**
-   * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row. Now multiply
+   * Treat the 3x3 `matrix` and `origin` as upper 3x4 part of a 4x4 matrix, with 0001 as the final row. Now multiply
    * the transposed of this 4x4 matrix by Point4d given as xyzw. Return as a new point4d (`M*p` as first 3 elements
    * and `o*p + w` as last element where `p = (x,y,z)`) or in the pre-allocated result (if result is given).
    */
@@ -438,13 +446,13 @@ export class Transform implements BeJSONFunctions {
       result
     );
   }
-  /** For each point in the array, replace point by the transformed point (by `Tp = M*p + o`) */
+  /** For each point in the array, replace point by the transformed point (using `Tp = M*p + o`) */
   public multiplyPoint3dArrayInPlace(points: Point3d[]) {
     let point;
     for (point of points)
       Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, point);
   }
-  /** For each point in the 2d array, replace point by the transformed point (by `Tp = M*p + o`) */
+  /** For each point in the 2d array, replace point by the transformed point (using `Tp = M*p + o`) */
   public multiplyPoint3dArrayArrayInPlace(chains: Point3d[][]) {
     for (const chain of chains)
       this.multiplyPoint3dArrayInPlace(chain);
@@ -497,75 +505,23 @@ export class Transform implements BeJSONFunctions {
     );
   }
   /**
-   * *  for each point:   multiply    transform * point
-   * *  if result is given, resize to match source and replace each corresponding pi
-   * *  if result is not given, return a new array.
-   */
-  public multiplyInversePoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[] | undefined {
-    if (!this._matrix.computeCachedInverse(true))
-      return undefined;
-    const originX = this.origin.x;
-    const originY = this.origin.y;
-    const originZ = this.origin.z;
-    if (result) {
-      const n = Transform.matchArrayLengths(source, result, Point3d.createZero);
-      for (let i = 0; i < n; i++)
-        this._matrix.multiplyInverseXYZAsPoint3d(
-          source[i].x - originX,
-          source[i].y - originY,
-          source[i].z - originZ,
-          result[i]
-        );
-    }
-    result = [];
-    for (const p of source)
-      result.push(
-        this._matrix.multiplyInverseXYZAsPoint3d(
-          p.x - originX,
-          p.y - originY,
-          p.z - originZ
-        )!
-      );
-
-    return result;
-  }
-  /**
-   * * For each point in source: multiply transformInverse * point in place in the point.
-   * * Return false if not invertible.
-   */
-  public multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean {
-    if (!this._matrix.computeCachedInverse(true))
-      return false;
-    const originX = this.origin.x;
-    const originY = this.origin.y;
-    const originZ = this.origin.z;
-    const n = source.length;
-    for (let i = 0; i < n; i++)
-      this._matrix.multiplyInverseXYZAsPoint3d(
-        source[i].x - originX,
-        source[i].y - originY,
-        source[i].z - originZ,
-        source[i]
-      );
-    return true;
-  }
-  /**
-   * * Compute (if needed) the inverse of the matrix part, thereby ensuring inverse operations can complete.
-   * * Return true if matrix inverse completes.
+   * * Compute (if needed) the inverse of the `matrix` part of the Transform, thereby ensuring inverse
+   * operations can complete.
    * @param useCached If true, accept prior cached inverse if available.
+   * @returns `true` if matrix inverse completes, `false` otherwise.
    */
   public computeCachedInverse(useCached: boolean = true): boolean {
     return this._matrix.computeCachedInverse(useCached);
   }
   /**
-   * * If destination has more values than source, remove the extras.
-   * * If destination has fewer values, use the constructionFunction to create new ones.
-   * @param source array
-   * @param dest destination array, to  be modified to match source length
-   * @param constructionFunction function to call to create new entries.
+   * Match the length of destination array with the length of source array
+   * * If destination has more elements than source, remove the extra elements.
+   * * If destination has fewer elements than source, use `constructionFunction` to create new elements.
+   * *
+   * @param source the source array
+   * @param dest the destination array
+   * @param constructionFunction function to call to create new elements.
    */
-  // modify destination so it has non-null points for the same length as the source.
-  // (ASSUME existing elements of dest are non-null, and that parameters are given as either Point2d or Point3d arrays)
   public static matchArrayLengths(source: any[], dest: any[], constructionFunction: () => any): number {
     const numSource = source.length;
     const numDest = dest.length;
@@ -579,72 +535,146 @@ export class Transform implements BeJSONFunctions {
     return numSource;
   }
   /**
-   * * For each point:   multiply    transform * point
-   * * If result is given, resize to match source and replace each corresponding pi
-   * * If result is not given, return a new array.
+   * If for each point `p` we have `Tp = M*p + o = point` (where `point` is the transformed point), then
+   * `p = MInverse * (point - o)`. This function returns the array of original points `p[]` if `points`
+   * is the array of transformed point (`Tp = point` for each `p` and `point`).
+   * * If `results` is given, resize it to match the input `points` array and update it with original points `p[]`.
+   * * If `results` is not given, return a new array.
+   * * Returns `undefined` if the `matrix` part if this Transform is singular.
    */
-  public multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[] {
-    if (result) {
-      const n = Transform.matchArrayLengths(source, result, Point2d.createZero);
+  public multiplyInversePoint3dArray(points: Point3d[], results?: Point3d[]): Point3d[] | undefined {
+    if (!this._matrix.computeCachedInverse(true))
+      return undefined;
+    const originX = this.origin.x;
+    const originY = this.origin.y;
+    const originZ = this.origin.z;
+    if (results) {
+      const n = Transform.matchArrayLengths(points, results, Point3d.createZero);
       for (let i = 0; i < n; i++)
-        Matrix3d.xyPlusMatrixTimesXY(this._origin, this._matrix, source[i], result[i]);
+        this._matrix.multiplyInverseXYZAsPoint3d(
+          points[i].x - originX,
+          points[i].y - originY,
+          points[i].z - originZ,
+          results[i]
+        );
+    }
+    results = [];
+    for (const point of points)
+      results.push(
+        this._matrix.multiplyInverseXYZAsPoint3d(
+          point.x - originX,
+          point.y - originY,
+          point.z - originZ
+        )!
+      );
+    return results;
+  }
+  /**
+   * If for each point `p` we have `Tp = M*p + o = point` (where `point` is the transformed point), then
+   * `p = MInverse * (point - o)`. This function calculates the array of original points `p[]` if `points`
+   * is the array of transformed point (`Tp = point` for each `p` and `point`) and replaces `points`
+   * with the array of original points.
+   * * Returns `true` if the `matrix` part if this Transform is invertible and `false if singular.
+   */
+  public multiplyInversePoint3dArrayInPlace(points: Point3d[]): boolean {
+    if (!this._matrix.computeCachedInverse(true))
+      return false;
+    for (const point of points)
+      this._matrix.multiplyInverseXYZAsPoint3d(
+        point.x - this.origin.x,
+        point.y - this.origin.y,
+        point.z - this.origin.z,
+        point
+      );
+    return true;
+  }
+  /**
+   * Transform the input 2d point array (using `Tp = M*p + o`).
+   * * If `result` is given, resize it to match the input `points` array and update it with transformed points.
+   * * If `result` is not given, return a new array.
+   */
+  public multiplyPoint2dArray(points: Point2d[], result?: Point2d[]): Point2d[] {
+    if (result) {
+      const n = Transform.matchArrayLengths(points, result, Point2d.createZero);
+      for (let i = 0; i < n; i++)
+        Matrix3d.xyPlusMatrixTimesXY(this._origin, this._matrix, points[i], result[i]);
       return result;
     }
     result = [];
-    for (const p of source)
+    for (const p of points)
       result.push(Matrix3d.xyPlusMatrixTimesXY(this._origin, this._matrix, p));
     return result;
   }
   /**
-   * * For each point:   multiply    transform * point
-   * * If result is given, resize to match source and replace each corresponding pi
-   * * If result is not given, return a new array.
+   * Transform the input 3d point array (using `Tp = M*p + o`).
+   * * If `result` is given, resize it to match the input `points` array and update it with transformed points.
+   * * If `result` is not given, return a new array.
    */
-  public multiplyPoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[] {
+  public multiplyPoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[] {
     if (result) {
-      const n = Transform.matchArrayLengths(source, result, Point3d.createZero);
+      const n = Transform.matchArrayLengths(points, result, Point3d.createZero);
       for (let i = 0; i < n; i++)
-        Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, source[i], result[i]);
+        Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, points[i], result[i]);
       return result;
     }
     result = [];
-    for (const p of source)
+    for (const p of points)
       result.push(Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, p));
     return result;
   }
   /**
-   * Multiply the vector by the Matrix3d part of the transform.
-   * * The transform's origin is not used.
-   * * Return as new or result by usual optional result convention
+   * Multiply the vector by the `matrix` part of the Transform.
+   * * The `origin` part of Transform is not used.
+   * * If `result` is given, update it with the multiplication. Otherwise, create a new Vector3d.
    */
   public multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d {
     return this._matrix.multiplyVector(vector, result);
   }
   /**
-   * Multiply the vector in place by the Matrix3d part of the transform.
-   * * The transform's origin is not used.
+   * Multiply the vector by the `matrix` part of the Transform in place.
+   * * The `origin` part of Transform is not used.
    */
   public multiplyVectorInPlace(vector: Vector3d): void {
     this._matrix.multiplyVectorInPlace(vector);
   }
   /**
-   * Multiply the vector (x,y,z) by the Matrix3d part of the transform.
-   * * The transform's origin is not used.
-   * * Return as new or result by usual optional result convention
+   * Multiply the vector (x,y,z) by the `matrix` part of the Transform.
+   * * The `origin` part of Transform is not used.
+   * * If `result` is given, update it with the multiplication. Otherwise, create a new Vector3d.
    */
   public multiplyVectorXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d {
     return this._matrix.multiplyXYZ(x, y, z, result);
   }
-  /** Multiply this Transform times other Transform.
+  /**
+   * Calculate `transformA * transformB` and store it into the calling instance (`this`).
+   * * **Note:** If `transformA = [A   a]` and `transformB = [B   b]` then `transformA * transformB` is defined as
+   * `[A*B   Ab+a]`. See `multiplyTransformTransform` doc for math details.
+   * @param transformA first operand
+   * @param transformB second operand
+   */
+  public setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void {
+    Matrix3d.xyzPlusMatrixTimesXYZ(
+      transformA._origin,
+      transformA._matrix,
+      transformB._origin,
+      this._origin as Point3d
+    );
+    transformA._matrix.multiplyMatrixMatrix(transformB._matrix, this._matrix);
+  }
+  /**
+   * Multiply `this` Transform times `other` Transform.
+   * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as [A*B   Ab+a].
+   * That's because we create a 4x4 matrix for each Transform with the 3x3 `matrix` and `origin`
+   * as upper 3x4 part of a 4x4 matrix and 0001 as the final row. Then we multiply those two 4x4 matrixes:
    * ```
    * equation
    * \begin{matrix}
-   *    \text{`this` transform with matrix part }\bold{A}\text{ and translation }\bold{a} & \blockTransform{A}{a}\\
-   *    \text{`other` transform with matrix part }\bold{B}\text{ and translation part }\bold{b}\text{ promoted to block transform} & \blockTransform{B}{b} \\
+   *    \text{`this` Transform with `matrix` part }\bold{A}\text{ and `origin` part }\bold{a} & \blockTransform{A}{a}\\
+   *    \text{`other` Transform with `matrix` part }\bold{B}\text{ and `origin` part }\bold{b} & \blockTransform{B}{b} \\
    * \text{product}& \blockTransform{A}{a}\blockTransform{B}{b}=\blockTransform{AB}{Ab + a}
    * \end{matrix}
    * ```
-   * @param other right hand transform for multiplication.
+   * @param other the 'other` Transform to be multiplied to `this` Transform.
    * @param result optional preallocated result to reuse.
    */
   public multiplyTransformTransform(other: Transform, result?: Transform) {
@@ -657,30 +687,20 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * Multiply transformA * transformB, store to calling instance.
-   * @param transformA left operand
-   * @param transformB right operand
-   */
-  public setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void {
-    if (Transform._scratchPoint === undefined)
-      Transform._scratchPoint = Point3d.create();
-    Matrix3d.xyzPlusMatrixTimesXYZ(transformA._origin, transformA._matrix, transformB._origin, Transform._scratchPoint);
-    this._origin.setFrom(Transform._scratchPoint);
-    transformA._matrix.multiplyMatrixMatrix(transformB._matrix, this._matrix);
-  }
-  //   [Q A][R 0] = [QR A]
-  //   [0 1][0 1]   [0  1]
-  /**
-   * Multiply this Transform times other Matrix3d, with other considered to be a Transform with 0 translation.
+   * Multiply `this` Transform times `other` Matrix3d (considered to be a Transform with 0 `origin`).
+   * **Note:** If `this = [A   a]`, then we promote `other` matrix to be a Transform [B   0].
+   * Then `this * other` is defined as [A*B   a]. That's because we create a 4x4 matrix for each Transform
+   * with the 3x3 `matrix` and `origin` as upper 3x4 part of a 4x4 matrix and 0001 as the final row. Then we
+   * multiply those two 4x4 matrixes:
    * ```
    * equation
    * \begin{matrix}
-   *    \text{`this` transform with matrix part }\bold{A}\text{ and translation }\bold{b} & \blockTransform{B}{b}\\
-   *    \text{`other` matrix }\bold{B}\text{ promoted to block transform} & \blockTransform{B}{0} \\
+   *    \text{`this` Transform with `matrix` part }\bold{A}\text{ and `origin` part }\bold{a} & \blockTransform{A}{a}\\
+   *    \text{`other` matrix }\bold{B}\text{ promoted to block Transform} & \blockTransform{B}{0} \\
    * \text{product}& \blockTransform{A}{a}\blockTransform{B}{0}=\blockTransform{AB}{a}
    * \end{matrix}
    * ```
-   * @param other right hand Matrix3d for multiplication.
+   * @param other the `other` Matrix3d to be multiplied to `this` Transform.
    * @param result optional preallocated result to reuse.
    */
   public multiplyTransformMatrix3d(other: Matrix3d, result?: Transform): Transform {
@@ -694,15 +714,17 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * Return the range of the transformed corners.
+   * Return the Range of the transformed corners.
    * * The 8 corners are transformed individually.
-   * * Note that if there is anything other than translation and principal axis scaling in the transform, the volume of the range rotation will increase.
-   * * Hence to get a "tight" range on rotated geometry, a range computation must be made on the rotated geometry itself.
+   * * **Note:** Suppose you have a geometry, a range box around that geometry, and your Transform is a rotation.
+   * If you rotate the range box and recompute a new range box around the rotated range box, then the new range
+   * box will have a larger volume than the original range box. However, if you rotate the geometry itself and
+   * then recompute the range box, it will be a tighter range box around the rotated geometry. `multiplyRange`
+   * function creates the larger range box because it only has access to the range box and the geometry itself.
    */
   public multiplyRange(range: Range3d, result?: Range3d): Range3d {
     if (range.isNull)
       return range.clone(result);
-    // snag current values to allow aliasing.
     const lowX = range.low.x;
     const lowY = range.low.y;
     const lowZ = range.low.z;
@@ -721,9 +743,9 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * * Return a Transform which is the inverse of this transform.
-   * @param result optional pre-allocated result
-   * @return the inverse Transform, or undefined if the matrix is singular
+   * Return a Transform which is the inverse of `this` Transform.
+   * * If `transform = [M   o]` then `transformInverse = [MInverse   MInverse*-o]`
+   * * Return `undefined` if this Transform's matrix is singular.
    */
   public inverse(result?: Transform): Transform | undefined {
     const matrixInverse = this._matrix.inverse(result ? result._matrix : undefined);
@@ -740,28 +762,47 @@ export class Transform implements BeJSONFunctions {
     );
   }
   /**
-   * Initialize transforms that map each direction of a box (axis aligned) to `[0,1]`.
-   * * The corner coordinates do _not_ need to be in order in any of the x,y,z directions.
-   * * The npcToGlobalTransform (if supplied) maps 000 to the point named point000.
-   * * The npcToGlobalTransform (if supplied) maps 11 to the point named point000.
-   * * The globalToNpc transform is the inverse.
-   * @param min the "000" corner of the box
-   * @param max the "111" corner of the box
-   * @param npcToGlobal (object created by caller, re-initialized here) transform that carries 01 coordinates into the min,max box.
-   * @param globalToNpc (object created by caller, re-initialized here) transform that carries world coordinates into 01
+   * Initialize 2 Transforms: First Transform maps a box (axis aligned) specified by `min` and `max` to
+   * the unit box specified by 000 and 111 and inverse of it. Second Transform is the reverse of first.
+   * @param min the min corner of the box
+   * @param max the max corner of the box
+   * @param npcToGlobal maps global (the unit box specified by 000 and 111) to NPC (a box specified by `min`
+   * and `max`). Object created by caller, re-initialized here.
+   * @param globalToNpc maps NPC (a box specified by `min` and `max`) to global (the unit box specified by
+   * 000 and 111). Object created by caller, re-initialized here.
+   * * NPC stands for `Normalized Projection Coordinate`
    */
-  public static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform) {
+  public static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform): void {
     const diag = max.minus(min);
-    if (diag.x === 0.0) diag.x = 1.0;
-    if (diag.y === 0.0) diag.y = 1.0;
-    if (diag.z === 0.0) diag.z = 1.0;
+    if (diag.x === 0.0)
+      diag.x = 1.0;
+    if (diag.y === 0.0)
+      diag.y = 1.0;
+    if (diag.z === 0.0)
+      diag.z = 1.0;
     const rMatrix = new Matrix3d();
+    /**
+     *               [diag.x    0       0      min.x]
+     * npcToGlobal = [  0     diag.y    0      min.y]
+     *               [  0       0     diag.y   min.z]
+     *
+     * npcToGlobal * 0 = min
+     * npcToGlobal * 1 = diag + min = max
+     */
     if (npcToGlobal) {
       Matrix3d.createScale(diag.x, diag.y, diag.z, rMatrix);
       Transform.createOriginAndMatrix(min, rMatrix, npcToGlobal);
     }
+    /**
+     *               [1/diag.x      0         0      -min.x/diag.x]
+     * globalToNpc = [  0       1/diag.y      0      -min.y/diag.y]
+     *               [  0         0       1/diag.y   -min.z/diag.z]
+     *
+     * globalToNpc * min = min/diag - min/diag = 0
+     * globalToNpc * max = max/diag - min/diag = diag/diag = 1
+     */
     if (globalToNpc) {
-      const origin = new Point3d(- min.x / diag.x, - min.y / diag.y, - min.z / diag.z);
+      const origin = new Point3d(-min.x / diag.x, -min.y / diag.y, -min.z / diag.z);
       Matrix3d.createScale(1.0 / diag.x, 1.0 / diag.y, 1.0 / diag.z, rMatrix);
       Transform.createOriginAndMatrix(origin, rMatrix, globalToNpc);
     }

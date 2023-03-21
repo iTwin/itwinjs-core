@@ -796,7 +796,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
-  /** @internal */
+  /** Returns true if solar shadow display is enabled by this display style. */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }

@@ -1457,7 +1457,6 @@ export class ColorDef {
         b: number;
         t: number;
     };
-    // @internal (undocumented)
     static computeTbgr(val?: string | ColorDefProps): ColorDefProps;
     static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): ColorDefProps;
     static computeTbgrFromHSL(h: number, s: number, l: number, transparency?: number): ColorDefProps;
@@ -2080,9 +2079,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     toggleGroundPlane(display?: boolean): void;
     toggleSkyBox(display?: boolean): void;
-    // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
-    // @internal (undocumented)
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
@@ -2228,7 +2225,6 @@ export class DisplayStyleSettings {
     synchMapImagery(): void;
     get timePoint(): number | undefined;
     set timePoint(timePoint: number | undefined);
-    // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
@@ -3112,7 +3108,6 @@ export enum FeatureIndexType {
 // @public
 export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
-    // @internal (undocumented)
     get alwaysDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _alwaysDrawn: Id64.Uint32Set;
@@ -3167,7 +3162,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _modelOverrides: Id64.Uint32Map<FeatureAppearance>;
     // @internal
     protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
-    // @internal (undocumented)
     get neverDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _neverDrawn: Id64.Uint32Set;

@@ -190,6 +190,7 @@ export class HyperModeling {
    */
   public static async isSupportedForIModel(imodel: IModelConnection): Promise<boolean> {
     try {
+      // eslint-disable-next-line deprecation/deprecation
       const nRows = await imodel.queryRowCount("SELECT ECInstanceId FROM bis.SectionDrawingLocation LIMIT 1");
       return nRows > 0;
     } catch {

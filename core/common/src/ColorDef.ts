@@ -65,7 +65,9 @@ export class ColorDef {
     return this.fromTbgr(this.computeTbgr(val));
   }
 
-  /** @internal */
+  /** Compute the 0xTTBBGGRR value corresponding to the specified representation of a color.
+   * @see [[fromString]] for a description of valid string representations.
+   */
   public static computeTbgr(val?: string | ColorDefProps): ColorDefProps {
     switch (typeof val) {
       case "number":
