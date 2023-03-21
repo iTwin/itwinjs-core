@@ -712,10 +712,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /**
    * Return an array containing only the curve primitives.
-   * * This DEFAULT simply pushes `this` to the collectorArray.
-   * * CurvePrimitiveWithDistanceIndex optionally collects its members.
+   * * This DEFAULT implementation simply pushes `this` to the collectorArray.
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
-   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   * @param smallestPossiblePrimitives if true, a [[CurvePrimitiveWithDistanceIndex]] recurses on its (otherwise hidden) children. If false, it returns only itself.
+   * @param explodeLinestrings if true, push a [[LineSegment3d]] for each segment of a [[LineString3d]]. If false, push only the [[LineString3d]].
    */
   public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings: boolean = false) {
     collectorArray.push(this);
@@ -723,7 +723,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
 
   /**
    * Return an array containing only the curve primitives.
-   * * This DEFAULT captures the default result construction and calls collectCurvePrimitivesGo
+   * * This DEFAULT implementation captures the optional collector and calls [[collectCurvePrimitivesGo]].
    * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without clearing the array.)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
