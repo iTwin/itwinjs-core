@@ -239,8 +239,9 @@ export interface CachedIModelCoordinatesResponseProps {
   missing?: XYZProps[];
 }
 
-/** An object capable of communicating with the backend to convert between coordinates in a geographic (lat/long) coordinate system and coordinates in an [[IModelConnection]]'s own coordinate system.
+/** An object capable of communicating with the backend to convert between coordinates in a geographic coordinate system and coordinates in an [[IModelConnection]]'s own coordinate system.
  * @see [[GeoServices.getConverter]] to obtain a converter.
+ * @see [GeographicCRS]($common) for more information about geographic coordinate reference systems.
  * @public
  */
 export class GeoConverter {
