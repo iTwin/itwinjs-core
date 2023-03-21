@@ -3506,14 +3506,14 @@ export interface GenericAbortSignal {
 export class GeoConverter {
     // @internal
     constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
-    geoCoordsToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]>;
+    convertFromIModelCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]>;
+    convertToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]>;
     // @internal (undocumented)
     getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps;
     // @internal (undocumented)
     getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps>;
     // @internal (undocumented)
     getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps>;
-    iModelCoordsToGeoCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]>;
 }
 
 // @beta
@@ -14407,7 +14407,6 @@ export abstract class ViewState extends ElementState {
     static getStandardViewMatrix(id: StandardViewId): Matrix3d;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     getTargetPoint(result?: Point3d): Point3d;
-    // (undocumented)
     getUpVector(point: Point3d): Vector3d;
     getViewClip(): ClipVector | undefined;
     abstract getViewedExtents(): AxisAlignedBox3d;
