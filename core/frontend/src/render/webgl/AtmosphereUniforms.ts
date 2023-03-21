@@ -11,7 +11,7 @@ import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
 import { FrustumUniformType } from "./FrustumUniforms";
 
-export const MAX_SAMPLE_POINTS = 20; // Maximum number of sample points to be used for the in-scattering and out-scattering computations.
+export const MAX_SAMPLE_POINTS = 40; // Maximum number of sample points to be used for the in-scattering and out-scattering computations.
 
 export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _atmosphere?: Atmosphere.Settings;
