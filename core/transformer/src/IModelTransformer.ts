@@ -305,7 +305,6 @@ export class IModelTransformer extends IModelExportHandler {
       this.importer = new IModelImporter(target, { preserveElementIdsForFiltering: this._options.preserveElementIdsForFiltering });
     } else {
       this.importer = target;
-      /* eslint-disable deprecation/deprecation */
       if (Boolean(this._options.preserveElementIdsForFiltering) !== this.importer.preserveElementIdsForFiltering) {
         Logger.logWarning(
           loggerCategory,
@@ -317,7 +316,6 @@ export class IModelTransformer extends IModelExportHandler {
         );
         this.importer.preserveElementIdsForFiltering = Boolean(this._options.preserveElementIdsForFiltering);
       }
-      /* eslint-enable deprecation/deprecation */
     }
     this.targetDb = this.importer.targetDb;
     // create the IModelCloneContext, it must be initialized later
