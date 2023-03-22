@@ -17,7 +17,6 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export class ModelSelectorState extends ElementState {
-  /** @internal */
   public static override get className() { return "ModelSelector"; }
 
   private readonly _models = new ObservableSet<string>();

@@ -18,6 +18,7 @@ const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -
 async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions, callback?: (row: any) => void) {
   ecdb.saveChanges();
   let rowCount: number = 0;
+  // eslint-disable-next-line deprecation/deprecation
   for await (const row of ecdb.query(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rowCount++;
     if (callback)
@@ -28,6 +29,7 @@ async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: Q
 async function queryRows(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions) {
   ecdb.saveChanges();
   const rows = [];
+  // eslint-disable-next-line deprecation/deprecation
   for await (const row of ecdb.query(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rows.push(row);
   }
@@ -35,6 +37,7 @@ async function queryRows(ecdb: ECDb, ecsql: string, params?: QueryBinder, config
 }
 async function queryCount(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions): Promise<number> {
   ecdb.saveChanges();
+  // eslint-disable-next-line deprecation/deprecation
   for await (const row of ecdb.query(`SELECT COUNT(*) FROM (${ecsql})`, params, { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
     return row[0] as number;
   }
@@ -180,9 +183,11 @@ describe("ECSqlStatement", () => {
       ecdb.clearStatementCache();
       const rca = await queryRows(ecdb, "SELECT count(*) as nRows FROM ts.Foo");
       assert.equal(rca[0].nRows, 100); // expe
+      // eslint-disable-next-line deprecation/deprecation
       const rc = await ecdb.queryRowCount("SELECT * FROM ts.Foo");
       assert.equal(rc, 100); // expe
       let rowNo = 0;
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of ecdb.query("SELECT * FROM ts.Foo", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.n, rowNo + 1);
         rowNo = rowNo + 1;
@@ -219,6 +224,7 @@ describe("ECSqlStatement", () => {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
             options.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+            // eslint-disable-next-line deprecation/deprecation
             for await (const _row of ecdb.restartQuery("tag", "SELECT * FROM ts.Foo", undefined, options.getOptions())) {
               rowCount++;
             }
@@ -268,6 +274,7 @@ describe("ECSqlStatement", () => {
       ecdb.clearStatementCache();
       for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) { // eslint-disable-line @typescript-eslint/no-unused-vars
         let rowNo = 1;
+        // eslint-disable-next-line deprecation/deprecation
         for await (const row of ecdb.query("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", new QueryBinder().bindInt(1, 123).bindInt(2, 30), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           assert.equal(row.n, rowNo);
           rowNo = rowNo + 1;
@@ -292,15 +299,18 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.cnt, 3);
       }
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (?, ?, ?)", new QueryBinder().bindInt(1, 1).bindInt(2, 2).bindInt(3, 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.cnt, 3);
       }
       const slm = new SequentialLogMatcher();
       slm.append().error().category("ECDb").message("No parameter index found for parameter name: d.");
       try {
+        // eslint-disable-next-line deprecation/deprecation
         for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3).bindInt("d", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           assert.equal(row.cnt, 3);
         }
@@ -324,6 +334,7 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of ecdb.query("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", new QueryBinder().bindInt(1, 1), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.hexId, row.id);
         assert.equal(row.hexId, row.idhex);
@@ -624,6 +635,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, new QueryBinder().bindString(1, dtStr)), 1);
         stmt.bindString(1, dtStr);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -648,6 +660,7 @@ describe("ECSqlStatement", () => {
         assert.throw(() => stmt.bindInteger(1, num));
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([num])), 0);
         assert.throw(() => stmt.bindValue(1, num));
         stmt.clearBindings();
@@ -664,6 +677,7 @@ describe("ECSqlStatement", () => {
         assert.throw(() => stmt.bindValue(1, str));
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([str])), 0);
 
         assert.throw(() => stmt.getBinder(1).bind(str));
@@ -675,6 +689,7 @@ describe("ECSqlStatement", () => {
         assert.throw(() => stmt.bindString(1, hexStr));
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([hexStr])), 0);
 
         assert.throw(() => stmt.bindValue(1, hexStr));
@@ -699,6 +714,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([hexStr])), 0);
 
         stmt.bindValues([hexStr]);
@@ -731,6 +747,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([str])), 0);
 
         stmt.bindValue(1, str);
@@ -753,6 +770,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([num])), 0);
 
         stmt.bindValue(1, num);
@@ -775,6 +793,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
+        // eslint-disable-next-line deprecation/deprecation
         assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([dt])), 0);
 
         stmt.bindValue(1, dt);
