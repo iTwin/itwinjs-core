@@ -50,7 +50,7 @@ export class BatchedTile extends Tile {
   }
 
   public selectTiles(selected: BatchedTile[], args: TileDrawArgs, numSkipped: number): SelectParent {
-    let vis = this.computeVisibility(args);
+    const vis = this.computeVisibility(args);
     if (TileVisibility.OutsideFrustum === vis)
       return SelectParent.No;
 
@@ -106,14 +106,14 @@ export class BatchedTile extends Tile {
     // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
     // If we previously loaded and later unloaded content for this tile to free memory, don't force it to reload its content - proceed to children.
     const maximumLevelsToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;
-    let canSkipThisTile = (this._hadGraphics && !this.hasGraphics) /*|| this.depth < this.iModelTree.maxInitialTilesToSkip*/;
+    let canSkipThisTile = (this._hadGraphics && !this.hasGraphics) /* || this.depth < this.iModelTree.maxInitialTilesToSkip */ ;
     if (canSkipThisTile) {
       numSkipped = 1;
     } else {
-      canSkipThisTile = this.isReady || this.isParentDisplayable /*|| this.depth < this.iModelTree.maxInitialTilesToSkip*/;
+      canSkipThisTile = this.isReady || this.isParentDisplayable /* || this.depth < this.iModelTree.maxInitialTilesToSkip */ ;
       if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
         // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
-        const isNotReady = !this.isReady && !this.hasGraphics /*&& !this.hasSizeMultiplier*/;
+        const isNotReady = !this.isReady && !this.hasGraphics /* && !this.hasSizeMultiplier */ ;
         if (isNotReady) {
           if (numSkipped >= maximumLevelsToSkip)
             canSkipThisTile = false;
