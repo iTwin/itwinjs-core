@@ -10,8 +10,8 @@
 /* eslint-disable quote-props */
 
 /**
- * Utilities to compare json objects by search through properties.
- * @internal
+ * Utilities to compare json objects by searching through their properties.
+ * @public
  */
 export class DeepCompare {
   /** Statistical accumulations during searchers. */
@@ -25,22 +25,23 @@ export class DeepCompare {
     undefined: 0,
   };
   /** Counts of property names encountered during various searches. */
-  public propertyCounts: { [key: string]: any } = {};
+  public propertyCounts: { [key: string]: number } = {};
   /** Array of error descriptions. */
   public errorTracker: any[] = [];
   /** relative tolerance for declaring numeric values equal. */
   public numberRelTol: number;
+  /** Construct comparison object with relative tolerance. */
   public constructor(numberRelTol = 1.0e-12) { this.numberRelTol = numberRelTol; }
 
-  /** test if _a and _b are within tolerance.
+  /** Test if a and b are within tolerance.
    * * If not, push error message to errorTracker.
    */
-  public compareNumber(_a: number, _b: number) {
-    if (Math.abs(_b - _a) < this.numberRelTol * (1 + Math.abs(_a) + Math.abs(_b))) {
+  public compareNumber(a: number, b: number) {
+    if (Math.abs(b - a) < this.numberRelTol * (1 + Math.abs(a) + Math.abs(b))) {
       return this.announce(true);
     } else {
-      this.errorTracker.unshift(_b);
-      this.errorTracker.unshift(_a);
+      this.errorTracker.unshift(b);
+      this.errorTracker.unshift(a);
       this.errorTracker.unshift(`In ${this.errorTracker[this.errorTracker.length - 1]} property: Mismatched values`);
       return this.announce(false);
     }
@@ -154,8 +155,7 @@ export class DeepCompare {
   private compareInternal(a: any, b: any): boolean {
     if (typeof a !== typeof b) {
       return this.announce(false);
-    }
-    if ((typeof a === "number") && (typeof b === "number")) {
+    } else if ((typeof a === "number") && (typeof b === "number")) {
       this.typeCounts.numbers++;
       return this.compareNumber(a, b);
     } else if (Array.isArray(a) && Array.isArray(b)) {

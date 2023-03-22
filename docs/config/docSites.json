@@ -52,8 +52,13 @@
       {
         "version": "v2.19.0",
         "archivedPath": "/v2"
+      },
+      {
+        "version": "v3.6.1",
+        "archivedPath": "/v3"
       }
     ],
+    "currentVersion": "v4.x",
     "packageAliases": {
       "analytical-backend": "analytical-backend",
       "appui-abstract": "appui-abstract",

@@ -102,6 +102,7 @@ describe("imodel-transformer", () => {
       // do two queries because querying abstract GeometricElement won't contain the category
       const sum = (arr: number[]) => arr.reduce((prev, x) => prev + x, 0);
       return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
+        // eslint-disable-next-line deprecation/deprecation
         const queryResult = await db.query(
           `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
           QueryBinder.from({ category: testCategory })

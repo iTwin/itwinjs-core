@@ -189,6 +189,8 @@ export interface AttachToViewportArgs {
    * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
    */
   drawingToSheetTransform?: Transform;
+  /** A function that can be invoked to notify the viewport that its feature symbology overrides should be recreated. */
+  invalidateSymbologyOverrides: () => void;
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
@@ -201,7 +203,6 @@ export interface AttachToViewportArgs {
  * @extensions
  */
 export abstract class ViewState extends ElementState {
-  /** @internal */
   public static override get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
@@ -511,7 +512,6 @@ export abstract class ViewState extends ElementState {
 
   /** Execute a function against each [[TileTreeReference]] associated with this view.
    * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
-   * @internal
    */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
     this.forEachModelTreeRef(func);
@@ -1042,7 +1042,7 @@ export abstract class ViewState extends ElementState {
     } else if (undefined !== options?.paddingPercent) {
       let left, right, top, bottom;
       const padding = options.paddingPercent;
-      if (typeof padding === "number"){
+      if (typeof padding === "number") {
         left = right = top = bottom = padding;
       } else {
         left = padding.left ?? 0;
@@ -1167,6 +1167,10 @@ export abstract class ViewState extends ElementState {
     return allowView;
   }
 
+  /** Compute the vector in the "up" direction of a specific point in world space.
+   * This is typically a unit Z vector. However, if the point is outside of the iModel's project extents and using ellipsoid [[globeMode]], an up-vector
+   * will be computed relative to the surface of the ellipsoid at that point.
+   */
   public getUpVector(point: Point3d): Vector3d {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.iModel.projectExtents.containsPoint(point))
       return Vector3d.unitZ();
@@ -1378,7 +1382,6 @@ export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
   private _environmentDecorations?: EnvironmentDecorations;
-  /** @internal */
   public static override get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
   protected _cameraOn: boolean;
@@ -1468,7 +1471,7 @@ export abstract class ViewState3d extends ViewState {
     return val;
   }
 
-  /** @internal */
+  /** See [[ViewState.is3d]]. */
   public is3d(): this is ViewState3d { return true; }
 
   /** @internal */
@@ -1793,22 +1796,21 @@ export abstract class ViewState3d extends ViewState {
     if (!yVec) // up vector zero length?
       return ViewStatus.InvalidUpVector;
 
+    const minFrontDist = this.minimumFrontDistance();
     let zVec: Vector3d;
     let focusDist: number;
     if (args.targetPoint) {
       zVec = Vector3d.createStartEnd(args.targetPoint, eye); // z defined by direction from eye to target
       focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
+      if (focusDist <= minFrontDist) { // eye and target are too close together
+        args.opts?.onExtentsError?.(ViewStatus.InvalidTargetPoint);
+        return ViewStatus.InvalidTargetPoint;
+      }
     } else {
       zVec = Vector3d.createFrom(args.viewDirection).negate();
       if (!zVec.normalizeInPlace())
         return ViewStatus.InvalidDirection;
       focusDist = this.getFocusDistance();
-    }
-    const minFrontDist = this.minimumFrontDistance();
-
-    if (focusDist <= minFrontDist) { // eye and target are too close together
-      args.opts?.onExtentsError?.(ViewStatus.InvalidTargetPoint);
-      return ViewStatus.InvalidTargetPoint;
     }
 
     const xVec = new Vector3d();
@@ -2250,7 +2252,6 @@ export abstract class ViewState3d extends ViewState {
  */
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
-  /** @internal */
   public static override get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
   public readonly delta: Point2d;
@@ -2289,7 +2290,7 @@ export abstract class ViewState2d extends ViewState {
     return val;
   }
 
-  /** @internal */
+  /** See [[ViewState.is3d]]. */
   public is3d(): this is ViewState3d { return false; }
 
   /** @internal */

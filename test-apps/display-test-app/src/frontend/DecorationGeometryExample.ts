@@ -154,7 +154,7 @@ class GeometryDecorator {
   }
 
   private addCone(cx: number, cy: number = 0): void {
-    const cone = Cone.createAxisPoints(new Point3d(cx, cy + 0.5, 0), new Point3d(cx, cy + 0.5, 1), 0.5, 0.25, true);
+    const cone = Cone.createAxisPoints(new Point3d(cx + 0.5, cy + 0.5, 0), new Point3d(cx + 0.5, cy + 0.5, 1), 0.5, 0.25, true);
     if (cone)
       this.addDecorator((builder) => builder.addSolidPrimitive(cone));
   }
@@ -178,7 +178,7 @@ class GeometryDecorator {
       builder.addSolidPrimitive(sphere);
 
       builder.activatePickableId(coneId);
-      const cone = Cone.createAxisPoints(new Point3d(9, y + 0.5, 0), new Point3d(9, y + 0.5, 1), 0.5, 0.25, true);
+      const cone = Cone.createAxisPoints(new Point3d(9.5, y + 0.5, 0), new Point3d(9.5, y + 0.5, 1), 0.5, 0.25, true);
       assert(undefined !== cone);
       builder.addSolidPrimitive(cone);
     });
