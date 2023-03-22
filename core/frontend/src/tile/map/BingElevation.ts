@@ -122,7 +122,7 @@ export class BingElevationProvider {
     const range = iModel.projectExtents.clone();
 
     // Expand for project surroundings.
-    range.expandInPlace(1000.);
+    range.expandInPlace(1000);
     for (const corner of range.corners()) {
       const carto = iModel.spatialToCartographicFromEcef(corner);
       latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
