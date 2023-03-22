@@ -47,7 +47,7 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
       expr2 = -1.0;
     if (expr2 > 1.0)
       expr2 = 1.0;
-    const expr3 = Angle.degreesToRadians(240.);
+    const expr3 = Angle.degreesToRadians(240);
 
     return Math.asin(expr1 * Math.cos(Math.acos(expr2) / 3. + expr3));
   }
@@ -83,7 +83,7 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
       m = Math.tan(phi) / (3.0 * xc2);
       const m2x4 = m * m * xc2 * xc2;
       const correction = xc * m2x4 * (
-        (9. / 10.) + m2x4 * (
+        (9. / 10) + m2x4 * (
           -(9. / 8.) + m2x4 * (
             +(729. / 208.) + m2x4 *
             -(32805. / 2176.))));
