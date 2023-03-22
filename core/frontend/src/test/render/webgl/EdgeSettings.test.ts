@@ -66,7 +66,7 @@ describe("EdgeSettings", () => {
       },
       {
         // Nonsense LinePixels => solid
-        settings: makeSettings(makeStyle(undefined, undefined, 1234321), makeStyle(undefined, undefined, 4321234)),
+        settings: makeSettings(makeStyle(undefined, undefined, 1234321 as LinePixels), makeStyle(undefined, undefined, 4321234 as LinePixels)),
         expected: makeExpected(undefined, undefined, LinePixels.Solid, undefined, LinePixels.Solid),
       },
       {

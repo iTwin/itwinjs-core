@@ -42,10 +42,10 @@ describe("ThematicDisplay", () => {
 
     // check if setting bad values for displayMode, gradient mode, and gradient color scheme yields expected defaults
     let badThematicProps: ThematicDisplayProps = {
-      displayMode: 99999,
+      displayMode: 99999 as ThematicDisplayMode,
       gradientSettings: {
-        mode: 99999,
-        colorScheme: 99999,
+        mode: 99999 as ThematicGradientMode,
+        colorScheme: 99999 as ThematicGradientColorScheme,
       },
     };
     let td = ThematicDisplay.fromJSON(badThematicProps);
