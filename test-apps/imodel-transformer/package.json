@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/projects-client": "^0.6.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",

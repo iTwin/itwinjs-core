@@ -53,7 +53,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
