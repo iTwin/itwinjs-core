@@ -49,7 +49,8 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   }
 
   public override getAppearanceProvider(): FeatureAppearanceProvider | undefined {
-    return this._onModelSelectorChanged ? this : undefined;
+    // ###TODO model table is broken in exporter on diborra/clipped-tiles - modelId is always zero in getFeatureAppearance. Fix.
+    return undefined; // this._onModelSelectorChanged ? this : undefined;
   }
 
   public getFeatureAppearance(
