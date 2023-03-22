@@ -18,6 +18,8 @@ export interface BatchedTileParams extends TileParams {
   childrenProps: Tileset3dSchema.Tile[] | undefined;
 }
 
+let channel: TileRequestChannel | undefined;
+
 /** @internal */
 export class BatchedTile extends Tile {
   private readonly _childrenProps?: Tileset3dSchema.Tile[];
@@ -197,7 +199,12 @@ export class BatchedTile extends Tile {
   }
 
   public override get channel(): TileRequestChannel {
-    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-batched-models");
+    if (!channel) {
+      channel = new TileRequestChannel("itwinjs-batched-models", 20);
+      IModelApp.tileAdmin.channels.add(channel);
+    }
+
+    return channel;
   }
 
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
