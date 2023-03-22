@@ -6,8 +6,8 @@
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GltfReaderProps, GraphicBuilder, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileParams, TileRequest,
-  TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
+  GltfReaderProps, GraphicBuilder, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, SelectParent, Tile, TileBoundingBoxes, TileContent,
+  TileDrawArgs, TileLoadStatus, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
@@ -31,8 +31,11 @@ export class BatchedTile extends Tile {
     if (params.childrenProps?.length)
       this._childrenProps = params.childrenProps;
 
-    if (!this.contentId)
+    if (!this.contentId) {
       this.setIsReady();
+      // mark "undisplayable"
+      this._maximumSize = 0;
+    }
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -44,38 +47,132 @@ export class BatchedTile extends Tile {
     return RealityTileLoader.computeTileLocationPriority(this, viewports, this.tree.iModelTransform);
   }
 
-  public selectTiles(selected: BatchedTile[], args: TileDrawArgs): void {
-    const vis = this.computeVisibility(args);
+  public selectTiles(selected: BatchedTile[], args: TileDrawArgs, numSkipped: number): SelectParent {
+    let vis = this.computeVisibility(args);
     if (TileVisibility.OutsideFrustum === vis)
-      return;
+      return SelectParent.No;
 
-    // ###TODO proper tile refinement. Currently we simply load each level of the tree in succession until we find a tile that
-    // meets screen space error. Moreover, while we wait for children to load we stop displaying the parent.
-    // Prefer to skip some levels where appropriate.
-    // More importantly, fix tile tree structure so that children can be substituted for (portions of) parents more quickly, especially near the camera
-    // (need non-overlapping child volumes).
-    if (!this.isReady) {
-      args.insertMissing(this);
-      return;
+    if (TileVisibility.Visible === vis) {
+      // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
+      if (!this.isReady)
+        args.insertMissing(this);
+
+      if (this.hasGraphics) {
+        // It can be drawn - select it
+        args.markReady(this);
+        selected.push(this);
+      } else if (!this.isReady) {
+        // It can't be drawn. Try to draw children in its place; otherwise draw the parent.
+        // Do not load/request the children for this purpose.
+        const initialSize = selected.length;
+        const kids = this._batchedChildren;
+        if (undefined === kids)
+          return SelectParent.Yes;
+
+        // Find any descendant to draw, until we exceed max initial tiles to skip.
+        // if (this.depth < this.iModelTree.maxInitialTilesToSkip) {
+        //   for (const kid of kids) {
+        //     if (SelectParent.Yes === kid.selectTiles(selected, args, numSkipped)) {
+        //       selected.length = initialSize;
+        //       return SelectParent.Yes;
+        //     }
+
+        //     return SelectParent.No;
+        //   }
+        // }
+
+        // If all visible direct children can be drawn, draw them.
+        for (const kid of kids) {
+          if (TileVisibility.OutsideFrustum !== kid.computeVisibility(args)) {
+            if (!kid.hasGraphics) {
+              selected.length = initialSize;
+              return SelectParent.Yes;
+            } else {
+              selected.push(kid);
+            }
+          }
+        }
+
+        args.markUsed(this);
+      }
+
+      // We're drawing either this tile, or its direct children.
+      return SelectParent.No;
     }
 
-    if (TileVisibility.Visible === vis && this.hasGraphics) {
-      args.markReady(this);
-      selected.push(this);
-      return;
+    // This tile is too coarse to draw. Try to draw something more appropriate.
+    // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
+    // If we previously loaded and later unloaded content for this tile to free memory, don't force it to reload its content - proceed to children.
+    const maximumLevelsToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;
+    let canSkipThisTile = (this._hadGraphics && !this.hasGraphics) /*|| this.depth < this.iModelTree.maxInitialTilesToSkip*/;
+    if (canSkipThisTile) {
+      numSkipped = 1;
+    } else {
+      canSkipThisTile = this.isReady || this.isParentDisplayable /*|| this.depth < this.iModelTree.maxInitialTilesToSkip*/;
+      if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
+        // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
+        const isNotReady = !this.isReady && !this.hasGraphics /*&& !this.hasSizeMultiplier*/;
+        if (isNotReady) {
+          if (numSkipped >= maximumLevelsToSkip)
+            canSkipThisTile = false;
+          else
+            numSkipped += 1;
+        }
+      }
     }
 
-    args.markUsed(this);
+    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+    const children = canSkipThisTile ? this._batchedChildren : undefined;
+    if (canSkipThisTile && TileTreeLoadStatus.Loading === childrenLoadStatus) {
+      args.markChildrenLoading();
+      args.markUsed(this);
+    }
+
+    if (undefined !== children) {
+      // If we are the root tile and we are not displayable, then we want to draw *any* currently available children in our place, or else we would draw nothing.
+      // Otherwise, if we want to draw children in our place, we should wait for *all* of them to load, or else we would show missing chunks where not-yet-loaded children belong.
+      const isUndisplayableRootTile = this.isUndisplayableRootTile;
+      args.markUsed(this);
+      let drawChildren = true;
+      const initialSize = selected.length;
+      for (const child of children) {
+        // NB: We must continue iterating children so that they can be requested if missing.
+        if (SelectParent.Yes === child.selectTiles(selected, args, numSkipped)) {
+          if (child.loadStatus === TileLoadStatus.NotFound) {
+            // At least one child we want to draw failed to load. e.g., we reached max depth of map tile tree. Draw parent instead.
+            drawChildren = canSkipThisTile = false;
+          } else {
+            // At least one child we want to draw is not yet loaded. Wait for it to load before drawing it and its siblings, unless we have nothing to draw in their place.
+            drawChildren = isUndisplayableRootTile;
+          }
+        }
+      }
+
+      if (drawChildren)
+        return SelectParent.No;
+
+      // Some types of tiles (like maps) allow the ready children to be drawn on top of the parent while other children are not yet loaded.
+      if (args.parentsAndChildrenExclusive)
+        selected.length = initialSize;
+    }
+
     if (this.isReady) {
-      const childrenStatus = this.loadChildren();
-      if (TileTreeLoadStatus.Loading === childrenStatus)
-        args.markChildrenLoading();
+      if (this.hasGraphics) {
+        selected.push(this);
+        if (!canSkipThisTile) {
+          // This tile is too coarse, but we require loading it before we can start loading higher-res children.
+          args.markReady(this);
+        }
+      }
 
-      const children = this._batchedChildren;
-      if (children)
-        for (const child of children)
-          child.selectTiles(selected, args);
+      return SelectParent.No;
     }
+
+    // This tile is not ready to be drawn. Request it *only* if we cannot skip it.
+    if (!canSkipThisTile)
+      args.insertMissing(this);
+
+    return this.isParentDisplayable ? SelectParent.Yes : SelectParent.No;
   }
 
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
