@@ -110,7 +110,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     maxDistClamp?: number;
   }
 
-  /** Parameters to define consant level of detail mapping mode, a mode of texture coordinate generation which dynamically creates
+  /** Parameters to define constant level of detail mapping mode, a mode of texture coordinate generation which dynamically creates
    * texture cooprdinates so that the level of detail of the texture in the rendered image remains somewhat constant. */
   export interface ConstantLodParams {
     /** The number of times the texture is repeated.  Increasing this will make the texture pattern appear smaller, decreasing it will make it larger. */
