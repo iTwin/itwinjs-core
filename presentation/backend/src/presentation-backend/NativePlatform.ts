@@ -10,7 +10,7 @@ import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
-  DiagnosticsScopeLogs, NodeKey, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
+  DiagnosticsScopeLogs, NodeKey, PresentationError, PresentationStatus, UpdateInfo, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { HierarchyCacheMode } from "./PresentationManager";
 
@@ -83,8 +83,7 @@ export interface NativePlatformDefinition extends IDisposable {
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValue): NativePlatformResponse<void>;
   unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
-  getUpdateInfo(): NativePlatformResponse<UpdateInfoJSON | undefined>;
-  updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKey, isExpanded?: boolean, instanceFilters?: string[] }>): NativePlatformResponse<void>;
+  getUpdateInfo(): NativePlatformResponse<UpdateInfo | undefined>;
 }
 
 /** @internal */
@@ -169,13 +168,13 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return imodel.nativeDb;
     }
     public getRulesets(rulesetId: string) {
-      return this.handleResult(this._nativeAddon.getRulesets(rulesetId));
+      return this.handleResult<string>(this._nativeAddon.getRulesets(rulesetId));
     }
     public addRuleset(serializedRulesetJson: string) {
-      return this.handleResult(this._nativeAddon.addRuleset(serializedRulesetJson));
+      return this.handleResult<string>(this._nativeAddon.addRuleset(serializedRulesetJson));
     }
     public removeRuleset(rulesetId: string, hash: string) {
-      return this.handleResult(this._nativeAddon.removeRuleset(rulesetId, hash));
+      return this.handleResult<boolean>(this._nativeAddon.removeRuleset(rulesetId, hash));
     }
     public clearRulesets() {
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
@@ -184,10 +183,10 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const response = this._nativeAddon.handleRequest(db, options);
       cancelEvent?.addOnce(() => response.cancel());
       const result = await response.result;
-      return this.handleResult(result);
+      return this.handleResult<string>(result);
     }
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes) {
-      return this.handleResult(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));
+      return this.handleResult<VariableValue>(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));
     }
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON) {
       return this.handleVoidResult(this._nativeAddon.setRulesetVariableValue(rulesetId, variableId, type, value));
@@ -196,10 +195,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.unsetRulesetVariableValue(rulesetId, variableId));
     }
     public getUpdateInfo() {
-      return this.handleResult(this._nativeAddon.getUpdateInfo());
-    }
-    public updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKey, isExpanded?: boolean, instanceFilter?: string }>) {
-      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, stateChanges));
+      return this.handleResult<UpdateInfo | undefined>(this._nativeAddon.getUpdateInfo());
     }
   };
 };

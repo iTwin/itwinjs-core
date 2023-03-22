@@ -31,7 +31,6 @@ import {
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
-import { StateTracker } from "../presentation-frontend/StateTracker";
 
 describe("PresentationManager", () => {
 
@@ -148,14 +147,6 @@ describe("PresentationManager", () => {
       sinon.stub(IpcApp, "addListener");
       const mgr = PresentationManager.create();
       expect(mgr.rpcRequestsHandler.clientId).to.eq(mgr.ipcRequestsHandler?.clientId);
-    });
-
-    it("sets custom StateTracker if supplied with props", async () => {
-      sinon.stub(IpcApp, "isValid").get(() => true);
-      sinon.stub(IpcApp, "addListener");
-      const tracker = moq.Mock.ofType<StateTracker>();
-      const mgr = PresentationManager.create({ stateTracker: tracker.object });
-      expect(mgr.stateTracker).to.eq(tracker.object);
     });
 
     it("starts listening to update events", async () => {
@@ -1291,11 +1282,9 @@ describe("PresentationManager", () => {
       const ruleset1: Ruleset = { id: "1", rules: [] };
       const ruleset2: Ruleset = { id: "2", rules: [] };
       const ruleset3: Ruleset = { id: "3", rules: [] };
-      const ruleset4: Ruleset = { id: "4", rules: [] };
       rulesetsManagerMock.setup(async (x) => x.get(ruleset1.id)).returns(async () => new RegisteredRuleset(ruleset1, "", () => { }));
       rulesetsManagerMock.setup(async (x) => x.get(ruleset2.id)).returns(async () => new RegisteredRuleset(ruleset2, "", () => { }));
-      rulesetsManagerMock.setup(async (x) => x.get(ruleset3.id)).returns(async () => new RegisteredRuleset(ruleset3, "", () => { }));
-      rulesetsManagerMock.setup(async (x) => x.get(ruleset4.id)).returns(async () => undefined);
+      rulesetsManagerMock.setup(async (x) => x.get(ruleset3.id)).returns(async () => undefined);
 
       const report: UpdateInfo = {
         [imodelKey]: {
@@ -1304,12 +1293,9 @@ describe("PresentationManager", () => {
             content: "FULL",
           },
           [ruleset2.id]: {
-            hierarchy: [],
-          },
-          [ruleset3.id]: {
             content: "FULL",
           },
-          [ruleset4.id]: {},
+          [ruleset3.id]: {},
         },
       };
       ipcAppAddListenerStub.firstCall.args[1](new Event(PresentationIpcEvents.Update), report);
@@ -1317,15 +1303,10 @@ describe("PresentationManager", () => {
       // workaround for a floating promise...
       await BeDuration.wait(1);
 
-      expect(hierarchyUpdatesSpy).to.be.calledTwice;
+      expect(hierarchyUpdatesSpy).to.be.calledOnce;
       expect(hierarchyUpdatesSpy.firstCall).to.be.calledWith({
         rulesetId: ruleset1.id,
         updateInfo: "FULL",
-        imodelKey,
-      });
-      expect(hierarchyUpdatesSpy.secondCall).to.be.calledWith({
-        rulesetId: ruleset2.id,
-        updateInfo: [],
         imodelKey,
       });
 
@@ -1336,7 +1317,7 @@ describe("PresentationManager", () => {
         imodelKey,
       });
       expect(contentUpdatesSpy.secondCall).to.be.calledWith({
-        rulesetId: ruleset3.id,
+        rulesetId: ruleset2.id,
         updateInfo: "FULL",
         imodelKey,
       });

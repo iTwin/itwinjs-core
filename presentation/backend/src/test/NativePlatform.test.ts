@@ -230,14 +230,6 @@ describe("default NativePlatform", () => {
     expect(result).to.deep.equal({ result: updates });
   });
 
-  it("calls addon's updateHierarchyState", async () => {
-    addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", []))
-      .returns(() => ({ result: undefined }))
-      .verifiable();
-    nativePlatform.updateHierarchyState({}, "test-ruleset-id", []);
-    addonMock.verifyAll();
-  });
-
   it("returns imodel addon from IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
     mock.setup((x) => x.nativeDb).returns(() => ({} as any)).verifiable(moq.Times.atLeastOnce());
