@@ -6,7 +6,7 @@
  * @module Toolbar
  */
 
-import { BeEvent, Mutable } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
@@ -143,7 +143,7 @@ export class ToolbarItemsManager {
         const { childrenUpdated, childItems } = this.refreshChildItems(updatedItem, eventIds);
         // istanbul ignore else
         if (childrenUpdated) {
-          (updatedItem as Mutable<GroupButton>).items = childItems;
+          updatedItem.items = childItems;
           itemsUpdated = true;
         }
       }
@@ -180,7 +180,7 @@ export class ToolbarItemsManager {
         const { childrenUpdated, childItems } = ToolbarItemsManager.refreshChildItems(updatedItem, eventIds);
         // istanbul ignore else
         if (childrenUpdated) {
-          (updatedItem as Mutable<GroupButton>).items = childItems;
+          updatedItem.items = childItems;
           updateRequired = true;
         }
       }
@@ -248,12 +248,12 @@ export class ToolbarItemsManager {
     const newChildren: Array<ActionButton | GroupButton> = [];
     for (const item of parentItem.items) {
       const updatedItem = { ...item };
-      updatedItem.isActive = (updatedItem.id === toolId);
 
       if (ToolbarItemUtilities.isGroupButton(updatedItem)) {
-        (updatedItem as Mutable<GroupButton>).items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
+        updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
       }
 
+      updatedItem.isActive = (updatedItem.id === toolId);
       newChildren.push(updatedItem);
     }
     return newChildren;
@@ -267,12 +267,12 @@ export class ToolbarItemsManager {
     const newItems: CommonToolbarItem[] = [];
     for (const item of this.items) {
       const updatedItem = { ...item };
-      updatedItem.isActive = (updatedItem.id === toolId);
 
       if (ToolbarItemUtilities.isGroupButton(updatedItem)) {
-        (updatedItem as Mutable<GroupButton>).items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
+        updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
       }
 
+      updatedItem.isActive = (updatedItem.id === toolId);
       newItems.push(updatedItem);
     }
 
