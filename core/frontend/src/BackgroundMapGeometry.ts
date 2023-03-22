@@ -357,7 +357,7 @@ export class BackgroundMapGeometry {
         }
 
         const ellipsoidColor = ColorDef.create(ColorByName.yellow);
-        builder.setSymbology(ellipsoidColor, ellipsoidColor, 1, 2 as LinePixels);
+        builder.setSymbology(ellipsoidColor, ellipsoidColor, 1, LinePixels.Code2);
         for (const clipPlane of clipPlanes.planes) {
           const plane = clipPlane.getPlane3d();
           const arc = ellipsoid.createPlaneSection(plane);
