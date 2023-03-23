@@ -19,15 +19,17 @@ const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
 
-/** @beta */
+/** ###TODO docs
+ * @beta
+ */
 export enum MapLayerImageryProviderStatus {
   Valid,
   RequireAuth,
 }
 
-/** Base class for map layer imagery providers.
+/** ###TODO improve this?
+ * Base class for map layer imagery providers.
  * Map layer imagery providers request tiles from their URLs and provide images and other tile data.
- * @beta
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
@@ -35,14 +37,15 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   private readonly _mercatorTilingScheme = new WebMercatorTilingScheme();
+
   /** @internal */
   private readonly _geographicTilingScheme = new GeographicTilingScheme();
 
   /** @internal */
   private _status =  MapLayerImageryProviderStatus.Valid;
 
-  /** @beta */
   public get status() { return this._status;}
+
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid);}
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
@@ -59,6 +62,7 @@ export abstract class MapLayerImageryProvider {
   // Those values are used internally for various computation, this should not get overriden.
   /** @internal */
   protected readonly defaultMinimumZoomLevel = 0;
+
   /** @internal */
   protected readonly defaultMaximumZoomLevel = 22;
 
@@ -149,7 +153,8 @@ export abstract class MapLayerImageryProvider {
 
   /** Change the status of this provider.
    * Sub-classes should override 'onStatusUpdated' instead of this method.
-   *  @internal */
+   * @internal
+   */
   public setStatus(status: MapLayerImageryProviderStatus) {
     if (this._status !== status) {
       this.onStatusUpdated(status);
@@ -160,7 +165,7 @@ export abstract class MapLayerImageryProvider {
 
   /** Method called whenever the status changes, giving the opportunity to sub-classes to have a custom behavior.
    *  @internal
-   * */
+   */
   protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) {}
 
   /** @internal */

@@ -85,10 +85,9 @@ export interface MapLayerFormatEntry {
   accessClient?: MapLayerAccessClient;
 }
 
-/** TODO what is this, needs docs.
+/** ###TODO needs docs
  * Look at TerrainProviderRegistry for example?
- * @beta
- * */
+ */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
   constructor(opts?: MapLayerOptions) {

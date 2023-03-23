@@ -820,7 +820,6 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Return the imagery provider for the provided map-layer index.
    * @param index of the owning map layer.
    * @param isOverlay true if the map layer is overlay, otherwise layer is background
-   * @beta
    */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
@@ -853,7 +852,6 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Returns the cartographic range of a map layer.
    * @param layerIndex of the map layer.
    * @param isOverlay true if the map layer is overlay, otherwise layer is background
-   * @beta
    */
   public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
     const mapLayerSettings = this.view.displayStyle.mapLayerAtIndex(layerIndex, isOverlay);
@@ -889,8 +887,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Changes viewport to include range of a map layer.
    * @param layerIndex of the map layer.
    * @param isOverlay true if the map layer is overlay, otherwise layer is background
-   * @param vp
-   * @beta
+   * @param vp the viewport.
    */
   public async viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean> {
     const range = await this.getMapLayerRange(layerIndex, isOverlay);

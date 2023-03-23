@@ -98,7 +98,6 @@ export interface Localization {
 
   /** Unregister a namespace.
    * @param namespace - the name of the namespace.
-   * @beta
    */
   unregisterNamespace(namespace: string): void;
 

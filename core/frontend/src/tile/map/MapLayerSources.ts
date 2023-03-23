@@ -117,9 +117,7 @@ export class MapLayerSource {
   }
 }
 
-/** A collection of [[MapLayerSource]] objects.
- * @internal
- */
+/** A collection of [[MapLayerSource]] objects. */
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
