@@ -116,7 +116,7 @@ export interface IModelAppOptions {
   sessionId?: GuidString;
   /** @internal */
   locateManager?: ElementLocateManager;
-  /** @internal */
+  /** If present, supplies the [[TentativePoint]] for this session. */
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
@@ -258,7 +258,7 @@ export class IModelApp {
   /** The [[AccuSnap]] for this session. */
   public static get accuSnap(): AccuSnap { return this._accuSnap; }
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
-  /** @internal */
+  /** The [[TentativePoint]] for this session]]. */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
   /** The [[Localization]] for this session. */
   public static get localization(): Localization { return this._localization; }
@@ -270,7 +270,7 @@ export class IModelApp {
   public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
   public static get applicationVersion(): string { return this._applicationVersion; }
-  /** @internal */
+  /** True after [[startup]] has been called, until [[shutdown]] is called. */
   public static get initialized() { return this._initialized; }
 
   /** Provides access to the IModelHub implementation for this IModelApp.

@@ -199,13 +199,13 @@ public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
 beta;GenericAbortSignal
-internal;GeoConverter
+public;GeoConverter
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
 beta;GeometryTileTreeReference 
-internal;GeoServices
+public;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
@@ -577,7 +577,12 @@ internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
 internal;RenderMaterialSource
-internal;RenderMemory
+public;RenderMemory
+internal;Buffers 
+internal;BufferType
+internal;Consumer
+internal;Consumers
+internal;ConsumerType
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
@@ -733,7 +738,7 @@ public;ToolSettings
 internal;ToolSettingsState
 internal;ToolState
 public;ToolTipOptions
-internal;ToolTipProvider
+public;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
 internal;TraversalChildrenDetails

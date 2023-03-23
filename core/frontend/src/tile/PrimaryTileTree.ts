@@ -22,7 +22,7 @@ import { AnimationNodeId, formatAnimationBranchId } from "../render/GraphicBranc
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
-import { ViewState, ViewState3d } from "../ViewState";
+import { AttachToViewportArgs, ViewState, ViewState3d } from "../ViewState";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
@@ -495,6 +495,10 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   update(): void;
   /** See SpatialViewState.setTileTreeReferencesDeactivated. */
   setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
+  /** See SpatialViewState.attachToViewport. */
+  attachToViewport(args: AttachToViewportArgs): void;
+  /** See SpatialViewState.detachFromViewport. */
+  detachFromViewport(): void;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
@@ -610,6 +614,9 @@ class SpatialRefs implements SpatialTileTreeReferences {
   public update(): void {
     this._allLoaded = false;
   }
+
+  public attachToViewport() { }
+  public detachFromViewport() { }
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
     this.load();

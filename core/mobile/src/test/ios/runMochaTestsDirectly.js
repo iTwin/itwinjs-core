@@ -36,7 +36,7 @@ function MobileReporter(runner) {
     while (plainMsg[i] === '\n') {
       i++;
     }
-    plainMsg = plainMsg.substr(i);
+    plainMsg = plainMsg.substring(i);
     if (type === "info") {
       process.log("MOCHA INFO", plainMsg);
     } else {
