@@ -436,7 +436,7 @@ export class Checker {
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
   /** fails if value is undefined, null, NaN, empty string, 0, or false. */
-  public testPointer<T extends any>(value: T | undefined, ...params: any[]): value is T {
+  public testPointer<T>(value: T | undefined, ...params: any[]): value is T {
     if (value)
       return this.announceOK();
     return this.announceError("Expect pointer", value, params);
