@@ -249,10 +249,12 @@ const adjustEyeSpace = `
     v_eyeSpace.z -= blankingRegionOffset * (u_frustum.y - u_frustum.x);
 `;
 
-const computePositionPostlude = `
+const computeConstantLodUvCustom = `
   vec2 worldpos = (u_modelToWorld * vec4(rawPos.xyz, 0.0)).xy;
   v_uvCustom = vec3((u_constantLodVParams.xy + worldpos) * vec2(1.0, -1.0), kFrustumType_Perspective == u_frustum.z ? -v_eyeSpace.z : u_constantLodVParams.z);
+`;
 
+const computePositionPostlude = `
   return u_proj * pos;
 `;
 
@@ -271,35 +273,17 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
 
-  vert.addUniform("u_modelToWorld", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_modelToWorld", (uniform, params) => {
-      if (undefined !== params.geometry.asSurface?.mesh.constantLodVParams)
-        params.target.uniforms.branch.bindModelToWorldTransform(uniform, params.geometry, false);
-    });
-  });
-
-  builder.addVarying("v_uvCustom", VariableType.Vec3);
-
-  vert.addUniform("u_constantLodVParams", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_constantLodVParams", (uniform, params) => {
-      const vParams = params.geometry.asSurface?.mesh.constantLodVParams;
-      if (undefined !== vParams) {
-        vParams[2] = params.target.planFrustum.points[Npc.LeftTopRear].distance(params.target.planFrustum.points[Npc.RightTopRear]);
-        uniform.setUniform3fv(vParams);
-      }
-    });
-  });
-
-  let computePosition;
-  if (isHiliter && !System.instance.supportsLogZBuffer) {
-    computePosition = computePositionPrelude + computePositionPostlude;
-  } else {
+  let computePosition = computePositionPrelude;
+  if (!isHiliter || System.instance.supportsLogZBuffer) {
     addFrustum(builder);
     addRenderOrder(builder.vert);
     addRenderOrderConstants(builder.vert);
     builder.addVarying("v_eyeSpace", VariableType.Vec3);
-    computePosition = computePositionPrelude + adjustEyeSpace + computePositionPostlude;
+    computePosition += adjustEyeSpace;
   }
+  if (!isHiliter)
+    computePosition += computeConstantLodUvCustom;
+  computePosition += computePositionPostlude;
 
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
@@ -685,8 +669,16 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
   }
 
-  if (flags.isThematic)
+  if (flags.isThematic) {
     addThematicDisplay(builder);
+  } else {
+    builder.vert.addUniform("u_modelToWorld", VariableType.Mat4, (prog) => {
+      prog.addGraphicUniform("u_modelToWorld", (uniform, params) => {
+        if (undefined !== params.geometry.asSurface?.mesh.constantLodVParams)
+          params.target.uniforms.branch.bindModelToWorldTransform(uniform, params.geometry, false);
+      });
+    });
+  }
 
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
@@ -736,6 +728,23 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
         addAltPickBufferOutputs(builder.frag);
     }
   }
+
+  builder.addVarying("v_uvCustom", VariableType.Vec3);
+
+  // Set u_modelToWorld here which is used for calculating the v_uvCustom.
+  // This uniform is also added by thematic display, but in this case we don't want to bind it all of the time, only if we are using constantLod.
+  // So we must add this after thematic adds it (which is done earlier in the call to addThematicDisplay) so that for the thematic shaders it will
+  // bind the uniform always rather than just when constantLod is used.
+
+  builder.vert.addUniform("u_constantLodVParams", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_constantLodVParams", (uniform, params) => {
+      const vParams = params.geometry.asSurface?.mesh.constantLodVParams;
+      if (undefined !== vParams) {
+        vParams[2] = params.target.planFrustum.points[Npc.LeftTopRear].distance(params.target.planFrustum.points[Npc.RightTopRear]);
+        uniform.setUniform3fv(vParams);
+      }
+    });
+  });
 
   builder.frag.addUniform("u_constantLodFParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_constantLodFParams", (uniform, params) => {
