@@ -133,10 +133,10 @@ describe("IModelHost", () => {
       accessKey: "testAccessKey",
     };
 
-    const setMaxTileCacheSizeStub = sinon.stub(IModelHost.platform, "setMaxTileCacheSize");
-    // sinon.stub(IModelHost, "platform").get(() => ({
-    //   setMaxTileCacheSize: setMaxTileCacheSizeStub,
-    // }));
+    const setMaxTileCacheSizeStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
+    }));
 
     const storageStub = sinon.createStubInstance(AzureServerStorage);
     const registerStub = sinon.stub(AzureServerStorageBindings.prototype, "register").callsFake((container) => {
