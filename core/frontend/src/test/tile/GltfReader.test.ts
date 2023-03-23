@@ -160,7 +160,7 @@ describe("GltfReader", () => {
       data: minimalBin, type: GltfV2ChunkTypes.Binary,
     }];
 
-    chunks.push({ data: minimalBin, type: 0xdeadbeef });
+    chunks.push({ data: minimalBin, type: 0xdeadbeef as GltfV2ChunkTypes });
     const glb = glbFromChunks(chunks);
     const reader = createReader(glb)!;
     expect(reader).not.to.be.undefined;

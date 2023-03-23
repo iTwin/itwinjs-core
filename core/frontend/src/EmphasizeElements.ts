@@ -646,7 +646,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public static clear(vp: Viewport, inactiveOnly: boolean = false) {
     const provider = this.get(vp);
 
-    if (undefined === provider || (inactiveOnly && provider.isActive))
+    if (undefined === provider || (inactiveOnly && provider.isActive(vp)))
       return;
 
     vp.clearNeverDrawn();

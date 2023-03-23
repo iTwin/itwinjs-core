@@ -31,6 +31,7 @@ import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
 
 /** @internal */
 export enum AccuDrawFlags {
+  None = 0,
   SetModePolar = 1,
   SetModeRect = 1 << 1,
   SetOrigin = (1 << 2),

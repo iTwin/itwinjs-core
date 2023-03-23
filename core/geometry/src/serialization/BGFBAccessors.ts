@@ -4287,8 +4287,8 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Encoding= optionalEncoding
      * @returns string|Uint8Array|null
      */
-    name(): string | null
-    name(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
+    name(): string | null;
+    name(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     name(optionalEncoding?: any): string | Uint8Array | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
@@ -4298,8 +4298,8 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Encoding= optionalEncoding
      * @returns string|Uint8Array|null
      */
-    inputName(): string | null
-    inputName(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
+    inputName(): string | null;
+    inputName(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     inputName(optionalEncoding?: any): string | Uint8Array | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;

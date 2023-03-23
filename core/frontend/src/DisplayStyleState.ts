@@ -50,7 +50,6 @@ export interface OsmBuildingDisplayOptions {
  * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  /** @internal */
   public static override get className() { return "DisplayStyle"; }
   private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
@@ -796,7 +795,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
-  /** @internal */
+  /** Returns true if solar shadow display is enabled by this display style. */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
@@ -851,7 +850,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
-  /** @internal */
   public static override get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -877,7 +875,6 @@ export class DisplayStyle2dState extends DisplayStyleState {
  * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  /** @internal */
   public static override get className() { return "DisplayStyle3d"; }
   private _settings: DisplayStyle3dSettings;
 

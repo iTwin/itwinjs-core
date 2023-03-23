@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.0.0-dev.51",
+  "version": "4.0.0-dev.55",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -41,11 +41,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.51",
-    "@itwin/core-common": "workspace:^4.0.0-dev.51",
-    "@itwin/core-frontend": "workspace:^4.0.0-dev.51",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.51",
-    "@itwin/presentation-common": "workspace:^4.0.0-dev.51"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.55",
+    "@itwin/core-common": "workspace:^4.0.0-dev.55",
+    "@itwin/core-frontend": "workspace:^4.0.0-dev.55",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.55",
+    "@itwin/presentation-common": "workspace:^4.0.0-dev.55"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -54,7 +54,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -82,7 +82,7 @@
     "sinon-chai": "^3.2.0",
     "source-map-support": "^0.5.6",
     "typemoq": "^2.1.0",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

@@ -97,7 +97,7 @@ describe("Geodetic Settings", () => {
         description: "Clarke 1866, Benoit Ratio",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305951,
+        polarRadius: 6356774.719195306,
       },
       targetEllipsoid: {
         id: "WGS84",
@@ -105,7 +105,7 @@ describe("Geodetic Settings", () => {
         description: "Clarke 1866, Benoit Ratio",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305951,
+        polarRadius: 6356774.719195306,
       },
       gridFile: {
         fallback: {
@@ -129,7 +129,7 @@ describe("Geodetic Settings", () => {
         description: "Clarke 1866, Benoit Ratio",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305951,
+        polarRadius: 6356774.719195306,
       },
       targetEllipsoid: {
         id: "WGS84",
@@ -137,7 +137,7 @@ describe("Geodetic Settings", () => {
         description: "Clarke 1866, Benoit Ratio",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305951,
+        polarRadius: 6356774.719195306,
       },
       gridFile: {
         fallback: {
@@ -159,7 +159,7 @@ describe("Geodetic Settings", () => {
         description: "Clarke 1866, Benoit Ratio",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305953,
+        polarRadius: 6356774.719195306,
       },
       targetEllipsoid: {
         id: "WGS84",
@@ -167,7 +167,7 @@ describe("Geodetic Settings", () => {
         description: "Clarke 1866, Benoit Ratio",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305953,
+        polarRadius: 6356774.719195306,
       },
       gridFile: {
         fallback: {
@@ -275,7 +275,7 @@ describe("Geodetic Settings", () => {
       description: "Clarke 1866, Benoit Ratio",
       source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
       equatorialRadius: 6378160.0,
-      polarRadius: 6356774.719195305951,
+      polarRadius: 6356774.719195306,
     }, "input");
 
     roundTrip({
@@ -284,7 +284,7 @@ describe("Geodetic Settings", () => {
       description: "Clarke 1866, Benoit Ratio",
       source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
       equatorialRadius: 6378160.0,
-      polarRadius: 6356774.719195305951,
+      polarRadius: 6356774.719195306,
     }, "input");
 
     roundTrip({
@@ -292,7 +292,7 @@ describe("Geodetic Settings", () => {
       description: "Australian National Spheroid of 1966",
       source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
       equatorialRadius: 6378160.0,
-      polarRadius: 6356774.719195305951,
+      polarRadius: 6356774.719195306,
     }, "input");
 
     // This one verifies that fuzzy number compare is applied
@@ -302,15 +302,15 @@ describe("Geodetic Settings", () => {
       description: "Clarke 1866, Benoit Ratio",
       source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
       equatorialRadius: 6378160.0,
-      polarRadius: 6356774.719195305951,
+      polarRadius: 6356774.719195306,
     });
     const ellipsoid2 = new GeodeticEllipsoid({
       id: "CLRK66",
       epsg: 7008,
       description: "Clarke 1866, Benoit Ratio",
       source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
-      equatorialRadius: 6378160.00000000001,
-      polarRadius: 6356774.71919530588,
+      equatorialRadius: 6378160,
+      polarRadius: 6356774.719195306,
     });
     expect(ellipsoid1.equals(ellipsoid2)).to.be.true;
 
@@ -465,7 +465,7 @@ describe("Geodetic Settings", () => {
         description: "Clarke 1866, Benoit Ratio",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305951,
+        polarRadius: 6356774.719195306,
       },
       transforms: [
         {
@@ -489,7 +489,7 @@ describe("Geodetic Settings", () => {
         description: "Australian National Spheroid of 1966",
         source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
         equatorialRadius: 6378160.0,
-        polarRadius: 6356774.719195305951,
+        polarRadius: 6356774.719195306,
       },
       transforms: [
         {
@@ -526,7 +526,7 @@ describe("Geodetic Settings", () => {
             description: "Clarke 1866, Benoit Ratio",
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             equatorialRadius: 6378160.0,
-            polarRadius: 6356774.719195305951,
+            polarRadius: 6356774.719195306,
           },
           targetEllipsoid: {
             id: "WGS84",
@@ -534,7 +534,7 @@ describe("Geodetic Settings", () => {
             description: "Clarke 1866, Benoit Ratio",
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             equatorialRadius: 6378160.0,
-            polarRadius: 6356774.719195305951,
+            polarRadius: 6356774.719195306,
           },
           gridFile: {
             fallback: {
@@ -770,7 +770,7 @@ describe("Geodetic Settings", () => {
           description: "Clarke 1866, Benoit Ratio",
           source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
           equatorialRadius: 6378160.0,
-          polarRadius: 6356774.719195305951,
+          polarRadius: 6356774.719195306,
         },
         transforms: [
           {
@@ -781,7 +781,7 @@ describe("Geodetic Settings", () => {
               description: "Clarke 1866, Benoit Ratio",
               source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
               equatorialRadius: 6378160.0,
-              polarRadius: 6356774.719195305951,
+              polarRadius: 6356774.719195306,
             },
             targetEllipsoid: {
               id: "WGS84",
@@ -789,7 +789,7 @@ describe("Geodetic Settings", () => {
               description: "Clarke 1866, Benoit Ratio",
               source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
               equatorialRadius: 6378160.0,
-              polarRadius: 6356774.719195305951,
+              polarRadius: 6356774.719195306,
             },
             gridFile: {
               fallback: {
@@ -995,7 +995,7 @@ describe("Geodetic Settings", () => {
             description: "Clarke 1866, Benoit Ratio",
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             equatorialRadius: 6378160.0,
-            polarRadius: 6356774.719195305951,
+            polarRadius: 6356774.719195306,
           },
           transforms: [
             {
@@ -1006,7 +1006,7 @@ describe("Geodetic Settings", () => {
                 description: "Clarke 1866, Benoit Ratio",
                 source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               targetEllipsoid: {
                 id: "WGS84",
@@ -1014,7 +1014,7 @@ describe("Geodetic Settings", () => {
                 description: "Clarke 1866, Benoit Ratio",
                 source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               gridFile: {
                 fallback: {
@@ -1170,7 +1170,7 @@ describe("Geodetic Settings", () => {
             description: "Clarke 1866, Benoit Ratio",
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             equatorialRadius: 6378160.0,
-            polarRadius: 6356774.719195305951,
+            polarRadius: 6356774.719195306,
           },
           transforms: [
             {
@@ -1178,12 +1178,12 @@ describe("Geodetic Settings", () => {
               sourceEllipsoid: {
                 id: "CLRK66",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               targetEllipsoid: {
                 id: "WGS84-2",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               gridFile: {
                 fallback: {
@@ -1207,7 +1207,7 @@ describe("Geodetic Settings", () => {
               sourceEllipsoid: {
                 id: "WGS84-2",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               targetEllipsoid: {
                 id: "NSRS98",
@@ -1280,7 +1280,7 @@ describe("Geodetic Settings", () => {
             description: "Clarke 1866, Benoit Ratio",
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             equatorialRadius: 6378160.0,
-            polarRadius: 6356774.719195305951,
+            polarRadius: 6356774.719195306,
           },
           transforms: [
             {
@@ -1288,12 +1288,12 @@ describe("Geodetic Settings", () => {
               sourceEllipsoid: {
                 id: "CLRK66",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               targetEllipsoid: {
                 id: "WGS84-2",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               gridFile: {
                 fallback: {
@@ -1317,7 +1317,7 @@ describe("Geodetic Settings", () => {
               sourceEllipsoid: {
                 id: "WGS84-2",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               targetEllipsoid: {
                 id: "NSRS98",
@@ -1389,7 +1389,7 @@ describe("Geodetic Settings", () => {
             description: "Clarke 1866, Benoit Ratio",
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             equatorialRadius: 6378160.0,
-            polarRadius: 6356774.719195305951,
+            polarRadius: 6356774.719195306,
           },
           transforms: [
             {
@@ -1397,12 +1397,12 @@ describe("Geodetic Settings", () => {
               sourceEllipsoid: {
                 id: "CLRK66",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305953,
+                polarRadius: 6356774.719195306,
               },
               targetEllipsoid: {
                 id: "WGS84-2",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305953,
+                polarRadius: 6356774.719195306,
               },
               gridFile: {
                 fallback: {
@@ -1426,7 +1426,7 @@ describe("Geodetic Settings", () => {
               sourceEllipsoid: {
                 id: "WGS84-2",
                 equatorialRadius: 6378160.0,
-                polarRadius: 6356774.719195305951,
+                polarRadius: 6356774.719195306,
               },
               targetEllipsoid: {
                 id: "NSRS98",
@@ -1473,7 +1473,7 @@ describe("Geodetic Settings", () => {
           translationY: 15.0000000000001,
           translationZ: 0.02000000000001,
           rotDeg: 1.2000000000001,
-          scale: 1.0001000000000001,
+          scale: 1.0001,
         },
       },
     });
