@@ -12,6 +12,7 @@ import {
   ArcGisUtilities,
   AzureMapsLayerImageryProvider,
   BingMapsImageryLayerProvider,
+  GoogleMapImageryProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
   MapLayerFormat,
@@ -200,5 +201,10 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new TileUrlImageryProvider(settings); }
 }
 
+class GoogleMapLayerFormat extends ImageryMapLayerFormat {
+  public static override formatId = "GoogleMaps";
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new GoogleMapImageryProvider(settings); }
+}
+
 /** @internal */
-export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
+export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat,GoogleMapLayerFormat];

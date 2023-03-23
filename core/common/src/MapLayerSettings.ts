@@ -14,7 +14,7 @@ import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
  * In order to be displayed, a corresponding format must have been registered in the [MapLayerFormatRegistry]($frontend)
  * @public
  */
-export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
+export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS" | "GoogleMaps";
 
 /** @public */
 export type SubLayerId = string | number;
