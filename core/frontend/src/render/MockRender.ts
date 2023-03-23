@@ -5,7 +5,7 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, EmptyLocalization, PackedFeatureTable } from "@itwin/core-common";
+import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { ViewRect } from "../ViewRect";
@@ -108,7 +108,7 @@ export namespace MockRender {
 
   /** @internal */
   export class Batch extends Graphic {
-    public constructor(public readonly graphic: RenderGraphic, public readonly featureTable: PackedFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
+    public constructor(public readonly graphic: RenderGraphic, public readonly featureTable: RenderFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
 
     public override dispose() {
       dispose(this.graphic);
@@ -146,7 +146,7 @@ export namespace MockRender {
 
     public createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
     public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) { return new Branch(branch, transform, options); }
-    public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
+    public createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
 
     public override createMesh(_params: MeshParams) { return new Graphic(); }
     public override createPolyline(_params: PolylineParams) { return new Graphic(); }

@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
-import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
+import {
+  IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
+} from "@itwin/core-frontend";
+import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -145,6 +148,12 @@ const dtaFrontendMain = async () => {
 
   // retrieve, set, and output the global configuration variable
   await getFrontendConfig();
+
+  if (configuration.useFrontendTiles) {
+    initializeFrontendTiles({
+      computeSpatialTilesetBaseUrl: (iModel) => new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`),
+    });
+  }
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   let tileAdminProps: TileAdmin.Props;

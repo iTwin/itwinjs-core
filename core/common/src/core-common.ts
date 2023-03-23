@@ -154,6 +154,7 @@ export * from "./tile/IModelTileIO";
 export * from "./tile/PntsTileIO";
 export * from "./tile/TileIO";
 export * from "./tile/TileMetadata";
+export * from "./tile/Tileset3dSchema";
 export * from "./WhiteOnWhiteReversalSettings";
 
 /** @docs-package-description

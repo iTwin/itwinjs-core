@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-  Feature, PackedFeatureTable, PointCloudDisplaySettings, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  ModelFeature, PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { DepthType, RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
@@ -473,7 +473,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 }
 
 interface BatchInfo {
-  featureTable: PackedFeatureTable;
+  featureTable: RenderFeatureTable;
   iModel?: IModelConnection;
   tileId?: string;
 }
@@ -485,6 +485,7 @@ class PixelBuffer implements Pixel.Buffer {
   private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
   private readonly _batchState: BatchState;
+  private readonly _scratchModelFeature = ModelFeature.create();
 
   private get _numPixels(): number { return this._rect.width * this._rect.height; }
 
@@ -506,9 +507,9 @@ class PixelBuffer implements Pixel.Buffer {
     return pixelIndex < data.length ? data[pixelIndex] : undefined;
   }
 
-  private getFeature(pixelIndex: number): Feature | undefined {
+  private getFeature(pixelIndex: number, result: ModelFeature): ModelFeature | undefined {
     const featureId = this.getFeatureId(pixelIndex);
-    return undefined !== featureId ? this._batchState.getFeature(featureId) : undefined;
+    return undefined !== featureId ? this._batchState.getFeature(featureId, result) : undefined;
   }
 
   private getFeatureId(pixelIndex: number): number | undefined {
@@ -566,7 +567,7 @@ class PixelBuffer implements Pixel.Buffer {
     let planarity = px.planarity;
 
     const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
-    const feature = haveFeatureIds ? this.getFeature(index) : undefined;
+    const feature = haveFeatureIds ? this.getFeature(index, this._scratchModelFeature) : undefined;
     const batchInfo = haveFeatureIds ? this.getBatchInfo(index) : undefined;
     if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
@@ -613,7 +614,15 @@ class PixelBuffer implements Pixel.Buffer {
       tileId = batchInfo.tileId;
     }
 
-    return new Pixel.Data(feature, distanceFraction, geometryType, planarity, featureTable, iModel, tileId);
+    return new Pixel.Data({
+      feature,
+      distanceFraction,
+      type: geometryType,
+      planarity,
+      batchType: featureTable?.type,
+      iModel,
+      tileId,
+    });
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {

@@ -63,6 +63,7 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
+import { RequireAtLeastOne } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -2999,7 +3000,7 @@ export class Feature {
     constructor(elementId?: Id64String, subCategoryId?: Id64String, geometryClass?: GeometryClass);
     compare(rhs: Feature): number;
     // (undocumented)
-    readonly elementId: string;
+    readonly elementId: Id64String;
     equals(other: Feature): boolean;
     // (undocumented)
     readonly geometryClass: GeometryClass;
@@ -3008,7 +3009,7 @@ export class Feature {
     // (undocumented)
     get isUndefined(): boolean;
     // (undocumented)
-    readonly subCategoryId: string;
+    readonly subCategoryId: Id64String;
 }
 
 // @public
@@ -3232,7 +3233,7 @@ export class FeatureTableHeader {
     // (undocumented)
     readonly length: number;
     // (undocumented)
-    readonly maxFeatures: number;
+    readonly numSubCategories: number;
     // (undocumented)
     static readFrom(stream: ByteStream): FeatureTableHeader | undefined;
     // (undocumented)
@@ -4577,6 +4578,7 @@ export enum ImdlFlags {
     ContainsCurves = 1,
     DisallowMagnification = 8,
     Incomplete = 4,
+    MultiModelFeatureTable = 16,
     None = 0
 }
 
@@ -5576,6 +5578,28 @@ export interface ModelExtentsProps {
     status: IModelStatus;
 }
 
+// @internal
+export interface ModelFeature {
+    // (undocumented)
+    elementId: Id64String;
+    // (undocumented)
+    geometryClass: GeometryClass;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    subCategoryId: Id64String;
+}
+
+// @internal (undocumented)
+export namespace ModelFeature {
+    // (undocumented)
+    export function create(): ModelFeature;
+    // (undocumented)
+    export function isDefined(feature: ModelFeature): boolean;
+    // (undocumented)
+    export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature;
+}
+
 // @public
 export interface ModelGeometryChanges {
     readonly elements: Iterable<ElementGeometryChange>;
@@ -5693,6 +5717,37 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 export enum MonochromeMode {
     Flat = 0,
     Scaled = 1
+}
+
+// @internal
+export class MultiModelPackedFeatureTable implements RenderFeatureTable {
+    constructor(features: PackedFeatureTable, models: PackedFeatureModelTable);
+    // (undocumented)
+    get batchModelId(): string;
+    // (undocumented)
+    get batchModelIdPair(): Id64.Uint32Pair;
+    // (undocumented)
+    get byteLength(): number;
+    // (undocumented)
+    static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType, numSubCategories: number): MultiModelPackedFeatureTable;
+    // (undocumented)
+    findElementId(featureIndex: number): Id64String | undefined;
+    // (undocumented)
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    // (undocumented)
+    getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    // (undocumented)
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    // (undocumented)
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+    // (undocumented)
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+    // (undocumented)
+    iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
+    // (undocumented)
+    get numFeatures(): number;
+    // (undocumented)
+    get type(): BatchType;
 }
 
 // @internal (undocumented)
@@ -6082,29 +6137,55 @@ export interface PackedFeature {
     // (undocumented)
     geometryClass: GeometryClass;
     // (undocumented)
+    modelId: Id64.Uint32Pair;
+    // (undocumented)
     subCategoryId: Id64.Uint32Pair;
 }
 
+// @internal (undocumented)
+export namespace PackedFeature {
+    // (undocumented)
+    export function create(): PackedFeature;
+    // (undocumented)
+    export function createWithIndex(): PackedFeatureWithIndex;
+}
+
 // @internal
-export class PackedFeatureTable {
-    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
+export class PackedFeatureModelTable {
+    constructor(data: Uint32Array);
+    // (undocumented)
+    get byteLength(): number;
+    // (undocumented)
+    getEntry(modelIndex: number, result: PackedFeatureModelEntry): PackedFeatureModelEntry;
+    getModelIdPair(featureIndex: number, result?: Id64.Uint32Pair): Id64.Uint32Pair;
+    get length(): number;
+}
+
+// @internal
+export class PackedFeatureTable implements RenderFeatureTable {
+    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
     // (undocumented)
     get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined;
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
+    readonly batchModelId: Id64String;
+    // (undocumented)
+    readonly batchModelIdPair: Id64.Uint32Pair;
+    // (undocumented)
     get byteLength(): number;
     findElementId(featureIndex: number): Id64String | undefined;
-    findFeature(featureIndex: number): Feature | undefined;
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
     getAnimationNodeId(featureIndex: number): number;
     // (undocumented)
     getElementIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
-    getFeature(featureIndex: number): Feature;
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     // (undocumented)
-    getPackedFeature(featureIndex: number): PackedFeature;
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     // (undocumented)
     getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
+    getUniform(result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
     get isClassifier(): boolean;
     // (undocumented)
@@ -6113,9 +6194,9 @@ export class PackedFeatureTable {
     // (undocumented)
     get isVolumeClassifier(): boolean;
     // (undocumented)
-    readonly maxFeatures: number;
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     // (undocumented)
-    readonly modelId: Id64String;
+    iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
     // (undocumented)
     readonly numFeatures: number;
     static pack(featureTable: FeatureTable): PackedFeatureTable;
@@ -6123,8 +6204,13 @@ export class PackedFeatureTable {
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
-    get uniform(): Feature | undefined;
     unpack(): FeatureTable;
+}
+
+// @internal (undocumented)
+export interface PackedFeatureWithIndex extends PackedFeature {
+    // (undocumented)
+    index: number;
 }
 
 // @internal
@@ -7125,6 +7211,22 @@ export interface RelTypeInfo {
 
 // @public
 export type RemoveFunction = () => void;
+
+// @internal
+export interface RenderFeatureTable {
+    readonly batchModelId: Id64String;
+    readonly batchModelIdPair: Id64.Uint32Pair;
+    readonly byteLength: number;
+    findElementId(featureIndex: number): Id64String | undefined;
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+    readonly numFeatures: number;
+    // (undocumented)
+    readonly type: BatchType;
+}
 
 // @public
 export abstract class RenderMaterial {
@@ -9498,6 +9600,126 @@ export enum TileReadStatus {
     NewerMajorVersion = 6,
     // (undocumented)
     Success = 0
+}
+
+// @alpha
+export namespace Tileset3dSchema {
+    // (undocumented)
+    export interface Asset extends TilesetProperty {
+        // (undocumented)
+        tilesetVersion?: string;
+        // (undocumented)
+        version: string;
+    }
+    // (undocumented)
+    export type BoundingBox = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    uX: number,
+    uY: number,
+    uZ: number,
+    vX: number,
+    vY: number,
+    vZ: number,
+    wX: number,
+    wY: number,
+    wZ: number
+    ];
+    // (undocumented)
+    export type BoundingRegion = [
+    west: number,
+    south: number,
+    east: number,
+    north: number,
+    minHeight: number,
+    maxHeight: number
+    ];
+    // (undocumented)
+    export type BoundingSphere = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    radius: number
+    ];
+    // (undocumented)
+    export type BoundingVolume = RequireAtLeastOne<{
+        box?: BoundingBox;
+        sphere?: BoundingSphere;
+        region?: BoundingRegion;
+    }>;
+    // (undocumented)
+    export interface Content extends TilesetProperty {
+        // (undocumented)
+        boundingVolume?: BoundingVolume;
+        // (undocumented)
+        uri: string;
+    }
+    export interface Extensions {
+        // (undocumented)
+        [key: string]: any;
+    }
+    // (undocumented)
+    export type GeometricError = number;
+    // (undocumented)
+    export type Refinement = "ADD" | "REPLACE" | string;
+    // (undocumented)
+    export interface Tile extends TilesetProperty {
+        // (undocumented)
+        boundingVolume: BoundingVolume;
+        // (undocumented)
+        children?: Tile[];
+        // (undocumented)
+        content?: Content;
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        refine?: Refinement;
+        // (undocumented)
+        transform?: Transform;
+        // (undocumented)
+        viewerRequestVolume?: BoundingVolume;
+    }
+    // (undocumented)
+    export interface Tileset extends TilesetProperty {
+        // (undocumented)
+        asset: Asset;
+        // (undocumented)
+        extensionsRequired?: string[];
+        // (undocumented)
+        extensionsUsed?: string[];
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        properties: unknown;
+        // (undocumented)
+        root: Tile;
+    }
+    export interface TilesetProperty {
+        // (undocumented)
+        extensions?: Extensions;
+        // (undocumented)
+        extras?: any;
+    }
+    // (undocumented)
+    export type Transform = [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+    ];
 }
 
 // @internal

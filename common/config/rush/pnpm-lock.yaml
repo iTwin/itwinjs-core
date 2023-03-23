@@ -1411,6 +1411,30 @@ importers:
       rimraf: 3.0.2
       typescript: 4.4.4
 
+  ../../extensions/frontend-tiles:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      '@types/node': 18.11.5
+      eslint: ^7.11.0
+      rimraf: ^3.0.2
+      typescript: ~4.4.0
+    devDependencies:
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
+      '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@types/node': 18.11.5
+      eslint: 7.32.0
+      rimraf: 3.0.2
+      typescript: 4.4.4
+
   ../../extensions/map-layers:
     specifiers:
       '@itwin/appui-abstract': workspace:*
@@ -3285,6 +3309,7 @@ importers:
       '@itwin/electron-authorization': ^0.8.5
       '@itwin/eslint-plugin': workspace:*
       '@itwin/frontend-devtools': workspace:*
+      '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': ^2.2.1
       '@itwin/imodels-access-frontend': ^2.2.1
@@ -3338,6 +3363,7 @@ importers:
       '@itwin/editor-frontend': link:../../editor/frontend
       '@itwin/electron-authorization': 0.8.5_electron@22.3.1
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
+      '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.3.0
       '@itwin/imodels-access-frontend': 2.3.0
