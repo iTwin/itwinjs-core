@@ -126,7 +126,7 @@ describe("ArcGISTileMap", () => {
 
   it("Test simple 4x4 tilemap request", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset1.tilemap;
     });
 
@@ -180,7 +180,7 @@ describe("ArcGISTileMap", () => {
 
   it("Test 4x4 tilemap request, using call queue", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset1.tilemap;
     });
 
@@ -202,7 +202,7 @@ describe("ArcGISTileMap", () => {
   // no offset should be applied the requested tile (i.e we should not end up with negatives values for row,columns)
   it("Test 4x4 tilemap request, top-left tile of LOD", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset3.tilemap;
     });
 
@@ -223,7 +223,7 @@ describe("ArcGISTileMap", () => {
   // tile map, we need to make sure we can still get the tight tiles visibility.
   it("Test 4x4 tilemap request, response got adjusted to 3x3", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset2.tilemap;
     });
 
@@ -238,7 +238,7 @@ describe("ArcGISTileMap", () => {
   // As a fallback, a second request should be made with a smaller tilemap should be made
   it("Test 4x4 tilemap request, response got adjusted to 2x2", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset4.tilemap;
     });
 
@@ -258,7 +258,7 @@ describe("ArcGISTileMap", () => {
   // The second request will return the 1x1 tilemap.  available array should have a single tile available.
   it("Test 4x4 tilemap request, response got adjusted to 1x1", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset5.tilemap;  // always returns an 1x1 tilemap
     });
 
@@ -289,7 +289,7 @@ describe("ArcGISTileMap", () => {
 
   it("Test empty tilemap response", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return emptyBundleError;
     });
 
@@ -308,7 +308,7 @@ describe("ArcGISTileMap", () => {
 
   it("Test 8x8 tilemap request", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset6.tilemap;
     });
     const parentQuadId = QuadId.createFromContentId(dataset6.parentContentId1);
