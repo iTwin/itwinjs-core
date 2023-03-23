@@ -3169,7 +3169,6 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
-    // @beta
     enableOpenTelemetry?: boolean;
     // @beta
     hubAccess?: BackendHubAccess;
