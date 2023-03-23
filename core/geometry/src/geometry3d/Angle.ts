@@ -139,11 +139,11 @@ export class Angle implements BeJSONFunctions {
     }
   }
   /**
- * Create an Angle from a JSON object
- * @param json object from JSON.parse. If a number, value is in *DEGREES*
- * @param defaultValRadians if json is undefined, default value in radians.
- * @return a new Angle
- */
+   * Create an Angle from a JSON object
+   * @param json object from JSON.parse. If a number, value is in *DEGREES*
+   * @param defaultValRadians if json is undefined, default value in radians.
+   * @return a new Angle
+   */
   public static fromJSON(json?: AngleProps, defaultValRadians?: number): Angle {
     const val = new Angle();
     val.setFromJSON(json, defaultValRadians);
@@ -198,21 +198,15 @@ export class Angle implements BeJSONFunctions {
     // all larger radians reference from 360 degrees (2PI)
     return 360.0 + 180 * ((radians - 2.0 * pi) / pi);
   }
-  /**
-   * Return the cosine of this Angle object's angle.
-   */
+  /** Return the cosine of this Angle object's angle */
   public cos(): number {
     return Math.cos(this._radians);
   }
-  /**
-   * Return the sine of this Angle object's angle.
-   */
+  /** Return the sine of this Angle object's angle */
   public sin(): number {
     return Math.sin(this._radians);
   }
-  /**
-   * Return the tangent of this Angle object's angle.
-   */
+  /** Return the tangent of this Angle object's angle */
   public tan(): number {
     return Math.tan(this._radians);
   }
@@ -224,11 +218,11 @@ export class Angle implements BeJSONFunctions {
   public static isHalfCircleRadians(radians: number): boolean {
     return Math.abs(Math.abs(radians) - Math.PI) <= Geometry.smallAngleRadians;
   }
-  /** test if the angle is a full circle */
+  /** Test if the angle is a full circle */
   public get isFullCircle(): boolean {
     return Angle.isFullCircleRadians(this._radians);
   }
-  /** test if the angle is a half circle (in either direction) */
+  /** Test if the angle is a half circle (in either direction) */
   public get isHalfCircle(): boolean {
     return Angle.isHalfCircleRadians(this._radians);
   }
@@ -293,7 +287,7 @@ export class Angle implements BeJSONFunctions {
     // fall through for NaN disaster.
     return 0;
   }
-  /** return a (newly allocated) Angle object with value 0 radians */
+  /** Return a (newly allocated) Angle object with value 0 radians */
   public static zero(): Angle {
     return new Angle(0);
   }
@@ -446,20 +440,22 @@ export class Angle implements BeJSONFunctions {
     return value;
   }
   /**
-     * Return the half angle cosine, sine, and radians for given dot products between vectors. The vectors define
-     * an ellipse using x(t) = c + U cos(t) + V sin(t) so U and V are at angle t=0 degree and t=90 degree. The
-     * half angle t0 is an angle such that x(t0) is one of the ellipse semi-axis.
-     * * This construction arises e.g. in `Arc3d.toScaledMatrix3d`.
-     * * Given ellipse x(t) = c + U cos(t) + V sin(t), find t0 such that radial vector W(t0) = x(t0) - c is
-     * perpendicular to the ellipse.
-     * * Then 0 = W(t0).x'(t0) = (U cos(t0) + V sin(t0)).(V cos(t0) - U sin(t0)) = U.V cos(2t0) + 0.5 (V.V - U.U) sin(2t0)
-     * implies sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the three dot products on the RHS.
-     * math details can be found at docs/learning/geometry/Angle.md
-     * @param dotUU dot product of vectorU with itself
-     * @param dotVV dot product of vectorV with itself
-     * @param dotUV dot product of vectorU with vectorV
-     */
-  public static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true): TrigValues {
+   * Return the half angle cosine, sine, and radians for given dot products between vectors. The vectors define
+   * an ellipse using x(t) = c + U cos(t) + V sin(t) so U and V are at angle t=0 degree and t=90 degree. The
+   * half angle t0 is an angle such that x(t0) is one of the ellipse semi-axis.
+   * * This construction arises e.g. in `Arc3d.toScaledMatrix3d`.
+   * * Given ellipse x(t) = c + U cos(t) + V sin(t), find t0 such that radial vector W(t0) = x(t0) - c is
+   * perpendicular to the ellipse.
+   * * Then 0 = W(t0).x'(t0) = (U cos(t0) + V sin(t0)).(V cos(t0) - U sin(t0)) = U.V cos(2t0) + 0.5 (V.V - U.U) sin(2t0)
+   * implies sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the three dot products on the RHS.
+   * math details can be found at docs/learning/geometry/Angle.md
+   * @param dotUU dot product of vectorU with itself
+   * @param dotVV dot product of vectorV with itself
+   * @param dotUV dot product of vectorU with vectorV
+   */
+  public static dotProductsToHalfAngleTrigValues(
+    dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true
+  ): TrigValues {
 
     const cos2t0 = dotUU - dotVV;
     const sin2t0 = 2.0 * dotUV;
@@ -468,9 +464,8 @@ export class Angle implements BeJSONFunctions {
     return Angle.trigValuesToHalfAngleTrigValues(cos2t0, sin2t0);
   }
   /**
-   * * Returns the angle between two vectors, with the vectors given as xyz components
+   * Returns the angle between two vectors, with the vectors given as xyz components
    * * The returned angle is between 0 and PI
-   *
    * @param ux x component of vector u
    * @param uy y component of vector u
    * @param uz z component of vector u
@@ -478,12 +473,15 @@ export class Angle implements BeJSONFunctions {
    * @param vy y component of vector v
    * @param vz z component of vector v
    */
-  public static radiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
+  public static radiansBetweenVectorsXYZ(
+    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number
+  ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
     return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
   }
   /**
-   * * Returns the angle between two vectors, with the vectors given as xyz components, and an up vector to resolve angle to a full 2PI range.
+   * Returns the angle between two vectors, with the vectors given as xyz components, and an up vector to resolve
+   * angle to a full 2PI range.
    * * The returned angle is (-PI < radians <= PI) or (0 <= radians < 2 * PI)
    * * The angle is in the plane of the U and V vectors.
    * * The upVector determines a positive side of the plane but need not be strictly perpendicular to the plane.
@@ -497,7 +495,8 @@ export class Angle implements BeJSONFunctions {
    * @param upVectorX x component of vector to positive side of plane.
    * @param upVectorY y component of vector to positive side of plane.
    * @param upVectorZ z component of vector to positive side of plane.
-   * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI).  If false, return signed (-PI < radians <= PI)
+   * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI). If false, return
+   * signed (-PI < radians <= PI)
    */
   public static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
     upVectorX: number, upVectorY: number, upVectorZ: number,
@@ -510,8 +509,8 @@ export class Angle implements BeJSONFunctions {
     const crossMagnitude = Geometry.hypotenuseXYZ(wx, wy, wz);
     if (upDotW < 0.0) {
       if (adjustToPositive) {
-        // The turn is greater than 180 degrees.  Take a peculiarly oriented atan2 to get the excess-180 part as addition to PI.
-        // This gives the smoothest numerical transition passing PI.
+        // The turn is greater than 180 degrees.  Take a peculiarly oriented atan2 to get the excess-180 part as
+        // addition to PI. This gives the smoothest numerical transition passing PI.
         return Math.PI + Math.atan2(crossMagnitude, -uDotV);
       } else {
         return -Math.atan2(crossMagnitude, uDotV);
@@ -520,7 +519,6 @@ export class Angle implements BeJSONFunctions {
       return Math.atan2(crossMagnitude, uDotV);
     }
   }
-
   /**
    * Add a multiple of a full circle angle (360 degrees, 2PI) in place.
    * @param multiple multiplier factor
