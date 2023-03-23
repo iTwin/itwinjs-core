@@ -6457,11 +6457,9 @@ export type PointCloudShape = "square" | "round";
 // @beta
 export type PointCloudSizeMode = "voxel" | "pixel";
 
-// @beta
+// @public
 export interface PointWithStatus {
-    // (undocumented)
     p: XYZProps;
-    // (undocumented)
     s: GeoCoordStatus;
 }
 

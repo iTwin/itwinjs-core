@@ -233,7 +233,7 @@ class ApplicationSettings extends BaseSettings {
       if (val.default)
         defaults[schemaName] = val.default;
     }
-    this.addDictionary("_default_", 0, defaults);
+    this.addDictionary("_default_", 0 as SettingsPriority, defaults);
   }
 
   public constructor() {

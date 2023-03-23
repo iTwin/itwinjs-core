@@ -3,7 +3,6 @@
   "compilerOptions": {
     "strictNullChecks": false,
     "noUnusedParameters": false,
-    "suppressImplicitAnyIndexErrors": true,
     "noImplicitAny": false
   },
   "include": ["./src/**/*.ts"]

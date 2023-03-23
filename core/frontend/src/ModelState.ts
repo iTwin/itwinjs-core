@@ -23,7 +23,6 @@ import { ViewState } from "./ViewState";
  * @extensions
  */
 export class ModelState extends EntityState implements ModelProps {
-  /** @internal */
   public static override get className() { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -78,7 +77,6 @@ export class ModelState extends EntityState implements ModelProps {
  * @extensions
  */
 export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
-  /** @internal */
   public static override get className() { return "GeometricModel"; }
   /** @internal */
   public geometryGuid?: string;
@@ -198,7 +196,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
  * @extensions
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
-  /** @internal */
   public static override get className() { return "GeometricModel2d"; }
   /** @internal */
   public readonly globalOrigin: Point2d;
@@ -225,7 +222,6 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
  * @extensions
  */
 export class GeometricModel3dState extends GeometricModelState {
-  /** @internal */
   public static override get className() { return "GeometricModel3d"; }
 
   constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState) {
@@ -270,7 +266,6 @@ export class GeometricModel3dState extends GeometricModelState {
  * @extensions
  */
 export class SheetModelState extends GeometricModel2dState {
-  /** @internal */
   public static override get className() { return "SheetModel"; }
 }
 
@@ -282,7 +277,6 @@ export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
   public readonly classifiers?: SpatialClassifiers;
 
-  /** @internal */
   public static override get className() { return "SpatialModel"; }
   /** @internal */
   public override get asSpatialModel(): SpatialModelState { return this; }
@@ -303,7 +297,6 @@ export class SpatialModelState extends GeometricModel3dState {
  * @extensions
  */
 export class PhysicalModelState extends SpatialModelState {
-  /** @internal */
   public static override get className() { return "PhysicalModel"; }
 }
 
@@ -312,7 +305,6 @@ export class PhysicalModelState extends SpatialModelState {
  * @extensions
  */
 export class SpatialLocationModelState extends SpatialModelState {
-  /** @internal */
   public static override get className() { return "SpatialLocationModel"; }
 }
 
@@ -321,7 +313,6 @@ export class SpatialLocationModelState extends SpatialModelState {
  * @extensions
  */
 export class DrawingModelState extends GeometricModel2dState {
-  /** @internal */
   public static override get className() { return "DrawingModel"; }
 }
 
@@ -330,6 +321,5 @@ export class DrawingModelState extends GeometricModel2dState {
  * @extensions
  */
 export class SectionDrawingModelState extends DrawingModelState {
-  /** @internal */
   public static override get className() { return "SectionDrawingModel"; }
 }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "ViewState3d.lookAt with ortho paramters should not use camera focusDist",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
