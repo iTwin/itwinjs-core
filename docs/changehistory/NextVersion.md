@@ -7,7 +7,7 @@ Table of contents:
 
 - [AppUi](#appui)
   - [Static manager classes](#static-manager-classes)
-  - [ViewSelector enhancments](#viewselector-enhancements)
+  - [ViewSelector enhancements](#viewselector-enhancements)
 - [Mesh intersection with ray](#mesh-intersection-with-ray)
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
