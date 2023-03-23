@@ -7,6 +7,7 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { PackedFeature } from "@itwin/core-common";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -279,6 +280,8 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
   return undefined;
 }
 
+const scratchFeature = PackedFeature.create();
+
 /** @internal */
 export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: DrawCommands): DrawCommands {
   // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
@@ -311,8 +314,8 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
           if (undefined === surface || undefined === surface.mesh.uniformFeatureId)
             continue;
 
-          const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId);
-          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(batch.featureTable.modelId)))
+          const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId, scratchFeature);
+          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(Id64.fromUint32PairObject(feature.modelId))))
             continue;
 
           break;

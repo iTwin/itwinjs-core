@@ -49,7 +49,7 @@ const clippedPasses: RenderPass[] = [
   RenderPass.OverlayLayers,
 ];
 
-function isFeatureVisible(feature: PackedFeature, target: Target, modelIdParts: Id64.Uint32Pair, includeNonLocatable: boolean) {
+function isFeatureVisible(feature: PackedFeature, target: Target, includeNonLocatable: boolean) {
   const ovrs = target.currentFeatureSymbologyOverrides;
   if (!ovrs)
     return true;
@@ -59,7 +59,7 @@ function isFeatureVisible(feature: PackedFeature, target: Target, modelIdParts: 
     feature.elementId.lower, feature.elementId.upper,
     feature.subCategoryId.lower, feature.subCategoryId.upper,
     feature.geometryClass,
-    modelIdParts.lower, modelIdParts.upper,
+    feature.modelId.lower, feature.modelId.upper,
     BatchType.Primary, feature.animationNodeId);
 
   return undefined !== app && (includeNonLocatable || !app.nonLocatable);
@@ -80,16 +80,15 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
       if (ovrs.allHidden)
         continue;
 
+      const scratchFeature = PackedFeature.createWithIndex();
       const table = command.batch.featureTable;
-      const modelIdParts = Id64.getUint32Pair(table.modelId);
-      for (let i = 0; i < table.numFeatures; i++) {
-        const feature = table.getPackedFeature(i);
-        if (!ovrs.anyOverridden || isFeatureVisible(feature, features.target, modelIdParts, features.includeNonLocatable)) {
+      for (const feature of table.iterable(scratchFeature)) {
+        if (!ovrs.anyOverridden || isFeatureVisible(feature, features.target, features.includeNonLocatable)) {
           yield {
             elementId: Id64.fromUint32PairObject(feature.elementId),
             subCategoryId: Id64.fromUint32PairObject(feature.subCategoryId),
             geometryClass: feature.geometryClass,
-            modelId: table.modelId,
+            modelId: Id64.fromUint32PairObject(feature.modelId),
             iModel: command.batch.batchIModel ?? features.iModel,
           };
         }

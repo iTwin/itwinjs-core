@@ -13,8 +13,9 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../Viewport";
+import { GltfWrapMode } from "../gltf/GltfSchema";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, GltfWrapMode, I3dmReader, readPointCloudTileContent,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
   RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
 
@@ -95,8 +96,18 @@ export abstract class RealityTileLoader {
       isCanceled = () => !tile.isLoading;
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
-    let reader: GltfReader | undefined;
+    let reader: GltfReader | ImdlReader | undefined;
     switch (format) {
+      case TileFormat.IModel:
+        reader = ImdlReader.create({
+          stream: streamBuffer,
+          iModel,
+          modelId,
+          is3d,
+          system,
+          isCanceled,
+        });
+        break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
         let graphic = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
@@ -107,7 +118,6 @@ export abstract class RealityTileLoader {
         }
 
         return { graphic };
-
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
         break;
@@ -154,7 +164,8 @@ export abstract class RealityTileLoader {
     if (undefined !== reader) {
       // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
       // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
-      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+      if (reader instanceof GltfReader)
+        reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
       try {
         content = await reader.read();
       } catch (_err) {

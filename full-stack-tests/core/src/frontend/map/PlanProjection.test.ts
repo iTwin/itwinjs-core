@@ -95,8 +95,8 @@ describe("Plan projections (#integration)", () => {
 
           const pixel = vp.readPixel(x, y, true);
           expect(pixel.type).to.equal(Pixel.GeometryType.Surface);
-          expect(pixel.featureTable).not.to.be.undefined;
-          expect(Id64.isTransient(pixel.featureTable!.modelId)).to.equal(expectMap);
+          expect(pixel.modelId).not.to.be.undefined;
+          expect(Id64.isTransient(pixel.modelId!)).to.equal(expectMap);
         };
 
         expectPixel(50, 50, test.expectMap);
