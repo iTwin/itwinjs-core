@@ -219,6 +219,8 @@ export class ElementPicker {
     const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
     let pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
+    if (rect.isNull)
+      return 0;
     let result: number = 0;
     vp.readPixels(rect, Pixel.Selector.All, (pixels) => {
       if (undefined === pixels)
@@ -267,7 +269,7 @@ export class ElementPicker {
         if (!hitPointWorld)
           continue;
 
-        const modelId = undefined !== pixel.featureTable ? pixel.featureTable.modelId : undefined;
+        const modelId = pixel.modelId;
         const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass, modelId, pixel.iModel, pixel.tileId, pixel.isClassifier);
         this.hitList!.addHit(hit);
 

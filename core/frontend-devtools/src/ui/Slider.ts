@@ -12,6 +12,7 @@ export interface Slider {
   label: HTMLLabelElement;
   slider: HTMLInputElement;
   div: HTMLDivElement;
+  readout: HTMLLabelElement;
 }
 
 /** @alpha */
@@ -29,6 +30,7 @@ export interface SliderProps {
   value: string;
   verticalAlign?: "middle" | false;
   textAlign?: "right" | false;
+  readout?: "right" | false;
 }
 
 /** @alpha */
@@ -46,6 +48,8 @@ export function createSlider(props: SliderProps): Slider {
   label.innerText = props.name;
   div.appendChild(label);
 
+  const readout = document.createElement("label");
+
   const slider = document.createElement("input");
   slider.type = "range";
   slider.className = "slider";
@@ -54,11 +58,19 @@ export function createSlider(props: SliderProps): Slider {
   slider.max = props.max;
   slider.step = props.step;
   slider.value = props.value;
-  slider.addEventListener("input", () => props.handler(slider));
+  slider.addEventListener("input", () => {
+    props.handler(slider);
+    readout.innerText = slider.value;
+  });
   div.appendChild(slider);
+
+  if (props.readout === "right") {
+    readout.innerText = slider.value;
+    div.appendChild(readout);
+  }
 
   if (undefined !== props.parent)
     props.parent.appendChild(div);
 
-  return { label, slider, div };
+  return { label, slider, div, readout };
 }

@@ -258,17 +258,17 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
     const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
-    const minHeight = this._exaggeration * streamBuffer.nextFloat32;
-    const maxHeight = this._exaggeration * streamBuffer.nextFloat32;
+    const minHeight = this._exaggeration * streamBuffer.readFloat32();
+    const maxHeight = this._exaggeration * streamBuffer.readFloat32();
     const boundCenter = nextPoint3d64FromByteStream(streamBuffer);
-    const boundRadius = streamBuffer.nextFloat64;
+    const boundRadius = streamBuffer.readFloat64();
     const horizonOcclusion = nextPoint3d64FromByteStream(streamBuffer);
     const terrainTile = tile;
 
     terrainTile.adjustHeights(minHeight, maxHeight);
 
     if (undefined === center || undefined === boundCenter || undefined === boundRadius || undefined === horizonOcclusion) { }
-    const pointCount = streamBuffer.nextUint32;
+    const pointCount = streamBuffer.readUint32();
     const encodedVertexBuffer = new Uint16Array(blob.buffer, streamBuffer.curPos, pointCount * 3);
     streamBuffer.advance(pointCount * 6);
 
@@ -287,7 +287,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     if (streamBuffer.curPos % bytesPerIndex !== 0)
       streamBuffer.advance(bytesPerIndex - (streamBuffer.curPos % bytesPerIndex));
 
-    const triangleCount = streamBuffer.nextUint32;
+    const triangleCount = streamBuffer.readUint32();
     const indexCount = triangleCount * triangleElements;
 
     const getIndexArray = (numIndices: number) => {
@@ -317,20 +317,20 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const uvScale = 1.0 / 32767.0;
     const heightScale = uvScale * (maxHeight - minHeight);
 
-    const westCount = streamBuffer.nextUint32,
+    const westCount = streamBuffer.readUint32(),
       westIndices = getIndexArray(westCount),
-      southCount = streamBuffer.nextUint32,
+      southCount = streamBuffer.readUint32(),
       southIndices = getIndexArray(southCount),
-      eastCount = streamBuffer.nextUint32,
+      eastCount = streamBuffer.readUint32(),
       eastIndices = getIndexArray(eastCount),
-      northCount = streamBuffer.nextUint32,
+      northCount = streamBuffer.readUint32(),
       northIndices = getIndexArray(northCount);
 
     // Extensions...
     let encodedNormalsBuffer;
     while (streamBuffer.curPos < streamBuffer.length) {
-      const extensionId = streamBuffer.nextUint8;
-      const extensionLength = streamBuffer.nextUint32;
+      const extensionId = streamBuffer.readUint8();
+      const extensionLength = streamBuffer.readUint32();
       switch (extensionId) {
         case QuantizedMeshExtensionIds.OctEncodedNormals:
           assert(pointCount * 2 === extensionLength);
@@ -339,7 +339,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
           break;
 
         case QuantizedMeshExtensionIds.Metadata:
-          const stringLength = streamBuffer.nextUint32;
+          const stringLength = streamBuffer.readUint32();
           if (stringLength > 0) {
             const strData = streamBuffer.nextBytes(stringLength);
             const str = utf8ToString(strData);

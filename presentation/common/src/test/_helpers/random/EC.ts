@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as ec from "../../../presentation-common/EC";
-import { createRandomId, nullable } from "./Misc";
+import { createRandomId } from "./Misc";
 
 /**
  * @internal Used for testing only.
@@ -26,30 +26,9 @@ export const createRandomECInstanceKey = (): ec.InstanceKey => {
 /**
  * @internal Used for testing only.
  */
-export const createRandomECInstanceKeyJSON = (): ec.InstanceKeyJSON => {
-  return {
-    className: faker.random.word(),
-    id: createRandomECInstanceId(),
-  };
-};
-
-/**
- * @internal Used for testing only.
- */
 export const createRandomECClassInfo = (): ec.ClassInfo => {
   return {
     id: createRandomECInstanceId(),
-    name: faker.random.word(),
-    label: faker.random.words(),
-  };
-};
-
-/**
- * @internal Used for testing only.
- */
-export const createRandomECClassInfoJSON = (): ec.ClassInfoJSON => {
-  return {
-    id: createRandomId(),
     name: faker.random.word(),
     label: faker.random.words(),
   };
@@ -72,20 +51,6 @@ export const createRandomRelatedClassInfo = (): ec.RelatedClassInfo => {
 /**
  * @internal Used for testing only.
  */
-export const createRandomRelatedClassInfoJSON = (): ec.RelatedClassInfoJSON => {
-  return {
-    sourceClassInfo: createRandomECClassInfoJSON(),
-    targetClassInfo: createRandomECClassInfoJSON(),
-    isPolymorphicTargetClass: nullable(() => faker.random.boolean()),
-    relationshipInfo: createRandomECClassInfoJSON(),
-    isForwardRelationship: faker.random.boolean(),
-    isPolymorphicRelationship: nullable(() => faker.random.boolean()),
-  };
-};
-
-/**
- * @internal Used for testing only.
- */
 export const createRandomRelationshipPath = (length: number = 2): ec.RelationshipPath => {
   const path = new Array<ec.RelatedClassInfo>();
   while (length--)
@@ -96,18 +61,8 @@ export const createRandomRelationshipPath = (length: number = 2): ec.Relationshi
 /**
  * @internal Used for testing only.
  */
-export const createRandomRelationshipPathJSON = (length: number = 2): ec.RelationshipPathJSON => {
-  const path = new Array<ec.RelatedClassInfoJSON>();
-  while (length--)
-    path.push(createRandomRelatedClassInfoJSON());
-  return path;
-};
-
-/**
- * @internal Used for testing only.
- */
-export const createRandomPropertyInfoJSON = (): ec.PropertyInfoJSON => ({
-  classInfo: createRandomECClassInfoJSON(),
+export const createRandomPropertyInfo = (): ec.PropertyInfo => ({
+  classInfo: createRandomECClassInfo(),
   name: faker.random.word(),
   type: "string",
 });

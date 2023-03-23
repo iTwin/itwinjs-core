@@ -1,7 +1,7 @@
 # Widgets
 
 A **Widget** is a collection of UI components that allows the user to view and/or modify data relevant to their current context.
-A Widget can float as a modeless dialog or be docked into one a [StagePanel]($appui-react).
+A Widget can float as a modeless dialog or be docked into a [Panel]($appui-react).
 
 A label for the Widget may be specified using the `label` or `labelKey` prop.
 An icon may be specified using the `iconSpec` prop.

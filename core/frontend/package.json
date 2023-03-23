@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.6.0-dev.5",
+  "version": "4.0.0-dev.54",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -17,7 +17,7 @@
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
-    "extract-extension-api": "eslint --no-eslintrc -c \"../../tools/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
+    "extract-extension-api": "eslint --no-eslintrc -c \"./node_modules/@itwin/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
@@ -41,13 +41,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.6.0-dev.5",
-    "@itwin/core-bentley": "workspace:^3.6.0-dev.5",
-    "@itwin/core-common": "workspace:^3.6.0-dev.5",
-    "@itwin/core-geometry": "workspace:^3.6.0-dev.5",
-    "@itwin/core-orbitgt": "workspace:^3.6.0-dev.5",
-    "@itwin/core-quantity": "workspace:^3.6.0-dev.5",
-    "@itwin/webgl-compatibility": "workspace:^3.6.0-dev.5"
+    "@itwin/appui-abstract": "workspace:^4.0.0-dev.54",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.54",
+    "@itwin/core-common": "workspace:^4.0.0-dev.54",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.54",
+    "@itwin/core-orbitgt": "workspace:^4.0.0-dev.54",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.54"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -62,14 +61,13 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
-    "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.11.5",
+    "@types/node": "^18.11.5",
     "@types/qs": "^6.5.0",
     "@types/semver": "7.3.10",
     "@types/superagent": "^4.1.14",
@@ -86,29 +84,28 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~4.4.0",
-    "webpack": "^5.64.4"
+    "typescript": "~5.0.2",
+    "webpack": "^5.76.0"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/object-storage-azure": "~1.4.0",
-    "@itwin/cloud-agnostic-core": "~1.4.0",
-    "@itwin/object-storage-core": "~1.4.0",
+    "@itwin/object-storage-azure": "^1.5.0",
+    "@itwin/cloud-agnostic-core": "^1.5.0",
+    "@itwin/object-storage-core": "^1.5.0",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
+    "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "deep-assign": "^2.0.0",
     "fuse.js": "^3.3.0",
-    "lodash": "^4.17.10",
     "qs": "^6.5.3",
     "semver": "^7.3.5",
     "superagent": "^7.1.5",
     "wms-capabilities": "0.4.0",
-    "xml-js": "~1.6.11",
     "reflect-metadata": "0.1.13"
   },
   "nyc": {

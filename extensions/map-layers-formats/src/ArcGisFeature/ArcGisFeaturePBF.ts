@@ -10,7 +10,7 @@ import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/a
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { assert, Logger } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
@@ -47,7 +47,6 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
   public readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
-      assert(!msg);
       Logger.logError(loggerCategory, msg);
       return;
     }
@@ -74,9 +73,8 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
 
   public readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[]) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
-      const msg = "Response was not in PBF format";
-      assert(!msg);
-      Logger.logError(loggerCategory, msg);
+
+      Logger.logError(loggerCategory, "Response was not in PBF format");
     }
 
     const collection = response.data as esriPBuffer.FeatureCollectionPBuffer;

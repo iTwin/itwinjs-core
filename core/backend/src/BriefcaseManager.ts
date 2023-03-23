@@ -241,6 +241,7 @@ export class BriefcaseManager {
       throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
     }
     try {
+      nativeDb.enableWalMode(); // local briefcases should use WAL journal mode
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getCurrentChangeset().id !== checkpoint.changeset.id)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
@@ -486,7 +487,7 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static logUsage(imodel: IModelDb, activity?: RpcActivity) {
+  public static logUsage(imodel: IModelDb, activity?: RpcActivity) { // eslint-disable-line deprecation/deprecation
 
     const telemetryEvent = new TelemetryEvent(
       "core-backend - Open iModel",

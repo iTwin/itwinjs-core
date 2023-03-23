@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { randomInt } from "crypto";
 import * as fs from "fs";
+import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -24,9 +25,11 @@ import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { MomentData } from "../../geometry4d/MomentData";
-import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
+import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -35,12 +38,10 @@ import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { Sphere } from "../../solid/Sphere";
-import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 
 /* eslint-disable no-console */
 
@@ -376,6 +377,57 @@ describe("Polyface.Box", () => {
       const volumeData = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, zPlane);
       ck.testBoolean(expectSameMoments, MomentData.areEquivalentPrincipalAxes(volumeData.positiveProjectedFacetAreaMoments, volumeData.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Polyface.IntersectLocalRangeBoxes", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // data from iModel (soil nail, bolt, plate)
+    const localRange: Range3d[] = [];
+    localRange.push(Range3d.createXYZXYZ(-0.023434012896785816, -5.00413553129377, -9.650393591767262, 20.02343401289663, 5.03613553129378, 9.68239359176722));
+    localRange.push(Range3d.createXYZXYZ(-0.024019658687571166, -0.020559836132079568, -0.047579717945438915, 0.10484869637410554, 0.09055983613204432, 0.0975797179454645));
+    localRange.push(Range3d.createXYZXYZ(-0.041116288886769325, -0.04342022062438389, -0.21911795212515983, 0.3411162888867949, 0.3434202206242212, 0.22911795212515074));
+    const localToWorld: Transform[] = [];
+    localToWorld.push(Transform.createRefs(Point3d.create(-108.12092516312605, 80.97820829881688, 67.15651552186583), YawPitchRollAngles.createDegrees(-47.95656913000159, 15.000000000006024, 90).toMatrix3d()));
+    localToWorld.push(Transform.createRefs(Point3d.create(-95.29966304738043, 66.6762028551563, 72.28348554781851), YawPitchRollAngles.createDegrees(42.04343086998508, -4.9775680764904035e-11, 74.99999999999397).toMatrix3d()));
+    localToWorld.push(Transform.createRefs(Point3d.create(-95.14478995681672, 66.78879158941069, 72.16981588733208), YawPitchRollAngles.createDegrees(132.0434308699035, 75.00000000001432, 8.799644912641437e-11).toMatrix3d()));
+
+    const xRange = Math.max(localRange[0].xLength(), localRange[1].xLength(), localRange[2].xLength());
+    const yRange = Math.max(localRange[0].yLength(), localRange[1].yLength(), localRange[2].yLength());
+    const zRange = Math.max(localRange[0].zLength(), localRange[1].zLength(), localRange[2].zLength());
+    const delta = Math.max(xRange, yRange, zRange);
+    const delta10 = 10 * delta;
+    let z = 0;
+    for (const marginJ of [undefined, 1.0]) {
+      let y = 0;
+      for (const perturbJ of [false, true]) {
+        let x = 0;
+        for (let i = 0; i < localRange.length; ++i) {
+          const j = (i + 1) % localRange.length;
+
+          const localRangeJ = localRange[j].clone();
+          const localToWorldJ = localToWorld[j].clone();
+          if (marginJ)
+            localRangeJ.expandInPlace(marginJ);
+          if (perturbJ)  // perturb with local translation to set up negative results
+            localToWorldJ.multiplyTransformTransform(Transform.createTranslationXYZ(1.1 * delta), localToWorldJ);
+
+          // doLocalRangesIntersect converts i_th range to a polyface transformed into j_th range's local coordinates
+          GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, localRange[i], localToWorldJ.inverse()?.multiplyTransformTransform(localToWorld[i]), x, y, z);
+          GeometryCoreTestIO.captureRangeEdges(allGeometry, localRangeJ, x, y, z);
+
+          const isClash = ClipUtilities.doLocalRangesIntersect(localRange[i], localToWorld[i], localRange[j], localToWorldJ, marginJ);
+          ck.testBoolean(isClash, !perturbJ, `ranges clash as expected: margin=${marginJ} perturb=${perturbJ} i=${i} j=${j}`);
+          x += delta10;
+        }
+        y += delta10;
+      }
+      z += delta10;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectLocalRangeBoxes");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -875,14 +927,11 @@ it("PartialSawToothTriangulation", () => {
     let y0 = 0.0;
     const polygonPoints = fullSawtooth.slice(0, numPoints);
     const loop = Loop.createPolygon(polygonPoints);
-    const sweepContour = SweepContour.createForLinearSweep(loop);
-
     const options = new StrokeOptions();
-    options.needParams = false;
+    options.needNormals = false;
     options.needParams = false;
     const builder = PolyfaceBuilder.create(options);
-
-    sweepContour!.emitFacets(builder, false);
+    builder.addGeometryQuery(loop);
     const polyface = builder.claimPolyface(true);
     if (!ck.testExactNumber(polygonPoints.length - 2, polyface.facetCount, "Triangle count in polygon")) {
       const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
@@ -918,16 +967,16 @@ it("facets from sweep contour with holes", () => {
   let x1 = x0;
 
   const options = new StrokeOptions();
-  options.needParams = false;
+  options.needNormals = false;
   options.needParams = false;
   const builder = PolyfaceBuilder.create(options);
-  builder.addTriangulatedRegion(region);
+  builder.addGeometryQuery(region);
   GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x1, y1);
   for (const e of [1, 0.5]) {
     x1 += step;
     options.maxEdgeLength = e;
     const builder1 = PolyfaceBuilder.create(options);
-    builder1.addTriangulatedRegion(region);
+    builder1.addGeometryQuery(region);
     GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x1, y1);
   }
 

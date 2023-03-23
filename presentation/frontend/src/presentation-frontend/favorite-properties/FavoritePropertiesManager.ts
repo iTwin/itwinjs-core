@@ -371,6 +371,7 @@ export class FavoritePropertiesManager implements IDisposable {
     INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
     INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
     WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       if (!(row.classFullName in baseClasses))
         baseClasses[row.classFullName] = [];
@@ -544,7 +545,7 @@ const getPropertyClassName = (propertyName: PropertyFullName): string | undefine
   if (parts === 2) // nested property OR nested property parent class OR regular property parent class
     return propertyNameStart;
   // regular property without parent class
-  return propertyNameStart.substr(0, propertyName.lastIndexOf(":"));
+  return propertyNameStart.substring(0, propertyName.lastIndexOf(":"));
 };
 
 /** @internal */

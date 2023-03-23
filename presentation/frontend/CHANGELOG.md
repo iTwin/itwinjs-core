@@ -1,6 +1,50 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:40 GMT
+
+### Updates
+
+-  Use EmptyLocalization for localization in tests to increase test performance
+- API promotions
+- Add APIs to get hierarchy level descriptor
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+_Version update only_
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:28 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+_Version update only_
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:29 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+_Version update only_
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT
@@ -520,7 +564,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 ### Updates
 
 - Fixed broken double angle bracket link syntax
-- Changed 'compareHierarchy' to build result in pages for massive result sets. 
+- Changed 'compareHierarchy' to build result in pages for massive result sets.
 - HiliteSetProvider: return geometric elements grouped by BisCore.GroupInformationElement
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
@@ -963,7 +1007,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

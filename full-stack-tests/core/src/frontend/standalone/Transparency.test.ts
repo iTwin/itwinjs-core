@@ -195,7 +195,7 @@ describe("Transparency", async () => {
   });
 
   it("should be overridden per-feature", async () => {
-    const pickableId = imodel.transientIds.next;
+    const pickableId = imodel.transientIds.getNext();
     await test(
       (vp) => {
         decorator.overrideTransparency(pickableId, 0);
@@ -334,7 +334,7 @@ describe("Transparency", async () => {
   });
 
   it("should use element alpha and ignore texture if symbology overrides ignore material", async () => {
-    const pickableId = imodel.transientIds.next;
+    const pickableId = imodel.transientIds.getNext();
     await test(
       (vp) => {
         decorator.ignoreMaterial(pickableId);
@@ -356,7 +356,7 @@ describe("Transparency", async () => {
   });
 
   it("should replace material alpha with symbology override", async () => {
-    const pickableId = imodel.transientIds.next;
+    const pickableId = imodel.transientIds.getNext();
 
     await test(
       (vp) => {
@@ -419,7 +419,7 @@ describe("Transparency", async () => {
   // Unclear if this is what we want. Without it, there's no way to make a very-transparent textured surface more visible via symbology overrides -
   // but any value other than zero will multiply, making transparent textures always more transparent, never less.
   it("should multiply texture alpha with symbology override", async () => {
-    const pickableId = imodel.transientIds.next;
+    const pickableId = imodel.transientIds.getNext();
     async function testCase(color: ColorDef, transparencyOverride: number, material: RenderMaterial, expectedColor: ColorDef): Promise<void> {
       await test(
         (vp) => {
@@ -444,7 +444,7 @@ describe("Transparency", async () => {
   });
 
   it("symbology override applies regardless of render mode and view flags unless explicitly specified", async () => {
-    const pickableId = imodel.transientIds.next;
+    const pickableId = imodel.transientIds.getNext();
     for (let iTransp = 0; iTransp < 2; iTransp++) {
       for (let iViewDep = 0; iViewDep < 2; iViewDep++) {
         const viewDep = iViewDep > 0;

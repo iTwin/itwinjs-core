@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "3.6.0-dev.5",
+  "version": "4.0.0-dev.54",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
   "main": "lib/cjs/ecschema-editing.js",
@@ -40,14 +40,14 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/ecschema-metadata": "workspace:*",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.11.5",
+    "@types/node": "^18.11.5",
     "@types/sinon": "^9.0.0",
     "@xmldom/xmldom": "~0.8.5",
     "benchmark": "^2.1.4",
@@ -59,12 +59,12 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.6.0-dev.5",
-    "@itwin/core-quantity": "workspace:^3.6.0-dev.5",
-    "@itwin/ecschema-metadata": "workspace:^3.6.0-dev.5"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.54",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.54",
+    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.54"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

@@ -34,13 +34,13 @@ class ElementChangeSets {
 function generateElementChanges(numInserts: number, numUpdates: number, numDeletes: number): ElementChangeSets {
   const changes = new ElementChangeSets();
   for (let i = 0; i < numInserts; i++)
-    changes.inserts.add({ id: ids.next, type: DbOpcode.Insert, range: nextRange() });
+    changes.inserts.add({ id: ids.getNext(), type: DbOpcode.Insert, range: nextRange() });
 
   for (let i = 0; i < numUpdates; i++)
-    changes.updates.add({ id: ids.next, type: DbOpcode.Update, range: nextRange() });
+    changes.updates.add({ id: ids.getNext(), type: DbOpcode.Update, range: nextRange() });
 
   for (let i = 0; i < numDeletes; i++)
-    changes.deletes.add({ id: ids.next, type: DbOpcode.Delete });
+    changes.deletes.add({ id: ids.getNext(), type: DbOpcode.Delete });
 
   return changes;
 }
@@ -91,7 +91,7 @@ function elementChangesToJSON(changes: ElementChangeSets): ModelGeometryChangesP
   const updated = updatedIds && updatedRanges ? { ids: updatedIds, ranges: updatedRanges } : undefined;
   return {
     inserted, updated, deleted,
-    id: ids.next,
+    id: ids.getNext(),
     guid: Guid.createValue(),
     range: nextRange().toJSON(),
   };

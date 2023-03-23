@@ -6,25 +6,25 @@
 /* eslint-disable no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
-import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
-import { Range3d } from "../../geometry3d/Range";
-import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
-import { LineSegment3d } from "../../curve/LineSegment3d";
+import { AnyCurve } from "../../curve/CurveChain";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
-import { RegionOps } from "../../curve/RegionOps";
 import { Path } from "../../curve/Path";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { RegionOps } from "../../curve/RegionOps";
 import { Geometry } from "../../Geometry";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Range3d } from "../../geometry3d/Range";
+import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 const chainCollectorInputDirectory = "./src/test/testInputs/ChainCollector/";
 const noOffset0 = "aecc_alignment";
@@ -223,14 +223,14 @@ describe("ChainCollector", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.1);
       const outsideOffsetLength = OffsetHelpers.sumLengths(offsets.outsideOffsets);
       // skip the inside and outside ..
-      const myOffsetA: GeometryQuery[] = [];
-      OffsetHelpers.appendOffsets(primitives, -offsetDistance, myOffsetA, true);
+      const myOffsetA: AnyCurve[] = [];
+      OffsetHelpers.appendOffsets(primitives, -offsetDistance, myOffsetA);
       const myLengthA = OffsetHelpers.sumLengths(myOffsetA);
       y0 += yShift;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, myOffsetA, x0, y0);
 
-      const myOffsetB: GeometryQuery[] = [];
-      OffsetHelpers.appendOffsets([primitives], -offsetDistance, myOffsetB, false);
+      const myOffsetB: AnyCurve[] = [];
+      OffsetHelpers.appendOffsets([primitives], -offsetDistance, myOffsetB);
       const myLengthB = OffsetHelpers.sumLengths(myOffsetB);
       y0 += yShift;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, myOffsetB, x0, y0);

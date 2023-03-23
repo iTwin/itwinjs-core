@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
-  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, PhysicalElementProps,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -26,7 +25,7 @@ import {
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
@@ -34,6 +33,7 @@ import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
+import { samplePngTexture } from "../imageData";
 
 // spell-checker: disable
 
@@ -157,29 +157,29 @@ describe("iModel", () => {
       assert.equal(error.errorNumber, IModelStatus.NotFound);
     }
 
-    const element1: Element | undefined = imodel1.elements.tryGetElement(code1);
-    const element2: Element | undefined = imodel1.elements.tryGetElement("0x34");
-    const element3: Element | undefined = imodel1.elements.tryGetElement(badCode);
+    const element1 = imodel1.elements.tryGetElement(code1);
+    const element2 = imodel1.elements.tryGetElement("0x34");
+    const element3 = imodel1.elements.tryGetElement(badCode);
     assert.isDefined(element1);
     assert.isDefined(element2);
     assert.isUndefined(element3);
-    const elementProps1: ElementProps | undefined = imodel1.elements.tryGetElementProps(code1);
-    const elementProps2: ElementProps | undefined = imodel1.elements.tryGetElementProps("0x34");
-    const elementProps3: ElementProps | undefined = imodel1.elements.tryGetElementProps(badCode);
+    const elementProps1 = imodel1.elements.tryGetElementProps(code1);
+    const elementProps2 = imodel1.elements.tryGetElementProps("0x34");
+    const elementProps3 = imodel1.elements.tryGetElementProps(badCode);
     assert.isDefined(elementProps1);
     assert.isDefined(elementProps2);
     assert.isUndefined(elementProps3);
 
-    const model1: Model | undefined = imodel1.models.tryGetModel(IModel.dictionaryId);
-    const modelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(IModel.dictionaryId);
-    const subModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.dictionaryId);
+    const model1 = imodel1.models.tryGetModel(IModel.dictionaryId);
+    const modelProps1 = imodel1.models.tryGetModelProps(IModel.dictionaryId);
+    const subModel1 = imodel1.models.tryGetSubModel(IModel.dictionaryId);
     assert.isDefined(model1);
     assert.isDefined(modelProps1);
     assert.isDefined(subModel1);
-    const badModel1: Model | undefined = imodel1.models.tryGetModel(Id64.fromUint32Pair(999, 999));
-    const badModelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(Id64.fromUint32Pair(999, 999));
-    const badSubModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.rootSubjectId);
-    const badSubModel2: Model | undefined = imodel1.models.tryGetSubModel(badCode);
+    const badModel1 = imodel1.models.tryGetModel(Id64.fromUint32Pair(999, 999));
+    const badModelProps1 = imodel1.models.tryGetModelProps(Id64.fromUint32Pair(999, 999));
+    const badSubModel1 = imodel1.models.tryGetSubModel(IModel.rootSubjectId);
+    const badSubModel2 = imodel1.models.tryGetSubModel(badCode);
     assert.isUndefined(badModel1);
     assert.isUndefined(badModelProps1);
     assert.isUndefined(badSubModel1);
@@ -220,17 +220,37 @@ describe("iModel", () => {
 
     const a2 = imodel2.elements.getElement("0x1d");
     assert.exists(a2);
-    assert.isTrue(a2.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    const el3: Element = imodel2.elements.getElement(a2.federationGuid!);
+    expect(a2.federationGuid).equal("18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const el3 = imodel2.elements.getElement(a2.federationGuid!);
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.equal(a2.id, el3.id);
     roundtripThroughJson(el3);
 
-    const newEl = el3;
+    const newEl = el3.toJSON();
     newEl.federationGuid = undefined;
-    const newId = imodel2.elements.insertElement(newEl.toJSON());
-    assert.isTrue(Id64.isValidId64(newId), "insert worked");
+    newEl.code = { scope: "bad scope", spec: "0x10", value: "new code" };
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+    newEl.code.scope = "0x34322"; // valid id, but element doesn't exist
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+
+    newEl.code.scope = el3.federationGuid!;
+    const newId = imodel2.elements.insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
+    const a4 = imodel2.elements.getElementProps(newId);
+    expect(a4.code.scope).equal(el3.id);
+
+    a4.code.scope = "0x13343";
+    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope");
+
+    a4.code.scope = "0x1";
+    imodel2.elements.updateElement(a4); // should change the code scope to new element
+    let a5 = imodel2.elements.getElementProps(newId);
+    expect(a5.code.scope).equal("0x1");
+
+    a4.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
+    imodel2.elements.updateElement(a4);
+    a5 = imodel2.elements.getElementProps(newId);
+    expect(a5.code.scope).equal(el3.id);
   });
 
   it("should optionally detect class mismatches", () => {
@@ -325,19 +345,22 @@ describe("iModel", () => {
       pattern_weight: 0.5,
       TextureId: "test_textureid",
     };
-    /* eslint-enable @typescript-eslint/naming-convention */
 
-    const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
-    renderMaterialParams.description = testDescription;
-    renderMaterialParams.color = color;
-    renderMaterialParams.specularColor = specularColor;
-    renderMaterialParams.finish = finish;
-    renderMaterialParams.transmit = transmit;
-    renderMaterialParams.diffuse = diffuse;
-    renderMaterialParams.specular = specular;
-    renderMaterialParams.reflect = reflect;
-    renderMaterialParams.reflectColor = reflectColor;
-    renderMaterialParams.patternMap = textureMapProps;
+    /* eslint-enable @typescript-eslint/naming-convention */
+    const renderMaterialParams: RenderMaterialElementParams = {
+      paletteName: testPaletteName,
+      description: testDescription,
+      color,
+      specularColor,
+      finish,
+      transmit,
+      diffuse,
+      specular,
+      reflect,
+      reflectColor,
+      patternMap: textureMapProps,
+    };
+
     const renderMaterialId = RenderMaterialElement.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
     const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
@@ -376,16 +399,11 @@ describe("iModel", () => {
   });
 
   it("attempt to apply material to new element in imodel5", () => {
-    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
-    // bottom right pixel.  The rest of the square is red.
-    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
-
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
-    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
     const testTextureDescription = "empty description";
 
-    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureDescription);
+    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, samplePngTexture.base64, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
@@ -468,7 +486,7 @@ describe("iModel", () => {
     const props: DisplayStyleProps = {
       classFullName: DisplayStyle3d.classFullName,
       model: IModel.dictionaryId,
-      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId, value: "test style" },
       isPrivate: false,
       jsonProperties: {
         styles: settings,
@@ -1219,7 +1237,6 @@ describe("iModel", () => {
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subCategory).scopeType, CodeScopeSpec.Type.ParentElement);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.viewDefinition).scopeType, CodeScopeSpec.Type.Model);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subject).scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.isTrue(imodel2.codeSpecs.getByName(BisCodeSpec.spatialCategory).isManagedWithIModel);
   });
 
   it("should create and insert CodeSpecs", () => {
@@ -1229,7 +1246,6 @@ describe("iModel", () => {
     assert.deepEqual(codeSpecId, codeSpec.id);
     assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
     const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
@@ -1248,13 +1264,11 @@ describe("iModel", () => {
 
     const codeSpec4 = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
-    codeSpec4.isManagedWithIModel = false;
     const codeSpec4Id = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
     assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const copyOfCodeSpec4 = testImodel.codeSpecs.getById(codeSpec4Id);
-    assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
     assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
@@ -1278,14 +1292,12 @@ describe("iModel", () => {
     if (true) {
       const iModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
       const codeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      codeSpec.isManagedWithIModel = false;
       const codeSpecId = iModelDb.codeSpecs.insert(codeSpec);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.id, codeSpecId);
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.saveChanges();
       iModelDb.close();
     }
@@ -1298,7 +1310,6 @@ describe("iModel", () => {
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.close();
     }
   });
@@ -1853,10 +1864,9 @@ describe("iModel", () => {
       await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: GeoCoordStatus.Success });
 
       await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x: -0.80184489371471, y: 51.978341907041205, z: 0.0 }, s: GeoCoordStatus.Success });
-      await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 66091.33104544488, y: 394055.0279323471, z: 0.0 }, { p: { x: -2.8125, y: 54.162433968067798, z: 0.0 }, s: GeoCoordStatus.Success });
-      await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
-      await convertTest("BritishNatGrid-Ellipsoid2.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "ETRF89", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2030365061523707, y: 49.960007477936202, z: 0.0 }, s: GeoCoordStatus.Success });
-      await convertTest("BritishNatGrid-Ellipsoid3.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "OSGB", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.718, y: 11572.405, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid2.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "ETRF89", { x: 170370.718, y: 11572.405, z: 0.0 }, { p: { x: -5.2030365061523707, y: 49.960007477936202, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid3.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "OSGB", { x: 170370.718, y: 11572.405, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
       await convertTest("GermanyDHDN-3-Ellipsoid1.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: GeoCoordStatus.Success });
       await convertTest("GermanyDHDN-3-Ellipsoid2.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "DHDN/3", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: GeoCoordStatus.Success });
       await convertTest("GermanyDHDN-3-Ellipsoid3.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "WGS84", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.034215937440818, y: 50.573862480894853, z: 0.0 }, s: GeoCoordStatus.Success });
@@ -1917,7 +1927,7 @@ describe("iModel", () => {
               longitudeOfOrigin: -122,
               latitudeOfOrigin: 37.66666666667,
               standardParallel1: 39.833333333333336,
-              standardParallel2: 38.333333333333334,
+              standardParallel2: 38.333333333333336,
               falseEasting: 2000000.0,
               falseNorthing: 500000.0,
             },
@@ -1959,12 +1969,12 @@ describe("iModel", () => {
                 sourceEllipsoid: {
                   id: "CLRK66",
                   equatorialRadius: 6378160.0,
-                  polarRadius: 6356774.719195305951,
+                  polarRadius: 6356774.719195306,
                 },
                 targetEllipsoid: {
                   id: "WGS84",
                   equatorialRadius: 6378160.0,
-                  polarRadius: 6356774.719195305951,
+                  polarRadius: 6356774.719195306,
                 },
                 gridFile: {
                   files: [
@@ -2570,17 +2580,11 @@ describe("iModel", () => {
     expect((elProps as any).isPrivate).undefined;
     expect((elProps as any).isInstanceOfEntity).undefined;
 
-    // update UserLabel to undefined
-    element.userLabel = undefined;
-    element.update();
-    element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.userLabel, undefined); // NOTE: userLabel is cleared when userLabel is specified as undefined
-
-    // update UserLabel to ""
+    // remove userlabel by setting it to the blank string
     element.userLabel = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.userLabel); // NOTE: userLabel is also cleared when the empty string is specified
+    assert.isUndefined(element.userLabel); // NOTE: userLabel is cleared when the empty string is specified
   });
 
   it("should update FederationGuid", () => {
@@ -2616,17 +2620,22 @@ describe("iModel", () => {
     assert.equal(element.federationGuid, federationGuid);
     assert.isTrue(element.isPrivate);
 
-    // update FederationGuid to undefined
-    element.federationGuid = undefined;
-    element.update();
+    // remove federationGuid by setting it to undefined in ElementProps
+    const elProps = element.toJSON();
+    elProps.federationGuid = undefined;
+    imodel1.elements.updateElement(elProps);
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
 
-    // update FederationGuid to ""
-    element.federationGuid = "";
-    element.update();
-    element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.federationGuid);
+    // ensure that update doesn't change federationGuid from an element immediately after insert (toJSON should remove undefined value)
+    const subject5 = Subject.create(imodel1, IModel.rootSubjectId, "Subject5");
+    const s5Id = subject5.insert();
+    const s5pre = imodel1.elements.getElement<Subject>(s5Id);
+    subject5.description = "new descr";
+    subject5.update();
+    const s5post = imodel1.elements.getElement<Subject>(s5Id);
+    expect(s5pre.federationGuid).equal(s5post.federationGuid);
+    expect(s5post.description).equal(subject5.description);
   });
 
   it("should support partial update", () => {
@@ -2675,7 +2684,6 @@ describe("iModel", () => {
     // Element.FederationGuid is a custom-handled property
     assert.equal(subject1.federationGuid, federationGuid1);
     assert.equal(subject2.federationGuid, federationGuid2);
-    assert.isUndefined(subject3.federationGuid);
     assert.isUndefined(subject4.federationGuid);
 
     // test partial update of Description (auto-handled)
@@ -2683,7 +2691,7 @@ describe("iModel", () => {
       id: subject1.id,
       classFullName: subject1.classFullName,
       description: "Description1-Updated",
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     assert.equal(subject1.description, "Description1-Updated"); // should have been updated
     assert.isDefined(subject1.model);
@@ -2697,7 +2705,7 @@ describe("iModel", () => {
       id: subject2.id,
       classFullName: subject2.classFullName,
       userLabel: "UserLabel2-Updated",
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     assert.isDefined(subject2.model);
     assert.isDefined(subject2.parent);
@@ -2711,7 +2719,6 @@ describe("iModel", () => {
     subject2.description = "";
     subject3.description = "Description3";
     subject4.description = "Description4";
-    subject1.userLabel = undefined;
     subject2.userLabel = "";
     subject3.userLabel = "UserLabel3";
     subject4.userLabel = "UserLabel4";
@@ -2731,31 +2738,31 @@ describe("iModel", () => {
     assert.equal(subject4.description, "Description4");
 
     // Element.UserLabel is a custom-handled property
-    assert.isUndefined(subject1.userLabel);
     assert.isUndefined(subject2.userLabel); // NOTE: different behavior between auto-handled and custom-handled
     assert.equal(subject3.userLabel, "UserLabel3");
     assert.equal(subject4.userLabel, "UserLabel4");
 
     // test partial update of Description to undefined
+    const s3Fed = subject3.federationGuid;
     imodel1.elements.updateElement({
       id: subject3.id,
       classFullName: subject3.classFullName,
       description: undefined,
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
     assert.isUndefined(subject3.description); // should have been updated
     assert.isDefined(subject3.model);
     assert.isDefined(subject3.parent);
     assert.equal(subject3.code.value, "Subject3"); // should not have changed
     assert.equal(subject3.userLabel, "UserLabel3"); // should not have changed
-    assert.isUndefined(subject3.federationGuid); // should not have changed
+    assert.equal(subject3.federationGuid, s3Fed); // should not have changed
 
     // test partial update of UserLabel to undefined
     imodel1.elements.updateElement({
       id: subject4.id,
       classFullName: subject4.classFullName,
       userLabel: undefined,
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
     assert.isDefined(subject4.model);
     assert.isDefined(subject4.parent);
@@ -2763,5 +2770,6 @@ describe("iModel", () => {
     assert.equal(subject4.code.value, "Subject4"); // should not have changed
     assert.equal(subject4.description, "Description4"); // should not have changed
     assert.isUndefined(subject4.federationGuid); // should not have changed
+
   });
 });

@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+import { BriefcaseDb } from '@itwin/core-backend';
 import { CodeSpec } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { ConcreteEntity } from '@itwin/core-backend';
@@ -23,6 +24,7 @@ import { FontProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelDb } from '@itwin/core-backend';
 import { IModelElementCloneContext } from '@itwin/core-backend';
+import { IModelJsNative } from '@itwin/core-backend';
 import { Model } from '@itwin/core-backend';
 import { ModelProps } from '@itwin/core-common';
 import { Placement2d } from '@itwin/core-common';
@@ -32,6 +34,39 @@ import { RelationshipProps } from '@itwin/core-backend';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SQLiteDb } from '@itwin/core-backend';
+
+// @beta
+export class ChangedInstanceIds {
+    // (undocumented)
+    aspect: ChangedInstanceOps;
+    // (undocumented)
+    codeSpec: ChangedInstanceOps;
+    // (undocumented)
+    element: ChangedInstanceOps;
+    // (undocumented)
+    font: ChangedInstanceOps;
+    static initialize(accessToken: AccessToken | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds>;
+    // (undocumented)
+    model: ChangedInstanceOps;
+    // (undocumented)
+    relationship: ChangedInstanceOps;
+}
+
+// @beta
+export class ChangedInstanceOps {
+    addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void;
+    // (undocumented)
+    deleteIds: Set<string>;
+    // (undocumented)
+    insertIds: Set<string>;
+    // (undocumented)
+    updateIds: Set<string>;
+}
+
+// @beta
+export interface ExportSchemaResult {
+    schemaPath?: string;
+}
 
 // @internal
 export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean;
@@ -72,6 +107,7 @@ export class IModelExporter {
     saveStateToJson(): IModelExporterState;
     shouldExportElement(element: Element_2): boolean;
     readonly sourceDb: IModelDb;
+    get sourceDbChanges(): ChangedInstanceIds | undefined;
     visitElements: boolean;
     visitRelationships: boolean;
     wantGeometry: boolean;
@@ -121,7 +157,7 @@ export abstract class IModelExportHandler {
     onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
     onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
-    onExportSchema(_schema: Schema): Promise<void>;
+    onExportSchema(_schema: Schema): Promise<void | ExportSchemaResult>;
     onProgress(): Promise<void>;
     // @internal
     preExportElement(_element: Element_2): Promise<void>;
@@ -233,7 +269,7 @@ export class IModelTransformer extends IModelExportHandler {
     onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     onExportModel(sourceModel: Model): void;
     onExportRelationship(sourceRelationship: Relationship): void;
-    onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
+    onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void | ExportSchemaResult>;
     onTransformElement(sourceElement: Element_2): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -267,7 +303,7 @@ export class IModelTransformer extends IModelExportHandler {
     shouldExportElement(_sourceElement: Element_2): boolean;
     shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
-    // @deprecated
+    // @deprecated (undocumented)
     protected skipElement(_sourceElement: Element_2): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;

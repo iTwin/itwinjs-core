@@ -20,6 +20,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
+/* eslint-disable deprecation/deprecation */
 
 /** @internal */
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };

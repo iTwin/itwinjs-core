@@ -31,6 +31,7 @@ import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
 
 /** @internal */
 export enum AccuDrawFlags {
+  None = 0,
   SetModePolar = 1,
   SetModeRect = 1 << 1,
   SetOrigin = (1 << 2),
@@ -1943,7 +1944,7 @@ export class AccuDraw {
     if (context.viewport.viewFlags.acsTriad) {
       context.viewport.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
       if (undefined === this._acsPickId)
-        this._acsPickId = context.viewport.iModel.transientIds.next;
+        this._acsPickId = context.viewport.iModel.transientIds.getNext();
       const acsPickBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._acsPickId);
       const color = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor, 50);
       acsPickBuilder.setSymbology(color, color, 6);

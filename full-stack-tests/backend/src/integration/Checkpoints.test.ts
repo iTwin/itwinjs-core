@@ -57,7 +57,7 @@ describe("Checkpoints", () => {
   before(async () => {
     originalEnv = { ...process.env };
     process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
-    fs.rmSync(cloudcacheDir, { recursive: true, force: true });
+    IModelJsFs.removeSync(cloudcacheDir);
 
     // Props for daemon
     accountProps = {
@@ -139,7 +139,7 @@ describe("Checkpoints", () => {
         changeset: testChangeSet,
       })).eventually.rejectedWith(/Cannot create CloudCache: invalid cache directory or directory does not exist/);
     } finally {
-      fs.rmSync(portfile);
+      IModelJsFs.removeSync(portfile);
     }
   });
 
@@ -154,10 +154,12 @@ describe("Checkpoints", () => {
     assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
+    // eslint-disable-next-line deprecation/deprecation
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
     await iModel.refreshContainerSas(accessToken);
+    // eslint-disable-next-line deprecation/deprecation
     numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
@@ -173,6 +175,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
+    // eslint-disable-next-line deprecation/deprecation
     numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
@@ -187,6 +190,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
     assert.equal(iModel2.iTwinId, testITwinId);
     assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
+    // eslint-disable-next-line deprecation/deprecation
     numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 3);
 
@@ -202,6 +206,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel3.changeset.id, testChangeSet2.id);
     assert.equal(iModel3.iTwinId, testITwinId2);
     assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
+    // eslint-disable-next-line deprecation/deprecation
     numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 4);
 
@@ -230,10 +235,12 @@ describe("Checkpoints", () => {
       assert.equal(iModel.changeset.id, testChangeSet.id);
       assert.equal(iModel.iTwinId, testITwinId);
       assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
+      // eslint-disable-next-line deprecation/deprecation
       let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
       assert.equal(numModels, 32);
 
       await iModel.refreshContainerSas(accessToken);
+      // eslint-disable-next-line deprecation/deprecation
       numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
       assert.equal(numModels, 32);
 
@@ -249,6 +256,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel.changeset.id, testChangeSet.id);
       assert.equal(iModel.iTwinId, testITwinId);
       assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
+      // eslint-disable-next-line deprecation/deprecation
       numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
       assert.equal(numModels, 32);
 
@@ -263,6 +271,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
       assert.equal(iModel2.iTwinId, testITwinId);
       assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
+      // eslint-disable-next-line deprecation/deprecation
       numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
       assert.equal(numModels, 3);
 
@@ -278,6 +287,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel3.changeset.id, testChangeSet2.id);
       assert.equal(iModel3.iTwinId, testITwinId2);
       assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
+      // eslint-disable-next-line deprecation/deprecation
       numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
       assert.equal(numModels, 4);
 

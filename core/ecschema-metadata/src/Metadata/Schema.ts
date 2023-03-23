@@ -145,7 +145,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
+  protected createClass<T extends AnyClass>(type: (new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
     const item = new type(this, name, modifier);
     this.addItem(item);
     return item;
@@ -177,7 +177,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
+  protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;

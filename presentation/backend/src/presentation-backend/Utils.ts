@@ -13,19 +13,21 @@ import {
   combineDiagnosticsSeverities, compareDiagnosticsSeverities, Diagnostics, DiagnosticsLogEntry, DiagnosticsOptions, InstanceKey,
 } from "@itwin/presentation-common";
 
-const ecPresentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/ECPresentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
-const rulesEngine = require("@itwin/presentation-common/lib/cjs/assets/locales/en/RulesEngine.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+const presentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/Presentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /** @internal */
 export function getLocalizedStringEN(key: string) {
+  let result = presentation;
   const [namespace, identifier] = key.split(":", 2);
-  if (namespace === "ECPresentation") {
-    return ecPresentation[identifier];
+  if (namespace !== "Presentation")
+    return key;
+  const keySteps = identifier.split(".");
+  for (const keyStep of keySteps) {
+    if (keyStep in result === false)
+      return key;
+    result = result[keyStep];
   }
-  if (namespace === "RulesEngine") {
-    return rulesEngine[identifier];
-  }
-  return key;
+  return typeof result === "string" ? result : key;
 }
 
 /** @internal */

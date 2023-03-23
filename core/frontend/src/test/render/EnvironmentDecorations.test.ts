@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { ColorDef, Environment, EnvironmentProps, Gradient, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Environment, EnvironmentProps, Gradient, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
 import { EnvironmentDecorations } from "../../EnvironmentDecorations";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
@@ -17,7 +17,7 @@ describe("EnvironmentDecorations", () => {
   let iModel: IModelConnection;
 
   function createView(env?: EnvironmentProps): SpatialViewState {
-    const view = SpatialViewState.createBlank(iModel, {x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1});
+    const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     if (env)
       view.displayStyle.environment = Environment.fromJSON(env);
 
@@ -52,7 +52,7 @@ describe("EnvironmentDecorations", () => {
   }
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
 
     const pngData = new Uint8Array([
       137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206,

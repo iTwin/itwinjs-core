@@ -103,11 +103,6 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
-/** Extracts a subset of literals `U` from a union of literals `T` in a type-safe way.
- * @beta
- */
-export type ExtractLiterals<T, U extends T> = Extract<T, U>;
-
 /** A runtime property omitter, makes a shallow copy of the given object without the specified properties
  * Compatible with the typescript `Omit` mapped type:
  * ```js
@@ -121,3 +116,20 @@ export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K
     delete clone[key];
   return clone;
 }
+
+/** Defines a type wherein at least one of the properties of T is required to exist.
+ * In the following example, paying for a coffee requires a customer to have either a credit card, some cash, or both in their wallet.
+ * ```ts
+ *  interface Wallet {
+ *    cash?: number;
+ *    card?: CreditCard;
+ *  }
+ *
+ *  function payForCoffee(wallet: RequireAtLeastOne<Wallet>) { ... }
+ * ```
+ * Source: [@azure/keyvault-certificates](https://learn.microsoft.com/en-us/javascript/api/@azure/keyvault-certificates/requireatleastone?view=azure-node-latest).
+ * @public
+ */
+export type RequireAtLeastOne<T> = {
+  [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];

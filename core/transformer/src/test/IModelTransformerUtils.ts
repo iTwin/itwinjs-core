@@ -257,6 +257,7 @@ export async function assertIdentityTransformation(
   const targetToSourceElemsMap = new Map<Element, Element | undefined>();
   const targetElemIds = new Set<Id64String>();
 
+  // eslint-disable-next-line deprecation/deprecation
   for await (const [sourceElemId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Element"
   )) {
@@ -381,6 +382,7 @@ export async function assertIdentityTransformation(
     }
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   for await (const [targetElemId] of targetDb.query(
     "SELECT ECInstanceId FROM bis.Element"
   )) {
@@ -426,6 +428,7 @@ export async function assertIdentityTransformation(
   const targetToSourceModelsMap = new Map<Model, Model | undefined>();
   const targetModelIds = new Set<Id64String>();
 
+  // eslint-disable-next-line deprecation/deprecation
   for await (const [sourceModelId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Model"
   )) {
@@ -448,6 +451,7 @@ export async function assertIdentityTransformation(
     }
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   for await (const [targetModelId] of targetDb.query(
     "SELECT ECInstanceId FROM bis.Model"
   )) {
@@ -482,11 +486,13 @@ export async function assertIdentityTransformation(
     { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
   ];
   const sourceRelationships = new Map<string, any>();
+  // eslint-disable-next-line deprecation/deprecation
   for await (const row of sourceDb.query(...query)) {
     sourceRelationships.set(makeRelationKey(row), row);
   }
 
   const targetRelationshipsToFind = new Map<string, any>();
+  // eslint-disable-next-line deprecation/deprecation
   for await (const row of targetDb.query(...query)) {
     targetRelationshipsToFind.set(makeRelationKey(row), row);
   }
@@ -1282,7 +1288,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  public override async onExportSchema(schema: Schema): Promise<void> {
+  public override async onExportSchema(schema: Schema) {
     this.writeLine(`[Schema] ${schema.name}`);
     return super.onExportSchema(schema);
   }
@@ -1471,4 +1477,37 @@ export async function runWithCpuProfiler<F extends () => any>(
   await invokeFunc(session, "Profiler.disable");
   session.disconnect();
   return result;
+}
+
+export function getProfileVersion(db: IModelDb): ProfileVersion {
+  const rows = db.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db' AND Name='SchemaVersion'", (s) => [...s]);
+  const profile = JSON.parse(rows[0].strData);
+  assert(profile.major !== undefined);
+  assert(profile.minor !== undefined);
+  assert(profile.sub1 !== undefined);
+  assert(profile.sub2 !== undefined);
+  return profile;
+}
+
+export interface ProfileVersion {
+  major: number;
+  minor: number;
+  sub1: number;
+  sub2: number;
+}
+
+/**
+ * Compare two profile versions, returning
+ * a positive integer if the first is greater than the second,
+ * 0 if they are equal,
+ * or a negative integer if the first is less than the second
+ */
+export function cmpProfileVersion(a: ProfileVersion, b: ProfileVersion): number {
+  for (const subKey of ["major", "minor", "sub1", "sub2"] as const) {
+    if (a[subKey] > b[subKey])
+      return 1;
+    else if (a[subKey] < b[subKey])
+      return -1;
+  }
+  return 0;
 }

@@ -12,7 +12,7 @@ const cpx = require("cpx2");
 const fs = require("fs");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const { validateTags } = require("./utils/validateTags");
-const { addSourceDir } = require("./utils/addSourceDir");
+const { addPackageMetadata } = require("./utils/addPackageMetadata");
 const argv = require("yargs").argv;
 
 // Makes the script crash on unhandled rejections instead of silently
@@ -29,7 +29,8 @@ const json = (argv.json === undefined) ? paths.appJsonDocs : argv.json;
 const baseUrlOptions = (argv.baseUrl === undefined) ? [] : ["--baseUrl", argv.baseUrl];
 const includeOptions = (argv.includes === undefined) ? [] : ["--includes", argv.includes];
 
-let excludeList = "**/node_modules/**/*,**/*test*/**/*";
+const testExclude = argv.testExcludeGlob ?? "**/*test*/**/*";
+let excludeList = `**/node_modules/**/*,${testExclude}`;
 if (argv.excludes !== undefined)
   excludeList += ",**/" + argv.excludes + "/**/*";
 if (argv.excludeGlob !== undefined)
@@ -84,13 +85,14 @@ spawn(require.resolve(".bin/typedoc"), args).then((code) => {
     cpx.copySync(path.join(source, argv.tsIndexFile), outputDir);
     fs.renameSync(path.join(outputDir, argv.tsIndexFile), path.join(outputDir, 'index.ts'));
   }
+
   // Copy CHANGELOG.json to json output folder
   if (fs.existsSync(path.join(process.cwd(), 'CHANGELOG.json'))) {
     cpx.copySync(path.join(process.cwd(), 'CHANGELOG.json'), outputDir);
   }
 
-  // Append the directory of the package to the output
-  addSourceDir(json, process.cwd());
+  // Append the directory of the package, version and repository URL to the output
+  addPackageMetadata(json, process.cwd());
 
   if (code === 0) {
     let tagErrors = validateTags(json);

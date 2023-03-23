@@ -492,9 +492,14 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
   public get lineWeights(): boolean { return this._lineWeights; }
 
-  /** @internal */
+  /** A set of elements that are always invisible.
+   * @note If an element is present in both `alwaysDrawn` and [[neverDrawn]], it will not be displayed - `neverDrawn` takes precedence.
+   */
   public get neverDrawn() { return this._neverDrawn; }
-  /** @internal */
+  /** A set of elements that are unconditionally displayed.
+   * @see [[isAlwaysDrawnExclusive]] to specify that *only* elements in this set will be displayed.
+   * @note If an element is present in both `alwaysDrawn` and [[neverDrawn]], it will not be displayed - `neverDrawn` takes precedence.
+   */
   public get alwaysDrawn() { return this._alwaysDrawn; }
 
   /** @internal */
@@ -721,7 +726,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @param replaceExisting Specifies whether to replace a pre-existing override for the same model.
    * @note These overrides take priority over all other overrides.
    * @note If [[defaultOverrides]] are defined, they will not apply to any element within this model, even if the supplied appearance overrides nothing.
-   * @deprecated Use [[FeatureOverrides.override]].
+   * @deprecated in 3.x. Use [[FeatureOverrides.override]].
    */
   public overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
     this.override({ modelId: id, appearance: app, onConflict: replaceExisting ? "replace" : "skip" });
@@ -733,7 +738,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @param replaceExisting Specifies whether to replace a pre-existing override for the same subcategory.
    * @note These overrides have lower priority than element and model overrides.
    * @note If [[defaultOverrides]] are defined, they will not apply to any geometry within this subcategory, even if the supplied appearance overrides nothing.
-   * @deprecated Use [[FeatureOverrides.override]].
+   * @deprecated in 3.x. Use [[FeatureOverrides.override]].
    */
   public overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
     this.override({ subCategoryId: id, appearance: app, onConflict: replaceExisting ? "replace" : "skip" });
@@ -745,7 +750,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @param replaceExisting Specifies whether to replace a pre-existing override for the same element.
    * @note These overrides take precedence over subcategory overrides, but not over model overrides.
    * @note If [[defaultOverrides]] are defined, they will not apply to this element, even if the supplied appearance overrides nothing.
-   * @deprecated Use [[FeatureOverrides.override]].
+   * @deprecated in 3.x. Use [[FeatureOverrides.override]].
    */
   public overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
     this.override({ elementId: id, appearance: app, onConflict: replaceExisting ? "replace" : "skip" });

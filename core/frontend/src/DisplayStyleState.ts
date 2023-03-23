@@ -50,7 +50,6 @@ export interface OsmBuildingDisplayOptions {
  * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  /** @internal */
   public static override get className() { return "DisplayStyle"; }
   private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
@@ -60,7 +59,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _assigningScript = false;
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated use [[onScheduleScriptChanged]].
+   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just before the [[scheduleScript]] property is changed. */
@@ -318,7 +317,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated Use [[scheduleScript]].
+   * @deprecated in 3.x. Use [[scheduleScript]].
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
@@ -796,7 +795,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
-  /** @internal */
+  /** Returns true if solar shadow display is enabled by this display style. */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
@@ -851,7 +850,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
-  /** @internal */
   public static override get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -862,7 +860,12 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
-    this._settings = new DisplayStyleSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyleSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 }
@@ -872,7 +875,6 @@ export class DisplayStyle2dState extends DisplayStyleState {
  * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  /** @internal */
   public static override get className() { return "DisplayStyle3d"; }
   private _settings: DisplayStyle3dSettings;
 
@@ -880,7 +882,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
     super(props, iModel, source);
-    this._settings = new DisplayStyle3dSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 

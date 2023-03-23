@@ -1057,7 +1057,7 @@ describe("TransitionSpiral3d", () => {
     const allGeometry: GeometryQuery[] = [];
 
     // distances in meters
-    const startPoint = Point3d.create(38.049581317, 391.30711461591967);
+    const startPoint = Point3d.create(38.049581317, 391.30711461591966);
     const startRadius = 0.1;
     const endRadius = 0;
     const startBearing = Angle.createRadians(0);
@@ -1070,7 +1070,7 @@ describe("TransitionSpiral3d", () => {
     if (ck.testPointer(clothoid)) {
       GeometryCoreTestIO.captureGeometry(allGeometry, clothoid);
 
-      const spacePoint = Point3d.create(36.079385122364806, 392.05867428412268);
+      const spacePoint = Point3d.create(36.079385122364805, 392.0586742841227);
       const detail = clothoid.closestPoint(spacePoint, false);
 
       if (ck.testPointer(detail) && ck.testPointer(detail.curve)) {

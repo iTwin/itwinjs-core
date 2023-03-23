@@ -51,6 +51,8 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
+import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 
 // spell:ignore fontid fontmap
 
@@ -147,6 +149,19 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 }
 
+/**
+ * Options for the importing of schemas
+ * @public
+ */
+export interface SchemaImportOptions {
+  /**
+   * An [[ECSchemaXmlContext]] to use instead of building a default one.
+   * This can be useful in rare cases where custom schema location logic is necessary
+   * @internal
+   */
+  ecSchemaXmlContext?: ECSchemaXmlContext;
+}
+
 /** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
 class NoLocks implements LockControl {
   public get isServerBased() { return false; }
@@ -208,6 +223,8 @@ export abstract class IModelDb extends IModel {
   public readonly elements = new IModelDb.Elements(this);
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
+  /** @beta */
+  public readonly channels: ChannelControl = new ChannelAdmin(this);
   private _relationships?: Relationships;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -473,7 +490,7 @@ export abstract class IModelDb extends IModel {
   /** Allow to execute query and read results along with meta data. The result are streamed.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
+   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -501,6 +518,7 @@ export abstract class IModelDb extends IModel {
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
    */
   public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
@@ -521,8 +539,10 @@ export abstract class IModelDb extends IModel {
    * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
+   * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
@@ -545,8 +565,10 @@ export abstract class IModelDb extends IModel {
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
@@ -632,6 +654,7 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         result.push(row);
       }
@@ -749,6 +772,21 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.abandonChanges();
   }
 
+  /**
+   * Save all changes and perform a [checkpoint](https://www.sqlite.org/c3ref/wal_checkpoint_v2.html) on this IModelDb.
+   * This ensures that all changes to the database since it was opened are saved to its file and the WAL file is truncated.
+   * @note Checkpoint automatically happens when IModelDbs are closed. However, the checkpoint
+   * operation itself can take some time. It may be useful to call this method prior to closing so that the checkpoint "penalty" is paid earlier.
+   * @note Another use for this function is to permit the file to be copied while it is open for write. iModel files should
+   * rarely be copied, and even less so while they're opened. But this scenario is sometimes encountered for tests.
+   */
+  public performCheckpoint() {
+    if (!this.isReadonly) {
+      this.saveChanges();
+      this.nativeDb.performCheckpoint();
+    }
+  }
+
   /** @internal */
   public reverseTxns(numOperations: number): IModelStatus {
     return this.nativeDb.reverseTxns(numOperations);
@@ -768,22 +806,22 @@ export abstract class IModelDb extends IModel {
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
+   * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(schemaFileNames: LocalFileName[]): Promise<void> {
-    if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Error importing schema");
-      this.clearCaches();
-      return;
-    }
+  public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
+    if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+      await this.acquireSchemaLock();
 
-    await this.acquireSchemaLock();
+    const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
+    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+      schemaLockHeld: true,
+      ecSchemaXmlContext: maybeCustomNativeContext,
+    };
 
-    const stat = this.nativeDb.importSchemas(schemaFileNames);
+    const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema");
     }
@@ -801,18 +839,10 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
-    if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
-      if (DbResult.BE_SQLITE_OK !== status) {
-        throw new IModelError(status, "Error importing schema");
-      }
-      this.clearCaches();
-      return;
-    }
+    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+      await this.acquireSchemaLock();
 
-    await this.acquireSchemaLock();
-
-    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema");
 
@@ -944,7 +974,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any); // TODO: Remove "as any" when NativeLibrary.ts is updated so "spec" isn't marked as required
   }
 
   /** Prepare an ECSQL statement.
@@ -1686,6 +1716,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
      * @throws [[IModelError]] if unable to insert the element.
+     * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
+     * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
+     * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
+     * if you intend to continue working with it. That will ensure its values reflect the persistent state.
      */
     public insertElement(elProps: ElementProps): Id64String {
       try {
@@ -2080,7 +2114,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return viewStateData;
     }
 
-    /** @deprecated use [[getViewStateProps]]. */
+    /** @deprecated in 3.x. use [[getViewStateProps]]. */
     public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
       const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
       let drawingExtents;
@@ -2369,8 +2403,8 @@ export class BriefcaseDb extends IModelDb {
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
     await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
     try {
-      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
-      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
     } finally {
       await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
     }
@@ -2555,6 +2589,7 @@ export class SnapshotDb extends IModelDb {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
+    iModelDb.performCheckpoint();
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
 
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -2569,7 +2604,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    nativeDb.saveChanges();
+
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
@@ -2628,7 +2663,7 @@ export class SnapshotDb extends IModelDb {
     const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
     try {
-      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
+      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot);
     } catch (err: any) {
       snapshot.close();
       throw err;
@@ -2710,9 +2745,9 @@ export class StandaloneDb extends BriefcaseDb {
    * @see [[StandaloneDb.validateSchemas]]
    */
   public static upgradeStandaloneSchemas(filePath: LocalFileName) {
-    let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
+    let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade, schemaLockHeld: true });
     nativeDb.closeIModel();
-    nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade, schemaLockHeld: true });
     nativeDb.closeIModel();
   }
 

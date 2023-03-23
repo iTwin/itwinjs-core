@@ -15,19 +15,20 @@ import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry";
  * `degrees` or `radians` because both are available if requested by caller.
  * * The various access method are named so that callers can specify whether untyped numbers passed in or
  * out are degrees or radians.
+ * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/AngleSweep
  * @public
  */
 export class Angle implements BeJSONFunctions {
   /** maximal accuracy value of pi/12 (15 degrees), in radians */
-  public static readonly piOver12Radians = 0.26179938779914943653855361527329;
+  public static readonly piOver12Radians = 0.26179938779914946;
   /** maximal accuracy value of pi/4 (45 degrees), in radians */
-  public static readonly piOver4Radians = 7.85398163397448280000e-001;
+  public static readonly piOver4Radians = 7.853981633974483e-001;
   /** maximal accuracy value of pi/2 (90 degrees), in radians */
-  public static readonly piOver2Radians = 1.57079632679489660000e+000;
+  public static readonly piOver2Radians = 1.5707963267948966e+000;
   /** maximal accuracy value of pi (180 degrees), in radians */
-  public static readonly piRadians = 3.14159265358979310000e+000;
+  public static readonly piRadians = 3.141592653589793e+000;
   /** maximal accuracy value of 2*pi (360 degrees), in radians */
-  public static readonly pi2Radians = 6.28318530717958620000e+000;
+  public static readonly pi2Radians = 6.283185307179586e+000;
   /** scale factor for converting radians to degrees */
   public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
   /** scale factor for converting degrees to radians */
@@ -453,11 +454,13 @@ export class Angle implements BeJSONFunctions {
      * perpendicular to the ellipse.
      * * Then 0 = W(t0).x'(t0) = (U cos(t0) + V sin(t0)).(V cos(t0) - U sin(t0)) = U.V cos(2t0) + 0.5 (V.V - U.U) sin(2t0)
      * implies sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the three dot products on the RHS.
+     * math details can be found at docs/learning/geometry/Angle.md
      * @param dotUU dot product of vectorU with itself
      * @param dotVV dot product of vectorV with itself
      * @param dotUV dot product of vectorU with vectorV
      */
   public static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true): TrigValues {
+
     const cos2t0 = dotUU - dotVV;
     const sin2t0 = 2.0 * dotUV;
     if (favorZero && Math.abs(sin2t0) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
@@ -479,6 +482,45 @@ export class Angle implements BeJSONFunctions {
     const uDotV = ux * vx + uy * vy + uz * vz;
     return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
   }
+  /**
+   * * Returns the angle between two vectors, with the vectors given as xyz components, and an up vector to resolve angle to a full 2PI range.
+   * * The returned angle is (-PI < radians <= PI) or (0 <= radians < 2 * PI)
+   * * The angle is in the plane of the U and V vectors.
+   * * The upVector determines a positive side of the plane but need not be strictly perpendicular to the plane.
+   *
+   * @param ux x component of vector u
+   * @param uy y component of vector u
+   * @param uz z component of vector u
+   * @param vx x component of vector v
+   * @param vy y component of vector v
+   * @param vz z component of vector v
+   * @param upVectorX x component of vector to positive side of plane.
+   * @param upVectorY y component of vector to positive side of plane.
+   * @param upVectorZ z component of vector to positive side of plane.
+   * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI).  If false, return signed (-PI < radians <= PI)
+   */
+  public static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
+    upVectorX: number, upVectorY: number, upVectorZ: number,
+    adjustToPositive: boolean = false): number {
+    const uDotV = ux * vx + uy * vy + uz * vz;
+    const wx = uy * vz - uz * vy;
+    const wy = uz * vx - ux * vz;
+    const wz = ux * vy - uy * vx;
+    const upDotW = upVectorX * wx + upVectorY * wy + upVectorZ * wz;
+    const crossMagnitude = Geometry.hypotenuseXYZ(wx, wy, wz);
+    if (upDotW < 0.0) {
+      if (adjustToPositive) {
+        // The turn is greater than 180 degrees.  Take a peculiarly oriented atan2 to get the excess-180 part as addition to PI.
+        // This gives the smoothest numerical transition passing PI.
+        return Math.PI + Math.atan2(crossMagnitude, -uDotV);
+      } else {
+        return -Math.atan2(crossMagnitude, uDotV);
+      }
+    } else {
+      return Math.atan2(crossMagnitude, uDotV);
+    }
+  }
+
   /**
    * Add a multiple of a full circle angle (360 degrees, 2PI) in place.
    * @param multiple multiplier factor

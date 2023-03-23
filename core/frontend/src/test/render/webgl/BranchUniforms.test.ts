@@ -13,6 +13,7 @@ import { Branch } from "../../../render/webgl/Graphic";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { Target } from "../../../render/webgl/Target";
+import { EmptyLocalization } from "@itwin/core-common";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
@@ -97,7 +98,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
 
 describe("BranchUniforms", async () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

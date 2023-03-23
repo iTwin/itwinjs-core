@@ -78,9 +78,7 @@ export abstract class IModelConnection extends IModel {
   public get subcategories(): SubCategoriesCache { return this.categories.cache; }
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The Geographic location services available for this iModelConnection
-   * @internal
-   */
+  /** The Geographic location services available for this iModelConnection. */
   public readonly geoServices: GeoServices;
   /** @internal Whether GCS has been disabled for this iModelConnection. */
   protected _gcsDisabled = false;
@@ -91,6 +89,8 @@ export abstract class IModelConnection extends IModel {
   /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
    * [[expandDisplayedExtents]], but never smaller, to accommodate data sources like reality models that may exceed the project extents.
    * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
+   * @deprecated in 3.6. These extents are still computed, but no longer used to determine the viewed extents of a [[SpatialViewState]]. It is not useful to
+   * perpetually expand the iModel's extents.
    */
   public readonly displayedExtents: AxisAlignedBox3d;
   private readonly _extentsExpansion = Range3d.createNull();
@@ -156,12 +156,6 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
-
-  /** Event called immediately after *this* IModelConnection has its displayed extents expanded.
-   * @note This event is called only for this IModelConnection.
-   * @internal
-   */
-  public readonly onDisplayedExtentsExpansion = new BeEvent<() => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
@@ -231,10 +225,12 @@ export abstract class IModelConnection extends IModel {
 
     this.tiles = new Tiles(this);
     this.geoServices = new GeoServices(this);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
+      /* eslint-disable-next-line deprecation/deprecation */
       this.expandDisplayedExtents(this._extentsExpansion);
     });
 
@@ -259,7 +255,7 @@ export abstract class IModelConnection extends IModel {
   /** Allow to execute query and read results along with meta data. The result are streamed.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
+   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -295,6 +291,7 @@ export abstract class IModelConnection extends IModel {
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
    */
   public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
@@ -314,9 +311,11 @@ export abstract class IModelConnection extends IModel {
    * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
+   * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
 
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
@@ -338,8 +337,10 @@ export abstract class IModelConnection extends IModel {
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
@@ -502,13 +503,14 @@ export abstract class IModelConnection extends IModel {
   /** Expand this iModel's [[displayedExtents]] to include the specified range.
    * This is done automatically when reality models are added to a spatial view. In some cases a [[TiledGraphicsProvider]] may wish to expand
    * the extents explicitly to include its geometry.
+   * @deprecated in 3.6. See [[displayedExtents]].
    */
   public expandDisplayedExtents(range: Range3d): void {
     this._extentsExpansion.extendRange(range);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents.setFrom(this.projectExtents);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents.extendRange(this._extentsExpansion);
-
-    this.onDisplayedExtentsExpansion.raiseEvent();
   }
 
   /** @internal */
@@ -977,6 +979,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of this._iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const origin = [row.x, row.y, row.z];
         const bbox = {
@@ -1142,7 +1145,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
      * @throws "No content" error if invalid thumbnail.
-     * @deprecated
+     * @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel.
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
       // eslint-disable-next-line deprecation/deprecation

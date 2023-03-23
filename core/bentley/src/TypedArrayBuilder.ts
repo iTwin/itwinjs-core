@@ -28,7 +28,13 @@ export interface TypedArrayBuilderOptions {
   initialCapacity?: number;
 }
 
-/** Incrementally builds a [TypedArray] of unsigned 8-, 16-, or 32-bit integers.
+/** A [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) containing unsigned 8-, 16-, or 32-bit integers.
+ * @see [[UintArrayBuilder]] to construct such an array.
+ * @public
+ */
+export type UintArray = Uint8Array | Uint16Array | Uint32Array;
+
+/** Incrementally builds a [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) of unsigned 8-, 16-, or 32-bit integers.
  * Sometimes you wish to populate a `TypedArray`, but you don't know how many elements you will need.
  * `TypedArray` requires you to specify the size upon construction, and does not permit you to change the size later.
  *
@@ -39,11 +45,12 @@ export interface TypedArrayBuilderOptions {
  *
  * Once you've finished adding elements, you can obtain the finished `TypedArray` via [[toTypedArray]].
  * @see [[Uint8ArrayBuilder]], [[Uint16ArrayBuilder]], and [[Uint32ArrayBuilder]] to build specific types of arrays.
+ * @see [[UintArrayBuilder]] when you don't know the maximum number of bytes required for each element in the array.
  * @public
  */
-export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
+export class TypedArrayBuilder<T extends UintArray> {
   /** The constructor for the specific type of array being populated. */
-  protected readonly _constructor: Constructor<T>;
+  protected _constructor: Constructor<T>;
   /** The underlying typed array, to be reallocated and copied when its capacity is exceeded. */
   protected _data: T;
   /** The number of elements added to the array so far. */
@@ -138,7 +145,7 @@ export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array>
  * @public
  */
 export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
-  /** @see [[TypedArrayBuilder]] constructor. */
+  /** See [[TypedArrayBuilder]] constructor. */
   public constructor(options?: TypedArrayBuilderOptions) {
     super(Uint8Array, options);
   }
@@ -148,7 +155,7 @@ export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
  * @public
  */
 export class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
-  /** @see [[TypedArrayBuilder]] constructor. */
+  /** See [[TypedArrayBuilder]] constructor. */
   public constructor(options?: TypedArrayBuilderOptions) {
     super(Uint16Array, options);
   }
@@ -158,7 +165,7 @@ export class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
  * @public
  */
 export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
-  /** @see [[TypedArrayBuilder]] constructor. */
+  /** See [[TypedArrayBuilder]] constructor. */
   public constructor(options?: TypedArrayBuilderOptions) {
     super(Uint32Array, options);
   }
@@ -169,5 +176,94 @@ export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
       return new Uint8Array(this._data.buffer);
 
     return new Uint8Array(this._data.buffer, 0, this.length * 4);
+  }
+}
+
+/** Options used to construct a [[UintArrayBuilder]].
+ * @public
+ */
+export interface UintArrayBuilderOptions extends TypedArrayBuilderOptions {
+  /** The type of the initial empty `TypedArray` created by the builder. For example, if you know that you will be adding values larger than
+   * 255 to the array, specify `{ initialType: Uint16Array }` to avoid replacing the otherwise default `Uint8Array` when the first such value is added.
+   * Default: `Uint8Array`.
+   */
+  initialType?: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array;
+}
+
+/** A [[TypedArrayBuilder]] that can populate a [[UintArray]] with the minimum
+ * [bytes per element](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/BYTES_PER_ELEMENT) required.
+ *
+ * By default, the underlying array is a `Uint8Array`, though this can be configured via [[UintArrayBuilderOptions.initialType]].
+ * As values are added to the array, if the bytes per element supported by the underlying array is too small to hold one of the new values, the array is
+ * reallocated to a type large enough to hold all of the new values. For example, the following produces a `Uint8Array` because all values are less than 256:
+ *
+ * ```ts
+ *  const builder = new UintArrayBuilder();
+ *  builder.append([1, 2, 254, 255]);
+ *  const array = builder.toTypedArray();
+ *  assert(array instanceof Uint8Array);
+ * ```
+ *
+ * However, the following produces a `Uint16Array` because one of the values is larger than 255 but none are larger than 65,535:
+ *
+ * ```ts
+ *  const builder = new UintArrayBuilder();
+ *  builder.append([1, 255, 257, 65535]);
+ *  const array = builder.toTypedArray();
+ *  assert(array instanceof Uint16Array);
+ * ```
+ *
+ * @see [[Uint8ArrayBuilder]], [[Uint16ArrayBuilder]], or [[Uint32ArrayBuilder]] if you know the number of bytes you want to allocate for each element in the array.
+ * @public
+ */
+export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
+  public constructor(options?: UintArrayBuilderOptions) {
+    super(options?.initialType ?? Uint8Array, options);
+  }
+
+  /** The number of bytes (1, 2, or 4) currently allocated per element by the underlying array.
+   * This may change as larger values are added to the array.
+   */
+  public get bytesPerElement(): number {
+    return this._data.BYTES_PER_ELEMENT;
+  }
+
+  /** Ensures that the underlying array is of a type that can contain the largest value in `newValues`.
+   * For example, if `_data` is a `Uint16Array` and `newValues` contains any value(s) larger than 65,535, it will be replaced with a `Uint32Array`.
+   * This method is invoked by [[push]] and [[append]].
+   */
+  protected ensureBytesPerElement(newValues: Iterable<number>): void {
+    const curBytesPerElem = this.bytesPerElement;
+    assert(curBytesPerElem === 1 || curBytesPerElem === 2 || curBytesPerElem === 4);
+    if (curBytesPerElem >= 4)
+      return;
+
+    let neededBytesPerElem = curBytesPerElem;
+    for (const value of newValues) {
+      if (value > 0xffff) {
+        neededBytesPerElem = 4;
+        break;
+      } else if (value > 0xff) {
+        neededBytesPerElem = 2;
+      }
+    }
+
+    if (neededBytesPerElem <= curBytesPerElem)
+      return;
+
+    this._constructor = neededBytesPerElem === 1 ? Uint8Array : (neededBytesPerElem === 2 ? Uint16Array : Uint32Array);
+    this._data = new this._constructor(this._data);
+  }
+
+  /** See [[TypedArrayBuilder.push]]. */
+  public override push(value: number): void {
+    this.ensureBytesPerElement([value]);
+    super.push(value);
+  }
+
+  /** See [[TypedArrayBuilder.append]]. */
+  public override append(values: UintArray): void {
+    this.ensureBytesPerElement(values);
+    super.append(values);
   }
 }

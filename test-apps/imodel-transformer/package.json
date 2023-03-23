@@ -32,19 +32,19 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/projects-client": "^0.6.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
     "@types/fs-extra": "^4.0.7",
-    "@types/node": "18.11.5",
-    "@types/yargs": "^17.0.10",
+    "@types/node": "^18.11.5",
+    "@types/yargs": "17.0.19",
     "cross-env": "^5.1.4",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "eslintConfig": {
     "plugins": [

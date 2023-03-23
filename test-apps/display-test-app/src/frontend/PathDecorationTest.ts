@@ -36,7 +36,7 @@ export class PathDecorationTest {
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. Here we add the line string. */
   public decorate(context: DecorateContext) {
     if (undefined === this._pickId)
-      this._pickId = context.viewport.iModel.transientIds.next;
+      this._pickId = context.viewport.iModel.transientIds.getNext();
     const pathBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickId);
     pathBuilder.addPath(this._path);
     context.addDecorationFromBuilder(pathBuilder);

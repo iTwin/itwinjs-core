@@ -63,8 +63,7 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
-import { RepositoryStatus } from '@itwin/core-bentley';
-import { RpcInterfaceStatus } from '@itwin/core-bentley';
+import { RequireAtLeastOne } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -331,7 +330,7 @@ export namespace AreaPattern {
     }
 }
 
-// @beta
+// @public
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
 }
@@ -666,14 +665,11 @@ export type BlobRange = QueryLimit;
 // @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
-    // (undocumented)
     center: Point3d;
-    // (undocumented)
     init(center: Point3d, radius: number): void;
-    // (undocumented)
     radius: number;
-    // (undocumented)
-    transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
+    transformBy(transform: Transform, result?: BoundingSphere): BoundingSphere;
+    transformInPlace(transform: Transform): void;
 }
 
 // @alpha
@@ -1264,20 +1260,36 @@ export namespace CodeScopeSpec {
 export class CodeSpec {
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
-    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // @beta
+    // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
     name: string;
     // @internal
-    properties: any;
+    properties: CodeSpecProperties;
     get scopeReq(): CodeScopeSpec.ScopeRequirement;
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
+}
+
+// @public
+export interface CodeSpecProperties {
+    // (undocumented)
+    scopeSpec: {
+        type: CodeScopeSpec.Type;
+        fGuidRequired?: boolean;
+        relationship?: string;
+    };
+    // (undocumented)
+    spec?: {
+        isManagedWithDgnDb?: boolean;
+    };
+    // (undocumented)
+    version?: string;
 }
 
 // @public
@@ -1445,7 +1457,6 @@ export class ColorDef {
         b: number;
         t: number;
     };
-    // @internal (undocumented)
     static computeTbgr(val?: string | ColorDefProps): ColorDefProps;
     static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): ColorDefProps;
     static computeTbgrFromHSL(h: number, s: number, l: number, transparency?: number): ColorDefProps;
@@ -1692,6 +1703,7 @@ export namespace ContextRealityModelProps {
 // @public
 export class ContextRealityModels {
     constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+    constructor(args: ContextRealityModelsArgs);
     add(props: ContextRealityModelProps): ContextRealityModel;
     clear(): void;
     delete(model: ContextRealityModel): boolean;
@@ -1701,12 +1713,22 @@ export class ContextRealityModels {
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
+    populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
     update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
 }
 
 // @public
+export interface ContextRealityModelsArgs {
+    container: ContextRealityModelsContainer;
+    createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    deferPopulating?: boolean;
+}
+
+// @public
 export interface ContextRealityModelsContainer {
+    // @internal
+    container?: never;
     contextRealityModels?: ContextRealityModelProps[];
 }
 
@@ -1742,8 +1764,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1900544,
-    Major = 29,
+    Combined = 1966080,
+    Major = 30,
     Minor = 0
 }
 
@@ -2057,9 +2079,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     toggleGroundPlane(display?: boolean): void;
     toggleSkyBox(display?: boolean): void;
-    // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
-    // @internal (undocumented)
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
@@ -2205,7 +2225,6 @@ export class DisplayStyleSettings {
     synchMapImagery(): void;
     get timePoint(): number | undefined;
     set timePoint(timePoint: number | undefined);
-    // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
@@ -2217,6 +2236,8 @@ export class DisplayStyleSettings {
 // @public
 export interface DisplayStyleSettingsOptions {
     createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    // @internal
+    deferContextRealityModels?: boolean;
 }
 
 // @public
@@ -2975,7 +2996,7 @@ export class Feature {
     constructor(elementId?: Id64String, subCategoryId?: Id64String, geometryClass?: GeometryClass);
     compare(rhs: Feature): number;
     // (undocumented)
-    readonly elementId: string;
+    readonly elementId: Id64String;
     equals(other: Feature): boolean;
     // (undocumented)
     readonly geometryClass: GeometryClass;
@@ -2984,7 +3005,7 @@ export class Feature {
     // (undocumented)
     get isUndefined(): boolean;
     // (undocumented)
-    readonly subCategoryId: string;
+    readonly subCategoryId: Id64String;
 }
 
 // @public
@@ -3058,15 +3079,6 @@ export interface FeatureAppearanceSource {
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @internal
-export class FeatureGates {
-    addMonitor(feature: string, monitor: (val: GateValue) => void): () => void;
-    check(feature: string, defaultVal?: GateValue): GateValue;
-    readonly gates: Map<string, GateValue>;
-    onChanged: BeEvent<(feature: string, val: GateValue) => void>;
-    setGate(feature: string, val: GateValue): void;
-}
-
 // @internal (undocumented)
 export class FeatureIndex {
     // (undocumented)
@@ -3096,7 +3108,6 @@ export enum FeatureIndexType {
 // @public
 export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
-    // @internal (undocumented)
     get alwaysDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _alwaysDrawn: Id64.Uint32Set;
@@ -3151,7 +3162,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _modelOverrides: Id64.Uint32Map<FeatureAppearance>;
     // @internal
     protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
-    // @internal (undocumented)
     get neverDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _neverDrawn: Id64.Uint32Set;
@@ -3217,7 +3227,7 @@ export class FeatureTableHeader {
     // (undocumented)
     readonly length: number;
     // (undocumented)
-    readonly maxFeatures: number;
+    readonly numSubCategories: number;
     // (undocumented)
     static readFrom(stream: ByteStream): FeatureTableHeader | undefined;
     // (undocumented)
@@ -3355,38 +3365,25 @@ export class Frustum {
     translate(offset: XYAndZ): void;
 }
 
-// @internal
+// @public
 export class FrustumPlanes {
-    constructor(frustum?: Frustum);
-    // (undocumented)
     computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance?: number): FrustumPlanes.Containment;
-    // (undocumented)
     computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment;
-    // (undocumented)
     containsPoint(point: Point3d, tolerance?: number): boolean;
-    // (undocumented)
-    init(frustum: Frustum): void;
-    // (undocumented)
+    static createEmpty(): FrustumPlanes;
+    static fromFrustum(frustum: Frustum): FrustumPlanes;
+    init(frustum: Frustum): boolean;
     intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
-    // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
-    // (undocumented)
     get isValid(): boolean;
-    // (undocumented)
-    get planes(): ClipPlane[] | undefined;
+    get planes(): ClipPlane[];
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace FrustumPlanes {
-    // (undocumented)
-    export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance?: number): void;
-    // (undocumented)
     export enum Containment {
-        // (undocumented)
         Inside = 2,
-        // (undocumented)
         Outside = 0,
-        // (undocumented)
         Partial = 1
     }
 }
@@ -3396,9 +3393,6 @@ export interface FunctionalElementProps extends ElementProps {
     // (undocumented)
     typeDefinition?: RelatedElementProps;
 }
-
-// @internal (undocumented)
-export type GateValue = number | boolean | string | undefined;
 
 // @public
 export class GeocentricTransform implements GeocentricTransformProps {
@@ -4298,7 +4292,7 @@ export enum HSVConstants {
 // @internal (undocumented)
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
-// @public
+// @public @deprecated
 export interface HttpServerRequest extends BackendReadable {
     // (undocumented)
     aborted: boolean;
@@ -4350,7 +4344,7 @@ export interface HttpServerRequest extends BackendReadable {
     url?: string;
 }
 
-// @public
+// @public @deprecated
 export interface HttpServerResponse extends BackendWritable {
     // (undocumented)
     send(body?: any): HttpServerResponse;
@@ -4578,6 +4572,7 @@ export enum ImdlFlags {
     ContainsCurves = 1,
     DisallowMagnification = 8,
     Incomplete = 4,
+    MultiModelFeatureTable = 16,
     None = 0
 }
 
@@ -4689,8 +4684,11 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction);
 }
+
+// @public
+export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 // @public
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
@@ -5574,6 +5572,28 @@ export interface ModelExtentsProps {
     status: IModelStatus;
 }
 
+// @internal
+export interface ModelFeature {
+    // (undocumented)
+    elementId: Id64String;
+    // (undocumented)
+    geometryClass: GeometryClass;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    subCategoryId: Id64String;
+}
+
+// @internal (undocumented)
+export namespace ModelFeature {
+    // (undocumented)
+    export function create(): ModelFeature;
+    // (undocumented)
+    export function isDefined(feature: ModelFeature): boolean;
+    // (undocumented)
+    export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature;
+}
+
 // @public
 export interface ModelGeometryChanges {
     readonly elements: Iterable<ElementGeometryChange>;
@@ -5693,6 +5713,37 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
+// @internal
+export class MultiModelPackedFeatureTable implements RenderFeatureTable {
+    constructor(features: PackedFeatureTable, models: PackedFeatureModelTable);
+    // (undocumented)
+    get batchModelId(): string;
+    // (undocumented)
+    get batchModelIdPair(): Id64.Uint32Pair;
+    // (undocumented)
+    get byteLength(): number;
+    // (undocumented)
+    static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType, numSubCategories: number): MultiModelPackedFeatureTable;
+    // (undocumented)
+    findElementId(featureIndex: number): Id64String | undefined;
+    // (undocumented)
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    // (undocumented)
+    getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    // (undocumented)
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    // (undocumented)
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+    // (undocumented)
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+    // (undocumented)
+    iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
+    // (undocumented)
+    get numFeatures(): number;
+    // (undocumented)
+    get type(): BatchType;
+}
+
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
@@ -5762,11 +5813,22 @@ export class NonUniformColor {
     readonly isOpaque: boolean;
 }
 
+// @public
+export enum NormalMapFlags {
+    GreenUp = 1,
+    None = 0
+}
+
 // @beta
 export interface NormalMapParams {
-    greenDown?: boolean;
+    greenUp?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
+}
+
+// @public
+export interface NormalMapProps extends TextureMapProps {
+    NormalFlags?: NormalMapFlags;
 }
 
 // @public
@@ -5852,7 +5914,7 @@ export interface OpenAPIEncoding {
     style?: string;
 }
 
-// @public
+// @public @deprecated
 export interface OpenAPIInfo {
     // (undocumented)
     title: string;
@@ -6069,29 +6131,55 @@ export interface PackedFeature {
     // (undocumented)
     geometryClass: GeometryClass;
     // (undocumented)
+    modelId: Id64.Uint32Pair;
+    // (undocumented)
     subCategoryId: Id64.Uint32Pair;
 }
 
+// @internal (undocumented)
+export namespace PackedFeature {
+    // (undocumented)
+    export function create(): PackedFeature;
+    // (undocumented)
+    export function createWithIndex(): PackedFeatureWithIndex;
+}
+
 // @internal
-export class PackedFeatureTable {
-    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
+export class PackedFeatureModelTable {
+    constructor(data: Uint32Array);
+    // (undocumented)
+    get byteLength(): number;
+    // (undocumented)
+    getEntry(modelIndex: number, result: PackedFeatureModelEntry): PackedFeatureModelEntry;
+    getModelIdPair(featureIndex: number, result?: Id64.Uint32Pair): Id64.Uint32Pair;
+    get length(): number;
+}
+
+// @internal
+export class PackedFeatureTable implements RenderFeatureTable {
+    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
     // (undocumented)
     get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined;
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
+    readonly batchModelId: Id64String;
+    // (undocumented)
+    readonly batchModelIdPair: Id64.Uint32Pair;
+    // (undocumented)
     get byteLength(): number;
     findElementId(featureIndex: number): Id64String | undefined;
-    findFeature(featureIndex: number): Feature | undefined;
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
     getAnimationNodeId(featureIndex: number): number;
     // (undocumented)
     getElementIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
-    getFeature(featureIndex: number): Feature;
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     // (undocumented)
-    getPackedFeature(featureIndex: number): PackedFeature;
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     // (undocumented)
     getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
+    getUniform(result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
     get isClassifier(): boolean;
     // (undocumented)
@@ -6100,9 +6188,9 @@ export class PackedFeatureTable {
     // (undocumented)
     get isVolumeClassifier(): boolean;
     // (undocumented)
-    readonly maxFeatures: number;
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     // (undocumented)
-    readonly modelId: Id64String;
+    iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
     // (undocumented)
     readonly numFeatures: number;
     static pack(featureTable: FeatureTable): PackedFeatureTable;
@@ -6110,8 +6198,13 @@ export class PackedFeatureTable {
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
-    get uniform(): Feature | undefined;
     unpack(): FeatureTable;
+}
+
+// @internal (undocumented)
+export interface PackedFeatureWithIndex extends PackedFeature {
+    // (undocumented)
+    index: number;
 }
 
 // @internal
@@ -6317,6 +6410,13 @@ export type Point2dProps = number[];
 
 // @beta
 export interface PointCloudDisplayProps {
+    edlFilter?: number;
+    edlMixWts1?: number;
+    edlMixWts2?: number;
+    edlMixWts4?: number;
+    edlMode?: PointCloudEDLMode;
+    edlRadius?: number;
+    edlStrength?: number;
     maxPixelsPerVoxel?: number;
     minPixelsPerVoxel?: number;
     pixelSize?: number;
@@ -6329,6 +6429,13 @@ export interface PointCloudDisplayProps {
 export class PointCloudDisplaySettings {
     clone(changedProps: PointCloudDisplayProps): PointCloudDisplaySettings;
     static defaults: PointCloudDisplaySettings;
+    readonly edlFilter?: number;
+    readonly edlMixWts1?: number;
+    readonly edlMixWts2?: number;
+    readonly edlMixWts4?: number;
+    readonly edlMode: PointCloudEDLMode;
+    readonly edlRadius: number;
+    readonly edlStrength: number;
     equals(other: PointCloudDisplaySettings): boolean;
     static fromJSON(props?: PointCloudDisplayProps): PointCloudDisplaySettings;
     readonly maxPixelsPerVoxel: number;
@@ -6341,16 +6448,17 @@ export class PointCloudDisplaySettings {
 }
 
 // @beta
+export type PointCloudEDLMode = "off" | "on" | "full";
+
+// @beta
 export type PointCloudShape = "square" | "round";
 
 // @beta
 export type PointCloudSizeMode = "voxel" | "pixel";
 
-// @beta
+// @public
 export interface PointWithStatus {
-    // (undocumented)
     p: XYZProps;
-    // (undocumented)
     s: GeoCoordStatus;
 }
 
@@ -6465,6 +6573,8 @@ export enum PrimitiveTypeCode {
     DateTime = 769,
     // (undocumented)
     Double = 1025,
+    // (undocumented)
+    IGeometry = 2561,
     // (undocumented)
     Integer = 1281,
     // (undocumented)
@@ -7094,6 +7204,22 @@ export interface RelTypeInfo {
 // @public
 export type RemoveFunction = () => void;
 
+// @internal
+export interface RenderFeatureTable {
+    readonly batchModelId: Id64String;
+    readonly batchModelIdPair: Id64.Uint32Pair;
+    readonly byteLength: number;
+    findElementId(featureIndex: number): Id64String | undefined;
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+    readonly numFeatures: number;
+    // (undocumented)
+    readonly type: BatchType;
+}
+
 // @public
 export abstract class RenderMaterial {
     protected constructor(params: RenderMaterial.Params);
@@ -7136,6 +7262,12 @@ export namespace RenderMaterial {
 }
 
 // @public
+export interface RenderMaterialAssetMapsProps {
+    Normal?: NormalMapProps;
+    Pattern?: TextureMapProps;
+}
+
+// @public
 export interface RenderMaterialAssetProps {
     color?: RgbFactorProps;
     diffuse?: number;
@@ -7148,9 +7280,8 @@ export interface RenderMaterialAssetProps {
     HasSpecular?: boolean;
     HasSpecularColor?: boolean;
     HasTransmit?: boolean;
-    Map?: {
-        Pattern?: TextureMapProps;
-    };
+    Map?: RenderMaterialAssetMapsProps;
+    pbr_normal?: number;
     reflect?: number;
     reflect_color?: RgbFactorProps;
     specular?: number;
@@ -7551,8 +7682,6 @@ export interface RepositoryLinkProps extends UrlLinkProps {
     repositoryGuid?: GuidString;
 }
 
-export { RepositoryStatus }
-
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
@@ -7689,7 +7818,7 @@ export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
     new (): RpcConfiguration;
 };
 
-// @public
+// @public @deprecated
 export enum RpcContentType {
     // (undocumented)
     Binary = 2,
@@ -7753,7 +7882,7 @@ export class RpcDirectRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
 }
 
-// @public
+// @public @deprecated
 export enum RpcEndpoint {
     // (undocumented)
     Backend = 1,
@@ -7799,8 +7928,6 @@ export interface RpcInterfaceEndpoints {
 
 // @internal (undocumented)
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
-
-export { RpcInterfaceStatus }
 
 // @internal
 export class RpcInvocation {
@@ -7977,7 +8104,7 @@ export abstract class RpcProtocol {
     transferChunkThreshold: number;
 }
 
-// @public
+// @public @deprecated
 export enum RpcProtocolEvent {
     // (undocumented)
     BackendErrorOccurred = 11,
@@ -8200,7 +8327,7 @@ export interface RpcRequestContext {
     serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 }
 
-// @public
+// @public @deprecated
 export enum RpcRequestEvent {
     // (undocumented)
     PendingUpdateReceived = 1,
@@ -8237,7 +8364,7 @@ export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfig
 // @internal
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
-// @public
+// @public @deprecated
 export enum RpcRequestStatus {
     // (undocumented)
     BadGateway = 10,
@@ -8271,7 +8398,7 @@ export enum RpcRequestStatus {
     Unknown = 0
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export namespace RpcRequestStatus {
     // (undocumented)
     export function isTransientError(status: RpcRequestStatus): boolean;
@@ -9467,6 +9594,126 @@ export enum TileReadStatus {
     Success = 0
 }
 
+// @alpha
+export namespace Tileset3dSchema {
+    // (undocumented)
+    export interface Asset extends TilesetProperty {
+        // (undocumented)
+        tilesetVersion?: string;
+        // (undocumented)
+        version: string;
+    }
+    // (undocumented)
+    export type BoundingBox = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    uX: number,
+    uY: number,
+    uZ: number,
+    vX: number,
+    vY: number,
+    vZ: number,
+    wX: number,
+    wY: number,
+    wZ: number
+    ];
+    // (undocumented)
+    export type BoundingRegion = [
+    west: number,
+    south: number,
+    east: number,
+    north: number,
+    minHeight: number,
+    maxHeight: number
+    ];
+    // (undocumented)
+    export type BoundingSphere = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    radius: number
+    ];
+    // (undocumented)
+    export type BoundingVolume = RequireAtLeastOne<{
+        box?: BoundingBox;
+        sphere?: BoundingSphere;
+        region?: BoundingRegion;
+    }>;
+    // (undocumented)
+    export interface Content extends TilesetProperty {
+        // (undocumented)
+        boundingVolume?: BoundingVolume;
+        // (undocumented)
+        uri: string;
+    }
+    export interface Extensions {
+        // (undocumented)
+        [key: string]: any;
+    }
+    // (undocumented)
+    export type GeometricError = number;
+    // (undocumented)
+    export type Refinement = "ADD" | "REPLACE" | string;
+    // (undocumented)
+    export interface Tile extends TilesetProperty {
+        // (undocumented)
+        boundingVolume: BoundingVolume;
+        // (undocumented)
+        children?: Tile[];
+        // (undocumented)
+        content?: Content;
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        refine?: Refinement;
+        // (undocumented)
+        transform?: Transform;
+        // (undocumented)
+        viewerRequestVolume?: BoundingVolume;
+    }
+    // (undocumented)
+    export interface Tileset extends TilesetProperty {
+        // (undocumented)
+        asset: Asset;
+        // (undocumented)
+        extensionsRequired?: string[];
+        // (undocumented)
+        extensionsUsed?: string[];
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        properties: unknown;
+        // (undocumented)
+        root: Tile;
+    }
+    export interface TilesetProperty {
+        // (undocumented)
+        extensions?: Extensions;
+        // (undocumented)
+        extras?: any;
+    }
+    // (undocumented)
+    export type Transform = [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+    ];
+}
+
 // @internal
 export interface TileTreeContentIds {
     // (undocumented)
@@ -9690,6 +9937,7 @@ export type UpdateCallback = (obj: any, t: number) => void;
 export interface UpgradeOptions {
     readonly domain?: DomainOptions;
     readonly profile?: ProfileOptions;
+    readonly schemaLockHeld?: boolean;
 }
 
 // @public
@@ -9862,7 +10110,6 @@ export interface ViewFlagProps {
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
-    // @beta
     wiremesh?: boolean;
 }
 
@@ -9906,7 +10153,6 @@ export class ViewFlags {
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
-    // @beta
     readonly wiremesh: boolean;
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
     withRenderMode(renderMode: RenderMode): ViewFlags;

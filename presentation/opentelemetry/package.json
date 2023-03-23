@@ -1,10 +1,10 @@
 {
   "name": "@itwin/presentation-opentelemetry",
-  "version": "3.6.0-dev.5",
+  "version": "4.0.0-dev.54",
   "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
+    "node": "^18.0.0"
   },
   "repository": {
     "type": "git",
@@ -43,27 +43,27 @@
   "peerDependencies": {
     "@itwin/presentation-common": "workspace:*",
     "@opentelemetry/api": "^1.0.4",
-    "@opentelemetry/resources": "^1.5.0",
-    "@opentelemetry/sdk-trace-base": "^1.5.0",
-    "@opentelemetry/semantic-conventions": "^1.5.0"
+    "@opentelemetry/resources": "~1.5.0",
+    "@opentelemetry/sdk-trace-base": "~1.5.0",
+    "@opentelemetry/semantic-conventions": "~1.5.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/presentation-common": "workspace:*",
     "@opentelemetry/api": "1.0.4",
-    "@opentelemetry/resources": "^1.5.0",
-    "@opentelemetry/sdk-trace-base": "^1.5.0",
-    "@opentelemetry/semantic-conventions": "^1.5.0",
+    "@opentelemetry/resources": "~1.5.0",
+    "@opentelemetry/sdk-trace-base": "~1.5.0",
+    "@opentelemetry/semantic-conventions": "~1.5.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.11.5",
+    "@types/node": "^18.11.5",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

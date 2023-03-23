@@ -1310,7 +1310,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     super(_clipView.iModel);
     if (!this.getClipData())
       return;
-    this._clipId = this.iModel.transientIds.next;
+    this._clipId = this.iModel.transientIds.getNext();
     this.updateDecorationListener(true);
     this._removeViewCloseListener = IModelApp.viewManager.onViewClose.addListener(this.onViewClose, this); // eslint-disable-line @typescript-eslint/unbound-method
     if (undefined !== this._clipEventHandler && this._clipEventHandler.selectOnCreate())
@@ -1401,7 +1401,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (numCurrent < numReqControls) {
       const transientIds = this.iModel.transientIds;
       for (let i: number = numCurrent; i < numReqControls; i++)
-        this._controlIds[i] = transientIds.next;
+        this._controlIds[i] = transientIds.getNext();
     } else if (numCurrent > numReqControls) {
       this._controlIds.length = numReqControls;
     }
@@ -1816,7 +1816,11 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   public testDecorationHit(id: string): boolean { return (id === this._clipId || this._controlIds.includes(id)); }
-  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> { return (hit.sourceId === this._clipId ? "View Clip" : "Modify View Clip"); }
+  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    if (hit.sourceId === this._clipId)
+      return CoreTools.translate("ViewClip.Message.Clip");
+    return CoreTools.translate("ViewClip.Message.ModifyClip");
+  }
   protected override updateDecorationListener(_add: boolean): void { super.updateDecorationListener(undefined !== this._clipId); } // Decorator isn't just for resize controls...
 
   public override decorate(context: DecorateContext): void {

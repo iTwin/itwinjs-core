@@ -23,6 +23,8 @@ export enum ImdlFlags {
   Incomplete = 1 << 2,
   /** The tile must be refined by sub-division, not magnification. */
   DisallowMagnification = 1 << 3,
+  /** The tile's feature table contains features from multiple models. */
+  MultiModelFeatureTable = 1 << 4,
 }
 
 /** Describes the maximum major and minor version of the iMdl tile format supported by this version of this package.
@@ -33,7 +35,7 @@ export enum CurrentImdlVersion {
    * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
    * greater minor version than CurrentVersion.Minor, although some data may be skipped.
    */
-  Major = 29,
+  Major = 30,
   /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this package can
    * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
    */
@@ -74,20 +76,20 @@ export class ImdlHeader extends TileHeader {
    */
   public constructor(stream: ByteStream) {
     super(stream);
-    this.headerLength = stream.nextUint32;
-    this.flags = stream.nextUint32;
+    this.headerLength = stream.readUint32();
+    this.flags = stream.readUint32();
 
     this.contentRange = new Range3d();
     nextPoint3d64FromByteStream(stream, this.contentRange.low);
     nextPoint3d64FromByteStream(stream, this.contentRange.high);
 
-    this.tolerance = stream.nextFloat64;
-    this.numElementsIncluded = stream.nextUint32;
-    this.numElementsExcluded = stream.nextUint32;
-    this.tileLength = stream.nextUint32;
+    this.tolerance = stream.readFloat64();
+    this.numElementsIncluded = stream.readUint32();
+    this.numElementsExcluded = stream.readUint32();
+    this.tileLength = stream.readUint32();
 
     // empty sub-volume bit field introduced in format v02.00
-    this.emptySubRanges = this.versionMajor >= 2 ? stream.nextUint32 : 0;
+    this.emptySubRanges = this.versionMajor >= 2 ? stream.readUint32() : 0;
 
     // Skip any unprocessed bytes in header
     const remainingHeaderBytes = this.headerLength - stream.curPos;
@@ -103,16 +105,26 @@ export class ImdlHeader extends TileHeader {
  * @internal
  */
 export class FeatureTableHeader {
+  // The number of bytes the entire table occupies.
+  public readonly length: number;
+  // The number of subcategories in the table.
+  // NOTE: This used to be "max features" which was useless and unused. It is only accurate if ImdlFlags.HasMultiModelFeatureTable is set.
+  public readonly numSubCategories: number;
+  // The number of features in the table.
+  public readonly count: number;
+
   public static readFrom(stream: ByteStream) {
-    const length = stream.nextUint32;
-    const maxFeatures = stream.nextUint32;
-    const count = stream.nextUint32;
+    const length = stream.readUint32();
+    const maxFeatures = stream.readUint32();
+    const count = stream.readUint32();
     return stream.isPastTheEnd ? undefined : new FeatureTableHeader(length, maxFeatures, count);
   }
 
   public static sizeInBytes = 12;
 
-  private constructor(public readonly length: number,
-    public readonly maxFeatures: number,
-    public readonly count: number) { }
+  private constructor(length: number, numSubCategories: number, count: number) {
+    this.length = length;
+    this.numSubCategories = numSubCategories;
+    this.count = count;
+  }
 }

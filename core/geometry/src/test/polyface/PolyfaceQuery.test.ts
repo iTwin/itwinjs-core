@@ -3,32 +3,44 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+
+import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry, PolygonLocation } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
 import { TorusImplicit } from "../../numerics/Polynomials";
+import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
+import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Box } from "../../solid/Box";
+import { Cone } from "../../solid/Cone";
+import { RotationalSweep } from "../../solid/RotationalSweep";
+import { Sphere } from "../../solid/Sphere";
+import { TorusPipe } from "../../solid/TorusPipe";
 import { ChainMergeContext } from "../../topology/ChainMerge";
+import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Transform } from "../../geometry3d/Transform";
-import { Range3d } from "../../geometry3d/Range";
-import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
-import { Arc3d } from "../../curve/Arc3d";
-import { PolyfaceData } from "../../polyface/PolyfaceData";
-import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
 import { ImportedSample } from "../testInputs/ImportedSamples";
+
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -147,38 +159,38 @@ it("ExpandToMaximalPlanarFacetsA", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const builder = PolyfaceBuilder.create();
-  const linestringA = LineString3d.create (
-    [0,0,0],[1,0,0],[2,0,0], [3,0,1],[4,0,0]
+  const linestringA = LineString3d.create(
+    [0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 1], [4, 0, 0]
   );
   const dx = 0;
   let dy = 1;
-  const linestringB = linestringA.cloneTransformed (Transform.createTranslationXYZ (0,2,0));
-  builder.addGreedyTriangulationBetweenLineStrings (linestringA, linestringB);
-  const polyface = builder.claimPolyface (true);
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy, 0);
+  const linestringB = linestringA.cloneTransformed(Transform.createTranslationXYZ(0, 2, 0));
+  builder.addGreedyTriangulationBetweenLineStrings(linestringA, linestringB);
+  const polyface = builder.claimPolyface(true);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy, 0);
 
-  const partitions1 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent (polyface, false);
-  PolyfaceQuery.markPairedEdgesInvisible (polyface, Angle.createDegrees (1.0));
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy += 3, 0);
-  const partitions2 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent (polyface, true);
-  ck.testExactNumber (1, partitions1.length, "Simple partitions");
-  ck.testExactNumber (3, partitions2.length, "Planar partitions");
+  const partitions1 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface, false);
+  PolyfaceQuery.markPairedEdgesInvisible(polyface, Angle.createDegrees(1.0));
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy += 3, 0);
+  const partitions2 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface, true);
+  ck.testExactNumber(1, partitions1.length, "Simple partitions");
+  ck.testExactNumber(3, partitions2.length, "Planar partitions");
   dy += 3;
   for (const partition of [partitions1, partitions2]) {
     const fragmentPolyfaces = PolyfaceQuery.clonePartitions(polyface, partition);
     const dzBoundary = 0.25;
     dy += 3;
     const ax = 0.0;
-    for (const fragment of fragmentPolyfaces){
-      GeometryCoreTestIO.captureCloneGeometry (allGeometry, fragment, ax, dy, 0);
-      const boundary = PolyfaceQuery.boundaryEdges (fragment);
-      GeometryCoreTestIO.captureCloneGeometry (allGeometry, boundary, dx, dy, dzBoundary);
+    for (const fragment of fragmentPolyfaces) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, ax, dy, 0);
+      const boundary = PolyfaceQuery.boundaryEdges(fragment);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, dx, dy, dzBoundary);
       dy += 2;
-      }
     }
+  }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFaces");
-    expect(ck.getNumErrors()).equals(0);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFaces");
+  expect(ck.getNumErrors()).equals(0);
 });
 
 /** Return whether all edges in the clusters are visible.
@@ -210,8 +222,8 @@ function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster
  * @param expectAllOtherEdgesHidden whether to verify all other edges are hidden (default, false: verify all are visible)
  */
 function verifyEdgeCountsAndVisibilities(ck: Checker, mesh: IndexedPolyface, dihedralAngle: Angle | undefined,
-    expectedSmoothCount: number, expectedSharpCount: number, expectedOtherCount: number,
-    expectAllSmoothEdgesHidden?: boolean, expectAllSharpEdgesHidden?: boolean, expectAllOtherEdgesHidden?: boolean): boolean {
+  expectedSmoothCount: number, expectedSharpCount: number, expectedOtherCount: number,
+  expectAllSmoothEdgesHidden?: boolean, expectAllSharpEdgesHidden?: boolean, expectAllOtherEdgesHidden?: boolean): boolean {
   const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle);
   const sharpEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle, true);
   const otherEdges: SortableEdgeCluster[] = [];
@@ -234,10 +246,10 @@ function verifyEdgeCountsAndVisibilities(ck: Checker, mesh: IndexedPolyface, dih
 it("ExpandToMaximalPlanarFacetsWithHole", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const polyface = Sample.sweepXZLineStringToMeshWithHoles (
-    [[0,0],[5,1], [7,1]],
+  const polyface = Sample.sweepXZLineStringToMeshWithHoles(
+    [[0, 0], [5, 1], [7, 1]],
     5,
-    (x: number, y: number)=>{
+    (x: number, y: number) => {
       if (x === 1 && y === 1) return false;
       if (x === 3 && y === 2) return false;
       if (x === 5 && y === 2) return false;
@@ -247,13 +259,13 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
   let dx = 0;
   let dy = 0;
   const yStep = 10.0;
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy, 0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy, 0);
   verifyEdgeCountsAndVisibilities(ck, polyface, undefined, 42, 4, 36);
 
-  const maximalPolyface = PolyfaceQuery.cloneWithMaximalPlanarFacets (polyface);
-  if (maximalPolyface){
+  const maximalPolyface = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface);
+  if (maximalPolyface) {
     verifyEdgeCountsAndVisibilities(ck, maximalPolyface, undefined, 4, 4, 36, true);  // smooth edges are hidden because they are bridges
-    GeometryCoreTestIO.captureCloneGeometry (allGeometry, maximalPolyface, dx, dy += yStep, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, maximalPolyface, dx, dy += yStep, 0);
     dx += 20;
   }
 
@@ -331,10 +343,10 @@ it("CountVisitableFacets", () => {
 it("FillHoles", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const polyface = Sample.sweepXZLineStringToMeshWithHoles (
-    [[0,0],[5,1], [7,1]],
+  const polyface = Sample.sweepXZLineStringToMeshWithHoles(
+    [[0, 0], [5, 1], [7, 1]],
     5,
-    (x: number, y: number)=>{
+    (x: number, y: number) => {
       if (x === 1 && y === 1) return false;
       if (x === 3 && y === 2) return false;
       if (x === 3 && y === 3) return false;
@@ -346,29 +358,29 @@ it("FillHoles", () => {
   let dy = 0;
   const yStep = 10.0;
   const zShift = 5.0;
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy += yStep, 0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy += yStep, 0);
   dy += yStep;
   let numChains = 0;
-  PolyfaceQuery.announceBoundaryChainsAsLineString3d (polyface,
-      (ls: LineString3d)=> {GeometryCoreTestIO.captureCloneGeometry (allGeometry, ls, dx, dy); numChains++;});
-  ck.testExactNumber (3, numChains, "boundary chains");
+  PolyfaceQuery.announceBoundaryChainsAsLineString3d(polyface,
+    (ls: LineString3d) => { GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, dx, dy); numChains++; });
+  ck.testExactNumber(3, numChains, "boundary chains");
 
-  const options = {includeOriginalMesh: false, upVector: Vector3d.unitZ(), maxPerimeter: 5};
+  const options = { includeOriginalMesh: false, upVector: Vector3d.unitZ(), maxPerimeter: 5 };
   const unfilledChains: LineString3d[] = [];
 
-  const filledHoles = PolyfaceQuery.fillSimpleHoles (polyface, options, unfilledChains);
-  ck.testExactNumber (2, unfilledChains.length, "outer and large hole via perimeter");
+  const filledHoles = PolyfaceQuery.fillSimpleHoles(polyface, options, unfilledChains);
+  ck.testExactNumber(2, unfilledChains.length, "outer and large hole via perimeter");
   dy += yStep;
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, filledHoles, dx, dy, 0);
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, unfilledChains, dx, dy, zShift);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, filledHoles, dx, dy, 0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, unfilledChains, dx, dy, zShift);
 
-  const optionsA = {includeOriginalMesh: true,  maxEdgesAroundHole: 9};
+  const optionsA = { includeOriginalMesh: true, maxEdgesAroundHole: 9 };
   const unfilledChainsA: LineString3d[] = [];
-  const filledHolesA = PolyfaceQuery.fillSimpleHoles (polyface, optionsA, unfilledChainsA);
-  ck.testExactNumber (1, unfilledChainsA.length, "outer via count");
+  const filledHolesA = PolyfaceQuery.fillSimpleHoles(polyface, optionsA, unfilledChainsA);
+  ck.testExactNumber(1, unfilledChainsA.length, "outer via count");
   dy += yStep;
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, filledHolesA, dx, dy, 0);
-  GeometryCoreTestIO.captureCloneGeometry (allGeometry, unfilledChainsA, dx, dy, zShift);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, filledHolesA, dx, dy, 0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, unfilledChainsA, dx, dy, zShift);
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "FillHoles");
   expect(ck.getNumErrors()).equals(0);
@@ -377,51 +389,51 @@ it("FillHoles", () => {
 it("SimplestTriangulation", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const range = Range3d.createXYZXYZ (0,0,0, 3,1,1);
-  const points = range.corners ();
+  const range = Range3d.createXYZXYZ(0, 0, 0, 3, 1, 1);
+  const points = range.corners();
   let dx = 0;
   const dy = 0;
   const dz = 0;
   const xStep = 5;
   const yStep = 4;
 
-  const announceTriangles = (loop: Point3d[], triangles: Point3d[][])=>{
-    const builder = PolyfaceBuilder.create ();
+  const announceTriangles = (loop: Point3d[], triangles: Point3d[][]) => {
+    const builder = PolyfaceBuilder.create();
     for (const t of triangles)
-      builder.addPolygon (t);
-    const polyface = builder.claimPolyface (true);
+      builder.addPolygon(t);
+    const polyface = builder.claimPolyface(true);
     polyface.twoSided = true;
-    GeometryCoreTestIO.captureCloneGeometry (allGeometry, loop, dx, dy + yStep, dz);
-    GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy + 2 * yStep, dz);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy + yStep, dz);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy + 2 * yStep, dz);
   };
   const doTest = (pointsA: Point3d[], expected: boolean, message: any) => {
-    GeometryCoreTestIO.captureCloneGeometry (allGeometry, pointsA, dx, dy, dz);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, dx, dy, dz);
     // (  force the linestring branch selectively)
     if (pointsA.length !== 4)
-      ck.testBoolean (expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop (
-          LineString3d.create (pointsA), announceTriangles), message);
+      ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(
+        LineString3d.create(pointsA), announceTriangles), message);
     else
-      ck.testBoolean (expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop (pointsA, announceTriangles), message);
+      ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(pointsA, announceTriangles), message);
     dx += xStep;
-    };
+  };
 
-    const pointQ = points[0].interpolate (0.5, points[1]);
-    const pointR = points[0].interpolate (0.75,points[1]);
+  const pointQ = points[0].interpolate(0.5, points[1]);
+  const pointR = points[0].interpolate(0.75, points[1]);
 
-  doTest ( [points[0], points[1], points[3]], true, [0,1,3]);
-  doTest ( [points[0], points[1], points[3],points[2]], true, "0,1,3,2");
-    // force both diagonal variants
-  doTest ( [points[0], pointR, points[3],points[2]], true, "0,R,3,2");
-  doTest ( [pointR, points[1], points[3],points[2]], true, "R,1,3,2");
+  doTest([points[0], points[1], points[3]], true, [0, 1, 3]);
+  doTest([points[0], points[1], points[3], points[2]], true, "0,1,3,2");
+  // force both diagonal variants
+  doTest([points[0], pointR, points[3], points[2]], true, "0,R,3,2");
+  doTest([pointR, points[1], points[3], points[2]], true, "R,1,3,2");
 
-  doTest ( [points[0], points[1], points[3],points[7]], true, "0,1,3,7");
-  doTest ( [points[0], points[1], points[3],points[7].interpolate (0.5, points[4])], true, "0,1,3,<7,0.5,4>");
+  doTest([points[0], points[1], points[3], points[7]], true, "0,1,3,7");
+  doTest([points[0], points[1], points[3], points[7].interpolate(0.5, points[4])], true, "0,1,3,<7,0.5,4>");
   dx += xStep;
-  doTest ( [points[0], points[1], points[1]], false, [0,1,1]);
-  doTest ( [points[0], points[1], points[1], points[2]], false, [0,1,1, 2]);
-  doTest ( [points[0], pointQ, pointR, points[1]], false, "4 colinear");
-  doTest ( [points[0], pointQ, points[1]], false, "3 colinear");
-  ck.testFalse (SpacePolygonTriangulation.triangulateSimplestSpaceLoop ([points[0], points[1], points[3],points[2]], announceTriangles, 2.0), "perimeter trigger");
+  doTest([points[0], points[1], points[1]], false, [0, 1, 1]);
+  doTest([points[0], points[1], points[1], points[2]], false, [0, 1, 1, 2]);
+  doTest([points[0], pointQ, pointR, points[1]], false, "4 colinear");
+  doTest([points[0], pointQ, points[1]], false, "3 colinear");
+  ck.testFalse(SpacePolygonTriangulation.triangulateSimplestSpaceLoop([points[0], points[1], points[3], points[2]], announceTriangles, 2.0), "perimeter trigger");
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "SimplestTriangulation");
   expect(ck.getNumErrors()).equals(0);
@@ -430,49 +442,49 @@ it("GreedyEarCutTriangulation", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const points = [
-    Point3d.create (1, 0, 0),
-    Point3d.create (1,1, 0),
-    Point3d.create (-1,1,0),
-    Point3d.create (-1,0,0),
+    Point3d.create(1, 0, 0),
+    Point3d.create(1, 1, 0),
+    Point3d.create(-1, 1, 0),
+    Point3d.create(-1, 0, 0),
   ];
-  const arc = Arc3d.createXYEllipse (Point3d.create (0,0,0), 0.75, 0.25);
+  const arc = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), 0.75, 0.25);
   let dx = 0;
   const dy = 0;
   const dz = 0;
   const xStep = 5;
   const yStep = 4;
 
-  const announceTriangles = (loop: Point3d[], triangles: Point3d[][])=>{
-    const builder = PolyfaceBuilder.create ();
+  const announceTriangles = (loop: Point3d[], triangles: Point3d[][]) => {
+    const builder = PolyfaceBuilder.create();
     for (const t of triangles)
-      builder.addPolygon (t);
-    const polyface = builder.claimPolyface (true);
+      builder.addPolygon(t);
+    const polyface = builder.claimPolyface(true);
     polyface.twoSided = true;
-    GeometryCoreTestIO.captureCloneGeometry (allGeometry, loop, dx, dy + yStep, dz);
-    GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy + 2 * yStep, dz);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy + yStep, dz);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy + 2 * yStep, dz);
   };
   const doTest = (pointsA: Point3d[], pointB: Point3d, expected: boolean, message: any) => {
     pointsA.push(pointB);
     dx += xStep;
-    GeometryCoreTestIO.captureCloneGeometry (allGeometry, pointsA, dx, dy, dz);
-    if (ck.testBoolean (expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop (pointsA, announceTriangles), message)){
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, dx, dy, dz);
+    if (ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(pointsA, announceTriangles), message)) {
 
     }
-    pointsA.pop ();
-    };
+    pointsA.pop();
+  };
 
-    for (const yMove of [0, 3]){
-      for (const zz of [0, 0.2, -0.4, 4.0]){
-        for (const fraction of [0.75, 0.9, 0.0, 0.1, 0.4, 0.5, 0.6]){
-        const pointB = arc.fractionToPoint (fraction);
+  for (const yMove of [0, 3]) {
+    for (const zz of [0, 0.2, -0.4, 4.0]) {
+      for (const fraction of [0.75, 0.9, 0.0, 0.1, 0.4, 0.5, 0.6]) {
+        const pointB = arc.fractionToPoint(fraction);
         pointB.z = zz;
         pointB.y += yMove;
         // hmm.. zz values don't bother it alone.
         // shifting y does make it fail . . ..
-        doTest (points, pointB, (yMove === 0), {fraction, zz, yMove});
-        }
+        doTest(points, pointB, (yMove === 0), { fraction, zz, yMove });
       }
     }
+  }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "GreedyEarCutTriangulation");
   expect(ck.getNumErrors()).equals(0);
 });
@@ -855,6 +867,94 @@ describe("ReOrientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("isConvex", () => {
+
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const dxB = 5.0;
+    const y0 = 0;
+    const strokeLength = 10.0;
+    const options = StrokeOptions.createForFacets();
+    const solids = Sample.createClosedSolidSampler(true);
+    for (const solid of solids) {
+      const builder = PolyfaceBuilder.create(options);
+      builder.addGeometryQuery(solid);
+      const meshA = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0);
+      const dihedralA = PolyfaceQuery.dihedralAngleSummary(meshA);
+      // We don't really know what solids are in the sampler, but ....
+      // These types are always convex ...
+      if (solid instanceof Box
+        || solid instanceof Cone
+        || solid instanceof Sphere) {
+        ck.testExactNumber(1, dihedralA);
+      }
+      // These types are always mixed
+      if (solid instanceof TorusPipe
+        || solid instanceof RotationalSweep)
+        ck.testExactNumber(0, dihedralA);
+      ck.testBoolean(dihedralA > 0, PolyfaceQuery.isConvexByDihedralAngleCount(meshA), "Dihedral angle counts match closure");
+      if (dihedralA !== 0)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          [Point3d.create(0, 0, 0), Point3d.create(0, dihedralA * strokeLength, 0)], x0, y0);
+      else
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          [Point3d.create(0, dxB, 0), Point3d.create(strokeLength, dxB, 0)], x0, y0);
+      meshA.reverseIndices();
+      const dihedralB = PolyfaceQuery.dihedralAngleSummary(meshA);
+      if (dihedralB !== 0)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          [Point3d.create(dxB, 0, 0), Point3d.create(dxB, dihedralB * strokeLength, 0)], x0, y0);
+      else
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          [Point3d.create(0, -dxB, 0), Point3d.create(strokeLength, -dxB, 0)], x0, y0);
+      ck.testExactNumber(dihedralA, -dihedralB);
+      ck.testBoolean(dihedralB > 0, PolyfaceQuery.isConvexByDihedralAngleCount(meshA), "Dihedral angle counts match closure in reversed mesh");
+      x0 += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "isConvex");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("isConvexWithBoundary", () => {
+
+    const ck = new Checker();
+    const options = StrokeOptions.createForFacets();
+    const builder = PolyfaceBuilder.create(options);
+    const point00 = Point3d.create(0, 0, 0);
+    const point10 = Point3d.create(1, 0, 0);
+    const point01 = Point3d.create(0, 1, 0);
+    const point111 = Point3d.create(1, 1, -1);
+    builder.addPolygon([point00, point10, point01]);
+    builder.addPolygon([point01, point10, point111]);
+    const polyface = builder.claimPolyface();
+    ck.testExactNumber(1, PolyfaceQuery.dihedralAngleSummary(polyface, true), "dihedral with boundary");
+    ck.testFalse(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, false), "isConvexByDihedralPairing reject boundary");
+    ck.testTrue(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, true), "isConvexByDihedralPairing with boundary");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("isConvexWithAllPlanar", () => {
+
+    const ck = new Checker();
+    const options = StrokeOptions.createForFacets();
+    const builder = PolyfaceBuilder.create(options);
+    const point00 = Point3d.create(0, 0, 0);
+    const point10 = Point3d.create(1, 0, 0);
+    const point01 = Point3d.create(0, 1, 0);
+    const point111 = Point3d.create(1, 1, 0);
+    builder.addPolygon([point00, point10, point01]);
+    builder.addPolygon([point01, point10, point111]);
+    const polyface = builder.claimPolyface();
+    ck.testExactNumber(1, PolyfaceQuery.dihedralAngleSummary(polyface, true), "dihedral with boundary and planar");
+    ck.testTrue(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, true), "isConvexByDihedralPairing with boundary and planar");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("ComputeSilhouettes", () => {
 
     const ck = new Checker();
@@ -964,3 +1064,219 @@ function countArraysBySize(data: number[][], target: number): number {
   }
   return result;
 }
+
+describe("Intersections", () => {
+  it("IntersectRay3dClosedConvexMesh", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testPointer(mesh, "created mesh")) {
+      // fire ray at some known locations from the origin. This symmetric mesh imposes symmetry on the intersections and ray params.
+      const knownPoints = [
+        { vec: Vector3d.create(0.22391898, 0.22391898, 0.94853602), numInts: 8, a: 1.0 }, // a vertex
+        { vec: Vector3d.create(0.0, 0.22391898, 0.94853602), numInts: 4, a: 0.97460776 }, // an edge
+      ];
+      const opts = new FacetIntersectOptions();
+      let ints: FacetLocationDetail[];
+      opts.acceptIntersection = (detail: FacetLocationDetail): boolean => {
+        ints.push(detail.clone()); return false;
+      };
+      for (const knownPoint of knownPoints) {
+        const ray = Ray3d.create(Point3d.createZero(), knownPoint.vec.normalize()!);
+        for (const paramTol of [Geometry.smallFraction, Geometry.smallFraction * 100]) {
+          ints = [];
+          opts.parameterTolerance = paramTol; // to trigger different snapLocationToEdge branches
+          PolyfaceQuery.intersectRay3d(mesh, ray, opts);
+          if (ck.testExactNumber(ints.length, knownPoint.numInts, "known point intersects expected number of facets")) {
+            for (const detail of ints)
+              ck.testCoordinate(Math.abs(detail.a), knownPoint.a, "known point intersects at expected ray parameters");
+          }
+        }
+      }
+      // create grid of unit rays on xy-plane, pointing down
+      const range = Range3d.createFromVariantData(mesh.data.point);
+      const diagonal = range.diagonal().magnitude();
+      range.expandInPlace(diagonal / 3);
+      const testRays: Ray3d[] = [];
+      const delta = 0.1;
+      for (let xCoord = range.low.x; xCoord < range.high.x; xCoord += delta)
+        for (let yCoord = range.low.y; yCoord < range.high.y; yCoord += delta)
+          testRays.push(Ray3d.createXYZUVW(xCoord, yCoord, 0, 0, 0, -1));
+      // transform grid into place
+      const normal = Vector3d.createNormalized(-1, 3, 4)!;
+      const localToWorld = Matrix3d.createRigidHeadsUp(normal);
+      const translate = normal.scaleToLength(diagonal * 3);
+      const localToWorldTransform = Transform.createOriginAndMatrix(translate, localToWorld);
+      for (const ray of testRays)
+        ray.transformInPlace(localToWorldTransform);
+      // fire rays into mesh; some will miss
+      let x0 = 0;
+      const options = new FacetIntersectOptions();
+      options.needColor = options.needNormal = options.needParam = true;
+      for (const filter of ["firstFound", "infiniteLine", "boundedSegment", "boundedRay"]) {
+        let intersects: FacetLocationDetail[] = [];
+        if (filter === "firstFound")
+          options.acceptIntersection = undefined; // default behavior: accept first found intersection with infinite line
+        else
+          options.acceptIntersection = (detail: FacetLocationDetail): boolean => {
+            let collect = false;
+            if (filter === "infiniteLine")
+              collect = true;
+            else if (filter === "boundedSegment")
+              collect = detail.a >= 0.0 && detail.a <= 1.0;
+            else if (filter === "boundedRay")
+              collect = detail.a >= 0.0;
+            if (collect)
+              intersects.push(detail.clone());
+            return false; // keep processing
+          };
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0);
+        for (const ray of testRays) {
+          intersects = [];
+          let loc = PolyfaceQuery.intersectRay3d(mesh, ray, options);
+          if (options.acceptIntersection !== undefined)
+            ck.testUndefined(loc, "callbacks that accept no intersection result in intersectRay3d returning undefined");
+          if (filter === "boundedSegment")
+            ck.testExactNumber(intersects.length, 0, "no intersections expected within ray parameter [0,1]");
+          let segment: LineSegment3d | undefined;
+          if (loc !== undefined) {
+            segment = LineSegment3d.create(ray.origin, loc.point);
+          } else if (intersects.length > 0) {
+            ck.testTrue(intersects.length <= 2, "expect 1 or 2 intersections of this closed convex mesh, if any");
+            if (intersects.length === 2) {
+              intersects.sort((d0, d1) => d0.a - d1.a);
+              loc = intersects[0];  // closer to ray origin
+              segment = LineSegment3d.create(intersects[0].point, intersects[1].point);
+            } else {
+              segment = LineSegment3d.create(ray.origin, intersects[0].point);
+            }
+          }
+          if (undefined !== loc) {
+            ck.testTrue(loc.isInsideOrOn, "intersection is real");
+            ck.testTrue(loc.classify < PolygonLocation.OutsidePolygon, "intersection is real (via classify)");
+            ck.testBoolean(options.needNormal, undefined !== loc.getNormal(), "normal computed as expected");
+            ck.testBoolean(options.needParam, undefined !== loc.getParam(), "uv parameter computed as expected");
+            ck.testBoolean(options.needColor, undefined !== loc.getColor(), "color computed as expected");
+            ck.testBoolean(options.needBarycentricCoordinates || options.needNormal || options.needParam || options.needColor, undefined !== loc.getBarycentricCoordinates(), "barycentric coords computed as expected");
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, segment, x0);
+          }
+        }
+        x0 += diagonal;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dClosedConvexMesh");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("IntersectRay3dSingleFaceMesh", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const vertices0 = [Point3d.create(0, 0), Point3d.create(4, 0), Point3d.create(4, 4), Point3d.create(0, 4)];
+    const normals0: Vector3d[] = [];
+    const params0: Point2d[] = [];
+    const colors0 = [0xB435CA, 0x0CF316, 0xFB2B04, 0xF7EF08];
+    const centroid = Point3dArray.centroid(vertices0);
+    const up = Vector3d.unitZ();
+    const strokeOptions = StrokeOptions.createForFacets();
+    const builder0 = PolyfaceBuilder.create(strokeOptions);
+    builder0.addPolygon(vertices0);
+    const mesh0 = builder0.claimPolyface();
+    for (let i = 0; i < vertices0.length; ++i) {
+      const normal = Vector3d.createAdd3Scaled(vertices0[i], 1, centroid, -1, up, 2);
+      normals0.push(normal.clone());
+      let index = mesh0.addNormal(normal);
+      mesh0.addNormalIndex(index);
+
+      const param = Point2d.create(vertices0[i].x / 4, vertices0[i].y / 4);
+      params0.push(param.clone());
+      index = mesh0.addParam(param);
+      mesh0.addParamIndex(index);
+
+      index = mesh0.addColor(colors0[i]);
+      mesh0.addColorIndex(index);
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0);
+    // fire rays to midpoints of edges
+    const rays = [Ray3d.createXYZUVW(2, 0, 5, 0, 0, -1), Ray3d.createXYZUVW(4, 2, 5, 0, 0, -1), Ray3d.createXYZUVW(2, 4, 5, 0, 0, -1), Ray3d.createXYZUVW(0, 2, 5, 0, 0, -1)];
+    const vertices1: Point3d[] = [];
+    const normals1: Vector3d[] = [];
+    const params1: Point2d[] = [];
+    const colors1: number[] = [];
+    for (const ray of rays) {
+      const loc = PolyfaceQuery.intersectRay3d(mesh0, ray); // no aux data
+      if (ck.testPointer(loc, "found intersection")) {
+        ck.testExactNumber(loc.facetIndex, 0, "intersected expected facet index");
+        ck.testExactNumber(loc.edgeCount, 4, "edge count as expected");
+        ck.testTrue(loc.isConvex, "expected convexity");
+        ck.testExactNumber(loc.closestEdge.edgeParam, 0.5, "closest edge param is midpoint");
+        ck.testExactNumber(loc.classify, PolygonLocation.OnPolygonEdgeInterior, "expected location code");
+        vertices1.push(loc.point.clone());
+        ck.testUndefined(loc.getNormal(), "intersect with defaults computes no normal");
+        ck.testUndefined(loc.getParam(), "intersect with defaults computes no param");
+        ck.testUndefined(loc.getColor(), "intersect with defaults computes no color");
+        ck.testUndefined(loc.getBarycentricCoordinates(), "intersect with defaults computes no barycentric coords");
+        // compute aux data ex post facto
+        const visitor = mesh0.createVisitor();
+        visitor.moveToReadIndex(loc.facetIndex);
+        let normal = loc.getNormal(visitor.normal);
+        ck.testUndefined(normal, "normal can't be computed without vertices");
+        normal = loc.getNormal(visitor.normal, visitor.point);
+        const b = loc.getBarycentricCoordinates();
+        if (ck.testPointer(b, "barycentric coords cached as side effect of computing aux data")) {
+          ck.testPoint3d(loc.point, visitor.point.linearCombination(b) as Point3d, "roundtrip point through barycentric coords");
+          if (ck.testPointer(normal, "computed normal") && ck.testPointer(visitor.normal, "visitor has normals")) {
+            ck.testVector3d(normal, visitor.normal.linearCombination(b) as Vector3d, "roundtrip normal through barycentric coords");
+            normals1.push(normal);
+          }
+          const param = loc.getParam(visitor.param);
+          if (ck.testPointer(param, "computed param") && ck.testPointer(visitor.param, "visitor has params")) {
+            ck.testPoint2d(param, visitor.param.linearCombination(b) as Point2d, "roundtrip uv parameter through barycentric coords");
+            params1.push(param);
+          }
+          const color = loc.getColor(visitor.color);
+          if (ck.testPointer(color, "computed color") && ck.testPointer(visitor.color, "visitor has colors")) {
+            ck.testExactNumber(color, NumberArray.linearCombinationOfColors(visitor.color, b), "roundtrip color through barycentric coords");
+            colors1.push(color);
+          }
+        }
+      }
+    }
+    // create a new mesh interpolated from the original
+    const builder1 = PolyfaceBuilder.create(strokeOptions);
+    builder1.addPolygon(vertices1);
+    const mesh1 = builder1.claimPolyface();
+    for (let i = 0; i < vertices1.length; ++i) {
+      ck.testPoint3d(vertices1[i], vertices0[i].interpolate(0.5, vertices0[(i + 1) % vertices0.length]), "interpolated point as expected");
+      ck.testVector3d(normals1[i], normals0[i].interpolate(0.5, normals0[(i + 1) % normals0.length]), "interpolated normal as expected");
+      ck.testPoint2d(params1[i], params0[i].interpolate(0.5, params0[(i + 1) % params0.length]), "interpolated uv parameter as expected");
+      for (let j = 0; j < 4; ++j)
+        ck.testExactNumber((colors1[i] >>> (j * 8)) & 0xFF, Math.floor(Geometry.interpolate((colors0[i] >>> (j * 8)) & 0xFF, 0.5, (colors0[(i + 1) % normals0.length] >>> (j * 8)) & 0xFF)), "interpolated color as expected");
+      let index = mesh1.addNormal(normals1[i]);
+      mesh1.addNormalIndex(index);
+      index = mesh1.addParam(params1[i]);
+      mesh1.addParamIndex(index);
+      index = mesh1.addColor(colors1[i]);
+      mesh1.addColorIndex(index);
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, 6);
+
+    // remaining coverage
+    const intersectOptions = new FacetIntersectOptions();
+    intersectOptions.needBarycentricCoordinates = true;
+    const loc1 = PolyfaceQuery.intersectRay3d(mesh1, Ray3d.createXYZUVW(centroid.x, centroid.y, -5, 0, 0, 1), intersectOptions);
+    if (ck.testPointer(loc1, "found intersection in new mesh")) {
+      ck.testTrue(loc1.isValid, "intersection isValid");
+      ck.testExactNumber(loc1.classify, PolygonLocation.InsidePolygonProjectsToEdgeInterior, "intersection has expected code");
+      ck.testExactNumber(loc1.closestEdge.edgeParam, 0.5, "intersection projects to edge midpoint");
+      ck.testExactNumber(loc1.a, 5.0, "intersection computed at expected ray parameter");
+      const b1 = loc1.getBarycentricCoordinates();
+      if (ck.testPointer(b1, "intersection returned with barycentric coordinates")) {
+        for (const bCoord of b1)
+          ck.testExactNumber(bCoord, 0.25, "expected barycentric coords at center");
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dSingleFaceMesh");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});

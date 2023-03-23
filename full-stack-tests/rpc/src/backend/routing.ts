@@ -11,7 +11,7 @@ export function initializeWebRoutingTest(protocol: BentleyCloudRpcProtocol) {
   protocol.fulfill = async (request: SerializedRpcRequest) => {
     if (request.operation.interfaceDefinition === "WebRoutingInterface") {
       const fulfillment = await RpcRequestFulfillment.forUnknownError(request, "");
-      fulfillment.status = Number(request.operation.operationName.substr(4));
+      fulfillment.status = Number(request.operation.operationName.substring(4));
 
       let intercepted = interceptions.get(fulfillment.status) ?? 0;
       if (intercepted < 3) {

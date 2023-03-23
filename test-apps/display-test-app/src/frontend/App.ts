@@ -27,6 +27,7 @@ import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
+import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -257,7 +258,7 @@ export class DisplayTestApp {
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
-        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"]}}),
+        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"] } }),
       },
       localhostIpcApp: {
         socketUrl,
@@ -267,7 +268,12 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
-      opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
+      // The electron package produces an exception every time getAccessToken is called, which is quite frequently.
+      // It makes debugging with "pause on caught exceptions" infuriating.
+      // ###TODO fix that in the client and remove this
+      if (!configuration.noElectronAuth)
+        opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
+
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
@@ -338,6 +344,7 @@ export class DisplayTestApp {
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
+      ViewClipByElementGeometryTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
@@ -351,7 +358,7 @@ export class DisplayTestApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await EditTools.initialize({ registerAllTools: true });
+    await EditTools.initialize();
     MapLayersFormats.initialize();
   }
 

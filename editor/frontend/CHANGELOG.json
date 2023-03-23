@@ -2,6 +2,78 @@
   "name": "@itwin/editor-frontend",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/editor-frontend_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add EditTools.busyRetry"
+          },
+          {
+            "comment": "Added RegionBooleanTool to unite, subtract, or intersect planar regions."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.6",
+      "tag": "@itwin/editor-frontend_v3.5.6",
+      "date": "Fri, 24 Feb 2023 16:02:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.5",
+      "tag": "@itwin/editor-frontend_v3.5.5",
+      "date": "Thu, 26 Jan 2023 22:53:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.4",
+      "tag": "@itwin/editor-frontend_v3.5.4",
+      "date": "Wed, 18 Jan 2023 15:27:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.3",
+      "tag": "@itwin/editor-frontend_v3.5.3",
+      "date": "Fri, 13 Jan 2023 17:23:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.2",
+      "tag": "@itwin/editor-frontend_v3.5.2",
+      "date": "Wed, 11 Jan 2023 16:46:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.1",
+      "tag": "@itwin/editor-frontend_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/editor-frontend_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "replace callCommand with commandConnection typed prox"
+          },
+          {
+            "comment": "use ipc Proxy for calling EditCommand methods"
+          },
+          {
+            "comment": "New modify tool base class. Extend curve tool now supports paths."
+          },
+          {
+            "comment": "Tools to create linear/rotational swept solids and surfaces."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/editor-frontend_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",

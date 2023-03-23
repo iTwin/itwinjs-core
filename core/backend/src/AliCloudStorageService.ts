@@ -12,7 +12,7 @@ import { CloudStorageService, CloudStorageUploadOptions } from "./CloudStorageBa
 
 /**
  * @beta
- * @deprecated
+ * @deprecated in 3.x. Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
  */
 export interface AliCloudStorageServiceCredentials {
   region: string;
@@ -21,7 +21,7 @@ export interface AliCloudStorageServiceCredentials {
 }
 
 declare class OSS {
-  constructor(params: AliCloudStorageServiceCredentials)
+  constructor(params: AliCloudStorageServiceCredentials);
   public useBucket(name: string): void;
   public signatureUrl(name: string, policy: OSS.SignatureUrlOptions): string;
   public list(params: { marker: string, "max-keys": number }, arg2: {}): Promise<{ objects?: Array<{ name: string }> }>;
@@ -43,7 +43,7 @@ declare namespace OSS { // eslint-disable-line no-redeclare
 
 /**
  * @beta
- * @deprecated Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
+ * @deprecated in 3.x. Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
  */
 export class AliCloudStorageService extends CloudStorageService {
   private _client: OSS;

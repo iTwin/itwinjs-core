@@ -11,9 +11,11 @@ import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
 
+/* eslint-disable deprecation/deprecation */
+
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
-const isInstance = <T extends any>(args: InstanceOrArray<T>): args is T => {
+const isInstance = <T>(args: InstanceOrArray<T>): args is T => {
   return !Array.isArray(args);
 };
 
