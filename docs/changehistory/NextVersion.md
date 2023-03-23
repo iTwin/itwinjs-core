@@ -20,6 +20,7 @@ Table of contents:
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
+- [Deprecations](#deprecations)
 
 ## Updated minimum requirements
 
@@ -106,3 +107,25 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
+
+### Deprecations
+
+The following deprecated classes/methods were removed:
+
+- `AliCloudStorageService` (`@itwin/core-backend`)
+- `AliCloudStorageServiceCredentials` (`@itwin/core-backend`)
+- `AzureBlobStorage` (`@itwin/core-backend`)
+- `CloudStorageService` (`@itwin/core-backend`)
+- `CloudStorageTileUploader` (`@itwin/core-backend`)
+- `CloudStorageUploadOptions` (`@itwin/core-backend`)
+- `IModelHost.tileCacheService` (`@itwin/core-backend`)
+- `IModelHost.tileUploader` (`@itwin/core-backend`)
+- `CloudStorageCache` (`@itwin/core-common`)
+- `CloudStorageContainerDescriptor` (`@itwin/core-common`)
+- `CloudStorageContainerUrl` (`@itwin/core-common`)
+- `CloudStorageProvider` (`@itwin/core-common`)
+- `CloudStorageTileCache` (`@itwin/core-common`)
+- `IModelTileRpcInterface.getTileCacheContainerUrl` (`@itwin/core-common`)
+- `IModelTileRpcInterface.isUsingExternalTileCache` (`@itwin/core-common`)
+
+The `tileCacheService` option was removed from [IModelHostOptions]($backend) and [IModelHostConfiguration]($backend).
