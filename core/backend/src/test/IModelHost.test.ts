@@ -138,15 +138,15 @@ describe("IModelHost", () => {
       setMaxTileCacheSize: setMaxTileCacheSizeStub,
     }));
 
-    const storageStub = sinon.createStubInstance(AzureServerStorage);
+    const storageStub = sinon.createStubInstance(AzureServerStorage) as sinon.SinonStubbedInstance<AzureServerStorage> & AzureServerStorage; // I guess Sinon type definitions don't work well with overloads
     const registerStub = sinon.stub(AzureServerStorageBindings.prototype, "register").callsFake((container) => {
-      container.bind(ServerStorage).toConstantValue(storageStub as any); // I guess Sinon type definitions don't work well with overloads
+      container.bind(ServerStorage).toConstantValue(storageStub);
     });
 
     await IModelHost.startup(config);
 
     assert.isDefined(IModelHost.tileStorage);
-    assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
+    assert.equal(IModelHost.tileStorage!.storage, storageStub);
     assert.isTrue(registerStub.calledOnce);
     assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountName, config.tileCacheAzureCredentials.account);
     assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountKey, config.tileCacheAzureCredentials.accessKey);
