@@ -4,7 +4,7 @@ Every BIS `Element` has an optional 128 bit [Globally Unique Identifier](https:/
 
 ## Scope of Uniqueness
 
-Assigned FederationGuids are enforced to be unique on a single BIS Repository. However, multiple BIS Repositories under the same iTwin can use the same FederationGuid in order to refer to the same real-world Entity.
+Assigned FederationGuids are enforced to be unique on a single BIS Repository. However, multiple BIS Repositories can use the same FederationGuid in order to refer to the same real-world Entity.
 
 Therefore, the [Code](./codes.md) of Elements with the same FederationGuid across multiple BIS Repositories is typically the same, unless such Code is enforced to be unique across all BIS Repositories in an iTwin.
 
