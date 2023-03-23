@@ -5818,7 +5818,7 @@ export class Transform implements BeJSONFunctions {
     multiplyComponentXYZ(componentIndex: number, x: number, y: number, z?: number): number;
     multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number;
     multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined;
-    multiplyInversePoint3dArray(points: Point3d[], results?: Point3d[]): Point3d[] | undefined;
+    multiplyInversePoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[] | undefined;
     multiplyInversePoint3dArrayInPlace(points: Point3d[]): boolean;
     multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;
     multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;

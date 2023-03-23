@@ -96,21 +96,19 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     return undefined;
   }
   /**
- * Return the cross product of vectors from point at originIndex to points at indexA and indexB
- * @param originIndex index of origin
- * @param indexA index of first target within the array
- * @param indexB index of second target within the array
- * @param result caller-allocated vector.
- * @returns return true if indexA, indexB both valid
- */
+   * Return the cross product of vectors from point at originIndex to points at indexA and indexB
+   * @param originIndex index of origin
+   * @param indexA index of first target within the array
+   * @param indexB index of second target within the array
+   * @param result caller-allocated vector.
+   * @returns return true if indexA, indexB both valid
+   */
   public override crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number): number | undefined {
     if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
       return XY.crossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB]);
     return undefined;
   }
-  /**
-   * read-only property for number of XYZ in the collection.
-   */
+  /** Read-only property for number of XYZ in the collection. */
   public override get length(): number {
     return this.data.length;
   }

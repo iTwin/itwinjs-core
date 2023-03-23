@@ -692,7 +692,11 @@ export class Geometry {
   public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
     return value === targetValue ? undefined : value;
   }
-  /** Simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
+  /**
+   * Simple interpolation between values, but choosing (based on fraction) a or b as starting
+   * point for maximum accuracy.
+   * * If `f = 0`, then `a` is returned and if `f = 1`, then `b` is returned.
+   */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
   }
