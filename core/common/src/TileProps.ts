@@ -9,6 +9,14 @@
 import type { ObjectReference } from "@itwin/object-storage-core/lib/common";
 import { GuidString } from "@itwin/core-bentley";
 import { Range3dProps, TransformProps } from "@itwin/core-geometry";
+import { IModelRpcProps } from "./IModel";
+
+/** @beta */
+export interface TileContentIdentifier {
+  treeId: string;
+  contentId: string;
+  guid: string | undefined;
+}
 
 /** Wire format describing an [IModelTile]($frontend)
  * @internal

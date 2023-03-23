@@ -10,13 +10,13 @@ import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost, IModelHostConfiguration, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
-import { AzureBlobStorage } from "../CloudStorageBackend";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { AzureServerStorage } from "@itwin/object-storage-azure";
+import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
+import { Container } from "inversify";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: path.join(__dirname, ".cache") };
@@ -126,7 +126,6 @@ describe("IModelHost", () => {
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
   });
 
-  /* eslint-disable deprecation/deprecation */
   it("should set Azure cloud storage provider for tile cache given credentials", async () => {
     const config: IModelHostOptions = {};
     config.tileCacheAzureCredentials = {
@@ -134,24 +133,29 @@ describe("IModelHost", () => {
       accessKey: "testAccessKey",
     };
 
-    const setMaxTileCacheSizeStub = sinon.stub();
-    sinon.stub(IModelHost, "platform").get(() => ({
-      setMaxTileCacheSize: setMaxTileCacheSizeStub,
-    }));
+    const setMaxTileCacheSizeStub = sinon.stub(IModelHost.platform, "setMaxTileCacheSize");
+    // sinon.stub(IModelHost, "platform").get(() => ({
+    //   setMaxTileCacheSize: setMaxTileCacheSizeStub,
+    // }));
+
+    const storageStub = sinon.createStubInstance(AzureServerStorage);
+    const registerStub = sinon.stub(AzureServerStorageBindings.prototype, "register").callsFake((container) => {
+      container.bind(ServerStorage).toConstantValue(storageStub as any); // I guess Sinon type definitions don't work well with overloads
+    });
 
     await IModelHost.startup(config);
 
-    assert.instanceOf(IModelHost.tileCacheService, AzureBlobStorage);
-    assert.equal((IModelHost.tileCacheService as any)._credential.accountName, config.tileCacheAzureCredentials.account);
     assert.isDefined(IModelHost.tileStorage);
     assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
-    assert.equal((IModelHost.tileStorage!.storage as any)._config.accountName, config.tileCacheAzureCredentials.account);
+    assert.isTrue(registerStub.calledOnce);
+    assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountName, config.tileCacheAzureCredentials.account);
+    assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountKey, config.tileCacheAzureCredentials.accessKey);
+    assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).baseUrl, `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`);
     assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
     const config: IModelHostOptions = {};
-    config.tileCacheService = {} as AzureBlobStorage;
     config.tileCacheStorage = {} as ServerStorage;
 
     const setMaxTileCacheSizeStub = sinon.stub();
@@ -161,21 +165,9 @@ describe("IModelHost", () => {
 
     await IModelHost.startup(config);
 
-    assert.equal(IModelHost.tileCacheService, config.tileCacheService);
     assert.isDefined(IModelHost.tileStorage);
     assert.equal(IModelHost.tileStorage!.storage, config.tileCacheStorage);
     assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
-  });
-
-  it("should throw if both tileCacheService and tileCacheAzureCredentials are set", async () => {
-    const config: IModelHostOptions = {};
-    config.tileCacheAzureCredentials = {
-      account: "testAccount",
-      accessKey: "testAccessKey",
-    };
-    config.tileCacheService = {} as AzureBlobStorage;
-
-    await expect(IModelHost.startup(config)).to.be.rejectedWith("Cannot use both Azure and custom cloud storage providers for tile cache.");
   });
 
   it("should throw if both tileCacheStorage and tileCacheAzureCredentials are set", async () => {
@@ -197,8 +189,7 @@ describe("IModelHost", () => {
 
     await IModelHost.startup(opts);
 
-    assert.isUndefined(IModelHost.tileCacheService);
-    assert.isUndefined(IModelHost.tileUploader);
+    assert.isUndefined(IModelHost.tileStorage);
     assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(IModelHostConfiguration.defaultMaxTileCacheDbSize));
   });
 
@@ -214,29 +205,21 @@ describe("IModelHost", () => {
       maxTileCacheDbSize,
     });
 
-    assert.isUndefined(IModelHost.tileCacheService);
-    assert.isUndefined(IModelHost.tileUploader);
     assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(maxTileCacheDbSize));
   });
 
-  it("should cleanup tileCacheService, tileStorageService and tileUploader on shutdown", async () => {
+  it("should cleanup tileStorage on shutdown", async () => {
     const config: IModelHostOptions = {};
-    config.tileCacheService = {} as AzureBlobStorage;
     config.tileCacheStorage = {} as ServerStorage;
 
     await IModelHost.startup(config);
 
-    assert.equal(IModelHost.tileCacheService, config.tileCacheService);
     assert.equal(IModelHost.tileStorage?.storage, config.tileCacheStorage);
-    assert.isDefined(IModelHost.tileUploader);
 
     await IModelHost.shutdown();
 
-    assert.isUndefined(IModelHost.tileCacheService);
     assert.isUndefined(IModelHost.tileStorage);
-    assert.isUndefined(IModelHost.tileUploader);
   });
-  /* eslint-enable deprecation/deprecation */
 
   it("should throw if hubAccess is undefined and getter is called", async () => {
     await IModelHost.startup(opts);
