@@ -731,11 +731,6 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   builder.addVarying("v_uvCustom", VariableType.Vec3);
 
-  // Set u_modelToWorld here which is used for calculating the v_uvCustom.
-  // This uniform is also added by thematic display, but in this case we don't want to bind it all of the time, only if we are using constantLod.
-  // So we must add this after thematic adds it (which is done earlier in the call to addThematicDisplay) so that for the thematic shaders it will
-  // bind the uniform always rather than just when constantLod is used.
-
   builder.vert.addUniform("u_constantLodVParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_constantLodVParams", (uniform, params) => {
       const vParams = params.geometry.asSurface?.mesh.constantLodVParams;
