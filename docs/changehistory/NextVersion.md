@@ -7,6 +7,7 @@ Table of contents:
 
 - [AppUi](#appui)
   - [Static manager classes](#static-manager-classes)
+  - [ViewSelector enhancments](#viewselector-enhancements)
 - [Mesh intersection with ray](#mesh-intersection-with-ray)
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
@@ -79,6 +80,10 @@ Below is a list of the changes from this move, some of these new access point ma
  UiFramework.childWindowManager.closeAllChildWindows | UiFramework.childWindows.closeAll
  UiFramework.childWindowManager.closeChildWindow | UiFramework.childWindows.close
  UiFramework.backstageManager | UiFramework.backstage
+
+### ViewSelector Enhancements
+
+Search functionality has been added to the `ViewSelector` component, allowing for additional ease when navigating between iModel views. Search functionality is optional and enabled by default. To disable search functionality, set the `searchBox` property of `ViewSelector` to false.
 
 ## Mesh intersection with ray
 
