@@ -10,7 +10,6 @@ import {
   VariableType,
   VertexShaderBuilder,
 } from "../ShaderBuilder";
-import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
 
 const computeRayDir = `
 vec3 computeRayDir(vec3 eyeSpace) {
@@ -248,7 +247,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   vec3 firstPointInAtmosphere = rayDir * atmosphereHitInfo[0] + rayOrigin;
   vec3 scatterPoint = firstPointInAtmosphere;
 
-  float opticalDepthFromRayOriginToSamplePoints[MAX_SAMPLE_POINTS];
+  float opticalDepthFromRayOriginToSamplePoints[u_numInScatteringPoints];
   // The first sample point either lies at the edge of the atmosphere (camera is in space) or exactly at the ray origin (camera is in the atmosphere).
   // In both cases, the distance traveled through the atmosphere to this point is 0.
   opticalDepthFromRayOriginToSamplePoints[0] = 0.0;
@@ -520,7 +519,6 @@ export function addAtmosphericScatteringEffect(
   const mainShader = perFragmentCompute ? builder.frag : builder.vert;
 
   mainShader.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
-  mainShader.addConstant("MAX_SAMPLE_POINTS", VariableType.Int, `${MAX_SAMPLE_POINTS}`);
 
   addMainShaderUniforms(mainShader);
 

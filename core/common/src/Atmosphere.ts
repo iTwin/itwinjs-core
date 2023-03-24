@@ -110,13 +110,17 @@ export namespace Atmosphere {
     private static _defaultDensityFalloff: number = 1.0;
     private static _defaultInScatteringIntensity: number = 6.0;
     private static _defaultMinDensityHeightBelowEarth: 0.0;
-    private static _defaultNumInScatteringPoints: number = 10;
-    private static _defaultNumOpticalDepthPoints: number = 10;
     private static _defaultOutScatteringIntensity: number = 1.0;
     private static _defaultScatteringStrength: number = 5;
     private static _defaultWavelengths: Wavelengths = new Wavelengths({ r: 700.0, g: 530.0, b: 440.0 });
 
+    private static _defaultNumInScatteringPoints: number = 10;
+    private static _highQualityNumInScatteringPoints: number = 20;
+    private static _defaultNumOpticalDepthPoints: number = 5;
+    private static _maxSamplePoints = 40; // Maximum number of sample points to be used for atmospheric scattering computation
+
     public static readonly defaults = new Settings({});
+    public static readonly highQuality = new Settings({ numInScatteringPoints: this._highQualityNumInScatteringPoints });
 
     /** If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
@@ -128,9 +132,9 @@ export namespace Atmosphere {
     public readonly inScatteringIntensity: number;
     /** If defined, corresponds to the height in meters below the earth's pole at which the atmosphere is at its densest. Physically, this is the point at which there is the most air molecules to interfere with light transmission. Defaults to 0.0. */
     public readonly depthBelowEarthForMaxDensity: number;
-    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light reflected toward the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 20. Defaults to 10. */
+    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light reflected toward the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 40. Defaults to 10. */
     public readonly numInScatteringPoints: number;
-    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered away from the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 20. Defaults to 10. */
+    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered away from the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 40. Defaults to 5. */
     public readonly numOpticalDepthPoints: number;
     /** If defined, multiplies the amount of light scattered away from the viewing eye by this value. A higher value decreases perceived overall brightness of the elements in the atmosphere and thickness of the atmosphere. Defaults to 1.0. */
     public readonly outScatteringIntensity: number;
@@ -169,8 +173,8 @@ export namespace Atmosphere {
       this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings._defaultDensityFalloff);
       this.inScatteringIntensity = JsonUtils.asDouble(json.inScatteringIntensity, Settings._defaultInScatteringIntensity);
       this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(json.depthBelowEarthForMaxDensity, Settings._defaultMinDensityHeightBelowEarth);
-      this.numInScatteringPoints = JsonUtils.asDouble(json.numInScatteringPoints, Settings._defaultNumInScatteringPoints);
-      this.numOpticalDepthPoints = JsonUtils.asDouble(json.numOpticalDepthPoints, Settings._defaultNumOpticalDepthPoints);
+      this.numInScatteringPoints = Math.min(JsonUtils.asDouble(json.numInScatteringPoints, Settings._defaultNumInScatteringPoints), Settings._maxSamplePoints);
+      this.numOpticalDepthPoints = Math.min(JsonUtils.asDouble(json.numOpticalDepthPoints, Settings._defaultNumOpticalDepthPoints), Settings._maxSamplePoints);
       this.outScatteringIntensity = JsonUtils.asDouble(json.outScatteringIntensity, Settings._defaultOutScatteringIntensity);
       this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings._defaultScatteringStrength);
       this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths);

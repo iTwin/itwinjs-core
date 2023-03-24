@@ -9,9 +9,6 @@ import { desync, sync, SyncTarget } from "./Sync";
 import { Target } from "./Target";
 import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
-import { FrustumUniformType } from "./FrustumUniforms";
-
-export const MAX_SAMPLE_POINTS = 40; // Maximum number of sample points to be used for the in-scattering and out-scattering computations.
 
 export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _atmosphere?: Atmosphere.Settings;
@@ -126,11 +123,11 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   }
 
   private _updateNumInScatteringPoints(numInScatteringPoints: number) {
-    this._numInScatteringPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numInScatteringPoints));
+    this._numInScatteringPoints = Math.max(0, numInScatteringPoints);
   }
 
   private _updateNumOpticalDepthPoints(numOpticalDepthPoints: number) {
-    this._numOpticalDepthPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numOpticalDepthPoints));
+    this._numOpticalDepthPoints = Math.max(0, numOpticalDepthPoints);
   }
 
   private _updateExposure(exposure: number) {
