@@ -13,14 +13,13 @@ import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
-/** @beta */
 /** Class representing a map-layer format.
  * Each format has it's unique 'formatId' string, used to uniquely identify a format in the [[MapLayerFormatRegistry]].
  * When creating an [[ImageMapLayerSettings]] object, a format needs to be specified this 'formatId'.
  * The MapLayerFormat object can later be used to validate a source, or create a provider.
  *
-* Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
- * @beta
+ * Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
+ * @public
  */
 export class MapLayerFormat {
   public static formatId: string;
@@ -46,7 +45,9 @@ export class MapLayerFormat {
 
 }
 
-/** @beta */
+/** The type of a map layer format.
+ * @public
+ */
 export type MapLayerFormatType = typeof MapLayerFormat;
 
 /** @public */
@@ -63,7 +64,7 @@ export interface MapLayerSourceValidation {
  * 'BingMaps' must have it's key value set to 'key'
  * 'MapboxImagery' must have it's key value set to 'access_token'
  *
- * @beta
+ * @public
  */
 export interface MapLayerOptions {
   /** Access key for Azure Maps in the format `{ key: "subscription-key", value: "your-azure-maps-key" }`. */
@@ -87,6 +88,7 @@ export interface MapLayerFormatEntry {
 
 /** ###TODO needs docs
  * Look at TerrainProviderRegistry for example?
+ * @public
  */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
@@ -96,16 +98,17 @@ export class MapLayerFormatRegistry {
   }
   private _formats = new Map<string, MapLayerFormatEntry>();
 
-  public isRegistered(formatId: string) {return this._formats.get(formatId) !== undefined;}
+  public isRegistered(formatId: string) { return this._formats.get(formatId) !== undefined; }
 
-  public register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient) {
+  public register(formatClass: MapLayerFormatType) {
     if (formatClass.formatId.length === 0)
       return; // must be an abstract class, ignore it
 
-    this._formats.set(formatClass.formatId, {type: formatClass, accessClient});
+    this._formats.set(formatClass.formatId, { type: formatClass });
   }
 
-  public setAccessClient(formatId: string, accessClient: MapLayerAccessClient ): boolean {
+  /** @beta */
+  public setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean {
     const entry = this._formats.get(formatId);
     if (entry !== undefined) {
       entry.accessClient = accessClient;
@@ -114,6 +117,7 @@ export class MapLayerFormatRegistry {
     return false;
   }
 
+  /** @beta */
   public getAccessClient(formatId: string): MapLayerAccessClient | undefined {
     if (formatId.length === 0)
       return undefined;
@@ -136,9 +140,9 @@ export class MapLayerFormatRegistry {
     return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
-  /** TODO docs
+  /** ###TODO docs
    * @internal
-  */
+   */
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;

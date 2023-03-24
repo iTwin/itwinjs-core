@@ -19,17 +19,17 @@ const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
 
-/** ###TODO docs
- * @beta
+/** The status of the map layer imagery provider that lets you know if authentication is needed to request tiles.
+ * @public
  */
 export enum MapLayerImageryProviderStatus {
   Valid,
   RequireAuth,
 }
 
-/** ###TODO improve this?
- * Base class for map layer imagery providers.
+/** Base class for map layer imagery providers.
  * Map layer imagery providers request tiles from their URLs and provide images and other tile data.
+ * @public
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
@@ -42,11 +42,11 @@ export abstract class MapLayerImageryProvider {
   private readonly _geographicTilingScheme = new GeographicTilingScheme();
 
   /** @internal */
-  private _status =  MapLayerImageryProviderStatus.Valid;
+  private _status = MapLayerImageryProviderStatus.Valid;
 
-  public get status() { return this._status;}
+  public get status() { return this._status; }
 
-  public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid);}
+  public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
 
@@ -55,7 +55,7 @@ export abstract class MapLayerImageryProvider {
   public get maximumZoomLevel(): number { return this.defaultMaximumZoomLevel; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public get mutualExclusiveSubLayer(): boolean { return false; }
-  public get useGeographicTilingScheme() { return false;}
+  public get useGeographicTilingScheme() { return false; }
   public cartoRange?: MapCartoRectangle;
   public get hasSuccessfullyFetchedTile() { return this._hasSuccessfullyFetchedTile; }
 
@@ -83,7 +83,7 @@ export abstract class MapLayerImageryProvider {
 
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
 
-  public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
+  public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
 
   /** @internal */
   public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
@@ -93,17 +93,21 @@ export abstract class MapLayerImageryProvider {
 
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
+  /** @internal */
   protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
 
+  /** @internal */
   public getPotentialChildIds(tile: ImageryMapTile): QuadId[] {
     const childLevel = tile.quadId.level + 1;
     return tile.quadId.getChildIds(this.tilingScheme.getNumberOfXChildrenAtLevel(childLevel), this.tilingScheme.getNumberOfYChildrenAtLevel(childLevel));
   }
 
+  /** @internal */
   protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     resolveChildren(this.getPotentialChildIds(tile));
   }
 
+  /** @internal */
   public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     if (tile.depth >= this.maximumZoomLevel || (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))) {
       tile.setLeaf();
@@ -112,6 +116,7 @@ export abstract class MapLayerImageryProvider {
     this._generateChildIds(tile, resolveChildren);
   }
 
+  /** @internal */
   public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
     if (doDebugToolTips) {
       const range = quadId.getLatLongRangeDegrees(tree.tilingScheme);
@@ -119,9 +124,10 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** @internal */
   public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
     // default implementation; simply return an empty feature info
-    featureInfos.push({layerName: this._settings.name});
+    featureInfos.push({ layerName: this._settings.name });
   }
 
   /** @internal */
@@ -166,18 +172,19 @@ export abstract class MapLayerImageryProvider {
   /** Method called whenever the status changes, giving the opportunity to sub-classes to have a custom behavior.
    *  @internal
    */
-  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) {}
+  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) { }
 
   /** @internal */
-  protected setRequestAuthorization(headers: Headers){
-    if  (this._settings.userName && this._settings.password) {
-      headers.set("Authorization", `Basic ${  Base64EncodedString.encode(`${this._settings.userName  }:${  this._settings.password}`)}`);
+  protected setRequestAuthorization(headers: Headers) {
+    if (this._settings.userName && this._settings.password) {
+      headers.set("Authorization", `Basic ${Base64EncodedString.encode(`${this._settings.userName}:${this._settings.password}`)}`);
     }
   }
+
   /** @internal */
   public async makeTileRequest(url: string) {
-    let headers: Headers|undefined;
-    if  (this._settings.userName && this._settings.password) {
+    let headers: Headers | undefined;
+    if (this._settings.userName && this._settings.password) {
       headers = new Headers();
       this.setRequestAuthorization(headers);
     }
@@ -260,13 +267,13 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   // calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857
   public getEPSG4326Lon(x3857: number): number {
-    return Angle.radiansToDegrees(x3857/earthRadius);
+    return Angle.radiansToDegrees(x3857 / earthRadius);
   }
 
   /** @internal */
   // calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857
   public getEPSG4326Lat(y3857: number): number {
-    const y = 2 * Math.atan(Math.exp(y3857 / earthRadius)) - (Math.PI/2);
+    const y = 2 * Math.atan(Math.exp(y3857 / earthRadius)) - (Math.PI / 2);
     return Angle.radiansToDegrees(y);
   }
 
@@ -276,12 +283,12 @@ export abstract class MapLayerImageryProvider {
   public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
     // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
     // so use Math.pow instead (I assume the performance lost to be minimal)
-    const mapSize = this.tileSize*Math.pow(2,zoomLevel);
-    const leftGrid = this.tileSize  * column;
-    const topGrid = this.tileSize  * row;
+    const mapSize = this.tileSize * Math.pow(2, zoomLevel);
+    const leftGrid = this.tileSize * column;
+    const topGrid = this.tileSize * row;
 
     const longitudeLeft = 360 * ((leftGrid / mapSize) - 0.5);
-    const y0 = 0.5 - ((topGrid + this.tileSize ) / mapSize);
+    const y0 = 0.5 - ((topGrid + this.tileSize) / mapSize);
     const latitudeBottom = 90.0 - 360.0 * Math.atan(Math.exp(-y0 * 2 * Math.PI)) / Math.PI;
 
     const longitudeRight = 360 * (((leftGrid + this.tileSize) / mapSize) - 0.5);
