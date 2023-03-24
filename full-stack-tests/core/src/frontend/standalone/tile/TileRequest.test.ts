@@ -6,9 +6,9 @@ import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { IModelTileRpcInterface, ServerTimeoutError, TileContentIdentifier } from "@itwin/core-common";
+import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
+  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
   TileRequestChannel, TileStorage, Viewport,
 } from "@itwin/core-frontend";
 import { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";

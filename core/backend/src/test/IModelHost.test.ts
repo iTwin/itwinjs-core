@@ -16,7 +16,6 @@ import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { Container } from "inversify";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: path.join(__dirname, ".cache") };
