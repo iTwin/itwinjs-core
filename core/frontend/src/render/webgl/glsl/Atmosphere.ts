@@ -348,9 +348,6 @@ vec3 applyHdr(vec3 color) {
 `;
 
 const applyAtmosphericScattering = `
-  if (!u_isEnabled) {
-    return baseColor;
-  }
   mat3 atmosphericScatteringOutput = computeAtmosphericScatteringFragment();
   vec3 atmosphericScatteringColor = atmosphericScatteringOutput[0];
 
@@ -562,15 +559,6 @@ export function addAtmosphericScatteringEffect(
       });
     },
     VariablePrecision.High
-  );
-  builder.frag.addUniform(
-    "u_isEnabled",
-    VariableType.Boolean,
-    (prog) => {
-      prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindIsEnabled(uniform);
-      });
-    },
   );
   builder.frag.addFunction(applyHdr);
   builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);

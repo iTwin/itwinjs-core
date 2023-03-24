@@ -36,9 +36,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _numInScatteringPoints = 0.0;
   private _numOpticalDepthPoints = 0.0;
 
-  // Misc parameters
-  private _isEnabled = false;
-
   // utility
   public syncKey = 0;
   private _scratchMatrix3d = new Matrix3d();
@@ -50,8 +47,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     if (!(this.atmosphere && plan.atmosphere && this.atmosphere.equals(plan.atmosphere))) {
       this._atmosphere = plan.atmosphere;
     }
-
-    this._updateIsEnabled(target.wantAtmosphere);
 
     if (!this.atmosphere || !plan.ellipsoid) {
       return;
@@ -70,10 +65,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._updateNumOpticalDepthPoints(this.atmosphere.numOpticalDepthPoints);
     this._updateOutScatteringIntensity(this.atmosphere.outScatteringIntensity);
     this._updateScatteringCoefficients(this.atmosphere.scatteringStrength, this.atmosphere.wavelengths);
-  }
-
-  private _updateIsEnabled(wantAtmosphere: boolean) {
-    this._isEnabled = wantAtmosphere;
   }
 
   private _updateEarthCenter(earthCenter: Point3d, viewMatrix: Transform) {
@@ -144,12 +135,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
 
   private _updateExposure(exposure: number) {
     this._exposure = exposure;
-  }
-
-  public bindIsEnabled(uniform: UniformHandle): void {
-    if (!sync(this, uniform)) {
-      uniform.setUniform1i(this._isEnabled ? 1 : 0);
-    }
   }
 
   public bindExposure(uniform: UniformHandle): void {
