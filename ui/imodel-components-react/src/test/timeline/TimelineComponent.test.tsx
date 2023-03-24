@@ -6,13 +6,14 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent, render } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { UiAdmin } from "@itwin/appui-abstract";
 import { BaseTimelineDataProvider } from "../../imodel-components-react/timeline/BaseTimelineDataProvider";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../imodel-components-react/timeline/interfaces";
 import { TimelineComponent, TimelineMenuItemProps } from "../../imodel-components-react/timeline/TimelineComponent";
 import { TestUtils } from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
+import userEvent from "@testing-library/user-event";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public playing = false;
@@ -90,7 +91,10 @@ function TestRepeatTimelineComponent() {
 }
 
 describe("<TimelineComponent showDuration={true} />", () => {
-  let fakeTimers: sinon.SinonFakeTimers | undefined;
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  }); let fakeTimers: sinon.SinonFakeTimers | undefined;
   const rafSpy = sinon.spy((cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 0);
   });
@@ -153,8 +157,8 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     fireEvent.click(playButton);
     // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+    fakeTimers.setSystemTime(600);
     fakeTimers.tick(1);
 
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
@@ -174,11 +178,11 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.pointerCallbackCalled).to.be.true;
   });
 
-  it("should show tooltip on pointer move", () => {
+  it("should show tooltip on pointer move", async () => {
     const spyOnChange = sinon.spy();
     const dataProvider = new TestTimelineDataProvider();
     expect(dataProvider.loop).to.be.false;
-    fakeTimers = sinon.useFakeTimers();
+    fakeTimers = sinon.useFakeTimers({shouldAdvanceTime: true});
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -202,63 +206,16 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const sliderContainer = renderedComponent.container.querySelector(".iui-slider-container");
     expect(sliderContainer).to.exist;
 
-    // tried following methods to get test coverage of onPointerMove onPointerLeave but could not get event to fire
-    // fireEvent(sliderContainer!, new MouseEvent("mouseenter", { bubbles: false, cancelable: false }));
-    // fireEvent(sliderContainer!, new MouseEvent("mouseleave", { bubbles: false, cancelable: false }));
-
-    // act(() => {
-    //   fireEvent.pointerEnter(sliderContainer!, {
-    //     pointerId: 5,
-    //     buttons: 1,
-    //     clientX: 210,
-    //   });
-    // });
-
-    // act(() => {
-    //   fireEvent.pointerLeave(sliderContainer!, {
-    //     pointerId: 5,
-    //     buttons: 1,
-    //     clientX: 410,
-    //   });
-    // });
-
-    act(() => {
-      fireEvent.pointerDown(thumb!, {
-        pointerId: 5,
-        buttons: 1,
-        clientX: 210,
-      });
-    });
-
-    act(() => {
-      fireEvent.pointerMove(sliderContainer!, {
-        pointerId: 5,
-        buttons: 1,
-        clientX: 210,
-      });
-    });
-
-    /* move thumb to 40% value on slider */
-    act(() => {
-      fireEvent.pointerMove(sliderContainer!, {
-        pointerId: 5,
-        buttons: 1,
-        clientX: 410,
-      });
-    });
-
-    act(() => {
-      fireEvent.pointerUp(sliderContainer!, {
-        pointerId: 5,
-        buttons: 1,
-        clientX: 410,
-      });
-    });
+    await theUserTo.pointer([
+      { target: thumb!, coords: { x: 210, clientX: 210, y: 0, clientY: 0}, keys: "[MouseLeft>]"},
+      { coords: { x: 410, clientX: 410, y: 0, clientY: 0 }},
+      { keys: "[/MouseLeft]" },
+    ]);
   });
 
   it("timeline with short duration", async () => {
     const dataProvider = new TestTimelineDataProvider();
-    dataProvider.getSettings().duration = 20;  // make sure this is shorter than 40 so we get to end of animation
+    dataProvider.getSettings().duration = 2;  // make sure this is shorter than 40 so we get to end of animation
 
     fakeTimers = sinon.useFakeTimers();
 
@@ -283,8 +240,8 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.playing).to.be.true;
 
     // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+    fakeTimers.setSystemTime(600);
     fakeTimers.tick(1);
 
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
@@ -320,8 +277,8 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.playing).to.be.true;
 
     // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+    fakeTimers.setSystemTime(600);
     fakeTimers.tick(1);
 
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
@@ -360,8 +317,8 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.playing).to.be.true;
 
     // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+    fakeTimers.setSystemTime(600);
     fakeTimers.tick(1);
 
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
@@ -395,8 +352,9 @@ describe("<TimelineComponent showDuration={true} />", () => {
     fireEvent.click(playButton);
     expect(dataProvider.playing).to.be.true;
 
+    fakeTimers.tick(1);
     // Wait for animation.
-    fakeTimers.tick(600);
+    fakeTimers.setSystemTime(600);
     // Wait for 1st raf cb.
     fakeTimers.tick(1);
 
@@ -523,7 +481,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       />,
     );
   });
-  it("onPlayPause called for TimerPausePlay event", () => {
+  it("onPlayPause called for TimerPausePlay event", async () => {
     fakeTimers = sinon.useFakeTimers();
     const dataProvider = new TestTimelineDataProvider();
     const spyOnPlayPause = sinon.spy();
@@ -540,6 +498,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     const args: TimelinePausePlayArgs = { uiComponentId: "TestTimeline", timelineAction: TimelinePausePlayAction.Play };
     UiAdmin.sendUiEvent(args);
+
+    // React18 is scheduling setStates,
+    // Wait for the playing to effectively start, otherwise "Pause" event wouldn't do anything.
+    await waitFor(() => {
+      expect(screen.getAllByTitle("timeline.pause")).lengthOf(2);
+    });
+
     args.timelineAction = TimelinePausePlayAction.Pause;
     UiAdmin.sendUiEvent(args);
     args.timelineAction = TimelinePausePlayAction.Toggle;

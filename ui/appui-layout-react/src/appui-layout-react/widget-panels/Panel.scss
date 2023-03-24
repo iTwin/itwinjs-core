@@ -79,8 +79,8 @@
     >.nz-grip-container {
       left: 0;
 
-      >.nz-grip {
-        right: 0;
+      >.nz-grip.nz-grip {
+        right: calc(#{$nz-grip-width} * -0.5);
         transform: translate(0, -50%);
       }
     }
@@ -102,6 +102,9 @@
           }
         }
       }
+      > .nz-grip-container > .nz-grip {
+        right: 0;
+      }
     }
   }
 
@@ -111,8 +114,8 @@
     >.nz-grip-container {
       right: 0;
 
-      >.nz-grip {
-        left: 0;
+      >.nz-grip.nz-grip {
+        left: calc(#{$nz-grip-width} * -0.5);
         transform: translate(0, -50%);
       }
     }
@@ -130,6 +133,9 @@
             left: -$nz-grip-width * 0.5;
           }
         }
+      }
+      > .nz-grip-container > .nz-grip {
+        left: 0;
       }
     }
   }
@@ -165,8 +171,8 @@
     >.nz-grip-container {
       top: 0;
 
-      >.nz-grip {
-        bottom: 0;
+      >.nz-grip.nz-grip {
+        bottom: calc(#{$nz-grip-width} * -0.5);
         transform: translate(-50%, 0);
       }
     }
@@ -195,6 +201,9 @@
             bottom: -$nz-grip-width * 0.5;
           }
         }
+      }
+      > .nz-grip-container > .nz-grip {
+        bottom: 0;
       }
     }
   }
