@@ -413,14 +413,14 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal = false, _isMapTile = false): RenderTerrainGeometry | undefined {
+  public createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined {
     return undefined;
   }
 
   /** @internal */
-  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false, _isMapTile = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal = false, _isMapTile = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */
