@@ -69,7 +69,7 @@ export class MapTileLoader extends RealityTileLoader {
       return {};
 
     const projection = tile.getProjection(tile.heightRange);
-    const terrainGeometry = system.createTerrainMesh(mesh, projection.transformFromLocal, true, true);
+    const terrainGeometry = system.createTerrainMesh(mesh, projection.transformFromLocal, true);
 
     let unavailableChild = false;
     if (quadId.level < this.maxDepth) {
