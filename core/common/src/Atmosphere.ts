@@ -7,12 +7,18 @@
  */
 import { JsonUtils } from "@itwin/core-bentley";
 
-/** Namespace containing types controlling how the atmospheric scattering effect should be drawn.
+/** Namespace containing types controlling how atmospheric scattering should be rendered.
  * @public
+ * The techniques used to render the atmosphere approximate the physical behavior of light when interacting with particles in the air.
+ * In a nutshell, samples of atmospheric density are taken along rays cast from the view's perspective and used to simulate the scattering of light toward the camera.
+ * Implementation of this behavior is adapted from equations outlined in "Display of Clouds Taking into Account Multiple Anisotropic Scattering and Sky Light", Nishita et al. 1993
+ *   and refined for GPU shaders in "Photorealistic Real-Time Outdoor Light Scattering", Hoffman and Preetham 2002.
+ * These sources are also compiled in Chapter 16 of NVIDIA's "GPU Gems 2", which can be found online here:
+ *   https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering
  */
 export namespace Atmosphere {
 
-  /** JSON representation of a [[Wavelengths]] object, with each wavelength value a positive number. */
+  /** JSON representation of a [[Wavelengths]] object */
   export interface WavelengthsProps {
     r: number;
     g: number;
@@ -20,16 +26,20 @@ export namespace Atmosphere {
   }
 
   /** An immutable container of wavelength values for the red, green and blue pixel components. Values are in nanometers. */
-  export class Wavelengths implements WavelengthsProps {
+  export class Wavelengths {
+    public readonly r: number;
+    public readonly g: number;
+    public readonly b: number;
+
     /** Constructs from red, green, and blue wavelength values.
      * @param r Wavelength value for red
      * @param g Wavelength value for green
      * @param b Wavelength value for blue
      */
-    constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
-      this.r = Math.max(0, r);
-      this.g = Math.max(0, g);
-      this.b = Math.max(0, b);
+    constructor(props: WavelengthsProps) {
+      this.r = Math.max(0, props.r);
+      this.g = Math.max(0, props.g);
+      this.b = Math.max(0, props.b);
     }
 
     public equals(other: Wavelengths): boolean {
@@ -52,7 +62,7 @@ export namespace Atmosphere {
         if (typeof json.b === "number")
           b = json.b;
       }
-      return new Wavelengths(r, g, b);
+      return new Wavelengths({ r, g, b });
     }
   }
 
@@ -83,7 +93,7 @@ export namespace Atmosphere {
   }
 
   /** Describes the properties with which the atmospheric scattering effect should be drawn. Theses properties correspond to a physics-based approximation of atmospheric scattering phenomenons. */
-  export class Settings implements Props {
+  export class Settings {
     private static _defaultAtmosphereHeightAboveEarth: number = 100000.0;
     private static _defaultExposure: number = 2.5;
     private static _defaultDensityFalloff: number = 1.0;
@@ -93,13 +103,13 @@ export namespace Atmosphere {
     private static _defaultNumOpticalDepthPoints: number = 10;
     private static _defaultOutScatteringIntensity: number = 1.0;
     private static _defaultScatteringStrength: number = 5;
-    private static _defaultWavelengths: Wavelengths = new Wavelengths(700.0, 530.0, 440.0);
+    private static _defaultWavelengths: Wavelengths = new Wavelengths({ r: 700.0, g: 530.0, b: 440.0 });
 
-    public static readonly defaults = new Settings();
+    public static readonly defaults = new Settings({});
 
     /** If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
-    /** If defined, this value can be used to simulate the aperture of a camera. Higher values allow more light in. Defaults to 2.5 */
+    /** If defined, this value is used to simulate the aperture of a camera. Higher values allow more light in. Defaults to 2.5 */
     public readonly exposure: number;
     /** If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 1.0. */
     public readonly densityFalloff: number;
@@ -142,7 +152,7 @@ export namespace Atmosphere {
       return true;
     }
 
-    private constructor(json: Props = {}) {
+    private constructor(json: Props) {
       this.atmosphereHeightAboveEarth = JsonUtils.asDouble(json.atmosphereHeightAboveEarth, Settings._defaultAtmosphereHeightAboveEarth);
       this.exposure = JsonUtils.asDouble(json.exposure, Settings._defaultExposure);
       this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings._defaultDensityFalloff);
@@ -156,6 +166,8 @@ export namespace Atmosphere {
     }
 
     public static fromJSON(json?: Props) {
+      if (undefined === json)
+        return this.defaults;
       return new Settings(json);
     }
 
