@@ -233,8 +233,6 @@ export class IdMap implements WebGLDisposable {
 
     const handle = TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
     if (!handle) {
-      // eslint-disable-next-line no-console
-      console.log("no handle");
       return undefined;
     }
 

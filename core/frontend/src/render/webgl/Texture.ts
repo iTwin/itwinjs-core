@@ -749,8 +749,6 @@ export class TextureCubeHandle extends TextureHandle {
   /** Create a cube map texture from six HTMLImageElement objects. */
   public static override createForCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement) {
     const params = TextureCubeCreateParams.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
-    // eslint-disable-next-line no-console
-    console.log(params !== undefined ? "params" : "no params");
     return params !== undefined ? this.create(params) : undefined;
   }
 
