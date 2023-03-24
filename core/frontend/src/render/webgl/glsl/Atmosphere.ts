@@ -194,7 +194,12 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, int numSamplePo
 `;
 
 /**
- * Calculates the atmospheric interference of light from both the sun and a given original color.
+ * Calculates the amount of light scattered toward the camera by atmospheric interference.
+ * Returned value is a matrix containing two vec3's.
+ *   The first is the color of light scattered by the atmosphere alone.
+ *   The second is the intensity of light reflected by surface scattering.
+ * The second value must be combined with the actual color of the surface to calculate the final color of the surface.
+ * Because the sky is not a surface, surface scattering is not computed when applying the effect to a skybox.
  */
 const computeAtmosphericScatteringFromScratch = `
 mat3 computeAtmosphericScattering(bool isSkyBox) {
@@ -282,6 +287,9 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 }
 `;
 
+/**
+ * Computes the intensity of light (by color) directly reflected toward the camera by a surface.
+ */
 const calculateReflectedLightIntensity = `
 vec3 calculateReflectedLightIntensity(float opticalDepth) {
     // Using only the wavelength-specific scattering to calculate surface scattering results in too much red light on the surface in areas experiencing sunset
@@ -305,38 +313,32 @@ vec3 calculateReflectedLightIntensity(float opticalDepth) {
 }
 `;
 
-/**
- *
- */
 const computeAtmosphericScatteringFragmentFromVaryings = `
 mat3 computeAtmosphericScatteringFragment() {
   return v_atmosphericScattering;
 }
 `;
 
-/**
- *
- */
 const computeAtmosphericScatteringFragmentOnSky = `
 mat3 computeAtmosphericScatteringFragment() {
   return computeAtmosphericScattering(true);
 }
 `;
 
-/**
- *
- */
 const computeAtmosphericScatteringFragmentOnRealityMesh = `
 mat3 computeAtmosphericScatteringFragment() {
   return computeAtmosphericScattering(false);
 }
 `;
 
+/**
+ * Applies a rudimentary high-dynamic range effect to compress potentially over-exposed colors into an acceptable range.
+ * This approach uses an exponential curve, which preserves relative color intensity, at the cost of a loss in saturation.
+ */
 const applyHdr = `
-vec3 applyHdr(vec3 atmosphericScatteringColor, vec3 reflectedLightColor) {
-  vec3 colorWithoutHdr = atmosphericScatteringColor + reflectedLightColor;
+vec3 applyHdr(vec3 color) {
   float exposure = u_exposure;
-  vec3 colorWithHdr = 1.0 - exp(-exposure * colorWithoutHdr);
+  vec3 colorWithHdr = 1.0 - exp(-exposure * color);
 
   return colorWithHdr;
 }
@@ -352,7 +354,7 @@ const applyAtmosphericScattering = `
   vec3 reflectedLightIntensity = atmosphericScatteringOutput[1];
   vec3 reflectedLightColor = reflectedLightIntensity * baseColor.rgb;
 
-  return vec4(applyHdr(atmosphericScatteringColor, reflectedLightColor), baseColor.a);
+  return vec4(applyHdr(atmosphericScatteringColor + reflectedLightColor), baseColor.a);
 `;
 
 const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuilder) => {
