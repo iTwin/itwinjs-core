@@ -30,7 +30,7 @@ Minor schema upgrades can **ONLY** include:
 * The addition of a class in the middle of a class hierarchy
 * The addition of optional properties.
 * The addition of Kinds of Quantities.
-* The addition of Categories.
+* The addition of Property Categories.
 * Loosening of constraints
   * Class modifier changed from Sealed to None
   * Making a relationship constraint polymorphic or lowering the minimum or increasing the maximum cardinality
