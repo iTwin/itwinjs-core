@@ -5,10 +5,17 @@
 ```ts
 
 import { IModelConnection } from '@itwin/core-frontend';
+import { SpatialTileTreeReferences } from '@itwin/core-frontend';
+
+// @alpha
+export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
+
+// @internal (undocumented)
+export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
 
 // @alpha
 export interface FrontendTilesOptions {
-    computeSpatialTilesetBaseUrl: (iModel: IModelConnection) => URL;
+    computeSpatialTilesetBaseUrl: ComputeSpatialTilesetBaseUrl;
 }
 
 // @alpha

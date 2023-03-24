@@ -1,4 +1,6 @@
 sep=;
 Release Tag;API Item
+alpha;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
+internal;createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create
 alpha;FrontendTilesOptions
 alpha;initializeFrontendTiles(options: FrontendTilesOptions): void

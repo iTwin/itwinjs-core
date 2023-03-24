@@ -9,6 +9,7 @@ import {
 import { BatchedTileTreeReference } from "./BatchedTileTreeReference";
 import { ComputeSpatialTilesetBaseUrl, createFallbackSpatialTileTreeReferences } from "./FrontendTiles";
 
+// Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _treeRef: BatchedTileTreeReference;
 
@@ -37,6 +38,9 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 }
 
+// A placeholder used by [[ProxySpatialTileTreeReferences]] until asynchronous loading completes.
+// It provides a TileTreeOwner that never loads a tile tree.
+// This ensures that [ViewState.areAllTileTreesLoaded]($frontend) will not return `true` while we are loading.
 class ProxyTileTreeReference extends TileTreeReference {
   private readonly _treeOwner: TileTreeOwner;
 
@@ -61,9 +65,13 @@ class ProxyTileTreeReference extends TileTreeReference {
   }
 }
 
+// Serves as a placeholder while we asynchronously obtain the base URL for a pre-published tileset (or asynchronously determine
+// that no such tileset exists).
 class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
+  // Once async loading completes, all methods will be forwarded to this implementation.
   private _impl?: SpatialTileTreeReferences;
   private readonly _proxyRef: ProxyTileTreeReference;
+  // Retained if attachToViewport is called while we are still loading; and reset if detachFromViewport is called while loading.
   private _attachArgs?: AttachToViewportArgs;
 
   public constructor(view: SpatialViewState, getBaseUrl: Promise<URL | undefined>) {
@@ -136,8 +144,10 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
     });
   }
 
-  if (null === entry)
+  if (null === entry) {
+    // No tileset exists for this iModel - use default tile generation instead.
     return createFallbackSpatialTileTreeReferences(view);
+  }
 
   if (entry instanceof Promise)
     return new ProxySpatialTileTreeReferences(view, entry);
