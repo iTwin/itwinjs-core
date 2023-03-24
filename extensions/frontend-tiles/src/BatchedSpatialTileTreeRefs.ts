@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  AttachToViewportArgs, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeReference,
+  AttachToViewportArgs, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedTileTreeReference } from "./BatchedTileTreeReference";
+import { ComputeSpatialTilesetBaseUrl, createFallbackSpatialTileTreeReferences } from "./FrontendTiles";
 
-class TreeRefs implements SpatialTileTreeReferences {
+class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _treeRef: BatchedTileTreeReference;
 
   public constructor(treeRef: BatchedTileTreeReference) {
@@ -36,8 +37,92 @@ class TreeRefs implements SpatialTileTreeReferences {
   }
 }
 
+class ProxyTileTreeReference extends TileTreeReference {
+  private readonly _treeOwner: TileTreeOwner;
+
+  public constructor(iModel: IModelConnection) {
+    super();
+    this._treeOwner = {
+      iModel,
+      tileTree: undefined,
+      loadStatus: TileTreeLoadStatus.NotLoaded,
+      load: () => undefined,
+      dispose: () => { },
+      loadTree: async () => Promise.resolve(undefined),
+    };
+  }
+
+  public override get treeOwner() {
+    return this._treeOwner;
+  }
+
+  public override get _isLoadingComplete() {
+    return false;
+  }
+}
+
+class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
+  private _impl?: SpatialTileTreeReferences;
+  private readonly _proxyRef: ProxyTileTreeReference;
+  private _attachArgs?: AttachToViewportArgs;
+
+  public constructor(view: SpatialViewState, getBaseUrl: Promise<URL | undefined>) {
+    this._proxyRef = new ProxyTileTreeReference(view.iModel);
+    getBaseUrl.then((url: URL | undefined) => {
+      if (url) {
+        const ref = BatchedTileTreeReference.create(view, url);
+        this._impl = new BatchedSpatialTileTreeReferences(ref);
+        if (this._attachArgs) {
+          this._impl.attachToViewport(this._attachArgs);
+          this._attachArgs = undefined;
+        }
+      } else {
+        this._impl = createFallbackSpatialTileTreeReferences(view);
+      }
+    }).catch(() => {
+      this._impl = createFallbackSpatialTileTreeReferences(view);
+    });
+  }
+
+  public update(): void {
+    this._impl?.update();
+  }
+
+  public attachToViewport(args: AttachToViewportArgs): void {
+    this._attachArgs = args;
+  }
+
+  public detachFromViewport(): void {
+    this._attachArgs = undefined;
+  }
+
+  public setDeactivated(): void { }
+
+  public *[Symbol.iterator](): Iterator<TileTreeReference> {
+    if (this._impl)
+      return this._impl[Symbol.iterator]();
+
+    yield this._proxyRef;
+  }
+}
+
+const iModelToBaseUrl = new Map<IModelConnection, URL | null | Promise<URL | undefined>>();
+
 /** @internal */
-export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: (iModel: IModelConnection) => URL): SpatialTileTreeReferences {
-  const treeRef = BatchedTileTreeReference.create(view, computeBaseUrl(view.iModel));
-  return new TreeRefs(treeRef);
+export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl): SpatialTileTreeReferences {
+  const iModel = view.iModel;
+  let entry = iModelToBaseUrl.get(iModel);
+  if (undefined === entry) {
+    iModelToBaseUrl.set(iModel, entry = computeBaseUrl(iModel));
+    iModel.onClose.addOnce(() => iModelToBaseUrl.delete(iModel));
+  }
+
+  if (null === entry)
+    return createFallbackSpatialTileTreeReferences(view);
+
+  if (entry instanceof Promise)
+    return new ProxySpatialTileTreeReferences(view, entry);
+
+  const ref = BatchedTileTreeReference.create(view, entry);
+  return new BatchedSpatialTileTreeReferences(ref);
 }
