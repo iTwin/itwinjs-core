@@ -18,7 +18,7 @@ import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
-import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
+import { EnableAtmosphere, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
 /* eslint-disable no-restricted-syntax */
@@ -218,7 +218,8 @@ export class PrimitiveCommand {
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
     const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType);
+    const enableAtmosphere = target.wantAtmosphere ? EnableAtmosphere.Yes : EnableAtmosphere.No;
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType, enableAtmosphere);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);

@@ -12,14 +12,14 @@ import { AttributeMap } from "../AttributeMap";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ShaderType, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import { FragmentShaderComponent, ProgramBuilder, ShaderType, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { addAtmosphericScatteringEffect } from "./Atmosphere";
+import { TechniqueFlags } from "../TechniqueFlags";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.
@@ -91,7 +91,7 @@ function modulateColor(colorIn: Float32Array, t: number, colorOut: Float32Array)
 }
 
 /** @internal */
-export function createSkySphereProgram(context: WebGL2RenderingContext, isGradient: boolean): ShaderProgram {
+export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlags): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture, false);
   const builder = createViewportQuadBuilder(false, attrMap);
   if (isGradient) {
@@ -251,11 +251,11 @@ export function createSkySphereProgram(context: WebGL2RenderingContext, isGradie
   }
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
-  // TODO: conditionally call this if atmospheric scattering enabled
-  addAtmosphericScatteringEffect(builder, true, true);
+  if (flags.enableAtmosphere)
+    addAtmosphericScatteringEffect(builder, true, true);
 
   builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
   builder.frag.headerComment = `//!F! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
 
-  return builder.buildProgram(context);
+  return builder;
 }

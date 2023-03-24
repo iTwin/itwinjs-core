@@ -39,7 +39,7 @@ import {
   addColorOverrideMix, createClassifierRealityMeshHiliter, createRealityMeshBuilder, createRealityMeshHiliter,
 } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
-import { createSkySphereProgram } from "./glsl/SkySphere";
+import { createSkySphereBuilder } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
@@ -49,6 +49,7 @@ import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderPro
 import { System } from "./System";
 import { Target } from "./Target";
 import {
+  EnableAtmosphere,
   FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, IsWiremesh, PositionType, TechniqueFlags,
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
@@ -652,7 +653,7 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class RealityMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 98;
+  private static readonly _numVariants = 194;
 
   public constructor(gl: WebGL2RenderingContext) {
     super(RealityMeshTechnique._numVariants);
@@ -668,21 +669,24 @@ class RealityMeshTechnique extends VariedTechnique {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
-              const flags = scratchTechniqueFlags;
-              for (const featureMode of featureModes) {
-                flags.reset(featureMode, IsInstanced.No, shadowable, thematic, "quantized");
-                flags.isClassified = iClassified;
-                flags.isWiremesh = wiremesh;
-                flags.isTranslucent = 1 === iTranslucent;
-                const builder = createRealityMeshBuilder(flags);
+              for (let enableAtmosphere = EnableAtmosphere.No; enableAtmosphere <= EnableAtmosphere.Yes; enableAtmosphere++) {
+                const flags = scratchTechniqueFlags;
+                for (const featureMode of featureModes) {
+                  flags.reset(featureMode, IsInstanced.No, shadowable, thematic, "quantized");
+                  flags.isClassified = iClassified;
+                  flags.isWiremesh = wiremesh;
+                  flags.isTranslucent = 1 === iTranslucent;
+                  flags.enableAtmosphere = enableAtmosphere;
+                  const builder = createRealityMeshBuilder(flags);
 
-                if (flags.isTranslucent) {
-                  addShaderFlags(builder);
-                  addTranslucency(builder);
-                } else
-                  this.addFeatureId(builder, featureMode);
+                  if (flags.isTranslucent) {
+                    addShaderFlags(builder);
+                    addTranslucency(builder);
+                  } else
+                    this.addFeatureId(builder, featureMode);
 
-                this.addShader(builder, flags, gl);
+                  this.addShader(builder, flags, gl);
+                }
               }
             }
           }
@@ -712,7 +716,39 @@ class RealityMeshTechnique extends VariedTechnique {
       ndx += 24;
     if (flags.isWiremesh)
       ndx += 48;
+    if (flags.enableAtmosphere)
+      ndx += 96;
     return ndx;
+  }
+}
+
+class SkySphereTechnique extends VariedTechnique {
+  private static readonly _numVariants = 2;
+
+  public constructor(gl: WebGL2RenderingContext, isGradient: boolean) {
+    super(SkySphereTechnique._numVariants);
+
+    for (let enableAtmosphere = EnableAtmosphere.No; enableAtmosphere <= EnableAtmosphere.Yes; enableAtmosphere++) {
+      const tempFlags = scratchTechniqueFlags;
+      for (const featureMode of featureModes) {
+        tempFlags.reset(featureMode, IsInstanced.No, IsShadowable.No, IsThematic.No, "quantized");
+        tempFlags.enableAtmosphere = enableAtmosphere;
+        const builder = createSkySphereBuilder(isGradient, tempFlags);
+
+        this.addShader(builder, tempFlags, gl);
+      }
+    }
+
+    this.finishConstruction();
+  }
+
+  protected get _debugDescription() { return "SkySphere"; }
+
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    let index = 0;
+    if (flags.enableAtmosphere)
+      index += 2 ** 0;
+    return index;
   }
 }
 
@@ -935,8 +971,8 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
     this._list[TechniqueId.EVSMFromDepth] = new SingularTechnique(createEVSMProgram(gl));
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
-    this._list[TechniqueId.SkySphereGradient] = new SingularTechnique(createSkySphereProgram(gl, true));
-    this._list[TechniqueId.SkySphereTexture] = new SingularTechnique(createSkySphereProgram(gl, false));
+    this._list[TechniqueId.SkySphereGradient] = new SkySphereTechnique(gl, true);
+    this._list[TechniqueId.SkySphereTexture] = new SkySphereTechnique(gl, false);
     this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
     this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl, BlurType.NoTest));
     this._list[TechniqueId.BlurTestOrder] = new SingularTechnique(createBlurProgram(gl, BlurType.TestOrder));
