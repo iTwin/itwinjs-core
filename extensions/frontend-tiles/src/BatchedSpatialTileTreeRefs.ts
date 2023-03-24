@@ -60,6 +60,7 @@ class ProxyTileTreeReference extends TileTreeReference {
     return this._treeOwner;
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public override get _isLoadingComplete() {
     return false;
   }
