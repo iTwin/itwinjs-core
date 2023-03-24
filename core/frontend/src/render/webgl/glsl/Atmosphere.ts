@@ -314,6 +314,9 @@ vec3 calculateReflectedLightIntensity(float opticalDepth) {
     //   This results in a more uniform scattering of light, producing sunsets that are still dark but without an overpowering red hue.
     //   By rough visual inspection, an equal interpolation between the two extremes retains a bit of ambient red without removing it entirely.
     //   Because this interpolation only occurs here during surface scattering, the vibrant sky color during sunset is unaffected.
+    // Note: This workaround may not be needed if an absolute sun position is used instead of a sun direction.
+    //   This would affect the angle at which sun rays hit the atmosphere, which is most extreme at sunset.
+    //   The efficacy of this technique should be reevaluated if a feature is added which affects the surface scattering behavior.
 
     float averageScatteringValue = (u_scatteringCoefficients.x + u_scatteringCoefficients.y + u_scatteringCoefficients.z) / 3.0;
     vec3 equalScatteringByWavelength = vec3(averageScatteringValue);
