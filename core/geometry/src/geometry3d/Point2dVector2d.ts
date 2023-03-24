@@ -7,13 +7,14 @@
  * @module CartesianGeometry
  */
 // cspell:word JSONXY
-// cspell:word CWXY
+// cspell:word CWXY CCWXY
 
 import { BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { Angle } from "./Angle";
 import { XAndY, XYProps } from "./XYZProps";
 
-/** Minimal object containing x,y and operations that are meaningful without change in both point and vector.
+/**
+ * Minimal object containing x,y and operations that are meaningful without change in both point and vector.
  *  * `XY` is not instantiable.
  *  * The derived (instantiable) classes are
  *    * `Point2d`
@@ -61,11 +62,11 @@ export class XY implements XAndY {
   public isAlmostEqualXY(x: number, y: number, tol?: number): boolean {
     return Geometry.isSameCoordinate(this.x, x, tol) && Geometry.isSameCoordinate(this.y, y, tol);
   }
-  /** return a json array  `[x,y]`   */
+  /** Return a json array  `[x,y]`   */
   public toJSON(): XYProps {
     return [this.x, this.y];
   }
-  /** return a json object `{x: 1, y:2}`  */
+  /** Return a json object `{x: 1, y:2}`  */
   public toJSONXY(): XYProps {
     return { x: this.x, y: this.y };
   }
@@ -73,7 +74,7 @@ export class XY implements XAndY {
    * Set x and y from a JSON input such as `[1,2]` or `{x:1, y:2}`
    * * If no JSON input is provided, 0 would be used as default values for x and y.
    * @param json the JSON input
-   * */
+   */
   public setFromJSON(json?: XYProps): void {
     if (Array.isArray(json)) {
       this.set(json[0] || 0, json[1] || 0);
@@ -101,17 +102,13 @@ export class XY implements XAndY {
   public maxDiff(other: XAndY): number {
     return Math.max(Math.abs(this.x - other.x), Math.abs(this.y - other.y));
   }
-  /**
-   * Return the x,y component corresponding to 0,1.
-   */
+  /** Return the x,y component corresponding to 0,1 */
   public at(index: number): number {
     if (index < 0.5)
       return this.x;
     return this.y;
   }
-  /**
-   * Set value at index 0 or 1.
-   */
+  /** Set value at index 0 or 1 */
   public setAt(index: number, value: number): void {
     if (index < 0.5)
       this.x = value;
@@ -128,7 +125,7 @@ export class XY implements XAndY {
     }
     return index;
   }
-  /** returns true if the x,y components are both small by metric metric tolerance */
+  /** Returns true if the x,y components are both small by metric metric tolerance */
   public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y);
   }
@@ -144,11 +141,11 @@ export class XY implements XAndY {
   public magnitudeSquared(): number {
     return this.x * this.x + this.y * this.y;
   }
-  /** returns true if the x,y components are exactly equal. */
+  /** Returns true if the x,y components are exactly equal. */
   public isExactEqual(other: XAndY): boolean {
     return this.x === other.x && this.y === other.y;
   }
-  /** returns true if x,y match `other` within metric tolerance */
+  /** Returns true if x,y match `other` within metric tolerance */
   public isAlmostEqualMetric(other: XAndY, distanceTol: number = Geometry.smallMetricDistance): boolean {
     return this.maxDiff(other) <= distanceTol;
   }
@@ -163,7 +160,7 @@ export class XY implements XAndY {
   public unitVectorTo(other: XAndY, result?: Vector2d): Vector2d | undefined {
     return this.vectorTo(other, result).normalize(result);
   }
-  /** cross product of vectors from origin to targets */
+  /** Cross product of vectors from origin to targets */
   public static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number {
     return Geometry.crossProductXYXY(
       targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
@@ -178,7 +175,7 @@ export class Point2d extends XY implements BeJSONFunctions {
   constructor(x: number = 0, y: number = 0) {
     super(x, y);
   }
-  /** return a new Point2d with x,y coordinates from this. */
+  /** Return a new Point2d with x,y coordinates from this. */
   public clone(result?: Point2d): Point2d {
     return Point2d.create(this.x, this.y, result);
   }
@@ -200,7 +197,7 @@ export class Point2d extends XY implements BeJSONFunctions {
    * Set x and y from a JSON input such as `[1,2]` or `{x:1, y:2}`
    * * If no JSON input is provided, 0 would be used as default values for x and y.
    * @param json the JSON input
-   * */
+   */
   public static fromJSON(json?: XYProps): Point2d {
     const val = new Point2d();
     val.setFromJSON(json);
@@ -216,7 +213,8 @@ export class Point2d extends XY implements BeJSONFunctions {
   public static createZero(result?: Point2d): Point2d {
     return Point2d.create(0, 0, result);
   }
-  /** Starting at this point, move along vector by tangentFraction of the vector length, and then
+  /**
+   * Starting at this point, move along vector by tangentFraction of the vector length, and then
    * to the left by leftFraction of the perpendicular vector length.
    * @param tangentFraction distance to move along the vector, as a fraction of vector
    * @param leftFraction distance to move perpendicular to the vector, as a fraction of the rotated vector
@@ -230,7 +228,8 @@ export class Point2d extends XY implements BeJSONFunctions {
       this.y + tangentFraction * dy + leftFraction * dx
     );
   }
-  /** Interpolate at tangentFraction between this instance and point, and then Move by leftFraction
+  /**
+   * Interpolate at tangentFraction between this instance and point, and then Move by leftFraction
    * along the xy perpendicular of the vector between the points.
    */
   public forwardLeftInterpolate(tangentFraction: number, leftFraction: number, point: XAndY): Point2d {
@@ -332,7 +331,8 @@ export class Point2d extends XY implements BeJSONFunctions {
     const y2 = target2.y - this.y;
     return x1 * y2 - y1 * x2;
   }
-  /** Return the fractional coordinate of the projection of this instance x,y onto the
+  /**
+   * Return the fractional coordinate of the projection of this instance x,y onto the
    * line from startPoint to endPoint.
    * @param startPoint start point of line
    * @param endPoint end point of line
@@ -347,7 +347,8 @@ export class Point2d extends XY implements BeJSONFunctions {
   }
 }
 
-/** 2D vector with `x`,`y` as properties
+/**
+ * 2D vector with `x`,`y` as properties
  * @public
  */
 export class Vector2d extends XY implements BeJSONFunctions {
@@ -385,7 +386,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
   public static createZero(result?: Vector2d): Vector2d {
     return Vector2d.create(0, 0, result);
   }
-  /** copy contents from another Point3d, Point2d, Vector2d, or Vector3d, or leading entries of Float64Array */
+  /** Copy contents from another Point3d, Point2d, Vector2d, or Vector3d, or leading entries of Float64Array */
   public static createFrom(data: XAndY | Float64Array, result?: Vector2d): Vector2d {
     if (data instanceof Float64Array) {
       if (data.length >= 2)
@@ -400,7 +401,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * Set x and y from a JSON input such as `[1,2]` or `{x:1, y:2}`
    * * If no JSON input is provided, 0 would be used as default values for x and y.
    * @param json the JSON input
-   * */
+   */
   public static fromJSON(json?: XYProps): Vector2d {
     const val = new Vector2d();
     val.setFromJSON(json);
@@ -432,7 +433,8 @@ export class Vector2d extends XY implements BeJSONFunctions {
     }
     return undefined;
   }
-  /** Return a (new or optionally reused) vector which is `this` divided by `denominator`
+  /**
+   * Return a (new or optionally reused) vector which is `this` divided by `denominator`
    * * return undefined if denominator is zero.
    */
   public safeDivideOrNull(denominator: number, result?: Vector2d): Vector2d | undefined {
@@ -453,7 +455,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * it's returning the length of the projection as a fraction of the target magnitude.
    * @param target the target vector
    * @param defaultFraction the returned value in case magnitude square of target vector is very small
-   * */
+   */
   public fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number {
     /*
      * projection length is (this.target)/||target||
@@ -508,7 +510,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     }
     return result;
   }
-  /** return a new Vector2d rotated CCW by given angle */
+  /** Return a new Vector2d rotated CCW by given angle */
   public rotateXY(angle: Angle, result?: Vector2d): Vector2d {
     const s = angle.sin();
     const c = angle.cos();
@@ -520,7 +522,8 @@ export class Vector2d extends XY implements BeJSONFunctions {
     result.y = xx * s + yy * c;
     return result;
   }
-  /** Return a vector computed at fractional position between this vector and vectorB
+  /**
+   * Return a vector computed at fractional position between this vector and vectorB
   * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
   *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
   * @param vectorB second vector
@@ -542,14 +545,14 @@ export class Vector2d extends XY implements BeJSONFunctions {
     }
     return result;
   }
-  /** return {this + vector}. */
+  /** Return {this + vector}. */
   public plus(vector: XAndY, result?: Vector2d): Vector2d {
     result = result ? result : new Vector2d();
     result.x = this.x + vector.x;
     result.y = this.y + vector.y;
     return result;
   }
-  /** return {this - vector}. */
+  /** Return {this - vector}. */
   public minus(vector: XAndY, result?: Vector2d): Vector2d {
     result = result ? result : new Vector2d();
     result.x = this.x - vector.x;
@@ -584,34 +587,34 @@ export class Vector2d extends XY implements BeJSONFunctions {
     result.y = this.y * scale;
     return result;
   }
-  /** return a vector parallel to this but with specified length */
+  /** Return a vector parallel to this but with specified length */
   public scaleToLength(length: number, result?: Vector2d): Vector2d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.magnitude());
     if (mag === 0)
       return undefined;
     return this.scale(length / mag, result);
   }
-  /** return the dot product of this with vectorB */
+  /** Return the dot product of this with vectorB */
   public dotProduct(vectorB: XAndY): number {
     return this.x * vectorB.x + this.y * vectorB.y;
   }
-  /** dot product with vector from pointA to pointB */
+  /** Dot product with vector from pointA to pointB */
   public dotProductStartEnd(pointA: XAndY, pointB: XAndY): number {
     return this.x * (pointB.x - pointA.x) + this.y * (pointB.y - pointA.y);
   }
-  /** vector cross product {this CROSS vectorB} */
+  /** Vector cross product {this CROSS vectorB} */
   public crossProduct(vectorB: XAndY): number {
     return this.x * vectorB.y - this.y * vectorB.x;
   }
   /**
-   * return the radians (as a simple number, not strongly typed Angle) signed angle from this to vectorB.
+   * Return the radians (as a simple number, not strongly typed Angle) signed angle from this to vectorB.
    * This is positive if the shortest turn is counterclockwise, negative if clockwise.
    */
   public radiansTo(vectorB: XAndY): number {
     return Math.atan2(this.crossProduct(vectorB), this.dotProduct(vectorB));
   }
   /**
-   * return the (strongly typed) signed angle from this to vectorB.
+   * Return the (strongly typed) signed angle from this to vectorB.
    * This is positive if the shortest turn is counterclockwise, negative if clockwise.
    */
   public angleTo(vectorB: XAndY): Angle {
@@ -650,7 +653,9 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
    * @param options optional radian and distance tolerances.
    */
-  public isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+  public isPerpendicularTo(
+    other: Vector2d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions
+  ): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const aa = this.magnitudeSquared();

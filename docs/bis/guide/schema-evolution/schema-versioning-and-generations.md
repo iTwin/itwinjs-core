@@ -27,18 +27,25 @@ Minor schema upgrades are schema changes that don’t break compatibility with a
 Minor schema upgrades can **ONLY** include:
 
 * The addition of optional classes.
+* The addition of a class in the middle of a class hierarchy
 * The addition of optional properties.
-* The addition of Kinds of Quantities
-* The addition of Categories
-* Changes to items that don’t affect code (or meaning), such as label changes, description changes and other changes that just affect presentation.
+* The addition of Kinds of Quantities.
+* The addition of Property Categories.
+* Loosening of constraints
+  * Class modifier changed from Sealed to None
+  * Making a relationship constraint polymorphic or lowering the minimum or increasing the maximum cardinality
+* Changes to items that don’t affect code (or meaning), such as:
+  * display label, role label or description changes
+  * presentation unit or format changes (either in a KindOfQuantity definition or by switching a property to a different KindOfQuantity with the same persistence unit)
+  * any other changes that just affect presentation.
 
 Minor schema upgrades may **NOT** include:
 
 * The removal of classes.
 * The removal of properties.
-* The change of class definition (for example, changing the base class).
-* The change of property definition (for example, changing the type).
-* The change of relationship constraints, cardinality or strength.
+* The change of class definition (for example, changing the base class so the class no longer 'is' the original base class).
+* The change of property definition (for example, changing the type or changing the KindOfQuantity if it changes the persistence unit).
+* The change of relationship constraints or strength or narrowing the cardinality.
 
 ### Major Schema Upgrades
 
@@ -86,11 +93,13 @@ If schema 2 adds to *Student* a double property *Psychology*, the meaning of *Ov
 Updating data for a schema update with a *write* version change usually requires some custom logic. This should not be surprising as the previous data was written by applications that are not write-compatible with the newer schema.
 
 #### Examples of Write incompatible changes
+
 * Adding a *Not Null* or *Unique* constraint on a new property in an existing class
 * Adding a new *Navigation Property* with a *Foreign Key* constraint to an existing class
 
 There are other examples of write incompatible changes which, however, are prohibited by the software because they
 would modify how EC content is mapped to the database (which is generally not allowed):
+
 * Adding a *Not Null* or *Unique* constraint to an existing property
 * Adding a new unique index to an existing class
 * Adding a *Foreign Key* constraint to an existing *Navigation Property*

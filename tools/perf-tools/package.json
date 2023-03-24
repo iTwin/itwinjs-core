@@ -1,6 +1,6 @@
 {
   "name": "@itwin/perf-tools",
-  "version": "4.0.0-dev.53",
+  "version": "4.0.0-dev.56",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
@@ -35,11 +35,11 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@types/fs-extra": "^4.0.7",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "eslintConfig": {
     "plugins": [

@@ -49,7 +49,7 @@ async function startCertaTests(entryPoint: string) {
 
     // Execute tests
     mocha.run((failedCount) => ipcRenderer.send("certa-done", failedCount));
-  } catch ({ message, stack }) {
+  } catch ({ message, stack }: any) {
     ipcRenderer.send("certa-error", { message, stack });
   }
 }
