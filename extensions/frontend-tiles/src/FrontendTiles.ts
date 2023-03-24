@@ -6,15 +6,24 @@
 import { IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
 
+/** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
+ * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).
+ * If no such tileset exists for the given iModel, return `undefined`.
+ * @see [[FrontendTilesOptions.computeSpatialTilesetBaseUrl]].
+ * @alpha
+ */
+export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
+
 /** Options supplied to [[initializeFrontendTiles]].
  * @alpha
  */
 export interface FrontendTilesOptions {
-  /** Given an iModel, provide the base URL where the tiles are stored representing all of the spatial models in the iModel.
-   * It is expected that baseUrl/tileset.json exists and contains a 3d tileset in which all relative URLs are relative to baseUrl.
-   */
-  computeSpatialTilesetBaseUrl: (iModel: IModelConnection) => URL;
+  /** Provide the base URL for the pre-published tileset for a given iModel. */
+  computeSpatialTilesetBaseUrl: ComputeSpatialTilesetBaseUrl;
 }
+
+/** @internal */
+export const createFallbackSpatialTileTreeReferences = SpatialTileTreeReferences.create;
 
 /** Initialize the frontend-tiles package to obtain tiles for spatial views.
  * @alpha
