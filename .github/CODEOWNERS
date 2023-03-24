@@ -106,7 +106,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
 /core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
-/extensions/frontend-tiles            @iTwin/itwinjs-core-display @danieliborra
 /core/geometry                  @bbastings @dassaf4 @saeeedtorabi
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
@@ -134,6 +133,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /example-code                         @iTwin/itwinjs-core-admins
 
 /extensions                           @aruniverse @calebmshafer
+/extensions/frontend-tiles            @iTwin/itwinjs-core-display @danieliborra
 /extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
 /extensions/map-layers                @mdastous-bentley @MarcBedard8
 
