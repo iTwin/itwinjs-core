@@ -377,7 +377,6 @@ export interface BackendHubAccess {
 export enum BackendLoggerCategory {
     Authorization = "core-backend.Authorization",
     CodeSpecs = "core-backend.CodeSpecs",
-    // @internal
     CustomViewState3dCreator = "core-backend.CustomViewState3dCreator",
     // @internal
     DevTools = "core-backend.DevTools",

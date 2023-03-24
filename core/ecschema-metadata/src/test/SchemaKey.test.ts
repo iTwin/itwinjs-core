@@ -133,7 +133,7 @@ describe("SchemaKey", () => {
       });
 
       it("should correctly handle invalid SchemaMatchType", () => {
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), -1)).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), -1 as SchemaMatchType)).false;
       });
     });
 
