@@ -14,13 +14,15 @@ import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
 
 const computeRayDir = `
 vec3 computeRayDir(vec3 eyeSpace) {
-  return u_isCameraEnabled ? normalize(eyeSpace) : vec3(0.0, 0.0, -1.0);
+  bool isCameraEnabled = u_frustum.z == 2;
+  return isCameraEnabled ? normalize(eyeSpace) : vec3(0.0, 0.0, -1.0);
 }
 `;
 
 const computeSceneDepthDefault = `
 float computeSceneDepth(vec3 eyeSpace) {
-  return u_isCameraEnabled ? length(eyeSpace) : -eyeSpace.z;
+  bool isCameraEnabled = u_frustum.z == 2;
+  return isCameraEnabled ? length(eyeSpace) : -eyeSpace.z;
 }
 `;
 
@@ -32,7 +34,8 @@ float computeSceneDepth(vec3 eyeSpace) {
 
 const computeRayOrigin = `
 vec3 computeRayOrigin(vec3 eyeSpace) {
-  return u_isCameraEnabled ? vec3(0.0) : vec3(eyeSpace.xy, 0.0);
+  bool isCameraEnabled = u_frustum.z == 2;
+  return isCameraEnabled ? vec3(0.0) : vec3(eyeSpace.xy, 0.0);
 }
 `;
 
@@ -475,15 +478,6 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
       });
     },
     VariablePrecision.High
-  );
-  shader.addUniform(
-    "u_isCameraEnabled",
-    VariableType.Boolean,
-    (prog) => {
-      prog.addProgramUniform("u_isCameraEnabled", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindIsCameraEnabled(uniform);
-      });
-    }
   );
   shader.addUniform(
     "u_inScatteringIntensity",

@@ -37,7 +37,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _numOpticalDepthPoints = 0.0;
 
   // Misc parameters
-  private _isCameraEnabled = true;
   private _isEnabled = false;
 
   // utility
@@ -65,7 +64,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._updateEarthScaleMatrix(plan.ellipsoid.ellipsoidRadii);
     this._updateInScatteringIntensity(this.atmosphere.inScatteringIntensity);
     this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
-    this._updateIsCameraEnabled(target.uniforms.frustum.type);
     this._updateAtmosphereRadiusScaleFactor(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateAtmosphereMaxDensityThresholdScaleFactor(this.atmosphere.depthBelowEarthForMaxDensity);
     this._updateNumInScatteringPoints(this.atmosphere.numInScatteringPoints);
@@ -76,10 +74,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
 
   private _updateIsEnabled(wantAtmosphere: boolean) {
     this._isEnabled = wantAtmosphere;
-  }
-
-  private _updateIsCameraEnabled(frustumType: FrustumUniformType) {
-    this._isCameraEnabled = frustumType === FrustumUniformType.Perspective;
   }
 
   private _updateEarthCenter(earthCenter: Point3d, viewMatrix: Transform) {
@@ -155,12 +149,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   public bindIsEnabled(uniform: UniformHandle): void {
     if (!sync(this, uniform)) {
       uniform.setUniform1i(this._isEnabled ? 1 : 0);
-    }
-  }
-
-  public bindIsCameraEnabled(uniform: UniformHandle): void {
-    if (!sync(this, uniform)) {
-      uniform.setUniform1i(this._isCameraEnabled ? 1 : 0);
     }
   }
 
