@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
@@ -85,15 +86,26 @@ export class PlanarSubdivision {
           return -1000.0;
         return fractionA - fractionB;
       });
-      let detail0 = getDetailOnCurve(details[0], p)!;
-      this.addHalfEdge(graph, p, p.startPoint (), 0.0, detail0.point, detail0.fraction);
+      // Lambda function to add a 2-sided edge from a given last point to the intersection.
+      // Adds another 2-sided edge for a coincident interval if present in the detail.
+      // Returns updated last point for next call.
+      const addGraphEdgeAndUpdateLast = (lastPoint: Point3d, lastFraction: number, detail: CurveLocationDetail): {point: Point3d, fraction: number} => {
+        assert(Geometry.isIn01(detail.fraction));
+        this.addHalfEdge(graph, p, lastPoint, lastFraction, detail.point, detail.fraction);
+        if (detail.hasFraction1) {  // add the coincident segment too
+          assert(Geometry.isIn01(detail.fraction1!));
+          assert(detail.fraction <= detail.fraction1!);
+          this.addHalfEdge(graph, p, detail.point, detail.fraction, detail.point1!, detail.fraction1!);
+        }
+        return {point: detail.point1 ?? detail.point, fraction: detail.fraction1 ?? detail.fraction};
+      };
+      let detail = getDetailOnCurve(details[0], p)!;
+      let last = addGraphEdgeAndUpdateLast(p.startPoint(), 0.0, detail);
       for (let i = 1; i < details.length; i++) {
-        // create (both sides of) a graph edge . . .
-        const detail1 = getDetailOnCurve(details[i], p)!;
-        this.addHalfEdge(graph, p, detail0.point, detail0.fraction, detail1.point, detail1.fraction);
-        detail0 = detail1;
+        detail = getDetailOnCurve(details[i], p)!;
+        last = addGraphEdgeAndUpdateLast(last.point, last.fraction, detail);
       }
-      this.addHalfEdge(graph, p, detail0.point, detail0.fraction, p.endPoint(), 1.0);
+      this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0);
     }
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
     return graph;

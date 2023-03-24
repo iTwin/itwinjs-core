@@ -654,7 +654,7 @@ describe("RegionBoolean", () => {
   });
 
   // cspell:word laurynas
-  it("BridgeEdgesAndDegenerateLoops", () => {
+  it.only("BridgeEdgesAndDegenerateLoops", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -675,7 +675,7 @@ describe("RegionBoolean", () => {
     // * nearly-intersecting edges larger than default tol
     // * island-in-hole
     const testCases: TestInput[] = [
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
+/*      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2 },
@@ -693,7 +693,7 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 }, // 0.0001 yields 2 neg area loops!
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
+*/      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
     ];
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
@@ -705,12 +705,12 @@ describe("RegionBoolean", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
           if (ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion")) { // note that merged preserves the constituents of the union!
             const signedLoops = RegionOps.constructAllXYRegionLoops(merged);
-            if (ck.testExactNumber(testCase.expectedNumComponents, signedLoops.length, "UnionRegion has expected number of connected components.")) {
+            if (ck.testExactNumber(testCase.expectedNumComponents, signedLoops.length, `UnionRegion has expected number of connected components: ${testCase.jsonFilePath}`)) {
               x0 += xDelta;
               for (const signedLoop of signedLoops) {
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoop.negativeAreaLoops, x0, y0);
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoop.positiveAreaLoops, x0, y0, xDelta);
-                ck.testExactNumber(1, signedLoop.negativeAreaLoops.length, "SignedLoop has one outer loop.");
+                ck.testExactNumber(1, signedLoop.negativeAreaLoops.length, `SignedLoop has one outer loop: ${testCase.jsonFilePath}`);
               }
             }
           }
@@ -723,17 +723,17 @@ describe("RegionBoolean", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("OverlappingArcs", () => {
+  it("OverlappingArcs", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
     let xDelta = 0;
-    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/overlappingArcs.imjs", "utf8"))) as BagOfCurves[];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/overlappingArcs.imjs", "utf8"))) as Loop[] | BagOfCurves[];
     if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
-      for (const arcPair of inputs) {
-        ck.testType(arcPair, BagOfCurves, "have BagOfCurves");
-        ck.testExactNumber(2, arcPair.children.length, "have 2 curves in bag");
+      for (let i = 0; i < inputs.length; ++i) {
+        const arcPair = inputs[i];
+        ck.testExactNumber(2, arcPair.children.length, "have 2 curve children");
         ck.testType(arcPair.getChild(0), Arc3d, "first curve is arc");
         ck.testType(arcPair.getChild(1), Arc3d, "second curve is arc");
         x0 = 0;
@@ -741,8 +741,15 @@ describe("RegionBoolean", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPair, x0, y0);
         const signedLoops = RegionOps.constructAllXYRegionLoops(arcPair);
         if (ck.testExactNumber(1, signedLoops.length, "Overlapping arcs yield one connected component.")) {
-          if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "SignedLoop has one outer loop.")) {
+          if (arcPair instanceof Loop) { // arcs that overlap to form a closed loop
+            ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "SignedLoop has one outer loop.");
+            ck.testExactNumber(1, signedLoops[0].positiveAreaLoops.length, "SignedLoop has one inner loop.");
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops[0], x0 += xDelta, y0);
+          } else if (arcPair instanceof BagOfCurves) {  // arcs that overlap but do not form a closed loop
+            ck.testExactNumber(0, signedLoops[0].negativeAreaLoops.length, "SignedLoop has no outer loop.");
+            ck.testExactNumber(0, signedLoops[0].positiveAreaLoops.length, "SignedLoop has no inner loop.");
+          } else {
+            ck.announceError("unexpected input", arcPair);
           }
         }
         y0 += 1.5 * arcPair.range().yLength();

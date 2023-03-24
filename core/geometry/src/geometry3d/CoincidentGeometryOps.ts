@@ -23,6 +23,8 @@ import { Segment1d } from "./Segment1d";
 export class CoincidentGeometryQuery {
   private _vectorU?: Vector3d;
   private _vectorV?: Vector3d;
+  private _point0?: Point3d;
+  private _point1?: Point3d;
   private _tolerance: number;
   public get tolerance(): number {
     return this._tolerance;
@@ -87,7 +89,7 @@ export class CoincidentGeometryQuery {
       return undefined;
 
     detailAOnB.fraction1 = detailA1OnB.fraction;
-    detailAOnB.point1 = detailA1OnB.point;  // capture -- detailB0OnA is not reused.
+    detailAOnB.point1 = detailA1OnB.point;  // capture -- detailA1OnB is not reused.
     detailBOnA.fraction1 = detailB1OnA.fraction;
     detailBOnA.point1 = detailB1OnA.point;
     if (!restrictToBounds)
@@ -106,23 +108,23 @@ export class CoincidentGeometryQuery {
       return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
     } else {
       if (segment.signedDelta() < 0.0) {
-        if (detailBOnA.point.isAlmostEqual(pointA0)) {
+        if (detailBOnA.point.isAlmostEqual(pointA0, this.tolerance)) {
           detailBOnA.collapseToStart();
           detailAOnB.collapseToStart();
           return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
         }
-        if (detailBOnA.point1.isAlmostEqual(pointA1)) {
+        if (detailBOnA.point1.isAlmostEqual(pointA1, this.tolerance)) {
           detailBOnA.collapseToEnd();
           detailAOnB.collapseToEnd();
           return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
         }
       } else {
-        if (detailBOnA.point.isAlmostEqual(pointA1)) {
+        if (detailBOnA.point.isAlmostEqual(pointA1, this.tolerance)) {
           detailBOnA.collapseToStart();
           detailAOnB.collapseToEnd();
           return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
         }
-        if (detailBOnA.point1.isAlmostEqual(pointA0)) {
+        if (detailBOnA.point1.isAlmostEqual(pointA0, this.tolerance)) {
           detailBOnA.collapseToEnd();
           detailAOnB.collapseToStart();
           return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
@@ -167,11 +169,11 @@ export class CoincidentGeometryQuery {
    * @param arcA
    * @param arcB
    * @param _restrictToBounds
-   * @return 0, 1, or 2 overlap intervals.
+   * @return 0, 1, or 2 overlap points/intervals
    */
   public coincidentArcIntersectionXY(arcA: Arc3d, arcB: Arc3d, _restrictToBounds: boolean = true): CurveLocationDetailPair[] | undefined {
     let result: CurveLocationDetailPair[] | undefined;
-    if (arcA.center.isAlmostEqual(arcB.center)) {
+    if (arcA.center.isAlmostEqual(arcB.center, this.tolerance)) {
       const matrixBToA = arcA.matrixRef.multiplyMatrixInverseMatrix(arcB.matrixRef);
       if (matrixBToA) {
         const ux = matrixBToA.at(0, 0); const uy = matrixBToA.at(1, 0);
@@ -191,18 +193,37 @@ export class CoincidentGeometryQuery {
           const sweepB = AngleSweep.createStartEndRadians(betaStartRadians, betaEndRadians);
           const sweepA = arcA.sweep;
           const fractionPeriodA = sweepA.fractionPeriod();
-          const fractionB0 = sweepA.radiansToPositivePeriodicFraction(sweepB.startRadians);
-          const fractionSweep = sweepB.sweepRadians / sweepA.sweepRadians;
-          const fractionB1 = fractionB0 + fractionSweep;
+          const fractionB0 = sweepA.radiansToPositivePeriodicFraction(sweepB.startRadians);   // arcB start in arcA fraction space (fractionB0 >= 0)
+          const fractionSweep = sweepB.sweepRadians / sweepA.sweepRadians;                    // arcB sweep in arcA fraction space
+          const fractionB1 = fractionB0 + fractionSweep;                                      // arcB end in arcA fraction space
           const fractionSweepB = Segment1d.create(fractionB0, fractionB1);
-          if (fractionSweepB.clampDirectedTo01())
+          if (fractionSweepB.clampDirectedTo01()) {
             result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, fractionSweepB, fractionB0, fractionB1, fractionSpacesReversed));
-          if (fractionB1 > fractionPeriodA) {
-            const fractionSweepBWrap = Segment1d.create(fractionB0 - fractionPeriodA, fractionB1 - fractionPeriodA);
-            if (fractionSweepBWrap.clampDirectedTo01())
-              result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, fractionSweepBWrap, fractionB0, fractionB1, fractionSpacesReversed));
+          } else {  // test isolated intersection at arcA end point
+            const arcA1 = this._point1 = arcA.endPoint(this._point1);
+            const arcB0 = this._point0 = arcB.startPoint(this._point0);
+            if (arcA1.isAlmostEqual(arcB0, this.tolerance)) {
+              const detailA = CurveLocationDetail.createCurveFractionPoint(arcA, 1, arcA1);
+              const detailB = CurveLocationDetail.createCurveFractionPoint(arcB, 0, arcB0);
+              result = this.appendDetailPair(result, CurveLocationDetailPair.createCapture(detailA, detailB));
+            }
           }
-          // START HERE: endpoint intersection
+          if (fractionB1 >= fractionPeriodA) {
+            const fractionB0Wrap = fractionB0 - fractionPeriodA;
+            const fractionB1Wrap = fractionB1 - fractionPeriodA;
+            const fractionSweepBWrap = Segment1d.create(fractionB0Wrap, fractionB1Wrap);
+            if (fractionSweepBWrap.clampDirectedTo01()) {
+              result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, fractionSweepBWrap, fractionB0Wrap, fractionB1Wrap, fractionSpacesReversed));
+            } else {  // test isolated intersection at arcA start point
+              const arcA0 = this._point0 = arcA.startPoint(this._point0);
+              const arcB1 = this._point1 = arcB.endPoint(this._point1);
+              if (arcA0.isAlmostEqual(arcB1, this.tolerance)) {
+                const detailA = CurveLocationDetail.createCurveFractionPoint(arcA, 0, arcA0);
+                const detailB = CurveLocationDetail.createCurveFractionPoint(arcB, 1, arcB1);
+                result = this.appendDetailPair(result, CurveLocationDetailPair.createCapture(detailA, detailB));
+              }
+            }
+          }
         }
       }
     }
