@@ -12,25 +12,6 @@ import {
 } from "../ShaderBuilder";
 import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
 
-/** A physics-based atmospheric scattering technique that simulates how an atmosphere diverts light.
- * @internal
- * This shader adds an atmospheric scattering effect that mimics some aspects of the physical phenomenons of Rayleigh Scattering and Mie Scattering.
- *
- * This implementation is highly inspired by Sebastian Lague's Solar System project: https://github.com/SebLague/Solar-System/ and video: https://www.youtube.com/watch?v=DxfEbulyFcY
- * along with this ShaderToy replica: https://www.shadertoy.com/view/fltXD2.
- * Both of which are inspired by this Nvidia article on atmospheric scattering: https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering.
- *
- * The effect traces rays from the vertices or fragments toward the eye/camera and samples air density at multiple points to compute how much light is scattered away by the air molecules.
- * It also traces rays from the aforementioned sample points toward the sun and samples air density at multiple points to compute how much light is scattered in toward the eye/camera.
- *
- * The effect can be computed on vertices (the default for the background map) and fragments (the default for the skybox, which is a ViewportQuad).
- * The effect is much more accurate when computed on fragments, as the atmosphere is an ellipsoid. Air density between 2 vertices cannot be linearly interpolated.
- *
- * All coordinates are in view space.
- */
-
-// #region GENERAL
-
 const computeRayDir = `
 vec3 computeRayDir(vec3 eyeSpace) {
   return u_isCameraEnabled ? normalize(eyeSpace) : vec3(0.0, 0.0, -1.0);
@@ -43,7 +24,6 @@ float computeSceneDepth(vec3 eyeSpace) {
 }
 `;
 
-// TODO: ask about default scene depth potentially being insufficient
 const computeSceneDepthSky = `
 float computeSceneDepth(vec3 eyeSpace) {
   return MAX_FLOAT;
@@ -55,10 +35,6 @@ vec3 computeRayOrigin(vec3 eyeSpace) {
   return u_isCameraEnabled ? vec3(0.0) : vec3(eyeSpace.xy, 0.0);
 }
 `;
-
-// #endregion GENERAL
-
-// #region ELLIPSOID
 
 /**
  * Computes the intersection of a ray with a sphere and returns two values:
@@ -356,10 +332,6 @@ mat3 computeAtmosphericScatteringFragment() {
 }
 `;
 
-// #endregion ELLIPSOID
-
-// #region MAIN
-
 const applyHdr = `
 vec3 applyHdr(vec3 atmosphericScatteringColor, vec3 reflectedLightColor) {
   vec3 colorWithoutHdr = atmosphericScatteringColor + reflectedLightColor;
@@ -374,7 +346,6 @@ const applyAtmosphericScattering = `
   if (!u_isEnabled) {
     return baseColor;
   }
-
   mat3 atmosphericScatteringOutput = computeAtmosphericScatteringFragment();
   vec3 atmosphericScatteringColor = atmosphericScatteringOutput[0];
 
@@ -608,5 +579,3 @@ export function addAtmosphericScatteringEffect(
   builder.frag.addFunction(applyHdr);
   builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
 }
-
-// #endregion MAIN

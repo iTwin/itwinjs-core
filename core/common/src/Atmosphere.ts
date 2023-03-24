@@ -9,12 +9,23 @@ import { JsonUtils } from "@itwin/core-bentley";
 
 /** Namespace containing types controlling how atmospheric scattering should be rendered.
  * @public
- * The techniques used to render the atmosphere approximate the physical behavior of light when interacting with particles in the air.
- * In a nutshell, samples of atmospheric density are taken along rays cast from the view's perspective and used to simulate the scattering of light toward the camera.
- * Implementation of this behavior is adapted from equations outlined in "Display of Clouds Taking into Account Multiple Anisotropic Scattering and Sky Light", Nishita et al. 1993
- *   and refined for GPU shaders in "Photorealistic Real-Time Outdoor Light Scattering", Hoffman and Preetham 2002.
+ * The techniques used to render the atmosphere approximate the physical behavior of light when interacting with particles in the air (Rayleigh Scattering and Mie Scattering)
+ * Presently, only Rayleigh Scattering is implemented here
+ *
+ * In a nutshell, this implementation samples atmospheric density along rays cast from the view and uses the samples to simulate the scattering of light toward the camera.
+ * The amount of light scattered toward the camera is dependent on the amount of light scattered away from its original path from the sun, so rays must also be cast from the sample points to the sun.
+ *
+ * The effect can be computed on vertices (the default for the background map) and fragments (the default for the skybox, which is a ViewportQuad).
+ * All coordinates are in view space.
+ *
+ * This implementation is adapted from equations outlined in "Display of Clouds Taking into Account Multiple Anisotropic Scattering and Sky Light", Nishita et al. 1993
+ *   which are further refined for use in GPU shaders in "Photorealistic Real-Time Outdoor Light Scattering", Hoffman and Preetham 2002.
  * These sources are also compiled in Chapter 16 of NVIDIA's "GPU Gems 2", which can be found online here:
  *   https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering
+ *
+ * This implementation is also highly inspired by Sebastian Lague's Solar System project: https://github.com/SebLague/Solar-System/ and video: https://www.youtube.com/watch?v=DxfEbulyFcY
+ *   along with this ShaderToy replica: https://www.shadertoy.com/view/fltXD2.
+ * Both of which are inspired by this Nvidia article on atmospheric scattering: https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering.
  */
 export namespace Atmosphere {
 
