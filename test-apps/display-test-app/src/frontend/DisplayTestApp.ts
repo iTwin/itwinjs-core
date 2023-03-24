@@ -151,7 +151,16 @@ const dtaFrontendMain = async () => {
 
   if (configuration.useFrontendTiles) {
     initializeFrontendTiles({
-      computeSpatialTilesetBaseUrl: (iModel) => new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`),
+      computeSpatialTilesetBaseUrl: async (iModel) => {
+        const url = new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`);
+        try {
+          const response = await fetch(`${url}tileset.json`);
+          await response.json();
+          return url;
+        } catch (_) {
+          return undefined;
+        }
+      },
     });
   }
 

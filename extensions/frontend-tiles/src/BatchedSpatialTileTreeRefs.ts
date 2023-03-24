@@ -71,17 +71,22 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     getBaseUrl.then((url: URL | undefined) => {
       if (url) {
         const ref = BatchedTileTreeReference.create(view, url);
-        this._impl = new BatchedSpatialTileTreeReferences(ref);
-        if (this._attachArgs) {
-          this._impl.attachToViewport(this._attachArgs);
-          this._attachArgs = undefined;
-        }
+        this.setTreeRefs(new BatchedSpatialTileTreeReferences(ref));
       } else {
-        this._impl = createFallbackSpatialTileTreeReferences(view);
+        this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
       }
     }).catch(() => {
-      this._impl = createFallbackSpatialTileTreeReferences(view);
+      this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
     });
+  }
+
+  private setTreeRefs(refs: SpatialTileTreeReferences): void {
+    this._impl = refs;
+    if (this._attachArgs) {
+      this._impl.attachToViewport(this._attachArgs);
+      this._attachArgs.invalidateSymbologyOverrides();
+      this._attachArgs = undefined;
+    }
   }
 
   public update(): void {
@@ -89,11 +94,17 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   public attachToViewport(args: AttachToViewportArgs): void {
-    this._attachArgs = args;
+    if (this._impl)
+      this._impl.attachToViewport(args);
+    else
+      this._attachArgs = args;
   }
 
   public detachFromViewport(): void {
-    this._attachArgs = undefined;
+    if (this._impl)
+      this._impl.detachFromViewport();
+    else
+      this._attachArgs = undefined;
   }
 
   public setDeactivated(): void { }
@@ -113,8 +124,16 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
   const iModel = view.iModel;
   let entry = iModelToBaseUrl.get(iModel);
   if (undefined === entry) {
-    iModelToBaseUrl.set(iModel, entry = computeBaseUrl(iModel));
+    const promise = computeBaseUrl(iModel);
+    iModelToBaseUrl.set(iModel, entry = promise);
     iModel.onClose.addOnce(() => iModelToBaseUrl.delete(iModel));
+    promise.then((url: URL | undefined) => {
+      if (iModelToBaseUrl.has(iModel))
+        iModelToBaseUrl.set(iModel, url ?? null);
+    }).catch(() => {
+      if (iModelToBaseUrl.has(iModel))
+        iModelToBaseUrl.set(iModel, null);
+    });
   }
 
   if (null === entry)
