@@ -119,10 +119,12 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   public setDeactivated(): void { }
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
-    if (this._impl)
-      return this._impl[Symbol.iterator]();
-
-    yield this._proxyRef;
+    if (this._impl) {
+      for (const ref of this._impl)
+        yield ref;
+    } else {
+      yield this._proxyRef;
+    }
   }
 }
 
