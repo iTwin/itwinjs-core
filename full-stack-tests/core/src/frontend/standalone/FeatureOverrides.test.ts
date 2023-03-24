@@ -124,7 +124,6 @@ describe("FeatureTable", () => {
     const unpacked = packed.unpack();
 
     expect(table.length).to.equal(unpacked.length);
-    expect(table.maxFeatures).to.equal(unpacked.maxFeatures);
     expect(table.modelId.toString()).to.equal(unpacked.modelId.toString());
     expect(table.isUniform).to.equal(unpacked.isUniform);
 

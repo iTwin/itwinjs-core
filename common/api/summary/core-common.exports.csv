@@ -470,6 +470,8 @@ public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
 public;ModelExtentsProps
+internal;ModelFeature
+internal;ModelFeature
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -482,6 +484,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
+internal;MultiModelPackedFeatureTable 
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -526,7 +529,10 @@ public;OverrideFeatureAppearanceOptions
 public;OverrideModelAppearanceOptions 
 public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
-internal;PackedFeatureTable
+internal;PackedFeature
+internal;PackedFeatureModelTable
+internal;PackedFeatureTable 
+internal;PackedFeatureWithIndex 
 internal;ParsedTileTreeIdAndContentId
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
@@ -553,7 +559,7 @@ beta;PointCloudDisplaySettings
 beta;PointCloudEDLMode = "off" | "on" | "full"
 beta;PointCloudShape = "square" | "round"
 beta;PointCloudSizeMode = "voxel" | "pixel"
-beta;PointWithStatus
+public;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
 internal;PolylineEdgeArgs
@@ -619,6 +625,7 @@ public;RelatedElementProps
 public;RelationshipProps 
 internal;RelTypeInfo
 public;RemoveFunction = () => void
+internal;RenderFeatureTable
 public;class RenderMaterial
 public;RenderMaterial
 public;RenderMaterialAssetMapsProps

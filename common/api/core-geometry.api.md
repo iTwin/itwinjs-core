@@ -1218,6 +1218,7 @@ export class ClipUtilities {
     static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets;
     static doesClipperIntersectRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): boolean;
     static doesConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): boolean;
+    static doLocalRangesIntersect(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, range1Margin?: number): boolean;
     static doPolygonClipParitySequence(xyz: GrowableXYZArray, clippers: Clipper[], acceptedIn: GrowableXYZArray[] | undefined, acceptedOut: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache | undefined): void;
     static doPolygonClipSequence(xyz: GrowableXYZArray, clippers: Clipper[], acceptedIn: GrowableXYZArray[] | undefined, acceptedOut: GrowableXYZArray[] | undefined, finalCandidates: GrowableXYZArray[] | undefined, inAction: ClipStepAction, outAction: ClipStepAction, finalFragmentAction: ClipStepAction, arrayCache: GrowableXYZArrayCache | undefined): void;
     static isClipper(obj: any): boolean;
@@ -1817,15 +1818,15 @@ export class CutLoopMergeContext {
     sortAndMergeLoops(): void;
 }
 
-// @internal
+// @public
 export class DeepCompare {
     constructor(numberRelTol?: number);
     compare(a: any, b: any, tolerance?: number): boolean;
-    compareNumber(_a: number, _b: number): boolean;
+    compareNumber(a: number, b: number): boolean;
     errorTracker: any[];
     numberRelTol: number;
     propertyCounts: {
-        [key: string]: any;
+        [key: string]: number;
     };
     typeCounts: {
         numbers: number;
@@ -3514,7 +3515,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowZXYZ(x: number, y: number, z: number): number;
     factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
     factorPerpendicularColumns(matrixVD: Matrix3d, matrixU: Matrix3d): boolean;
-    factorRigidWithSignedScale(): {
+    factorRigidWithSignedScale(result?: Matrix3d): {
         rigidAxes: Matrix3d;
         scale: number;
     } | undefined;
@@ -5222,18 +5223,18 @@ export class RegionMomentsXY extends NullGeometryHandler {
     handleUnionRegion(region: UnionRegion): MomentData | undefined;
 }
 
-// @beta
+// @public
 export class RegionOps {
     // @internal
     static addLoopsToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, announceIsolatedLoop: (graph: HalfEdgeGraph, seed: HalfEdge) => void): void;
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
-    static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined;
-    static collectChains(fragments: GeometryQuery[], gapTolerance?: number): ChainTypes;
+    static cloneCurvesWithXYSplits(curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection): AnyCurve | undefined;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number): ChainTypes;
     static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
-    static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): {
-        insideOffsets: GeometryQuery[];
-        outsideOffsets: GeometryQuery[];
+    static collectInsideAndOutsideOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
+        insideOffsets: AnyCurve[];
+        outsideOffsets: AnyCurve[];
         chains: ChainTypes;
     };
     static computeXYArea(root: AnyRegion): number | undefined;
@@ -5241,7 +5242,6 @@ export class RegionOps {
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
-    // @alpha
     static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
@@ -5254,17 +5254,16 @@ export class RegionOps {
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
-    // @alpha
     static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance?: number): AnyRegion | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion;
-    static splitPathsByRegionInOnOutXY(curvesToCut: CurveCollection | CurvePrimitive | undefined, region: AnyRegion): {
+    static splitPathsByRegionInOnOutXY(curvesToCut: AnyCurve | undefined, region: AnyRegion): {
         insideParts: AnyCurve[];
         outsideParts: AnyCurve[];
         coincidentParts: AnyCurve[];
     };
-    static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined, makeClones: boolean): BagOfCurves | Path | CurvePrimitive | Loop | undefined;
+    static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
 }
 
@@ -5810,7 +5809,7 @@ export class Transform implements BeJSONFunctions {
     getTranslation(): Vector3d;
     static get identity(): Transform;
     static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform): void;
-    inverse(): Transform | undefined;
+    inverse(result?: Transform): Transform | undefined;
     isAlmostEqual(other: Readonly<Transform>): boolean;
     isAlmostEqualAllowZRotation(other: Transform): boolean;
     get isIdentity(): boolean;
@@ -5819,14 +5818,14 @@ export class Transform implements BeJSONFunctions {
     multiplyComponentXYZ(componentIndex: number, x: number, y: number, z?: number): number;
     multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number;
     multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined;
-    multiplyInversePoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[] | undefined;
-    multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean;
+    multiplyInversePoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[] | undefined;
+    multiplyInversePoint3dArrayInPlace(points: Point3d[]): boolean;
     multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;
     multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
     multiplyPoint2d(point: XAndY, result?: Point2d): Point2d;
-    multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[];
+    multiplyPoint2dArray(points: Point2d[], result?: Point2d[]): Point2d[];
     multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d;
-    multiplyPoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[];
+    multiplyPoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[];
     multiplyPoint3dArrayArrayInPlace(chains: Point3d[][]): void;
     multiplyPoint3dArrayInPlace(points: Point3d[]): void;
     multiplyRange(range: Range3d, result?: Range3d): Range3d;

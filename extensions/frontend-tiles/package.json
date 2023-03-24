@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-tiles",
-  "version": "4.0.0-dev.47",
+  "version": "4.0.0-dev.56",
   "description": "Experimental alternative technique for visualizing the contents of iModels",
   "main": "lib/cjs/frontend-tiles.js",
   "module": "lib/esm/frontend-tiles.js",
@@ -45,11 +45,11 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@types/node": "^18.11.5",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "eslintConfig": {
     "plugins": [

@@ -43,6 +43,7 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of imodel.query(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }))
         resultId = row.resultId;
     } catch (ex) {

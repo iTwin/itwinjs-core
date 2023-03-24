@@ -187,6 +187,7 @@ describe("RulesetEmbedder", () => {
         };
       }
     }
+    // eslint-disable-next-line deprecation/deprecation
     imodelMock.setup((x) => x.query(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => asyncIterator());
   }
 

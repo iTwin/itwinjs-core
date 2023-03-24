@@ -95,7 +95,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       union.extendRange(contentRange);
   }
 
-  /** @internal */
+  /** Record graphics memory consumed by this tile tree reference. */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree)
