@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+
 import { Arc3d } from "../../curve/Arc3d";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -12,9 +13,7 @@ import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray } from "../../geometry3d/PointHelpers";
 import { Point4d } from "../../geometry4d/Point4d";
-import {
-  AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, SmallSystem, TrigPolynomial,
-} from "../../numerics/Polynomials";
+import { AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Checker } from "../Checker";
 
 /* eslint-disable no-console, no-trailing-spaces */
@@ -656,11 +655,11 @@ describe("Geometry", () => {
     ck.testExactNumber(-3, Geometry.restrictToInterval(-5, -3, 4));
     ck.testExactNumber(-3, Geometry.restrictToInterval(-5, 4, -3));
 
-    ck.testTrue(Geometry.isHugeCoordinate(1.0e14));
-    ck.testTrue(Geometry.isHugeCoordinate(-1.0e14));
+    ck.testTrue(Geometry.isLargeCoordinateResult(1.0e14));
+    ck.testTrue(Geometry.isLargeCoordinateResult(-1.0e14));
 
-    ck.testFalse(Geometry.isHugeCoordinate(1.0e7));
-    ck.testFalse(Geometry.isHugeCoordinate(-1.0e10));
+    ck.testFalse(Geometry.isLargeCoordinateResult(1.0e7));
+    ck.testFalse(Geometry.isLargeCoordinateResult(-1.0e10));
     const e = Geometry.smallMetricDistance * 0.24;
     const point0 = Point3d.create(1, 43, 2);
     const point1 = Point3d.create(point0.x + 0.1 * e, point0.y + e, point0.z + 2);
