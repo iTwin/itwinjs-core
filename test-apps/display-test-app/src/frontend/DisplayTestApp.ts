@@ -154,10 +154,12 @@ const dtaFrontendMain = async () => {
       computeSpatialTilesetBaseUrl: async (iModel) => {
         const url = new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`);
         try {
+          // See if a tileset has been published for this iModel.
           const response = await fetch(`${url}tileset.json`);
           await response.json();
           return url;
         } catch (_) {
+          // No tileset available.
           return undefined;
         }
       },
