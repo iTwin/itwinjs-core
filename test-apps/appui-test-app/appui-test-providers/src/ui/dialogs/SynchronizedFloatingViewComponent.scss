@@ -10,8 +10,3 @@
     height: calc(100% - 27px);
   }
 }
-
-.iui-popover.tippy-box[data-reference-hidden] {
-visibility: inherit!important;
-  pointer-events: inherit!important;
-}
