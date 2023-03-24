@@ -16,7 +16,11 @@ export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeRefe
 // @alpha
 export interface FrontendTilesOptions {
     computeSpatialTilesetBaseUrl: ComputeSpatialTilesetBaseUrl;
+    maxLevelsToSkip?: number;
 }
+
+// @internal (undocumented)
+export function getMaxLevelsToSkip(): number;
 
 // @alpha
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
