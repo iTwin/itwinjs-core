@@ -1112,7 +1112,7 @@ export class ToolAdmin {
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
 
-    snapPromise.then((snapOk) => {
+    snapPromise.then(async (snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
       return processMotion();

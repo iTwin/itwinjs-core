@@ -20,7 +20,7 @@ export class Entity {
   /** An immutable property used to discriminate between [[Entity]] and [EntityProps]($common), used to inform the TypeScript compiler that these two types
    * are never substitutable for one another. To obtain an EntityProps from an Entity, use [[Entity.toJSON]].
    */
-  public readonly isInstanceOfEntity: true = true;
+  public readonly isInstanceOfEntity = true as const;
   /** The Schema that defines this class. */
   public static schema: typeof Schema;
 

@@ -1216,7 +1216,7 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     isPrimitive(): this is AnyPrimitiveProperty;
     // @internal (undocumented)
-    static isProperty(object: any): object is Property;
+    static isProperty(object: any): object is AnyProperty;
     // (undocumented)
     get isReadOnly(): boolean;
     // (undocumented)
@@ -1555,7 +1555,7 @@ export class Schema implements CustomAttributeContainerProps {
     protected _alias?: string;
     get context(): SchemaContext;
     // @alpha (undocumented)
-    protected createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T;
+    protected createClass<T extends AnyClass>(type: (new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T;
     protected createConstant(name: string): Promise<Constant>;
     // (undocumented)
     protected createConstantSync(name: string): Constant;
@@ -1575,7 +1575,7 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected createInvertedUnitSync(name: string): InvertedUnit;
     // @alpha (undocumented)
-    protected createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T;
+    protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T;
     protected createKindOfQuantity(name: string): Promise<KindOfQuantity>;
     // (undocumented)
     protected createKindOfQuantitySync(name: string): KindOfQuantity;

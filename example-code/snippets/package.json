@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -45,7 +45,7 @@
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "mocha": {
     "exit": true,
