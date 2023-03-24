@@ -83,7 +83,7 @@ Below is a list of the changes from this move, some of these new access point ma
 
 ### ViewSelector Enhancements
 
-Search functionality has been added to the [ViewSelector]($appui-react) component, allowing for additional ease when navigating between iModel views. Search functionality is optional and enabled by default. To disable search functionality, set the [ViewSelector.searchBox]($appui-react) to `false`.
+Search functionality has been added to the [ViewSelector]($appui-react) component, allowing for additional ease when navigating between iModel views. Search functionality is optional and enabled by default. To disable search functionality, set [ViewSelectorProps.searchBox]($appui-react) to `false`.
 
 ## Mesh intersection with ray
 
