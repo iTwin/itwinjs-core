@@ -106,7 +106,7 @@ export class CodeSpecs {
   public insert(codeSpecOrName: CodeSpec | string, scopeType?: CodeScopeSpec.Type): Id64String {
     if (codeSpecOrName instanceof CodeSpec) {
       const codeSpec = codeSpecOrName;
-      const id: Id64String = this._imodel.insertCodeSpec(codeSpec);
+      const id = this._imodel.insertCodeSpec(codeSpec);
       codeSpec.id = id;
       return id;
     }
