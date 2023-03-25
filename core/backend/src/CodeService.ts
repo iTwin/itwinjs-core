@@ -56,20 +56,7 @@ export interface CodeIndex {
   forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
 }
 
-/**
- * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.
- * @alpha
- */
-export interface CodeService {
-  /** @internal */
-  close: () => void;
-
-  /** @internal */
-  addAllCodeSpecs(iModel: IModelDb): Promise<void>;
-
-  /** the code index for this CodeService */
-  readonly codeIndex: CodeIndex;
-
+export interface CodesDb {
   /**
    * Application-supplied parameters for obtaining the write lock on the container.
    * Applications should set these parameters by adding a listener for `BriefcaseDb.onCodeServiceCreated`
@@ -77,11 +64,15 @@ export interface CodeService {
    */
   readonly lockParams: CloudSqlite.ObtainLockParams;
 
+  /** the code index for this CodeService */
+  readonly codeIndex: CodeIndex;
+
   /**
-   * Application-supplied parameters for reserving new codes.
-   * @see lockParams
+   * The token that grants access to the cloud container for this CodeService.
+   * It should be established in a listener for `BriefcaseDb.onCodeServiceCreated`, and should be refreshed (via a
+   * timer) before it expires.
    */
-  readonly appParams: CodeService.AuthorAndOrigin;
+  sasToken: AccessToken;
 
   /**
    * The token that grants access to the cloud container for this CodeService.
@@ -109,7 +100,7 @@ export interface CodeService {
    * If not, throw an exception. Elements with no CodeValue are ignored.
    * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
    */
-  verifyCode(props: CodeService.ElementCodeProps): void;
+  verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
 
   /** Add a new code spec to this code service.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
@@ -178,6 +169,46 @@ export interface CodeService {
   deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
 }
 
+export interface InternalCodes extends CodesDb {
+  verifyFont(): void;
+}
+
+/**
+ * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.
+ * @alpha
+ */
+export interface CodeService {
+  /** @internal */
+  close: () => void;
+
+  addAllCodes(iModel: IModelDb): Promise<{ internal: number, external: number }>;
+
+  /** @internal */
+  addAllCodeSpecs(iModel: IModelDb): Promise<void>;
+
+  /** the code index for this CodeService */
+  readonly externalCodes?: CodesDb;
+
+  /** the code index for this CodeService */
+  readonly internalCodes?: InternalCodes;
+
+  /**
+   * Application-supplied parameters for reserving new codes.
+   */
+  readonly appParams: CodeService.AuthorAndOrigin;
+
+  /**
+   * Verify that the Code of a to-be-inserted or to-be-updated Element:
+   * 1. has already been reserved,
+   * 2. if the element has a `federationGuid`, it must match the reserved value. If the federationGuid is undefined,
+   * the value from the code index is returned.
+   *
+   * If not, throw an exception. Elements with no CodeValue are ignored.
+   * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
+   */
+  verifyCode(props: CodeService.ElementCodeProps): void;
+}
+
 /** @alpha */
 export namespace CodeService {
   /** @internal */
@@ -193,7 +224,7 @@ export namespace CodeService {
 
   /** Get a previously registered `CodeSequence` by its name.
    * @throws if no sequence by that name was registered.
-  */
+   */
   export function getSequence(name: string): CodeSequence {
     const seq = codeSequences.get(name);
     if (!seq)
@@ -229,8 +260,10 @@ export namespace CodeService {
   /** The name of a code spec */
   export type CodeSpecName = string;
 
-  /** The name that identifies the "originator" of a code. Usually this is the Guid of the iModel from which a code was added,
-   * but can also be used to identify a system or type from an external code service. */
+  /**
+   * The name that identifies the "originator" of a code. Usually this is the Guid of the iModel from which a code was added,
+   * but can also be used to identify a system or type from an external code service.
+   */
   export type CodeOriginName = string;
 
   /** The name that identifies the "author" of a code. Generally, this is intended to be the name of a person or group that helps identify the purpose of the code. */
