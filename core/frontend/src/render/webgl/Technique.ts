@@ -723,7 +723,7 @@ class RealityMeshTechnique extends VariedTechnique {
 }
 
 class SkySphereTechnique extends VariedTechnique {
-  private static readonly _numVariants = 2;
+  private static readonly _numVariants = 6; // one ternary flag and one binary flag = (3 ** 1) * (2 ** 1)
 
   public constructor(gl: WebGL2RenderingContext, isGradient: boolean) {
     super(SkySphereTechnique._numVariants);
@@ -747,7 +747,10 @@ class SkySphereTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = 0;
     if (flags.enableAtmosphere)
-      index += 2 ** 0;
+      index += 1 << 0;
+    if (flags.featureMode)
+      index += (1 << 1) * flags.featureMode;
+
     return index;
   }
 }
