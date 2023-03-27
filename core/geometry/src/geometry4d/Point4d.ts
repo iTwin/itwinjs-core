@@ -6,7 +6,8 @@
 /** @packageDocumentation
  * @module Numerics
  */
-import { BeJSONFunctions, Geometry } from "../Geometry";
+import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { Plane3d } from "../geometry3d/Plane3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d } from "../geometry3d/Point2dVector2d";
@@ -42,7 +43,7 @@ function quotientDerivative2(ddg: number, dh: number, ddh: number,
  * *
  * @public
  */
-export class Point4d implements BeJSONFunctions {
+export class Point4d extends Plane3d implements BeJSONFunctions {
   /** x,y,z,w are packed into a Float64Array */
   public xyzw: Float64Array;
   /** Set x,y,z,w of this point.  */
@@ -75,6 +76,7 @@ export class Point4d implements BeJSONFunctions {
   public set w(val: number) { this.xyzw[3] = val; }
   /** Construct from coordinates. */
   protected constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
+    super();
     this.xyzw = new Float64Array(4);
     this.xyzw[0] = x;
     this.xyzw[1] = y;
@@ -84,6 +86,15 @@ export class Point4d implements BeJSONFunctions {
   /** Return a Point4d with specified x,y,z,w */
   public static create(x: number = 0, y: number = 0, z: number = 0, w: number = 0, result?: Point4d): Point4d {
     return result ? result.set(x, y, z, w) : new Point4d(x, y, z, w);
+  }
+  /**
+   * Create a "Point4d as a plane" from "any" other [[PlaneAltitudeEvaluator]] type.
+   * @param source
+   * @returns
+   */
+  public static createPlaneFrom(source: PlaneAltitudeEvaluator): Point4d | undefined {
+    return new Point4d(source.normalX(), source.normalY(), source.normalZ(), source.altitudeXYZ(0, 0, 0));
+    return undefined;
   }
   /** Copy coordinates from `other`. */
   public setFrom(other: Point4d): Point4d {
@@ -224,13 +235,13 @@ export class Point4d implements BeJSONFunctions {
   public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
     return new Point4d(xyz.x, xyz.y, xyz.z, w);
   }
-/** Create a `Point4d` from
- * * Point2d, Point3d, or Point4d
- * * other structure with members x,y and optional z,w
- * * array of numbers
- * * default z is 0.0
- * * default 2 is 1.0  (array[3] can replace)
- */
+  /** Create a `Point4d` from
+   * * Point2d, Point3d, or Point4d
+   * * other structure with members x,y and optional z,w
+   * * array of numbers
+   * * default z is 0.0
+   * * default 2 is 1.0  (array[3] can replace)
+   */
 
   public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
     if (point instanceof Point2d)
@@ -247,9 +258,9 @@ export class Point4d implements BeJSONFunctions {
       const w1 = point.length > 3 ? point[3] : 1.0;
       return new Point4d(x1, y1, z1, w1);
     }
-    const x = point.hasOwnProperty ("x") ? point.x : 0.0;
-    const y = point.hasOwnProperty ("y") ? point.y : 0.0;
-    const z = point.hasOwnProperty ("z") ? (point as any).z : 0.0;
+    const x = point.hasOwnProperty("x") ? point.x : 0.0;
+    const y = point.hasOwnProperty("y") ? point.y : 0.0;
+    const z = point.hasOwnProperty("z") ? (point as any).z : 0.0;
     const w = point.hasOwnProperty("w") ? (point as any).w : 0.0;
     return new Point4d(x, y, z, w);
 
@@ -315,18 +326,18 @@ export class Point4d implements BeJSONFunctions {
   public velocityXYZ(x: number, y: number, z: number): number {
     return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z;
   }
-/**
- * Return the x component of the normal used to evaluate altitude.
- */
-  public normalX(): number {return this.x; }
+  /**
+   * Return the x component of the normal used to evaluate altitude.
+   */
+  public normalX(): number { return this.x; }
   /**
   * Return the x component of the normal used to evaluate altitude.
   */
-  public normalY(): number {return this.y; }
+  public normalY(): number { return this.y; }
   /**
   * Return the z component of the normal used to evaluate altitude.
   */
-  public normalZ(): number {return this.z; }
+  public normalZ(): number { return this.z; }
 
   /** unit X vector */
   public static unitX(): Point4d { return new Point4d(1, 0, 0, 0); }
@@ -342,6 +353,18 @@ export class Point4d implements BeJSONFunctions {
       return this.scale(1.0 / denominator, result);
     }
     return undefined;
+  }
+  /**
+   * * Return xyz projection of spacePoint to the plane of the DPoint4d (understood as coefficients, not point coordinates)
+   * * If the xyz part of `this` are all zero, (a clone of) `spacePoint` is returned.
+   */
+  public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
+    const h = this.altitude(spacePoint);
+    const nn = this.magnitudeSquaredXYZ();
+    const alpha = Geometry.conditionalDivideCoordinate(-h, nn);
+    if (alpha === undefined)
+      return spacePoint.clone(result);
+    return spacePoint.plusXYZ(alpha * this.x, alpha * this.y, alpha * this.z, result);
   }
   /** scale all components (including w!!) */
   public scale(scale: number, result?: Point4d): Point4d {
@@ -504,17 +527,7 @@ export class Point4d implements BeJSONFunctions {
   }
   /** Treating this Point4d as plane coefficients, convert to origin and normal form. */
   public toPlane3dByOriginAndUnitNormal(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
-    const a = Math.sqrt(this.magnitudeSquaredXYZ());
-    const direction = Vector3d.create(this.x, this.y, this.z);
-    const w = this.w;
-    const divA = Geometry.conditionalDivideFraction(1.0, a);
-    if (divA !== undefined) {
-      const divASquared = divA * divA;
-      const b = -w * divASquared;
-      direction.scaleInPlace(divASquared);
-      return Plane3dByOriginAndUnitNormal.create(Point3d.create(this.x * b, this.y * b, this.z * b), direction, result);
-    }
-    return undefined;
+    return Plane3dByOriginAndUnitNormal.createFrom(this, result);
   }
   /** Normalize so sum of squares of all 4 coordinates is 1. */
   public normalizeQuaternion() {
