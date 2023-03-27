@@ -63,7 +63,7 @@ export class ElectronApp {
       throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();
-      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces);
+      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line deprecation/deprecation
     }
     await NativeApp.startup(this._ipc!, opts);
   }

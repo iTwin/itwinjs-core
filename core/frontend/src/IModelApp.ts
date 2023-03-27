@@ -128,6 +128,10 @@ export interface IModelAppOptions {
    *  @internal
    */
   noRender?: boolean;
+  /**
+   * @deprecated in 3.7. Specify desired RPC interfaces in the platform-specific RPC manager call instead.
+   * See [[MobileRpcManager.initializeClient]], [[ElectronRpcManager.initializeFrontend]], [[BentleyCloudRpcManager.initializeClient]].
+   */
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
