@@ -23,27 +23,72 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 
-/* eslint-disable no-console */
-
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
+  /** For debugging: set to true to enable output to console via wrapped methods. */
+  public static enableConsole: boolean = false;
+  /** For debugging: set to true to enable saveGeometry output. */
+  public static enableSave: boolean = false;
+  /** For debugging: the location of json files output by saveGeometry. */
   public static outputRootDirectory = "./src/test/output";
-  public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
+
+  /** wrapper for console.log */
+  public static consoleLog(message?: any, ...optionalParams: any[]): void {
+    if (!this.enableConsole)
+      return;
+    console.log(message, ...optionalParams); // eslint-disable-line no-console
+  }
+  /** wrapper for console.time */
+  public static consoleTime(label?: string): void {
+    if (!this.enableConsole)
+      return;
+    console.time(label);  // eslint-disable-line no-console
+  }
+  /** wrapper for console.timeEnd */
+  public static consoleTimeEnd(label?: string): void {
+    if (!this.enableConsole)
+      return;
+    console.timeEnd(label); // eslint-disable-line no-console
+  }
+  private static makeOutputDir(subDirectoryName?: string): string {
     let path = GeometryCoreTestIO.outputRootDirectory;
-    if (directoryName !== undefined) {
-      path = `${path}/${directoryName}`;
+    if (!fs.existsSync(path))
+      fs.mkdirSync(path);
+    if (subDirectoryName !== undefined) {
+      path = `${path}/${subDirectoryName}`;
       if (!fs.existsSync(path))
         fs.mkdirSync(path);
     }
+    return path;
+  }
+  /** Output geometry as json for debugging */
+  public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
+    if (!this.enableSave)
+      return;
+
+    let path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
     if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
         fullPath = `${fullPath}.imjs`;
 
-    console.log(`saveGeometry:: ${fullPath}`);
+    this.consoleLog(`saveGeometry:: ${fullPath}`);
 
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
+  /** For each property of data: save the value in a file name `${propertyName}.json` */
+  public static savePropertiesAsSeparateFiles(directoryName: string | undefined, data: { [key: string]: any }) {
+    if (!GeometryCoreTestIO.enableSave)
+      return;
+    let path = this.makeOutputDir(directoryName);
+    for (const property in data) {
+      if (data.hasOwnProperty(property)) {
+        const filename = `${path}/${property}.imjs`;
+        fs.writeFileSync(filename, JSON.stringify(data[property])); // prettyPrint(data[property]));
+      }
+    }
+  }
+  /** Append the geometry to the collection, e.g., for output by saveGeometry. */
   public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
@@ -58,7 +103,7 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
-  /** Create and capture a loop object for a (single) sequence of points . */
+  /** Create and capture a loop object from a (single) sequence of points . */
   public static createAndCaptureLoop(collection: GeometryQuery[], points: IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!points || points.length === 0)
       return;
@@ -69,7 +114,7 @@ export class GeometryCoreTestIO {
     }
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
-  /** Create and capture a loop object for an array of point sequences. */
+  /** Create and capture loop object(s) from an array of point sequences. */
   public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection | IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (points instanceof IndexedXYZCollection) {
       this.createAndCaptureLoop(collection, points, dx, dy, dz);
@@ -80,7 +125,7 @@ export class GeometryCoreTestIO {
     for (const loop of points)
       this.createAndCaptureLoop(collection, loop, dx, dy, dz);
   }
-
+  /** Clone the geometry and append to collection, e.g., for output by saveGeometry. */
   public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;

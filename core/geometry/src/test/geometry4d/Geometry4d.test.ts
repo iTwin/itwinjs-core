@@ -21,7 +21,7 @@ import * as bsiChecker from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console, @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 /**
  *
@@ -232,10 +232,10 @@ describe("Geometry4d.BoxMap", () => {
     const highB = Point3d.create(101, 101, 101);
 
     if (bsiChecker.Checker.noisy.boxMap) {
-      console.log("lowA", lowA);
-      console.log("highA", highA);
-      console.log("lowB", lowB);
-      console.log("highB", highB);
+      GeometryCoreTestIO.consoleLog("lowA", lowA);
+      GeometryCoreTestIO.consoleLog("highA", highA);
+      GeometryCoreTestIO.consoleLog("lowB", lowB);
+      GeometryCoreTestIO.consoleLog("highB", highB);
     }
     const map = Map4d.createBoxMap(lowA, highA, lowB, highB);
     const map2 = Map4d.createIdentity();
@@ -252,8 +252,8 @@ describe("Geometry4d.BoxMap", () => {
     ck.testTrue(map4.isAlmostEqual(Map4d.createIdentity()));
     if (ck.testPointer(map, "Expect box map") && map) {
       if (bsiChecker.Checker.noisy.boxMap) {
-        console.log("A==>B", prettyPrint(map.transform0));
-        console.log("B==>A", prettyPrint(map.transform1));
+        GeometryCoreTestIO.consoleLog("A==>B", prettyPrint(map.transform0));
+        GeometryCoreTestIO.consoleLog("B==>A", prettyPrint(map.transform1));
       }
       for (const fractionPoint of [Point3d.create(0.4, 0, 0), Point3d.create(0, 0.2, 0), Point3d.create(0, 0, 1.1), Point3d.create(0.3, 0.5, 0.2)]) {
         const pointA0 = lowA.interpolateXYZ(fractionPoint.x, fractionPoint.y, fractionPoint.z, highA);
@@ -666,9 +666,9 @@ function verifySandwich(ck: bsiChecker.Checker, meat: Map4d, bread: Map4d) {
   const product01 = sandwich0M1.multiplyMapMap(sandwich0I1);
   const identity = Map4d.createIdentity();
   if (bsiChecker.Checker.noisy.map4d) {
-    console.log("meat", prettyMap(meat));
-    console.log("bread", prettyMap(bread));
-    console.log("product01", prettyMap(product01));
+    GeometryCoreTestIO.consoleLog("meat", prettyMap(meat));
+    GeometryCoreTestIO.consoleLog("bread", prettyMap(bread));
+    GeometryCoreTestIO.consoleLog("product01", prettyMap(product01));
   }
   ck.testTrue(product01.isAlmostEqual(identity), "Sandwich identity");
 
@@ -676,7 +676,7 @@ function verifySandwich(ck: bsiChecker.Checker, meat: Map4d, bread: Map4d) {
   const sandwich1I0 = inverseMeat.sandwich1This0(bread);
   const product10 = sandwich1M0.multiplyMapMap(sandwich1I0);
   if (bsiChecker.Checker.noisy.map4d) {
-    console.log("product10", prettyMap(product10));
+    GeometryCoreTestIO.consoleLog("product10", prettyMap(product10));
   }
   ck.testTrue(product10.isAlmostEqual(identity), "Sandwich identity");
 }
@@ -832,10 +832,10 @@ describe("Map4d", () => {
             ck.testPerpendicular(lineVector, spaceVector);
           } else {
             // recompute for debug ...
-            console.log("Error case");
-            console.log("A0", hA0);
-            console.log("A1", hA1);
-            console.log("spacePoint", spacePoint);
+            GeometryCoreTestIO.consoleLog("Error case");
+            GeometryCoreTestIO.consoleLog("A0", hA0);
+            GeometryCoreTestIO.consoleLog("A1", hA1);
+            GeometryCoreTestIO.consoleLog("spacePoint", spacePoint);
             badFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(hA0, hA1, spacePoint);
           }
         }
@@ -916,6 +916,6 @@ export function exerciseNearInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, i
       }
     }
     if (!ck.testTrue(ok, "unable to make step in invertible", name, i, j, matrixA))
-      console.log(`matrixA ${prettyPrint(matrixA)}`);
+      GeometryCoreTestIO.consoleLog(`matrixA ${prettyPrint(matrixA)}`);
   }
 }

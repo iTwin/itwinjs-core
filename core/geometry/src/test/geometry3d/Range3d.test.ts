@@ -20,7 +20,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console */
 // (assume points are distinct ...)
 function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {
   const rangeA = Range3d.createTransformedArray(frame, points);
@@ -384,7 +383,7 @@ describe("Range3d", () => {
     const rangeA = Range3d.createXYZXYZ(
       intervalA.low, intervalA.low, intervalA.low,
       intervalA.high, intervalA.high, intervalA.high);
-    // console.log("rangeA:", JSON.stringify(rangeA));
+    // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range3d.createXYZXYZOrCorrectToNull(
         intervalB.low, intervalB.low, intervalB.low,
@@ -425,7 +424,7 @@ describe("Range3d", () => {
     const rangeA = Range2d.createXYXY(
       intervalA.low, intervalA.low,
       intervalA.high, intervalA.high);
-    // console.log("rangeA:", JSON.stringify(rangeA));
+    // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range2d.createXYXYOrCorrectToNull(
         intervalB.low, intervalB.low,
