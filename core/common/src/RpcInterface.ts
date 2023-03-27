@@ -24,13 +24,13 @@ import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 /**
  * Specifies the required static properties of an RpcInterface class.
  * These properties are used to identify RPC requests and responses.
- * @public
+ * @beta
  */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 
 /**
  * A class that implements the operations of an RPC interface.
- * @public
+ * @beta
  */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 

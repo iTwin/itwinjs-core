@@ -15,7 +15,7 @@ import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 /* eslint-disable deprecation/deprecation */
 
 /** Describes the endpoints of an RPC interface.
- * @public
+ * @beta
  */
 export interface RpcInterfaceEndpoints {
   interfaceName: string;
@@ -25,7 +25,7 @@ export interface RpcInterfaceEndpoints {
 }
 
 /** RPC interface management is concerned with coordination of access and configuration for RPC interfaces.
- * @public
+ * @beta
  */
 export class RpcManager {
   /** Initializes an RPC interface class.

@@ -33,7 +33,7 @@ export namespace RpcRoutingMap {
 
 /** A RpcConfiguration specifies how calls on an RPC interface will be marshalled, plus other operating parameters.
  * RpcConfiguration is the base class for specific configurations.
- * @internal
+ * @beta
  */
 export abstract class RpcConfiguration {
   /** Whether development mode is enabled.
