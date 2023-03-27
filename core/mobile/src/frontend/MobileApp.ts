@@ -61,7 +61,7 @@ export class MobileApp {
         authorizationClient.setAccessToken(accessToken, expirationDate);
       });
 
-      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface];
+      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface]; // eslint-disable-line deprecation/deprecation
       MobileRpcManager.initializeClient(rpcInterfaces);
       this._isValid = true;
     }
