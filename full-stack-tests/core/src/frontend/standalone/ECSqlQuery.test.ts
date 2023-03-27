@@ -50,7 +50,7 @@ describe("ECSql Query", () => {
     const cb = async () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
+          // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
           for await (const _row of imodel1.restartQuery("tag", "SELECT * FROM BisCore.element")) {
             rowCount++;
           }
@@ -134,6 +134,7 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
+      // eslint-disable-next-line deprecation/deprecation
       pendingRowCount.push(db.queryRowCount(query));
     }
 
@@ -156,6 +157,7 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
@@ -178,13 +180,16 @@ describe("ECSql Query", () => {
     let row1: any;
     let row2: any;
     let row3: any;
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of imodel2.query(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       row1 = row;
     assert.isNotEmpty(row1.geometryStream);
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
       row2 = row;
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
       row3 = row;
     assert.equal(row3.id, row1.id);

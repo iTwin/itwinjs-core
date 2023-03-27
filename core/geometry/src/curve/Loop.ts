@@ -88,7 +88,7 @@ export class Loop extends CurveChain {
 }
 
 /**
- * structure carrying a pair of loops with curve geometry.
+ * Structure carrying a pair of loops with curve geometry.
  * @public
  */
 export class LoopCurveLoopCurve {
@@ -129,5 +129,4 @@ export interface SignedLoops {
   slivers: Loop[];
 /** Array indicating edges between loops */
   edges?: LoopCurveLoopCurve[];
-
 }

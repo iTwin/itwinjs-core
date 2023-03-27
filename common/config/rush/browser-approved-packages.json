@@ -675,6 +675,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "reflect-metadata",
       "allowedCategories": [ "frontend" ]
     },

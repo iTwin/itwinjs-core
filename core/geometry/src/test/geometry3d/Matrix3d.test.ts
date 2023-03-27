@@ -159,33 +159,53 @@ describe("Matrix3d.Inverse", () => {
   });
 });
 
-function checkPointArrays(ck: bsiChecker.Checker, pointA: Point3d[]) {
+function checkPointArrays(ck: bsiChecker.Checker, pointsA: Point3d[]) {
   const transform = Transform.createScaleAboutPoint(Point3d.create(3, 3, 3), 2);
-  const pointB = transform.multiplyPoint3dArray(pointA);
-  ck.testExactNumber(pointA.length, pointB.length, "multiplyPoint3dArray simple create");
+  const pointsB = transform.multiplyPoint3dArray(pointsA);
+  ck.testExactNumber(
+    pointsA.length,
+    pointsB.length,
+    "multiplyPoint3dArray same size for input and output"
+  );
 
-  pointB.pop();
-  transform.multiplyPoint3dArray(pointA, pointB);  // pointB goes in too small !!!
-  ck.testExactNumber(pointA.length, pointB.length, "multiplyPoint3dArray needs push");
+  pointsB.pop(); // remove the last element of pointsB
+  transform.multiplyPoint3dArray(pointsA, pointsB);
+  ck.testExactNumber(
+    pointsA.length,
+    pointsB.length,
+    "multiplyPoint3dArray pushes one element to the end of pointsB"
+  );
 
-  pointB.push(Point3d.create(1, 1, 1)); // now it is bigger !!!
-  transform.multiplyPoint3dArray(pointA, pointB);
-  ck.testExactNumber(pointA.length, pointB.length, "multiplyPoint3dArray needs push");
+  pointsB.push(Point3d.create(1, 1, 1)); // add one element to the end of pointsB
+  transform.multiplyPoint3dArray(pointsA, pointsB);
+  ck.testExactNumber(
+    pointsA.length,
+    pointsB.length,
+    "multiplyPoint3dArray removes one element from the end of pointsB"
+  );
 
-  const rangeA = Range3d.createArray(pointA);
-  const rangeB = Range3d.createArray(pointB);
+  const rangeA = Range3d.createArray(pointsA);
+  const rangeB = Range3d.createArray(pointsB);
   const rangeC = transform.multiplyRange(rangeA);
-  // simple scale applied to points or range has same range ...
-  ck.testPoint3d(rangeB.low, rangeC.low, "transformed array, range");
-  ck.testPoint3d(rangeB.high, rangeC.high, "transformed array, range");
+  ck.testPoint3d(
+    rangeB.low,
+    rangeC.low,
+    "`scale array and then create a range on the scaled array` is same as " +
+    "`create range on the array and then scale the range`"
+  );
+  ck.testPoint3d(
+    rangeB.high,
+    rangeC.high,
+    "`scale array and then create a range on the scaled array` is same as " +
+    "`create range on the array and then scale the range`"
+  );
 }
 
 describe("Matrix3d.checkPointArrays", () => {
   it("Matrix3d.checkPointArrays", () => {
-
     const ck = new bsiChecker.Checker();
-    const pointA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
-    checkPointArrays(ck, pointA);
+    const pointsA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
+    checkPointArrays(ck, pointsA);
     ck.checkpoint("Point3dArray.checkPointArrays");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -593,8 +613,10 @@ describe("Matrix3d.Factors", () => {
       0.0040687348173572974, 0.019908485552297163, 0,
       0, 0, 0.020320000000000008
     );
-    const data = rigidScale.factorRigidWithSignedScale();
+    const result = Matrix3d.createZero();
+    const data = rigidScale.factorRigidWithSignedScale(result);
     if (ck.testPointer(data)) {
+      ck.testTrue(data.rigidAxes === result, "pre-allocated result object is returned");
       const rotationMatrix = data.rigidAxes;
       const quat = rotationMatrix.toQuaternion();
       const quatMatrix = Matrix3d.createFromQuaternion(quat);
@@ -1250,7 +1272,7 @@ describe("Matrix3d.Multiply", () => {
       const columnY = matrix.columnY();
       const columnZ = matrix.columnZ();
       const origin = Point3d.create(4, 3, 0.1231);
-      const w = 0.9213123678687689769;
+      const w = 0.921312367868769;
       for (const v of vectors) {
         const resultAW = Point3d.createScale(origin, w).plus3Scaled(columnX, v.x, columnY, v.y, columnZ, v.z);
         const resultBW = Matrix3d.xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z, w);
@@ -1758,38 +1780,38 @@ describe("Matrix3d.MatrixProduct", () => {
 describe("Matrix3d.CloneRigid", () => {
   it("Matrix3d.CloneRigid", () => {
     const ck = new bsiChecker.Checker();
-    // createRigidFromMatrix3d failed on this.
-    // Failure due to applying metric tolerance to columns AFTER doing cross products.
-    // with diagonal magnitude "a", first cross product is a^2, second uses an original column and first cross and has magnitude a^3
-    // That failed the tolerance test.
-    // Revised code divides entire (copy of) input by its largest magnitude, and the later test passes as expected. (But can still fail for near-parallel columns)
     const matrix = Matrix3d.createRowValues(
       -6.438509378433656e-18, -1.0840344784091856e-18, -0.008851813267008355,
       7.88489990157899e-34, -0.008851813267008355, 1.0840344784091856e-18,
-      -0.008851813267008355, 0, 6.438509378433656e-18);
+      -0.008851813267008355, 0, 6.438509378433656e-18
+    );
     const origin = Point3d.create(1, 2, 3);
     const transform = Transform.createOriginAndMatrix(origin, matrix);
-    const transform1 = transform.cloneRigid(AxisOrder.XYZ);
-    ck.testType(transform1, Transform, "confirm corrected code returned a transform.");
+    const rigidTransform = transform.cloneRigid(AxisOrder.XYZ);
+    ck.testType(rigidTransform, Transform, "confirm cloneRigid returned a Transform.");
+
     for (const scale of [1.0 / matrix.maxAbs(), 10, 100, 1000]) {
       const matrix1 = matrix.scale(scale);
-      const transform2 = Transform.createOriginAndMatrix(origin, matrix1);
-      const transform3 = transform2.cloneRigid(AxisOrder.XYZ);
-      ck.testType(transform3, Transform, "cloneRigid");
+      const transform1 = Transform.createOriginAndMatrix(origin, matrix1);
+      const rigidTransform1 = transform1.cloneRigid(AxisOrder.XYZ);
+      ck.testType(rigidTransform1, Transform, "confirm cloneRigid returned a Transform.");
     }
-    for (const a of [1.0e-5, 1.0e-4, 1.0e-2, 1, 1.0e3, 1.0e6]) {
-      const matrixA = Matrix3d.createScale(a, a, a);
-      const matrixC = Matrix3d.createRigidFromMatrix3d(matrixA);
-      ck.testTrue(matrixC !== undefined && matrixC.isIdentity, "normalize of uniform scale");
+
+    for (const scale of [1.0e-5, 1.0e-4, 1.0e-2, 1, 1.0e3, 1.0e6]) {
+      const scaleMatrix = Matrix3d.createScale(scale, scale, scale);
+      const rigidScaleMatrix = Matrix3d.createRigidFromMatrix3d(scaleMatrix);
+      ck.testTrue(rigidScaleMatrix !== undefined && rigidScaleMatrix.isIdentity, "normalize of uniform scale");
     }
-    const matrixB = Matrix3d.createScale(1.0e-10, 1.0e-10, 1.0e-10);
-    const e = 1.0e-10;
-    ck.testUndefined(Matrix3d.createRigidFromMatrix3d(matrixB), "Expect no rigid from epsilon matrix");
+
+    const epsMatrix = Matrix3d.createScale(1.0e-10, 1.0e-10, 1.0e-10);
+    const eps = 1.0e-10;
+    ck.testUndefined(Matrix3d.createRigidFromMatrix3d(epsMatrix), "expect no rigid from epsilon matrix");
     const matrixD = Matrix3d.createRowValues(
       1, 1, 0,
-      0, e, 0,
-      0, e, 1);
-    ck.testUndefined(Matrix3d.createRigidFromMatrix3d(matrixD), "Expect no rigid from matrix with near-parallel columns");
+      0, eps, 0,
+      0, eps, 1
+    );
+    ck.testUndefined(Matrix3d.createRigidFromMatrix3d(matrixD), "expect no rigid from matrix with near-parallel columns");
 
     expect(ck.getNumErrors()).equals(0);
   });
