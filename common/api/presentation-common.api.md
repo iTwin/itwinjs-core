@@ -1046,7 +1046,7 @@ export interface FormatOptions {
 }
 
 // @internal (undocumented)
-export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined;
+export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
 
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
