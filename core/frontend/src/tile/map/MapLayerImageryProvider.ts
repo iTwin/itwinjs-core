@@ -27,8 +27,8 @@ export enum MapLayerImageryProviderStatus {
   RequireAuth,
 }
 
-/** Base class for map layer imagery providers.
- * Map layer imagery providers request tiles from their URLs and provide images and other tile data.
+/** Abstract class for map layer imagery providers.
+ * Map layer imagery providers request and provide tile images and other data. Each map layer from a separate source needs its own imagery provider object.
  * @public
  */
 export abstract class MapLayerImageryProvider {
@@ -191,6 +191,7 @@ export abstract class MapLayerImageryProvider {
     return fetch(url, { method: "GET", headers });
   }
 
+  /** Returns a map layer tile at the specified settings. */
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
 
     try {

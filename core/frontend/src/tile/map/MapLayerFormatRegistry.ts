@@ -86,8 +86,7 @@ export interface MapLayerFormatEntry {
   accessClient?: MapLayerAccessClient;
 }
 
-/** ###TODO needs docs
- * Look at TerrainProviderRegistry for example?
+/** A registry of MapLayerFormats identified by their unique format IDs. The registry can be accessed via [[IModelApp.mapLayerFormatRegistry]].
  * @public
  */
 export class MapLayerFormatRegistry {
@@ -140,7 +139,7 @@ export class MapLayerFormatRegistry {
     return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
-  /** ###TODO docs
+  /** Returns a [[MapLayerImageryProvider]] based on the provided [[ImageMapLayerSettings]] object.
    * @internal
    */
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
