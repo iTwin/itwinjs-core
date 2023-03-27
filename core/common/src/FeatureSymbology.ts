@@ -492,9 +492,14 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
   public get lineWeights(): boolean { return this._lineWeights; }
 
-  /** @internal */
+  /** A set of elements that are always invisible.
+   * @note If an element is present in both `alwaysDrawn` and [[neverDrawn]], it will not be displayed - `neverDrawn` takes precedence.
+   */
   public get neverDrawn() { return this._neverDrawn; }
-  /** @internal */
+  /** A set of elements that are unconditionally displayed.
+   * @see [[isAlwaysDrawnExclusive]] to specify that *only* elements in this set will be displayed.
+   * @note If an element is present in both `alwaysDrawn` and [[neverDrawn]], it will not be displayed - `neverDrawn` takes precedence.
+   */
   public get alwaysDrawn() { return this._alwaysDrawn; }
 
   /** @internal */
