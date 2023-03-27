@@ -109,18 +109,6 @@ internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
-beta;class CloudStorageCache
-deprecated;class CloudStorageCache
-beta;CloudStorageContainerDescriptor
-deprecated;CloudStorageContainerDescriptor
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageProvider
-deprecated;CloudStorageProvider
-beta;CloudStorageTileCache 
-deprecated;CloudStorageTileCache 
 public;Code 
 public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
