@@ -3,8 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64 } from "@itwin/core-bentley";
-import { BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass } from "@itwin/core-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import {
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ModelExtentsProps,
+} from "@itwin/core-common";
 import {
   AttachToViewportArgs, SpatialViewState, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
@@ -15,6 +18,8 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   private readonly _treeOwner: TileTreeOwner;
   private readonly _view: SpatialViewState;
   private readonly _viewedModels = new Id64.Uint32Set();
+  private readonly _modelRanges = new Map<Id64String, Range3d>();
+  private _modelRangePromise?: Promise<void>;
   private _onModelSelectorChanged?: () => void;
 
   private constructor(treeOwner: TileTreeOwner, view: SpatialViewState) {
@@ -44,8 +49,33 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   public updateViewedModels(): void {
     this._viewedModels.clear();
     this._viewedModels.addIds(this._view.modelSelector.models);
-    if (this._onModelSelectorChanged)
-      this._onModelSelectorChanged();
+    if (!this._onModelSelectorChanged)
+      return;
+
+    this._onModelSelectorChanged();
+
+    this._modelRangePromise = undefined;
+    const modelIds = Array.from(this._view.modelSelector.models).filter((modelId) => !this._modelRanges.has(modelId));
+    if (modelIds.length === 0)
+      return;
+
+    const modelRangePromise = this._modelRangePromise = this._treeOwner.iModel.models.queryExtents(modelIds).then((extents: ModelExtentsProps[]) => {
+      if (modelRangePromise !== this._modelRangePromise)
+        return;
+
+      this._modelRangePromise = undefined;
+      for (const extent of extents)
+        this._modelRanges.set(extent.id, Range3d.fromJSON(extent.extents));
+    }).catch(() => { });
+  }
+
+  public override unionFitRange(union: Range3d): void {
+    this._viewedModels.forEach((low: number, high: number) => {
+      const id = Id64.fromUint32Pair(low, high);
+      const extent = this._modelRanges.get(id);
+      if (extent)
+        union.extendRange(extent);
+    });
   }
 
   public override getAppearanceProvider(): FeatureAppearanceProvider | undefined {
