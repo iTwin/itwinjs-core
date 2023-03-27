@@ -339,16 +339,15 @@ export interface AzureBlobStorageCredentials {
     baseUrl?: string;
 }
 
-// @beta
+// @internal
 export interface BackendHubAccess {
-    // @internal
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @internal @deprecated
+    // @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
@@ -361,14 +360,11 @@ export interface BackendHubAccess {
     pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
     }) => Promise<ChangesetIndex>;
-    // @internal
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
-    // @internal
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
-    // @internal
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
@@ -3076,9 +3072,9 @@ export class IModelHost {
     static getAccessToken(): Promise<AccessToken>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
-    // @beta
+    // @internal
     static getHubAccess(): BackendHubAccess | undefined;
-    // @beta
+    // @internal
     static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
     // @internal (undocumented)
@@ -3140,7 +3136,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultMaxTileCacheDbSize: number;
     // (undocumented)
     static defaultTileRequestTimeout: number;
-    // @beta (undocumented)
+    // @internal (undocumented)
     hubAccess?: BackendHubAccess;
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
@@ -3170,7 +3166,7 @@ export interface IModelHostOptions {
     crashReportingConfig?: CrashReportingConfig;
     // @beta
     enableOpenTelemetry?: boolean;
-    // @beta
+    // @internal
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
