@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel, tryGetFieldByLabel } from "../../../Utils";
@@ -174,6 +174,95 @@ describe("Learning Snippets", () => {
         expect(content!.descriptor.fields).to.containSubset([{
           label: "Code",
         }]).and.to.have.lengthOf(1);
+      });
+
+      it("uses 'applyOnNestedContent' attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.ApplyOnNestedContent.Ruleset
+        // The ruleset has a content rule that returns content of given input instances. The produced content
+        // additionally include properties of parent element by following the `bis.SpatialViewDefinitionUsesModelSelector`
+        // relationship. There's also a content modifier that includes properties of the related `DisplayStyle` and
+        // creates a calculated property for nested `bis.SpatialViewDefinition`.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              // load content for given input instances
+              specType: "SelectedNodeInstances",
+              relatedProperties: [{
+                propertiesSource: {
+                  relationship: {
+                    schemaName: "BisCore",
+                    className: "SpatialViewDefinitionUsesModelSelector",
+                  },
+                  direction: "Backward",
+                  targetClass: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+                },
+              }],
+            }],
+          }, {
+            // apply related and calculated properties on nested properties
+            ruleType: "ContentModifier",
+            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+            relatedProperties: [{
+              propertiesSource: {
+                relationship: {
+                  schemaName: "BisCore",
+                  className: "ViewDefinitionUsesDisplayStyle",
+                },
+                direction: "Forward",
+                targetClass: { schemaName: "BisCore", className: "DisplayStyle" },
+              },
+            }],
+            calculatedProperties: [{
+              label: "Calculated for SpatialViewDefinition",
+              value: "this.Extents",
+            }],
+            applyOnNestedContent: true,
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x35" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(1);
+        expect(content!.descriptor.fields).to.containSubset([
+          { label: "Model" },
+          { label: "Is Private" },
+          { label: "User Label" },
+          {
+            label: "Spatial View Definition",
+            nestedFields: [
+              { label: "Model" },
+              { label: "Is Private" },
+              { label: "User Label" },
+              {
+                label: "Calculated for SpatialViewDefinition",
+                category: { name: "SpatialViewDefinition" },
+              },
+              {
+                label: "Display Style",
+                category: { name: "SpatialViewDefinition-DisplayStyle" },
+                nestedFields: [
+                  { label: "Model" },
+                  { label: "Is Private" },
+                  { label: "Code" },
+                  { label: "User Label" },
+                ],
+              },
+            ],
+          },
+        ]);
+        const spatialViewDefinition = content!.contentSet[0].displayValues[getFieldByLabel(content!.descriptor.fields, "Spatial View Definition").name] as DisplayValuesArray;
+        expect(spatialViewDefinition.length).to.eq(1);
+        const spatialViewDefinitionProperties = (spatialViewDefinition[0] as DisplayValuesMap).displayValues as DisplayValuesMap;
+        expect(spatialViewDefinitionProperties[getFieldByLabel(content!.descriptor.fields, "Calculated for SpatialViewDefinition").name]).to.eq("5.9371887957409877,3.2424499696297646,40");
       });
 
       it("uses `relatedProperties` attribute", async () => {

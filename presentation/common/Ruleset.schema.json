@@ -293,6 +293,10 @@
       "additionalProperties": false,
       "description": "Content modifiers are used to modify how instances of specified ECClasses are displayed in content which is\nproduced using content rules. They do not produce any content\nby themselves.",
       "properties": {
+        "applyOnNestedContent": {
+          "description": "Specifies whether calculatedProperties and\nrelatedProperties specifications should also be applied on\nnested content.",
+          "type": "boolean"
+        },
         "calculatedProperties": {
           "description": "Specifications of calculated properties whose values are\ngenerated using provided ECExpressions.",
           "items": {
