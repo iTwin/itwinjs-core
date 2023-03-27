@@ -5728,6 +5728,7 @@ export interface NormalMapParams {
     greenUp?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
+    useConstantLod?: boolean;
 }
 
 // @public
@@ -9120,6 +9121,18 @@ export class TextureMapping {
 
 // @public (undocumented)
 export namespace TextureMapping {
+    export interface ConstantLodParamProps {
+        maxDistClamp?: number;
+        minDistClamp?: number;
+        offset?: XAndY;
+        repetitions?: number;
+    }
+    export interface ConstantLodParams {
+        maxDistClamp: number;
+        minDistClamp: number;
+        offset: XAndY;
+        repetitions: number;
+    }
     export enum Mode {
         // @internal (undocumented)
         Cubic = 4,
@@ -9143,9 +9156,11 @@ export namespace TextureMapping {
         Spherical = 5
     }
     export interface ParamProps {
+        constantLodParams?: ConstantLodParamProps;
         mapMode?: TextureMapping.Mode;
         textureMat2x3?: TextureMapping.Trans2x3;
         textureWeight?: number;
+        useConstantLod?: boolean;
         // @internal (undocumented)
         worldMapping?: boolean;
     }
@@ -9153,8 +9168,10 @@ export namespace TextureMapping {
         constructor(props?: TextureMapping.ParamProps);
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+        constantLodParams: ConstantLodParams;
         mode: TextureMapping.Mode;
         textureMatrix: TextureMapping.Trans2x3;
+        useConstantLod: boolean;
         weight: number;
         // @internal (undocumented)
         worldMapping: boolean;
