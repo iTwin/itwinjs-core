@@ -7,8 +7,18 @@
  */
 
 import type { ObjectReference } from "@itwin/object-storage-core/lib/common";
-import { GuidString } from "@itwin/core-bentley";
+import { GuidString, RequireAtLeastOne } from "@itwin/core-bentley";
 import { Range3dProps, TransformProps } from "@itwin/core-geometry";
+
+export type TileBoundingVolumeProps = RequireAtLeastOne<{
+  box?: [centerX: number, centerY: number, centerZ: number,
+    uX: number, uY: number, uZ: number,
+    vX: number, vY: number, vZ: number,
+    wX: number, wY: number, wZ: number,
+  ];
+  sphere?: [centerX: number, centerY: number, centerZ: number, radius: number];
+  region?: [west: number, south: number, east: number, north: number, minHeight: number, maxHeight: number];
+}>;
 
 /** Wire format describing an [IModelTile]($frontend)
  * @internal

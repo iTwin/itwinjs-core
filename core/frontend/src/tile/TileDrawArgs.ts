@@ -7,8 +7,8 @@
  */
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import { BoundingSphere, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, OrientedBoundingBox, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -196,6 +196,19 @@ export class TileDrawArgs {
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }
 
+  public computePixelSizeInMetersAtClosestPointOnBoundingVolume(tileBoundingVolume: OrientedBoundingBox | BoundingSphere): number {
+    const worldBoundingVolume = tileBoundingVolume.transformBy(this.location);
+    let closestPoint: XYAndZ = worldBoundingVolume.center;
+    if (this.context.viewport.view.is3d() && this._nearFrontCenter) {
+      const pointOnBoundingVolume = worldBoundingVolume.closestPointOnSurface(this.context.viewport.view.camera.eye);
+      closestPoint = pointOnBoundingVolume ?? this._nearFrontCenter;
+    }
+
+    const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(closestPoint);
+    const viewPt2 = new Point3d(viewPt.x + 1, viewPt.y, viewPt.z);
+    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+  }
+
   /** Compute this size of a sphere on screen in pixels */
   public getRangePixelSize(range: Range3d): number {
     const transformedRange = this.location.multiplyRange(range, scratchRange);
@@ -261,7 +274,7 @@ export class TileDrawArgs {
     this.hiddenLineSettings = params.hiddenLineSettings;
     this.animationTransformNodeId = params.animationTransformNodeId;
     this.boundingRange = params.boundingRange;
-    this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
+    this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 2; // 16 is Cesium's default.
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)

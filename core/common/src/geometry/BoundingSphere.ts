@@ -6,7 +6,12 @@
  * @module Geometry
  */
 
-import { Point3d, Transform } from "@itwin/core-geometry";
+import {
+  Geometry, Point3d, Transform, Vector3d, XYAndZ,
+} from "@itwin/core-geometry";
+
+const scratchDistanceSquared = new Point3d();
+const scratchDir = new Vector3d();
 
 /** Describes a spherical volume of space as an approximation of the shape of some more complex geometric entity fully contained within that volume.
  * When performing tests for intersection or containment, the approximation can be used as a first, quick check.
@@ -22,7 +27,7 @@ export class BoundingSphere {
   /** Create a new bounding sphere with the specified center and radius. */
   constructor(center: Point3d = Point3d.createZero(), radius = 0) {
     this.center = center;
-    this.radius = radius;
+    this.radius = Math.max(0, radius);
   }
 
   /** Change the center and radius of the sphere. */
@@ -46,5 +51,33 @@ export class BoundingSphere {
   /** Apply the specified transform to this bounding sphere. */
   public transformInPlace(transform: Transform): void {
     this.transformBy(transform, this);
+  }
+
+  /** Computes the distance from the given point to the closest point on the surface of the bounding sphere, or zero if the point is on or inside the sphere.
+   */
+  public distanceToPoint(point: XYAndZ): number {
+    const diff = this.center.minus(point, scratchDistanceSquared);
+    const dist = diff.magnitude() - this.radius;
+    return dist <= 0 ? 0 : dist;
+  }
+
+  public distanceSquaredToPoint(point: XYAndZ): number {
+    const distance = this.distanceToPoint(point);
+    return distance * distance;
+  }
+
+  public closestPointOnSurface(point: XYAndZ, result?: Point3d): Point3d | undefined {
+    const dir = Vector3d.createStartEnd(this.center, point, scratchDir);
+    if (dir.magnitudeSquared() < this.radius * this.radius)
+      return undefined;
+
+    dir.normalizeInPlace();
+    dir.scaleInPlace(this.radius);
+    dir.plus(this.center, dir);
+    return Point3d.create(dir.x, dir.y, dir.z, result);
+  }
+
+  public isAlmostEqual(other: BoundingSphere): boolean {
+    return this.center.isAlmostEqual(other.center) && Geometry.isSameCoordinate(this.radius, other.radius);
   }
 }

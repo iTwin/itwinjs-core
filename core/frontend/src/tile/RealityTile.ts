@@ -8,7 +8,7 @@
 
 import { BeTimePoint, dispose } from "@itwin/core-bentley";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@itwin/core-geometry";
-import { ColorDef, Frustum } from "@itwin/core-common";
+import { ColorDef, Frustum, OrientedBoundingBox } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -29,6 +29,7 @@ export interface RealityTileParams extends TileParams {
   readonly rangeCorners?: Point3d[];
   readonly region?: RealityTileRegion;
   readonly geometricError?: number;
+  boundingBox?: OrientedBoundingBox;
 }
 
 /** The geometry representing the contents of a reality tile.  Currently only polyfaces are returned
@@ -64,6 +65,8 @@ export class RealityTile extends Tile {
   /** @internal */
   public readonly region?: RealityTileRegion;
   /** @internal */
+  public readonly boundingBox?: OrientedBoundingBox;
+  /** @internal */
   protected _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
   /** @internal */
@@ -79,6 +82,7 @@ export class RealityTile extends Tile {
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
+    this.boundingBox = props.boundingBox;
     this._geometricError = props.geometricError;
 
     if (undefined === this.transformToRoot)
@@ -354,9 +358,9 @@ export class RealityTile extends Tile {
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
     if (undefined !== this._geometricError) {
-      const radius = args.getTileRadius(this);
-      const center = args.getTileCenter(this);
-      const pixelSize = args.computePixelSizeInMetersAtClosestPoint(center, radius);
+      const pixelSize = this.boundingBox
+        ? args.computePixelSizeInMetersAtClosestPointOnBoundingVolume(this.boundingBox)
+        : args.computePixelSizeInMetersAtClosestPoint(args.getTileCenter(this), args.getTileRadius(this));
 
       const sse = this._geometricError / pixelSize;
       return args.maximumScreenSpaceError / sse;
