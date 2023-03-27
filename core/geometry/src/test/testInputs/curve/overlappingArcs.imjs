@@ -1,6 +1,26 @@
 [
 {"loop":
 	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[90,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[90,360]}}
+	]},
+{"loop":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[0,90]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[90,360]}}
+	]},
+{"loop":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[0,90]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[0,-270]}}
+	]},
+{"loop":
+	[
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[90,0]}},
+	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[0,-270]}}
+	]},
+{"loop":
+	[
 	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[0.2,-0.5,0],"sweepStartEnd":[180,0]}},
 	{"arc":{"center":[0,0,0],"vectorX":[0.5,0.2,0],"vectorY":[-0.2,0.5,0],"sweepStartEnd":[0,180]}}
 	]},

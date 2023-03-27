@@ -197,32 +197,33 @@ export class CoincidentGeometryQuery {
           const fractionSweep = sweepB.sweepRadians / sweepA.sweepRadians;                    // arcB sweep in arcA fraction space
           const fractionB1 = fractionB0 + fractionSweep;                                      // arcB end in arcA fraction space
           const fractionSweepB = Segment1d.create(fractionB0, fractionB1);
-          if (fractionSweepB.clampDirectedTo01()) {
-            result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, fractionSweepB, fractionB0, fractionB1, fractionSpacesReversed));
-          } else {  // test isolated intersection at arcA end point
-            const arcA1 = this._point1 = arcA.endPoint(this._point1);
-            const arcB0 = this._point0 = arcB.startPoint(this._point0);
-            if (arcA1.isAlmostEqual(arcB0, this.tolerance)) {
-              const detailA = CurveLocationDetail.createCurveFractionPoint(arcA, 1, arcA1);
-              const detailB = CurveLocationDetail.createCurveFractionPoint(arcB, 0, arcB0);
-              result = this.appendDetailPair(result, CurveLocationDetailPair.createCapture(detailA, detailB));
-            }
-          }
-          if (fractionB1 >= fractionPeriodA) {
-            const fractionB0Wrap = fractionB0 - fractionPeriodA;
-            const fractionB1Wrap = fractionB1 - fractionPeriodA;
-            const fractionSweepBWrap = Segment1d.create(fractionB0Wrap, fractionB1Wrap);
-            if (fractionSweepBWrap.clampDirectedTo01()) {
-              result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, fractionSweepBWrap, fractionB0Wrap, fractionB1Wrap, fractionSpacesReversed));
-            } else {  // test isolated intersection at arcA start point
-              const arcA0 = this._point0 = arcA.startPoint(this._point0);
-              const arcB1 = this._point1 = arcB.endPoint(this._point1);
-              if (arcA0.isAlmostEqual(arcB1, this.tolerance)) {
-                const detailA = CurveLocationDetail.createCurveFractionPoint(arcA, 0, arcA0);
-                const detailB = CurveLocationDetail.createCurveFractionPoint(arcB, 1, arcB1);
+
+          // lambda to add coincident interval/endpoint at start or end of arcA
+          const appendCoincidentIntersection = (atStartOfArcA: boolean, arcBSweepInArcAFractionSpace: Readonly<Segment1d>): boolean => {
+            const size = result ? result.length : 0;
+            if (arcBSweepInArcAFractionSpace.clampDirectedTo01() && !Geometry.isSmallRelative(arcBSweepInArcAFractionSpace.absoluteDelta())) {
+              // START HERE: do we ever need to pass in the 4th and 5th args separately like before?
+              result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, arcBSweepInArcAFractionSpace, arcBSweepInArcAFractionSpace.x0, arcBSweepInArcAFractionSpace.x1, fractionSpacesReversed));
+            } else {  // test isolated intersection
+              const atStartOfArcB = fractionSpacesReversed ? atStartOfArcA : !atStartOfArcA;
+              const arcAPt = this._point0 = atStartOfArcA ? arcA.startPoint(this._point0): arcA.endPoint(this._point0);
+              const arcBPt = this._point1 = atStartOfArcB ? arcB.startPoint(this._point1): arcB.endPoint(this._point1);
+              if (arcAPt.isAlmostEqual(arcBPt, this.tolerance)) {
+                const detailA = CurveLocationDetail.createCurveFractionPoint(arcA, atStartOfArcA ? 0 : 1, arcAPt);
+                const detailB = CurveLocationDetail.createCurveFractionPoint(arcB, atStartOfArcB ? 0 : 1, arcBPt);
                 result = this.appendDetailPair(result, CurveLocationDetailPair.createCapture(detailA, detailB));
               }
             }
+            return result !== undefined && result.length > size;
+          };
+
+          appendCoincidentIntersection(false, fractionSweepB);  // check overlap at end of arcA
+
+          // check overlap at start of arcA by shifting fractionSweepB in both directions
+          if (fractionB1 >= fractionPeriodA) {
+            appendCoincidentIntersection(true, Segment1d.create(fractionB0 - fractionPeriodA, fractionB1 - fractionPeriodA));
+          } else if (fractionB0 <= 0) {
+            appendCoincidentIntersection(true, Segment1d.create(fractionB0 + fractionPeriodA, fractionB1 + fractionPeriodA));
           }
         }
       }
