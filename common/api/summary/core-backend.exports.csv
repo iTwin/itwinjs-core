@@ -13,7 +13,7 @@ public;AuxCoordSystemSpatial
 beta;AzureBlobStorage 
 deprecated;AzureBlobStorage 
 beta;AzureBlobStorageCredentials
-beta;BackendHubAccess
+internal;BackendHubAccess
 public;BackendLoggerCategory
 internal;BaseSettings 
 public;BindParameter = number | string
