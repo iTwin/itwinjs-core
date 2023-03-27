@@ -1120,98 +1120,6 @@ export interface CloudContainerUri {
     readonly uriParams: string;
 }
 
-// @beta @deprecated (undocumented)
-export abstract class CloudStorageCache<TContentId, TContentType> {
-    constructor();
-    // (undocumented)
-    protected formContainerKey(id: TContentId): string;
-    // (undocumented)
-    abstract formContainerName(id: TContentId): string;
-    // (undocumented)
-    abstract formResourceName(id: TContentId): string;
-    // (undocumented)
-    protected getContainer(id: TContentId): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    protected abstract instantiateResource(response: Response): Promise<TContentType | undefined>;
-    // (undocumented)
-    protected abstract obtainContainerUrl(id: TContentId, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    provider: CloudStorageProvider;
-    // (undocumented)
-    protected requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response>;
-    // (undocumented)
-    retrieve(id: TContentId): Promise<TContentType | undefined>;
-    // (undocumented)
-    protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageContainerDescriptor {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    provider?: CloudStorageProvider;
-    // (undocumented)
-    resource?: string;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageContainerUrl {
-    // (undocumented)
-    bound?: boolean;
-    // (undocumented)
-    descriptor: CloudStorageContainerDescriptor;
-    // (undocumented)
-    expires: number;
-    // (undocumented)
-    headers?: Record<string, string>;
-    // (undocumented)
-    method?: string;
-    // (undocumented)
-    url: string;
-    // (undocumented)
-    valid: number;
-}
-
-// @beta @deprecated (undocumented)
-export namespace CloudStorageContainerUrl {
-    // (undocumented)
-    export function empty(): CloudStorageContainerUrl;
-}
-
-// @beta @deprecated (undocumented)
-export enum CloudStorageProvider {
-    // (undocumented)
-    AliCloud = 2,
-    // (undocumented)
-    Amazon = 1,
-    // (undocumented)
-    Azure = 0,
-    // (undocumented)
-    External = 3,
-    // (undocumented)
-    Unknown = 4
-}
-
-// @beta @deprecated (undocumented)
-export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
-    protected constructor();
-    // (undocumented)
-    protected formContainerKey(id: TileContentIdentifier): string;
-    // (undocumented)
-    formContainerName(id: TileContentIdentifier): string;
-    // (undocumented)
-    formResourceName(id: TileContentIdentifier): string;
-    // (undocumented)
-    static getCache(): CloudStorageTileCache;
-    // (undocumented)
-    protected instantiateResource(response: Response): Promise<Uint8Array | undefined>;
-    // (undocumented)
-    protected obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    supplyExpiryForContainerUrl(_id: CloudStorageContainerDescriptor): Date;
-}
-
 // @public
 export class Code implements CodeProps {
     constructor(codeProps: CodeProps);
@@ -4798,14 +4706,10 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
-    // @beta (undocumented)
+    // @beta
     getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined>;
-    // @beta @deprecated
-    getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
-    // @internal @deprecated
-    isUsingExternalTileCache(): Promise<boolean>;
     // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
@@ -9467,8 +9371,6 @@ export interface TileContentIdentifier {
     contentId: string;
     // (undocumented)
     guid: string | undefined;
-    // (undocumented)
-    tokenProps: IModelRpcProps;
     // (undocumented)
     treeId: string;
 }
