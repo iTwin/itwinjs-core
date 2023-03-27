@@ -248,6 +248,8 @@ export const enum SurfaceBitIndex {
   OverrideRgb,
   HasNormalMap,
   HasMaterialAtlas,
+  UseConstantLodTextureMapping,
+  UseConstantLodNormalMapMapping,
   Count,
 }
 
