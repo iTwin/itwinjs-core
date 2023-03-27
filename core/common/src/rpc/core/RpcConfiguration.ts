@@ -57,7 +57,7 @@ export abstract class RpcConfiguration {
    */
   public static throwOnTokenMismatch = false;
 
-  /** Sets the configuration supplier for an RPC interface class. */
+  /** @internal Sets the configuration supplier for an RPC interface class. */
   public static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void {
     const map = definition.prototype.configurationSupplier as RpcRoutingMap | undefined;
     if (!map || typeof (map.configurations) === "undefined") {
@@ -94,7 +94,7 @@ export abstract class RpcConfiguration {
     return instance;
   }
 
-  /** Enables passing of application-specific context with each RPC request. */
+  /** @internal Enables passing of application-specific context with each RPC request. */
   public static requestContext: RpcRequestContext = {
     getId: (_request: RpcRequest): string => "",
     serialize: async (request: RpcRequest): Promise<SerializedRpcActivity> => ({

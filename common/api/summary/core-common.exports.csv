@@ -48,10 +48,9 @@ public;BaseMapLayerSettings
 public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
-internal;class BentleyCloudRpcConfiguration 
-beta;BentleyCloudRpcConfigurationHolder
-public;BentleyCloudRpcManager 
-public;BentleyCloudRpcParams
+beta;class BentleyCloudRpcConfiguration 
+beta;BentleyCloudRpcManager 
+beta;BentleyCloudRpcParams
 internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
@@ -648,7 +647,7 @@ public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
 internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
-internal;class RpcConfiguration
+beta;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
 deprecated;RpcContentType
@@ -660,12 +659,12 @@ internal;RpcDirectRequest
 public;RpcEndpoint
 deprecated;RpcEndpoint
 public;class RpcInterface
-public;RpcInterfaceDefinition
-public;RpcInterfaceEndpoints
-public;RpcInterfaceImplementation
+beta;RpcInterfaceDefinition
+beta;RpcInterfaceEndpoints
+beta;RpcInterfaceImplementation
 internal;RpcInvocation
 internal;RpcManagedStatus
-public;RpcManager
+beta;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
@@ -708,7 +707,7 @@ public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
-public;RpcRoutingToken
+beta;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
 internal;RpcSessionInvocation 
