@@ -33,7 +33,7 @@ export interface BentleyCloudRpcParams {
   pathPrefix?: string;
 }
 
-/** Internal operating parameters for Bentley cloud RPC interface deployments.
+/** Operating parameters for Bentley cloud RPC interface deployments.
  * @beta
  */
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {

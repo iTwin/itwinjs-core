@@ -17,10 +17,10 @@ async function init() {
   await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "websocket");
 
-  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
-  const webEditServer = new WebEditServer(rpcConfigHolder.configuration.protocol);
+  const webEditServer = new WebEditServer(rpcConfig.protocol);
   const httpServer = await webEditServer.initialize(port);
 
   await LocalhostIpcHost.startup({ localhostIpcHost: { noServer: true } });
@@ -28,7 +28,7 @@ async function init() {
   // eslint-disable-next-line no-console
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
-  initializeAttachedInterfacesTest(rpcConfigHolder.configuration);
+  initializeAttachedInterfacesTest(rpcConfig);
 
   return () => {
     httpServer.close();

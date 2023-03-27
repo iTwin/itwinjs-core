@@ -44,11 +44,11 @@ const settings = new Settings(process.env);
 
   PresentationBackend.initialize();
 
-  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, getRpcInterfaces(settings));
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, getRpcInterfaces(settings));
 
   // create a basic express web server
   const port = 5011;
-  const server = new IModelJsExpressServer(rpcConfigHolder.configuration.protocol);
+  const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
   // eslint-disable-next-line no-console
   console.log(`Web backend for full-stack-tests listening on port ${port}`);

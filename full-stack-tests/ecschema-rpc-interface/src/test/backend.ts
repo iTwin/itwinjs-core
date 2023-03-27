@@ -40,12 +40,12 @@ void (async () => {
   const hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup({ hubAccess, cacheDir: path.join(__dirname, ".cache") });
 
-  const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());
   RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
   // create a basic express web server
   const port = 5011;
-  const server = new IModelJsExpressServer(rpcConfigHolder.configuration.protocol);
+  const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
   console.log(`Web backend for schema-rpc-tests listening on port ${port}`); // eslint-disable-line
 })();

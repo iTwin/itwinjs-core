@@ -100,11 +100,11 @@ async function init() {
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
   } else {
-    const rpcConfigHolder = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
+    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const webEditServer = new WebEditServer(rpcConfigHolder.configuration.protocol);
+    const webEditServer = new WebEditServer(rpcConfig.protocol);
     const httpServer = await webEditServer.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 

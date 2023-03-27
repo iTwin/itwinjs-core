@@ -20,13 +20,13 @@ function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
   const mobilePort = port + 2000;
 
-  const configHolder = BentleyCloudRpcManager.initializeClient({
+  const config = BentleyCloudRpcManager.initializeClient({
     info: { title: "rpc-full-stack-test", version: "v1.0" },
     pathPrefix: `${protocol}://${window.location.hostname}:${port}`,
   }, rpcInterfaces);
 
-  initializeMultipleClientsTest(configHolder.configuration.protocol.pathPrefix);
-  initializeAttachedInterfacesTest(configHolder.configuration);
+  initializeMultipleClientsTest(config.protocol.pathPrefix);
+  initializeAttachedInterfacesTest(config);
   setupMockMobileFrontend(mobilePort);
 }
 
@@ -42,7 +42,7 @@ function initializeMultipleClientsTest(path: string) {
     MultipleClientsInterface.config1,
   );
 
-  config1.configuration.protocol.pathPrefix = path;
+  config1.protocol.pathPrefix = path;
 
   const config2 = BentleyCloudRpcManager.initializeClient(
     { info: { title: `rpc-full-stack-test-config${MultipleClientsInterface.config2.id}`, version: "v1.0" } },
@@ -50,7 +50,7 @@ function initializeMultipleClientsTest(path: string) {
     MultipleClientsInterface.config2,
   );
 
-  config2.configuration.protocol.pathPrefix = path;
+  config2.protocol.pathPrefix = path;
 }
 
 function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
