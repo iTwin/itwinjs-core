@@ -516,7 +516,6 @@ importers:
       '@types/deep-assign': ^0.1.0
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
-      '@types/qs': ^6.5.0
       '@types/semver': 7.3.10
       '@types/sinon': ^9.0.0
       '@types/superagent': ^4.1.14
@@ -531,7 +530,6 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      qs: ^6.5.3
       reflect-metadata: 0.1.13
       rimraf: ^3.0.2
       semver: ^7.3.5
@@ -552,7 +550,6 @@ importers:
       '@loaders.gl/draco': 3.3.1
       deep-assign: 2.0.0
       fuse.js: 3.6.1
-      qs: 6.11.1
       reflect-metadata: 0.1.13
       semver: 7.3.8
       superagent: 7.1.5
@@ -572,7 +569,6 @@ importers:
       '@types/deep-assign': 0.1.1
       '@types/mocha': 8.2.3
       '@types/node': 18.15.3
-      '@types/qs': 6.9.7
       '@types/semver': 7.3.10
       '@types/sinon': 9.0.11
       '@types/superagent': 4.1.16
@@ -823,7 +819,6 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
-      '@types/qs': ^6.5.0
       '@types/superagent': ^4.1.14
       '@types/ws': ^7.0.0
       chai: ^4.1.2
@@ -835,7 +830,6 @@ importers:
       js-base64: ^3.6.1
       lodash: ^4.17.10
       mocha: ^10.0.0
-      qs: ^6.5.3
       rimraf: ^3.0.2
       superagent: ^7.1.5
       typescript: ~5.0.2
@@ -844,7 +838,6 @@ importers:
       deep-assign: 2.0.0
       js-base64: 3.7.5
       lodash: 4.17.21
-      qs: 6.11.1
       superagent: 7.1.5
       ws: 7.5.9
     devDependencies:
@@ -861,7 +854,6 @@ importers:
       '@types/lodash': 4.14.191
       '@types/mocha': 8.2.3
       '@types/node': 18.15.3
-      '@types/qs': 6.9.7
       '@types/superagent': 4.1.16
       '@types/ws': 7.4.7
       chai: 4.3.7

@@ -7,7 +7,6 @@
  */
 import * as deepAssign from "deep-assign";
 import * as https from "https";
-import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -24,43 +23,6 @@ export const requestIdHeaderName = "X-Correlation-Id";
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
-}
-
-/** Typical option to query REST API. Note that services may not quite support these fields,
- * and the interface is only provided as a hint.
- * @internal
- */
-export interface RequestQueryOptions {
-  /**
-   * Select string used by the query (use the mapped EC property names, and not TypeScript property names)
-   * Example: "Name,Size,Description"
-   */
-  $select?: string;
-
-  /**
-   * Filter string used by the query (use the mapped EC property names, and not TypeScript property names)
-   *  Example: "Name like '*.pdf' and Size lt 1000"
-   */
-  $filter?: string;
-
-  /** Sets the limit on the number of entries to be returned by the query */
-  $top?: number;
-
-  /** Sets the number of entries to be skipped */
-  $skip?: number;
-
-  /**
-   * Orders the return values (use the mapped EC property names, and not TypeScript property names)
-   * Example: "Size desc"
-   */
-  $orderby?: string;
-
-  /**
-   *  Sets the limit on the number of entries to be returned by a single response.
-   *  Can be used with a Top option. For example if Top is set to 1000 and PageSize
-   *  is set to 100 then 10 requests will be performed to get result.
-   */
-  $pageSize?: number;
 }
 
 /** @internal */
@@ -94,7 +56,6 @@ export interface RequestOptions {
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
   auth?: RequestBasicCredentials;
   body?: any;
-  qs?: any | RequestQueryOptions;
   responseType?: string;
   timeout?: RequestTimeoutOptions; // Optional timeouts. If unspecified, an arbitrary default is setup.
   stream?: any; // Optional stream to read the response to/from (only for NodeJs applications)
@@ -285,18 +246,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   if (options.headers)
     sareq = sareq.set(options.headers);
 
-  let queryStr: string = "";
-  let fullUrl: string = "";
-  if (options.qs && Object.keys(options.qs).length > 0) {
-    const stringifyOptions: IStringifyOptions = { delimiter: "&", encode: false };
-    queryStr = stringify(options.qs, stringifyOptions);
-    sareq = sareq.query(queryStr);
-    fullUrl = `${url}?${queryStr}`;
-  } else {
-    fullUrl = url;
-  }
-
-  Logger.logInfo(loggerCategory, fullUrl);
+  Logger.logInfo(loggerCategory, url);
 
   if (options.auth)
     sareq = sareq.auth(options.auth.user, options.auth.password);

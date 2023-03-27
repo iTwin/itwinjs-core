@@ -42,7 +42,6 @@
     "deep-assign": "^2.0.0",
     "lodash": "^4.17.10",
     "js-base64": "^3.6.1",
-    "qs": "^6.5.3",
     "superagent": "^7.1.5",
     "ws": "^7.5.3"
   },
@@ -60,7 +59,6 @@
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "^18.11.5",
-    "@types/qs": "^6.5.0",
     "@types/superagent": "^4.1.14",
     "@types/ws": "^7.0.0",
     "chai": "^4.1.2",
