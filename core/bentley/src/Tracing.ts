@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
-import { LogFunction, Logger } from "./Logger";
 /** @packageDocumentation
  * @module Logging
  */
+
+import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
+import { LogFunction, Logger } from "./Logger";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
 /**
