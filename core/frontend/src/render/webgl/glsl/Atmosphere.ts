@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
 import {
   FragmentShaderBuilder,
   FragmentShaderComponent,
@@ -13,14 +14,14 @@ import {
 
 const computeRayDir = `
 vec3 computeRayDir(vec3 eyeSpace) {
-  bool isCameraEnabled = u_frustum.z == 2;
+  bool isCameraEnabled = u_frustum.z == 2.0;
   return isCameraEnabled ? normalize(eyeSpace) : vec3(0.0, 0.0, -1.0);
 }
 `;
 
 const computeSceneDepthDefault = `
 float computeSceneDepth(vec3 eyeSpace) {
-  bool isCameraEnabled = u_frustum.z == 2;
+  bool isCameraEnabled = u_frustum.z == 2.0;
   return isCameraEnabled ? length(eyeSpace) : -eyeSpace.z;
 }
 `;
@@ -33,7 +34,7 @@ float computeSceneDepth(vec3 eyeSpace) {
 
 const computeRayOrigin = `
 vec3 computeRayOrigin(vec3 eyeSpace) {
-  bool isCameraEnabled = u_frustum.z == 2;
+  bool isCameraEnabled = u_frustum.z == 2.0;
   return isCameraEnabled ? vec3(0.0) : vec3(eyeSpace.xy, 0.0);
 }
 `;
@@ -247,7 +248,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   vec3 firstPointInAtmosphere = rayDir * atmosphereHitInfo[0] + rayOrigin;
   vec3 scatterPoint = firstPointInAtmosphere;
 
-  float opticalDepthFromRayOriginToSamplePoints[u_numInScatteringPoints];
+  float opticalDepthFromRayOriginToSamplePoints[MAX_SAMPLE_POINTS];
   // The first sample point either lies at the edge of the atmosphere (camera is in space) or exactly at the ray origin (camera is in the atmosphere).
   // In both cases, the distance traveled through the atmosphere to this point is 0.
   opticalDepthFromRayOriginToSamplePoints[0] = 0.0;
@@ -366,8 +367,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
           uniform
         );
       });
-    },
-    VariablePrecision.High
+    }
   );
   shader.addUniform(
     "u_scatteringCoefficients",
@@ -390,8 +390,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
           uniform
         );
       });
-    },
-    VariablePrecision.High
+    }
   );
   shader.addUniform(
     "u_numOpticalDepthPoints",
@@ -402,8 +401,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
           uniform
         );
       });
-    },
-    VariablePrecision.High
+    }
   );
   shader.addUniform(
     "u_sunDir",
@@ -482,8 +480,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
       prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
         params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
       });
-    },
-    VariablePrecision.High
+    }
   );
   shader.addUniform(
     "u_outScatteringIntensity",
@@ -492,8 +489,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
       prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
         params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
       });
-    },
-    VariablePrecision.High
+    }
   );
   shader.addUniform(
     "u_earthScaleMatrix",
@@ -505,6 +501,11 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     },
     VariablePrecision.High
   );
+  shader.addUniform("u_frustum", VariableType.Vec3, (prg) => {
+    prg.addGraphicUniform("u_frustum", (uniform, params) => {
+      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
+    });
+  });
 };
 
 /** Adds the atmospheric effect to a technique
@@ -519,6 +520,7 @@ export function addAtmosphericScatteringEffect(
   const mainShader = perFragmentCompute ? builder.frag : builder.vert;
 
   mainShader.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
+  mainShader.addConstant("MAX_SAMPLE_POINTS", VariableType.Int, `${MAX_SAMPLE_POINTS}`);
 
   addMainShaderUniforms(mainShader);
 

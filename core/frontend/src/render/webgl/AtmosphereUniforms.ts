@@ -10,6 +10,8 @@ import { Target } from "./Target";
 import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
 
+export const MAX_SAMPLE_POINTS = 40; // Maximum number of sample points to be used for the in-scattering and out-scattering computations.
+
 export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _atmosphere?: Atmosphere.Settings;
   public get atmosphere(): Atmosphere.Settings | undefined {
@@ -123,11 +125,11 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   }
 
   private _updateNumInScatteringPoints(numInScatteringPoints: number) {
-    this._numInScatteringPoints = Math.max(0, numInScatteringPoints);
+    this._numInScatteringPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numInScatteringPoints));
   }
 
   private _updateNumOpticalDepthPoints(numOpticalDepthPoints: number) {
-    this._numOpticalDepthPoints = Math.max(0, numOpticalDepthPoints);
+    this._numOpticalDepthPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numOpticalDepthPoints));
   }
 
   private _updateExposure(exposure: number) {

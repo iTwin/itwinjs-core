@@ -107,7 +107,7 @@ export namespace Atmosphere {
   export class Settings {
     private static _defaultAtmosphereHeightAboveEarth: number = 100000.0;
     private static _defaultExposure: number = 2.5;
-    private static _defaultDensityFalloff: number = 1.0;
+    private static _defaultDensityFalloff: number = 10.0;
     private static _defaultInScatteringIntensity: number = 6.0;
     private static _defaultMinDensityHeightBelowEarth: 0.0;
     private static _defaultOutScatteringIntensity: number = 1.0;
@@ -117,7 +117,6 @@ export namespace Atmosphere {
     private static _defaultNumInScatteringPoints: number = 10;
     private static _highQualityNumInScatteringPoints: number = 20;
     private static _defaultNumOpticalDepthPoints: number = 5;
-    private static _maxSamplePoints = 40; // Maximum number of sample points to be used for atmospheric scattering computation
 
     public static readonly defaults = new Settings({});
     public static readonly highQuality = new Settings({ numInScatteringPoints: this._highQualityNumInScatteringPoints });
@@ -126,7 +125,7 @@ export namespace Atmosphere {
     public readonly atmosphereHeightAboveEarth: number;
     /** If defined, this value is used to simulate the aperture of a camera. Higher values allow more light in. Defaults to 2.5 */
     public readonly exposure: number;
-    /** If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 1.0. */
+    /** If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 10.0. */
     public readonly densityFalloff: number;
     /** If defined, multiplies the amount of light redirected by the atmosphere toward the viewing eye by this value. A higher value increases perceived overall brightness and thickness of the atmosphere. Defaults to 6.0. */
     public readonly inScatteringIntensity: number;
@@ -173,8 +172,8 @@ export namespace Atmosphere {
       this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings._defaultDensityFalloff);
       this.inScatteringIntensity = JsonUtils.asDouble(json.inScatteringIntensity, Settings._defaultInScatteringIntensity);
       this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(json.depthBelowEarthForMaxDensity, Settings._defaultMinDensityHeightBelowEarth);
-      this.numInScatteringPoints = Math.min(JsonUtils.asDouble(json.numInScatteringPoints, Settings._defaultNumInScatteringPoints), Settings._maxSamplePoints);
-      this.numOpticalDepthPoints = Math.min(JsonUtils.asDouble(json.numOpticalDepthPoints, Settings._defaultNumOpticalDepthPoints), Settings._maxSamplePoints);
+      this.numInScatteringPoints = JsonUtils.asDouble(json.numInScatteringPoints, Settings._defaultNumInScatteringPoints);
+      this.numOpticalDepthPoints = JsonUtils.asDouble(json.numOpticalDepthPoints, Settings._defaultNumOpticalDepthPoints);
       this.outScatteringIntensity = JsonUtils.asDouble(json.outScatteringIntensity, Settings._defaultOutScatteringIntensity);
       this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings._defaultScatteringStrength);
       this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths);
