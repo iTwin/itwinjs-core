@@ -49,8 +49,10 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   public updateViewedModels(): void {
     this._viewedModels.clear();
     this._viewedModels.addIds(this._view.modelSelector.models);
-    if (!this._onModelSelectorChanged)
+    if (!this._onModelSelectorChanged) {
+      // Don't bother updating model ranges if we're not attached to a viewport.
       return;
+    }
 
     this._onModelSelectorChanged();
 
