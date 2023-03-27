@@ -900,7 +900,7 @@ export class MapTileTreeReference extends TileTreeReference {
       useDepthBuffer: this.useDepthBuffer,
       baseColor: this._baseColor,
       baseTransparent: this._baseTransparent,
-      mapTransparent: this.settings.transparency > 0,
+      mapTransparent: Number(this.settings.transparency) > 0,
       maskModelIds: this._planarClipMask?.settings.compressedModelIds,
       produceGeometry: false,
     };

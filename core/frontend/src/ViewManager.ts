@@ -69,12 +69,13 @@ export interface SelectedViewportChangedArgs {
   previous?: ScreenViewport;
 }
 
-/** An object which customizes the locate tooltip.
- * @internal
+/** An object that can contribute customizations to the tooltip displayed when mousing over an element or other entity in a [[Viewport]].
+ * @see [[ViewManager.addToolTipProvider]] to register a tooltip provider.
+ * @public
  */
 export interface ToolTipProvider {
-  /** Augment or replace tooltip for the specified HitDetail.
-   * To cooperate with other tooltip providers, replacing the input tooltip instead of appending information is discouraged.
+  /** Augment or replace the tooltip for the specified HitDetail.
+   * @note To cooperate with other tooltip providers, prefer to *append* information to the input tooltip instead of replacing it entirely.
    */
   augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
 }
@@ -447,12 +448,10 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return IModelApp.formatElementToolTip(msg);
   }
 
-  /** Add a new [[ToolTipProvider]] to customize the locate tooltip.
-   * @internal
+  /** Register a new [[ToolTipProvider]] to customize the locate tooltip.
    * @param provider The new tooltip provider to add.
-   * @throws Error if provider is already active.
+   * @throws Error if `provider` is already registered.
    * @returns a function that may be called to remove this provider (in lieu of calling [[dropToolTipProvider]].)
-   * @see [[dropToolTipProvider]]
    */
   public addToolTipProvider(provider: ToolTipProvider): () => void {
     if (this.toolTipProviders.includes(provider))
@@ -463,8 +462,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
   }
 
   /** Drop (remove) a [[ToolTipProvider]] so it is no longer active.
-   * @internal
-   * @param provider The tooltip to drop.
+   * @param provider The tooltip provider to drop.
    * @note Does nothing if provider is not currently active.
    */
   public dropToolTipProvider(provider: ToolTipProvider) {

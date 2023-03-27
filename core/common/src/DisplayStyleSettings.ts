@@ -903,7 +903,7 @@ export class DisplayStyleSettings {
       this._json.clipStyle = style.toJSON();
   }
 
-  /** @internal */
+  /** Convert these settings to their JSON representation. */
   public toJSON(): DisplayStyleSettingsProps {
     return this._json;
   }
@@ -1128,12 +1128,12 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }
   }
 
-  /** @internal */
+  /** Convert these settings to their JSON representation. */
   public override toJSON(): DisplayStyle3dSettingsProps {
     return this._json3d;
   }
 
-  /** @internal */
+  /** See [[DisplayStyleSettings.toOverrides]]. */
   public override toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
     const props = super.toOverrides(options) as DisplayStyle3dSettingsProps;
     if (options?.includeAll)
