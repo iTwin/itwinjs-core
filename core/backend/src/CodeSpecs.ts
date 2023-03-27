@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
+import { CodeScopeSpec, CodeSpec, CodeSpecProperties, IModelError } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 
@@ -102,20 +102,22 @@ export class CodeSpecs {
    * @returns The Id of the persistent CodeSpec.
    * @throws IModelError if the insertion fails
    */
+  public insert(name: string, properties: CodeSpecProperties): Id64String;
   public insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
-  public insert(codeSpecOrName: CodeSpec | string, scopeType?: CodeScopeSpec.Type): Id64String {
+  public insert(codeSpecOrName: CodeSpec | string, props?: CodeSpecProperties | CodeScopeSpec.Type): Id64String {
     if (codeSpecOrName instanceof CodeSpec) {
-      const codeSpec = codeSpecOrName;
-      const id = this._imodel.insertCodeSpec(codeSpec);
-      codeSpec.id = id;
+      const id = this._imodel.insertCodeSpec(codeSpecOrName.name, codeSpecOrName.properties);
+      codeSpecOrName.id = id;
       return id;
     }
-    if (typeof codeSpecOrName === "string") {
-      const name = codeSpecOrName;
-      if (scopeType)
-        return this._imodel.insertCodeSpec(CodeSpec.create(this._imodel, name, scopeType));
-    }
-    throw new IModelError(IModelStatus.BadArg, "Invalid argument");
+    if (props === undefined)
+      throw new IModelError(IModelStatus.BadArg, "Invalid argument");
+
+    if (typeof props === "object")
+      return this._imodel.insertCodeSpec(codeSpecOrName, props);
+
+    const spec = CodeSpec.create(this._imodel, codeSpecOrName, props);
+    return this._imodel.insertCodeSpec(spec.name, spec.properties);
   }
 
   /** Update the Json properties of an existing CodeSpec.

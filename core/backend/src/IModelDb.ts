@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
-  CodeProps, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
+  CodeProps, CodeSpec, CodeSpecProperties, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
@@ -973,8 +973,9 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any); // TODO: Remove "as any" when NativeLibrary.ts is updated so "spec" isn't marked as required
+  public insertCodeSpec(specName: string, properties: CodeSpecProperties): Id64String {
+    // this.codeService?.internalCodes?.verifySpec(specName, properties); // TODO
+    return this.nativeDb.insertCodeSpec(specName, properties);
   }
 
   /** Prepare an ECSQL statement.
