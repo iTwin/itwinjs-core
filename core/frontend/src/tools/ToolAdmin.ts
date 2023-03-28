@@ -426,9 +426,7 @@ export class ToolAdmin {
    */
   private _toolSettingsChangeHandler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined = undefined;
 
-  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
-   * @internal
-   */
+  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool. */
   public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
   public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
@@ -439,9 +437,7 @@ export class ToolAdmin {
  */
   private _reloadToolSettingsHandler: (() => void) | undefined = undefined;
 
-  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
-   * @internal
-   */
+  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool. */
   public get reloadToolSettingsHandler() { return this._reloadToolSettingsHandler; }
   public set reloadToolSettingsHandler(handler: (() => void) | undefined) {
     this._reloadToolSettingsHandler = handler;
@@ -452,9 +448,7 @@ export class ToolAdmin {
    */
   private _toolSyncUiEventDispatcher: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined = undefined;
 
-  /** Returns the handler registered by the UI layer that will trigger UiSyncEvent processing that informs UI component to refresh their state.
-   * @internal
-   */
+  /** Returns the handler registered by the UI layer that will trigger UiSyncEvent processing that informs UI component to refresh their state. */
   public get toolSyncUiEventDispatcher() { return this._toolSyncUiEventDispatcher; }
   public set toolSyncUiEventDispatcher(handler: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined) {
     this._toolSyncUiEventDispatcher = handler;
@@ -1657,7 +1651,6 @@ export class ToolAdmin {
    * To "bump" a setting means to toggle a boolean value or cycle through enum values.
    * If no `settingIndex` param is specified, the first setting is bumped.
    * Returns true if the setting was successfully bumped.
-   * @beta
    */
   public async bumpToolSetting(settingIndex?: number): Promise<boolean> {
     return this.currentTool.bumpToolSetting(settingIndex);
@@ -1668,7 +1661,6 @@ export class ToolAdmin {
    * more important user interaction processing is required.
    * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
    * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
-   * @beta
    */
   public dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
     const defaultRefreshEventId = "tool-admin-refresh-ui";
@@ -1687,7 +1679,6 @@ export class ToolAdmin {
    * to be processed together.
    * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
    * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
-   * @beta
    */
   public dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
     const defaultRefreshEventId = "tool-admin-refresh-ui";
@@ -1872,6 +1863,10 @@ export class ToolAdmin {
     this.setLocateCircleOn(enableLocate);
     viewManager.invalidateDecorationsAllViews();
   }
+
+  /** Controls how the button event location is adjusted for the active tool */
+  public get coordinateLockOverrides(): CoordinateLockOverrides { return this.toolState.coordLockOvr; }
+  public set coordinateLockOverrides(coordLockOvr: CoordinateLockOverrides) { this.toolState.coordLockOvr = coordLockOvr; }
 
   /** @internal */
   public async callOnCleanup() {
