@@ -51,38 +51,38 @@ vec3 computeRayOrigin(vec3 eyeSpace) {
  * @returns A vec2 of float values representing the ray's distance to and through the sphere.
  */
 const raySphere = `
- vec2 raySphere(vec3 sphereCenter, float sphereRadius, vec3 rayOrigin, vec3 rayDir) {
-   // Adapted from: https://math.stackexchange.com/questions/1939423/calculate-if-vector-intersects-sphere
-   // 1. For a given unit vector U and arbitrary point P, the equation for a line which shares direction with U and intersects with P is given as: f(x) = P + xU
-   // 2. For a given sphere with center C and radius R, and arbitrary point Q, Q lies on the sphere if the length of (Q - C) equals the radius. This can be expressed as: ||Q - C||^2 = R^2
-   // 3. By the definition of the dot product: ||Q - C||^2 = (Q - C) • (Q - C)
-   // 4. If we constrain arbitrary point Q to the line described in (1.), our new sphere equation is: (P - C + xU) • (P - C + xU) = R^2
-   // 5. Because dot product is distributive, we can FOIL the binomials and produce the following quadratic function: x^2(U • U) + 2x((P - C) • U) + (P - C) • (P - C) - R^2 = 0
+vec2 raySphere(vec3 sphereCenter, float sphereRadius, vec3 rayOrigin, vec3 rayDir) {
+  // Adapted from: https://math.stackexchange.com/questions/1939423/calculate-if-vector-intersects-sphere
+  // 1. For a given unit vector U and arbitrary point P, the equation for a line which shares direction with U and intersects with P is given as: f(x) = P + xU
+  // 2. For a given sphere with center C and radius R, and arbitrary point Q, Q lies on the sphere if the length of (Q - C) equals the radius. This can be expressed as: ||Q - C||^2 = R^2
+  // 3. By the definition of the dot product: ||Q - C||^2 = (Q - C) • (Q - C)
+  // 4. If we constrain arbitrary point Q to the line described in (1.), our new sphere equation is: (P - C + xU) • (P - C + xU) = R^2
+  // 5. Because dot product is distributive, we can FOIL the binomials and produce the following quadratic function: x^2(U • U) + 2x((P - C) • U) + (P - C) • (P - C) - R^2 = 0
 
-   // Solving the quadratic formula
-   float a = 1.0; // the dot product of a unit vector and itself equals 1
-   vec3 offset = rayOrigin - sphereCenter; // We assign P in the formula above to the ray origin
-   float b = 2.0 * dot(offset, rayDir);
-   float c = dot(offset, offset) - sphereRadius * sphereRadius;
-   float discriminant = b * b - 4.0 * a * c;
+  // Solving the quadratic formula
+  float a = 1.0; // the dot product of a unit vector and itself equals 1
+  vec3 offset = rayOrigin - sphereCenter; // We assign P in the formula above to the ray origin
+  float b = 2.0 * dot(offset, rayDir);
+  float c = dot(offset, offset) - sphereRadius * sphereRadius;
+  float discriminant = b * b - 4.0 * a * c;
 
-   // If the quadratic discriminant == 0, then there is only one (double) root, and if it is < 0, there are only complex roots; neither of these cases is useful to us here.
-   // If it is > 0, there are two roots, denoting the intersections where the ray enters the sphere, and where it exits the sphere.
-   if (discriminant <= 0.0) {
-     return vec2(MAX_FLOAT, 0.0);
-   }
+  // If the quadratic discriminant == 0, then there is only one (double) root, and if it is < 0, there are only complex roots; neither of these cases is useful to us here.
+  // If it is > 0, there are two roots, denoting the intersections where the ray enters the sphere, and where it exits the sphere.
+  if (discriminant <= 0.0) {
+    return vec2(MAX_FLOAT, 0.0);
+  }
 
-   float s = sqrt(discriminant);
-   float firstRoot = (-b - s) / (2.0 * a);
-   float secondRoot = (-b + s) / (2.0 * a);
-   if (firstRoot <= 0.0 && secondRoot <= 0.0) { // both intersections are behind the ray origin
-     return vec2(MAX_FLOAT, 0.0);
-   }
-   float distanceToSphereNear = max(0.0, firstRoot); // If this root is negative and the other isn't, the ray origin must be inside the sphere, so the distance traveled to enter the sphere is 0
-   float distanceToSphereFar = secondRoot;
-   return vec2(distanceToSphereNear, distanceToSphereFar - distanceToSphereNear);
- }
- `;
+  float s = sqrt(discriminant);
+  float firstRoot = (-b - s) / (2.0 * a);
+  float secondRoot = (-b + s) / (2.0 * a);
+  if (firstRoot <= 0.0 && secondRoot <= 0.0) { // both intersections are behind the ray origin
+    return vec2(MAX_FLOAT, 0.0);
+  }
+  float distanceToSphereNear = max(0.0, firstRoot); // If this root is negative and the other isn't, the ray origin must be inside the sphere, so the distance traveled to enter the sphere is 0
+  float distanceToSphereFar = secondRoot;
+  return vec2(distanceToSphereNear, distanceToSphereFar - distanceToSphereNear);
+}
+`;
 
 /**
  * Computes the intersection of a ray with an ellipsoid and returns two values:

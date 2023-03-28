@@ -723,20 +723,19 @@ class RealityMeshTechnique extends VariedTechnique {
 }
 
 class SkySphereTechnique extends VariedTechnique {
-  private static readonly _numVariants = 6; // one ternary flag and one binary flag = (3 ** 1) * (2 ** 1)
+  private static readonly _numVariants = 2; // one binary flag (2 ** 1)
 
   public constructor(gl: WebGL2RenderingContext, isGradient: boolean) {
     super(SkySphereTechnique._numVariants);
 
     for (let enableAtmosphere = EnableAtmosphere.No; enableAtmosphere <= EnableAtmosphere.Yes; enableAtmosphere++) {
       const tempFlags = scratchTechniqueFlags;
-      for (const featureMode of featureModes) {
-        tempFlags.reset(featureMode, IsInstanced.No, IsShadowable.No, IsThematic.No, "quantized");
-        tempFlags.enableAtmosphere = enableAtmosphere;
-        const builder = createSkySphereBuilder(isGradient, tempFlags);
 
-        this.addShader(builder, tempFlags, gl);
-      }
+      tempFlags.reset(FeatureMode.None, IsInstanced.No, IsShadowable.No, IsThematic.No, "quantized");
+      tempFlags.enableAtmosphere = enableAtmosphere;
+      const builder = createSkySphereBuilder(isGradient, tempFlags);
+
+      this.addShader(builder, tempFlags, gl);
     }
 
     this.finishConstruction();
@@ -748,8 +747,6 @@ class SkySphereTechnique extends VariedTechnique {
     let index = 0;
     if (flags.enableAtmosphere)
       index += 1 << 0;
-    if (flags.featureMode)
-      index += (1 << 1) * flags.featureMode;
 
     return index;
   }
