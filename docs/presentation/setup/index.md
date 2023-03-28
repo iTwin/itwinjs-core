@@ -42,7 +42,7 @@ Similar to the backend, the frontend initialization consists of 3 steps:
    [[include:Presentation.Frontend.IModelAppStartup]]
    ```
 
-2. Register [PresentationRpcInterface]($presentation-common) when RPC system. That's done by making sure the interface is included into the list of RPC interfaces when initializing one of the RPC managers. The below example uses [BentleyCloudRpcManager]($core-common).
+2. Register [PresentationRpcInterface]($presentation-common) in RPC system. That's done by making sure the interface is included into the list of RPC interfaces when initializing one of the RPC managers. The below example uses [BentleyCloudRpcManager]($core-common).
 
    ``` ts
    [[include:Presentation.Common.RpcInterface.Imports]]
