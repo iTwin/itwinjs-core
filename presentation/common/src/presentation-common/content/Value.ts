@@ -38,6 +38,7 @@ export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
     return isNestedContentValue(value);
   }
 
+  /** Is the value a navigation value */
   export function isNavigationValue(value: Value): value is NavigationPropertyValue {
     return value !== undefined
       && (value as NavigationPropertyValue).id !== undefined
@@ -177,7 +178,7 @@ export interface NestedContentValue {
 
 /**
  * Data structure that describes value of the navigation property.
- * @alpha
+ * @public
  */
 export interface NavigationPropertyValue {
   /** Label of target instance. */

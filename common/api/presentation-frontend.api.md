@@ -48,6 +48,7 @@ import { RegisteredRuleset } from '@itwin/presentation-common';
 import { RpcRequestsHandler } from '@itwin/presentation-common';
 import { Ruleset } from '@itwin/presentation-common';
 import { RulesetVariable } from '@itwin/presentation-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeProps } from '@itwin/presentation-common';
@@ -55,7 +56,6 @@ import { SetRulesetVariableParams } from '@itwin/presentation-common';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
 import { UnsetRulesetVariableParams } from '@itwin/presentation-common';
-import { UpdateHierarchyStateParams } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
 
 // @internal (undocumented)
@@ -229,22 +229,6 @@ export interface ISelectionProvider {
     selectionChange: SelectionChangeEvent;
 }
 
-// @internal
-export interface NodeIdentifier {
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    key: NodeKey;
-}
-
-// @internal (undocumented)
-export interface NodeState {
-    // (undocumented)
-    instanceFilter?: string;
-    // (undocumented)
-    isExpanded?: boolean;
-}
-
 // @internal (undocumented)
 export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
@@ -354,8 +338,6 @@ export class PresentationManager implements IDisposable {
     // @internal (undocumented)
     get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
-    // @internal (undocumented)
-    get stateTracker(): StateTracker | undefined;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
@@ -370,8 +352,8 @@ export interface PresentationManagerProps {
     requestTimeout?: number;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
-    // @internal (undocumented)
-    stateTracker?: StateTracker;
+    // @alpha
+    schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 }
 
 // @public
@@ -551,18 +533,6 @@ export class SelectionScopesManager {
 export interface SelectionScopesManagerProps {
     localeProvider?: () => string | undefined;
     rpcRequestsHandler: RpcRequestsHandler;
-}
-
-// @internal
-export class StateTracker {
-    constructor(ipcRequestsHandler: IpcRequestsHandler);
-    // (undocumented)
-    onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
-    // (undocumented)
-    onHierarchyStateChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, newHierarchyState: Array<{
-        node: NodeIdentifier | undefined;
-        state: NodeState;
-    }>): Promise<void>;
 }
 
 // @internal (undocumented)
