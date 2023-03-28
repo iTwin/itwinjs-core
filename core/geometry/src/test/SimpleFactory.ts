@@ -3,13 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import * as g from "../core-geometry";
 
-// console.log("=========================");
-// console.log("Standalone Output");
-// console.log("=========================");
+// GeometryCoreTestIO.consoleLog("=========================");
+// GeometryCoreTestIO.consoleLog("Standalone Output");
+// GeometryCoreTestIO.consoleLog("=========================");
 
 /**
  * This class has static methods to create typical instances of various classes.

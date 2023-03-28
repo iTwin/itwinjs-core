@@ -5446,9 +5446,11 @@ export class Sample {
     static createTriangularUnitGridPolyface(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d, numXVertices: number, numYVertices: number, createParams?: boolean, createNormals?: boolean, createColors?: boolean, triangulate?: boolean): IndexedPolyface;
     static createTwistingBezier(order: number, x0: number, y0: number, r: number, thetaStepper: AngleSweep, phiStepper: AngleSweep, weightInterval?: Segment1d): CurvePrimitive | undefined;
     static createUnitCircle(numPoints: number): Point3d[];
+    static createVerticalStaggerPolygon(dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number): Point3d[];
     static createWeightedXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number, weight00?: number, weight10?: number, weight01?: number, weight11?: number): BSplineSurface3dH | undefined;
     static createXYGrid(numU: number, numV: number, dX?: number, dY?: number): Point3d[];
     static createXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined;
+    // @deprecated (undocumented)
     static creatVerticalStaggerPolygon(dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number): Point3d[];
     static readonly lineSegment3d: LineSegment3d[];
     static nonConvexQuadSimpleFractal(numRecursion: number, perpendicularFactor: number): Point3d[];

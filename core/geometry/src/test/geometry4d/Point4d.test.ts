@@ -7,8 +7,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console, @typescript-eslint/naming-convention */
-
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {
   ck.testExactNumber(x, point.x);
   ck.testExactNumber(y, point.y);

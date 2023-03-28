@@ -7,8 +7,6 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { IndexedCollectionInterval, IndexedXYZCollectionInterval } from "../../geometry3d/IndexedCollectionInterval";
 import * as bsiChecker from "../Checker";
 
-/* eslint-disable no-console */
-
 describe("IndexedXYZCollectionInterval", () => {
   it("hello", () => {
     const ck = new bsiChecker.Checker();

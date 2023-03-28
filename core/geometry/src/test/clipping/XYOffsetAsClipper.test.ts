@@ -2,8 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import * as fs from "fs";
 
@@ -45,8 +43,8 @@ function captureClippedPolygon(allGeometry: GeometryQuery[], points: Point3d[], 
   for (const shape of clipShapes) {
     shape.push(shape.getPoint3dAtUncheckedPointIndex(0));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape, x0, y0);
-    }
   }
+}
 
 describe("OffsetByClip", () => {
   it("LongLineString", () => {
@@ -197,7 +195,7 @@ describe("OffsetByClip", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "DiegoProblemCases");
   });
-// cspell:word arnoldas
+  // cspell:word arnoldas
   it("ArnoldasLaneClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -210,14 +208,14 @@ describe("OffsetByClip", () => {
       fullRoadMesh.tryTranslateInPlace(-meshRangeA.low.x, -meshRangeA.low.y, -meshRangeA.low.z);
       const meshRange = fullRoadMesh.range();
       const rangeRectangle = Sample.createRectangleXY(meshRange.low.x, meshRange.low.y,
-           meshRange.xLength (), meshRange.yLength(), meshRange.low.z);
+        meshRange.xLength(), meshRange.yLength(), meshRange.low.z);
       let x0 = -meshRange.low.x;
       const y0 = -meshRange.low.y;
       const dx = meshRange.xLength();
       const dy = meshRange.yLength();
       // Extract the boundary of the upward facing mesh ..
       const boundary = PolyfaceQuery.boundaryOfVisibleSubset(fullRoadMesh, 0, Vector3d.unitZ(), Angle.createDegrees(2.0));
-      if (boundary){
+      if (boundary) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullRoadMesh, x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, y0);
         const chainsA = OffsetHelpers.collectChains([boundary], 1.0e-6);
@@ -236,44 +234,44 @@ describe("OffsetByClip", () => {
           }
           const offsetA = 3.0;
           for (const offsetB of [0.0, -1.0]) {          // we expect only one right side chain ..
-          for (const ls of rightSideChains) {
+            for (const ls of rightSideChains) {
               const clipper = ClipUtilities.createXYOffsetClipFromLineString(ls.packedPoints, offsetA, offsetB, meshRange.low.z - 1, meshRange.high.z + 1);
-            const builders = ClippedPolyfaceBuilders.create(true, true, true);
-            // first method: clip the whole polyface at once ....
-            PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(fullRoadMesh, clipper, builders);
-            const clipA = builders.builderA?.claimPolyface();
-            const clipB = builders.builderB?.claimPolyface();
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0 + 3 * dx, y0);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0 + 2.8 * dx, y0);
+              const builders = ClippedPolyfaceBuilders.create(true, true, true);
+              // first method: clip the whole polyface at once ....
+              PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(fullRoadMesh, clipper, builders);
+              const clipA = builders.builderA?.claimPolyface();
+              const clipB = builders.builderB?.claimPolyface();
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0 + 3 * dx, y0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0 + 2.8 * dx, y0);
               {
                 const clipResult: GrowableXYZArray[] = [];
                 clipper.polygonClip(rangeRectangle, clipResult);
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipResult, x0, y0 + dy);
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, rangeRectangle, x0, y0 + dy);
               }
-            const num0 = fullRoadMesh.facetCount;
-            if (ck.testDefined(clipA) && clipA
-              && ck.testDefined(clipB) && clipB) {
-              // hard to say what the output "should" be ... be test that counts are similar . .
-              // (The motivation for this problem was that there were many, many unnecessary interior edges)
-              const numA = clipA.facetCount;
-              const numB = clipB.facetCount;
+              const num0 = fullRoadMesh.facetCount;
+              if (ck.testDefined(clipA) && clipA
+                && ck.testDefined(clipB) && clipB) {
+                // hard to say what the output "should" be ... be test that counts are similar . .
+                // (The motivation for this problem was that there were many, many unnecessary interior edges)
+                const numA = clipA.facetCount;
+                const numB = clipB.facetCount;
                 ck.testLE(numA, 8 * num0);
                 ck.testLE(numB, 8 * num0);
                 // ck.testLE(num0, 2 * numA);
                 // ck.testLE(num0, 2 * numB);
-            }
+              }
               x0 += 4.0 * dx;
-            // second method clip the polyface one facet at a time.
-            // This indeed produces full facets !!!!
-            const visitor = fullRoadMesh.createVisitor();
-            for (; visitor.moveToNextFacet();){
-              const clipResult: GrowableXYZArray[] = [];
-              clipper.polygonClip(visitor.point.getPoint3dArray(), clipResult);
+              // second method clip the polyface one facet at a time.
+              // This indeed produces full facets !!!!
+              const visitor = fullRoadMesh.createVisitor();
+              for (; visitor.moveToNextFacet();) {
+                const clipResult: GrowableXYZArray[] = [];
+                clipper.polygonClip(visitor.point.getPoint3dArray(), clipResult);
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipResult, x0, y0);
               }
             }
-              x0 += 10.0 * dx;
+            x0 += 10.0 * dx;
           }
         }
       }
@@ -305,7 +303,7 @@ describe("OffsetByClip", () => {
         Vector3d.create(1.0, 0, 0),
         Vector3d.create(0, 2.0, 0),
         3, 2, false, false, false, false);
-      const grid0A = Sample.createTriangularUnitGridPolyface(Point3d.create(2,0, 0),
+      const grid0A = Sample.createTriangularUnitGridPolyface(Point3d.create(2, 0, 0),
         Vector3d.create(1.0, 0, 0),
         Vector3d.create(0, 2.0, 0),
         2, 2, false, false, false, false);
@@ -317,7 +315,7 @@ describe("OffsetByClip", () => {
         Vector3d.create(1.0, 0, 0),
         Vector3d.create(0, 2.0, 0),
         4, 3, false, false, false, false);
-        const grid3 = Sample.createTriangularUnitGridPolyface(Point3d.create(7, 4, 0),
+      const grid3 = Sample.createTriangularUnitGridPolyface(Point3d.create(7, 4, 0),
         Vector3d.create(1.0, 0, 0),
         Vector3d.create(0, 2.0, 0),
         3, 2, false, false, false, false);
@@ -366,33 +364,33 @@ describe("OffsetByClip", () => {
     const rectangleClipper = clipRectangle!.sweepToUnionOfConvexClipPlaneSets()!;
 
     const grid0 = Sample.createTriangularUnitGridPolyface(Point3d.create(2, 0, 0),
-        Vector3d.create(2.0, 0, 0),
-        Vector3d.create(0, 3.0, 0),
-        2, 2, false, false, false, false);
+      Vector3d.create(2.0, 0, 0),
+      Vector3d.create(0, 3.0, 0),
+      2, 2, false, false, false, false);
     for (const degrees of [0, 10, 20, 45, 90, 125]) {
       const rotation = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0),
         Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(degrees)));
       const grid1 = grid0.cloneTransformed(rotation);
       const clipper1 = rectangleClipper.clone();
       clipper1.transformInPlace(rotation);
-        y0 = 0.0;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, grid1, x0, y0);
-        for (const outputSelector of [0, 1]) {
-          const builders = ClippedPolyfaceBuilders.create(true, true, true);
-          PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(grid1, clipper1, builders, outputSelector);
-          y0 += 5;
-          const clipA = builders.builderA?.claimPolyface();
-          const clipB = builders.builderB?.claimPolyface();
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0, y0 += 5);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0, y0 += 5);
+      y0 = 0.0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, grid1, x0, y0);
+      for (const outputSelector of [0, 1]) {
+        const builders = ClippedPolyfaceBuilders.create(true, true, true);
+        PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(grid1, clipper1, builders, outputSelector);
+        y0 += 5;
+        const clipA = builders.builderA?.claimPolyface();
+        const clipB = builders.builderB?.claimPolyface();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0, y0 += 5);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0, y0 += 5);
 
-          const tiltedRectangle = Sample.createRectangleXY(0, 0, 10, 12, 0);
-          rotation.multiplyPoint3dArrayInPlace(tiltedRectangle);
-          captureClippedPolygon(allGeometry, tiltedRectangle, clipper1, x0, y0);
-          y0 += 5;
-        }
-        x0 += 10;
+        const tiltedRectangle = Sample.createRectangleXY(0, 0, 10, 12, 0);
+        rotation.multiplyPoint3dArrayInPlace(tiltedRectangle);
+        captureClippedPolygon(allGeometry, tiltedRectangle, clipper1, x0, y0);
+        y0 += 5;
       }
+      x0 += 10;
+    }
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "NonXYClip");
   });
@@ -409,32 +407,32 @@ describe("OffsetByClip", () => {
     // Make "not quite filleted" line-arc-line paths with quirky shapes
     for (const shiftRadius of [0.0, 0.1, -0.1, -0.3, 1.0]) {
       for (const angle of angles)
-        paths.push(quirkyArcPath(shiftRadius * angle.cos (), shiftRadius * angle.sin ()));
+        paths.push(quirkyArcPath(shiftRadius * angle.cos(), shiftRadius * angle.sin()));
     }
     paths.push(quirkyArcPath(0, 0, 0, 1));
     paths.push(quirkyArcPath(0, 0, 0, -1));
 
-  for (const radius0 of [1.0, 2.0]){    // nominally possible to have undefined return -- but it will get tossed later . ..
+    for (const radius0 of [1.0, 2.0]) {    // nominally possible to have undefined return -- but it will get tossed later . ..
       paths.push(CurveFactory.createRectangleXY(aa, aa, bb, bb, 0, radius0));
     }
 
-    paths.push(CurveFactory.createFilletsInLineString(LineString3d.create ([
+    paths.push(CurveFactory.createFilletsInLineString(LineString3d.create([
       [0, 0, 0],
       [5, 0, 0],
       [5, 5, 0],
       [10, 5, 0],
       [10, 10, 0],
-      [0,8,0],
+      [0, 8, 0],
     ]), 1.0));
-    for (const path of paths){
+    for (const path of paths) {
       const y0 = y00;
-      if (path){
+      if (path) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, 0.01);
         for (const offsetDistance of [2.0, 3.0, 0.9, 1.0, 1.1]) {   // 7.0 makes bow ties
-            const options1 = new JointOptions(offsetDistance);
+          const options1 = new JointOptions(offsetDistance);
           const options2 = new JointOptions(-offsetDistance);
-            const offset1 = RegionOps.constructCurveXYOffset(path, options1);
-            const offset2 = RegionOps.constructCurveXYOffset(path, options2);
+          const offset1 = RegionOps.constructCurveXYOffset(path, options1);
+          const offset2 = RegionOps.constructCurveXYOffset(path, options2);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, offset1, x0, y0);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, offset2, x0, y0);
           // y0 += 25.0;
@@ -450,36 +448,36 @@ describe("OffsetByClip", () => {
     const allGeometry: GeometryQuery[] = [];
     const polygonsToPaste: Point3d[][] = [
       [
-        Point3d.create(21.693771833736626,22.300546394411093,0.0),
-        Point3d.create(22.0,22.141134101103496,0.0),
-        Point3d.create(22.0,22.373898226040680,0.0),
+        Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+        Point3d.create(22.0, 22.141134101103496, 0.0),
+        Point3d.create(22.0, 22.373898226040680, 0.0),
         Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
       ],
       [
-         Point3d.create(21.693771833736626,22.300546394411093,0.0),
-         Point3d.create(21.812339330618727,22.0,0.0),
-         Point3d.create(22.0,22.0,0.0),
-         Point3d.create(22.0,22.141134101103496,0.0),
-          Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
-        ],
-        [Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
-         Point3d.create(21.591750080167749,22.0,0.0),
-         Point3d.create(21.812339330618727,22.0,0.0),
-          Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
-        ],
-        [
-          Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
-         Point3d.create(22.0,22.373898226040680,0.0),
-         Point3d.create(22.0,22.718188915620175,0.0),
-          Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
-        ],
-        [
-          Point3d.create(22.161522368914980, 22.938477631085025, 0.0),
-         Point3d.create(21.693771833736626,22.300546394411093,0.0),
-         Point3d.create(21.693771833736626,22.300546394411093,0.0),
-         Point3d.create(22.0,22.718188915620175,0.0),
-          Point3d.create(22.161522368914980, 22.938477631085025, 0.0),
-        ],
+        Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+        Point3d.create(21.812339330618727, 22.0, 0.0),
+        Point3d.create(22.0, 22.0, 0.0),
+        Point3d.create(22.0, 22.141134101103496, 0.0),
+        Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+      ],
+      [Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+      Point3d.create(21.591750080167749, 22.0, 0.0),
+      Point3d.create(21.812339330618727, 22.0, 0.0),
+      Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+      ],
+      [
+        Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+        Point3d.create(22.0, 22.373898226040680, 0.0),
+        Point3d.create(22.0, 22.718188915620175, 0.0),
+        Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+      ],
+      [
+        Point3d.create(22.161522368914980, 22.938477631085025, 0.0),
+        Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+        Point3d.create(21.693771833736626, 22.300546394411093, 0.0),
+        Point3d.create(22.0, 22.718188915620175, 0.0),
+        Point3d.create(22.161522368914980, 22.938477631085025, 0.0),
+      ],
     ];
     let x0 = -21;
     for (const candidates of [
@@ -493,13 +491,13 @@ describe("OffsetByClip", () => {
       [polygonsToPaste[1], polygonsToPaste[4]],
       [polygonsToPaste[2], polygonsToPaste[3]],
       [polygonsToPaste[2], polygonsToPaste[4]],   // 4 is a sliver !!!
-      ]) {
-        let y0 = -21;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, candidates, x0, y0);
-        const insidePieces = RegionOps.polygonBooleanXYToLoops(candidates, RegionBinaryOpType.Union, []);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, insidePieces, x0, y0 += 1);
-        x0 += 1;
-        }
+    ]) {
+      let y0 = -21;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, candidates, x0, y0);
+      const insidePieces = RegionOps.polygonBooleanXYToLoops(candidates, RegionBinaryOpType.Union, []);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, insidePieces, x0, y0 += 1);
+      x0 += 1;
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "IncompletePaste");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -543,9 +541,9 @@ describe("OffsetByClip", () => {
     let x0 = 0;
     const showVertexNeighborhoods = false;
     const vertexNeighborhoodFunction = (edgeData: VertexNeighborhoodSortData[]) => {
-      console.log({ nodeCount: edgeData.length });
+      GeometryCoreTestIO.consoleLog({ nodeCount: edgeData.length });
       for (const data of edgeData) {
-        console.log (` id: ${data.node.id}  x: ${  data.node.x}, y: ${  data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
+        GeometryCoreTestIO.consoleLog(` id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
       }
     };
     for (const candidates of [
@@ -577,11 +575,11 @@ describe("OffsetByClip", () => {
 // Collect sequences of accepted segments into linestrings.
 function filterSegments(linestring: LineString3d,
   segmentTestFunction: (pointA: Point3d, pointB: Point3d) => boolean,
-linestringAcceptFunction: (ls: LineString3d) => void): void{
+  linestringAcceptFunction: (ls: LineString3d) => void): void {
   const pointA = Point3d.create();
   const pointB = Point3d.create();
   let currentLineString: LineString3d | undefined;
-  for (let i = 0; i + 1 < linestring.packedPoints.length; i++){
+  for (let i = 0; i + 1 < linestring.packedPoints.length; i++) {
     linestring.packedPoints.getPoint3dAtCheckedPointIndex(i, pointA);
     linestring.packedPoints.getPoint3dAtCheckedPointIndex(i + 1, pointB);
     if (segmentTestFunction(pointA, pointB)) {

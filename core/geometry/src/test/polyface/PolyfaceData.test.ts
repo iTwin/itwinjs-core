@@ -8,8 +8,6 @@ import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console */
-
 describe("PolyfaceData", () => {
 
   it("IndexArrays", () => {

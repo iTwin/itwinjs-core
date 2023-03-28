@@ -25,8 +25,6 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
-
 const consolidateAdjacentPath = "./src/test/testInputs/curve/";
 /**
  * mutate data so it is an array or undefined.
