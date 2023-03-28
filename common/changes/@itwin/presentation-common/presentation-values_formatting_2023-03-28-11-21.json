@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added ContentPropertyValuesFormatter for supporting content values formatting on the frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
