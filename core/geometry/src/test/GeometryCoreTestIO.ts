@@ -66,7 +66,7 @@ export class GeometryCoreTestIO {
     if (!this.enableSave)
       return;
 
-    let path = this.makeOutputDir(directoryName);
+    const path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
     if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
         fullPath = `${fullPath}.imjs`;
@@ -80,7 +80,7 @@ export class GeometryCoreTestIO {
   public static savePropertiesAsSeparateFiles(directoryName: string | undefined, data: { [key: string]: any }) {
     if (!GeometryCoreTestIO.enableSave)
       return;
-    let path = this.makeOutputDir(directoryName);
+    const path = this.makeOutputDir(directoryName);
     for (const property in data) {
       if (data.hasOwnProperty(property)) {
         const filename = `${path}/${property}.imjs`;
