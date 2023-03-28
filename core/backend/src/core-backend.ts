@@ -9,6 +9,7 @@ export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CloudSqlite";
+export * from "./CloudCaches";
 export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./EntityReferences";

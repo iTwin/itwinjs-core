@@ -12,7 +12,8 @@ import { NativeLibrary } from "@bentley/imodeljs-native";
 import { BriefcaseStatus, GuidString } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
-/** Types for using SQLite files stored in cloud containers.
+/**
+ * Types for using SQLite files stored in cloud containers.
  * @beta
  */
 export namespace CloudSqlite {
@@ -105,7 +106,7 @@ export namespace CloudSqlite {
   export interface CacheProps extends CloudHttpProps {
     /** full path of directory for cache to store its files. Must be on a (preferably fast) local drive, and must be empty when the cache is first created. */
     rootDir: string;
-    /** name of this cache. It is possible to have more than one CloudCache in the same session. */
+    /** name of this cache. It is possible to have more than one CloudCache in the same session, but each must have a unique name. */
     name: string;
     /** maximum cache Size. Must be a number followed by either M (for megabytes) or G (for gigabytes.) Default is 1G */
     cacheSize?: string;

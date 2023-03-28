@@ -19,6 +19,7 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
+import { CloudCaches } from "../CloudCaches";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey julianday
@@ -301,26 +302,11 @@ export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-  private static _sharedCloudCache?: CloudSqlite.CloudCache;
   private _cloudCache?: CloudSqlite.CloudCache;
   public get cloudCache(): CloudSqlite.CloudCache {
     if (undefined === this._cloudCache)
-      this._cloudCache = ITwinWorkspace.getSharedCloudCache();
+      this._cloudCache = CloudCaches.getCache("Workspace", "20G");
     return this._cloudCache;
-  }
-  private static getSharedCloudCache(): CloudSqlite.CloudCache {
-    if (undefined === this._sharedCloudCache) {
-      const rootDir = join(IModelHost.cacheDir, "Workspace", "cloud");
-      IModelJsFs.recursiveMkDirSync(rootDir);
-      this._sharedCloudCache = CloudSqlite.createCloudCache({ rootDir, cacheSize: "20G", name: "workspace" });
-    }
-    return this._sharedCloudCache;
-  }
-  public static finalize() {
-    if (this._sharedCloudCache) {
-      this._sharedCloudCache.destroy();
-      this._sharedCloudCache = undefined;
-    }
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {

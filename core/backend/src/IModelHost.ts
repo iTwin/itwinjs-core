@@ -534,7 +534,6 @@ export class IModelHost {
     IModelHost.tileStorage = undefined;
     IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
-    ITwinWorkspace.finalize();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 

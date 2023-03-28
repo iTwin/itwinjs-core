@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect, use as chaiuse } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { emptyDirSync, existsSync, mkdirsSync, rmSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
@@ -13,6 +14,8 @@ import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
+chaiuse(chaiAsPromised);
 
 export namespace CloudSqliteTest {
   export type TestContainer = CloudSqlite.CloudContainer & { isPublic: boolean };
