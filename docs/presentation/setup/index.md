@@ -6,8 +6,9 @@ Before the Presentation library can be used, it needs to be properly initialized
 
 There are 2 main steps to enable Presentation library usage:
 
-1. Register `PresentationRpcInterface` when initializing `IModelHost`. The way it's done depends on [IModelHost specialization](../../backend/IModelHost.md#imodelhost-specializations), but in any case that's similar to how any other `RpcInterface` is registered. A couple of examples:
-   - For a **web app**, `IModelHost` has to be initialized first and required RPC interfaces need to be passed to `BentleyCloudRpcManager.initializeImpl`:
+1. Register [PresentationRpcInterface]($presentation-common) when initializing [IModelHost]($core-backend). The way it's done depends on [IModelHost specialization](../../backend/IModelHost.md#imodelhost-specializations), but in any case that's similar to how any other [RpcInterface]($core-common) is registered. A couple of examples:
+
+   - For a **web app**, [IModelHost]($core-backend) has to be initialized first and required RPC interfaces need to be passed to [BentleyCloudRpcManager.initializeImpl]($core-common):
 
       ```ts
       [[include:Presentation.Common.RpcInterface.Imports]]
@@ -15,7 +16,7 @@ There are 2 main steps to enable Presentation library usage:
       [[include:Presentation.Backend.WebApp.RpcInterface]]
       ```
 
-   - For an **Electron app**, required RPC interfaces are passed straight into `ElectronHost.startup`:
+   - For an **Electron app**, required RPC interfaces are passed straight into [ElectronHost.startup]($core-electron):
 
       ```ts
       [[include:Presentation.Common.RpcInterface.Imports]]
@@ -33,20 +34,23 @@ There are 2 main steps to enable Presentation library usage:
 
 ## Frontend
 
-Similar to the backend, the frontend initialization consists of 2 steps:
+Similar to the backend, the frontend initialization consists of 3 steps:
 
-1. Register `PresentationRpcInterface` when initializing `IModelApp`. That's done by making sure the interface is included into the list of `rpcInterfaces` when calling `startup` on `IModelApp` or one of [its specializations](../../frontend/IModelApp.md#imodelapp-specializations).
+1. Initialize [IModelApp]($core-frontend).
+
+   ``` ts
+   [[include:Presentation.Frontend.IModelAppStartup]]
+   ```
+
+2. Register [PresentationRpcInterface]($presentation-common) when RPC system. That's done by making sure the interface is included into the list of RPC interfaces when initializing one of the RPC managers. The below example uses [BentleyCloudRpcManager]($core-common).
 
    ``` ts
    [[include:Presentation.Common.RpcInterface.Imports]]
    [[include:Presentation.Common.RpcInterface]]
    [[include:Presentation.Frontend.RpcInterface.Options]]
-   [[include:Presentation.Frontend.IModelAppStartup]]
    ```
 
-   **Note:** The above example uses `ElectronApp`, but it's similar with other specializations like `WebViewerApp`.
-
-2. Initialize Presentation frontend:
+3. Initialize Presentation frontend:
 
    ``` ts
    [[include:Presentation.Frontend.Imports]]
