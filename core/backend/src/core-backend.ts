@@ -54,8 +54,6 @@ export * from "./IpcHost";
 export * from "./NativeAppStorage";
 export * from "./NativeHost";
 export * from "./PropertyStore";
-export * from "./CloudStorageBackend";
-export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
