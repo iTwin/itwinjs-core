@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-frontend",
-      "comment": "Added content valeus formatting to `PresentationManager`",
+      "comment": "Added content values formatting to `PresentationManager`",
       "type": "none"
     }
   ],
