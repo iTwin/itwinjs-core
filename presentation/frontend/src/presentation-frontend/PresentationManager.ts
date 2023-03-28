@@ -9,10 +9,11 @@
 import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
-  ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
+  ContentSourcesRequestOptions, ContentUpdateInfo, createContentFormatter, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key,
   KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset,
   RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
@@ -87,6 +88,13 @@ export interface PresentationManagerProps {
    */
   requestTimeout?: number;
 
+  /**
+   * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
+   * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
+   * @alpha
+   */
+  schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
+
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
 
@@ -108,6 +116,7 @@ export class PresentationManager implements IDisposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
+  private _schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
   /**
@@ -145,6 +154,7 @@ export class PresentationManager implements IDisposable {
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
     this._connections = new Map<IModelConnection, Promise<void>>();
+    this._schemaContextProvider = props?.schemaContextProvider;
 
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
@@ -394,8 +404,10 @@ export class PresentationManager implements IDisposable {
   /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
   public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{ content: Content, size: number } | undefined> {
     await this.onConnection(requestOptions.imodel);
+    const shouldFormatValues = !requestOptions.omitFormattedValues;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
+      ...(shouldFormatValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
       ...options,
       descriptor: getDescriptorOverrides(requestOptions.descriptor),
       keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
@@ -414,10 +426,17 @@ export class PresentationManager implements IDisposable {
     });
     if (!descriptor)
       return undefined;
+
     const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => (item !== undefined));
+    const resultContent = new Content(descriptor, items);
+    if (shouldFormatValues && this._schemaContextProvider) {
+      const contentFormatter = createContentFormatter(this._schemaContextProvider(requestOptions.imodel), IModelApp.quantityFormatter.activeUnitSystem);
+      await contentFormatter.formatContent(resultContent);
+    }
+
     return {
       size: result.total,
-      content: this._localizationHelper.getLocalizedContent(new Content(descriptor, items)),
+      content: this._localizationHelper.getLocalizedContent(resultContent),
     };
   }
 

@@ -9,10 +9,11 @@
 import { IModelDb } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
-  DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
-  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
+  createContentFormatter, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON,
   HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition,
   LocalizationHelper, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
@@ -354,6 +355,13 @@ export interface PresentationManagerProps {
   getLocalizedString?: (key: string) => string;
 
   /**
+   * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
+   * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
+   * @alpha
+   */
+  schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
+
+  /**
    * Parameters for gathering diagnostics at the manager level. When supplied, they're used with every request
    * made through the manager.
    *
@@ -517,9 +525,19 @@ export class PresentationManager {
    * @public
    */
   public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
-    const content = await this._detail.getContent(requestOptions);
+    const shouldFormatValues = !requestOptions.omitFormattedValues;
+    const content = await this._detail.getContent({
+      ...(shouldFormatValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
+      ...requestOptions,
+    });
     if (!content)
       return undefined;
+
+    if (shouldFormatValues && this.props.schemaContextProvider !== undefined) {
+      const formatter = createContentFormatter(this.props.schemaContextProvider(requestOptions.imodel), requestOptions.unitSystem);
+      await formatter.formatContent(content);
+    }
+
     return this._localizationHelper.getLocalizedContent(content);
   }
 

@@ -6,14 +6,15 @@
  * @module Content
  */
 
-import { InstanceKey } from "../EC";
+import { InstanceId, InstanceKey } from "../EC";
+import { LabelDefinition } from "../LabelDefinition";
 import { ValuesDictionary } from "../Utils";
 
 /**
  * Raw value type
  * @public
  */
-export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[];
+export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NavigationPropertyValue | NestedContentValue[];
 
 /** @public */
 export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
@@ -35,6 +36,13 @@ export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is the value a nested content value */
   export function isNestedContent(value: Value): value is NestedContentValue[] {
     return isNestedContentValue(value);
+  }
+
+  export function isNavigationValue(value: Value): value is NavigationPropertyValue {
+    return value !== undefined
+      && (value as NavigationPropertyValue).id !== undefined
+      && (value as NavigationPropertyValue).className !== undefined
+      && (value as NavigationPropertyValue).label !== undefined;
   }
 
   /**
@@ -167,6 +175,19 @@ export interface NestedContentValue {
   mergedFieldNames: string[];
 }
 
+/**
+ * Data structure that describes value of the navigation property.
+ * @alpha
+ */
+export interface NavigationPropertyValue {
+  /** Label of target instance. */
+  label: LabelDefinition;
+  /** Full class name of target instance in format `SchemaName:ClassName` */
+  className: string;
+  /** Id of target instance. */
+  id: InstanceId;
+}
+
 /** @public */
 export namespace NestedContentValue {
   /**
@@ -202,7 +223,7 @@ export namespace NestedContentValue {
  * @deprecated in 3.x. Use [[Value]]
  */
 // eslint-disable-next-line deprecation/deprecation
-export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[];
+export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[];
 /**
  * JSON representation of [[ValuesMap]]
  * @public

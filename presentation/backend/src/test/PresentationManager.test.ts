@@ -10,6 +10,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsLoggerSeverity,
@@ -17,15 +18,15 @@ import {
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, IntRulesetVariable,
   ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset,
-  SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes,
-  StructTypeDescription, VariableValueTypes,
+  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, PropertyValueFormat, RegisteredRuleset,
+  RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions,
+  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfo, createRandomECInstanceKey, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomId,
   createRandomLabelDefinition, createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset, createTestCategoryDescription,
-  createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath,
-  createTestSelectClassInfo, createTestSimpleContentField,
+  createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo,
+  createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
@@ -684,10 +685,7 @@ describe("PresentationManager", () => {
       imodelMock.reset();
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
-      manager = new PresentationManager({ addon: nativePlatformMock.object });
-      sinon.stub(manager.getDetail(), "rulesets").value(sinon.createStubInstance(RulesetManagerImpl, {
-        add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
-      }));
+      recreateManager();
     });
     afterEach(() => {
       manager.dispose();
@@ -720,6 +718,17 @@ describe("PresentationManager", () => {
       // verify the manager correctly used addonResponse to create its result
       expect(actualResult).to.deep.eq(expectedResult);
     };
+
+    function recreateManager(props?: Partial<PresentationManagerProps>) {
+      manager && manager.dispose();
+      manager = new PresentationManager({
+        addon: nativePlatformMock.object,
+        ...props,
+      });
+      sinon.stub(manager.getDetail(), "rulesets").value(sinon.createStubInstance(RulesetManagerImpl, {
+        add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+      }));
+    }
 
     describe("getNodes", () => {
 
@@ -1719,6 +1728,125 @@ describe("PresentationManager", () => {
           paging: testData.pageOptions,
           descriptor: descriptor.createDescriptorOverrides(),
           keys,
+        };
+        const result = await manager.getContent(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns formatted content", async () => {
+        // setup manager to support formatting
+        recreateManager({ schemaContextProvider: () => new SchemaContext() });
+
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey()]);
+        const fieldName = faker.random.word();
+        const descriptor = createTestContentDescriptor({
+          fields: [
+            createTestPropertiesContentField({
+              name: fieldName,
+              properties: [{ property: createTestPropertyInfo() }],
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+            }),
+          ], displayType: "test",
+        });
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(keys),
+            descriptorOverrides: {
+              displayType: descriptor.displayType,
+            },
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const fieldValue = 1.234;
+        const addonResponse = {
+          descriptor: descriptor.toJSON(),
+          contentSet: [{
+            primaryKeys: [createRandomECInstanceKey()],
+            classInfo: createRandomECClassInfo(),
+            labelDefinition: createRandomLabelDefinition(),
+            imageId: faker.random.uuid(),
+            values: {
+              [fieldName]: fieldValue,
+            },
+            displayValues: {},
+            mergedFieldNames: [],
+          } as ItemJSON],
+        } as ContentJSON;
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor: descriptor.createDescriptorOverrides(),
+          keys,
+        };
+        const result = await manager.getContent(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns content without formatting", async () => {
+        // setup manager to support formatting
+        recreateManager({ schemaContextProvider: () => new SchemaContext() });
+
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey()]);
+        const fieldName = faker.random.word();
+        const descriptor = createTestContentDescriptor({
+          fields: [
+            createTestPropertiesContentField({
+              name: fieldName,
+              properties: [{ property: createTestPropertyInfo() }],
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+            }),
+          ], displayType: "test",
+        });
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(keys),
+            descriptorOverrides: {
+              displayType: descriptor.displayType,
+            },
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const fieldValue = 1.234;
+        const addonResponse = {
+          descriptor: descriptor.toJSON(),
+          contentSet: [{
+            primaryKeys: [createRandomECInstanceKey()],
+            classInfo: createRandomECClassInfo(),
+            labelDefinition: createRandomLabelDefinition(),
+            imageId: faker.random.uuid(),
+            values: {
+              [fieldName]: fieldValue,
+            },
+            displayValues: {},
+            mergedFieldNames: [],
+          } as ItemJSON],
+        } as ContentJSON;
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor: descriptor.createDescriptorOverrides(),
+          keys,
+          omitFormattedValues: true,
         };
         const result = await manager.getContent(options);
         verifyWithSnapshot(result, expectedParams);
