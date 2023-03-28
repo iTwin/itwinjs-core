@@ -5360,7 +5360,7 @@ export interface IModelAppOptions {
     // @beta (undocumented)
     realityDataAccess?: RealityDataAccess;
     renderSys?: RenderSystem | RenderSystem.Options;
-    // (undocumented)
+    // @deprecated (undocumented)
     rpcInterfaces?: RpcInterfaceDefinition[];
     security?: FrontendSecurityOptions;
     // @internal (undocumented)
