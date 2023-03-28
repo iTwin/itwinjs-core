@@ -981,6 +981,7 @@ export class AccuSnap implements Decorator {
     readonly toolState: AccuSnap.ToolState;
     // @internal (undocumented)
     touchCursor?: TouchCursor;
+    get userSettings(): AccuSnap.Settings;
     // @internal (undocumented)
     get wantVirtualCursor(): boolean;
 }
@@ -5359,7 +5360,7 @@ export interface IModelAppOptions {
     // @beta (undocumented)
     realityDataAccess?: RealityDataAccess;
     renderSys?: RenderSystem | RenderSystem.Options;
-    // (undocumented)
+    // @deprecated (undocumented)
     rpcInterfaces?: RpcInterfaceDefinition[];
     security?: FrontendSecurityOptions;
     // @internal (undocumented)
@@ -5767,7 +5768,6 @@ export interface InstancedGraphicParams {
 
 // @public
 export abstract class InteractiveTool extends Tool {
-    // @beta
     applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean>;
     beginDynamics(): void;
     bumpToolSetting(_settingIndex?: number): Promise<boolean>;
@@ -12448,7 +12448,6 @@ export class ToolAdmin {
     assemblyLock: boolean;
     // @internal (undocumented)
     beginDynamics(): void;
-    // @beta
     bumpToolSetting(settingIndex?: number): Promise<boolean>;
     // @internal (undocumented)
     callOnCleanup(): Promise<void>;
@@ -12457,6 +12456,8 @@ export class ToolAdmin {
     convertTouchMoveToMotion(ev: BeTouchEvent): Promise<void>;
     convertTouchStartToButtonDown(ev: BeTouchEvent, button?: BeButton): Promise<void>;
     convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button?: BeButton): Promise<void>;
+    get coordinateLockOverrides(): CoordinateLockOverrides;
+    set coordinateLockOverrides(coordLockOvr: CoordinateLockOverrides);
     // @internal (undocumented)
     readonly currentInputState: CurrentInputState;
     get currentTool(): InteractiveTool;
@@ -12467,9 +12468,7 @@ export class ToolAdmin {
     set defaultToolArgs(args: any[] | undefined);
     get defaultToolId(): string;
     set defaultToolId(toolId: string);
-    // @beta
     dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
-    // @beta
     dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
     doRedoOperation(): Promise<boolean>;
     doUndoOperation(): Promise<boolean>;
@@ -12526,7 +12525,6 @@ export class ToolAdmin {
     processEvent(): Promise<void>;
     processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
-    // @internal
     get reloadToolSettingsHandler(): (() => void) | undefined;
     set reloadToolSettingsHandler(handler: (() => void) | undefined);
     // @beta
@@ -12562,14 +12560,12 @@ export class ToolAdmin {
     syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void;
     // @internal (undocumented)
     testDecorationHit(id: string): boolean;
-    // @internal
     get toolSettingsChangeHandler(): ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined;
     set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined);
     // @internal (undocumented)
     readonly toolSettingsState: ToolSettingsState;
     // @internal (undocumented)
     readonly toolState: ToolState;
-    // @internal
     get toolSyncUiEventDispatcher(): ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined;
     set toolSyncUiEventDispatcher(handler: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined);
     // @internal (undocumented)
@@ -13140,40 +13136,40 @@ export class ViewClipControlArrow {
     sizeInches: number;
 }
 
-// @internal
+// @public
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
     constructor(_clipView: ScreenViewport, _clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
     static clear(): void;
     // (undocumented)
     protected clearControls(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _clip?: ClipVector;
     // (undocumented)
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
     // (undocumented)
     get clipId(): string | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     protected _clipId?: string;
-    // (undocumented)
+    // @internal (undocumented)
     protected _clipPlanes?: ConvexClipPlaneSet;
     // (undocumented)
     get clipPlaneSet(): ConvexClipPlaneSet | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     protected _clipPlanesLoops?: GeometryQuery[];
-    // (undocumented)
+    // @internal (undocumented)
     protected _clipPlanesLoopsNoncontributing?: GeometryQuery[];
     // (undocumented)
     get clipShape(): ClipShape | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     protected _clipShape?: ClipShape;
-    // (undocumented)
+    // @internal (undocumented)
     protected _clipShapeExtents?: Range1d;
     // (undocumented)
     protected _clipView: ScreenViewport;
-    // (undocumented)
+    // @internal (undocumented)
     protected _controlIds: string[];
-    // (undocumented)
+    // @internal (undocumented)
     protected _controls: ViewClipControlArrow[];
     // (undocumented)
     static create(vp: ScreenViewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
@@ -13207,11 +13203,11 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     protected onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onViewClose(vp: ScreenViewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _removeViewCloseListener?: () => void;
     // (undocumented)
     protected stop(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _suspendDecorator: boolean;
     // (undocumented)
     testDecorationHit(id: string): boolean;
@@ -13233,6 +13229,8 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     static create(): ViewClipDecorationProvider;
     // (undocumented)
     hideDecoration(): void;
+    // (undocumented)
+    isDecorationActive(vp: ScreenViewport): boolean;
     readonly onActiveClipChanged: BeEvent<(viewport: Viewport, eventType: ClipEventType, provider: ViewClipDecorationProvider) => void>;
     readonly onActiveClipRightClick: BeEvent<(hit: HitDetail, ev: BeButtonEvent, provider: ViewClipDecorationProvider) => void>;
     // (undocumented)

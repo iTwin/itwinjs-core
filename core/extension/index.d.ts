@@ -173,6 +173,7 @@ export {
 	UniformType,
 	VaryingType,
 	ViewClipClearTool,
+	ViewClipDecoration,
 	ViewClipDecorationProvider,
 	ViewClipTool,
 	ViewCreator2d,

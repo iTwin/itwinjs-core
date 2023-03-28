@@ -12,6 +12,7 @@ import {
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
 import { BatchedTileContentReader } from "./BatchedTileContentReader";
+import { getMaxLevelsToSkip } from "./FrontendTiles";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {
@@ -105,7 +106,7 @@ export class BatchedTile extends Tile {
     // This tile is too coarse to draw. Try to draw something more appropriate.
     // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
     // If we previously loaded and later unloaded content for this tile to free memory, don't force it to reload its content - proceed to children.
-    const maximumLevelsToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;
+    const maximumLevelsToSkip = getMaxLevelsToSkip();
     let canSkipThisTile = (this._hadGraphics && !this.hasGraphics) /* || this.depth < this.iModelTree.maxInitialTilesToSkip */ ;
     if (canSkipThisTile) {
       numSkipped = 1;
