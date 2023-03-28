@@ -767,7 +767,7 @@ public;ViewClipByRangeTool
 public;ViewClipByShapeTool 
 public;ViewClipClearTool 
 internal;ViewClipControlArrow
-internal;ViewClipDecoration 
+public;ViewClipDecoration 
 public;ViewClipDecorationProvider 
 public;ViewClipEventHandler
 internal;class ViewClipModifyTool 
