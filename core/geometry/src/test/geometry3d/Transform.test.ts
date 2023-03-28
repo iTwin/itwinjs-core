@@ -12,7 +12,6 @@ import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console */
 describe("Transform.Inverse", () => {
   it("Transform.Inverse", () => {
     const ck = new Checker();

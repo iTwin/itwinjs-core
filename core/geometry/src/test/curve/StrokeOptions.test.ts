@@ -12,8 +12,6 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
-
 describe("StrokeOptions", () => {
 
   it("HelloWorld", () => {

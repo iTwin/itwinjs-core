@@ -23,8 +23,6 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
 
-/* eslint-disable no-console */
-
 export class Checker {
   private _savedErrors: number;
   private _savedOK: number;
@@ -94,7 +92,7 @@ export class Checker {
   public checkpoint(...params: any[]) {
     // this.show(params);
     if (Checker.noisy.checkpoint || this._numErrors > 0)
-      console.log("               (ok ", this._numOK, ")  (errors ", this._numErrors, ")", params);
+      GeometryCoreTestIO.consoleLog("               (ok ", this._numOK, ")  (errors ", this._numErrors, ")", params);
     this._savedErrors += this._numErrors;
     this._savedOK += this._numOK;
     this._numErrors = 0;
@@ -102,7 +100,7 @@ export class Checker {
   }
   public announceError(...params: any[]): boolean {
     this._numErrors++;
-    console.log("ERROR");
+    GeometryCoreTestIO.consoleLog("ERROR");
     this.show(params);
     return false;
   }
@@ -459,15 +457,15 @@ export class Checker {
     if (dataA instanceof GeometryQuery && dataB instanceof GeometryQuery) {
       if (dataA.isAlmostEqual(dataB))
         return this.announceOK();
-      console.log(prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
-      console.log(prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
+      GeometryCoreTestIO.consoleLog(prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
+      GeometryCoreTestIO.consoleLog(prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
       return this.announceError("same geometry", params);
     } else if (Array.isArray(dataA) && Array.isArray(dataB) && dataA.length === dataB.length) {
       let numError = 0;
       for (let i = 0; i < dataA.length; i++) {
         if (!dataA[i].isAlmostEqual(dataB[i])) {
-          console.log(`dataA[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
-          console.log(`dataB[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
+          GeometryCoreTestIO.consoleLog(`dataA[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
+          GeometryCoreTestIO.consoleLog(`dataB[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
           numError++;
         }
         if (numError === 0)
@@ -528,7 +526,7 @@ export class Checker {
   public show(...params: any[]) {
     let p;
     for (p of params) {
-      console.log(p);
+      GeometryCoreTestIO.consoleLog(p);
     }
   }
   public static clearGeometry(name: string, outDir: string) {

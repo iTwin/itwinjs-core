@@ -10,7 +10,6 @@
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
 
-//   /* eslint-disable no-console */
 /**
  * * Context for regularizing single faces.
  * @internal
@@ -165,7 +164,7 @@ export class RegularizationContext {
       // for horizontal edge cases -- require edges ends to have strict sign change (no zeros!!)
       const cRight = HalfEdgeGraphOps.compareNodesYXUp(node, rightBase);
       const cTop = HalfEdgeGraphOps.compareNodesYXUp(node, rightTop);
-      // console.log(node.id, rightBase.id, rightTop.id, cRight, cTop);
+      // GeometryCoreTestIO.consoleLog(node.id, rightBase.id, rightTop.id, cRight, cTop);
       if (cRight * cTop >= 0)
         continue;
       const fraction = HalfEdge.horizontalScanFraction01(rightBase, y0);
@@ -289,12 +288,12 @@ export class RegularizationContext {
     if (upSweep) {
       this.bottomPeaks.sort(HalfEdgeGraphOps.compareNodesYXUp);
       for (const bottomPeak of this.bottomPeaks) {
-        // console.log("SEARCH", bottomPeak.id, [bottomPeak.x, bottomPeak.y]);
+        // GeometryCoreTestIO.consoleLog("SEARCH", bottomPeak.id, [bottomPeak.x, bottomPeak.y]);
         if (!HalfEdgeGraphOps.isDownPeak(bottomPeak))
           continue;
         const target = this.downwardConnectionFromBottomPeak(bottomPeak);
         if (target !== undefined) {
-          // console.log("join", bottomPeak.id, [bottomPeak.x, bottomPeak.y], target.id, [target.x, target.y]);
+          // GeometryCoreTestIO.consoleLog("join", bottomPeak.id, [bottomPeak.x, bottomPeak.y], target.id, [target.x, target.y]);
           this.joinNodes(bottomPeak, target, 1);
         }
       }
