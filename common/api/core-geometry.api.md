@@ -1037,7 +1037,7 @@ export interface Clipper {
 }
 
 // @public
-export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClipper {
+export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1052,6 +1052,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     static createNormalAndDistance(normal: Vector3d, distance: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPoint(normal: Vector3d, point: Point3d, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number, originX: number, originY: number, originZ: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
+    static createOriginAndVectors(origin: Point3d, vectorA: Vector3d, vectorB: Vector3d, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
     get distance(): number;
     dotProductPlaneNormalPoint(point: Point3d): number;
@@ -1074,6 +1075,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     normalY(): number;
     normalZ(): number;
     offsetDistance(offset: number): void;
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
     setPlane4d(plane: Point4d): void;
@@ -1818,15 +1820,15 @@ export class CutLoopMergeContext {
     sortAndMergeLoops(): void;
 }
 
-// @internal
+// @public
 export class DeepCompare {
     constructor(numberRelTol?: number);
     compare(a: any, b: any, tolerance?: number): boolean;
-    compareNumber(_a: number, _b: number): boolean;
+    compareNumber(a: number, b: number): boolean;
     errorTracker: any[];
     numberRelTol: number;
     propertyCounts: {
-        [key: string]: any;
+        [key: string]: number;
     };
     typeCounts: {
         numbers: number;
@@ -2158,6 +2160,7 @@ export class Geometry {
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
     static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined;
+    static split3Way01(x: number, tolerance?: number): -1 | 0 | 1;
     static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number;
     static square(x: number): number;
     static stepCount(stepSize: number, total: number, minCount?: number, maxCount?: number): number;
@@ -4057,7 +4060,25 @@ export interface PerpParallelOptions {
 }
 
 // @public
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
+export abstract class Plane3d implements PlaneAltitudeEvaluator {
+    abstract altitude(spacePoint: Point3d): number;
+    abstract altitudeXYZ(x: number, y: number, z: number): number;
+    classifyAltitude(point: Point3d, tolerance?: number): -1 | 0 | 1;
+    classifyAltitudeXYZ(x: number, y: number, z: number, tolerance?: number): -1 | 0 | 1;
+    getAnyPointOnPlane(result?: Point3d): Point3d;
+    getUnitNormal(result?: Vector3d): Vector3d | undefined;
+    isPointInPlane(spacePoint: Point3d, tolerance?: number): boolean;
+    abstract normalX(): number;
+    abstract normalY(): number;
+    abstract normalZ(): number;
+    abstract projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+    abstract velocity(spaceVector: Vector3d): number;
+    abstract velocityXYZ(x: number, y: number, z: number): number;
+    abstract weightedAltitude(spacePoint: Point4d): number;
+}
+
+// @public
+export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunctions {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
     altitudeXY(x: number, y: number): number;
@@ -4066,7 +4087,10 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
     cloneTransformed(transform: Transform, inverse?: boolean): Plane3dByOriginAndUnitNormal | undefined;
     static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
+    static createFrom(source: Plane3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
+    static createOriginAndTargets(pointA: Point3d, pointB: Point3d, pointC: Point3d): Plane3dByOriginAndUnitNormal | undefined;
     static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
+    static createOriginAndVectors(pointA: Point3d, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
     static createPointPointVectorInPlane(pointA: Point3d, pointB: Point3d, vector: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
     static createXYAngle(x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
     static createXYPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
@@ -4074,12 +4098,14 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     static createYZPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
     static createZXPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
     static fromJSON(json?: any): Plane3dByOriginAndUnitNormal;
+    getAnyPointOnPlane(result?: Point3d): Point3d;
     getLocalToWorld(): Transform;
     getNormalRef(): Vector3d;
     getOriginRef(): Point3d;
     getProjectionToPlane(): Transform;
+    getUnitNormal(result?: Vector3d): Vector3d | undefined;
     isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean;
-    isPointInPlane(spacePoint: Point3d): boolean;
+    isPointInPlane(spacePoint: Point3d, tolerance?: number): boolean;
     normalX(): number;
     normalY(): number;
     normalZ(): number;
@@ -4094,9 +4120,12 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
 }
 
 // @public
-export class Plane3dByOriginAndVectors implements BeJSONFunctions {
-    clone(): Plane3dByOriginAndVectors;
+export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunctions {
+    altitude(xyz: XYAndZ): number;
+    altitudeXYZ(x: number, y: number, z: number): number;
+    clone(result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createCapture(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+    static createFrom(source: Plane3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     static createFromTransformColumnsXYAndLengths(transform: Transform, xLength: number | undefined, yLength: number | undefined, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndTargets(origin: Point3d, targetU: Point3d, targetV: Point3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -4107,9 +4136,15 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     fractionToPoint(u: number, v: number, result?: Point3d): Point3d;
     fractionToVector(u: number, v: number, result?: Vector3d): Vector3d;
     static fromJSON(json?: any): Plane3dByOriginAndVectors;
+    getAnyPointOnPlane(result?: Point3d): Point3d;
+    getUnitNormal(result?: Vector3d): Vector3d | undefined;
     isAlmostEqual(other: Plane3dByOriginAndVectors): boolean;
     normalizeInPlace(): boolean;
+    normalX(): number;
+    normalY(): number;
+    normalZ(): number;
     origin: Point3d;
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     setFromJSON(json?: any): void;
     setOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d): Plane3dByOriginAndVectors;
     setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors;
@@ -4120,6 +4155,9 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     unitNormalRay(result?: Ray3d): Ray3d | undefined;
     vectorU: Vector3d;
     vectorV: Vector3d;
+    velocity(xyzVector: XYAndZ): number;
+    velocityXYZ(x: number, y: number, z: number): number;
+    weightedAltitude(xyzw: Point4d): number;
 }
 
 // @public
@@ -4304,7 +4342,7 @@ export class Point3dArrayPolygonOps {
 }
 
 // @public
-export class Point4d implements BeJSONFunctions {
+export class Point4d extends Plane3d implements BeJSONFunctions {
     protected constructor(x?: number, y?: number, z?: number, w?: number);
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
@@ -4315,6 +4353,7 @@ export class Point4d implements BeJSONFunctions {
     static createFromPackedXYZW(data: Float64Array, xIndex?: number, result?: Point4d): Point4d;
     static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d;
     static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d;
+    static createPlaneFrom(source: PlaneAltitudeEvaluator): Point4d | undefined;
     static createPlanePointPointZ(pointA: Point4d, pointB: Point4d, result?: Point4d): Point4d;
     static createRealDerivativePlane3dByOriginAndVectorsDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, ddx: number, ddy: number, ddz: number, ddw: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createRealDerivativeRay3dDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, result?: Ray3d): Ray3d;
@@ -4351,6 +4390,7 @@ export class Point4d implements BeJSONFunctions {
     plus2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
     plus3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
     plusScaled(vector: Point4d, scaleFactor: number, result?: Point4d): Point4d;
+    projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     radiansToPoint4dXYZW(other: Point4d): number | undefined;
     realDistanceXY(other: Point4d): number | undefined;
     realPoint(result?: Point3d): Point3d | undefined;
@@ -5120,6 +5160,7 @@ export class Ray3d implements BeJSONFunctions {
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
     intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
     isAlmostEqual(other: Ray3d): boolean;
+    isAlmostEqualPointSet(other: Ray3d): boolean;
     origin: Point3d;
     perpendicularPartOfVectorToTarget(targetPoint: XYAndZ, result?: Vector3d): Vector3d;
     pointToFraction(spacePoint: Point3d): number;
@@ -5223,18 +5264,18 @@ export class RegionMomentsXY extends NullGeometryHandler {
     handleUnionRegion(region: UnionRegion): MomentData | undefined;
 }
 
-// @beta
+// @public
 export class RegionOps {
     // @internal
     static addLoopsToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, announceIsolatedLoop: (graph: HalfEdgeGraph, seed: HalfEdge) => void): void;
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
-    static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined;
-    static collectChains(fragments: GeometryQuery[], gapTolerance?: number): ChainTypes;
+    static cloneCurvesWithXYSplits(curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection): AnyCurve | undefined;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number): ChainTypes;
     static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
-    static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): {
-        insideOffsets: GeometryQuery[];
-        outsideOffsets: GeometryQuery[];
+    static collectInsideAndOutsideOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
+        insideOffsets: AnyCurve[];
+        outsideOffsets: AnyCurve[];
         chains: ChainTypes;
     };
     static computeXYArea(root: AnyRegion): number | undefined;
@@ -5242,7 +5283,6 @@ export class RegionOps {
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
-    // @alpha
     static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
@@ -5255,17 +5295,16 @@ export class RegionOps {
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
-    // @alpha
     static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance?: number): AnyRegion | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion;
-    static splitPathsByRegionInOnOutXY(curvesToCut: CurveCollection | CurvePrimitive | undefined, region: AnyRegion): {
+    static splitPathsByRegionInOnOutXY(curvesToCut: AnyCurve | undefined, region: AnyRegion): {
         insideParts: AnyCurve[];
         outsideParts: AnyCurve[];
         coincidentParts: AnyCurve[];
     };
-    static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined, makeClones: boolean): BagOfCurves | Path | CurvePrimitive | Loop | undefined;
+    static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
 }
 
@@ -5407,9 +5446,11 @@ export class Sample {
     static createTriangularUnitGridPolyface(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d, numXVertices: number, numYVertices: number, createParams?: boolean, createNormals?: boolean, createColors?: boolean, triangulate?: boolean): IndexedPolyface;
     static createTwistingBezier(order: number, x0: number, y0: number, r: number, thetaStepper: AngleSweep, phiStepper: AngleSweep, weightInterval?: Segment1d): CurvePrimitive | undefined;
     static createUnitCircle(numPoints: number): Point3d[];
+    static createVerticalStaggerPolygon(dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number): Point3d[];
     static createWeightedXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number, weight00?: number, weight10?: number, weight01?: number, weight11?: number): BSplineSurface3dH | undefined;
     static createXYGrid(numU: number, numV: number, dX?: number, dY?: number): Point3d[];
     static createXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined;
+    // @deprecated (undocumented)
     static creatVerticalStaggerPolygon(dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number): Point3d[];
     static readonly lineSegment3d: LineSegment3d[];
     static nonConvexQuadSimpleFractal(numRecursion: number, perpendicularFactor: number): Point3d[];
@@ -5820,14 +5861,14 @@ export class Transform implements BeJSONFunctions {
     multiplyComponentXYZ(componentIndex: number, x: number, y: number, z?: number): number;
     multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number;
     multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined;
-    multiplyInversePoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[] | undefined;
-    multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean;
+    multiplyInversePoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[] | undefined;
+    multiplyInversePoint3dArrayInPlace(points: Point3d[]): boolean;
     multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;
     multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
     multiplyPoint2d(point: XAndY, result?: Point2d): Point2d;
-    multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[];
+    multiplyPoint2dArray(points: Point2d[], result?: Point2d[]): Point2d[];
     multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d;
-    multiplyPoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[];
+    multiplyPoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[];
     multiplyPoint3dArrayArrayInPlace(chains: Point3d[][]): void;
     multiplyPoint3dArrayInPlace(points: Point3d[]): void;
     multiplyRange(range: Range3d, result?: Range3d): Range3d;
@@ -6136,6 +6177,7 @@ export class Vector3d extends XYZ {
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
     static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d;
     static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d;
+    static createUnitCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d | undefined;
     static createZero(result?: Vector3d): Vector3d;
     crossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d;
     crossProductMagnitude(vectorB: XYAndZ): number;
@@ -6306,6 +6348,7 @@ export class XYZ implements XYAndZ {
     indexOfMaxAbs(): number;
     isAlmostEqual(other: Readonly<XYAndZ>, tol?: number): boolean;
     isAlmostEqualMetric(other: XYAndZ): boolean;
+    isAlmostEqualPointPlusScaledVector(other: XYAndZ, vector: XYAndZ, scale: number, tol?: number): boolean;
     isAlmostEqualXY(other: XAndY, tol?: number): boolean;
     isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean;
     get isAlmostZero(): boolean;

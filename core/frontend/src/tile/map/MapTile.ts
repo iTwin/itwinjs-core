@@ -51,9 +51,9 @@ export type TilePatch = PlanarTilePatch | EllipsoidPatch;
  */
 export abstract class MapTileProjection {
   /** The extents of the volume of space associated with the projected [[MapTile]]. */
-  abstract get localRange(): Range3d;
+  public abstract get localRange(): Range3d;
   /** @alpha */
-  abstract get transformFromLocal(): Transform;
+  public abstract get transformFromLocal(): Transform;
 
   /** Given parametric coordinates in [0, 1] within the tile's rectangular region, and an elevation above the Earth,
    * compute the 3d position in space.

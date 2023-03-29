@@ -46,7 +46,6 @@ function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined
   } else
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), xOrigin, yOrigin, zOrigin);
 }
-/* eslint-disable no-console */
 // cspell::word lisajoue
 describe("LinearSearchRange2dArray", () => {
 
@@ -184,7 +183,7 @@ describe("GriddedRaggedRange2dSet", () => {
           isInGrid = true;
           saveRange(allGeometry, undefined, range, x0, y0);
         } else {
-          // console.log("Range rejected", range.toJSON());
+          // GeometryCoreTestIO.consoleLog("Range rejected", range.toJSON());
           isInGrid = false;
           saveRange(allGeometry, 0.25, range, x0, y0);
         }

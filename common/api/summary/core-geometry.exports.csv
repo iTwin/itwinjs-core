@@ -107,7 +107,7 @@ public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve
 public;CurveSearchStatus
 internal;CutLoop
 internal;CutLoopMergeContext
-internal;DeepCompare
+public;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
@@ -203,6 +203,7 @@ internal;PascalCoefficients
 public;Path 
 public;PathFragment
 public;PerpParallelOptions
+public;class Plane3d 
 public;Plane3dByOriginAndUnitNormal 
 public;Plane3dByOriginAndVectors 
 public;PlaneAltitudeEvaluator
@@ -249,7 +250,7 @@ public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 
 public;RegionBinaryOpType
 internal;RegionMomentsXY 
-beta;RegionOps
+public;RegionOps
 public;RotationalSweep 
 public;RuledSweep 
 alpha;Sample

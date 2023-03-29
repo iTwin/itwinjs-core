@@ -18,8 +18,6 @@ import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console */
-
 describe("ConvexClipPlaneSet", () => {
   it("HelloWorld", () => {
     const ck = new Checker();

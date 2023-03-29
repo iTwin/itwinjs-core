@@ -366,7 +366,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       const index0 = Math.trunc(clampedGlobalFraction * numStrokes); // This indexes the point to the left of the query.
       const globalFraction0 = index0 / numStrokes;
       result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(index0, result);
-      // console.log(" fractionToPoint ", activeFraction, this.activeFractionInterval, "( global integration " + globalFraction0 + " to " + globalFraction + ")", index0);
+      // GeometryCoreTestIO.consoleLog(" fractionToPoint ", activeFraction, this.activeFractionInterval, "( global integration " + globalFraction0 + " to " + globalFraction + ")", index0);
       this.fullSpiralIncrementalIntegral(result, globalFraction0, targetGlobalFraction, true);
 
     }

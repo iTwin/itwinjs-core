@@ -575,11 +575,10 @@ export class PolyfaceQuery {
       while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, visitor, announce)))) {
         workTotal += workCount;
         this.awaitBlockCount++;
-        // console.log({ myWorkCount: workCount, myBlockCount: this.awaitBlockCount });
+        // GeometryCoreTestIO.consoleLog({ myWorkCount: workCount, myBlockCount: this.awaitBlockCount });
       }
     }
-    // eslint-disable-next-line no-console
-    // console.log({ myWorkTotal: workTotal, myBlockCount: this.awaitBlockCount });
+    // GeometryCoreTestIO.consoleLog({ myWorkTotal: workTotal, myBlockCount: this.awaitBlockCount });
     return workTotal;
   }
 

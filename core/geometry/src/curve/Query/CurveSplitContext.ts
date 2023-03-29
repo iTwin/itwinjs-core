@@ -8,6 +8,7 @@
  */
 
 import { Geometry } from "../../Geometry";
+import { AnyCurve } from "../CurveChain";
 import { CurveChain, CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
@@ -46,6 +47,7 @@ class CutFractionDescriptor {
 }
 /**
  * Context for splitting curves.
+ * * Sets startCut and endCut details on CurvePrimitive fragments.
  * @internal
  */
 export class CurveSplitContext {
@@ -89,7 +91,7 @@ export class CurveSplitContext {
     cutB.set(1.0, undefined);
     this.collectFragmentAndAdvanceCut(curveToCut, cutA, cutB, fragments);
   }
-  public static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined {
+  public static cloneCurvesWithXYSplits(curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection): AnyCurve | undefined {
     const context = new CurveSplitContext();
     if (curvesToCut instanceof CurvePrimitive) {
       const result: CurvePrimitive[] = [];
@@ -98,7 +100,6 @@ export class CurveSplitContext {
       if (result.length === 1)
         return result[0];
       return Path.createArray(result);
-
     } else if (curvesToCut instanceof CurveChain) {
       const result: CurvePrimitive[] = [];
       for (const primitive of curvesToCut.children) {
