@@ -525,15 +525,15 @@ export class PresentationManager {
    * @public
    */
   public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
-    const shouldFormatValues = !requestOptions.omitFormattedValues;
     const content = await this._detail.getContent({
-      ...(shouldFormatValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
       ...requestOptions,
+      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined)
     });
+
     if (!content)
       return undefined;
 
-    if (shouldFormatValues && this.props.schemaContextProvider !== undefined) {
+    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
       const formatter = createContentFormatter(this.props.schemaContextProvider(requestOptions.imodel), requestOptions.unitSystem);
       await formatter.formatContent(content);
     }

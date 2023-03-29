@@ -404,13 +404,12 @@ export class PresentationManager implements IDisposable {
   /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
   public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{ content: Content, size: number } | undefined> {
     await this.onConnection(requestOptions.imodel);
-    const shouldFormatValues = !requestOptions.omitFormattedValues;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
-      ...(shouldFormatValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
       ...options,
       descriptor: getDescriptorOverrides(requestOptions.descriptor),
       keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
+      ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
     });
     let descriptor = (requestOptions.descriptor instanceof Descriptor) ? requestOptions.descriptor : undefined;
     const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions, requestIndex) => {
@@ -429,7 +428,7 @@ export class PresentationManager implements IDisposable {
 
     const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => (item !== undefined));
     const resultContent = new Content(descriptor, items);
-    if (shouldFormatValues && this._schemaContextProvider) {
+    if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
       const contentFormatter = createContentFormatter(this._schemaContextProvider(requestOptions.imodel), IModelApp.quantityFormatter.activeUnitSystem);
       await contentFormatter.formatContent(resultContent);
     }
