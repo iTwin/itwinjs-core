@@ -839,7 +839,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return true;
   }
 
-  /** Returns true if solar shadow display is enabled by this display style. */
+  /** @internal */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
