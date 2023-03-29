@@ -16,7 +16,6 @@ export * from "./ChangeSummaryManager";
 export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
-export * from "./CloudCaches";
 export * from "./CloudSqlite";
 export * from "./CloudStorageBackend";
 export * from "./CodeService";

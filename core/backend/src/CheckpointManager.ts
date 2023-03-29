@@ -17,10 +17,10 @@ import {
 import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { CloudCaches } from "./CloudCaches";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { SnapshotDb, TokenArg } from "./IModelDb";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -167,7 +167,7 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir });
+      this._cloudCache = CloudSqlite.CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir });
 
       // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)

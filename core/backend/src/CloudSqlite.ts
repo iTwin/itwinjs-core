@@ -7,7 +7,7 @@
  */
 
 import { mkdirSync } from "fs";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { BriefcaseStatus, GuidString } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -504,6 +504,4 @@ export namespace CloudSqlite {
       return this.cloudCaches.get(args.cacheName) ?? this.makeCache(args);
     }
   }
-
-
 }

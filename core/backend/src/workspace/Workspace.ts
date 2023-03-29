@@ -19,7 +19,6 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
-import { CloudCaches } from "../CloudCaches";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey julianday
@@ -304,9 +303,7 @@ export class ITwinWorkspace implements Workspace {
   public readonly settings: Settings;
   private _cloudCache?: CloudSqlite.CloudCache;
   public get cloudCache(): CloudSqlite.CloudCache {
-    if (undefined === this._cloudCache)
-      this._cloudCache = CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
-    return this._cloudCache;
+    return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
