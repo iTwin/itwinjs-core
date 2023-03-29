@@ -6,6 +6,9 @@
  * @module IModelHost
  */
 
+// To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
+import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
+
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";

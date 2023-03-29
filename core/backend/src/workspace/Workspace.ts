@@ -305,7 +305,7 @@ export class ITwinWorkspace implements Workspace {
   private _cloudCache?: CloudSqlite.CloudCache;
   public get cloudCache(): CloudSqlite.CloudCache {
     if (undefined === this._cloudCache)
-      this._cloudCache = CloudCaches.getCache("Workspace", "20G");
+      this._cloudCache = CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
     return this._cloudCache;
   }
 
