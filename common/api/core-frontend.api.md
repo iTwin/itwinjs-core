@@ -1945,11 +1945,9 @@ export class Cluster<T extends Marker> {
 // @beta
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
-// @public (undocumented)
+// @public
 export enum CompassMode {
-    // (undocumented)
     Polar = 0,
-    // (undocumented)
     Rectangular = 1
 }
 
@@ -2265,15 +2263,11 @@ export class CurrentInputState {
     viewport?: ScreenViewport;
 }
 
-// @public (undocumented)
+// @public
 export enum CurrentState {
-    // (undocumented)
     Active = 3,
-    // (undocumented)
     Deactivated = 1,
-    // (undocumented)
     Inactive = 2,
-    // (undocumented)
     NotEnabled = 0
 }
 
@@ -5879,17 +5873,12 @@ export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec)
 // @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
-// @public (undocumented)
+// @public
 export enum ItemField {
-    // (undocumented)
     ANGLE_Item = 1,
-    // (undocumented)
     DIST_Item = 0,
-    // (undocumented)
     X_Item = 2,
-    // (undocumented)
     Y_Item = 3,
-    // (undocumented)
     Z_Item = 4
 }
 
@@ -9966,19 +9955,13 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @public (undocumented)
+// @public
 export enum RotationMode {
-    // (undocumented)
     ACS = 5,
-    // (undocumented)
     Context = 6,
-    // (undocumented)
     Front = 2,
-    // (undocumented)
     Side = 3,
-    // (undocumented)
     Top = 1,
-    // (undocumented)
     View = 4
 }
 

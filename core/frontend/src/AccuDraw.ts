@@ -56,19 +56,31 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @public */
+/** AccuDraw coordinate input mode
+ * @public
+ */
 export enum CompassMode {
+  /** Coordinate input using distance and angle */
   Polar = 0,
+  /** Coordinate input using x, y, and z deltas */
   Rectangular = 1,
 }
 
-/** @public */
+/** AccuDraw compass base rotation
+ * @public
+ */
 export enum RotationMode {
+  /** Aligned with standard view top or ACS top when [[ToolAdmin.acsContextLock]] is enabled */
   Top = 1,
+  /** Aligned with standard view front or ACS front when [[ToolAdmin.acsContextLock]] is enabled */
   Front = 2,
+  /** Aligned with standard view right or ACS right when [[ToolAdmin.acsContextLock]] is enabled */
   Side = 3,
+  /** Aligned with view */
   View = 4,
+  /** Aligned with view ACS */
   ACS = 5,
+  /** Not aligned with a standard rotation or ACS */
   Context = 6,
 }
 
@@ -83,12 +95,18 @@ export enum LockedStates {
   ANGLE_BM = (XY_BM | VEC_BM),
 }
 
-/** @public */
+/** AccuDraw enabled states
+ * @public
+ */
 export enum CurrentState {
-  NotEnabled = 0, // Compass disabled/unwanted for this session.
-  Deactivated = 1, // Compass deactivated but CAN be activated by user.
-  Inactive = 2, // Compass not displayed awaiting automatic activation (default tool state).
-  Active = 3, // Compass displayed and adjusting points.
+  /** Compass disabled/unwanted for this session */
+  NotEnabled = 0,
+  /** Compass deactivated but CAN be activated by user */
+  Deactivated = 1,
+  /** Compass not displayed awaiting automatic activation (default tool state) */
+  Inactive = 2,
+  /** Compass displayed and adjusting points */
+  Active = 3,
 }
 
 /** @internal */
@@ -101,12 +119,19 @@ export enum ContextMode {
   None = 15,
 }
 
-/** @public */
+/** AccuDraw coordinate input fields
+ * @public
+ */
 export enum ItemField {
+  /** Distance for polar mode */
   DIST_Item = 0,
+  /** Angle for polar mode */
   ANGLE_Item = 1,
+  /** X delta for rectangular mode */
   X_Item = 2,
+  /** Y delta for rectangular mode */
   Y_Item = 3,
+  /** Z delta (3d only) */
   Z_Item = 4,
 }
 
