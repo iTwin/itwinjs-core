@@ -2574,6 +2574,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
+    // @internal
+    enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean;
     equalState(other: DisplayStyleState): boolean;
     findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
@@ -2634,6 +2636,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @deprecated
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
+    // @internal
+    setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -6950,7 +6954,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -13413,6 +13417,7 @@ export class ViewCreator3d {
 
 // @public
 export interface ViewCreator3dOptions {
+    allSubCategoriesVisible?: boolean;
     cameraOn?: boolean;
     skyboxOn?: boolean;
     standardViewId?: StandardViewId;
