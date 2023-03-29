@@ -13,12 +13,8 @@ import { ConcurrentQuery } from "../../ConcurrentQuery";
 // cspell:ignore mirukuru ibim
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
-  const rows: any[] = [];
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
-    rows.push(row);
-  }
-  return rows;
+  const reader = iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs });
+  return reader.toArray();
 }
 
 describe("ECSql Query", () => {
@@ -103,8 +99,9 @@ describe("ECSql Query", () => {
           try {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
-            // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
-            for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions())) {
+            options.setRestartToken("tag");
+            const reader = imodel1.createQueryReader("SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions());
+            while (await reader.step()) {
               rowCount++;
             }
             successful++;
@@ -153,9 +150,9 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
-      ids.push(row[0]);
+    const idReader = imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23");
+    while (await idReader.step()) {
+      ids.push(idReader.current.ECInstanceId);
     }
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
@@ -217,8 +214,9 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      // eslint-disable-next-line deprecation/deprecation
-      pendingRowCount.push(db.queryRowCount(query));
+      const reader = db.createQueryReader(`SELECT count(*) FROM (${query})`);
+      if (await reader.step())
+        pendingRowCount.push(reader.current.getArray()[0]);
     }
 
     const rowCounts = await Promise.all(pendingRowCount);
@@ -240,8 +238,9 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      const reader = db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      while (await reader.step()) {
+        const row = reader.current.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {

@@ -507,8 +507,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader1 = imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader1.step()) {
+      const row = reader1.current.toRow();
       verifyTestElement(row as TestElement, expectedValue);
       rowCount++;
     }
@@ -539,8 +540,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader2 = imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader2.step()) {
+      const row = reader2.current.toRow();
       verifyTestElement(row as TestElement, actualValue);
       rowCount++;
     }
@@ -588,8 +590,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader1 = imodel.createQueryReader("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader1.step()) {
+      const row = reader1.current.toRow();
       verifyTestElementAspect(row as TestElementAspect, expectedAspectValue);
       rowCount++;
     }
@@ -621,8 +624,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader2 = imodel.createQueryReader("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader2.step()) {
+      const row = reader2.current.toRow();
       verifyTestElementAspect(row as TestElementAspect, actualAspectValue[0]);
       rowCount++;
     }
@@ -682,10 +686,10 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      const val = row as TestElementRefersToElements;
-      verifyTestElementRefersToElements(val, expectedRelationshipValue);
+    const reader1 = imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader1.step()) {
+      const row = reader1.current.toRow();
+      verifyTestElementRefersToElements(row as TestElementRefersToElements, expectedRelationshipValue);
       rowCount++;
     }
     assert.equal(rowCount, 1);
@@ -716,8 +720,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader2 = imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader2.step()) {
+      const row = reader2.current.toRow();
       verifyTestElementRefersToElements(row as TestElementRefersToElements, updatedExpectedValue);
       rowCount++;
     }

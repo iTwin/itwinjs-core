@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as semver from "semver";
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  Code, ColorDef, ECSqlReader, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import { HubWrappers, KnownTestLocations } from "../";
@@ -477,6 +477,7 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 2);
     }
     let rows: any[] = [];
+    let reader: ECSqlReader;
     rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rows.push(stmt.getRow());
@@ -485,9 +486,9 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      rows.push(row);
+    reader = rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader.step()) {
+      rows.push(reader.current.toRow());
     }
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
@@ -504,9 +505,9 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-        rows.push(row);
+      reader = rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      while (await reader.step()) {
+        rows.push(reader.current.toRow());
       }
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
@@ -595,9 +596,9 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      rows.push(row);
+    reader = rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader.step()) {
+      rows.push(reader.current.toRow());
     }
     assert.equal(rows.length, 30);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
@@ -613,9 +614,9 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      rows.push(row);
+    reader = rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader.step()) {
+      rows.push(reader.current.toRow());
     }
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
@@ -637,9 +638,9 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-        rows.push(row);
+      reader = rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      while (await reader.step()) {
+        rows.push(reader.current.toRow());
       }
       assert.equal(rows.length, 30);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
@@ -682,9 +683,9 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-        rows.push(row);
+      reader = rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      while (await reader.step()) {
+        rows.push(reader.current.toRow());
       }
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
