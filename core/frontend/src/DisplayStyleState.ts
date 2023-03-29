@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
@@ -796,7 +796,54 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
+<<<<<<< HEAD
   /** @internal */
+=======
+  /** For each subcategory belonging to any of the specified categories, make it visible by turning off the "invisible" flag in its subcategory appearance.
+   * This requires that the categories and subcategories have been previously loaded by, e.g., a call to IModelConnection.querySubCategories.
+   * @returns true if the visibility of any subcategory was modified.
+   * @see Viewport.changeCategoryDisplay
+   * @see ViewCreator3dOptions.allSubCategoriesVisible
+   * @internal
+   */
+  public enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean {
+    let anyChanged = false;
+    for (const categoryId of Id64.iterable(categoryIds)) {
+      const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
+      if (undefined !== subCategoryIds)
+        for (const subCategoryId of subCategoryIds)
+          if (this.setSubCategoryVisible(subCategoryId, true))
+            anyChanged = true;
+    }
+
+    return anyChanged;
+  }
+
+  /** Change the "invisible" flag for the given subcategory's appearance.
+   * This requires that the subcategory appearance has been previously loaded by, e.g., a call to IModelConnection.Categories.getSubCategoryInfo.
+   * @returns true if the visibility of any subcategory was modified.
+   * @see [[enableAllLoadedSubCategories]]
+   * @internal
+   */
+  public setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean {
+    const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+    if (undefined === app)
+      return false; // category not enabled or subcategory not found
+
+    const curOvr = this.getSubCategoryOverride(subCategoryId);
+    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
+    if (isAlreadyVisible === visible)
+      return false;
+
+    // Preserve existing overrides - just flip the visibility flag.
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
+    json.invisible = !visible;
+    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
+    return true;
+  }
+
+  /** Returns true if solar shadow display is enabled by this display style. */
+>>>>>>> c6f03a721b (Add a ViewCreator3d option to make all subcategories visible (#5308))
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
