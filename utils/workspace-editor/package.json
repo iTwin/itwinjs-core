@@ -8,7 +8,6 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",

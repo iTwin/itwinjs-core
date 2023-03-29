@@ -23,7 +23,6 @@
   "typings": "lib/cjs/presentation-backend",
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "npm run -s copy:assets && tsc 1>&2",
     "copy:assets": "cpx \"./assets/**/*\" ./lib/cjs/assets",
     "build:watch": "npm run -s build:cjs -- -w",

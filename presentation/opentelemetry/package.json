@@ -26,7 +26,6 @@
   "typings": "lib/cjs/presentation-opentelemetry",
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
