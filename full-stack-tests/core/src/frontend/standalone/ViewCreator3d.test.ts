@@ -66,7 +66,7 @@ describe("ViewCreator3d", async () => {
     view = await creator.createDefaultView({ allSubCategoriesVisible: true });
     expectVisible(true, true);
 
-    imodel.subcategories.add("0x19", "0x20", invisibleAppearance);
+    imodel.subcategories.add("0x17", "0x20", invisibleAppearance);
     view = await creator.createDefaultView({ allSubCategoriesVisible: true });
     expectVisible(true, true);
 
