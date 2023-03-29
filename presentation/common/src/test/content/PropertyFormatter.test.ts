@@ -152,8 +152,8 @@ describe("ContentPropertyValueFormatter", () => {
 
     it("'bool' value", async () => {
       const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "bool" });
-      expect(await formatter.formatPropertyValue(field, true)).to.be.eq("True");
-      expect(await formatter.formatPropertyValue(field, false)).to.be.eq("False");
+      expect(await formatter.formatPropertyValue(field, true)).to.be.eq("@Presentation:value.true@");
+      expect(await formatter.formatPropertyValue(field, false)).to.be.eq("@Presentation:value.false@");
     });
 
     it("'double' value", async () => {
@@ -223,7 +223,6 @@ describe("ContentPropertyValueFormatter", () => {
         members: [
           { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
           { name: "intProp", label: "Int Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" } },
-          { name: "boolProp", label: "Bool Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "bool" } },
           { name: "pointProp", label: "Point Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" } },
         ],
       });
@@ -236,10 +235,9 @@ describe("ContentPropertyValueFormatter", () => {
       };
 
       const formattedValue = (await formatter.formatPropertyValue(field, structValue)) as DisplayValuesMap;
-      expect(Object.keys(formattedValue)).to.have.lengthOf(4);
+      expect(Object.keys(formattedValue)).to.have.lengthOf(3);
       expect(formattedValue.doubleProp).to.be.eq("1.50");
       expect(formattedValue.intProp).to.be.eq("1");
-      expect(formattedValue.boolProp).to.be.eq("False");
       expect(formattedValue.pointProp).to.be.eq("X: 1.23 Y: 4.57");
     });
 

@@ -107,7 +107,7 @@ export class ContentPropertyValueFormatter {
     }
     if (type.typeName === "bool" || type.typeName === "boolean") {
       assert(typeof value === "boolean");
-      return value ? "True" : "False";
+      return value ? "@Presentation:value.true@" : "@Presentation:value.false@";
     }
     if (type.typeName === "int" || type.typeName === "long") {
       assert(isNumber(value));
