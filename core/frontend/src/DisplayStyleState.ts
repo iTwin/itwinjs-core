@@ -798,7 +798,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** For each subcategory belonging to any of the specified categories, make it visible by turning off the "invisible" flag in its subcategory appearance.
    * This requires that the categories and subcategories have been previously loaded by, e.g., a call to IModelConnection.querySubCategories.
    * @see Viewport.changeCategoryDisplay
-   * @see ViewCreator3dOptions.enableAllSubCategories
+   * @see ViewCreator3dOptions.allSubCategoriesVisible
    * @internal
    */
   public enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean {
