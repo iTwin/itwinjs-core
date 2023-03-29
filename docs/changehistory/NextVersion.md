@@ -106,3 +106,4 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
+- `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
