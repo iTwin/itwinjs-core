@@ -513,18 +513,15 @@ importers:
       '@loaders.gl/draco': ^3.1.6
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
-      '@types/deep-assign': ^0.1.0
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
       '@types/semver': 7.3.10
       '@types/sinon': ^9.0.0
-      '@types/superagent': ^4.1.14
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
-      deep-assign: ^2.0.0
       eslint: ^7.11.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
@@ -535,7 +532,6 @@ importers:
       semver: ^7.3.5
       sinon: ^9.0.2
       source-map-loader: ^4.0.0
-      superagent: ^7.1.5
       typescript: ~5.0.2
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
@@ -548,11 +544,9 @@ importers:
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.3.1
       '@loaders.gl/draco': 3.3.1
-      deep-assign: 2.0.0
       fuse.js: 3.6.1
       reflect-metadata: 0.1.13
       semver: 7.3.8
-      superagent: 7.1.5
       wms-capabilities: 0.4.0
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -566,12 +560,10 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.32_eslint@7.32.0+typescript@5.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
-      '@types/deep-assign': 0.1.1
       '@types/mocha': 8.2.3
       '@types/node': 18.15.3
       '@types/semver': 7.3.10
       '@types/sinon': 9.0.11
-      '@types/superagent': 4.1.16
       babel-loader: 8.2.5_webpack@5.76.1
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
