@@ -8,7 +8,6 @@
 
 import { assert } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { SchemaContext } from "@itwin/ecschema-metadata";
 import { KindOfQuantityInfo, PropertyInfo } from "../EC";
 import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter";
 import { ValuesDictionary } from "../Utils";
@@ -16,13 +15,6 @@ import { Content } from "./Content";
 import { Field, PropertiesField } from "./Fields";
 import { ArrayTypeDescription, PrimitiveTypeDescription, PropertyValueFormat, StructTypeDescription, TypeDescription } from "./TypeDescription";
 import { DisplayValue, DisplayValuesMap, NestedContentValue, Value } from "./Value";
-
-/** @alpha */
-export function createContentFormatter(schemaContext: SchemaContext, unitSystem?: UnitSystemKey) {
-  const koqPropertyFormatter = new KoqPropertyValueFormatter(schemaContext);
-  const contentValueFormatter = new ContentPropertyValueFormatter(koqPropertyFormatter);
-  return new ContentFormatter(contentValueFormatter, unitSystem);
-}
 
 /** @alpha */
 export class ContentFormatter {

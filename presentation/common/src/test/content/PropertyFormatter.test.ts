@@ -5,25 +5,13 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { SchemaContext } from "@itwin/ecschema-metadata";
 import { KoqPropertyValueFormatter, LabelDefinition, PropertyValueFormat, TypeDescription } from "../../presentation-common";
 import { Content } from "../../presentation-common/content/Content";
-import { ContentFormatter, ContentPropertyValueFormatter, createContentFormatter } from "../../presentation-common/content/PropertyValueFormatter";
+import { ContentFormatter, ContentPropertyValueFormatter } from "../../presentation-common/content/PropertyValueFormatter";
 import { DisplayValuesArray, DisplayValuesMap, NavigationPropertyValue, NestedContentValue } from "../../presentation-common/content/Value";
 import {
   createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo,
 } from "../_helpers";
-
-describe("createContentFormatter", () => {
-  it("creates formatter", async () => {
-    const formatter = createContentFormatter(new SchemaContext(), "metric");
-    const field = createTestPropertiesContentField({ name: "testField", properties: [], type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } });
-    const item = createTestContentItem({ displayValues: {}, values: { [field.name]: 1.5 } });
-    const content = new Content(createTestContentDescriptor({ fields: [field] }), [item]);
-    await formatter.formatContent(content);
-    expect(item.displayValues[field.name]).to.be.eq("1.50");
-  });
-});
 
 describe("ContentPropertyValueFormatter", () => {
   let formatter: ContentFormatter;

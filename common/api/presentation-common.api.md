@@ -462,9 +462,6 @@ export enum ContentSpecificationTypes {
 // @alpha (undocumented)
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
-// @alpha (undocumented)
-export function createContentFormatter(schemaContext: SchemaContext, unitSystem?: UnitSystemKey): ContentFormatter;
-
 // @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 

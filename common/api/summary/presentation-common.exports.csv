@@ -66,7 +66,6 @@ public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | C
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
-alpha;createContentFormatter(schemaContext: SchemaContext, unitSystem?: UnitSystemKey): ContentFormatter
 public;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 

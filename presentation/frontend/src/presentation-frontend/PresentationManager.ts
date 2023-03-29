@@ -11,12 +11,13 @@ import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
-  ContentSourcesRequestOptions, ContentUpdateInfo, createContentFormatter, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset,
-  RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
+  ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentFormatter, ContentInstanceKeysRequestOptions,
+  ContentPropertyValueFormatter, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions,
+  HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, KoqPropertyValueFormatter, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
+  SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
@@ -429,7 +430,8 @@ export class PresentationManager implements IDisposable {
     const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => (item !== undefined));
     const resultContent = new Content(descriptor, items);
     if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
-      const contentFormatter = createContentFormatter(this._schemaContextProvider(requestOptions.imodel), IModelApp.quantityFormatter.activeUnitSystem);
+      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel));
+      const contentFormatter = new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), IModelApp.quantityFormatter.activeUnitSystem);
       await contentFormatter.formatContent(resultContent);
     }
 
