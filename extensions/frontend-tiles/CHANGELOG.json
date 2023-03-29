@@ -1,0 +1,23 @@
+{
+  "name": "@itwin/frontend-tiles",
+  "entries": [
+    {
+      "version": "3.7.0",
+      "tag": "@itwin/frontend-tiles_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove y-up-to-z-up display transform."
+          },
+          {
+            "comment": "Ensure fitting the view fits to the extents of the currently-viewed models."
+          },
+          {
+            "comment": "Add new experimental package providing alternate technique for visualizing iModels."
+          }
+        ]
+      }
+    }
+  ]
+}

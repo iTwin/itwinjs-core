@@ -2,6 +2,18 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "3.7.0",
+      "tag": "@itwin/core-quantity_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed KeepSingleZero format trait where zero wasn't being retained when fractional part was all zeroes."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.6.3",
       "tag": "@itwin/core-quantity_v3.6.3",
       "date": "Mon, 27 Mar 2023 16:26:47 GMT",

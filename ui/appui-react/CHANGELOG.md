@@ -1,6 +1,16 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Mon, 27 Mar 2023 16:26:47 GMT and should not be manually modified.
+This log was last generated on Wed, 29 Mar 2023 15:02:27 GMT and should not be manually modified.
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+### Updates
+
+- Fix Popout widget window title
+- Fix react briefMessage in toasts
+- Move `Manager` classes under `UiFramework`
+- update @deprecated comments.
 
 ## 3.6.3
 Mon, 27 Mar 2023 16:26:47 GMT

@@ -2,6 +2,27 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.7.0",
+      "tag": "@itwin/core-frontend_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate IModelConnection's query, queryRowCount, and restartQuery methods."
+          },
+          {
+            "comment": "Deprecated IModelAppOptions.rpcInterfaces in favor of using platform-specific RPC manager."
+          },
+          {
+            "comment": "Fixed clipping problem with decorators."
+          },
+          {
+            "comment": "Localize tooltips for view clip decorations."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.6.3",
       "tag": "@itwin/core-frontend_v3.6.3",
       "date": "Mon, 27 Mar 2023 16:26:47 GMT",

@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Mon, 27 Mar 2023 16:26:47 GMT and should not be manually modified.
+This log was last generated on Wed, 29 Mar 2023 15:02:27 GMT and should not be manually modified.
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+### Updates
+
+- ray-mesh intersection
+- add merge tolerance to regionBooleanXY
 
 ## 3.6.3
 Mon, 27 Mar 2023 16:26:47 GMT

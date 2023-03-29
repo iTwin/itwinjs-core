@@ -2,6 +2,27 @@
   "name": "@itwin/imodel-components-react",
   "entries": [
     {
+      "version": "3.7.0",
+      "tag": "@itwin/imodel-components-react_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed expected test case result."
+          },
+          {
+            "comment": "Fix large timeline menu displaying outside visible area"
+          },
+          {
+            "comment": "Update Navigation Aids in line with current design goals."
+          },
+          {
+            "comment": "Update @deprecated comments"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.6.3",
       "tag": "@itwin/imodel-components-react_v3.6.3",
       "date": "Mon, 27 Mar 2023 16:26:47 GMT",

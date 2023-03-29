@@ -1,6 +1,13 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Mon, 27 Mar 2023 16:26:47 GMT and should not be manually modified.
+This log was last generated on Wed, 29 Mar 2023 15:02:27 GMT and should not be manually modified.
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+### Updates
+
+- Added a custom ESLint rule that enforces version and description for @deprecated tags. Deprecation tags must match a @deprecated in Major.minor format followed by a brief description of what API to use instead and/or a reason for the deprecation.
 
 ## 3.6.3
 Mon, 27 Mar 2023 16:26:47 GMT

@@ -2,6 +2,21 @@
   "name": "@itwin/core-webpack-tools",
   "entries": [
     {
+      "version": "3.7.0",
+      "tag": "@itwin/core-webpack-tools_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated minimum webpack peer dependency to `5.76.0`"
+          },
+          {
+            "comment": "CopyExternalsPlugin does not copy external modules marked /* webpack: external */"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.6.3",
       "tag": "@itwin/core-webpack-tools_v3.6.3",
       "date": "Mon, 27 Mar 2023 16:26:47 GMT",

@@ -2,6 +2,18 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "3.7.0",
+      "tag": "@itwin/certa_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Electron 23."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.6.3",
       "tag": "@itwin/certa_v3.6.3",
       "date": "Mon, 27 Mar 2023 16:26:47 GMT",

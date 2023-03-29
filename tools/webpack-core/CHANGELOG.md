@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-webpack-tools
 
-This log was last generated on Mon, 27 Mar 2023 16:26:47 GMT and should not be manually modified.
+This log was last generated on Wed, 29 Mar 2023 15:02:27 GMT and should not be manually modified.
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+### Updates
+
+- Updated minimum webpack peer dependency to `5.76.0`
+- CopyExternalsPlugin does not copy external modules marked /* webpack: external */
 
 ## 3.6.3
 Mon, 27 Mar 2023 16:26:47 GMT
