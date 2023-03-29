@@ -56,13 +56,13 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @alpha */
+/** @public */
 export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
 }
 
-/** @alpha */
+/** @public */
 export enum RotationMode {
   Top = 1,
   Front = 2,
@@ -83,7 +83,7 @@ export enum LockedStates {
   ANGLE_BM = (XY_BM | VEC_BM),
 }
 
-/** @internal */
+/** @public */
 export enum CurrentState {
   NotEnabled = 0, // Compass disabled/unwanted for this session.
   Deactivated = 1, // Compass deactivated but CAN be activated by user.
@@ -101,7 +101,7 @@ export enum ContextMode {
   None = 15,
 }
 
-/** @alpha */
+/** @public */
 export enum ItemField {
   DIST_Item = 0,
   ANGLE_Item = 1,
@@ -220,14 +220,15 @@ export class ThreeAxes {
 }
 
 /** Accudraw is an aide for entering coordinate data.
- * @internal
+ * This class is public to allow applications to provide a user interface for AccuDraw, either by implementing their own, or
+ * using the one supplied by the itwin appui package.
+ * @note When writing an [[InteractiveTool]] it is not correct to call methods on AccuDraw directly, tools should instead
+ * provide hints to AccuDraw using [[AccuDrawHintBuilder]].
+ * @public
  */
 export class AccuDraw {
-  /** @internal */
   public currentState = CurrentState.NotEnabled; // Compass state
-  /** @internal */
   public compassMode = CompassMode.Rectangular; // Compass mode
-  /** @internal */
   public rotationMode = RotationMode.View; // Compass rotation
   /** @internal */
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
@@ -335,14 +336,12 @@ export class AccuDraw {
   public get isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
   /** @internal */
   protected setNewFocus(index: ItemField) { this.newFocus = index; }
-  /** @internal */
+  /** Get the current lock state for the supplied input field */
   public getFieldLock(index: ItemField): boolean { return this._fieldLocked[index]; }
   /** @internal */
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
 
-  /** Implement this method to set focus to the AccuDraw UI.
-   * @internal
-   */
+  /** Implement this method to set focus to the AccuDraw UI. */
   public grabInputFocus() { }
 
   /** @internal */
@@ -361,7 +360,7 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
-  /** @internal */
+  /** Change current compass input mode to either polar or rectangular */
   public setCompassMode(mode: CompassMode): void {
     if (mode === this.compassMode)
       return;
@@ -370,7 +369,7 @@ export class AccuDraw {
     this.onCompassModeChange();
   }
 
-  /** @internal */
+  /** Change current compass orientation */
   public setRotationMode(mode: RotationMode): void {
     if (mode === this.rotationMode)
       return;
@@ -379,7 +378,7 @@ export class AccuDraw {
     this.onRotationModeChange();
   }
 
-  /** @internal */
+  /** Change the lock status for the supplied input field */
   public setFieldLock(index: ItemField, locked: boolean): void {
     if (locked === this._fieldLocked[index])
       return;
@@ -923,7 +922,7 @@ export class AccuDraw {
     }
   }
 
-  /** @internal */
+  /** Get the current value for the supplied input field */
   public getValueByIndex(index: ItemField): number {
     switch (index) {
       case ItemField.X_Item: return this.delta.x;
@@ -936,7 +935,7 @@ export class AccuDraw {
     }
   }
 
-  /** @internal */
+  /** Set the current value for the supplied input field */
   public setValueByIndex(index: ItemField, value: number): void {
     switch (index) {
       case ItemField.X_Item:
@@ -1144,7 +1143,7 @@ export class AccuDraw {
     return (!IModelApp.toolAdmin.gridLock);
   }
 
-  /** @internal */
+  /** Call from an AccuDraw UI event to sync the supplied input field value */
   public async processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void> {
     const isBearing = false;
 
@@ -2136,17 +2135,17 @@ export class AccuDraw {
     }
   }
 
-  /** @internal */
+  /** Called after compass mode is changed between polar and rectangular */
   public onCompassModeChange(): void { }
-  /** @internal */
+  /** Called after compass rotation is changed */
   public onRotationModeChange(): void { }
-  /** @internal */
+  /** Called after input field locked state is changed */
   public onFieldLockChange(_index: ItemField) { }
-  /** @internal */
+  /** Called after input field value changes */
   public onFieldValueChange(_index: ItemField) { }
-  /** @internal */
+  /** Whether AccuDraw currently has input focus */
   public get hasInputFocus() { return true; }
-  /** @internal */
+  /** Set focus to the specified input field */
   public setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
@@ -2780,7 +2779,6 @@ export class AccuDraw {
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
    * axis isn't locked to support "smart lock".
-   * @internal
    */
   public onMotion(_ev: BeButtonEvent): void { }
 
