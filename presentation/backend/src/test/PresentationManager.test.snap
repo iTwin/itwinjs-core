@@ -282,6 +282,170 @@ Object {
 }
 `;
 
+exports[`PresentationManager addon results conversion to Presentation objects getContent returns content without formatting 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0x10f000000e465",
+        "label": "Cambridgeshire asymmetric SDD",
+        "name": "optimizing",
+      },
+      "displayValues": Object {},
+      "imageId": "bad90675-1cd6-4a1c-9a48-976928bf2c4c",
+      "labelDefinition": Object {
+        "displayValue": "Electronics",
+        "rawValue": "Intelligent Plastic Keyboard",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "dot-com",
+          "id": "0x137ba0000004451",
+        },
+      ],
+      "values": Object {
+        "e-markets": 1.234,
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "Test category description",
+        "expand": false,
+        "label": "Test Category",
+        "name": "test-category",
+        "priority": 0,
+      },
+    ],
+    "classesMap": Object {
+      "0x1": Object {
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
+      },
+    },
+    "connectionId": "",
+    "contentFlags": 0,
+    "displayType": "test",
+    "fields": Array [
+      Object {
+        "category": "test-category",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Properties Field",
+        "name": "e-markets",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": "0x1",
+              "name": "PropertyName",
+              "type": "string",
+            },
+          },
+        ],
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "double",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": false,
+        "selectClassInfo": "0x1",
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContent returns formatted content 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0x14a1300000029c1",
+        "label": "generating IB back-end",
+        "name": "bypass",
+      },
+      "displayValues": Object {
+        "HTTP": "1.23",
+      },
+      "imageId": "9124abde-51a0-469c-83c9-93b31596571d",
+      "labelDefinition": Object {
+        "displayValue": "payment",
+        "rawValue": "mesh",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "Legacy",
+          "id": "0x1119c00000171d2",
+        },
+      ],
+      "values": Object {
+        "HTTP": 1.234,
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "Test category description",
+        "expand": false,
+        "label": "Test Category",
+        "name": "test-category",
+        "priority": 0,
+      },
+    ],
+    "classesMap": Object {
+      "0x1": Object {
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
+      },
+    },
+    "connectionId": "",
+    "contentFlags": 0,
+    "displayType": "test",
+    "fields": Array [
+      Object {
+        "category": "test-category",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Properties Field",
+        "name": "HTTP",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": "0x1",
+              "name": "PropertyName",
+              "type": "string",
+            },
+          },
+        ],
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "double",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": false,
+        "selectClassInfo": "0x1",
+      },
+    ],
+  },
+}
+`;
+
 exports[`PresentationManager addon results conversion to Presentation objects getContent returns localized content 1`] = `
 Object {
   "contentSet": Array [
