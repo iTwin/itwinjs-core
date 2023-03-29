@@ -9,20 +9,20 @@
 // To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
+import * as os from "os";
+import * as path from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { ServerStorage } from "@itwin/object-storage-core";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
-import { Container } from "inversify";
-import * as os from "os";
-import * as path from "path";
+import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
+import { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { CloudSqlite } from "./CloudSqlite";
 import { AzureBlobStorage, AzureBlobStorageCredentials, CloudStorageService, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
@@ -38,6 +38,7 @@ import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { Container } from "inversify";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -530,13 +531,14 @@ export class IModelHost {
     IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileCacheService = undefined;
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileUploader = undefined;
+    IModelHost.tileCacheService = undefined; // eslint-disable-line deprecation/deprecation
+    IModelHost.tileUploader = undefined; // eslint-disable-line deprecation/deprecation
     IModelHost.tileStorage = undefined;
     IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
+
+    CloudSqlite.CloudCaches.destroy();
+
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 

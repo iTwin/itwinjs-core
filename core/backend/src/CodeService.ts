@@ -75,13 +75,6 @@ export interface CodesDb {
   sasToken: AccessToken;
 
   /**
-   * The token that grants access to the cloud container for this CodeService.
-   * It should be established in a listener for `BriefcaseDb.onCodeServiceCreated`, and should be refreshed (via a
-   * timer) before it expires.
-   */
-  sasToken: AccessToken;
-
-  /**
    * Synchronize the local index with any changes by made by others.
    * @note This is called automatically whenever any write operation is performed on the code index. It is only necessary to
    * call this directly if you have not changed the code index recently, but wish to perform a readonly operation and want to

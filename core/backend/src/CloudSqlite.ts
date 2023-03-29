@@ -469,10 +469,10 @@ export namespace CloudSqlite {
   /** Arguments to create or find a CloudCache */
   export interface CreateCloudCacheArg {
     /** The name of the CloudCache. Cache names must be unique for a session. */
-    cacheName: string,
+    cacheName: string;
     /** A string that specifies the maximum size of the CloudCache. It should be a number followed by "K",
      * "M" "G", or "T". Default is "10G". */
-    cacheSize?: string,
+    cacheSize?: string;
     /** A local directory in temporary storage for the CloudCache. If not supplied, it is a directory called `cacheName`
      * in the `CloudCaches` temporary directory. */
     cacheDir?: string;
@@ -480,7 +480,6 @@ export namespace CloudSqlite {
 
   export class CloudCaches {
     private static readonly cloudCaches = new Map<string, CloudSqlite.CloudCache>();
-    private static initialized = false;
 
     /** create a new CloudCache */
     private static makeCache(args: CreateCloudCacheArg): CloudSqlite.CloudCache {
@@ -489,17 +488,26 @@ export namespace CloudSqlite {
       IModelJsFs.recursiveMkDirSync(rootDir);
       const cache = new NativeLibrary.nativeLib.CloudCache({ rootDir, name: cacheName, cacheSize: args.cacheSize ?? "10G" });
       this.cloudCaches.set(cacheName, cache);
-      // make sure we destroy all CloudCaches when we shut down.
-      if (!this.initialized) {
-        this.initialized = true;
-        IModelHost.onBeforeShutdown.addOnce(() => {
-          this.cloudCaches.forEach((cache) => cache.destroy());
-          this.cloudCaches.clear();
-        });
-      }
       return cache;
     }
 
+    /** find a cache by name if it exists */
+    public static findCache(cacheName: string) {
+      return this.cloudCaches.get(cacheName);
+    }
+    /** @internal */
+    public static dropCache(cacheName: string): CloudCache | undefined {
+      const cache = this.cloudCaches.get(cacheName);
+      this.cloudCaches.delete(cacheName);
+      return cache;
+    }
+    /** called by IModelHost after shutdown.
+     * @internal
+     */
+    public static destroy() {
+      this.cloudCaches.forEach((cache) => cache.destroy());
+      this.cloudCaches.clear();
+    }
     public static getCache(args: CreateCloudCacheArg) {
       return this.cloudCaches.get(args.cacheName) ?? this.makeCache(args);
     }

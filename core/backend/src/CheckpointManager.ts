@@ -143,7 +143,8 @@ export class V2CheckpointManager {
       if (value.isConnected)
         value.detach();
     }
-    this._cloudCache?.destroy();
+
+    CloudSqlite.CloudCaches.dropCache(this.cloudCacheName)?.destroy();
     this._cloudCache = undefined;
     this.containers.clear();
   }
