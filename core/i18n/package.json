@@ -58,7 +58,8 @@
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.0.2",
-    "webpack": "^5.76.0"
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to core-i18n",
