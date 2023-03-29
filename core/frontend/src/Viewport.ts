@@ -818,21 +818,19 @@ export abstract class Viewport implements IDisposable, TileUser {
   public get backgroundDrapeMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
 
   /** Return the imagery provider for the provided map-layer index.
-   * @param index of the owning map layer.
-   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    */
-  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+  public getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(mapLayerIndex); }
 
   /** Return the map-layer scale range visibility for the provided map-layer index.
-   * @param index of the owning map layer.
-   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    * @see [[DisplayStyleState.mapLayerAtIndex]].
    * @beta
    */
-  public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
-    const treeRef = (isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+  public getMapLayerScaleRangeVisibility(mapLayerIndex: MapLayerIndex): MapTileTreeScaleRangeVisibility {
+    const treeRef = (mapLayerIndex.isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
     if (treeRef) {
-      return treeRef.getMapLayerScaleRangeVisibility(index);
+      return treeRef.getMapLayerScaleRangeVisibility(mapLayerIndex.index);
 
     }
     return MapTileTreeScaleRangeVisibility.Unknown;
@@ -850,11 +848,10 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** Returns the cartographic range of a map layer.
-   * @param layerIndex of the map layer.
-   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    */
-  public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
-    const mapLayerSettings = this.view.displayStyle.mapLayerAtIndex(layerIndex, isOverlay);
+  public async getMapLayerRange(mapLayerIndex: MapLayerIndex): Promise<MapCartoRectangle | undefined> {
+    const mapLayerSettings = this.view.displayStyle.mapLayerAtIndex(mapLayerIndex);
     if (undefined === mapLayerSettings)
       return undefined;
 
@@ -872,7 +869,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
 
-    const imageryProvider = this.getMapLayerImageryProvider(layerIndex, isOverlay);
+    const imageryProvider = this.getMapLayerImageryProvider(mapLayerIndex);
     if (undefined === imageryProvider)
       return undefined;
 
@@ -885,12 +882,11 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** Changes viewport to include range of a map layer.
-   * @param layerIndex of the map layer.
-   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    * @param vp the viewport.
    */
-  public async viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean> {
-    const range = await this.getMapLayerRange(layerIndex, isOverlay);
+  public async viewMapLayerRange(mapLayerIndex: MapLayerIndex, vp: ScreenViewport): Promise<boolean> {
+    const range = await this.getMapLayerRange(mapLayerIndex);
     if (!range)
       return false;
 
@@ -905,7 +901,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
    * @beta
    */
-  public resetMapLayer(index: number, isOverlay: boolean) { this._mapTiledGraphicsProvider?.resetMapLayer(index, isOverlay); }
+  public resetMapLayer(mapLayerIndex: MapLayerIndex) { this._mapTiledGraphicsProvider?.resetMapLayer(mapLayerIndex); }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
