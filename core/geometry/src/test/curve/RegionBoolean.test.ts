@@ -728,32 +728,63 @@ describe("RegionBoolean", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
-    let xDelta = 0;
-    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/overlappingArcs.imjs", "utf8"))) as Loop[] | BagOfCurves[];
-    if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
-      for (let i = 0; i < inputs.length; ++i) {
-        const arcPair = inputs[i];
-        ck.testExactNumber(2, arcPair.children.length, "have 2 curve children");
-        ck.testType(arcPair.getChild(0), Arc3d, "first curve is arc");
-        ck.testType(arcPair.getChild(1), Arc3d, "second curve is arc");
-        x0 = 0;
-        xDelta = 1.5 * arcPair.range().xLength();
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPair, x0, y0);
-        const signedLoops = RegionOps.constructAllXYRegionLoops(arcPair);
-        if (ck.testExactNumber(1, signedLoops.length, "Overlapping arcs yield one connected component.")) {
-          if (arcPair instanceof Loop) { // arcs that overlap to form a closed loop
-            ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "SignedLoop has one outer loop.");
-            ck.testExactNumber(1, signedLoops[0].positiveAreaLoops.length, "SignedLoop has one inner loop.");
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops[0], x0 += xDelta, y0);
-          } else if (arcPair instanceof BagOfCurves) {  // arcs that overlap but do not form a closed loop
-            ck.testExactNumber(0, signedLoops[0].negativeAreaLoops.length, "SignedLoop has no outer loop.");
-            ck.testExactNumber(0, signedLoops[0].positiveAreaLoops.length, "SignedLoop has no inner loop.");
-          } else {
-            ck.announceError("unexpected input", arcPair);
-          }
+    let delta = 12;
+
+    // data for creating pairs of concentric arcs that intersect
+    const center = Point3d.createZero();
+    const vector0 = Vector3d.create(5,2);
+    const vector90 = Vector3d.create(2,-5);
+    const testCases = [ // numOverlap is number of non-trivial coincident intervals
+      { sweepStartA: 90, sweepEndA: 0, sweepStartB: 90, sweepEndB: 360, reverseB: false, numLoop: 1, numOverlap: 0 },
+      { sweepStartA: 0, sweepEndA: 90, sweepStartB: 90, sweepEndB: 360, reverseB: false, numLoop: 1, numOverlap: 0 },
+      { sweepStartA: 0, sweepEndA: 90, sweepStartB: 0, sweepEndB: -270, reverseB: false, numLoop: 1, numOverlap: 0 },
+      { sweepStartA: 90, sweepEndA: 0, sweepStartB: 0, sweepEndB: -270, reverseB: false, numLoop: 1, numOverlap: 0 },
+      { sweepStartA: 180, sweepEndA: 0, sweepStartB: 0, sweepEndB: 180, reverseB: true, numLoop: 1, numOverlap: 0 },  // Laurynas' original 2-arc circle
+      { sweepStartA: 190, sweepEndA: -10, sweepStartB: 0, sweepEndB: 180, reverseB: true, numLoop: 1, numOverlap: 2 },
+      { sweepStartA: 180, sweepEndA: 0, sweepStartB: -10, sweepEndB: 190, reverseB: true, numLoop: 1, numOverlap: 2 },
+      { sweepStartA: 190, sweepEndA: 0, sweepStartB: 0, sweepEndB: 180, reverseB: true, numLoop: 1, numOverlap: 1 },
+      { sweepStartA: 180, sweepEndA: 0, sweepStartB: -10, sweepEndB: 180, reverseB: true, numLoop: 1, numOverlap: 1 },
+      { sweepStartA: 180, sweepEndA: 10, sweepStartB: 0, sweepEndB: 180, reverseB: true, numLoop: 0, numOverlap: 0 },
+      { sweepStartA: 180, sweepEndA: 0, sweepStartB: 0, sweepEndB: 170, reverseB: true, numLoop: 0, numOverlap: 0 },
+      { sweepStartA: 190, sweepEndA: 10, sweepStartB: 0, sweepEndB: 180, reverseB: true, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 180, sweepEndA: 0, sweepStartB: -10, sweepEndB: 170, reverseB: true, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 0, sweepEndA: 180, sweepStartB: 0, sweepEndB: 170, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 0, sweepEndA: 180, sweepStartB: 170, sweepEndB: 0, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 0, sweepEndA: 180, sweepStartB: 170, sweepEndB: 10, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 0, sweepEndA: 180, sweepStartB: 10, sweepEndB: 170, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 0, sweepEndA: 180, sweepStartB: 10, sweepEndB: 180, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 0, sweepEndA: 180, sweepStartB: 180, sweepEndB: 10, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 0, sweepEndA: 170, sweepStartB: 0, sweepEndB: 180, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 170, sweepEndA: 0, sweepStartB: 0, sweepEndB: 180, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 170, sweepEndA: 10, sweepStartB: 0, sweepEndB: 180, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 10, sweepEndA: 170, sweepStartB: 0, sweepEndB: 180, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 10, sweepEndA: 180, sweepStartB: 0, sweepEndB: 180, reverseB: false, numLoop: 0, numOverlap: 1 },
+      { sweepStartA: 180, sweepEndA: 10, sweepStartB: 0, sweepEndB: 180, reverseB: false, numLoop: 0, numOverlap: 1 },
+    ];
+    for (const testCase of testCases) {
+      const arcPair: Arc3d[] = [];
+      const vector90B = testCase.reverseB ? vector90.negate() : vector90;
+      arcPair.push(Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndDegrees(testCase.sweepStartA, testCase.sweepEndA)));
+      arcPair.push(Arc3d.create(center, vector0, vector90B, AngleSweep.createStartEndDegrees(testCase.sweepStartB, testCase.sweepEndB)));
+      x0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPair, x0, y0);
+      const signedLoops = RegionOps.constructAllXYRegionLoops(arcPair);
+      if (ck.testExactNumber(1, signedLoops.length, "Overlapping arcs yield one connected component.")) {
+        ck.testExactNumber(testCase.numLoop, signedLoops[0].positiveAreaLoops.length, "SignedLoop has expected number of inner loops.");
+        ck.testExactNumber(testCase.numLoop, signedLoops[0].negativeAreaLoops.length, "SignedLoop has expected number of outer loops.");
+        for (const outerLoop of signedLoops[0].negativeAreaLoops)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerLoop, x0 += delta, y0);
+        let expectedNumSliver = testCase.numOverlap;
+        if (testCase.numLoop === 0)
+          ++expectedNumSliver;
+        ck.testExactNumber(expectedNumSliver, signedLoops[0].slivers.length, "SignedLoop has expected number of sliver faces.");
+        for (const sliverLoop of signedLoops[0].slivers) {
+          x0 += delta;
+          for (const prim of sliverLoop.children)
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, prim, x0, y0);
         }
-        y0 += 1.5 * arcPair.range().yLength();
       }
+      y0 += delta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "OverlappingArcs");
     expect(ck.getNumErrors()).equals(0);
