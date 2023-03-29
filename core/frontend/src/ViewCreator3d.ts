@@ -28,31 +28,16 @@ import { SpatialViewState } from "./SpatialViewState";
  * @extensions
 */
 export interface ViewCreator3dOptions {
-  /** Turn the [[Camera]] on to produce a perspective view.
-   * Default: true
-   */
+  /** Turn [[Camera]] on when generating the view. Defaults to true (on) */
   cameraOn?: boolean;
-  /** Enables display of a [[SkyBox]] in the view. */
+  /** Turn [[SkyBox]] on when generating the view. */
   skyboxOn?: boolean;
-  /** Orients the view to one of the standard view rotations. */
+  /** [[StandardViewId]] for the view state. */
   standardViewId?: StandardViewId;
-  /** Merge in props from a persistent "seed" view obtained from the iModel.
-   * @note The selection of the seed view is somewhat arbitrary, and the contents and styling of that view are unpredictable, so this option is not recommended.
-   */
+  /** Merge in props from the seed view (default spatial view) of the iModel.  */
   useSeedView?: boolean;
-  /** The desired aspect ratio of the [[Viewport]] in which the view is to be displayed.
-   * This is used to adjust the view's frustum so that the viewed models are better centered within the viewport.
-   */
+  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. */
   vpAspect?: number;
-  /** Indicates that geometry belonging to every [SubCategory]($backend) should be visible within the view.
-   * Each subcategory has a [SubCategoryAppearance]($common) that specifies how its geometry is displayed. This includes a [SubCategoryAppearance.invisible]($common) property that,
-   * when set to `true`, indicates the geometry should not be displayed at all. A view can override the appearances of any subcategories using a [SubCategoryOverride]($common).
-   * If `allSubCategoriesVisible` is `true`, [[ViewCreator3d]] will apply such an override to every viewed subcategory to change [SubCategoryOverride.invisible]($common) to `false`, making
-   * every subcategory visible.
-   * @note Subcategories are typically set to invisible by default for a reason.
-   * Forcing them all to be visible may produce undesirable results, such as z-fighting between geometry on different subcategories that are not intended to be viewed together.
-   */
-  allSubCategoriesVisible?: boolean;
 }
 
 /**
@@ -66,6 +51,7 @@ export interface ViewCreator3dOptions {
  * @extensions
  */
 export class ViewCreator3d {
+
   /**
    * Constructs a ViewCreator3d using an [[IModelConnection]].
    * @param _imodel [[IModelConnection]] to query for categories and/or models.
@@ -95,9 +81,6 @@ export class ViewCreator3d {
 
     if (options?.standardViewId)
       viewState.setStandardRotation(options.standardViewId);
-
-    if (options?.allSubCategoriesVisible)
-      viewState.displayStyle.enableAllLoadedSubCategories(viewState.categorySelector.categories);
 
     const range = viewState.computeFitRange();
     viewState.lookAtVolume(range, options?.vpAspect);

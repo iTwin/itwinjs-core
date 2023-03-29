@@ -749,8 +749,13 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    if (this.displayStyle.enableAllLoadedSubCategories(categoryIds))
-      this.maybeInvalidateScene();
+    for (const categoryId of Id64.iterable(categoryIds)) {
+      const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
+      if (undefined !== subCategoryIds) {
+        for (const subCategoryId of subCategoryIds)
+          this.changeSubCategoryDisplay(subCategoryId, true);
+      }
+    }
   }
 
   /** @internal */
@@ -761,8 +766,20 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
-    if (this.displayStyle.setSubCategoryVisible(subCategoryId, display))
-      this.maybeInvalidateScene();
+    const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+    if (undefined === app)
+      return; // category not enabled or subcategory not found
+
+    const curOvr = this.getSubCategoryOverride(subCategoryId);
+    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
+    if (isAlreadyVisible === display)
+      return;
+
+    // Preserve existing overrides - just flip the visibility flag.
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
+    json.invisible = !display;
+    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
+    this.maybeInvalidateScene();
   }
 
   /** The settings controlling how a background map is displayed within a view.

@@ -108,10 +108,7 @@ export class SubCategoriesCache {
         this._byCategoryId.set(id, invalidCategoryIdEntry);
   }
 
-  /** Exposed strictly for tests.
-   * @internal
-   */
-  public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+  private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
     let set = this._byCategoryId.get(categoryId);
     if (undefined === set)
       this._byCategoryId.set(categoryId, set = new Set<string>());

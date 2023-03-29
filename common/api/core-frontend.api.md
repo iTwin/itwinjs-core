@@ -2570,8 +2570,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
-    // @internal
-    enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean;
     equalState(other: DisplayStyleState): boolean;
     findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
@@ -2632,8 +2630,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @deprecated
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
-    // @internal
-    setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -10930,7 +10926,6 @@ export { Storage_2 as Storage }
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
-    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
@@ -13405,7 +13400,6 @@ export class ViewCreator3d {
 
 // @public
 export interface ViewCreator3dOptions {
-    allSubCategoriesVisible?: boolean;
     cameraOn?: boolean;
     skyboxOn?: boolean;
     standardViewId?: StandardViewId;
