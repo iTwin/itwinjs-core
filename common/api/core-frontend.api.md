@@ -10932,6 +10932,7 @@ export { Storage_2 as Storage }
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
+    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
