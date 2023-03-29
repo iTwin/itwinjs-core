@@ -818,7 +818,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Change the "invisible" flag for the given subcategory's appearance.
    * This requires that the subcategory appearance has been previously loaded by, e.g., a call to IModelConnection.Categories.getSubCategoryInfo.
    * @returns true if the visibility of any subcategory was modified.
-   * @see [[enableAllLoadedSubCategories]].
+   * @see [[enableAllLoadedSubCategories]]
    * @internal
    */
   public setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean {
