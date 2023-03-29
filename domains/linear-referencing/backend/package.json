@@ -9,7 +9,6 @@
   },
   "scripts": {
     "build": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
-    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "cover": "nyc npm -s test",

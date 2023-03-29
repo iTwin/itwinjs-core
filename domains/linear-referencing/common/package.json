@@ -6,7 +6,6 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",

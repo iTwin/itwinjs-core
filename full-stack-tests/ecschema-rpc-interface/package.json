@@ -11,8 +11,7 @@
     "url": "https://github.com/iTwin/itwinjs-core/tree/master/full-stack-tests/ecschema-rpc-interface"
   },
   "scripts": {
-    "build": "tsc 1>&2",
-    "build:ci": "npm run -s build && npm run -s webpack:test",
+    "build": "tsc 1>&2 && npm run -s webpack:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",

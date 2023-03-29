@@ -15,7 +15,6 @@
   "typings": "lib/plugins/index",
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
