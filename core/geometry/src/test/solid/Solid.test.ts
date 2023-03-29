@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
@@ -38,13 +37,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { ImportedSample } from "../testInputs/ImportedSamples";
 
-/* eslint-disable no-console */
-let outputFolderPath = "./src/test/output";
-// Output folder typically not tracked by git... make directory if not there
-if (!fs.existsSync(outputFolderPath))
-  fs.mkdirSync(outputFolderPath);
-outputFolderPath = `${outputFolderPath}/`;
-
 function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any) {
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
 }
@@ -66,9 +58,9 @@ function exerciseUVToWorld(ck: Checker, s: SolidPrimitive, u: number, v: number,
     vector01.scaleInPlace(1.0 / deltaUV);
     ck.testPoint3d(point00, plane00.origin, "same point on variant evaluators");
     if (!ck.testLT(vector10.angleTo(plane00.vectorU).degrees, toleranceDegrees))
-      console.log(" U", vector10, plane00.vectorU);
+      GeometryCoreTestIO.consoleLog(" U", vector10, plane00.vectorU);
     if (!ck.testLT(vector01.angleTo(plane00.vectorV).degrees, toleranceDegrees))
-      console.log(" V", vector01, plane00.vectorV);
+      GeometryCoreTestIO.consoleLog(" V", vector01, plane00.vectorV);
   }
 }
 function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
@@ -94,16 +86,16 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
           const range2 = Range3d.create();
           s2.extendRange(range2);
           if (!ck.testTrue(rangeScaledExpanded.containsRange(range2), "scaled range of solid commutes with range of scaled solid",
-              rangeScaledExpanded.low.toJSON(),
-              range2.low.toJSON(),
-              range2.high.toJSON(),
-              rangeScaledExpanded.high.toJSON())) {
+            rangeScaledExpanded.low.toJSON(),
+            range2.low.toJSON(),
+            range2.high.toJSON(),
+            rangeScaledExpanded.high.toJSON())) {
             const allGeometry: GeometryQuery[] = [];
             GeometryCoreTestIO.captureCloneGeometry(allGeometry,
               [s, Box.createRange(range, true)!,
-                  Box.createRange(rangeScaled, true)!,
-                  Box.createRange(rangeScaledExpanded, true)!,
-              s2, Box.createRange(range2, true)!]);
+                Box.createRange(rangeScaled, true)!,
+                Box.createRange(rangeScaledExpanded, true)!,
+                s2, Box.createRange(range2, true)!]);
             GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "ExerciseSolids");
             // compute ranges again to debug failure
             const myRangeScaled = Range3d.create();
@@ -314,11 +306,11 @@ describe("Solids", () => {
       };
       ck.testTrue(matrix.inverse() !== undefined, "Expect sample box to have good coordinate frame.");
       const rangeA = transformAndFacet(allGeometry, b, undefined, undefined, x0, y0, announcePolyface);
-      const rangeB = transformAndFacet(allGeometry, b, undefined, options, x0, y0 + 5.0 * rangeA.yLength (), announcePolyface);
+      const rangeB = transformAndFacet(allGeometry, b, undefined, options, x0, y0 + 5.0 * rangeA.yLength(), announcePolyface);
       const rangeC = transformAndFacet(allGeometry, b, undefined, optionsC, x0, y0 + 15.0 * rangeA.yLength(), announcePolyface);
       // verify same surface area for all . . . .
       const area0 = PolyfaceQuery.sumFacetAreas(allPolyfaces[0]);
-      for (let i = 1; i < allPolyfaces.length; i++){
+      for (let i = 1; i < allPolyfaces.length; i++) {
         ck.testCoordinate(area0, PolyfaceQuery.sumFacetAreas(allPolyfaces[i]));
       }
       ck.testRange3d(rangeA, rangeB);
@@ -507,7 +499,7 @@ function transformAndFacet(allGeometry: GeometryQuery[],
   transform: Transform | undefined,
   options: StrokeOptions | undefined,
   x0: number, y0: number,
-announcePolyface?: AnnouncePolyface): Range3d {
+  announcePolyface?: AnnouncePolyface): Range3d {
   const g1 = transform ? g.cloneTransformed(transform) : g;
   if (g1) {
     const builder = PolyfaceBuilder.create(options);

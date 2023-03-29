@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
@@ -131,8 +129,8 @@ class PolygonBooleanTests {
           const euler = graph.countVertexLoops() - graph.countNodes() / 2.0 + graph.countFaceLoops();
 
           if (!this.ck.testExactNumber(2, euler, `${boolOp} Expected euler characteristic ${name}`)) {
-            console.log(`outerRectangle  ${prettyPrint(boundary0)}`);
-            console.log(`innerRectangle  ${prettyPrint(boundary1)}`);
+            GeometryCoreTestIO.consoleLog(`outerRectangle  ${prettyPrint(boundary0)}`);
+            GeometryCoreTestIO.consoleLog(`innerRectangle  ${prettyPrint(boundary1)}`);
             GraphChecker.dumpGraph(graph);
           }
         }

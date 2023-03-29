@@ -36,8 +36,6 @@ import { BSplineCurveOps } from "./BSplineCurveOps";
 import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
-
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
  * * A bspline curve consists of a set of knots and a set of poles.

@@ -9,16 +9,18 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
-import { Point3dArray, PolyfaceQuery, PolylineOps} from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
@@ -37,7 +39,6 @@ function rotateArray(data: Point3d[], index0: number) {
   return out;
 }
 
-/* eslint-disable no-console */
 describe("Triangulation", () => {
   it("NullTriangulations", () => {
     const ck = new Checker();
@@ -188,7 +189,7 @@ describe("Triangulation", () => {
         if (degrees !== 0.0)
           rotation.multiplyPoint3dArrayInPlace(points);
         if (Checker.noisy.squareWaves)
-          console.log(name, "Rotation angle ", degrees, " numPhase", numPhase);
+          GeometryCoreTestIO.consoleLog(name, "Rotation angle ", degrees, " numPhase", numPhase);
         const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
         if (ck.testType(graph, HalfEdgeGraph)) {
           const pfA = PolyfaceBuilder.graphToPolyface(graph);
@@ -233,7 +234,7 @@ function testGraphFromSegments(ck: Checker, x0: number, segments: LineSegment3d[
   if (outputAnnotatedGeometry)
     GraphChecker.captureAnnotatedGraph(allGeometry, theGraph, dx, dy += yStep);
 
-  // console.log("Total Faces: ", theGraph.collectFaceLoops().length);
+  // GeometryCoreTestIO.consoleLog("Total Faces: ", theGraph.collectFaceLoops().length);
   // for (const face of faces) {
   //   Triangulator.earcutFromSingleFaceLoop(face);
   // }
@@ -273,15 +274,15 @@ describe("MonotoneFaces", () => {
     const ay = 10.0;
     // const e = 0.1;
     for (const loopA of [
-      Sample.creatVerticalStaggerPolygon(-1, -2, 4, 3, ax, ay, 0, 0),
-      Sample.creatVerticalStaggerPolygon(3, 0, 0, 4, ax, ay, 0, 0),
-      // Sample.creatVerticalStaggerPolygon(3, e, e, 3, ax, ay, 0, 0),
-      // Sample.creatVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
-      // Sample.creatVerticalStaggerPolygon(-3, 2, 1, 2, ax, ay, 0, 0),
-      // Sample.creatVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
-      // Sample.creatVerticalStaggerPolygon(3, 0, 0, -3, ax, ay, 0, 0),
-      // Sample.creatVerticalStaggerPolygon(3, 0, 0, -5, ax, ay, -1, 0),
-      // Sample.creatVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
+      Sample.createVerticalStaggerPolygon(-1, -2, 4, 3, ax, ay, 0, 0),
+      Sample.createVerticalStaggerPolygon(3, 0, 0, 4, ax, ay, 0, 0),
+      // Sample.createVerticalStaggerPolygon(3, e, e, 3, ax, ay, 0, 0),
+      // Sample.createVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
+      // Sample.createVerticalStaggerPolygon(-3, 2, 1, 2, ax, ay, 0, 0),
+      // Sample.createVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
+      // Sample.createVerticalStaggerPolygon(3, 0, 0, -3, ax, ay, 0, 0),
+      // Sample.createVerticalStaggerPolygon(3, 0, 0, -5, ax, ay, -1, 0),
+      // Sample.createVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
     ]) {
       const segmentA = Sample.convertPointsToSegments(loopA);
       testGraphFromSegments(ck, id * 30, segmentA, true, `LoopA${id++}`, false);
@@ -330,7 +331,7 @@ describe("MonotoneFaces", () => {
 
       GraphChecker.captureAnnotatedGraph(allGeometry, theGraph, dx, dy);
       dy += yStep;
-      // console.log("Total Faces: ", theGraph.collectFaceLoops().length);
+      // GeometryCoreTestIO.consoleLog("Total Faces: ", theGraph.collectFaceLoops().length);
       // for (const face of faces) {
       //   Triangulator.earcutFromSingleFaceLoop(face);
       // }
@@ -657,12 +658,12 @@ describe("Triangulation", () => {
         const polyface = builder.claimPolyface(true);
         if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, `Triangle count in arrow ${counter0}.${counter1}   needParams${needParams}`)
           || Checker.noisy.acsArrows) {
-          console.log(` Triangulation From Start index ${startIndex} needParams ${needParams} `);
-          console.log(`   arrow parameter ${a}`);
-          console.log(`    Facet Count ${polyface.facetCount} counter0 ${counter0}   counter1 ${counter1}`);
-          console.log(prettyPrint(arrowPoints));
+          GeometryCoreTestIO.consoleLog(` Triangulation From Start index ${startIndex} needParams ${needParams} `);
+          GeometryCoreTestIO.consoleLog(`   arrow parameter ${a}`);
+          GeometryCoreTestIO.consoleLog(`    Facet Count ${polyface.facetCount} counter0 ${counter0}   counter1 ${counter1}`);
+          GeometryCoreTestIO.consoleLog(prettyPrint(arrowPoints));
           const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
-          console.log(prettyPrint(jsPolyface));
+          GeometryCoreTestIO.consoleLog(prettyPrint(jsPolyface));
         }
         polyface.tryTranslateInPlace(counter1 * 10, counter0 * 10, 0);
         savedMeshes.push(polyface);
@@ -796,10 +797,10 @@ describe("Triangulation", () => {
   });
 
   const dartInTriangleOuter = [
-    Point3d.create (1,-4), Point3d.create (13,0), Point3d.create (1,4), Point3d.create (1,-4),
+    Point3d.create(1, -4), Point3d.create(13, 0), Point3d.create(1, 4), Point3d.create(1, -4),
   ];
   const dartInTriangleInner = [
-    Point3d.create (5,0), Point3d.create (3,-2), Point3d.create (9,0), Point3d.create (3,2),Point3d.create (5,0),
+    Point3d.create(5, 0), Point3d.create(3, -2), Point3d.create(9, 0), Point3d.create(3, 2), Point3d.create(5, 0),
   ];
 
   it("DartInTriangle", () => {
@@ -814,10 +815,10 @@ describe("Triangulation", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, dartInTriangleInner, dx, dy);
     dy += 10;
     const graph1 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
-      if (graph1) {
-        const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
-        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface1), "area of dart in triangle");
-        GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, dx, dy);
+    if (graph1) {
+      const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
+      ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface1), "area of dart in triangle");
+      GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, dx, dy);
     }
     dx += 20;
     dy = 0;
@@ -826,10 +827,10 @@ describe("Triangulation", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, innerReversed, dx, dy);
     dy += 10;
     const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, innerReversed]);
-      if (graph2) {
-        const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
-        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface2), "area of reversed dart in triangle");
-        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, dx, dy);
+    if (graph2) {
+      const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
+      ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface2), "area of reversed dart in triangle");
+      GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, dx, dy);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DartInTriangle");
@@ -955,17 +956,17 @@ describe("Triangulation", () => {
 
       [0, 1.593037e-11]];
   }
-const _messyShape = [
-      {
-        shape: {
-          points: messyShapePointsJson () ,
-          trans: [
-            [0.998765, 0.049683, -1.032365e-16, 532612.092389],
-            [-0.049683, 0.998765, -5.489607e-20, 212337.746743],
-            [1.031063e-16, 5.183973e-18, 1, 7.41464]],
-        },
+  const _messyShape = [
+    {
+      shape: {
+        points: messyShapePointsJson(),
+        trans: [
+          [0.998765, 0.049683, -1.032365e-16, 532612.092389],
+          [-0.049683, 0.998765, -5.489607e-20, 212337.746743],
+          [1.031063e-16, 5.183973e-18, 1, 7.41464]],
       },
-    ];
+    },
+  ];
 
   function tryTriangulation(allGeometry: GeometryQuery[], points: Point3d[], x0: number, y0: number) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, x0, y0);
@@ -973,15 +974,15 @@ const _messyShape = [
     y0 += range.yLength();
     Triangulator.clearAndEnableDebugGraphCapture(true);
     const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-      if (graph1) {
-        const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
-        GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, x0, y0);
-      } else {
-        const graph2 = Triangulator.claimDebugGraph();
-        if (graph2) {
-          const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
-          GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0 + range.xLength (), y0);
-        }
+    if (graph1) {
+      const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
+      GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, x0, y0);
+    } else {
+      const graph2 = Triangulator.claimDebugGraph();
+      if (graph2) {
+        const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0 + range.xLength(), y0);
+      }
     }
   }
   it("MessyPolygon", () => {

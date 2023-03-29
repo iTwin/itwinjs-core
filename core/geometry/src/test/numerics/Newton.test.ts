@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import { Newton1dUnbounded, NewtonEvaluatorRtoRD } from "../../numerics/Newton";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 // cspell:word currentdFdX
 export class HornerEvaluator extends NewtonEvaluatorRtoRD {
   private _coefficients: number[];
@@ -67,7 +67,7 @@ describe("Newton", () => {
         f.evaluate(x);
         iterator.setTarget(f.currentF);
         if (Checker.noisy.newtonRtoRD)
-          console.log({ xx: x, ff: f.currentF, dF: f.currentdFdX });
+          GeometryCoreTestIO.consoleLog({ xx: x, ff: f.currentF, dF: f.currentdFdX });
         // start iterator away from the root.
         iterator.setX(x + 1);
         if (ck.testTrue(iterator.runIterations())) {
@@ -75,7 +75,7 @@ describe("Newton", () => {
           ck.testCoordinate(x, iterator.getX(), "newton converted to correct value");
           ck.testLE(iterator.numIterations, 5, "Expect low newton iteration count for gentle function");
           if (Checker.noisy.newtonRtoRD)
-            console.log("   ", { xx: x, xx1: x1, n: iterator.numIterations });
+            GeometryCoreTestIO.consoleLog("   ", { xx: x, xx1: x1, n: iterator.numIterations });
         }
       }
     }

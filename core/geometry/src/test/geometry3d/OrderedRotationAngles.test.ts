@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import { AxisOrder } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -11,8 +10,7 @@ import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Checker } from "../Checker";
-
-/* eslint-disable no-console */
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function multiplyMatricesByAxisOrder(xMatrix: Matrix3d, yMatrix: Matrix3d, zMatrix: Matrix3d, axisOrder: AxisOrder): Matrix3d {
   switch (axisOrder) {
@@ -39,12 +37,12 @@ function testEqualOrderedRotationAngles(ck: Checker, a: OrderedRotationAngles, b
   const matrixA = a.toMatrix3d();
   const matrixB = b.toMatrix3d();
   if (!ck.testMatrix3d(matrixA, matrixB, "matrix images of OrderedRotationAngle pair")) {
-    console.log("*********************");
-    console.log("");
+    GeometryCoreTestIO.consoleLog("*********************");
+    GeometryCoreTestIO.consoleLog("");
     const a1 = OrderedRotationAngles.createFromMatrix3d(matrixA, a.order);
     const b1 = OrderedRotationAngles.createFromMatrix3d(matrixB, b.order);
-    console.log("A:", a, matrixA, a1);
-    console.log("B:", b, matrixB, b1);
+    GeometryCoreTestIO.consoleLog("A:", a, matrixA, a1);
+    GeometryCoreTestIO.consoleLog("B:", b, matrixB, b1);
   }
 }
 
@@ -610,9 +608,9 @@ describe("OrderedRotationAngles", () => {
           const ypr = YawPitchRollAngles.createRadians(yawAngle.radians, pitchAngle.radians, rollAngle.radians);
           const yprMatrix = ypr.toMatrix3d();
           if (!ck.testCoordinate(0, yprMatrix.maxDiff(matrixZYX))) {
-            console.log(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(matrixZYX)}`);
-            console.log("ypr matrix", yprMatrix);
-            console.log("matrixZYX", matrixZYX);
+            GeometryCoreTestIO.consoleLog(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(matrixZYX)}`);
+            GeometryCoreTestIO.consoleLog("ypr matrix", yprMatrix);
+            GeometryCoreTestIO.consoleLog("matrixZYX", matrixZYX);
           }
 
           const orderedAngles = OrderedRotationAngles.createDegrees(
@@ -623,9 +621,9 @@ describe("OrderedRotationAngles", () => {
           );
           const orderedMatrix = orderedAngles.toMatrix3d();
           if (!ck.testMatrix3d(yprMatrix, orderedMatrix)) {
-            console.log(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(orderedMatrix)}`);
-            console.log("ypr matrix", yprMatrix);
-            console.log("orderedMatrix", orderedMatrix);
+            GeometryCoreTestIO.consoleLog(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(orderedMatrix)}`);
+            GeometryCoreTestIO.consoleLog("ypr matrix", yprMatrix);
+            GeometryCoreTestIO.consoleLog("orderedMatrix", orderedMatrix);
           }
         }
       }
@@ -661,9 +659,9 @@ describe("OrderedRotationAngles", () => {
             const ypr = YawPitchRollAngles.createRadians(yawAngle.radians, pitchAngle.radians, rollAngle.radians);
             const yprMatrix = ypr.toMatrix3d();
             if (!ck.testCoordinate(0, yprMatrix.maxDiff(matrixZYX))) {
-              console.log(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(matrixZYX)}`);
-              console.log("ypr matrix", yprMatrix);
-              console.log("matrixZYX", matrixZYX);
+              GeometryCoreTestIO.consoleLog(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(matrixZYX)}`);
+              GeometryCoreTestIO.consoleLog("ypr matrix", yprMatrix);
+              GeometryCoreTestIO.consoleLog("matrixZYX", matrixZYX);
             }
 
             const xyzRotationIsClockwise: [boolean, boolean, boolean] = [false, true, false];
@@ -676,9 +674,9 @@ describe("OrderedRotationAngles", () => {
             );
             const orderedMatrix = orderedAngles.toMatrix3d();
             if (!ck.testMatrix3d(yprMatrix, orderedMatrix)) {
-              console.log(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(orderedMatrix)}`);
-              console.log("ypr matrix", yprMatrix);
-              console.log("orderedMatrix", orderedMatrix);
+              GeometryCoreTestIO.consoleLog(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(orderedMatrix)}`);
+              GeometryCoreTestIO.consoleLog("ypr matrix", yprMatrix);
+              GeometryCoreTestIO.consoleLog("orderedMatrix", orderedMatrix);
             }
           }
         }

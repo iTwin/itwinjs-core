@@ -6,9 +6,9 @@ import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { CloudStorageContainerUrl, CloudStorageTileCache, IModelTileRpcInterface, ServerTimeoutError, TileContentIdentifier } from "@itwin/core-common";
+import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
+  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
   TileRequestChannel, TileStorage, Viewport,
 } from "@itwin/core-frontend";
 import { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
@@ -421,72 +421,3 @@ describe("TileStorage", () => {
     expect(tileRpcInterfaceStub).to.have.been.calledTwice;
   });
 });
-
-/* eslint-disable deprecation/deprecation */
-describe("CloudStorageTileCache", () => {
-  let imodel: IModelConnection;
-  let cache: TestCloudStorageTileCache;
-  let tileProps: TileContentIdentifier;
-
-  class TestCloudStorageTileCache extends CloudStorageTileCache {
-    public constructor() { super(); }
-
-    public failOnContentRequest() {
-      this.requestResource = async () => expect.fail("Not supposed to fetch cached tile!");
-    }
-
-    public failOnContainerUrlRequest() {
-      this.obtainContainerUrl = async () => expect.fail("Not supposed to fetch container URL again!");
-    }
-  }
-
-  before(async () => {
-    await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("test.bim");
-    tileProps = {
-      tokenProps: imodel.getRpcProps(),
-      treeId: "treeId",
-      contentId: "contentId",
-      guid: undefined,
-    };
-  });
-
-  after(async () => {
-    await imodel.close();
-    await TestUtility.shutdownFrontend();
-  });
-
-  beforeEach(async () => {
-    cache = new TestCloudStorageTileCache();
-  });
-
-  it("loads undefined content when backend does not support caching", async () => {
-    const containerUrl = await IModelTileRpcInterface.getClient().getTileCacheContainerUrl(imodel.getRpcProps(), { name: imodel.iModelId! });
-    expect(containerUrl).to.eql(CloudStorageContainerUrl.empty());
-
-    const content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-  });
-
-  it("does not request tile content when backend does not support caching", async () => {
-    const containerUrl = await IModelTileRpcInterface.getClient().getTileCacheContainerUrl(imodel.getRpcProps(), { name: imodel.iModelId! });
-    expect(containerUrl).to.eql(CloudStorageContainerUrl.empty());
-
-    cache.failOnContentRequest();
-    const content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-  });
-
-  it("reuses empty storage container URL", async () => {
-    const containerUrl = await IModelTileRpcInterface.getClient().getTileCacheContainerUrl(imodel.getRpcProps(), { name: imodel.iModelId! });
-    expect(containerUrl).to.eql(CloudStorageContainerUrl.empty());
-
-    let content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-
-    cache.failOnContainerUrlRequest();
-    content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-  });
-});
-/* eslint-enable deprecation/deprecation */
