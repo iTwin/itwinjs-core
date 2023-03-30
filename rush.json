@@ -91,13 +91,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/core-transformer",
-      "projectFolder": "core/transformer",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/editor-common",
       "projectFolder": "editor/common",
       "reviewCategory": "edit",
