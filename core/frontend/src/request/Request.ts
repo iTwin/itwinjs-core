@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError } from "@itwin/core-common";
-
 /** @internal */
 export class RequestGlobalOptions {
   // Assume application is online or offline. This hint skip retry/timeout
@@ -20,13 +18,17 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
 /** Error object that's thrown if the status is *not* in the range of 200-299 (inclusive).
  * @internal
  */
-export class ResponseError extends BentleyError {
-  public status: number;
+export class HttpResponseError extends Error {
 
-  public constructor(httpCode: number) {
-    super(httpCode);
+  public constructor(
+    public status: number,
+    public responseText?: string,
+  ) {
+    let message = `HTTP response status code: ${status}.`;
+    if (responseText)
+      message += ` Response body: ${responseText}`;
 
-    this.status = httpCode;
+    super(message);
   }
 }
 
@@ -50,7 +52,7 @@ export async function request(url: string, responseType: "text", options?: Reque
 /** @internal */
 export async function request(url: string, responseType: "arraybuffer" | "json" | "text", options?: RequestOptions): Promise<any> {
   if (!RequestGlobalOptions.online)
-    throw new ResponseError(503);
+    throw new HttpResponseError(503);
 
   const headers: any = {
     ...options?.headers,
@@ -68,7 +70,7 @@ export async function request(url: string, responseType: "arraybuffer" | "json" 
   const response = await fetchWithRetry(fetchFunc, options?.retryCount ?? 4);
 
   if (!response.ok)
-    throw new ResponseError(response.status);
+    throw new HttpResponseError(response.status, await response.text());
 
   switch (responseType) {
     case "arraybuffer":

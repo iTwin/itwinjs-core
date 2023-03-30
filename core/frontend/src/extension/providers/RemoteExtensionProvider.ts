@@ -6,7 +6,7 @@ import type {
   ExtensionManifest,
   ExtensionProvider,
 } from "../Extension";
-import { request, RequestOptions } from "../../request/Request";
+import { request } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
 
 /**
