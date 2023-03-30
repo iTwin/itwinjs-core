@@ -251,9 +251,10 @@ export class ViewCreator3d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-      rows.push(row.id);
+    const reader = this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader.step()) {
+      rows.push(reader.current.id);
+    }
 
     return rows;
   };

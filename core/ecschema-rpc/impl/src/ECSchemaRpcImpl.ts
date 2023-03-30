@@ -53,11 +53,10 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     const schemaKeyProps: SchemaKeyProps[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
-    // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
-    // a typed row instance instead of any.
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of iModelDb.query(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader = iModelDb.createQueryReader(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader.step()) {
+      const row = reader.current.toRow();
       const schemaDefinitionRow = row as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;
       const read = Number(schemaDefinitionRow.read);

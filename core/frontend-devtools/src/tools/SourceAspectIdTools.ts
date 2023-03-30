@@ -43,9 +43,9 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of imodel.query(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }))
-        resultId = row.resultId;
+      const reader = imodel.createQueryReader(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } });
+      if (await reader.step())
+        resultId = reader.current.resultId as string;
     } catch (ex) {
       resultId = BentleyError.getErrorMessage(ex);
     }

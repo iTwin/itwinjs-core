@@ -477,9 +477,10 @@ export class SheetViewState extends ViewState2d {
   private async queryAttachmentIds(): Promise<Id64Array> {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.iModel.query(ecsql))
-      ids.push(row[0]);
+    const reader = this.iModel.createQueryReader(ecsql);
+    while (await reader.step()) {
+      ids.push(reader.current.id);
+    }
 
     return ids;
   }
