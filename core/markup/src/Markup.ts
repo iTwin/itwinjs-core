@@ -385,9 +385,9 @@ const newSvgElement = (name: string) => adopt(create(name));
 export class Markup {
   /** @internal */
   public readonly markupDiv: HTMLDivElement;
-  /** @internal */
+  /** Support undo/redo of markup operations */
   public readonly undo = new UndoManager();
-  /** @internal */
+  /** The set of currently selected markup elements */
   public readonly selected!: MarkupSelected;
   /** @internal */
   public readonly svgContainer?: Svg;
