@@ -203,6 +203,29 @@ export type AngleSweepProps =
   [number, number] |
   { degrees: [number, number] } |
   { radians: [number, number] };
+/**
+* Interface for method with a clone operation
+* @public
+*/
+export interface Cloneable<T> {
+  /** Required method to return a deep clone. */
+  clone(): T | undefined;
+}
+/** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
+ * @public
+ */
+export interface PerpParallelOptions {
+  /**
+   * Squared radian tolerance for comparing the angle between two vectors.
+   * Default: [[Geometry.smallAngleRadiansSquared]].
+   */
+  radianSquaredTol?: number;
+  /**
+   * Squared distance tolerance for detecting a zero-length vector.
+   * Default: [[Geometry.smallMetricDistanceSquared]].
+   */
+  distanceSquaredTol?: number;
+}
 
 /**
  * Class containing static methods for typical numeric operations.
@@ -591,7 +614,7 @@ export class Geometry {
   public static hypotenuseXY(x: number, y: number): number {
     return Math.sqrt(x * x + y * y);
   }
-  /** Return the squared hypotenuse i.e., `x*x + y*y`). */
+  /** Return the squared hypotenuse (i.e., `x*x + y*y`). */
   public static hypotenuseSquaredXY(x: number, y: number): number {
     return x * x + y * y;
   }
@@ -640,7 +663,7 @@ export class Geometry {
     return Geometry.hypotenuseXYZ(x1 - x0, y1 - y0, z1 - z0);
   }
   /**
-   * Returns Returns the triple product of 3 vectors provided as x,y,z number sequences.
+   * Returns the triple product of 3 vectors provided as x,y,z number sequences.
    * * The triple product is the determinant of the 3x3 matrix with the 9 numbers (3 vectors placed in 3 rows).
    * * The triple product is positive if the 3 vectors form a right handed coordinate system.
    * * The triple product is negative if the 3 vectors form a left handed coordinate system.
@@ -648,10 +671,11 @@ export class Geometry {
    *     * U dot (V cross W)
    *     * V dot (W cross U)
    *     * W dot (U cross V)
-   *     * (-U dot (W cross V))  -- (note the negative -- reversing cross product order changes the sign)
-   *     * (-V dot (U cross W)) -- (note the negative -- reversing cross product order changes the sign)
-   *     * (-W dot (V cross U)) -- (note the negative -- reversing cross product order changes the sign)
-   * * the triple product is 6 times the (signed) volume of the tetrahedron with the three vectors as edges from a
+   *     * -U dot (W cross V)
+   *     * -V dot (U cross W)
+   *     * -W dot (V cross U)
+   * * Note the negative in the last 3 formulas. Reversing cross product order changes the sign.
+   * * The triple product is 6 times the (signed) volume of the tetrahedron with the three vectors as edges from a
    * common vertex.
    */
   public static tripleProduct(
@@ -675,13 +699,86 @@ export class Geometry {
       + zx * this.tripleProduct(xy, xz, xw, yy, yz, yw, wy, wz, ww)
       - wx * this.tripleProduct(xy, xz, xw, yy, yz, yw, zy, zz, zw);
   }
-  /** Return the mean curvature for two radii, with 0 radius implying 0 curvature */
+  /**
+   * Returns the determinant of 3x3 matrix with first and second rows created from the 3 xy points and the third
+   * row created from the 3 numbers:
+   *      [columnA.x   columnB.x   columnC.x]
+   *      [columnA.y   columnB.y   columnC.y]
+   *      [ weightA     weightB     weightC ]
+   */
+  public static tripleProductXYW(
+    columnA: XAndY, weightA: number,
+    columnB: XAndY, weightB: number,
+    columnC: XAndY, weightC: number
+  ): number {
+    return Geometry.tripleProduct(
+      columnA.x, columnB.x, columnC.x,
+      columnA.y, columnB.y, columnC.y,
+      weightA, weightB, weightC
+    );
+  }
+  /**
+   * Returns the determinant of 3x3 matrix columns created by the given `Point4d` ignoring the z part:
+   *      [columnA.x   columnB.x   columnC.x]
+   *      [columnA.y   columnB.y   columnC.y]
+   *      [columnA.w   columnB.w   columnC.w]
+   */
+  public static tripleProductPoint4dXYW(columnA: Point4d, columnB: Point4d, columnC: Point4d): number {
+    return Geometry.tripleProduct(
+      columnA.x, columnB.x, columnC.x,
+      columnA.y, columnB.y, columnC.y,
+      columnA.w, columnB.w, columnC.w
+    );
+  }
+  /** 2D cross product of vectors with the vectors presented as numbers. */
+  public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
+    return ux * vy - uy * vx;
+  }
+  /** 3D cross product of vectors with the vectors presented as numbers. */
+  public static crossProductXYZXYZ(
+    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d
+  ): Vector3d {
+    return Vector3d.create(
+      uy * vz - uz * vy,
+      uz * vx - ux * vz,
+      ux * vy - uy * vx,
+      result
+    );
+  }
+  /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
+  public static crossProductMagnitude(
+    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number
+  ): number {
+    return Geometry.hypotenuseXYZ(
+      uy * vz - uz * vy,
+      uz * vx - ux * vz,
+      ux * vy - uy * vx
+    );
+  }
+  /** 2D dot product of vectors with the vectors presented as numbers. */
+  public static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
+    return ux * vx + uy * vy;
+  }
+  /** 3D dot product of vectors with the vectors presented as numbers. */
+  public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
+    return ux * vx + uy * vy + uz * vz;
+  }
+  /**
+   * Return the mean curvature for two radii.
+   * * Curvature is the reciprocal of radius.
+   * * 0 radius implies 0 curvature.
+   * @param r0 first radius
+   * @param r1 second radius
+   */
   public static meanCurvatureOfRadii(r0: number, r1: number): number {
     return 0.5 * (this.safeDivideFraction(1, r0, 0) + this.safeDivideFraction(1, r1, 0));
   }
   /**
-   * Returns curvature magnitude from a first and second derivative vector.
-   * @param ux  first derivative x component
+   * Returns curvature from the first and second derivative vectors.
+   * * If U is the first derivative and V is the second derivative, the curvature is defined as:
+   *     * `|| U x V || / || U ||^3`.
+   * * Math details can be found at https://en.wikipedia.org/wiki/Curvature#General_expressions
+   * @param ux first derivative x component
    * @param uy first derivative y component
    * @param uz first derivative z component
    * @param vx second derivative x component
@@ -698,159 +795,108 @@ export class Geometry {
     sum += q * q;
     q = ux * vy - uy * vx;
     sum += q * q;
-    const a = Math.sqrt(ux * ux + uy * uy + uz * uz);
-    const b = Math.sqrt(sum);
-    // (sum and a are both nonnegative)
-    const aaa = a * a * a;
-    // radius of curvature = aaa / b;
-    // curvature = b/aaa
-    const tol = Geometry.smallAngleRadians;
-    if (aaa > tol * b)
-      return b / aaa;
-    return 0; // hm.. maybe should be infinite?
+    const magUxV = Math.sqrt(sum);
+    const magU = Math.sqrt(ux * ux + uy * uy + uz * uz);
+    const magUCubed = magU * magU * magU;
+    if (magUCubed > Geometry.smallAngleRadians * magUxV)
+      return magUxV / magUCubed;
+    return 0;
   }
   /**
-   * Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from
-   * corresponding numbers.
+   * Clamp to (min(a,b), max(a,b)).
+   * * Always returns a number between `a` and `b`.
+   * @param value value to clamp
+   * @param a smallest allowed output if `a < b` or largest allowed output if `a > b`
+   * @param b largest allowed output if `a < b` or smallest allowed output if `a > b`
    */
-  public static tripleProductXYW(
-    columnA: XAndY, weightA: number,
-    columnB: XAndY, weightB: number,
-    columnC: XAndY, weightC: number
-  ): number {
-    return Geometry.tripleProduct(
-      columnA.x, columnB.x, columnC.x,
-      columnA.y, columnB.y, columnC.y,
-      weightA, weightB, weightC
-    );
-  }
-  /**
-   * Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from
-   * corresponding numbers.
-   */
-  public static tripleProductPoint4dXYW(columnA: Point4d, columnB: Point4d, columnC: Point4d): number {
-    return Geometry.tripleProduct(
-      columnA.x, columnB.x, columnC.x,
-      columnA.y, columnB.y, columnC.y,
-      columnA.w, columnB.w, columnC.w
-    );
-  }
-  /** 2D cross product of vectors layed out as scalars. */
-  public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
-    return ux * vy - uy * vx;
-  }
-  /** 3D cross product of vectors layed out as scalars. */
-  public static crossProductXYZXYZ(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d
-  ): Vector3d {
-    return Vector3d.create(
-      uy * vz - uz * vy,
-      uz * vx - ux * vz,
-      ux * vy - uy * vx,
-      result
-    );
-  }
-  /** magnitude of 3D cross product of vectors, with the vectors presented as */
-  public static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
-    return Geometry.hypotenuseXYZ(
-      uy * vz - uz * vy,
-      uz * vx - ux * vz,
-      ux * vy - uy * vx
-    );
-  }
-  /** 3D dot product of vectors layed out as scalars. */
-  public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
-    return ux * vx + uy * vy + uz * vz;
-  }
-  /** 2D dot product of vectors layed out as scalars. */
-  public static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
-    return ux * vx + uy * vy;
-  }
-  /**
-   * Clamp to (min(a,b), max(a,b))
-   * * always returns a number between a and b
-   * @param x
-   * @param a
-   * @param b
-   */
-  public static clampToStartEnd(x: number, a: number, b: number): number {
+  public static clampToStartEnd(value: number, a: number, b: number): number {
     if (a > b)
-      return Geometry.clampToStartEnd(x, b, a);
-    if (x < a)
+      return Geometry.clampToStartEnd(value, b, a);
+    if (value < a)
       return a;
-    if (b < x)
+    if (b < value)
       return b;
-    return x;
+    return value;
   }
   /**
-   * Clamp value to (min,max) with no test for order of (min,max)
+   * Clamp value to (min, max) with no test for order of (min, max).
+   * * Always returns a number between `min` and `max`.
    * @param value value to clamp
    * @param min smallest allowed output
-   * @param max largest allowed result.
+   * @param max largest allowed output
    */
   public static clamp(value: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, value));
   }
-  /** If given a number, return it.   If given undefined, return `defaultValue`. */
+  /** If given a `value`, return it. If given `undefined`, return `defaultValue`. */
   public static resolveNumber(value: number | undefined, defaultValue: number = 0): number {
     return value !== undefined ? value : defaultValue;
   }
-  /** If given a value, return it.   If given undefined, return `defaultValue`. */
+  /** If given a `value`, return it. If given `undefined`, return `defaultValue`. */
   public static resolveValue<T>(value: T | undefined, defaultValue: T): T {
     return value !== undefined ? value : defaultValue;
   }
-  /** If given value matches a target, return undefined.   Otherwise return the value. */
+  /** If given `value` matches the `targetValue`, return `undefined`. Otherwise return the `value`. */
   public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
     return value === targetValue ? undefined : value;
   }
   /**
-   * Simple interpolation between values, but choosing (based on fraction) a or b as starting
-   * point for maximum accuracy.
+   * Simple interpolation between values `a` and `b` with fraction `f`.
    * * If `f = 0`, then `a` is returned and if `f = 1`, then `b` is returned.
+   * * For maximum accuracy, we choose `a` or `b` as starting point based on fraction `f`.
    */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
   }
   /**
-   * Given an axisOrder (e.g. XYZ, YZX, etc) and an index, returns the axis index at the given index.
-   * * For example, if axisOrder = XYZ, then for index 0 returns X (or axis index 0), for index 1 returns
-   * Y (or axis index 1), and for index 2 returns Z (or axis index 2). For indexes greater than 2 or smaller
-   * than 0, it returns cyclic axis index. See Geometry.cyclic3dAxis for more info.
-   * * Another example: if axisOrder = ZYX, then for index 0 returns Z (or axis index 2), for index 1 returns
-   * Y (or axis index 1), and for index 2 returns X (or axis index 0).
-   * */
+   * Given an `axisOrder` (e.g. XYZ, YZX, etc) and an `index`, return the `axis` at the given index.
+   * * For example, if `axisOrder = XYZ`, then for index 0 return `X` (or axis 0), for index 1 return
+   * `Y` (or axis 1), and for index 2 return `Z` (or axis 2).
+   * * Another example: if `axisOrder = ZXY`, then for index 0 return `Z` (or axis 2), for index 1 return
+   * `X` (or axis 0), and for index 2 return `Y` (or axis 1).
+   * * For indexes greater than 2 or smaller than 0, it return cyclic axis. See [[Geometry.cyclic3dAxis]]
+   * for more info.
+   */
   public static axisOrderToAxis(order: AxisOrder, index: number): number {
     const axis = order <= AxisOrder.ZXY ? order + index : (order - AxisOrder.XZY) - index;
     return Geometry.cyclic3dAxis(axis);
   }
-  /** Return (a modulo period), e.g. for use as a cyclic index.  Both a and period may be negative. */
+  /**
+   * Return `a` modulo `period`.
+   * * Both `a` and `period` can be negative.
+   * * This function can be faster than the `%` operator for the common case when `p > 0` and `-p < a < 2p`.
+   */
   public static modulo(a: number, period: number): number {
+    // period is negative
     if (period <= 0) {
       if (period === 0)
         return a;
       return -Geometry.modulo(-a, -period);
     }
-
+    // period is positive
     if (a >= 0) {
-      if (a < period)
+      if (a < period) // "0 < a < period"
         return a;
-      if (a < 2 * period)
+      if (a < 2 * period) // "0 < period < a < 2*period"
         return a - period;
-    } else {
-      a += period;  // hopefully move into primary period without division and floor
+    } else { // "-period < a < 0"
+      a += period;
       if (a > 0)
         return a;
     }
+    // "0 < 2*period < a" or "a < -period < 0"
     const m = Math.floor(a / period);
     return a - m * period;
   }
-  /** Return 0 if the value is undefined, 1 if defined. */
-  public static defined01(value: any): number { return value === undefined ? 0 : 1; }
+  /** Return 0 if the value is `undefined` and 1 if the value is defined. */
+  public static defined01(value: any): number {
+    return value === undefined ? 0 : 1;
+  }
   /**
-   * Return `numerator` divided by `denominator`, or `undefined`.
+   * Return `numerator` divided by `denominator`.
    * @param numerator the numerator
    * @param denominator the denominator
-   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * @returns return `numerator/denominator` but if the ratio exceeds `Geometry.largeFractionResult`,
    * return `undefined`.
    */
   public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
@@ -862,81 +908,110 @@ export class Geometry {
    * Return `numerator` divided by `denominator`.
    * @param numerator the numerator
    * @param denominator the denominator
-   * @returns return `numerator/denominator` but if the ratio would exceed `Geometry.largeFractionResult`,
+   * @returns return `numerator/denominator` but if the ratio exceeds `Geometry.largeFractionResult`,
    * return `defaultResult`.
    */
   public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
-    const a = Geometry.conditionalDivideFraction(numerator, denominator);
-    if (a !== undefined)
-      return a;
+    const ratio = Geometry.conditionalDivideFraction(numerator, denominator);
+    if (ratio !== undefined)
+      return ratio;
     return defaultResult;
   }
   /**
-   * Return `numerator` divided by `denominator` (with a given `largestResult`), or `undefined`.
+   * Return `numerator` divided by `denominator` (with a given `largestResult`).
    * @param numerator the numerator
    * @param denominator the denominator
-   * @param largestResult the ratio threshold.
-   * @returns return `numerator/denominator` but if the ratio would exceed `largestResult`, return `undefined`.
+   * @param largestResult the ratio threshold
+   * @returns return `numerator/denominator` but if the ratio exceeds `largestResult`, return `undefined`.
    */
-  public static conditionalDivideCoordinate(numerator: number, denominator: number,
-    largestResult: number = Geometry.largeCoordinateResult): number | undefined {
+  public static conditionalDivideCoordinate(
+    numerator: number, denominator: number, largestResult: number = Geometry.largeCoordinateResult
+  ): number | undefined {
     if (Math.abs(denominator * largestResult) > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }
   /**
-   * Return the 0, 1, or 2 pairs of (c,s) values that solve
-   * {constCoff + cosCoff * c + sinCoff * s = 0}
-   * with the constraint {c*c+s*s = 1}
+   * Return solution(s) of equation `constCoff + cosCoff*c + sinCoff*s = 0` for `c` and `s` with the
+   * constraint `c*c + s*s = 1`.
+   * * There could be 0, 1, or 2 solutions. Return `undefined` if there is no solution.
    */
   public static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined {
-    {
-      const delta2 = cosCoff * cosCoff + sinCoff * sinCoff;
-      const constCoff2 = constCoff * constCoff;
-      // nSolution = 0
-      let result;
-      if (delta2 > 0.0) {
-        const lambda = - constCoff / delta2;
-        const a2 = constCoff2 / delta2;
-        const D2 = 1.0 - a2;
-        if (-Geometry.smallMetricDistanceSquared < D2 && D2 <= 0.0) { // observed D2 = -2.22e-16 in rotated system
-          // nSolution = 1
-          const c0 = lambda * cosCoff;
-          const s0 = lambda * sinCoff;
-          result = [Vector2d.create(c0, s0)];
-        } else if (D2 > 0.0) {
-          const mu = Math.sqrt(D2 / delta2);
-          /* c0,s0 = closest approach of line to origin */
-          const c0 = lambda * cosCoff;
-          const s0 = lambda * sinCoff;
-          // nSolution = 2
-          result = [Vector2d.create(c0 - mu * sinCoff, s0 + mu * cosCoff), Vector2d.create(c0 + mu * sinCoff, s0 - mu * cosCoff)];
-        }
+    /**
+     * Solutions can be found by finding the intersection of line "ax + by + d = 0" and unit circle "x^2 + y^2 = 1".
+     * From the line equation we have "y = (-ax - d) / b". By replacing this into the circle equation we get
+     * "x^2 + (ax+d)^2/b^2 = 1". If we solve this by quadratic formula we get
+     *      x = (-ad +- b*sqrt(a^2+b^2-d^2)) / (a^2+b^2)
+     *      y = (-ad -+ a*sqrt(a^2+b^2-d^2)) / (a^2+b^2)
+     *
+     * If "a^2+b^2-d^2 > 0" then there are two solutions (above).
+     * If "a^2+b^2-d^2 = 0" then there is one solution which is (-ad/(a^2+b^2), -bd/(a^2+b^2)).
+     * If "a^2+b^2-d^2 < 0" then there is no solution.
+     *
+     * Below in the code we have "a = cosCoff", "b = sinCoff", and "d = constCoff". Also equivalent criterion
+     * is used in the code. For example, "a^2+b^2-d^2 > 0" is equivalent of "1 - d^2/(a^2+b^2) > 0".
+     */
+    const a2b2 = cosCoff * cosCoff + sinCoff * sinCoff; // a^2+b^2
+    const d2 = constCoff * constCoff; // d^2
+    let result;
+    if (a2b2 > 0.0) {
+      const a2b2r = 1.0 / a2b2; // 1/(a^2+b^2)
+      const d2a2b2 = d2 * a2b2r; // d^2/(a^2+b^2)
+      const criteria = 1.0 - d2a2b2; // 1 - d^2/(a^2+b^2); the criteria to specify how many solutions we got
+      if (criteria < -Geometry.smallMetricDistanceSquared)
+        return result; // nSolution = 0
+      const da2b2 = -constCoff * a2b2r; // -d/(a^2+b^2)
+      const c0 = da2b2 * cosCoff; // -ad/(a^2+b^2)
+      const s0 = da2b2 * sinCoff; // -bd/(a^2+b^2)
+      // observed criteria = -2.22e-16 in rotated system
+      if (-Geometry.smallMetricDistanceSquared <= criteria && criteria <= 0.0) {
+        result = [Vector2d.create(c0, s0)]; // nSolution = 1
+      } else if (criteria > 0.0) {
+        // nSolution = 2
+        const s = Math.sqrt(criteria * a2b2r); // sqrt(a^2+b^2-d^2)) / (a^2+b^2)
+        result = [
+          Vector2d.create(c0 - s * sinCoff, s0 + s * cosCoff),
+          Vector2d.create(c0 + s * sinCoff, s0 - s * cosCoff),
+        ];
       }
-      return result;
     }
-  }
-  /** For a line f(x) whose function values at x0 and x1 are f0 and f1, return the x value at which f(x)=fTarget; */
-  public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF: number = 0,
-    defaultResult?: number): number | undefined {
-    const g = Geometry.conditionalDivideFraction(targetF - f0, f1 - f0);
-    if (g)
-      return Geometry.interpolate(x0, g, x1);
-    return defaultResult;
-  }
-  /** For a line f(x) whose function values at x=0 and x=1 are f0 and f1, return the x value at which f(x)=fTarget; */
-  public static inverseInterpolate01(f0: number, f1: number, targetF: number = 0): number | undefined {
-    return Geometry.conditionalDivideFraction(targetF - f0, f1 - f0);
+    return result;
   }
   /**
-   * Return true if json is an array with at least minEntries, and all entries are numbers (including
-   * those beyond minEntries)
+   * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`
+   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
+   */
+  public static inverseInterpolate(
+    x0: number, f0: number, x1: number, f1: number, fTarget: number = 0, defaultResult?: number
+  ): number | undefined {
+    /**
+     * Line equation is "fTarget-f0 = (f1-f0)/(x1-x0) * (x-x0)" or "(fTarget-f0)/(f1-f0) = (x-x0)/(x1-x0)".
+     * The right hand side is known so if we call it "fr" (short for "fraction") we get "(x-x0)/(x1-x0) = fr".
+     * Therefore, "x = x0*(1-fr) + x1*fr". This is same as interpolation between "x0" and "x1" with fraction "fr".
+     */
+    const fr = Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0); // (fTarget-f0)/(f1-f0)
+    if (fr !== undefined)
+      return Geometry.interpolate(x0, fr, x1); // x = x0*(1-fr) + x1*fr
+    return defaultResult;
+  }
+  /**
+   * For a line `f(x)` where `f(0) = f0` and `f(1) = f1`, return the `x` value at which `f(x) = fTarget`
+   * Return `undefined` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
+   */
+  public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
+    /**
+     * Line equation is "fTarget-f0 = (f1-f0)*x" so "x = (fTarget-f0)/(f1-f0)"
+     */
+    return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0); // x = (fTarget-f0)/(f1-f0)
+  }
+  /**
+   * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including
+   * those beyond minEntries).
    */
   public static isNumberArray(json: any, minEntries: number = 0): boolean {
     if (Array.isArray(json) && json.length >= minEntries) {
       let entry;
       for (entry of json) {
-        //        if (!(entry as number) && entry !== 0.0)
         if (!Number.isFinite(entry))
           return false;
       }
@@ -944,77 +1019,96 @@ export class Geometry {
     }
     return false;
   }
-  /** Return true if json is an array of at least numNumberArrays, with at least minEntries in each number array */
-  public static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries: number = 0): boolean {
-    if (Array.isArray(json) && json.length >= numNumberArray) {
+  /**
+   * Return `true` if `json` is an array of at least `minArrays` arrays with at least `minEntries` entries in
+   * each array and all entries are numbers (including those beyond minEntries).
+   */
+  public static isArrayOfNumberArray(json: any, minArrays: number, minEntries: number = 0): boolean {
+    if (Array.isArray(json) && json.length >= minArrays) {
       let entry;
       for (entry of json)
-        if (!Geometry.isNumberArray(entry, minEntries)) return false;
+        if (!Geometry.isNumberArray(entry, minEntries))
+          return false;
       return true;
     }
     return false;
   }
   /**
-   * Return the number of steps to take so that numSteps * stepSize >= total.
-   * minCount is returned for both (a) setSize 0 or less and (b) stepSize > total.
-   * A small tolerance is applied for almost
-  */
+   * Return the number of steps to take so that `numSteps * stepSize >= total`.
+   * * `minCount` is returned in the following 3 cases:
+   *   * (a) `stepSize <= 0`
+   *   * (b) `stepSize >= total`
+   *   * (b) `numSteps < minCount`
+   * * `maxCount` is returned if `numSteps > maxCount`.
+   */
   public static stepCount(stepSize: number, total: number, minCount = 1, maxCount = 101): number {
     if (stepSize <= 0)
       return minCount;
     total = Math.abs(total);
     if (stepSize >= total)
       return minCount;
-    const stepCount = Math.floor((total + 0.999999 * stepSize) / stepSize);
-    if (stepCount < minCount)
+    /**
+     * 0.999999 is multiplied so we return the same "numSteps" if
+     * stepSize*(numSteps-1) < total <= stepSize*numSteps.
+     * For example, if "stepSize = 2" then we return "numSteps = 5" if 8 < total <= 10.
+     */
+    const numSteps = Math.floor((total + 0.999999 * stepSize) / stepSize);
+    if (numSteps < minCount)
       return minCount;
-    if (stepCount > maxCount)
+    if (numSteps > maxCount)
       return maxCount;
-    return stepCount;
+    return numSteps;
   }
   /**
-   * Test if x is in simple 0..1 interval. But optionally skip the test. (this odd behavior is very
-   * convenient for code that sometimes does not do the filtering.)
+   * Test if `x` is in simple 0..1 interval (but skip the test if `apply01 = false`).
+   * * This odd behavior is very convenient for code that sometimes does not do the filtering.
    * @param x value to test.
-   * @param apply01 if false, accept all x.
+   * @param apply01 if false, return `true` for all values of `x`.
    */
   public static isIn01(x: number, apply01: boolean = true): boolean {
     return apply01 ? x >= 0.0 && x <= 1.0 : true;
   }
   /**
-   * Test if x is in simple 0..1 interval. But optionally skip the test. (this odd behavior is very convenient
-   * for code that sometimes does not do the filtering.)
+   * Test if x is in simple 0..1 interval for a given positive `tolerance`.
+   * * Make sure to pass a positive `tolerance` because there is no check for that in the code.
    * @param x value to test.
-   * @param apply01 if false, accept all x.
+   * @param tolerance the tolerance.
    */
   public static isIn01WithTolerance(x: number, tolerance: number): boolean {
     return x + tolerance >= 0.0 && x - tolerance <= 1.0;
   }
   /**
-   * Restrict x so it is in the interval `[a,b]`, allowing a,b to be in either order.
-   * @param x
+   * Restrict x so it is in the interval `[a,b]` (allowing `a` and `b` to be in either order).
+   * @param x value to restrict
    * @param a (usually the lower) interval limit
    * @param b (usually the upper) interval limit
    */
   public static restrictToInterval(x: number, a: number, b: number): number {
     if (a <= b) {
-      if (x < a) return a;
-      if (x > b) return b;
+      if (x < a)
+        return a;
+      if (x > b)
+        return b;
       return x;
     }
-    // reversed interval ....
-    if (x < b) return b;
-    if (x > a) return a;
+    // reversed interval
+    if (x < b)
+      return b;
+    if (x > a)
+      return a;
     return x;
   }
   /**
    * Case-insensitive string comparison.
-   * * Return true if the toUpperCase values match.
+   * * Return `true` if the `toUpperCase` values of `string1` and `string2` match.
    */
   public static equalStringNoCase(string1: string, string2: string): boolean {
     return string1.toUpperCase() === string2.toUpperCase();
   }
-  /** Test for EXACT match of number arrays. */
+  /**
+   * Test for exact match of two number arrays.
+   * Returns `true` if both arrays have the same length and have the same entries (or both are empty arrays).
+   */
   public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
     if (Array.isArray(a) && a.length === 0)
       a = undefined;
@@ -1032,29 +1126,13 @@ export class Geometry {
     }
     return false;
   }
-  /** Test for  match of XYZ arrays. */
-  public static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined,
-    testFunction: (p: T, q: T) => boolean): boolean {
-    if (Array.isArray(a) && a.length === 0)
-      a = undefined;
-    if (Array.isArray(b) && b.length === 0)
-      b = undefined;
-    if (a === undefined && b === undefined)
-      return true;
-    if (Array.isArray(a) && Array.isArray(b)) {
-      if (a.length !== b.length)
-        return false;
-      for (let i = 0; i < a.length; i++) {
-        if (!testFunction(a[i], b[i]))
-          return false;
-      }
-      return true;
-    }
-    return false;
-  }
-  /** Test for  match of typed arrays (e.g. Float64Array). */
-  public static almostEqualNumberArrays(a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
-    testFunction: (p: number, q: number) => boolean): boolean {
+  /**
+   * Test for match of two arrays of type `T`.
+   * Returns `true` if both arrays have the same length and have the same entries (or both are empty arrays).
+   */
+  public static almostEqualArrays<T>(
+    a: T[] | undefined, b: T[] | undefined, testFunction: (p: T, q: T) => boolean
+  ): boolean {
     if (Array.isArray(a) && a.length === 0)
       a = undefined;
     if (Array.isArray(b) && b.length === 0)
@@ -1073,17 +1151,41 @@ export class Geometry {
     return false;
   }
   /**
-   * Return
-   * * true if both values are defined and equal (with ===).
-   * * false if both defined by not equal
-   * * return (option arg) resultIfBothUndefined when both are undefined.
-   * * return false if one is defined and the other undefined
+   * Test for match of two arrays of type number or Float64Array.
+   * Returns `true` if both arrays have the same length and have the same entries (or both are empty arrays).
+   */
+  public static almostEqualNumberArrays(
+    a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
+    testFunction: (p: number, q: number) => boolean
+  ): boolean {
+    if (Array.isArray(a) && a.length === 0)
+      a = undefined;
+    if (Array.isArray(b) && b.length === 0)
+      b = undefined;
+    if (a === undefined && b === undefined)
+      return true;
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length)
+        return false;
+      for (let i = 0; i < a.length; i++) {
+        if (!testFunction(a[i], b[i]))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+  /**
+   * Test for match of two values of type `T`.
    * @param a first value
    * @param b second value
-   * @param resultIfBothUndefined return value when both are undefined.
-   * @returns
+   * @param resultIfBothUndefined returned value when both are `undefined`
+   * @returns `true` if both values are defined and equal (with ===) and `false` if both values are defined
+   * but not equal or if one is defined and the other undefined.
    */
-  public static areEqualAllowUndefined<T>(a: T | undefined, b: T | undefined, resultIfBothUndefined: boolean = true): boolean {
+  public static areEqualAllowUndefined<T>(
+    a: T | undefined, b: T | undefined, resultIfBothUndefined: boolean = true
+  ): boolean {
     if (a === undefined && b === undefined)
       return resultIfBothUndefined;
     if (a !== undefined && b !== undefined)
@@ -1091,39 +1193,16 @@ export class Geometry {
     return false;
   }
   /**
-   * Clone an array whose members have a clone method.
-   * * undefined return from clone is forced into the output array.
+   * Clone an `array` of type `T` whose members have a clone method.
+   * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
    */
-  public static cloneMembers<T extends Cloneable<T>>(a: T[] | undefined): T[] | undefined {
-    if (a === undefined)
+  public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {
+    if (array === undefined)
       return undefined;
-    const b: T[] = [];
-    for (const p of a) {
-      b.push(p.clone()!);
+    const clonedArray: T[] = [];
+    for (const element of array) {
+      clonedArray.push(element.clone()!);
     }
-    return b;
+    return clonedArray;
   }
-}
-/**
- * Interface for method with a clone operation
- * @public
- */
-export interface Cloneable<T> {
-  /** Required method to return a deep clone. */
-  clone(): T | undefined;
-}
-/** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
- * @public
- */
-export interface PerpParallelOptions {
-  /**
-   * Squared radian tolerance for comparing the angle between two vectors.
-   * Default: [[Geometry.smallAngleRadiansSquared]].
-   */
-  radianSquaredTol?: number;
-  /**
-   * Squared distance tolerance for detecting a zero-length vector.
-   * Default: [[Geometry.smallMetricDistanceSquared]].
-   */
-  distanceSquaredTol?: number;
 }

@@ -2077,8 +2077,8 @@ export class Geometry {
     static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder;
     static axisOrderToAxis(order: AxisOrder, index: number): number;
     static clamp(value: number, min: number, max: number): number;
-    static clampToStartEnd(x: number, a: number, b: number): number;
-    static cloneMembers<T extends Cloneable<T>>(a: T[] | undefined): T[] | undefined;
+    static clampToStartEnd(value: number, a: number, b: number): number;
+    static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined;
     static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
     static correctSmallMetricDistance(distance: number | undefined, replacement?: number): number;
@@ -2105,14 +2105,14 @@ export class Geometry {
     static hypotenuseXYZ(x: number, y: number, z: number): number;
     static hypotenuseXYZW(x: number, y: number, z: number, w: number): number;
     static interpolate(a: number, f: number, b: number): number;
-    static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF?: number, defaultResult?: number): number | undefined;
-    static inverseInterpolate01(f0: number, f1: number, targetF?: number): number | undefined;
+    static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, fTarget?: number, defaultResult?: number): number | undefined;
+    static inverseInterpolate01(f0: number, f1: number, fTarget?: number): number | undefined;
     static inverseMetricDistance(distance: number): number | undefined;
     static inverseMetricDistanceSquared(distanceSqrt: number): number | undefined;
     static isAlmostEqualNumber(a: number, b: number, tolerance?: number): boolean;
     static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
     static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance?: number): boolean;
-    static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
+    static isArrayOfNumberArray(json: any, minArrays: number, minEntries?: number): boolean;
     static isDistanceWithinTol(distance: number, tolerance?: number): boolean;
     // @deprecated
     static isHugeCoordinate(x: number): boolean;

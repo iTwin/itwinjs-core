@@ -962,7 +962,7 @@ export class Vector3d extends XYZ {
    * Return fractional projection of this vector on the target vector.
    * * It's returning the signed projection magnitude divided by the target magnitude.
    * * To find the projection vector, scale the target vector by the value that this function is returning.
-   * * math details can be found at docs/learning/geometry/PointVector.md
+   * * Math details can be found at docs/learning/geometry/PointVector.md
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnVector
    * and https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
    * @param target the target vector
