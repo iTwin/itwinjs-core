@@ -249,9 +249,7 @@ export class GeoConverter {
   private readonly _iModelToGeo: CoordinateConverter;
 
   /** @internal */
-  constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps) {
-    const datum = typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS;
-
+  constructor(iModel: IModelConnection, datum: string) {
     this._geoToIModel = new CoordinateConverter({
       iModel,
       requestPoints: async (geoCoords: XYAndZ[]) => {
@@ -315,6 +313,7 @@ export class GeoConverter {
  */
 export class GeoServices {
   private _iModel: IModelConnection;
+  private readonly _cache = new Map<string, GeoConverter>();
 
   /** @internal */
   constructor(iModel: IModelConnection) {
@@ -327,6 +326,16 @@ export class GeoServices {
    * @note A [[BlankConnection]] has no connection to a backend, so it is never "open"; therefore it always returns `undefined`.
    */
   public getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined {
-    return this._iModel.isOpen ? new GeoConverter(this._iModel, datumOrGCRS ? datumOrGCRS : "") : undefined;
+    if (!this._iModel.isOpen)
+      return undefined;
+
+    let datum = typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS;
+    datum = datum ?? "";
+
+    let converter = this._cache.get(datum);
+    if (!converter)
+      this._cache.set(datum, converter = new GeoConverter(this._iModel, datum));
+
+    return converter;
   }
 }
