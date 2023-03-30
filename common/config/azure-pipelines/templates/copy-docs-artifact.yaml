@@ -28,8 +28,7 @@ parameters:
   # parameter can be defined if custom staging logic is required
   - name: stagingSteps
     type: stepList
-    default:
-      steps: []
+    default: []
 
 steps:
   - ${{ parameters.useCurrentDocsArtifact }}:
