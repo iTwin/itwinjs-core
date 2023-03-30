@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@itwin/presentation-common": "workspace:*",
     "@opentelemetry/api": "1.0.4",
     "@opentelemetry/resources": "~1.5.0",
@@ -59,7 +59,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "^18.11.5",
     "cpx2": "^3.0.0",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
