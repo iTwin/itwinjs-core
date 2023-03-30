@@ -72,8 +72,9 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    await this._context.addSchema(schema);
+    // If this doesn't doesn't already exist in the cache, need to add this schema to the context to be able to locate schemaItems within the context.
+    if (this._context.getCachedSchemaSync(schema.schemaKey) === undefined)
+      await this._context.addSchema(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
@@ -118,8 +119,9 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    this._context.addSchemaSync(schema);
+    // If this doesn't doesn't already exist in the cache, need to add this schema to the context to be able to locate schemaItems within the context.
+    if (this._context.getCachedSchemaSync(schema.schemaKey) === undefined)
+      this._context.addSchemaSync(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
