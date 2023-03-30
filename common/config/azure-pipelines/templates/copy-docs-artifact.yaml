@@ -41,7 +41,7 @@ steps:
       displayName: Download Presentation Docs Artifact
       inputs:
         buildType: specific
-        project: ${{ paramters.projectId }}
+        project: ${{ parameters.projectId }}
         pipeline: ${{ parameters.pipelineId }}
         buildVersionToDownload: latestFromBranch
         branchName: ${{ parameters.defaultBranch }}
