@@ -67,7 +67,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), eq('${{ parameters.runRushAudit }}', 'true'), ne('${{ parameters.targetBranch }}', 'imodel02'))
+    condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'imodel02'))
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
@@ -79,7 +79,7 @@ steps:
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
     displayName: Build & run iOS display-test-app
-    condition: and(succeeded(), eq('${{ parameters.buildIos }}', 'true'), eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), ${{ parameters.buildIos }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
