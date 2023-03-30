@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/common"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "presentation/common"
   },
   "keywords": [
     "Bentley",

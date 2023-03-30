@@ -8,7 +8,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/bentley"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/bentley"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",

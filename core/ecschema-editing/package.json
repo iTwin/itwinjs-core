@@ -7,7 +7,8 @@
   "typings": "lib/cjs/ecschema-editing",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-editing"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/ecschema-editing"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s createLocalization && npm run -s copy:test-assets",

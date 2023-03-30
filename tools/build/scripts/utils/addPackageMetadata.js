@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const FS = require("fs-extra");
 const path = require("path");
@@ -10,7 +10,7 @@ const path = require("path");
 // so find the project root using rush env variable if available.
 const rootPackageJson = process.env.RUSHSTACK_FILE_ERROR_BASE_FOLDER
   ? path.join(process.env.RUSHSTACK_FILE_ERROR_BASE_FOLDER, "package.json")
-  : "../../../../package.json"
+  : "../../../../package.json";
 
 // Check if path to root package.json is valid.
 const rootPackageJsonPath = require.resolve(rootPackageJson);
@@ -20,9 +20,10 @@ const packageJsonPath = path.join(process.cwd(), "package.json");
 const packageJson = JSON.parse(FS.readFileSync(packageJsonPath));
 const version = packageJson.version;
 const repositoryUrl = packageJson.repository?.url;
+const repositoryDirectory = packageJson.repository?.directory;
 
-if (!version || !repositoryUrl) {
-  throw new Error('version or repositoryUrl not found in package.json');
+if (!version || !repositoryUrl || !repositoryDirectory) {
+  throw new Error("version or repository info not found in package.json");
 }
 
 // Appends the directory of the package root to the Typedoc JSON output
@@ -32,11 +33,14 @@ function addPackageMetadata(file, directory) {
     const pathToRootFolder = path.dirname(rootPackageJsonPath);
     const packageRoot = directory.substring(pathToRootFolder.length + 1);
     const jsonContents = JSON.parse(contents);
+
     jsonContents["packageRoot"] = packageRoot.endsWith("src")
       ? packageRoot
       : `${packageRoot}\\${"src"}`;
     jsonContents["version"] = version;
     jsonContents["repositoryUrl"] = repositoryUrl;
+    jsonContents["repositoryDirectory"] = repositoryDirectory;
+
     FS.writeFileSync(file, Buffer.from(JSON.stringify(jsonContents, null, 2)));
   }
 }

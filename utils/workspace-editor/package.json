@@ -19,7 +19,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/utils/workspace-editor"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "utils/workspace-editor"
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
