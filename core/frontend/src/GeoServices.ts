@@ -328,6 +328,16 @@ export class GeoConverter {
  */
 export class GeoServices {
   private _iModel: IModelConnection;
+  /** Each GeoConverter has its own independent request queue and cache of previously-converted points.
+   * Some callers like RealityTileTree obtain a single GeoConverter and reuse it throughout their own lifetime. Therefore they benefit from both batching and caching, and
+   * the cache gets deleted once the RealityTileTree becomes disused.
+   *
+   * Other callers like IModelConnection.spatialToCartographic obtain a new GeoConverter every time they need one, use it to convert a single point(!), and then discard the converter.
+   * This entirely prevents batching - e.g., calling spatialToCartographic 20 times in one frame results in 20 http requests.
+   * To address that, we cache each GeoConverter returned by getConverter until it has converted at least one point and has no further outstanding conversion requests.
+   * In this way, the converter lives for as long as (and no longer than) any caller is awaiting conversion to/from its datum - it and its cache are deleted once it becomes disused.
+   * This makes the coordinate caching generally less useful, but at least bounded - and maximizes batching of requests.
+   */
   private readonly _cache = new Map<string, GeoConverter>();
 
   /** @internal */
