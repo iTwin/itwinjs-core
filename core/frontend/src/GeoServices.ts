@@ -73,6 +73,10 @@ export class CoordinateConverter {
   protected readonly _iModel: IModelConnection;
   protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 
+  public get isIdle(): boolean {
+    return "idle" === this._state;
+  }
+
   protected toXYAndZ(input: XYZProps, output: WritableXYAndZ): XYAndZ {
     if (Array.isArray(input)) {
       output.x = input[0] ?? 0;
@@ -247,6 +251,10 @@ export interface CachedIModelCoordinatesResponseProps {
 export class GeoConverter {
   private readonly _geoToIModel: CoordinateConverter;
   private readonly _iModelToGeo: CoordinateConverter;
+  /** Used for removing this converter from GeoServices' cache after all requests are completed.
+   * @internal
+   */
+  public readonly onAllRequestsCompleted = new BeEvent<() => void>();
 
   /** @internal */
   constructor(iModel: IModelConnection, datum: string) {
@@ -286,6 +294,7 @@ export class GeoConverter {
   /** @internal */
   public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
     const result = await this._geoToIModel.convert(geoPoints);
+    this.checkCompletion();
     return {
       iModelCoords: result.points,
       fromCache: result.fromCache,
@@ -295,10 +304,16 @@ export class GeoConverter {
   /** @internal */
   public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
     const result = await this._iModelToGeo.convert(iModelPoints);
+    this.checkCompletion();
     return {
       geoCoords: result.points,
       fromCache: result.fromCache,
     };
+  }
+
+  private checkCompletion(): void {
+    if (this._geoToIModel.isIdle && this._iModelToGeo.isIdle)
+      this.onAllRequestsCompleted.raiseEvent();
   }
 
   /** @internal */
@@ -329,12 +344,17 @@ export class GeoServices {
     if (!this._iModel.isOpen)
       return undefined;
 
-    let datum = typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS;
-    datum = datum ?? "";
+    const datum = (typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS) ?? "";
 
     let converter = this._cache.get(datum);
-    if (!converter)
+    if (!converter) {
       this._cache.set(datum, converter = new GeoConverter(this._iModel, datum));
+
+      converter.onAllRequestsCompleted.addOnce(() => {
+        if (converter === this._cache.get(datum))
+          this._cache.delete(datum);
+      });
+    }
 
     return converter;
   }
