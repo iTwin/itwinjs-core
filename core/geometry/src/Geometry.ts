@@ -207,7 +207,7 @@ export type AngleSweepProps =
   { degrees: [number, number] } |
   { radians: [number, number] };
 /**
-* Interface for method with a clone operation
+* Interface for method with a clone operation.
 * @public
 */
 export interface Cloneable<T> {
