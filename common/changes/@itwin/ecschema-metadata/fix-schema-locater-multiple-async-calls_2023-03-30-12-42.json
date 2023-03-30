@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "Fixed scenario where in if the same schema was retrieved through multiple async calls, the schema was being re-added to cache with each call, leading to DuplicateSchema error",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}

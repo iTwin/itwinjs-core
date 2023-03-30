@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 
 import { TestUtility } from "../TestUtility";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { SchemaContext, SchemaMatchType, SchemaKey, ECObjectsStatus } from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-
 
 describe("Schema RPC locater", () => {
   let imodel: IModelConnection;
@@ -40,8 +39,7 @@ describe("Schema RPC locater", () => {
 
       const secondCallSchema = await schemaLocater.getSchema(new SchemaKey("ECDbSchemaPolicies", 1, 0, 0), SchemaMatchType.LatestReadCompatible, context);
       expect(secondCallSchema).to.be.not.undefined;
-    }
-    catch (error: any) {
+    } catch (error: any) {
       // getSchema shouldn't fail with duplicate schema error when called more than once
       assert(false, error.toDebugString());
     }
