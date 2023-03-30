@@ -77,7 +77,7 @@ def createRelease(tag):
     # If major/minor release, grab corresponding markdown from ./docs/changehistory
     fileName = "docs/changehistory/{0}.md".format(currentVer)
     if not os.path.exists(fileName):
-      print("changehistory could not be found.. exiting")
+      print("changehistory {0} could not be found.. exiting".format(currentVer))
       return
 
   # Create GitHub release using the markdown file
