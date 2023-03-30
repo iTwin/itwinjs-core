@@ -19,7 +19,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/domains/physical-material/backend"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "domains/physical-material/backend"
   },
   "keywords": [
     "Bentley",
