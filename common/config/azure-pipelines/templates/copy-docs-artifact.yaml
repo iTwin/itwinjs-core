@@ -31,7 +31,7 @@ parameters:
     default: []
 
 steps:
-  - ${{ if (parameters.useCurrentDocsArtifact) }}:
+  - ${{ if parameters.useCurrentDocsArtifact }}:
     - download: current
       artifact: ${{ parameters.artifactName }}
       displayName: Download ${{ parameters.artifactName }} Artifact
