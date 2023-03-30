@@ -72,12 +72,11 @@ steps:
       artifactName: Bis Docs
       useCurrentDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
       stagingSteps:
-        steps:
-        - task: CopyFiles@2
-          displayName: Copy Bis Docs to staging
-          inputs:
-            SourceFolder: $(Pipeline.Workspace)/Bis Docs
-            TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
+      - task: CopyFiles@2
+        displayName: Copy Bis Docs to staging
+        inputs:
+          SourceFolder: $(Pipeline.Workspace)/Bis Docs
+          TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # - ${{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
   #   - download: current
