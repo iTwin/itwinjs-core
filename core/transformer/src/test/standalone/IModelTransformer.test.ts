@@ -1134,8 +1134,9 @@ describe("IModelTransformer", () => {
   /** gets a mapping of element ids to their invariant content */
   async function getAllElementsInvariants(db: IModelDb, filterPredicate?: (element: Element) => boolean) {
     const result: Record<Id64String, any> = {};
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of db.query("SELECT * FROM bis.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader = db.createQueryReader("SELECT * FROM bis.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader.step()) {
+      const row = reader.current.toRow();
       if (!filterPredicate || filterPredicate(db.elements.getElement(row.id))) {
         const { lastMod: _lastMod, ...invariantPortion } = row;
         result[row.id] = invariantPortion;
@@ -1150,8 +1151,9 @@ describe("IModelTransformer", () => {
     filterPredicate?: (rel: { sourceId: string, targetId: string }) => boolean
   ): Promise<{ sourceId: Id64String, targetId: Id64String }[]> {
     const result = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of db.query("SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    const reader = db.createQueryReader("SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    while (await reader.step()) {
+      const row = reader.current.toRow();
       if (!filterPredicate || filterPredicate(row)) {
         const { id: _id, ...invariantPortion } = row;
         result.push(invariantPortion);
@@ -2086,43 +2088,43 @@ describe("IModelTransformer", () => {
 
     /* eslint-disable @typescript-eslint/indent */
     for (const sourceDb of sourceDbs)
-    for (const targetSeed of targetSeeds)
-    /* eslint-disable @typescript-eslint/indent */
-    for (const doUpgrade of doUpgradeVariants) {
-      if (IModelJsFs.existsSync(targetDbPath))
-        IModelJsFs.unlinkSync(targetDbPath);
+      for (const targetSeed of targetSeeds)
+        /* eslint-disable @typescript-eslint/indent */
+        for (const doUpgrade of doUpgradeVariants) {
+          if (IModelJsFs.existsSync(targetDbPath))
+            IModelJsFs.unlinkSync(targetDbPath);
 
-      let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
-      targetDb.close();
-      setToStandalone(targetDbPath);
-      if (doUpgrade)
-        StandaloneDb.upgradeStandaloneSchemas(targetDbPath);
-      targetDb = StandaloneDb.openFile(targetDbPath);
+          let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
+          targetDb.close();
+          setToStandalone(targetDbPath);
+          if (doUpgrade)
+            StandaloneDb.upgradeStandaloneSchemas(targetDbPath);
+          targetDb = StandaloneDb.openFile(targetDbPath);
 
-      const transformer = new IModelTransformer(sourceDb, targetDb);
-      try {
-        await transformer.processSchemas();
-      } catch (err) {
-        const wasExpected = expectedFailureCases.find((c) =>
-          c.sourceDb.pathName === sourceDb.pathName
-          && c.targetSeed.pathName === targetSeed.pathName
-          && c.doUpgrade === doUpgrade
-        );
-        if (!wasExpected) {
-          // eslint-disable-next-line no-console
-          console.log([
-            "Unexpected failure:",
-            `sourceDb: ${sourceDb.pathName}`,
-            `targetSeed: ${targetSeed.pathName}`,
-            `doUpgrade: ${doUpgrade}`,
-          ].join("\n"));
-          throw err;
+          const transformer = new IModelTransformer(sourceDb, targetDb);
+          try {
+            await transformer.processSchemas();
+          } catch (err) {
+            const wasExpected = expectedFailureCases.find((c) =>
+              c.sourceDb.pathName === sourceDb.pathName
+              && c.targetSeed.pathName === targetSeed.pathName
+              && c.doUpgrade === doUpgrade
+            );
+            if (!wasExpected) {
+              // eslint-disable-next-line no-console
+              console.log([
+                "Unexpected failure:",
+                `sourceDb: ${sourceDb.pathName}`,
+                `targetSeed: ${targetSeed.pathName}`,
+                `doUpgrade: ${doUpgrade}`,
+              ].join("\n"));
+              throw err;
+            }
+          }
+
+          transformer.dispose();
+          targetDb.close();
         }
-      }
-
-      transformer.dispose();
-      targetDb.close();
-    }
 
     oldDb.close();
     newDb.close();

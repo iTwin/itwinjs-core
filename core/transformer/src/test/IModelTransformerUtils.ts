@@ -257,10 +257,9 @@ export async function assertIdentityTransformation(
   const targetToSourceElemsMap = new Map<Element, Element | undefined>();
   const targetElemIds = new Set<Id64String>();
 
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const [sourceElemId] of sourceDb.query(
-    "SELECT ECInstanceId FROM bis.Element"
-  )) {
+  const sourceIdReader = sourceDb.createQueryReader("SELECT ECInstanceId FROM bis.Element");
+  while (await sourceIdReader.step()) {
+    const sourceElemId = sourceIdReader.current.id as string;
     const targetElemId = remapElem(sourceElemId);
     const sourceElem = sourceDb.elements.getElement({ id: sourceElemId, wantGeometry: compareElemGeom });
     const targetElem = targetDb.elements.tryGetElement({ id: targetElemId, wantGeometry: compareElemGeom });
@@ -382,10 +381,9 @@ export async function assertIdentityTransformation(
     }
   }
 
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const [targetElemId] of targetDb.query(
-    "SELECT ECInstanceId FROM bis.Element"
-  )) {
+  const targetIdReader = targetDb.createQueryReader("SELECT ECInstanceId FROM bis.Element");
+  while (await targetIdReader.step()) {
+    const targetElemId = targetIdReader.current.id as string;
     if (!targetElemIds.has(targetElemId)) {
       const targetElem = targetDb.elements.getElement(targetElemId);
       targetToSourceElemsMap.set(targetElem, undefined);
@@ -428,10 +426,9 @@ export async function assertIdentityTransformation(
   const targetToSourceModelsMap = new Map<Model, Model | undefined>();
   const targetModelIds = new Set<Id64String>();
 
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const [sourceModelId] of sourceDb.query(
-    "SELECT ECInstanceId FROM bis.Model"
-  )) {
+  const sourceModelIdReader = sourceDb.createQueryReader("SELECT ECInstanceId FROM bis.Model");
+  while (await sourceModelIdReader.step()) {
+    const sourceModelId = sourceModelIdReader.current.id as string;
     const targetModelId = remapElem(sourceModelId);
     const sourceModel = sourceDb.models.getModel(sourceModelId);
     const targetModel = targetDb.models.tryGetModel(targetModelId);
@@ -451,10 +448,9 @@ export async function assertIdentityTransformation(
     }
   }
 
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const [targetModelId] of targetDb.query(
-    "SELECT ECInstanceId FROM bis.Model"
-  )) {
+  const targetModelIdReader = targetDb.createQueryReader("SELECT ECInstanceId FROM bis.Model");
+  while (await targetModelIdReader.step()) {
+    const targetModelId = targetModelIdReader.current.id as string;
     if (!targetModelIds.has(targetModelId)) {
       const targetModel = targetDb.models.getModel(targetModelId);
       targetToSourceModelsMap.set(targetModel, undefined);
@@ -486,14 +482,16 @@ export async function assertIdentityTransformation(
     { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
   ];
   const sourceRelationships = new Map<string, any>();
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const row of sourceDb.query(...query)) {
+  const sourceRelationshipsReader = sourceDb.createQueryReader(...query);
+  while (await sourceRelationshipsReader.step()) {
+    const row = sourceRelationshipsReader.current.toRow();
     sourceRelationships.set(makeRelationKey(row), row);
   }
 
   const targetRelationshipsToFind = new Map<string, any>();
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const row of targetDb.query(...query)) {
+  const targetRelationshipsReader = targetDb.createQueryReader(...query);
+  while (await targetRelationshipsReader.step()) {
+    const row = targetRelationshipsReader.current.toRow();
     targetRelationshipsToFind.set(makeRelationKey(row), row);
   }
 

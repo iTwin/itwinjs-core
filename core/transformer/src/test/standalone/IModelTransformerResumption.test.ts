@@ -325,8 +325,9 @@ describe("test resuming transformations", () => {
       ["bis.CodeSpec", "findTargetCodeSpecId", codeSpecMap],
       ["bis.ElementAspect", "findTargetAspectId", aspectMap],
     ] as const) {
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const [sourceElemId] of sourceDb.query(`SELECT ECInstanceId from ${className}`)) {
+      const reader = sourceDb.createQueryReader(`SELECT ECInstanceId from ${className}`);
+      while (await reader.step()) {
+        const sourceElemId = reader.current.id as string;
         const idInRegular = regularTransformer.context[findMethod](sourceElemId);
         const idInResumed = resumedTransformer.context[findMethod](sourceElemId);
         map.set(idInRegular, idInResumed);
