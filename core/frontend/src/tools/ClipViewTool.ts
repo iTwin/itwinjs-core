@@ -1291,19 +1291,35 @@ export class ViewClipControlArrow {
   }
 }
 
-/** @internal Controls to modify a view's clip */
+/** A pickable decoration managed by ViewClipDecorationProvider used to visualize a view's clip and present modification handles.
+ * This class is public to facilitate customization of view clip events by type or selected controls.
+ * @see [[ViewClipDecorationProvider]]
+ * @public
+ * @extensions
+ */
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ViewClipDecoration;
+  /** @internal */
   protected _clip?: ClipVector;
+  /** @internal */
   protected _clipId?: string;
+  /** @internal */
   protected _clipShape?: ClipShape;
+  /** @internal */
   protected _clipShapeExtents?: Range1d;
+  /** @internal */
   protected _clipPlanes?: ConvexClipPlaneSet;
+  /** @internal */
   protected _clipPlanesLoops?: GeometryQuery[];
+  /** @internal */
   protected _clipPlanesLoopsNoncontributing?: GeometryQuery[];
+  /** @internal */
   protected _controlIds: string[] = [];
+  /** @internal */
   protected _controls: ViewClipControlArrow[] = [];
+  /** @internal */
   protected _suspendDecorator = false;
+  /** @internal */
   protected _removeViewCloseListener?: () => void;
 
   public constructor(protected _clipView: ScreenViewport, protected _clipEventHandler?: ViewClipEventHandler) {
@@ -1892,7 +1908,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       if (undefined === transform)
         continue;
 
-      // deep copy beecause we're using a builder transform w/addLineString...
+      // deep copy because we're using a builder transform w/addLineString...
       const visPts = shapePts.map((pt) => pt.clone());
       const hidPts = shapePts.map((pt) => pt.clone());
 
@@ -2023,6 +2039,7 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
   public showDecoration(vp: ScreenViewport): void { ViewClipDecoration.create(vp, this); }
   public hideDecoration(): void { ViewClipDecoration.clear(); }
   public async toggleDecoration(vp: ScreenViewport) { return ViewClipDecoration.toggle(vp, this); }
+  public isDecorationActive(vp: ScreenViewport): boolean { return (undefined !== ViewClipDecoration.get(vp)); }
 
   public static create(): ViewClipDecorationProvider {
     if (undefined === ViewClipDecorationProvider._provider) {

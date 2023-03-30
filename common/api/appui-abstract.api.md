@@ -1519,7 +1519,6 @@ export interface PropertyDescription {
     displayLabel: string;
     editor?: PropertyEditorInfo;
     enum?: EnumerationChoicesInfo;
-    // @alpha
     hideCompositePropertyLabel?: boolean;
     name: string;
     // @alpha

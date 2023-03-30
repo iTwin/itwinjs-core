@@ -63,7 +63,7 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.ignoreAudit }}', false))
 
-      - script: node common/scripts/install-run-rush.js build:ci --to-version-policy prerelease-monorepo-lockStep
+      - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
         env:

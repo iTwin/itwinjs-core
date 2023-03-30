@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "4.0.0-dev.59",
+  "version": "4.0.0-dev.62",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
   "main": "lib/cjs/ecschema-editing.js",
@@ -11,7 +11,6 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s createLocalization && npm run -s copy:test-assets",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
@@ -62,9 +61,9 @@
     "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.59",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.59",
-    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.59"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.62",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.62",
+    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.62"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

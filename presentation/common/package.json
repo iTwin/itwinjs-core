@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "4.0.0-dev.59",
+  "version": "4.0.0-dev.62",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -21,8 +21,7 @@
   "module": "lib/esm/presentation-common.js",
   "typings": "lib/cjs/presentation-common",
   "scripts": {
-    "build": "npm run -s ruleset-json-schema && npm run -s build:assets && npm run -s build:public && npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s ruleset-json-schema && npm run -s build:assets && npm run -s build:public && npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:assets": "cpx \"./assets/**/*\" ./lib/cjs/assets && npm run -s pseudolocalize:assets",
@@ -46,10 +45,10 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.59",
-    "@itwin/core-common": "workspace:^4.0.0-dev.59",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.59",
-    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.59"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.62",
+    "@itwin/core-common": "workspace:^4.0.0-dev.62",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.62",
+    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.62"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

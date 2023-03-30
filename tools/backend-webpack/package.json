@@ -1,6 +1,6 @@
 {
   "name": "@itwin/backend-webpack-tools",
-  "version": "4.0.0-dev.59",
+  "version": "4.0.0-dev.62",
   "description": "Configuration and scripts for iTwin.js agents and backends.",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,6 @@
   },
   "scripts": {
     "build": "",
-    "build:ci": "",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "",

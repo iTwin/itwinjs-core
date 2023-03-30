@@ -6,8 +6,7 @@
   "license": "MIT",
   "scripts": {
     "copy:config": "internal-tools copy-config",
-    "build": "tsc 1>&2",
-    "build:ci": "npm run -s build && npm run -s webpack:test",
+    "build": "tsc 1>&2 && npm run -s webpack:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run -s test",
     "docs": "",
@@ -87,7 +86,7 @@
     "stream-http": "^3.2.0",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0",
-    "webpack-cli": "^4.10.0"
+    "webpack-cli": "^5.0.1"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
