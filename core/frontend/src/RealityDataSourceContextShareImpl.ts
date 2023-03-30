@@ -116,11 +116,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
   public async getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
     const url = await realityData.getBlobUrl(accessToken, name);
 
-    const data = await request(url.toString(), {
-      method: "GET",
-      responseType: "json",
-    });
-    return data.body;
+    return request(url.toString(), "json");
   }
 
   /**
@@ -169,12 +165,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    */
   public async getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
     const url = await realityData.getBlobUrl(accessToken, name);
-    const options: RequestOptions = {
-      method: "GET",
-      responseType: "arraybuffer",
-    };
-    const data = await request(url.toString(), options);
-    return data.body;
+    return request(url.toString(), "arraybuffer");
   }
 
   /**
@@ -213,7 +204,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>  {
+  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     let spatialLocation: SpatialLocationAndExtents | undefined;
     const fileType = this.realityDataType;
 

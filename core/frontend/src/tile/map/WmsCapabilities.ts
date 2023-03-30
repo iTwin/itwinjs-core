@@ -18,14 +18,11 @@ import { MapCartoRectangle, WmsUtilities } from "../internal";
  */
 async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
   const options: RequestOptions = {
-    method: "GET",
-    responseType: "text",
-    timeout: { response: 20000 },
-    retries: 2,
+    timeout: 20000,
+    retryCount: 2,
     auth: credentials,
   };
-  const data = await request(url, options);
-  return data.text;
+  return request(url, "text", options);
 }
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
   return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
@@ -240,7 +237,7 @@ export class WmsCapabilities {
     return this.layer ? this.layer.getSubLayers(visible) : undefined;
   }
 
-  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]>|undefined {
+  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined {
     return this.layer ? this.layer.getSubLayersCrs(subLayerNames) : undefined;
   }
 }

@@ -7,7 +7,7 @@
  */
 
 import { Cartographic } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "./request/Request";
+import { request, RequestOptions } from "./request/Request";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
@@ -32,11 +32,10 @@ export class BingLocationProvider {
    */
   public async getLocation(query: string): Promise<GlobalLocation | undefined> {
     const requestUrl = this._locationRequestTemplate.replace("{query}", query);
-    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
-      const locationResponse: Response = await request(requestUrl, requestOptions);
-      const point = locationResponse.body.resourceSets[0].resources[0].point;
-      const bbox = locationResponse.body.resourceSets[0].resources[0].bbox;
+      const locationResponse = await request(requestUrl, "json");
+      const point = locationResponse.resourceSets[0].resources[0].point;
+      const bbox = locationResponse.resourceSets[0].resources[0].bbox;
       const southLatitude = bbox[0];
       const westLongitude = bbox[1];
       const northLatitude = bbox[2];

@@ -72,16 +72,17 @@ export enum WmtsConstants {
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string|undefined> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string | undefined> {
   const options: RequestOptions = {
-    method: "GET",
-    responseType: "text",
-    timeout: { response: 20000 },
-    retries: 2,
+    timeout: 20000,
+    retryCount: 2,
     auth: credentials,
   };
-  const data = await request(url, options);
-  return data.text;
+  try {
+    return await request(url, "text", options);
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -121,7 +122,7 @@ export namespace WmtsCapability {
 
       const keywords = elem.getElementsByTagName(OwsConstants.KEYWORDS_XMLTAG);
       if (keywords.length > 0) {
-        const keyword =  keywords[0].getElementsByTagName(OwsConstants.KEYWORD_XMLTAG);
+        const keyword = keywords[0].getElementsByTagName(OwsConstants.KEYWORD_XMLTAG);
         this.keywords = [];
         for (const keyworkElem of keyword) {
           const keyWordText = keyworkElem.textContent;
@@ -267,8 +268,8 @@ export namespace WmtsCapability {
         // In case wellKnownScaleSet was not been set properly, infer from scaleDenominator
         // Note: some servers are quite inaccurate in their scale values, hence I used a delta value of 1.
         else if (tms.tileMatrix.length > 0
-                && Math.abs(tms.tileMatrix[0].scaleDenominator - WmtsConstants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
-                && (tms.supportedCrs.includes("3857") || tms.supportedCrs.includes("900913"))
+          && Math.abs(tms.tileMatrix[0].scaleDenominator - WmtsConstants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
+          && (tms.supportedCrs.includes("3857") || tms.supportedCrs.includes("900913"))
         )
           googleMapsTms.push(tms);
       });
@@ -330,7 +331,7 @@ export namespace WmtsCapability {
       const minTileCol = getElementTextContent(elem, "MinTileCol");
       const maxTileCol = getElementTextContent(elem, "MaxTileCol");
 
-      if (minTileRow !== undefined && maxTileRow !== undefined && minTileCol !== undefined && maxTileCol )
+      if (minTileRow !== undefined && maxTileRow !== undefined && minTileCol !== undefined && maxTileCol)
         this.limits = Range2d.createXYXY(Number(minTileCol), Number(minTileRow), Number(maxTileCol), Number(maxTileRow));
     }
   }
@@ -369,7 +370,7 @@ export namespace WmtsCapability {
         throw new Error("No Identifier found.");
 
       this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
-      this.abstract =  getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG);
+      this.abstract = getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG);
 
       const supportedCrs = getElementTextContent(elem, OwsConstants.SUPPORTEDCRS_XMLTAG);
       if (supportedCrs)
@@ -381,7 +382,7 @@ export namespace WmtsCapability {
 
       // TileMatrix:
       // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.
-      const tileMatrix = elem.getElementsByTagName( XmlConstants.TILEMATRIX_XMLTAG);
+      const tileMatrix = elem.getElementsByTagName(XmlConstants.TILEMATRIX_XMLTAG);
       if (tileMatrix.length === 0)
         throw new Error("No matrix set link found for WMTS layer");
 
@@ -473,10 +474,10 @@ export namespace WmtsCapability {
 
       // BoundingBox
       const boundingBox = elem.getElementsByTagName(OwsConstants.BOUNDINGBOX_XMLTAG);
-      if (boundingBox.length > 0 )
-        this.boundingBox =  new BoundingBox(boundingBox[0]);
+      if (boundingBox.length > 0)
+        this.boundingBox = new BoundingBox(boundingBox[0]);
 
-      let lowerCornerArray: number[]|undefined, upperCornerArray: number[]|undefined;
+      let lowerCornerArray: number[] | undefined, upperCornerArray: number[] | undefined;
       const bbox = elem.getElementsByTagName(OwsConstants.WGS84BOUNDINGBOX_XMLTAG);
       if (bbox.length > 0) {
         lowerCornerArray = getElementTextContent(bbox[0], OwsConstants.LOWERCORNER_XMLTAG)?.split(" ").map((x: string) => +x);
@@ -496,7 +497,7 @@ export namespace WmtsCapability {
       }
 
       // Style
-      const style  = elem.getElementsByTagName("Style");
+      const style = elem.getElementsByTagName("Style");
       if (style.length > 0) {
         for (const styleElem of style)
           this.styles.push(new Style(styleElem));
@@ -504,7 +505,7 @@ export namespace WmtsCapability {
 
       // TileMatrixSetLink
       // TileMatrixSetLink is mandatory on Layer, if it doesn't exists, something is OFF with the capability.
-      const tileMatrixSetLink = elem.getElementsByTagName( XmlConstants.TILEMATRIXSETLINK_XMLTAG);
+      const tileMatrixSetLink = elem.getElementsByTagName(XmlConstants.TILEMATRIXSETLINK_XMLTAG);
 
       if (tileMatrixSetLink.length === 0)
         throw new Error("No matrix set link found for WMTS layer");
@@ -550,7 +551,7 @@ export class WmtsCapabilities {
 
   public static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined {
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlCapabilities,"text/xml");
+    const xmlDoc = parser.parseFromString(xmlCapabilities, "text/xml");
     return new WmtsCapabilities(xmlDoc);
   }
 

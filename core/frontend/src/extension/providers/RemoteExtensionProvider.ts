@@ -47,14 +47,12 @@ export class RemoteExtensionProvider implements ExtensionProvider {
    * Throws an error if the provided manifestUrl is not accessible.
    */
   public async getManifest(): Promise<ExtensionManifest> {
-    const options: RequestOptions = { method: "GET" };
-    const response = await request(this._props.manifestUrl, options);
-    const data = response.body || (() => {
-      if (!response.text)
-        throw new Error("Manifest file was empty.");
-      return JSON.parse(response.text);
-    })();
-    return data;
+    const response = await request(this._props.manifestUrl, "text");
+
+    if (!response)
+      throw new Error("Manifest file was empty.");
+
+    return JSON.parse(response);
   }
 
 }

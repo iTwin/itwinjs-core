@@ -84,24 +84,19 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     else
       this._baseUrl = `${urlParts.join("/")}/`;
   }
-  private async _doRequest(url: string, responseType: string): Promise<any> {
-    let options: RequestOptions = {
-      method: "GET",
-      responseType,
-    };
+  private async _doRequest(url: string, responseType: "json" | "arraybuffer"): Promise<any> {
+    let options: RequestOptions = {};
 
     const authToken = this._requestAuthorization;
     if (authToken) {
       options = {
-        ...options,
         headers: {
           authorization: authToken,
         },
       };
     }
 
-    const data = await request(url, options);
-    return data.body;
+    return request(url, responseType as any, options);
   }
 
   /**
@@ -170,7 +165,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>  {
+  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     // Cesium Ion asset we currenlty support are unbound (cover all earth)
     const spatialLocation: SpatialLocationAndExtents | undefined = undefined;
     return spatialLocation;
