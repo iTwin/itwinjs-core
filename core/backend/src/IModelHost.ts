@@ -139,9 +139,8 @@ export interface IModelHostOptions {
    */
   restrictTileUrlsByClientIp?: boolean;
 
-  /**
-   * Whether to enable OpenTelemetry tracing
-   * @beta
+  /** Whether to enable OpenTelemetry tracing.
+   * Defaults to `false`.
    */
   enableOpenTelemetry?: boolean;
 
