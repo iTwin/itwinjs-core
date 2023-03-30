@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core.git",
-    "directory": "core/ecschema-locators"
+    "directory": "core/ecschema-locaters"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:test-assets",
