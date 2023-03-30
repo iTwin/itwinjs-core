@@ -654,7 +654,9 @@ export abstract class IModelDb extends IModel {
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
       const reader = this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      result.concat(await reader.toArray());
+      while (await reader.step()) {
+        result.push(reader.current.toRow());
+      }
     } catch {
       // We can ignore the error here, and just return whatever we were able to query.
     }
