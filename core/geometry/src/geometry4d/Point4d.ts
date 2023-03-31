@@ -257,10 +257,10 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
       const w1 = point.length > 3 ? point[3] : 1.0;
       return new Point4d(x1, y1, z1, w1);
     }
-    const x = point.hasOwnProperty("x") ? point.x : 0.0;
-    const y = point.hasOwnProperty("y") ? point.y : 0.0;
+    const x = point.x;
+    const y = point.y;
     const z = point.hasOwnProperty("z") ? (point as any).z : 0.0;
-    const w = point.hasOwnProperty("w") ? (point as any).w : 0.0;
+    const w = point.hasOwnProperty("w") ? (point as any).w : 1.0;
     return new Point4d(x, y, z, w);
 
   }

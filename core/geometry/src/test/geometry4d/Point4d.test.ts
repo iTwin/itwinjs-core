@@ -8,6 +8,7 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {
   ck.testExactNumber(x, point.x);
@@ -137,6 +138,34 @@ describe("Point4d", () => {
     const planeD = Point4d.create(0, 0, 0, 1).toPlane3dByOriginAndUnitNormal();
     ck.testUndefined(planeD, "plane with undefined normal");
 
+    // coverage
+    const workPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.createZero(), workPlane);
+    const zeroPoint = Point4d.createZero();
+    zeroPoint.setComponent(3,1);  // homogeneous "zero" has weight 1
+    const testPoint = Point4d.createFromPoint([1,4,9,16]);
+    let workPoint = Point4d.createFromPoint(testPoint);
+    ck.testPoint4d(testPoint, workPoint);
+    workPoint = Point4d.createFromPoint([]);
+    ck.testPoint4d(zeroPoint, workPoint);
+    workPoint = Point4d.createFromPoint(Point2d.createFrom(testPoint));
+    ck.testCoordinate(testPoint.x, workPoint.x);
+    ck.testCoordinate(testPoint.y, workPoint.y);
+    ck.testCoordinate(0, workPoint.z);
+    ck.testCoordinate(1, workPoint.w);
+    workPoint = Point4d.createFromPoint(Point3d.createFrom(testPoint));
+    ck.testCoordinate(testPoint.x, workPoint.x);
+    ck.testCoordinate(testPoint.y, workPoint.y);
+    ck.testCoordinate(testPoint.z, workPoint.z);
+    ck.testCoordinate(1, workPoint.w);
+    workPoint = Point4d.createFromPoint({x: testPoint.x, y: testPoint.y, z: testPoint.z, w: testPoint.w});
+    ck.testPoint4d(testPoint, workPoint);
+    workPoint = Point4d.createFromPoint({x: testPoint.x, y: testPoint.y});
+    ck.testCoordinate(testPoint.x, workPoint.x);
+    ck.testCoordinate(testPoint.y, workPoint.y);
+    ck.testCoordinate(0, workPoint.z);
+    ck.testCoordinate(1, workPoint.w);
+
     // lambda implements original implementation
     const toPlane3dByOriginAndUnitNormalOrig = (pt: Point4d): Plane3dByOriginAndUnitNormal | undefined => {
       const a = Math.sqrt(pt.magnitudeSquaredXYZ());
@@ -170,7 +199,7 @@ describe("Point4d", () => {
       for (let count = 0; count < 100; ++count) {
         const pt = Point4d.create(randomCoordinate(size), randomCoordinate(size), randomCoordinate(size), randomCoordinate(size));
         const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
-        const newPlane = pt.toPlane3dByOriginAndUnitNormal();
+        const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
         ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
         if (oldPlane && newPlane) {
           ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), "plane implementations have same origins");
