@@ -163,7 +163,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    * @param name name or path of tile
    * @returns array buffer of tile content
    */
-  public async getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
+  public async getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<ArrayBuffer> {
     const url = await realityData.getBlobUrl(accessToken, name);
     return request(url.toString(), "arraybuffer");
   }

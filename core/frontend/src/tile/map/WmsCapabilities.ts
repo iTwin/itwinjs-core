@@ -16,7 +16,7 @@ import { MapCartoRectangle, WmsUtilities } from "../internal";
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
   const options: RequestOptions = {
     timeout: 20000,
     retryCount: 2,

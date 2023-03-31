@@ -72,17 +72,13 @@ export enum WmtsConstants {
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string | undefined> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
   const options: RequestOptions = {
     timeout: 20000,
     retryCount: 2,
     auth: credentials,
   };
-  try {
-    return await request(url, "text", options);
-  } catch {
-    return undefined;
-  }
+  return request(url, "text", options);
 }
 
 /**

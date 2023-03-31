@@ -85,18 +85,13 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
       this._baseUrl = `${urlParts.join("/")}/`;
   }
   private async _doRequest(url: string, responseType: "json" | "arraybuffer"): Promise<any> {
-    let options: RequestOptions = {};
+    let options: RequestOptions = {
+      headers: {
+        authorization: this._requestAuthorization,
+      },
+    };
 
-    const authToken = this._requestAuthorization;
-    if (authToken) {
-      options = {
-        headers: {
-          authorization: authToken,
-        },
-      };
-    }
-
-    return request(url, responseType as any, options);
+    return request(url, responseType as "json", options);
   }
 
   /**

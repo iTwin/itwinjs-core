@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Refactoring of internal request api, removed 'superagent', 'deep-assign' and 'qs' as dependency.",
+      "comment": "Refactoring of internal request api, removed 'superagent', 'deep-assign' and 'qs' dependencies.",
       "type": "none"
     }
   ],
