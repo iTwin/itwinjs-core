@@ -947,7 +947,7 @@ export class Vector3d extends XYZ {
     mag: number;
   } {
     const originalMagnitude = this.magnitude();
-    const correctedMagnitude = (originalMagnitude <= Geometry.smallFraction) ? 0.0 : originalMagnitude;
+    const correctedMagnitude = Geometry.correctSmallFraction(originalMagnitude);
     result = result ? result : new Vector3d();
     return { v: this.safeDivideOrNull(correctedMagnitude, result), mag: originalMagnitude };
   }
@@ -1213,7 +1213,7 @@ export class Vector3d extends XYZ {
    * @param result optional preallocated result
    */
   public scaleToLength(length: number, result?: Vector3d): Vector3d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.magnitude());
+    const mag = Geometry.correctSmallFraction(this.magnitude());
     if (mag === 0)
       return undefined;
     return this.scale(length / mag, result);

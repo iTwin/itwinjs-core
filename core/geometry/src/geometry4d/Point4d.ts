@@ -389,7 +389,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public normalizeWeight(result?: Point4d): Point4d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     result = result ? result : new Point4d();
     return this.safeDivideOrNull(mag, result);
   }
@@ -399,7 +399,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public realPoint(result?: Point3d): Point3d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     if (mag === 0.0)
       return undefined;
     const a = 1.0 / mag; // in zero case everything multiplies right back to true zero.
@@ -411,7 +411,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * If `this.w` is zero, return a Vector3d `(x,y,z)`
    */
   public realPointOrVector(): Point3d | Vector3d {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     if (mag === 0.0)
       return Vector3d.create(this.x, this.y, this.z);
     const a = 1.0 / mag; // in zero case everything multiplies right back to true zero.
@@ -427,7 +427,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public static createRealPoint3dDefault000(x: number, y: number, z: number, w: number, result?: Point3d): Point3d {
-    const mag = Geometry.correctSmallMetricDistance(w);
+    const mag = Geometry.correctSmallFraction(w);
     const a = mag === 0 ? 0.0 : (1.0 / mag); // in zero case everything multiplies right back to true zero.
     return Point3d.create(x * a, y * a, z * a, result);
   }
@@ -445,7 +445,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public static createRealDerivativeRay3dDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, result?: Ray3d): Ray3d {
-    const mag = Geometry.correctSmallMetricDistance(w);
+    const mag = Geometry.correctSmallFraction(w);
     // real point is X/w.
     // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
     const a = mag === 0 ? 0.0 : (1.0 / mag); // in zero case everything multiplies right back to true zero.
@@ -466,7 +466,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public static createRealDerivativePlane3dByOriginAndVectorsDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, ddx: number, ddy: number, ddz: number, ddw: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    const mag = Geometry.correctSmallMetricDistance(w);
+    const mag = Geometry.correctSmallFraction(w);
     // real point is X/w.
     // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
     const a = mag === 0 ? 0.0 : (1.0 / mag); // in zero case everything multiplies right back to true zero.
@@ -484,7 +484,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * If this.w is zero, return 000
    */
   public realPointDefault000(result?: Point3d): Point3d {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     if (mag === 0.0)
       return Point3d.create(0, 0, 0, result);
     result = result ? result : new Point3d();
@@ -497,7 +497,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * Use normalizeWeight to divide by the w component.
    */
   public normalizeXYZW(result?: Point4d): Point4d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.magnitudeXYZW());
+    const mag = Geometry.correctSmallFraction(this.magnitudeXYZW());
     result = result ? result : new Point4d();
     return this.safeDivideOrNull(mag, result);
   }

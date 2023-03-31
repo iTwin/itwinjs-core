@@ -255,6 +255,13 @@ export class Geometry {
     }
     return distance;
   }
+  /** Correct `fraction` to zero if undefined or smaller than fraction tolerance. Otherwise return it unchanged. */
+  public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
+    if (fraction === undefined || Math.abs(fraction) < Geometry.smallFraction) {
+      return replacement;
+    }
+    return fraction;
+  }
   /**
  * If `a` is large enough for safe division, return `1/a`, using Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
  * @param a denominator of division
