@@ -458,7 +458,7 @@ async function purgeWorkspace(args: EditorOpts) {
 /** detach a WorkspaceContainer from the local cache. */
 async function detachWorkspace(args: EditorOpts) {
   const container = getCloudContainer(args);
-  container.detach();
+  container.disconnect({ detach: true });
   showMessage(`detached ${sayContainer(args)}.`);
 }
 
