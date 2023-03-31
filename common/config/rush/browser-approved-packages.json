@@ -171,10 +171,6 @@
       "allowedCategories": [ "backend", "frontend" ]
     },
     {
-      "name": "@itwin/core-transformer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/core-webpack-tools",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },

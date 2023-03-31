@@ -90,7 +90,7 @@ forward synchronizations.
 Conflicts during a transformation are resolved in favor of the element which was modified most recently, as stored in the `LastMod` property
 of an element.  Elements in transformations are considered in conflict when their [code](/bis/fundamentals/foundation/codes) is the same.
 
-You can override the method [`IModelTransformer.hasElementChanged`](/reference/core-transformer/imodels/imodeltransformer/haselementchanged/)
+You can override the method [`IModelTransformer.hasElementChanged`]($transformer)
 in your transformer implementation to use more specific logic for determining if an element should be considered changed.
 
 Some other data in the iModel follows more specific rules for conflicts:
@@ -124,4 +124,4 @@ Synchronization conflicts are not to be confused with concurrent edit conflicts 
 
 ### Synchronization workflow examples
 
-More in depth samples exist in the [tests](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformerHub.test.ts) for the `@itwin/core-transformer` package.
+More in depth samples exist in the [tests](https://github.com/iTwin/transformer/blob/main/packages/transformer/src/test/standalone/IModelTransformerHub.test.ts) for the `@itwin/transformer` package.

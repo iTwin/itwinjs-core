@@ -7,7 +7,6 @@ packageClassification:  [
          "core-frontend",
          "core-common",
          "core-backend",
-         "core-transformer",
          "core-markup",
          "core-mobile",
          "core-i18n",
@@ -52,6 +51,13 @@ packageClassification:  [
          "linear-referencing-backend",
          "linear-referencing-common",
          "physical-material-backend"
+      ]
+   },
+   {
+      "order":"6",
+      "header":"Transformer",
+      "packages":[
+         "transformer"
       ]
    }
 ]

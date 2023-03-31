@@ -89,7 +89,7 @@
       "presentation-frontend": "presentation-frontend",
       "quantity": "core-quantity",
       "reality-data-client": "reality-data-client",
-      "transformer": "core-transformer",
+      "transformer": "transformer",
       "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"itwinjs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
