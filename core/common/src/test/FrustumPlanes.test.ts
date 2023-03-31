@@ -23,7 +23,7 @@ describe("FrustumPlanes", () => {
       Point3d.fromJSON({ x: 22.838134428009578, y: -21.182090505813676, z: 2.248236463773556 }), // left bottom front
       Point3d.fromJSON({ x: 22.826687847036766, y: -21.3106221602675, z: 2.248236463773556 }),   // right bottom front
       Point3d.fromJSON({ x: 22.845184176795684, y: -21.18271833185903, z: 2.332414308846702 }),  // left top front
-      Point3d.fromJSON({ x: 22.833737595822875, y: -21.311249986312852, z: 2.332414308846702 })  // right top front
+      Point3d.fromJSON({ x: 22.833737595822875, y: -21.311249986312852, z: 2.332414308846702 }), // right top front
     ]);
 
     const frustumPlanes = FrustumPlanes.fromFrustum(frustum);
@@ -40,7 +40,7 @@ describe("FrustumPlanes", () => {
       Point3d.fromJSON({ x: 22.834416905993425, y: -21.302724625992933, z: 2.3314674264499287 }), // left bottom front
       Point3d.fromJSON({ x: 22.834298900004015, y: -21.304049694595548, z: 2.3314674264499287 }), // right bottom front
       Point3d.fromJSON({ x: 22.834425708266938, y: -21.30272540989272, z: 2.3315725303959707 }),  // left top front
-      Point3d.fromJSON({ x: 22.834307702277528, y: -21.304050478495334, z: 2.3315725303959707 })  // right top front
+      Point3d.fromJSON({ x: 22.834307702277528, y: -21.304050478495334, z: 2.3315725303959707 }), // right top front
     ]);
 
     /*
@@ -67,5 +67,22 @@ describe("FrustumPlanes", () => {
 
     const frustumPlanes = FrustumPlanes.fromFrustum(frustum);
     expect(frustumPlanes.planes.length).to.equal(6);
+  });
+
+  it("should properly handle a bad (zero-size) frustum", () => {
+    const frustum = new Frustum();
+    frustum.setFromCorners([
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // left bottom rear
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // right bottom rear
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // left top rear
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // right top rear
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // left bottom front
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // right bottom front
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // left top front
+      Point3d.fromJSON({ x: 0, y: 0, z: 0 }),  // right top front
+    ]);
+
+    const frustumPlanes = FrustumPlanes.fromFrustum(frustum);
+    expect(frustumPlanes.planes.length).to.equal(0);
   });
 });
