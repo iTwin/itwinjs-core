@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { BeDuration } from "@itwin/core-bentley";
 import { GeographicCRSProps } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
@@ -64,5 +65,15 @@ describe.only("GeoServices", () => {
   });
 
   it("retains converter in cache if no requests are received", async () => {
+    const gs = makeGeoServices();
+    const cv = gs.getConverter()!;
+    await BeDuration.wait(1);
+    expect(gs.getConverter()).to.equal(cv);
+
+    await cv.convertToIModelCoords([[0, 1, 2]]);
+    expect(gs.getConverter()).not.to.equal(cv);
+  });
+
+  it("batches requests received within a single frame", async () => {
   });
 });
