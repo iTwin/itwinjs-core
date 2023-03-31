@@ -75,7 +75,6 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
   } else
     return [];
 
-  assert(planes.length === 6);
   return planes;
 }
 
