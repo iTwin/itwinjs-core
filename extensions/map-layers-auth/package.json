@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-auth",
-  "version": "4.0.0-dev.62",
+  "version": "4.0.0-dev.63",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers-auth.js",
   "module": "lib/esm/map-layers-auth.js",
@@ -20,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/map-layers-auth"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "extensions/map-layers-auth"
   },
   "keywords": [
     "iModel",

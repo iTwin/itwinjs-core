@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-quantity",
-  "version": "4.0.0-dev.62",
+  "version": "4.0.0-dev.63",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",
@@ -8,7 +8,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/quantity"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/quantity"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
@@ -51,7 +52,7 @@
     "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.62"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.63"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

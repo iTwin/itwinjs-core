@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "4.0.0-dev.62",
+  "version": "4.0.0-dev.63",
   "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -20,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/webgl-compatibility"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/webgl-compatibility"
   },
   "keywords": [
     "Bentley",
