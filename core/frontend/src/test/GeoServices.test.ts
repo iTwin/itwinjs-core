@@ -73,6 +73,16 @@ describe.only("GeoServices", () => {
   });
 
   it("removes converter from cache even if requests produce an exception", async () => {
+    const gs = makeGeoServices({
+      toIModelCoords: async () => { throw new Error("oh no!"); },
+    });
+    const cv = gs.getConverter()!;
+    expect(gs.getConverter()).to.equal(cv);
+
+    await cv.convertToIModelCoords([[0, 1, 2]]);
+    const cv2 = gs.getConverter();
+    expect(cv2).not.to.be.undefined;
+    expect(cv2).not.to.equal(cv);
   });
 
   it("retains converter in cache while requests are outstanding", async () => {
