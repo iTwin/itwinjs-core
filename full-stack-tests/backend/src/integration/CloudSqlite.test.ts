@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, use as chaiuse } from "chai";
+import { expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { emptyDirSync, existsSync, mkdirsSync, removeSync } from "fs-extra";
 import { join } from "path";
@@ -15,7 +15,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
-chaiuse(chaiAsPromised);
+useFromChai(chaiAsPromised);
 
 export namespace CloudSqliteTest {
   export type TestContainer = CloudSqlite.CloudContainer & { isPublic: boolean };
@@ -92,7 +92,7 @@ export namespace CloudSqliteTest {
 
     await CloudSqlite.withWriteLock("upload", container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
     expect(container.isConnected);
-    container.detach();
+    container.disconnect({ detach: true });
     expect(container.isConnected).false;
   }
 }
@@ -264,8 +264,8 @@ describe("CloudSqlite", () => {
     });
     expect(retries).equals(5); // retry handler should be called 5 times
 
-    cont2.detach();
-    contain1.detach();
+    cont2.disconnect({ detach: true });
+    contain1.disconnect({ detach: true });
 
     // can't connect with invalid token
     contain1.accessToken = "bad";

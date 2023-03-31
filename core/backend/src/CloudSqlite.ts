@@ -22,7 +22,9 @@ export namespace CloudSqlite {
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
     return new NativeLibrary.nativeLib.CloudContainer(args);
   }
-  export function startCloudPrefetch(container: CloudSqlite.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch {
+
+  /** Begin prefetching all blocks for a database in a CloudContainer in the background. */
+  export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch {
     return new NativeLibrary.nativeLib.CloudPrefetch(container, dbName, args);
   }
 
@@ -40,7 +42,7 @@ export namespace CloudSqlite {
     containerId: string;
     /** an alias for the container. Defaults to `containerId` */
     alias?: string;
-    /** token that grants access to the container. For sas=1 `storageType`s, this is the sasToken. For sas=0, this is the account key */
+    /** SAS token that grants access to the container. */
     accessToken: string;
     /** if true, container is attached with write permissions, and accessToken must provide write access to the cloud container. */
     writeable?: boolean;
@@ -161,10 +163,23 @@ export namespace CloudSqlite {
   }
 
   /**
-   * A cache for storing data from CloudSqlite databases. This object refers to a directory on a local filesystem
-   * and is used to **connect** CloudContainers so they may be accessed. The contents of the cache directory are entirely
-   * controlled by CloudSqlite and should be empty when the cache is first created and never modified directly. It maintains
-   * the state of the local data across sessions.
+   * A local cache for storing data downloaded from many CloudSqlite databases. This object refers to a directory on the local filesystem
+   * and is used to **connect** CloudContainers so they may be accessed. It maintains the state of the local copy of
+   * the downloaded data from SQLiteDbs in CloudContainers across sessions.
+   *
+   * Notes:
+   * - CloudCaches have a name, used internally by CloudSqlite, that must be unique. CloudCaches are created and maintained via [[CloudCaches.getCache]].
+   * - All CloudContainers connected to a given CloudCache must have the same block size, as determined by the first CloudContainer connected.
+   * - they have a maximum size that limits the amount of disk space they can consume. When the maximum size of a CloudCache is reached,
+   * the least recently used blocks are removed to make room for new blocks.
+   * - CloudCaches may only be used by a single process at a time. An exception is thrown if you attempt to access a CloudCache from a
+   * second process if it is already in use by another process. Note: for a readonly CloudCache, a "daemon" process can be used to
+   * share a CloudCache across processes. See its documentation for details.
+   * - Generally, it is expected that there only be a few CloudCaches and they be shared by all applications. Each CloudCache can consume
+   * its maximum disk space, so controlling system-wide disk usage is complicated. The only reason to make a new CloudCache is either
+   * for containers with a different block size, or to purposely control local disk space usage for a specific set of containers.
+   * - The contents of the cache directory are entirely controlled by CloudSqlite and should be empty when the cache is
+   * first created and never modified directly thereafter.
    */
   export interface CloudCache {
     /** `true` if this CloudCache is connected to a daemon process */
@@ -173,26 +188,46 @@ export namespace CloudSqlite {
     get name(): string;
     /** The root directory of this CloudCache on a local drive. */
     get rootDir(): LocalDirName;
-    /** The guid for this CloudCache. Used for acquiring write lock. */
+    /** A guid for this CloudCache. It is assigned when the CloudCache is first created and used for acquiring write locks. */
     get guid(): GuidString;
     /** Configure logging for this CloudCache.
      * @param mask A bitmask of `LoggingMask` values
      * @note this method does nothing if [[isDaemon]] is true. Daemon logging is configured when the daemon is started.
      * @note HTTP logging can be happen on multiple threads and may be buffered. To see buffered log messages, periodically call
-     * `IModelHost.flushLog`
+     * `[[IModelHost.flushLog]]
      */
     setLogMask(mask: number): void;
-    /** destroy this CloudCache. All CloudContainers should be detached before calling this. */
+    /**
+     * destroy this CloudCache to end this session. All currently connected CloudContainers are disconnected first.
+     * @note this does *not* delete the local directory. Its contents are maintained so it can be used in future sessions.
+     * @note this function is automatically called on [[IModelHost.shutdown]], so it is only called directly for tests.
+     * @internal
+     */
     destroy(): void;
   }
 
-  /** A CloudSqlite container that may be connected to a CloudCache.
-   * @note All methods and accessors of this interface (other than `initializeContainer`) require that the `connect` method be successfully called first.
+  /**
+   * A CloudSqlite container that may be connected to a CloudCache. A CloudContainer maps a container in a cloud blob-storage
+   * account to a local cache, so that the contents of a database in the container may be accessed as if it were a local file.
+   *
+   * Notes:
+   * - all methods and accessors of this interface (other than `initializeContainer`) require that the `connect` method be successfully called first.
    * Otherwise they will throw an exception or return meaningless values.
+   * - before a SQLiteDb in a container may be opened for write access, the container's write lock must be held (see [[acquireWriteLock]].)
+   * - a single CloudContainer may hold more than one SQLiteDb, but often they are 1:1.
+   * - the write lock is per-Container, not per-SQLiteDb (which is the reason they are often 1:1)
+   * - the accessToken (a SAS key) member provides time limited, restricted, access to the container. It must be refreshed before it expires.
+   * - when a CloudContainer is created, it may either be readonly or writeable. If a container is never meant to be used for writes,
+   * it is slightly more efficient to indicate that by passing `writeable: false`
    */
   export interface CloudContainer {
+    onConnect?: (container: CloudContainer, cache: CloudCache) => void;
+    onConnected?: (container: CloudContainer) => void;
+    onDisconnect?: (container: CloudContainer, detach: boolean) => void;
+    onDisconnected?: (container: CloudContainer, detach: boolean) => void;
+
     readonly cache?: CloudCache;
-    /** The ContainerId. */
+    /** The ContainerId within the storage account. */
     get containerId(): string;
     /** The *alias* to identify this CloudContainer in a CloudCache. Usually just the ContainerId. */
     get alias(): string;
@@ -213,17 +248,16 @@ export namespace CloudSqlite {
     get blockSize(): number;
 
     /**
-     * initialize a cloud blob-store container to be used as a new Sqlite CloudContainer. This creates the manifest, and should be
+     * initialize a cloud blob-store container to be used as a new CloudContainer. This creates the container's manifest of its contents, and should be
      * performed on an empty container. If an existing manifest is present, it is destroyed and a new one is created (essentially emptying the container.)
      */
     initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize?: number }): void;
 
     /**
-     * Connect this CloudContainer to a CloudCache for reading or writing its manifest, write lock, and databases.
-     * @note A CloudCache is a local directory holding copies of information from the cloud. Its content is persistent across sessions,
-     * but this method must be called each session to (re)establish the connection to the cache. If the CloudCache was previously populated,
+     * Connect this CloudContainer to a CloudCache for accessing and/or modifying its contents.
+     * @note A CloudCache is a local directory holding copies of information from the cloud. It is persistent across sessions,
+     * but this method must be called each session to (re)establish the connection to the CloudCache. If the CloudCache was previously populated,
      * this method may be called and will succeed *even when offline* or without a valid `accessToken`.
-     * @note all operations that access the contents of databases or the manifest require this method be successfully called (i.e. `isConnected === true`).
      */
     connect(cache: CloudCache): void;
 
@@ -238,16 +272,19 @@ export namespace CloudSqlite {
      * crashes or otherwise fails to release the lock. Calling `acquireWriteLock` with the lock already held resets the lock duration from the current time,
      * so long running processes should call this method periodically to ensure their lock doesn't expire (they should also make sure their accessToken is refreshed
      * before it expires.)
-     * @note on success, the manifest is polled before the promise resolves.
+     * @note on success, the container is synchronized with its contents in the cloud before the promise resolves.
      * @param user  An identifier of the process/user locking the CloudContainer. In the event of a write lock
-     * collision, this string will be included in the exception string of the *other* process attempting to obtain a write lock.
+     * collision, this string will be included in the exception string of the *other* process attempting to obtain a write lock so that users may identify who currently holds
+     * the lock.
      */
     acquireWriteLock(user: string): void;
 
     /**
      * Release the write lock if it is currently held.
-     * @note if there are local changes that have not been uploaded, they are automatically uploaded before the write lock is released.
-     * @note if the write lock is not held, this method does nothing.
+     *
+     * Notes:
+     *  - if there are local changes that have not been uploaded, they are automatically uploaded before the write lock is released.
+     *  - if the write lock is not held, this method does nothing.
      */
     releaseWriteLock(): void;
 
@@ -260,32 +297,31 @@ export namespace CloudSqlite {
 
     /**
      * Abandon any local changes in this container. If the write lock is currently held, it is released.
-     * This function fails with BE_SQLITE_BUSY if one or more clients have open read or write transactions
-     * on any database in the container.
+     * This function fails with BE_SQLITE_BUSY if there are any open read or write transactions on *any* database in the container.
      */
     abandonChanges(): void;
 
     /**
-     * Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container. Leaves the container attached to the
+     * Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container. Leaves the container's contents in the
      * CloudCache so it is available for future sessions.
      * @note This function does nothing (and does not throw) if the CloudContainer is not connected to a CloudCache.
      */
-    disconnect(): void;
+    disconnect(args?: {
+      /** if true removes the container from the CloudCache, otherwise Leaves the container in the CloudCache so it is available for future sessions. */
+      detach?: boolean;
+    }): void;
 
     /**
-     * Permanently Detach and Disconnect this CloudContainer from its CloudCache. There must be no open databases from this container.
-     */
-    detach(): void;
-
-    /**
-     * Poll cloud storage for changes from other processes. *No changes* made by other processes are visible to
-     * this CloudContainer unless/until this method is called.
-     * @note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
+     * Poll cloud storage for changes from other processes.
+     *
+     * Notes:
+     * - no changes made by other processes are visible to this CloudContainer unless/until this method is called.
+     * - note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
      */
     checkForChanges(): void;
 
     /**
-     * Upload any changed blocks from all databases in this CloudContainer.
+     * Upload any changed blocks from the databases in this CloudContainer.
      * @note this is called automatically from `releaseWriteLock` before the write lock is released. It is only necessary to call this directly if you
      * wish to upload changes while the write lock is still held.
      * @see hasLocalChanges
@@ -335,7 +371,10 @@ export namespace CloudSqlite {
     queryDatabaseHash(dbName: string): string;
   }
 
-  /** @internal */
+  /**
+   * Object returned by [[CloudSqlite.startCloudPrefetch]].
+   * It holds a promise that is fulfilled when a Prefetch is completed. May also be used to cancel an in-progress prefetch.
+   */
   export interface CloudPrefetch {
     readonly cloudContainer: CloudContainer;
     readonly dbName: string;
@@ -346,9 +385,11 @@ export namespace CloudSqlite {
     /**
      * Promise that is resolved when the prefetch completes or is cancelled. Await this promise to ensure that the
      * database has been fully downloaded before going offline, for example.
-     * @returns a Promise that resolves to `true` if the prefetch completed and the entire database is local, or `false` if it was aborted or failed.
-     * @note the promise is *not* rejected on `cancel`. Some progress may (or may not) have been made by the request.
-     * @note To monitor the progress being made during prefetch, call `CloudContainer.queryDatabase` periodically.
+     *
+     * Notes:
+     * - resolves to `true` if the prefetch completed and the entire database is local, or `false` if it was aborted or failed.
+     * - it is *not* rejected on `cancel`. Some progress may (or may not) have been made by the request.
+     * - To monitor the progress being made during prefetch, call `CloudContainer.queryDatabase` periodically.
      */
     promise: Promise<boolean>;
   }
@@ -384,7 +425,7 @@ export namespace CloudSqlite {
     }
   }
 
-  /** Upload a database into a CloudContainer
+  /** Upload a local SQLite database file into a CloudContainer.
     * @param container the CloudContainer holding the database. Must be connected.
     * @param props the properties that describe the database to be downloaded, plus optionally an `onProgress` function.
     * @note this function requires that the write lock be held on the container
@@ -394,7 +435,7 @@ export namespace CloudSqlite {
     container.checkForChanges(); // re-read the manifest so the database is available locally.
   }
 
-  /** Download a database from a CloudContainer
+  /** Download a database from a CloudContainer.
     * @param container the CloudContainer holding the database. Must be connected.
     * @param props the properties that describe the database to be downloaded, plus optionally an `onProgress` function.
     * @returns a Promise that is resolved when the download completes.
@@ -468,16 +509,18 @@ export namespace CloudSqlite {
 
   /** Arguments to create or find a CloudCache */
   export interface CreateCloudCacheArg {
-    /** The name of the CloudCache. Cache names must be unique for a session. */
+    /** The name of the CloudCache. CloudCache names must be unique. */
     cacheName: string;
     /** A string that specifies the maximum size of the CloudCache. It should be a number followed by "K",
      * "M" "G", or "T". Default is "10G". */
     cacheSize?: string;
-    /** A local directory in temporary storage for the CloudCache. If not supplied, it is a directory called `cacheName`
-     * in the `CloudCaches` temporary directory. */
+    /** A local directory in temporary storage for the CloudCache. If not supplied, it is a subdirectory called `cacheName`
+     * in the `CloudCaches` temporary directory.
+     * If the directory does not exist, it is created. */
     cacheDir?: string;
   }
 
+  /** The collection of currently extant CloudCaches, by name. */
   export class CloudCaches {
     private static readonly cloudCaches = new Map<string, CloudSqlite.CloudCache>();
 
@@ -491,7 +534,7 @@ export namespace CloudSqlite {
       return cache;
     }
 
-    /** find a cache by name if it exists */
+    /** find a CloudCache by name if it exists */
     public static findCache(cacheName: string) {
       return this.cloudCaches.get(cacheName);
     }
@@ -508,6 +551,8 @@ export namespace CloudSqlite {
       this.cloudCaches.forEach((cache) => cache.destroy());
       this.cloudCaches.clear();
     }
+
+    /** Get an CloudCache by name. If the CloudCache doesn't yet exist, it is created. */
     public static getCache(args: CreateCloudCacheArg) {
       return this.cloudCaches.get(args.cacheName) ?? this.makeCache(args);
     }

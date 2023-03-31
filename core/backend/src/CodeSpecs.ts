@@ -96,14 +96,14 @@ export class CodeSpecs {
    * @throws IModelError if the insertion fails
    */
   public insert(codeSpec: CodeSpec): Id64String;
+
   /** Add a new CodeSpec to the IModelDb.
    * @param name The name for the new CodeSpec.
-   * @param scopeType The scope type
+   * @param properties The properties or the CodeSpec. For backwards compatibility this may also be a `CodeScopeSpec.Type`.
    * @returns The Id of the persistent CodeSpec.
    * @throws IModelError if the insertion fails
    */
-  public insert(name: string, properties: CodeSpecProperties): Id64String;
-  public insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
+  public insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
   public insert(codeSpecOrName: CodeSpec | string, props?: CodeSpecProperties | CodeScopeSpec.Type): Id64String {
     if (codeSpecOrName instanceof CodeSpec) {
       const id = this._imodel.insertCodeSpec(codeSpecOrName.name, codeSpecOrName.properties);

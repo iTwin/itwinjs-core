@@ -141,7 +141,7 @@ export class V2CheckpointManager {
   public static cleanup(): void {
     for (const [_, value] of this.containers.entries()) {
       if (value.isConnected)
-        value.detach();
+        value.disconnect({ detach: true });
     }
 
     CloudSqlite.CloudCaches.dropCache(this.cloudCacheName)?.destroy();

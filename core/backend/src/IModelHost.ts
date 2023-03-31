@@ -42,7 +42,7 @@ import { Container } from "inversify";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
-// cspell:ignore nodereport fatalerror apicall alicloud rpcs
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs inversify
 
 /** @alpha */
 export interface CrashReportingConfigNameValuePair {
