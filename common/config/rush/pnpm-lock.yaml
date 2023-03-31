@@ -984,59 +984,6 @@ importers:
       typescript: 5.0.2
       webpack: 5.76.1
 
-  ../../core/transformer:
-    specifiers:
-      '@itwin/build-tools': workspace:*
-      '@itwin/core-backend': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': ^4.0.0-dev.32
-      '@types/chai': 4.3.1
-      '@types/chai-as-promised': ^7
-      '@types/mocha': ^8.2.2
-      '@types/node': ^18.11.5
-      '@types/semver': 7.3.10
-      '@types/sinon': ^9.0.0
-      chai: ^4.1.2
-      chai-as-promised: ^7
-      cpx2: ^3.0.0
-      eslint: ^7.11.0
-      mocha: ^10.0.0
-      npm-run-all: ^4.1.5
-      nyc: ^15.1.0
-      rimraf: ^3.0.2
-      semver: ^7.3.5
-      sinon: ^9.0.2
-      typescript: ~5.0.2
-    dependencies:
-      semver: 7.3.8
-    devDependencies:
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/core-backend': link:../backend
-      '@itwin/core-bentley': link:../bentley
-      '@itwin/core-common': link:../common
-      '@itwin/core-geometry': link:../geometry
-      '@itwin/ecschema-metadata': link:../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.32_eslint@7.32.0+typescript@5.0.2
-      '@types/chai': 4.3.1
-      '@types/chai-as-promised': 7.1.5
-      '@types/mocha': 8.2.3
-      '@types/node': 18.15.3
-      '@types/semver': 7.3.10
-      '@types/sinon': 9.0.11
-      chai: 4.3.7
-      chai-as-promised: 7.1.1_chai@4.3.7
-      cpx2: 3.0.2
-      eslint: 7.32.0
-      mocha: 10.2.0
-      npm-run-all: 4.1.5
-      nyc: 15.1.0
-      rimraf: 3.0.2
-      sinon: 9.2.4
-      typescript: 5.0.2
-
   ../../core/webgl-compatibility:
     specifiers:
       '@itwin/build-tools': workspace:*
@@ -1358,13 +1305,13 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/core-transformer': workspace:*
       '@itwin/ecschema-editing': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.32
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/projects-client': ^0.6.0
       '@itwin/service-authorization': ^0.6.3
+      '@itwin/transformer': ^0.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1385,11 +1332,11 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/core-transformer': link:../../core/transformer
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/projects-client': 0.6.0
       '@itwin/service-authorization': 0.6.3
+      '@itwin/transformer': 0.1.1_b120c43d476259da971bfaebcf810965
       '@xmldom/xmldom': 0.8.6
       fs-extra: 8.1.0
     devDependencies:
@@ -6042,6 +5989,25 @@ packages:
       openid-client: 4.9.1
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@itwin/transformer/0.1.1_b120c43d476259da971bfaebcf810965:
+    resolution: {integrity: sha512-ujEmvdvJI4YAodFHVMLgSlLo+rwYpE2YKrTWTLAx+LatRKoND3q+hwTae7ToixyxOJjG0vD6H9NdewR6sUe3Kw==}
+    engines: {node: ^18.0.0}
+    peerDependencies:
+      '@itwin/core-backend': 3.6.0 - 3.6.1
+      '@itwin/core-bentley': 3.6.0 - 3.6.1
+      '@itwin/core-common': 3.6.0 - 3.6.1
+      '@itwin/core-geometry': 3.6.0 - 3.6.1
+      '@itwin/core-quantity': 3.6.0 - 3.6.1
+      '@itwin/ecschema-metadata': 3.6.0 - 3.6.1
+    dependencies:
+      '@itwin/core-backend': link:../../core/backend
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
+      semver: 7.3.8
     dev: false
 
   /@jest/console/27.5.1:
