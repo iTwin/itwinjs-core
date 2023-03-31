@@ -62,7 +62,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     code: Code.createEmpty(),
     repository: new ExternalSourceIsInRepository(masterLinkRepoId),
     connectorName: "iModel Transformer",
-    connectorVersion: require("@itwin/transformer/package.json").version,
+    connectorVersion: require("@itwin/imodel-transformer/package.json").version,
   }, branchDb).insert();
 
   // initialize the branch provenance
