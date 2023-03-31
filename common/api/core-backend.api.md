@@ -46,6 +46,7 @@ import { CodeProps } from '@itwin/core-common';
 import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
+import { CodeSpecProperties } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorDefProps } from '@itwin/core-common';
 import { ConcreteEntityTypes } from '@itwin/core-common';
@@ -791,12 +792,21 @@ export namespace CloudSqlite {
         rootDir: string;
     }
     export interface CloudCache {
+        // @internal
         destroy(): void;
         get guid(): GuidString;
         get isDaemon(): boolean;
         get name(): string;
         get rootDir(): LocalDirName;
         setLogMask(mask: number): void;
+    }
+    export class CloudCaches {
+        // @internal
+        static destroy(): void;
+        // @internal (undocumented)
+        static dropCache(cacheName: string): CloudCache | undefined;
+        static findCache(cacheName: string): CloudCache | undefined;
+        static getCache(args: CreateCloudCacheArg): CloudCache;
     }
     export interface CloudContainer {
         abandonChanges(): void;
@@ -814,8 +824,9 @@ export namespace CloudSqlite {
         get containerId(): string;
         copyDatabase(dbName: string, toAlias: string): Promise<void>;
         deleteDatabase(dbName: string): Promise<void>;
-        detach(): void;
-        disconnect(): void;
+        disconnect(args?: {
+            detach?: boolean;
+        }): void;
         get garbageBlocks(): number;
         get hasLocalChanges(): boolean;
         get hasWriteLock(): boolean;
@@ -825,6 +836,14 @@ export namespace CloudSqlite {
         }): void;
         get isConnected(): boolean;
         get isWriteable(): boolean;
+        // (undocumented)
+        onConnect?: (container: CloudContainer, cache: CloudCache) => void;
+        // (undocumented)
+        onConnected?: (container: CloudContainer) => void;
+        // (undocumented)
+        onDisconnect?: (container: CloudContainer, detach: boolean) => void;
+        // (undocumented)
+        onDisconnected?: (container: CloudContainer, detach: boolean) => void;
         queryDatabase(dbName: string): CloudSqlite.CachedDbProps | undefined;
         queryDatabaseHash(dbName: string): string;
         queryDatabases(globArg?: string): string[];
@@ -835,7 +854,6 @@ export namespace CloudSqlite {
     export interface CloudHttpProps {
         nRequests?: number;
     }
-    // @internal (undocumented)
     export interface CloudPrefetch {
         cancel(): void;
         // (undocumented)
@@ -854,8 +872,11 @@ export namespace CloudSqlite {
         secure?: boolean;
         writeable?: boolean;
     }
-    // (undocumented)
-    export function createCloudCache(args: CloudSqlite.CacheProps): CloudSqlite.CloudCache;
+    export interface CreateCloudCacheArg {
+        cacheDir?: string;
+        cacheName: string;
+        cacheSize?: string;
+    }
     // (undocumented)
     export function createCloudContainer(args: ContainerAccessProps): CloudContainer;
     export interface DbNameProp {
@@ -892,8 +913,7 @@ export namespace CloudSqlite {
         minRequests?: number;
         timeout?: number;
     }
-    // (undocumented)
-    export function startCloudPrefetch(container: CloudSqlite.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
+    export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
     // (undocumented)
@@ -960,15 +980,10 @@ export interface CodeIndex {
     isCodePresent(guid: CodeService.CodeGuid): boolean;
 }
 
-// @alpha
-export interface CodeService {
+// @public (undocumented)
+export interface CodesDb {
     addAllCodes(iModel: IModelDb): Promise<number>;
-    // @internal (undocumented)
-    addAllCodeSpecs(iModel: IModelDb): Promise<void>;
     addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
-    readonly appParams: CodeService.AuthorAndOrigin;
-    // @internal (undocumented)
-    close: () => void;
     readonly codeIndex: CodeIndex;
     deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
     readonly lockParams: CloudSqlite.ObtainLockParams;
@@ -980,6 +995,23 @@ export interface CodeService {
     synchronizeWithCloud(): void;
     updateCode(props: CodeService.UpdatedCode): Promise<void>;
     updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
+    verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
+}
+
+// @alpha
+export interface CodeService {
+    // (undocumented)
+    addAllCodes(iModel: IModelDb): Promise<{
+        internal: number;
+        external: number;
+    }>;
+    // @internal (undocumented)
+    addAllCodeSpecs(iModel: IModelDb): Promise<void>;
+    readonly appParams: CodeService.AuthorAndOrigin;
+    // @internal (undocumented)
+    close: () => void;
+    readonly externalCodes?: CodesDb;
+    readonly internalCodes?: InternalCodes;
     verifyCode(props: CodeService.ElementCodeProps): void;
 }
 
@@ -1122,7 +1154,7 @@ export class CodeSpecs {
     hasId(codeSpecId: Id64String): boolean;
     hasName(name: string): boolean;
     insert(codeSpec: CodeSpec): Id64String;
-    insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
+    insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
     updateProperties(codeSpec: CodeSpec): void;
@@ -2845,7 +2877,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     protected initializeIModelDb(): void;
     // @internal (undocumented)
-    insertCodeSpec(codeSpec: CodeSpec): Id64String;
+    insertCodeSpec(specName: string, properties: CodeSpecProperties): Id64String;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -3325,6 +3357,12 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
+// @public (undocumented)
+export interface InternalCodes extends CodesDb {
+    // (undocumented)
+    verifyFont(): void;
+}
+
 // @public
 export abstract class IpcHandler {
     abstract get channelName(): string;
@@ -3380,8 +3418,6 @@ export class ITwinWorkspace implements Workspace {
     get cloudCache(): CloudSqlite.CloudCache;
     // (undocumented)
     readonly containerDir: LocalDirName;
-    // (undocumented)
-    static finalize(): void;
     // (undocumented)
     findContainer(containerId: WorkspaceContainer.Id): ITwinWorkspaceContainer | undefined;
     // (undocumented)

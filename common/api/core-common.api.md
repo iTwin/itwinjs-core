@@ -1263,6 +1263,8 @@ export class CodeSpec {
     static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
+    // (undocumented)
+    get isExternal(): boolean;
     // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);

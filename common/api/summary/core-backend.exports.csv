@@ -46,7 +46,6 @@ public;CheckpointProps
 public;ClassRegistry
 public;CloudContainerArgs
 beta;CloudSqlite
-internal;CloudPrefetch
 internal;LockAndOpenArgs
 internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
@@ -57,6 +56,7 @@ deprecated;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 deprecated;CloudStorageUploadOptions
 alpha;CodeIndex
+public;CodesDb
 alpha;CodeService
 alpha;CodeService
 public;CodeSpecs
@@ -239,6 +239,7 @@ public;InformationRecordPartition
 public;class InformationReferenceElement 
 internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
+public;InternalCodes 
 public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
