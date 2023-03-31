@@ -56,6 +56,20 @@ describe.only("GeoServices", () => {
   });
 
   it("removes converter from cache once all requests complete", async () => {
+    const gs = makeGeoServices();
+    const cv = gs.getConverter()!;
+    expect(gs.getConverter()).to.equal(cv);
+
+    await cv.convertToIModelCoords([[0, 1, 2]]);
+    const cv2 = gs.getConverter()!;
+    expect(cv2).not.to.equal(cv);
+    expect(gs.getConverter()).to.equal(cv2);
+
+    await cv2.convertFromIModelCoords([[2, 1, 0]]);
+    expect(gs.getConverter()).not.to.equal(cv2);
+  });
+
+  it("retains converter in cache until all requests complete", async () => {
   });
 
   it("removes converter from cache even if requests produce an exception", async () => {
