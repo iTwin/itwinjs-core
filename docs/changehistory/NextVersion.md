@@ -22,6 +22,7 @@ Table of contents:
   - [Dependency updates](#dependency-updates)
 - [Transformation](#transformation)
 - [Deprecated API removals](#deprecated-api-removals)
+- [AppUI packages moved](#appui-packages-moved)
 
 ## Updated minimum requirements
 
@@ -153,4 +154,14 @@ The following previously-deprecated APIs have been removed:
 - `CloudStorageTileCache`
 - `IModelTileRpcInterface.getTileCacheContainerUrl`
 - `IModelTileRpcInterface.isUsingExternalTileCache`
+
+### AppUI packages moved
+
+The source code for following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui). The package names and published location have not changed, but the release schedule will be independent from that of the itwinjs-core packages.
+
+- @itwin/appui-react
+- @itwin/appui-layout-react
+- @itwin/components-react
+- @itwin/core-react
+- @itwin/imodel-components-react
 
