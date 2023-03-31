@@ -21,8 +21,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
  * @internal exported strictly for tests.
  */
 export interface CoordinateConverterOptions {
-  /** The iModel for which to perform the conversions. */
-  iModel: IModelConnection;
+  isIModelClosed: () => boolean;
   /** Asynchronously convert each point. The resultant array should have the same number and order of points as the input. */
   requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
   /** Maximum number of points to include in each request. Default: 300. */
@@ -70,7 +69,7 @@ export class CoordinateConverter {
   // Used for creating cache keys (XYAndZ) from XYZProps without having to allocate temporary objects.
   protected readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
   protected readonly _maxPointsPerRequest: number;
-  protected readonly _iModel: IModelConnection;
+  protected readonly _isIModelClosed: () => boolean;
   protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 
   public get isIdle(): boolean {
@@ -93,7 +92,7 @@ export class CoordinateConverter {
 
   public constructor(opts: CoordinateConverterOptions) {
     this._maxPointsPerRequest = Math.max(1, opts.maxPointsPerRequest ?? 300);
-    this._iModel = opts.iModel;
+    this._isIModelClosed = opts.isIModelClosed;
     this._requestPoints = opts.requestPoints;
 
     this._cache = new Dictionary<XYAndZ, PointWithStatus>(compareXYAndZ, cloneXYAndZ);
@@ -103,7 +102,7 @@ export class CoordinateConverter {
 
   protected async dispatch(): Promise<void> {
     assert(this._state === "scheduled");
-    if (this._iModel.isClosed || this._pending.isEmpty) {
+    if (this._isIModelClosed() || this._pending.isEmpty) {
       this._state = "idle";
       this._onCompleted.raiseEvent();
       return;
@@ -126,7 +125,7 @@ export class CoordinateConverter {
     for (let i = 0; i < inflight.length; i += this._maxPointsPerRequest) {
       const requests = inflight.slice(i, i + this._maxPointsPerRequest).extractArray();
       const promise = this._requestPoints(requests).then((results) => {
-        if (this._iModel.isClosed)
+        if (this._isIModelClosed())
           return;
 
         if (results.length !== requests.length)
@@ -258,8 +257,9 @@ export class GeoConverter {
 
   /** @internal */
   constructor(iModel: IModelConnection, datum: string) {
+    const isIModelClosed = () => iModel.isClosed;
     this._geoToIModel = new CoordinateConverter({
-      iModel,
+      isIModelClosed,
       requestPoints: async (geoCoords: XYAndZ[]) => {
         const request = { source: datum, geoCoords };
         const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
@@ -269,7 +269,7 @@ export class GeoConverter {
     });
 
     this._iModelToGeo = new CoordinateConverter({
-      iModel,
+      isIModelClosed,
       requestPoints: async (iModelCoords: XYAndZ[]) => {
         const request = { target: datum, iModelCoords };
         const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
