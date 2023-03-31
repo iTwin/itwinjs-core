@@ -137,7 +137,7 @@ export interface ChangesetArg extends IModelIdArg {
 }
 
 /** Argument for downloading a changeset.
- * @beta
+ * @public
  */
 export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
   /** Directory where the changeset should be downloaded. */
@@ -158,7 +158,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
 }
 
 /** Argument for downloading a changeset range.
- * @beta
+ * @public
  */
 export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
   /** Directory where the changesets should be downloaded. */
