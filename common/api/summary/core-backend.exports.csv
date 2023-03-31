@@ -56,7 +56,7 @@ deprecated;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 deprecated;CloudStorageUploadOptions
 alpha;CodeIndex
-public;CodesDb
+alpha;CodesDb
 alpha;CodeService
 alpha;CodeService
 public;CodeSpecs
@@ -239,7 +239,7 @@ public;InformationRecordPartition
 public;class InformationReferenceElement 
 internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
-public;InternalCodes 
+alpha;InternalCodes 
 public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts

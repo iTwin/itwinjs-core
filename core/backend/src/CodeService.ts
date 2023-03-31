@@ -56,6 +56,9 @@ export interface CodeIndex {
   forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
 }
 
+/**
+ * @alpha
+ */
 export interface CodesDb {
   /**
    * Application-supplied parameters for obtaining the write lock on the container.
@@ -162,6 +165,9 @@ export interface CodesDb {
   deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
 }
 
+/**
+ * @alpha
+ */
 export interface InternalCodes extends CodesDb {
   verifyFont(): void;
 }

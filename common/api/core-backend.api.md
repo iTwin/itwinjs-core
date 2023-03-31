@@ -980,7 +980,7 @@ export interface CodeIndex {
     isCodePresent(guid: CodeService.CodeGuid): boolean;
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 export interface CodesDb {
     addAllCodes(iModel: IModelDb): Promise<number>;
     addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
@@ -3357,7 +3357,7 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 export interface InternalCodes extends CodesDb {
     // (undocumented)
     verifyFont(): void;
