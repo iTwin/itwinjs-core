@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-tiles",
-  "version": "4.0.0-dev.62",
+  "version": "4.0.0-dev.63",
   "description": "Experimental alternative technique for visualizing the contents of iModels",
   "main": "lib/cjs/frontend-tiles.js",
   "module": "lib/esm/frontend-tiles.js",
@@ -19,7 +19,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/frontend-tiles"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "extensions/frontend-tiles"
   },
   "keywords": [
     "Bentley",

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-orbitgt",
-  "version": "4.0.0-dev.62",
+  "version": "4.0.0-dev.63",
   "description": "",
   "main": "lib/cjs/core-orbitgt.js",
   "module": "lib/esm/core-orbitgt.js",
@@ -20,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/orbitgt"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/orbitgt"
   },
   "keywords": [
     "Point Cloud"

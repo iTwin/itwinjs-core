@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-opentelemetry",
-  "version": "4.0.0-dev.62",
+  "version": "4.0.0-dev.63",
   "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
   "license": "MIT",
   "engines": {
@@ -8,7 +8,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/opentelemetry"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "presentation/opentelemetry"
   },
   "keywords": [
     "Bentley",
