@@ -50,7 +50,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -856,10 +856,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (undefined === imageryProvider)
       return undefined;
 
-    try {
-      await imageryProvider.initialize();
+    const tileTreeRef = mapLayerIndex.isOverlay ? this.overlayMap : this.backgroundMap;
+    const imageryTreeRef = tileTreeRef?.getLayerImageryTreeRef(mapLayerIndex.index);
+
+    if (imageryTreeRef?.treeOwner.loadStatus === TileTreeLoadStatus.Loaded) {
       return imageryProvider.cartoRange;
-    } catch (_error) {
+    } else {
       return undefined;
     }
   }
