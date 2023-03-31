@@ -255,7 +255,12 @@ export class Geometry {
     }
     return distance;
   }
-  /** Correct `fraction` to zero if undefined or smaller than fraction tolerance. Otherwise return it unchanged. */
+  /**
+   * Correct `fraction` to `replacement` if `fraction` is undefined or too small.
+   * @param fraction number to test
+   * @param replacement value to return if `fraction` is too small
+   * @returns `fraction` if its absolute value is at least `Geometry.smallFraction`; otherwise returns `replacement`
+   */
   public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
     if (fraction === undefined || Math.abs(fraction) < Geometry.smallFraction) {
       return replacement;

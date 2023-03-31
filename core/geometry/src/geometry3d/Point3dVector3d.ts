@@ -924,7 +924,8 @@ export class Vector3d extends XYZ {
   public static unitZ(scale: number = 1): Vector3d {
     return new Vector3d(0, 0, scale);
   }
-  /** Scale the instance by 1.0/`denominator`.
+  /**
+   * Scale the instance by 1.0/`denominator`.
    * @param denominator number by which to divide the coordinates of this instance
    * @param result optional pre-allocated object to return
    * @return scaled vector, or undefined if `denominator` is exactly zero (in which case instance is untouched).
