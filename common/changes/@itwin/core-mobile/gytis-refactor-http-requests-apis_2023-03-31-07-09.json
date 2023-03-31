@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "Removed 'qs' dependency.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile"
+}
