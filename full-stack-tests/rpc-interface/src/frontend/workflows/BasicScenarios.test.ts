@@ -45,9 +45,10 @@ describe("Basic Scenarios", async () => {
     const iModel = await testContext.iModelWithChangesets!.getConnection();
 
     const rows = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of iModel.query("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 10 } }))
-      rows.push(row);
+    const reader = iModel.createQueryReader("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 10 } });
+    while (await reader.step()) {
+      rows.push(reader.current.toRow());
+    }
 
     expect(rows).not.to.be.empty;
   });

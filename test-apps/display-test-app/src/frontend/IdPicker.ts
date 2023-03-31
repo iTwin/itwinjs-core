@@ -203,11 +203,8 @@ export abstract class IdPicker extends ToolBarDropDown {
 
     const elemIds = `(${Array.from(selectedElems).join(",")})`;
     const ecsql = `SELECT DISTINCT ${elementType}.Id FROM bis.GeometricElement${is2d ? "2d" : "3d"} WHERE ECInstanceId IN ${elemIds}`;
-    const rows = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this._vp.view.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      rows.push(row);
-    }
+    const reader = this._vp.view.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    const rows = await reader.toArray();
     const column = `${elementType.toLowerCase()}.id`;
     return rows.map((value) => value[column]);
   }
@@ -257,11 +254,8 @@ export class CategoryPicker extends IdPicker {
 
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
-    const rows: any[] = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of view.iModel.query(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      rows.push(row);
-    }
+    const reader = view.iModel.createQueryReader(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    const rows = await reader.toArray();
     rows.sort((lhs, rhs) => {
       const lhName = getCategoryName(lhs);
       const rhName = getCategoryName(rhs);

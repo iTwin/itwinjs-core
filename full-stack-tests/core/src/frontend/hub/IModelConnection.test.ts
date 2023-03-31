@@ -14,12 +14,8 @@ import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
-  const rows: any[] = [];
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-    rows.push(row);
-  }
-  return rows;
+  const reader = iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+  return reader.toArray();
 }
 
 describe("IModelConnection (#integration)", () => {

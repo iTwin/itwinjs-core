@@ -50,8 +50,8 @@ describe("ECSql Query", () => {
     const cb = async () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
-          // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
-          for await (const _row of imodel1.restartQuery("tag", "SELECT * FROM BisCore.element")) {
+          const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { restartToken: "tag" });
+          while (await reader.step()) {
             rowCount++;
           }
           successful++;
@@ -134,8 +134,9 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      // eslint-disable-next-line deprecation/deprecation
-      pendingRowCount.push(db.queryRowCount(query));
+      const reader = db.createQueryReader(`SELECT COUNT(*) FROM (${query})`);
+      if (await reader.step())
+        pendingRowCount.push(reader.current.getArray()[0] as number);
     }
 
     const rowCounts = await Promise.all(pendingRowCount);
@@ -157,8 +158,9 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      const reader = db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      while (await reader.step()) {
+        const row = reader.current.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
@@ -177,21 +179,18 @@ describe("ECSql Query", () => {
   it("Query with Abbreviated Blobs", async function () {
     const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
     const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
-    let row1: any;
-    let row2: any;
-    let row3: any;
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel2.query(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-      row1 = row;
+    const reader1 = imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    await reader1.step();
+    const row1 = reader1.current.toRow();
     assert.isNotEmpty(row1.geometryStream);
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
-      row2 = row;
+    const reader2 = imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false });
+    await reader2.step();
+    const row2 = reader2.current.toRow();
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
-      row3 = row;
+    const reader3 = imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true });
+    await reader3.step();
+    const row3 = reader3.current.toRow();
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);
   });

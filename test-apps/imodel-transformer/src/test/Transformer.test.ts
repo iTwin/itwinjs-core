@@ -102,12 +102,12 @@ describe("imodel-transformer", () => {
       // do two queries because querying abstract GeometricElement won't contain the category
       const sum = (arr: number[]) => arr.reduce((prev, x) => prev + x, 0);
       return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
-        // eslint-disable-next-line deprecation/deprecation
-        const queryResult = await db.query(
+        const reader = db.createQueryReader(
           `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
-          QueryBinder.from({ category: testCategory })
-        ).next();
-        const value = queryResult.value[0];
+          QueryBinder.from({ category: testCategory }));
+        await reader.step();
+        const queryResult = reader.current.toArray();
+        const value = queryResult[0];
         if (typeof value !== "number") {
           throw Error(`unexpected result from COUNT query, queryResult was: '${JSON.stringify(queryResult)}'`);
         }
