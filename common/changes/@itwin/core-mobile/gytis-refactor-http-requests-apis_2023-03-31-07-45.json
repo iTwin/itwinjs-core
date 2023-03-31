@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-mobile",
-      "comment": "Removed 'qs' dependency.",
+      "comment": "Removed 'deep-assign', 'qs' dependencies.",
       "type": "none"
     }
   ],
