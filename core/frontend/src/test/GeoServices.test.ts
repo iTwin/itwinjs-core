@@ -7,7 +7,7 @@ import { BeDuration } from "@itwin/core-bentley";
 import { GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
-describe.only("GeoServices", () => {
+describe("GeoServices", () => {
   function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {
     return new GeoServices({
       isIModelClosed: opts.isIModelClosed ?? (() => false),
