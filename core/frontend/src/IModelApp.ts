@@ -100,9 +100,7 @@ export interface IModelAppOptions {
   notifications?: NotificationManager;
   /** If present, supplies the [[ToolAdmin]] for this session. */
   toolAdmin?: ToolAdmin;
-  /** If present, supplies the [[AccuDraw]] for this session.
-   * @internal
-   */
+  /** If present, supplies the [[AccuDraw]] for this session. */
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
@@ -249,9 +247,7 @@ export class IModelApp {
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
-  /** The [[AccuDraw]] for this session.
-   * @internal
-   */
+  /** The [[AccuDraw]] for this session. */
   public static get accuDraw(): AccuDraw { return this._accuDraw; }
   /** The [[AccuSnap]] for this session. */
   public static get accuSnap(): AccuSnap { return this._accuSnap; }

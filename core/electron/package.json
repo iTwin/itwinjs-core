@@ -1,14 +1,13 @@
 {
   "name": "@itwin/core-electron",
-  "version": "4.0.0-dev.61",
+  "version": "4.0.0-dev.63",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
     "node": "^18.0.0"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s webpack:test",
+    "build": "npm run -s build:cjs && npm run -s webpack:test",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
@@ -23,7 +22,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/core-electron"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/electron"
   },
   "keywords": [
     "Bentley",
@@ -35,11 +35,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.0.0-dev.61",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.61",
-    "@itwin/core-common": "workspace:^4.0.0-dev.61",
-    "@itwin/core-frontend": "workspace:^4.0.0-dev.61",
-    "@itwin/presentation-common": "workspace:^4.0.0-dev.61",
+    "@itwin/core-backend": "workspace:^4.0.0-dev.63",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.63",
+    "@itwin/core-common": "workspace:^4.0.0-dev.63",
+    "@itwin/core-frontend": "workspace:^4.0.0-dev.63",
+    "@itwin/presentation-common": "workspace:^4.0.0-dev.63",
     "electron": "^23.0.0"
   },
   "devDependencies": {
@@ -61,7 +61,8 @@
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.0.2",
-    "webpack": "^5.76.0"
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "@openid/appauth": "^1.2.6",

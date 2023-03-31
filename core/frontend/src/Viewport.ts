@@ -263,6 +263,7 @@ export interface MapLayerScaleRangeVisibility {
  *
  * @see [[ViewManager]]
  * @public
+ * @extensions
  */
 export abstract class Viewport implements IDisposable, TileUser {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
@@ -2886,6 +2887,7 @@ export abstract class Viewport implements IDisposable, TileUser {
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
  * ```
  * @public
+ * @extensions
  */
 export class ScreenViewport extends Viewport {
   /** Settings that may be adjusted to control the way animations are applied to a [[ScreenViewport]] by methods like
@@ -3648,6 +3650,7 @@ export interface OffScreenViewportOptions {
  * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImageBuffer]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
  * @public
+ * @extensions
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;

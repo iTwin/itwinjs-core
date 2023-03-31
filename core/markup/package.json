@@ -1,14 +1,13 @@
 {
   "name": "@itwin/core-markup",
-  "version": "4.0.0-dev.61",
+  "version": "4.0.0-dev.63",
   "description": "iTwin.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
   "typings": "lib/cjs/core-markup",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s copy:public && npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -24,7 +23,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/markup"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/markup"
   },
   "keywords": [
     "Bentley",
@@ -42,10 +42,10 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.61",
-    "@itwin/core-common": "workspace:^4.0.0-dev.61",
-    "@itwin/core-frontend": "workspace:^4.0.0-dev.61",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.61"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.63",
+    "@itwin/core-common": "workspace:^4.0.0-dev.63",
+    "@itwin/core-frontend": "workspace:^4.0.0-dev.63",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.63"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

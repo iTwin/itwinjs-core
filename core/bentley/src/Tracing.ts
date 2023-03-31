@@ -2,13 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Logging
+ */
+
 import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
 import { LogFunction, Logger } from "./Logger";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
 /**
- * Mirrors the SpanKind enum from [@opentelemetry/api](https://open-telemetry.github.io/opentelemetry-js-api/enums/spankind)
- * @alpha
+ * Mirrors the SpanKind enum from [@opentelemetry/api](https://open-telemetry.github.io/opentelemetry-js/enums/_opentelemetry_api.SpanKind.html)
+ * @public
  */
 export enum SpanKind {
   INTERNAL = 0,
@@ -77,7 +81,7 @@ function flattenObject(obj: object): SpanAttributes {
 
 /**
  * Enables OpenTelemetry tracing in addition to traditional logging.
- * @alpha
+ * @public
  */
 export class Tracing {
   private static _tracer?: Tracer;
@@ -121,7 +125,7 @@ export class Tracing {
 
   /**
    * Enable logging to OpenTelemetry. [[Tracing.withSpan]] will be enabled, all log entries will be attached to active span as span events.
-   * [[IModelHost.startup]] will call this automatically if it succeeds in requiring `@opentelemetry/api`.
+   * [IModelHost.startup]($backend) will call this automatically if the `enableOpenTelemetry` option is enabled and it succeeds in requiring `@opentelemetry/api`.
    * @note Node.js OpenTelemetry SDK should be initialized by the user.
    */
   public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
@@ -143,7 +147,7 @@ export class Tracing {
   }
 
   /** Set attributes on currently active openTelemetry span. Doesn't do anything if openTelemetry logging is not initialized.
-   * @param attributes  The attributes to set
+   * @param attributes The attributes to set
    */
   public static setAttributes(attributes: SpanAttributes) {
     Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.setAttributes(attributes);
