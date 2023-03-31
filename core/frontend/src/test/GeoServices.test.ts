@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { GeographicCRSProps } from "@itwin/core-common";
+import { GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
 describe.only("GeoServices", () => {
@@ -70,6 +70,44 @@ describe.only("GeoServices", () => {
   });
 
   it("retains converter in cache until all requests complete", async () => {
+    async function waitOneFrame(): Promise<void> {
+      return new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          resolve();
+        });
+      });
+    }
+
+    async function resolveAfter2Frames(): Promise<PointWithStatus[]> {
+      await waitOneFrame();
+      return new Promise<PointWithStatus[]>((resolve) => {
+        requestAnimationFrame(() => {
+          resolve([]);
+        });
+      });
+    }
+
+    const gs = makeGeoServices({
+      toIModelCoords: async () => resolveAfter2Frames(),
+      fromIModelCoords: async () => resolveAfter2Frames(),
+    });
+
+    const cv = gs.getConverter()!;
+    const promises: Array<Promise<PointWithStatus[]>> = [];
+    promises.push(cv.convertToIModelCoords([[0, 0, 0]]));
+    await waitOneFrame();
+    expect(gs.getConverter()).to.equal(cv);
+    promises.push(cv.convertToIModelCoords([[1, 1, 1]]));
+    await waitOneFrame();
+    expect(gs.getConverter()).to.equal(cv);
+    promises.push(cv.convertFromIModelCoords([[2, 2, 2]]));
+    await waitOneFrame();
+    expect(gs.getConverter()).to.equal(cv);
+    promises.push(cv.convertFromIModelCoords([[3, 3, 3]]));
+    expect(gs.getConverter()).to.equal(cv);
+
+    await Promise.all(promises);
+    expect(gs.getConverter()).not.to.equal(cv);
   });
 
   it("removes converter from cache even if requests produce an exception", async () => {
