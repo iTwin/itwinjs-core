@@ -299,7 +299,7 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/transformer",
+      "name": "@itwin/imodel-transformer",
       "allowedCategories": [ "internal" ]
     },
     {

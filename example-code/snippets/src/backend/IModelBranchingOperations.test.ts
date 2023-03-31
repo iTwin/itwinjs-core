@@ -13,7 +13,7 @@ import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { IModelTransformer } from "@itwin/transformer";
+import { IModelTransformer } from "@itwin/imodel-transformer";
 import { KnownTestLocations } from "./IModelTestUtils";
 
 // some json will be required later, but we don't want an eslint-disable line in the example code, so just disable for the file

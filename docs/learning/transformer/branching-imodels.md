@@ -124,4 +124,4 @@ Synchronization conflicts are not to be confused with concurrent edit conflicts 
 
 ### Synchronization workflow examples
 
-More in depth samples exist in the [tests](https://github.com/iTwin/transformer/blob/main/packages/transformer/src/test/standalone/IModelTransformerHub.test.ts) for the `@itwin/transformer` package.
+More in depth samples exist in the [tests](https://github.com/iTwin/imodel-transformer/blob/main/packages/transformer/src/test/standalone/IModelTransformerHub.test.ts) for the `@itwin/imodel-transformer` package.

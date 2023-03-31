@@ -21,7 +21,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/transformer": "^0.1.0",
+    "@itwin/imodel-transformer": "^0.1.0",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-editing": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
