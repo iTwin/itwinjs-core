@@ -105,7 +105,7 @@ export interface IModelHostOptions {
 
   /**
    * The kind of iModel hub server to use.
-   * @internal
+   * @public
    */
   hubAccess?: BackendHubAccess;
 
@@ -194,7 +194,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
   /** @beta */
   public workspace?: WorkspaceOpts;
-  /** @internal */
+  /** @public */
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
