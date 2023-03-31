@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
@@ -131,8 +129,8 @@ class PolygonBooleanTests {
           const euler = graph.countVertexLoops() - graph.countNodes() / 2.0 + graph.countFaceLoops();
 
           if (!this.ck.testExactNumber(2, euler, `${boolOp} Expected euler characteristic ${name}`)) {
-            console.log(`outerRectangle  ${prettyPrint(boundary0)}`);
-            console.log(`innerRectangle  ${prettyPrint(boundary1)}`);
+            GeometryCoreTestIO.consoleLog(`outerRectangle  ${prettyPrint(boundary0)}`);
+            GeometryCoreTestIO.consoleLog(`innerRectangle  ${prettyPrint(boundary1)}`);
             GraphChecker.dumpGraph(graph);
           }
         }
@@ -226,7 +224,7 @@ describe("RegionOps", () => {
     context.setDebugControls(10, 1);
     const fractalA = Sample.createFractalLMildConcavePatter(2, 1.0);
     const fractalB = Sample.createFractalHatReversingPattern(1, 0.7);
-    const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(0.123213213218937891722)));
+    const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(0.1232132132189379)));
     const fractalA1 = transform.multiplyInversePoint3dArray(fractalA)!;
     const fractalB1 = transform.multiplyInversePoint3dArray(fractalB)!;
     context.testBooleans(fractalA1, fractalB1);
@@ -777,12 +775,12 @@ describe("CloneSplitCurves", () => {
       Path.create(line010.clone(), LineSegment3d.create(line010.endPoint(), Point3d.create(0, y2))),   // two lines that will rejoin in output
       Path.create(line010.clone(), linestring10, Arc3d.createCircularStartMiddleEnd(linestring10.endPoint(), Point3d.create(5, y1), Point3d.create(0, 2 * y1))!)];
     for (const source of pathsToCut) {
-      const cut = RegionOps.cloneCurvesWithXYSplitFlags(source, cutters) as CurveCollection;
+      const cut = RegionOps.cloneCurvesWithXYSplits(source, cutters) as CurveCollection;
       ck.testCoordinate(cut.sumLengths(), curveLength(source), "split curve markup preserves length");
 
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [source, cutters], x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cut, x0, y0 + yStep);
-      const splits = RegionOps.splitToPathsBetweenFlagBreaks(cut, true);
+      const splits = RegionOps.splitToPathsBetweenBreaks(cut, true);
       if (splits)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutters, x0, y0 + 2 * yStep);
       if (splits instanceof BagOfCurves)
@@ -946,17 +944,17 @@ describe("CloneSplitCurves", () => {
         testOffsetWrapper(ck, allGeometry, delta, chain, options);
 
     // Bezier splines
-    const poles: Point3d[] = [Point3d.createZero(), Point3d.create(1,1), Point3d.create(2,-1), Point3d.create(3,2), Point3d.create(4,-2), Point3d.create(5,3)];
+    const poles: Point3d[] = [Point3d.createZero(), Point3d.create(1, 1), Point3d.create(2, -1), Point3d.create(3, 2), Point3d.create(4, -2), Point3d.create(5, 3)];
     const mirrorPoles: Point3d[] = [];
-    poles.forEach((pt) => {mirrorPoles.push(Point3d.create(-pt.x, pt.y));});
+    poles.forEach((pt) => { mirrorPoles.push(Point3d.create(-pt.x, pt.y)); });
     mirrorPoles.reverse();
     const rotatedPoles: Point3d[] = [];
-    mirrorPoles.forEach((pt) => {rotatedPoles.push(Point3d.create(pt.x, -pt.y));});
+    mirrorPoles.forEach((pt) => { rotatedPoles.push(Point3d.create(pt.x, -pt.y)); });
     testOffsetWrapper(ck, allGeometry, delta, Path.create(BezierCurve3d.create(mirrorPoles)!, BezierCurve3d.create(poles)!), options);
     testOffsetWrapper(ck, allGeometry, delta, Path.create(BezierCurve3d.create(rotatedPoles)!, BezierCurve3d.create(poles)!), options);
 
     // unclamped splines
-    const knots: number[] = [1,2,3,4,5,6,7,8];
+    const knots: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
     const curve = BSplineCurve3dH.create(poles, knots, 4)!;
     const mirrorCurve = BSplineCurve3dH.create(mirrorPoles, knots, 4)!;
     const rotatedCurve = BSplineCurve3dH.create(rotatedPoles, knots, 4)!;
@@ -967,7 +965,7 @@ describe("CloneSplitCurves", () => {
     testOffsetWrapper(ck, allGeometry, delta, Path.create(mirrorCurve, LineSegment3d.create(mirrorCurve.endPoint(), curve.startPoint()), curve), options);
     testOffsetWrapper(ck, allGeometry, delta, Path.create(rotatedCurve, LineSegment3d.create(rotatedCurve.endPoint(), curve.startPoint()), curve), options);
     // save unclamped, clamped, control polygon, start point, end point
-    GeometryCoreTestIO.saveGeometry([curve, curve.clonePartialCurve(0,1), LineString3d.create(curve.copyXYZFloat64Array(true)), Arc3d.createXY(curve.startPoint(), 0.5), Arc3d.createXY(curve.endPoint(), 0.5)], "BSplineCurve", "Unclamped");
+    GeometryCoreTestIO.saveGeometry([curve, curve.clonePartialCurve(0, 1), LineString3d.create(curve.copyXYZFloat64Array(true)), Arc3d.createXY(curve.startPoint(), 0.5), Arc3d.createXY(curve.endPoint(), 0.5)], "BSplineCurve", "Unclamped");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "OffsetCurves");
     expect(ck.getNumErrors()).equals(0);

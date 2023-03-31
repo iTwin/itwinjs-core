@@ -11,8 +11,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
-/* eslint-disable no-console */
-
 describe("AkimaCurve3d", () => {
   it("HelloWorld", () => {
     const ck = new Checker();

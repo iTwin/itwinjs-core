@@ -92,12 +92,14 @@ export interface TrigValues {
   /** the radians value */
   radians: number;
 }
+
 /**
- * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
- *
- * Specific implementors are
- * * Plane3dByOriginAndUnitNormal
- * * Point4d (used for homogeneous plane coefficients)
+ * Plane Evaluation methods.
+ * * These provide the necessary queries to implement clipping operations without knowing if the plane in use
+ * is a [[ClipPlane]], [[Plane3dByOriginAndUnitNormal]], [[Plane3dByOriginAndVectors]], [[Point4d]].
+ * * The Plane3d class declares obligation to implement these methods, and
+ * passes the obligation on to concrete implementations by declaring them as abstract members which the particular classes can implement.
+ * * It is intended that this interface be deprecated because its implementation by [[Plane3d]] provides all of its functionality and allows more to be added.
  * @public
  */
 export interface PlaneAltitudeEvaluator {
@@ -478,6 +480,19 @@ export class Geometry {
       return outPositive;
     return outZero;
   }
+  /**
+   * Examine the value (particularly sign) of x.
+   * * If x is negative, return -1
+   * * If x is true zero, return 0
+   * * If x is positive, return 1
+   */
+  public static split3Way01(x: number, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
+    if (x > tolerance)
+      return 1;
+    if (x < -tolerance)
+      return -1;
+    return 0;
+  }
   /** Return the largest signed value among a, b */
   public static maxXY(a: number, b: number): number {
     let q = a;
@@ -692,7 +707,11 @@ export class Geometry {
   public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
     return value === targetValue ? undefined : value;
   }
-  /** Simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
+  /**
+   * Simple interpolation between values, but choosing (based on fraction) a or b as starting
+   * point for maximum accuracy.
+   * * If `f = 0`, then `a` is returned and if `f = 1`, then `b` is returned.
+   */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
   }

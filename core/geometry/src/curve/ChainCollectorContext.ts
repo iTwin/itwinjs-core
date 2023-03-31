@@ -126,7 +126,7 @@ export class ChainCollectorContext {
       }
     }
   }
-  /** Transfer markup (e.g. isCutAtStart, isCutAtEnd) from source to destination */
+  /** Transfer markup (e.g. startCut, endCut) from source to destination */
   private transferMarkup(source: CurvePrimitive, dest: CurvePrimitive) {
     if (source && dest) {
       dest.startCut = source.startCut;
@@ -165,8 +165,8 @@ export class ChainCollectorContext {
     return bag;
   }
   /** test if there is a break between primitiveA and primitiveB, due to any condition such as
-   * * primitiveA.isCutAtEnd
-   * * primitiveB.isCutAtStart
+   * * primitiveA.endCut
+   * * primitiveB.startCut
    * * physical gap between primitives.
    */
   public static needBreakBetweenPrimitives(primitiveA: CurvePrimitive | undefined, primitiveB: CurvePrimitive | undefined, isXYOnly: boolean = false): boolean {

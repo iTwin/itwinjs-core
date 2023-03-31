@@ -10,7 +10,6 @@
   "private": true,
   "scripts": {
     "build": "npm run -s copy:locale && tsc 1>&2",
-    "build:ci": "npm run -s build",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
@@ -64,7 +63,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
@@ -73,7 +72,7 @@
     "internal-tools": "workspace:*",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
-    "typescript": "~4.4.0",
+    "typescript": "~5.0.2",
     "i18next-http-backend": "^1.4.4"
   },
   "eslintConfig": {

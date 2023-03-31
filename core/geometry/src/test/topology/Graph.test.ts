@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -12,7 +10,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point2d} from "../../geometry3d/Point2dVector2d";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Transform } from "../../geometry3d/Transform";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeFunction } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
@@ -26,11 +24,11 @@ import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangu
 import { OutputManager } from "../clipping/ClipPlanes.test";
 
 function logGraph(graph: HalfEdgeGraph, title: any) {
-  console.log(` == begin == ${title}`);
+  GeometryCoreTestIO.consoleLog(` == begin == ${title}`);
   for (const he of graph.allHalfEdges) {
-    console.log(HalfEdge.nodeToIdXYString(he));
+    GeometryCoreTestIO.consoleLog(HalfEdge.nodeToIdXYString(he));
   }
-  console.log(` ==end== ${title}`);
+  GeometryCoreTestIO.consoleLog(` ==end== ${title}`);
 }
 export class GraphChecker {
   public static captureAnnotatedGraph(data: GeometryQuery[], graph: HalfEdgeGraph | undefined, dx: number = 0, dy: number = 0) {
@@ -108,8 +106,8 @@ export class GraphChecker {
   public static dumpGraph(graph: HalfEdgeGraph | undefined,
     formatNode: NodeFunction = HalfEdge.nodeToIdXYString,
     formatNodeWithoutCoordinates: NodeFunction = HalfEdge.nodeToId) {
-    if (graph === undefined){
-      console.log ("   **** EMPTY GRAPH ****");
+    if (graph === undefined) {
+      GeometryCoreTestIO.consoleLog("   **** EMPTY GRAPH ****");
       return;
     }
     const faces = graph.collectFaceLoops();
@@ -119,8 +117,8 @@ export class GraphChecker {
       faceData.push(f.collectAroundFace(formatNode));
     }
     if (this.printToConsole) {
-      console.log(`"**FACE LOOPS ${faces.length}`);
-      console.log(faceData);
+      GeometryCoreTestIO.consoleLog(`"**FACE LOOPS ${faces.length}`);
+      GeometryCoreTestIO.consoleLog(faceData);
     }
     const vData = [];
     for (const v of vertices) {
@@ -132,8 +130,8 @@ export class GraphChecker {
         vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
     }
     if (this.printToConsole) {
-      console.log(`"**VERTEX LOOPS ${vertices.length}`);
-      console.log(vData);
+      GeometryCoreTestIO.consoleLog(`"**VERTEX LOOPS ${vertices.length}`);
+      GeometryCoreTestIO.consoleLog(vData);
     }
   }
   /**
@@ -388,12 +386,12 @@ describe("VUGraph", () => {
     const node = graph.addEdgeXY(1, 2, 3, 4);
     const node1 = node.facePredecessor;
     if (GraphChecker.printToConsole) {
-      console.log("NodeToId:", HalfEdge.nodeToId(node1));
-      console.log("nodeToIdString:", HalfEdge.nodeToIdString(node1));
-      console.log("nodeToXY:", HalfEdge.nodeToXY(node1));
-      console.log("nodeToIdXYString:", HalfEdge.nodeToIdXYString(node1));
-      console.log("nodeToIdMaskXY:", HalfEdge.nodeToIdMaskXY(node1));
-      console.log("nodeToMaskString:", HalfEdge.nodeToMaskString(node1));
+      GeometryCoreTestIO.consoleLog("NodeToId:", HalfEdge.nodeToId(node1));
+      GeometryCoreTestIO.consoleLog("nodeToIdString:", HalfEdge.nodeToIdString(node1));
+      GeometryCoreTestIO.consoleLog("nodeToXY:", HalfEdge.nodeToXY(node1));
+      GeometryCoreTestIO.consoleLog("nodeToIdXYString:", HalfEdge.nodeToIdXYString(node1));
+      GeometryCoreTestIO.consoleLog("nodeToIdMaskXY:", HalfEdge.nodeToIdMaskXY(node1));
+      GeometryCoreTestIO.consoleLog("nodeToMaskString:", HalfEdge.nodeToMaskString(node1));
     }
   });
 
@@ -591,7 +589,7 @@ describe("VUGraph", () => {
     graph.announceNodes(
       (_g: HalfEdgeGraph, _node: HalfEdge) => {
         numNodes++; return true;
-  }
+      }
     );
     ck.testExactNumber(4, numNodes);
 
@@ -602,7 +600,7 @@ describe("VUGraph", () => {
       if (node === edgeA) return false;
       numNodes++; return true;
     });
-    ck.testLT (numNodes, 4);
+    ck.testLT(numNodes, 4);
 
     numNodes = 0;
     graph.announceVertexLoops(
@@ -610,7 +608,7 @@ describe("VUGraph", () => {
         return !node.findAroundVertex(edgeB);
       }
     );
-    ck.testLT (numNodes, 3);
+    ck.testLT(numNodes, 3);
 
     numNodes = 0;
     graph.announceFaceLoops(
@@ -618,7 +616,7 @@ describe("VUGraph", () => {
         return !node.findAroundFace(edgeB);
       }
     );
-    ck.testExactNumber (numNodes, 0, "Graph's only face contains all nodes");
+    ck.testExactNumber(numNodes, 0, "Graph's only face contains all nodes");
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -638,13 +636,13 @@ describe("VUGraph", () => {
     ck.testTrue(pointU0.isAlmostEqual(pointU1));
     ck.testPoint3d(pointQ, pointR);
     ck.testExactNumber(0, markupA.classifyU(pointU0.x, 0));
-    ck.testExactNumber(1, markupA.classifyU(pointU0.x-3, 0));
+    ck.testExactNumber(1, markupA.classifyU(pointU0.x - 3, 0));
     ck.testExactNumber(-1, markupA.classifyU(pointU0.x + 2, 0));
     const tol = 1.0e-5;
     const epsilon = 0.9 * tol;
     ck.testExactNumber(0, markupA.classifyU(pointU0.x + epsilon, tol));
     ck.testExactNumber(0, markupA.classifyU(pointU0.x - epsilon, tol));
-    ck.testExactNumber(1, markupA.classifyU(pointU0.x-3 * epsilon, tol));
+    ck.testExactNumber(1, markupA.classifyU(pointU0.x - 3 * epsilon, tol));
     ck.testExactNumber(-1, markupA.classifyU(pointU0.x + 2 * epsilon, tol));
 
     expect(ck.getNumErrors()).equals(0);
@@ -706,7 +704,7 @@ describe("VUGraph", () => {
       moveAndMark(ck, outputManager, context, walker, pointACNeg, HalfEdgeTopo.Vertex);
     }
     moveAndMark(ck, outputManager, context, walker,
-      pointA.interpolate (0.5, pointB), HalfEdgeTopo.Edge);
+      pointA.interpolate(0.5, pointB), HalfEdgeTopo.Edge);
 
     // Exterior !!!!
     // moveTo does not identify this clearly.
@@ -742,7 +740,7 @@ function markPosition(out: OutputManager, p: HalfEdgePositionDetail | undefined)
   }
 }
 function moveAndMark(ck: Checker, out: OutputManager, context: InsertAndRetriangulateContext, position: HalfEdgePositionDetail, targetPoint: Point3d,
-expectedTopo: HalfEdgeTopo | undefined) {
+  expectedTopo: HalfEdgeTopo | undefined) {
   const xyz0 = position.clonePoint();
   context.moveToPoint(position, targetPoint);
   out.drawLines([xyz0, position.clonePoint()]);

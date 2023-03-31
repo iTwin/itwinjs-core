@@ -16,9 +16,9 @@ Describes a strongly typed *kind* for a property. This kind identifies what is b
 
 **relativeError** The ratio of the absolute error and the actual value persisted as a fractional value (not a percentage).  For example if a pipes diameter is measured +/- 1 mm at a diameter of 2 meters the relative error would be 1/2000 => 5e-4.
 
-**presentationUnits** A list of [Formats](./ec-format.md) or [format overrides](#format-overrides) that can be used to display the value in the UI.  The first format in the list is used as the default presentation of the value.
+**presentationUnits** A list of [Formats](./ec-format.md) or [format overrides](#format-overrides) that can be used to display the value in the UI.  The first format in the list is used as the default presentation of the value.  e.g. `f:DefaultRealU(4)[u:M];f:DefaultRealU(4)[u:MM]`
 
-The first format in the list is considered the default presentation format.  The [format](./ec-format.md) used when displaying this kind of value in the UI.
+The first format in the list is considered the default presentation [format](./ec-format.md) used when displaying this kind of value in the UI.
 
 ## Format Overrides
 

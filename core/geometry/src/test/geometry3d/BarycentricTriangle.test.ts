@@ -18,7 +18,6 @@ import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 // cspell:word subtriangle
 function verifyTriangle(ck: Checker, triangle: BarycentricTriangle) {
   const centroid = triangle.centroid();

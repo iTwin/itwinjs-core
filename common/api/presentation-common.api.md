@@ -1046,7 +1046,7 @@ export interface FormatOptions {
 }
 
 // @internal (undocumented)
-export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
+export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined;
 
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
@@ -2420,7 +2420,6 @@ export interface PropertyInfo {
     classInfo: ClassInfo;
     enumerationInfo?: EnumerationInfo;
     extendedType?: string;
-    // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
     // @beta

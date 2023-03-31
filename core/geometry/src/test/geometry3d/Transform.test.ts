@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { assert, expect } from "chai";
 
 import { AxisOrder } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -12,50 +12,58 @@ import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console */
-describe("Transform", () => {
-  it("CreateInvertible", () => {
+describe("Transform.Inverse", () => {
+  it("Transform.Inverse", () => {
     const ck = new Checker();
     const transforms = Sample.createInvertibleTransforms();
     const point3dA = Sample.createPoint3dLattice(-2, 1.5, 5);
     const point2dA = Sample.createPoint2dLattice(-2, 1.5, 5);
     const xyz = Point3d.create();
-    // Point3d arrays for use as supplied result:
+    // Point3d arrays for use as supplied result
     const point3dD: Point3d[] = [];
-    let point3dE: Point3d[] = [];
-    let point2dE: Point2d[] = [];
+    const point3dE: Point3d[] = [];
+    const point2dE: Point2d[] = [];
     for (const transform of transforms) {
-      // single point calls ...
       transform.multiplyPoint3d(point3dA[0], xyz);
       ck.testBoolean(transform.isIdentity, xyz.isAlmostEqual(point3dA[0]));
+
       transform.multiplyInversePoint3d(xyz, xyz);
-      ck.testPoint3d(point3dA[0], xyz, "RoundTrip transform and inverse");
+      ck.testPoint3d(point3dA[0], xyz, "transform times transform inverse is identity");
+
       const point3dB = transform.multiplyPoint3dArray(point3dA);
       const point3dC = transform.multiplyInversePoint3dArray(point3dB);
       if (ck.testPointer(point3dC, "transform inverse exists") && point3dC)
-        ck.testPoint3dArray(point3dA, point3dC);
+        ck.testPoint3dArray(point3dA, point3dC, "transform times transform inverse is identity");
 
       transform.multiplyPoint3dArray(point3dA, point3dD);
       const point3dE1 = transform.multiplyInversePoint3dArray(point3dD, point3dE);
+      if (point3dE1 !== point3dE) {
+        assert.fail();
+      }
       if (ck.testPointer(point3dE1, "transform inverse exists") && point3dE1) {
-        ck.testPoint3dArray(point3dA, point3dE1);
-        point3dE = point3dE1; // capture for reuse !!!
+        ck.testPoint3dArray(point3dE1, point3dE);
+        ck.testPoint3dArray(point3dA, point3dE, "transform times transform inverse is identity");
       }
 
       const point2dB = transform.multiplyPoint2dArray(point2dA);
       const point2dE1 = transform.multiplyPoint2dArray(point2dA, point2dE);
+      if (point2dE1 !== point2dE) {
+        assert.fail();
+      }
       for (let i = 0; i < point2dA.length; i++) {
         transform.multiplyXYZ(point2dA[i].x, point2dA[i].y, 0.0, xyz);
-        ck.testPoint2d(point2dE1[i], point2dB[i]);
+        ck.testPoint2d(point2dE1[i], point2dE[i]);
+        ck.testPoint2d(point2dE[i], point2dB[i]);
         ck.testCoordinate(xyz.x, point2dB[i].x);
         ck.testCoordinate(xyz.y, point2dB[i].y);
       }
-      point2dE = point2dE1; // capture for reuse
     }
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("RangeMaps", () => {
+describe("Transform.InitFromRange", () => {
+  it("Transform.InitFromRange", () => {
     const ck = new Checker();
     const point3dA = Sample.createPoint3dLattice(-2, 1.5, 5);
     const npcToWorld = Transform.createIdentity();
@@ -67,89 +75,113 @@ describe("Transform", () => {
       Point3d.create(1, 1, 1),
       Point3d.create(2, 3, 5),
       Point3d.create(-1, 4, 2),
-      Point3d.create(6, 9.20)];
-    for (let i = 0; i + 1 < corners.length; i++) {
+      Point3d.create(6, 9, 10),
+    ];
+    for (let i = 0; i < corners.length - 1; i++) {
       const cornerA = corners[i];
       const cornerB = corners[i + 1];
       Transform.initFromRange(corners[i], corners[i + 1], npcToWorld, worldToNpc);
-      ck.testTrue(npcToWorld.multiplyTransformTransform(worldToNpc).isIdentity, "range maps  inverses");
+      ck.testTrue(npcToWorld.multiplyTransformTransform(worldToNpc).isIdentity, "npcToWorld is inverse of worldToNpc");
       for (const xyz of point3dA) {
-        worldToNpc.multiplyPoint3d(xyz, npc);
-        const interpolated = cornerA.interpolateXYZ(npc.x, npc.y, npc.z, cornerB);
+        /**
+         * Transform T (or worldToNpc) maps [a,b] to [0,1] so for a given x:
+         * Tx = (x-a)/(b-a) = f
+         *
+         * Interpolation N (or npcToWorld) maps [0,1] to [a,b] so for a given f:
+         * Nf = a(1-f) + bf = x
+         */
+        worldToNpc.multiplyPoint3d(xyz, npc); // Tx = f
+        const interpolated = cornerA.interpolateXYZ(npc.x, npc.y, npc.z, cornerB); // Nf = x
         ck.testPoint3d(xyz, interpolated);
       }
     }
-    const xyz0 = Point3d.create(0, 0, 0);
-    // walk through branches ....
-    Transform.initFromRange(xyz0, xyz0, npcToWorld, worldToNpc);
+    const xyz0 = Point3d.create(2, 3, 4);
+    Transform.initFromRange(xyz0, xyz0, npcToWorld, worldToNpc); // pass same point as min and max
+    ck.testTrue(worldToNpc.matrix.isIdentity);
+    ck.testPoint3d(worldToNpc.origin as Point3d, Point3d.create(-xyz0.x, -xyz0.y, -xyz0.z));
+    ck.testTrue(npcToWorld.matrix.isIdentity);
+    ck.testPoint3d(npcToWorld.origin as Point3d, xyz0);
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("Misc", () => {
+describe("Transform.CreateOriginAndMatrix", () => {
+  it("Transform.CreateOriginAndMatrix", () => {
     const ck = new Checker();
     const matrixArray = Sample.createMatrix3dArray();
     for (const origin of [
       Point3d.create(0, 0, 0),
       Point3d.create(2, 0, 0),
       Point3d.create(0, 3, 0),
-      Point3d.create(0, 0, -2)]) {
+      Point3d.create(0, 0, -2),
+    ]) {
       for (const matrixA of matrixArray) {
         const transformA = Transform.createOriginAndMatrix(origin, matrixA);
-        const originB = transformA.getOrigin();
-        ck.testPoint3d(origin, originB, "getOrigin");
-        const transformC = Transform.createIdentity();
-        const transformC1 = Transform.createOriginAndMatrixColumns(
+        const originA = transformA.getOrigin();
+        ck.testPoint3d(origin, originA, "getOrigin");
+        const transformB = Transform.createIdentity();
+        const transformB1 = Transform.createOriginAndMatrixColumns(
           transformA.getTranslation(),
           transformA.matrix.columnX(),
           transformA.matrix.columnY(),
-          transformA.matrix.columnZ(), transformC);
-        const transformC2 = Transform.createOriginAndMatrixColumns(
+          transformA.matrix.columnZ(),
+          transformB
+        );
+        const transformB2 = Transform.createOriginAndMatrixColumns(
           transformA.getOrigin(),
           transformA.matrix.columnX(),
           transformA.matrix.columnY(),
-          transformA.matrix.columnZ());
+          transformA.matrix.columnZ()
+        );
+        ck.testTrue(transformB === transformB1, "input result and returned result are the same");
+        ck.testTransform(transformA, transformB1);
+        ck.testTransform(transformA, transformB2);
 
-        ck.testTrue(transformC === transformC1, "result returns same");
-        ck.testTransform(transformA, transformC, "createOriginAndMatrixColumn");
-        ck.testTransform(transformA, transformC2, "createOriginAndMatrixColumn");
-        // (destroy the transform)
+        // destroy the transform
         transformA.setIdentity();
         ck.testTrue(transformA.isIdentity);
       }
     }
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("Singular", () => {
+describe("Transform.Singular", () => {
+  it("Transform.Singular", () => {
     const ck = new Checker();
     const matrices = Sample.createSingularMatrix3d();
     const origin = Point3d.create(4, 1, 9);
     const pointA = Point3d.create(3, 2, -2);
     for (const matrix of matrices) {
-      ck.testFalse(matrix.computeCachedInverse(true));
       ck.testFalse(matrix.computeCachedInverse(false));
+      ck.testFalse(matrix.computeCachedInverse(true));
       const transform = Transform.createRefs(origin, matrix);
-      ck.testUndefined(transform.inverse(), "singular transform inverse undefined");
-      const pointB = transform.multiplyInversePoint3d(pointA);
+      ck.testUndefined(
+        transform.inverse(),
+        "Inverse of a transform is undefined if the transform has singular matrix part"
+      );
+      const pointB = transform.multiplyInverseXYZ(pointA.x, pointA.y, pointA.z);
       ck.testUndefined(pointB);
       const pointC = transform.multiplyInversePoint3dArray([]);
       ck.testUndefined(pointC);
     }
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("MultiplyTransformMatrix3d", () => {
+describe("Transform.MultiplyTransformMatrix3d", () => {
+  it("Transform.MultiplyTransformMatrix3d", () => {
     const ck = new Checker();
     const points = Sample.createPoint3dLattice(-2, 1, 2);
     const transformA = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11));
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11)
+    ); // [A a]
     const matrixB = Matrix3d.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
-    const transformB = Transform.createOriginAndMatrix(undefined, matrixB);
-    const transformC = transformA.multiplyTransformMatrix3d(matrixB);
-    // in place update of uninvolved transform . .
-    const transformD = transformA.multiplyTransformMatrix3d(matrixB, Transform.createIdentity());
-    const transformE = transformA.multiplyTransformTransform(transformB);
+    const transformB = Transform.createOriginAndMatrix(undefined, matrixB); // [B 0]
+    const transformC = transformA.multiplyTransformMatrix3d(matrixB); // [AB a]
+    const transformD = transformA.multiplyTransformMatrix3d(matrixB, Transform.createIdentity()); // [AB a]
+    const transformE = transformA.multiplyTransformTransform(transformB); // [A a]*[B 0] = [AB A0+a] = [AB a]
     ck.testTransform(transformC, transformD);
     ck.testTransform(transformC, transformE);
     for (const p of points) {
@@ -157,28 +189,28 @@ describe("Transform", () => {
       const productCp = transformC.multiplyPoint3d(p);
       ck.testPoint3d(productABp, productCp);
     }
-    // in place update of primary transform
-    const transformA1 = transformA.clone();
+    const transformA1 = transformA.clone(); // A1 = [A a]
     ck.testTransform(transformA, transformA1, "clone transform");
-    transformA1.multiplyTransformMatrix3d(matrixB, transformA1);
-    ck.testFalse(transformA.isAlmostEqual(transformA1), "inplace multiply changes input");
+    transformA1.multiplyTransformMatrix3d(matrixB, transformA1); // A1 = [AB a]
+    ck.testFalse(transformA.isAlmostEqual(transformA1));
     ck.testTransform(transformA1, transformE);
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("MultiplyMatrix3dTransform", () => {
+describe("Transform.MultiplyMatrix3dTransform", () => {
+  it("Transform.MultiplyMatrix3dTransform", () => {
     const ck = new Checker();
     const points = Sample.createPoint3dLattice(-2, 1, 2);
     const matrixA = Matrix3d.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
-    const transformA = Transform.createOriginAndMatrix(undefined, matrixA);
+    const transformA = Transform.createOriginAndMatrix(undefined, matrixA); // [A 0]
     const transformB = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
       Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11)
-    );
-    const transformC = matrixA.multiplyMatrixTransform(transformB);
-    // in place update of uninvolved transform . .
-    const transformD = matrixA.multiplyMatrixTransform(transformB, Transform.createIdentity());
-    const transformE = transformA.multiplyTransformTransform(transformB);
+    ); // [B b]
+    const transformC = matrixA.multiplyMatrixTransform(transformB); // [AB Ab]
+    const transformD = matrixA.multiplyMatrixTransform(transformB, Transform.createIdentity()); // [AB Ab]
+    const transformE = transformA.multiplyTransformTransform(transformB); // [A 0]*[B b] = [AB Ab+0] = [AB Ab]
     ck.testTransform(transformC, transformD);
     ck.testTransform(transformC, transformE);
     for (const p of points) {
@@ -187,66 +219,78 @@ describe("Transform", () => {
       const productCp = transformC.multiplyPoint3d(p);
       ck.testPoint3d(productABp, productCp);
     }
-    // in place update of primary transform
-    const transformB1 = transformB.clone();
+
+    const transformB1 = transformB.clone(); // B1 = [B b]
     ck.testTransform(transformB, transformB1, "clone transform");
-    matrixA.multiplyMatrixTransform(transformB1, transformB1);
-    ck.testFalse(transformA.isAlmostEqual(transformB1), "inplace multiply changes input");
+    matrixA.multiplyMatrixTransform(transformB1, transformB1); // B1 = [AB Ab]
+    ck.testFalse(transformA.isAlmostEqual(transformB1));
     ck.testTransform(transformB1, transformE);
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("frozenIdentity", () => {
+describe("Transform.Identity", () => {
+  it("Transform.Identity", () => {
     const ck = new Checker();
-    // confirm that "createIdentity" returns new transforms, whereas the property "identity" returns the same object each time (which we believe is frozen)
-    const myIdentity0 = Transform.createIdentity();
-    const myIdentity1 = Transform.createIdentity();
-    const systemIdentity0 = Transform.identity;
-    const systemIdentity1 = Transform.identity;
-    ck.testTransform(myIdentity0, systemIdentity0, "matching identity contents");
-    ck.testTransform(myIdentity1, systemIdentity1), "matching identity contents";
+    const myIdentity0 = Transform.createIdentity(); // user identity
+    const myIdentity1 = Transform.createIdentity(); // user identity
+    const systemIdentity0 = Transform.identity; // system identity
+    const systemIdentity1 = Transform.identity; // system identity
+    ck.testTransform(myIdentity0, systemIdentity0, "matching user and system identity contents");
+    ck.testTransform(myIdentity1, systemIdentity1), "matching user and system identity contents";
     ck.testTrue(systemIdentity0 === systemIdentity1, "system identity is unique");
-    ck.testFalse(myIdentity0 === myIdentity1, "createIdentity makes distinct objects");
-    ck.testFalse(systemIdentity0 === myIdentity0);
-    ck.testFalse(systemIdentity0 === myIdentity1);
+    ck.testFalse(myIdentity0 === myIdentity1, "createIdentity makes distinct objects for user identity");
+    ck.testFalse(systemIdentity0 === myIdentity0, "system identity object is different then user identity object");
+    ck.testFalse(systemIdentity0 === myIdentity1, "system identity object is different then user identity object");
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("finalCoverage", () => {
+describe("Transform.Clone", () => {
+  it("Transform.Clone", () => {
     const ck = new Checker();
-    // confirm that "createIdentity" returns new transforms, whereas the property "identity" returns the same object each time (which we believe is frozen)
     const transformA = Transform.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
     const transformB = Transform.createIdentity();
-    const transformB1 = transformA.clone(transformB);    // transformB is no longer an identity !!!!
+    const transformB1 = transformA.clone(transformB); // B1 = A = B
     ck.testTrue(transformB === transformB1);
 
     const transformC = Transform.createIdentity();
-    const transformB2 = Transform.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, transformC);
+    const transformB2 = Transform.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, transformC); // B2 = A = C
     ck.testTransform(transformA, transformB2);
-    ck.testTransform(transformA, transformB, "clone to result");
+    ck.testTransform(transformA, transformB);
 
     transformC.setFromJSON();
     ck.testTransform(transformC, Transform.identity, "setFromJSON defaults to identity");
 
     transformC.setFromJSON(transformB);
-    ck.testTransform(transformC, transformB, "setFromJSON with Transform object input");
+    ck.testTransform(transformC, transformB, "setFromJSON with transform object input");
+  });
+});
 
-    const singularA = Transform.createRowValues(
+describe("Transform.CloneRigid", () => {
+  it("Transform.CloneRigid", () => {
+    const ck = new Checker();
+    const singularTransformA = Transform.createRowValues(
       1, 2, 4, 0,
       2, 4, 3, 1,
-      3, 6, -10, 1);
+      3, 6, -10, 1
+    ); // columns X and Y (or 0 and 1) are dependent so matrix part is singular
     const points = [Point3d.create(1, 2, 3), Point3d.create(3, 2, 9)];
-    ck.testFalse(singularA.multiplyInversePoint3dArrayInPlace(points));
-    ck.testUndefined(singularA.cloneRigid(AxisOrder.XYZ), "cloneRigid fail with known XY degenerate");
-    const rigidA = singularA.cloneRigid(AxisOrder.ZXY);
-    if (ck.testPointer(rigidA, "cloneRigid corrects known Y degenerate") && rigidA) {
-      ck.testTrue(rigidA.matrix.isRigid());
+    ck.testFalse(singularTransformA.multiplyInversePoint3dArrayInPlace(points));
+    ck.testUndefined(
+      singularTransformA.cloneRigid(AxisOrder.XYZ),
+      "cloneRigid fail because column X and Y are dependent"
+    );
+
+    const rigidTransformA = singularTransformA.cloneRigid(AxisOrder.ZXY);
+    if (ck.testPointer(rigidTransformA, "cloneRigid does not fail because column Z and X are independent")) {
+      ck.testTrue(rigidTransformA.matrix.isRigid());
       const xy = Point2d.create(1, 2);
-      const xyz = Point3d.create(xy.x, xy.y, 0.0);
-      const xyB = rigidA.multiplyPoint2d(xy);
-      const xyzB = rigidA.multiplyPoint3d(xyz);
-      ck.testCoordinate(xyB.x, xyzB.x);
-      ck.testCoordinate(xyB.y, xyzB.y);
+      const xyz = Point3d.create(1, 2, 0);
+      const xyA = rigidTransformA.multiplyPoint2d(xy);
+      const xyzA = rigidTransformA.multiplyPoint3d(xyz);
+      ck.testCoordinate(xyA.x, xyzA.x);
+      ck.testCoordinate(xyA.y, xyzA.y);
     }
 
     const shift = Point3d.create(1, 2, 3);
@@ -255,8 +299,10 @@ describe("Transform", () => {
     ck.testTransform(translateA, translateB);
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
-  it("createRigidFromOriginAndColumns", () => {
+describe("Transform.CreateRigidFromOriginAndColumns", () => {
+  it("Transform.CreateRigidFromOriginAndColumns", () => {
     const ck = new Checker();
     const origin = Point3d.create(5, 6, 7);
     const vectorU = Vector3d.create(1, 2, 3);
@@ -264,18 +310,41 @@ describe("Transform", () => {
     const transform0 = Transform.createIdentity();
     const transform1 = Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorV, AxisOrder.XYZ);
     const transform2 = Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorV, AxisOrder.XYZ, transform0);
-    if (ck.testDefined(transform1) && transform1
-      && ck.testDefined(transform2) && transform2
-      && ck.testTrue(transform1.matrix.isRigid())) {
+    if (ck.testPointer(transform1) && ck.testPointer(transform2) && ck.testTrue(transform1.matrix.isRigid())) {
+      ck.testTransform(transform0, transform1);
       ck.testTransform(transform1, transform2);
       ck.testParallel(vectorU, transform0.matrix.columnX());
       ck.testPerpendicular(vectorU, transform0.matrix.columnZ());
-      ck.testPerpendicular(vectorU, transform0.matrix.columnY());
+      ck.testPerpendicular(vectorV, transform0.matrix.columnZ());
       ck.testPerpendicular(vectorU, transform0.matrix.columnY());
       ck.testLE(0.0, transform0.matrix.dotColumnX(vectorU));
       ck.testLE(0.0, transform0.matrix.dotColumnY(vectorV));
+
     }
     ck.testUndefined(Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorU, AxisOrder.XYZ));
     expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Transform.GetMatrix", () => {
+  it("Transform.GetMatrix", () => {
+    const ck = new Checker();
+    const transform0 = Transform.createZero();
+    const transform1 = Transform.createRefs(Point3d.createZero(), Matrix3d.identity, transform0);
+    ck.testTransform(transform0, transform1);
+    const matrix = transform1.getMatrix();
+    ck.testMatrix3d(matrix, Matrix3d.identity);
+  });
+});
+
+describe("Transform.CreateMatrixPickupPutdown", () => {
+  it("Transform.CreateMatrixPickupPutdown", () => {
+    const ck = new Checker();
+    const matrix = Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11);
+    const a = Point3d.create(1, 2, 3);
+    const b = Point3d.create(2, 4, 6);
+    const transform = Transform.createMatrixPickupPutdown(matrix, a, b);
+    const c = transform.multiplyPoint3d(a);
+    ck.testPoint3d(b, c);
   });
 });

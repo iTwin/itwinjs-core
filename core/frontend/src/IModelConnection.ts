@@ -78,9 +78,7 @@ export abstract class IModelConnection extends IModel {
   public get subcategories(): SubCategoriesCache { return this.categories.cache; }
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The Geographic location services available for this iModelConnection
-   * @internal
-   */
+  /** The Geographic location services available for this iModelConnection. */
   public readonly geoServices: GeoServices;
   /** @internal Whether GCS has been disabled for this iModelConnection. */
   protected _gcsDisabled = false;
@@ -800,7 +798,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param modelIds the Id or Ids of the [GeometricModel]($backend)s for which to query the ranges.
      * @returns An array containing the range of each model of each unique model Id, omitting the range for any Id which did no identify a GeometricModel.
      * @note The contents of the returned array do not follow a deterministic order.
-     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeoemtricModel.
+     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeometricModel.
      * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
      */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
