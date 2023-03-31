@@ -152,7 +152,7 @@ The following previously-deprecated APIs have been removed:
 
 ### AppUI packages moved
 
-The source code for following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui). The package names and published location have not changed.
+The source code for following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui). The package names and published location have not changed, but the release schedule will be independent from that of the itwinjs-core packages.
 
 - @itwin/appui-react
 - @itwin/appui-layout-react
