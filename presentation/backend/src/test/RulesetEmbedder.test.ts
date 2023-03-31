@@ -6,11 +6,13 @@ import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
   BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
 } from "@itwin/core-backend";
-import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import {
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ECSqlReader, QueryBinder, QueryRowFormat, QueryRowProxy,
+} from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
 import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
@@ -25,6 +27,8 @@ describe("RulesetEmbedder", () => {
   let codeSpecsMock: moq.IMock<CodeSpecs>;
   let elementsMock: moq.IMock<IModelDb.Elements>;
   let modelsMock: moq.IMock<IModelDb.Models>;
+  let ecSqlReaderMock: moq.IMock<ECSqlReader>;
+  let queryRowProxyMock: moq.IMock<QueryRowProxy>;
   let rootSubjectMock: moq.IMock<Subject>;
   let presentationRulesSubjectMock: moq.IMock<Subject>;
   let definitionPartitionMock: moq.IMock<DefinitionPartition>;
@@ -77,6 +81,8 @@ describe("RulesetEmbedder", () => {
     codeSpecsMock = moq.Mock.ofType<CodeSpecs>();
     elementsMock = moq.Mock.ofType<IModelDb.Elements>();
     modelsMock = moq.Mock.ofType<IModelDb.Models>();
+    ecSqlReaderMock = moq.Mock.ofType<ECSqlReader>();
+    queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
     rootSubjectMock = moq.Mock.ofType<Subject>();
     presentationRulesSubjectMock = moq.Mock.ofType<Subject>();
     definitionPartitionMock = moq.Mock.ofType<DefinitionPartition>();
@@ -96,6 +102,8 @@ describe("RulesetEmbedder", () => {
     imodelMock.setup((x) => x.codeSpecs).returns(() => codeSpecsMock.object);
     imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
     imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
+
+    ecSqlReaderMock.setup((x) => x.current).returns(() => queryRowProxyMock.object);
 
     codeSpecsMock.setup((x) => x.getByName(PresentationRules.CodeSpec.Ruleset)).returns(() => rulesetCodeSpec);
     codeSpecsMock.setup((x) => x.getByName(BisCodeSpec.subject)).returns(() => subjectCodeSpec);
@@ -178,17 +186,18 @@ describe("RulesetEmbedder", () => {
   }
 
   function setupMocksForQueryingExistingRulesets(rulesetId: string, rulesets: Array<{ ruleset: Ruleset, elementId: Id64String }>) {
-    async function* asyncIterator(): AsyncIterableIterator<any> {
-      for (const entry of rulesets) {
-        yield {
-          id: entry.elementId,
-          jsonProperties: JSON.stringify({ jsonProperties: entry.ruleset }),
-          normalizedVersion: normalizeVersion(entry.ruleset.version),
-        };
-      }
-    }
-    // eslint-disable-next-line deprecation/deprecation
-    imodelMock.setup((x) => x.query(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => asyncIterator());
+    const results = rulesets.map((entry) => ({
+      id: entry.elementId,
+      jsonProperties: JSON.stringify({ jsonProperties: entry.ruleset }),
+      normalizedVersion: normalizeVersion(entry.ruleset.version),
+    }));
+
+    const resultsIterator = results.values();
+    const resultsHasNextIterator = results.map(() => (true)).concat(false).values();
+
+    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => ecSqlReaderMock.object);
+    ecSqlReaderMock.setup(async (x) => x.step()).returns(() => resultsHasNextIterator.next().value);
+    queryRowProxyMock.setup((x) => x.toRow()).returns(() => resultsIterator.next().value);
   }
 
   function createRulesetElementProps(ruleset: Ruleset): DefinitionElementProps {
