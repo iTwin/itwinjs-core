@@ -5,7 +5,6 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import * as deepAssign from "deep-assign";
 import * as _ from "lodash";
 import * as https from "https";
 import * as sarequest from "superagent";
@@ -116,7 +115,7 @@ export class ResponseError extends BentleyError {
       }
       if (response.response.body && Object.keys(response.response.body).length > 0) {
         error._data = {};
-        deepAssign(error._data, response.response.body);
+        _.merge(error._data, response.response.body);
       } else {
         error._data = response.response.text;
       }

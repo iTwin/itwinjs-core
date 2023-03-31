@@ -38,7 +38,6 @@
     "@itwin/presentation-common": "workspace:^4.0.0-dev.62"
   },
   "dependencies": {
-    "deep-assign": "^2.0.0",
     "lodash": "^4.17.10",
     "js-base64": "^3.6.1",
     "superagent": "^7.1.5",
@@ -53,7 +52,6 @@
     "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
-    "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
