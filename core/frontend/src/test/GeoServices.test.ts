@@ -123,9 +123,6 @@ describe.only("GeoServices", () => {
     expect(cv2).not.to.equal(cv);
   });
 
-  it("retains converter in cache while requests are outstanding", async () => {
-  });
-
   it("retains converter in cache if no requests are received", async () => {
     const gs = makeGeoServices();
     const cv = gs.getConverter()!;
@@ -134,8 +131,5 @@ describe.only("GeoServices", () => {
 
     await cv.convertToIModelCoords([[0, 1, 2]]);
     expect(gs.getConverter()).not.to.equal(cv);
-  });
-
-  it("batches requests received within a single frame", async () => {
   });
 });
