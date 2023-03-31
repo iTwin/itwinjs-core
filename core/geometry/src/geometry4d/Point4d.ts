@@ -94,7 +94,6 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    */
   public static createPlaneFrom(source: PlaneAltitudeEvaluator): Point4d | undefined {
     return new Point4d(source.normalX(), source.normalY(), source.normalZ(), source.altitudeXYZ(0, 0, 0));
-    return undefined;
   }
   /** Copy coordinates from `other`. */
   public setFrom(other: Point4d): Point4d {
@@ -240,7 +239,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * other structure with members x,y and optional z,w
    * * array of numbers
    * * default z is 0.0
-   * * default 2 is 1.0  (array[3] can replace)
+   * * default w is 1.0  (array[3] can replace)
    */
 
   public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
