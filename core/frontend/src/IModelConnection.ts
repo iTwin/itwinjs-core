@@ -224,7 +224,7 @@ export abstract class IModelConnection extends IModel {
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
-    this.geoServices = new GeoServices(this);
+    this.geoServices = GeoServices.createForIModel(this);
     /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
