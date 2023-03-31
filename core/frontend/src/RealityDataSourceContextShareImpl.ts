@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request, RequestOptions } from "./request/Request";
+import { request } from "./request/Request";
 import { AccessToken, assert, GuidString, Logger } from "@itwin/core-bentley";
 import { RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";

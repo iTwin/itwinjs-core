@@ -47,17 +47,17 @@ export async function request(url: string, responseType: "text", options?: Reque
 export async function request(url: string, responseType: "arraybuffer" | "json" | "text", options?: RequestOptions): Promise<any> {
   const headers: any = {
     ...options?.headers,
-  }
+  };
 
   if (options?.auth)
-    headers.authorization = `Basic ${btoa(`${options.auth.user}:${options.auth.password}`)}`;
+    headers.authorization = `Basic ${window.btoa(`${options.auth.user}:${options.auth.password}`)}`;
 
   const fetchOptions: RequestInit = {
     headers,
     signal: options?.timeout ? AbortSignal.timeout(options.timeout) : undefined,
-  }
+  };
 
-  const fetchFunc = () => fetch(url, fetchOptions);
+  const fetchFunc = async () => fetch(url, fetchOptions);
   const response = await fetchWithRetry(fetchFunc, options?.retryCount ?? 4);
 
   if (!response.ok)
@@ -89,7 +89,7 @@ async function fetchWithRetry(fetchFunc: () => Promise<Response>, remainingRetri
 
 /**
  * @internal
- * @deprecated in 4.0.
+ * @deprecated in 4.0. Use [[DownloadProgressInfo]].
  */
 export interface ProgressInfo {
   percent?: number;
@@ -101,4 +101,5 @@ export interface ProgressInfo {
  * @internal
  * @deprecated in 4.0. Use [[OnDownloadProgress]].
  */
+// eslint-disable-next-line deprecation/deprecation
 export type ProgressCallback = (progress: ProgressInfo) => void;
