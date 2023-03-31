@@ -4,12 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @internal */
-export class RequestGlobalOptions {
-  // Assume application is online or offline. This hint skip retry/timeout
-  public static online: boolean = true;
-}
-
-/** @internal */
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
@@ -51,9 +45,6 @@ export async function request(url: string, responseType: "text", options?: Reque
 
 /** @internal */
 export async function request(url: string, responseType: "arraybuffer" | "json" | "text", options?: RequestOptions): Promise<any> {
-  if (!RequestGlobalOptions.online)
-    throw new HttpResponseError(503);
-
   const headers: any = {
     ...options?.headers,
   }

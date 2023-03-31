@@ -12,7 +12,7 @@ import {
   nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
   RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
-import { ProgressCallback, RequestGlobalOptions } from "./request/Request";
+import { ProgressCallback } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
@@ -79,7 +79,6 @@ export class NativeApp {
     await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
   };
   private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
-    RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
     await this.nativeAppIpc.overrideInternetConnectivity(by, status);
   }
   private static hookBrowserConnectivityEvents() {
@@ -123,7 +122,6 @@ export class NativeApp {
 
     // initialize current online state.
     if (window.navigator.onLine) {
-      RequestGlobalOptions.online = window.navigator.onLine;
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
   }
