@@ -13,7 +13,7 @@ public;AuxCoordSystemSpatial
 beta;AzureBlobStorage 
 deprecated;AzureBlobStorage 
 beta;AzureBlobStorageCredentials
-internal;BackendHubAccess
+public;BackendHubAccess
 public;BackendLoggerCategory
 internal;BaseSettings 
 public;BindParameter = number | string
@@ -92,10 +92,10 @@ public;DisplayStyle3d
 public;DisplayStyleCreationOptions 
 public;DocumentListModel 
 public;DocumentPartition 
-beta;DownloadChangesetArg 
-beta;DownloadChangesetRangeArg 
+public;DownloadChangesetArg 
+public;DownloadChangesetRangeArg 
 internal;DownloadJob
-beta;DownloadProgressArg
+public;DownloadProgressArg
 internal;DownloadRequest
 internal;Downloads
 public;Drawing 
