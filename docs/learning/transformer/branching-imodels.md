@@ -90,7 +90,7 @@ forward synchronizations.
 Conflicts during a transformation are resolved in favor of the element which was modified most recently, as stored in the `LastMod` property
 of an element.  Elements in transformations are considered in conflict when their [code](/bis/fundamentals/foundation/codes) is the same.
 
-You can override the method [`IModelTransformer.hasElementChanged`]($transformer)
+You can override the method [IModelTransformer.hasElementChanged]($transformer)
 in your transformer implementation to use more specific logic for determining if an element should be considered changed.
 
 Some other data in the iModel follows more specific rules for conflicts:
