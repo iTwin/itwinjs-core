@@ -57,7 +57,7 @@ packageClassification:  [
       "order":"6",
       "header":"Transformer",
       "packages":[
-         "transformer"
+         "imodel-transformer"
       ]
    }
 ]
