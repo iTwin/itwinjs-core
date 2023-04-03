@@ -276,13 +276,24 @@ export class Geometry {
     return distance;
   }
   /**
+   * Correct `fraction` to `replacement` if `fraction` is undefined or too small.
+   * @param fraction number to test
+   * @param replacement value to return if `fraction` is too small
+   * @returns `fraction` if its absolute value is at least `Geometry.smallFraction`; otherwise returns `replacement`
+   */
+  public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
+    if (fraction === undefined || Math.abs(fraction) < Geometry.smallFraction) {
+      return replacement;
+    }
+    return fraction;
+  }
+  /**
    * Return the inverse distance.
    * * If `distance` magnitude is smaller than `smallMetricDistance` (i.e. distance is large enough for safe division),
    * then return `1/distance`. Otherwise return `undefined`.
    */
   public static inverseMetricDistance(distance: number): number | undefined {
     return (Math.abs(distance) <= Geometry.smallMetricDistance) ? undefined : 1.0 / distance;
-  }
   /**
    * Return the inverse distance squared.
    * * If `distanceSqrt` magnitude is smaller than `smallMetricDistanceSquared` (i.e. distanceSqrt is large enough

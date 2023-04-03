@@ -2083,6 +2083,7 @@ export class Geometry {
     static cloneMembers<T extends Cloneable<T>>(a: T[] | undefined): T[] | undefined;
     static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
+    static correctSmallFraction(fraction: number | undefined, replacement?: number): number;
     static correctSmallMetricDistance(distance: number | undefined, replacement?: number): number;
     static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number;

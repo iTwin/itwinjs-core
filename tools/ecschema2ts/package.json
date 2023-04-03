@@ -2,18 +2,18 @@
   "name": "@itwin/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "4.0.0-dev.61",
+  "version": "4.0.0-dev.66",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
   "main": "bin/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/ecschema2ts"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "tools/ecschema2ts"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:test-assets",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",

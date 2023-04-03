@@ -347,112 +347,109 @@ import { XYProps } from '@itwin/core-geometry';
 import { XYZ } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @internal
+// @public
 export class AccuDraw {
-    // (undocumented)
+    // @internal (undocumented)
     accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _acsPickId?: string;
-    // (undocumented)
+    // @internal (undocumented)
     activate(): void;
-    // (undocumented)
+    // @internal (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean;
     // (undocumented)
     alwaysShowCompass: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     angleLock(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _animationFrames: number;
     // (undocumented)
     autoFocusFields: boolean;
     // (undocumented)
     autoPointPlacement: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly axes: ThreeAxes;
     // (undocumented)
     axisIndexing: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly baseAxes: ThreeAxes;
-    // (undocumented)
+    // @internal (undocumented)
     changeBaseRotationMode(mode: RotationMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     changeCompassMode(animate?: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     clearTentative(): boolean;
     // (undocumented)
     compassMode: CompassMode;
-    // (undocumented)
+    // @internal (undocumented)
     protected _compassSizeInches: number;
     // (undocumented)
     contextSensitive: boolean;
     // (undocumented)
     currentState: CurrentState;
-    // (undocumented)
+    // @internal (undocumented)
     currentView?: ScreenViewport;
-    // (undocumented)
+    // @internal (undocumented)
     deactivate(): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly delta: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     disableForSession(): void;
     // (undocumented)
     distanceIndexing: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     doAutoPoint(index: ItemField, mode: CompassMode): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     doLockAngle(isSnapped: boolean): void;
     // (undocumented)
     dontMoveFocus: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     downgradeInactiveState(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     enableForSession(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _fillColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _fillColorNoFocus: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     fixPointPolar(vp: Viewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     fixPointRectangular(vp: Viewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly flags: Flags;
     // (undocumented)
     floatingOrigin: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _frameColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _frameColorNoFocus: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
-    // (undocumented)
     getFieldLock(index: ItemField): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
-    // (undocumented)
+    // @internal (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
-    // (undocumented)
+    // @internal (undocumented)
     static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d;
-    // (undocumented)
     getValueByIndex(index: ItemField): number;
     grabInputFocus(): void;
-    // (undocumented)
+    // @internal (undocumented)
     hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
-    // (undocumented)
     get hasInputFocus(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _indexColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     indexed: LockedStates;
-    // (undocumented)
+    // @internal (undocumented)
     protected _indexToleranceInches: number;
     // (undocumented)
     get isActive(): boolean;
@@ -462,120 +459,110 @@ export class AccuDraw {
     get isEnabled(): boolean;
     // (undocumented)
     get isInactive(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isZLocked(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly lastAxes: ThreeAxes;
-    // (undocumented)
+    // @internal (undocumented)
     locked: LockedStates;
-    // (undocumented)
+    // @internal (undocumented)
     newFocus: ItemField;
-    // (undocumented)
+    // @internal (undocumented)
     onBeginDynamics(): boolean;
-    // (undocumented)
     onCompassModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onEndDynamics(): boolean;
-    // (undocumented)
     onFieldLockChange(_index: ItemField): void;
-    // (undocumented)
     onFieldValueChange(_index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInitialized(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInputCollectorExit(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onInputCollectorInstall(): boolean;
     onMotion(_ev: BeButtonEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onPostButtonEvent(ev: BeButtonEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPreButtonEvent(ev: BeButtonEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPrimitiveToolInstall(): boolean;
-    // (undocumented)
     onRotationModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSnap(snap: SnapDetail): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onTentative(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onViewToolExit(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onViewToolInstall(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly origin: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     readonly planePt: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     readonly point: Point3d;
-    // (undocumented)
     processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     processHints(): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly published: AccudrawData;
-    // (undocumented)
+    // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
-    // (undocumented)
+    // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
     // (undocumented)
     rotationMode: RotationMode;
-    // (undocumented)
+    // @internal (undocumented)
     saveCoordinate(index: ItemField, value: number): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly savedStateInputCollector: SavedState;
-    // (undocumented)
+    // @internal (undocumented)
     readonly savedStateViewTool: SavedState;
-    // (undocumented)
+    // @internal (undocumented)
     saveState(stateBuffer: SavedState): void;
-    // (undocumented)
+    // @internal (undocumented)
     sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void>;
-    // (undocumented)
     setCompassMode(mode: CompassMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus;
-    // (undocumented)
+    // @internal (undocumented)
     setContextRotation(rMatrix: Matrix3d, locked: boolean, animate: boolean): void;
-    // (undocumented)
     setFieldLock(index: ItemField, locked: boolean): void;
-    // (undocumented)
     setFocusItem(_index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     setKeyinStatus(index: ItemField, status: KeyinStatus): void;
-    // (undocumented)
+    // @internal (undocumented)
     setLastPoint(pt: Point3d): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected setNewFocus(index: ItemField): void;
-    // (undocumented)
     setRotationMode(mode: RotationMode): void;
-    // (undocumented)
     setValueByIndex(index: ItemField, value: number): void;
     // (undocumented)
     smartKeyin: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
     // (undocumented)
     stickyZLock: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     testDecorationHit(id: string): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     unlockAllFields(): void;
-    // (undocumented)
+    // @internal (undocumented)
     static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews?: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     updateFieldLock(index: ItemField, locked: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     updateRotation(animate?: boolean, newRotationIn?: Matrix3d): void;
-    // (undocumented)
+    // @internal (undocumented)
     upgradeToActiveState(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly vector: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _xColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _yColor: ColorDef;
 }
 
@@ -1958,11 +1945,9 @@ export class Cluster<T extends Marker> {
 // @beta
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
-// @alpha (undocumented)
+// @public
 export enum CompassMode {
-    // (undocumented)
     Polar = 0,
-    // (undocumented)
     Rectangular = 1
 }
 
@@ -2278,15 +2263,11 @@ export class CurrentInputState {
     viewport?: ScreenViewport;
 }
 
-// @internal (undocumented)
+// @public
 export enum CurrentState {
-    // (undocumented)
     Active = 3,
-    // (undocumented)
     Deactivated = 1,
-    // (undocumented)
     Inactive = 2,
-    // (undocumented)
     NotEnabled = 0
 }
 
@@ -2574,6 +2555,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
+    // @internal
+    enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean;
     equalState(other: DisplayStyleState): boolean;
     findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
@@ -2634,6 +2617,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @deprecated
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
+    // @internal
+    setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -5245,7 +5230,6 @@ export interface ImdlReaderResult extends IModelTileContent {
 // @public
 export class IModelApp {
     protected constructor();
-    // @internal
     static get accuDraw(): AccuDraw;
     static get accuSnap(): AccuSnap;
     // @beta
@@ -5338,7 +5322,6 @@ export class IModelApp {
 
 // @public
 export interface IModelAppOptions {
-    // @internal
     accuDraw?: AccuDraw;
     accuSnap?: AccuSnap;
     applicationId?: string;
@@ -5890,17 +5873,12 @@ export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec)
 // @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
-// @alpha (undocumented)
+// @public
 export enum ItemField {
-    // (undocumented)
     ANGLE_Item = 1,
-    // (undocumented)
     DIST_Item = 0,
-    // (undocumented)
     X_Item = 2,
-    // (undocumented)
     Y_Item = 3,
-    // (undocumented)
     Z_Item = 4
 }
 
@@ -9977,19 +9955,13 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @public
 export enum RotationMode {
-    // (undocumented)
     ACS = 5,
-    // (undocumented)
     Context = 6,
-    // (undocumented)
     Front = 2,
-    // (undocumented)
     Side = 3,
-    // (undocumented)
     Top = 1,
-    // (undocumented)
     View = 4
 }
 
@@ -10928,6 +10900,7 @@ export { Storage_2 as Storage }
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
+    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
@@ -13413,6 +13386,7 @@ export class ViewCreator3d {
 
 // @public
 export interface ViewCreator3dOptions {
+    allSubCategoriesVisible?: boolean;
     cameraOn?: boolean;
     skyboxOn?: boolean;
     standardViewId?: StandardViewId;

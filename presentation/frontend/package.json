@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.0.0-dev.61",
+  "version": "4.0.0-dev.66",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -8,7 +8,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/frontend"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "presentation/frontend"
   },
   "keywords": [
     "Bentley",
@@ -22,8 +23,7 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "npm run -s copy:cjs && tsc -p tsconfig.cjs.json",
     "build:esm": "npm run -s copy:esm && tsc -p tsconfig.esm.json",
     "copy:cjs": "cpx \"./src/**/*.json\" ./lib/cjs",
@@ -41,11 +41,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.61",
-    "@itwin/core-common": "workspace:^4.0.0-dev.61",
-    "@itwin/core-frontend": "workspace:^4.0.0-dev.61",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.61",
-    "@itwin/presentation-common": "workspace:^4.0.0-dev.61"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.66",
+    "@itwin/core-common": "workspace:^4.0.0-dev.66",
+    "@itwin/core-frontend": "workspace:^4.0.0-dev.66",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.66",
+    "@itwin/presentation-common": "workspace:^4.0.0-dev.66"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
