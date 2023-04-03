@@ -16,7 +16,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
-import { AtmosphericScattering } from '@itwin/core-common';
+import { Atmosphere } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
@@ -9298,12 +9298,6 @@ export interface RemoteExtensionProviderProps {
 // @internal
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
-// @internal (undocumented)
-export interface RenderAtmosphericSkyParams {
-    // (undocumented)
-    color: ColorDef;
-}
-
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -9559,7 +9553,7 @@ export interface RenderPlan {
     // (undocumented)
     readonly ao?: AmbientOcclusion.Settings;
     // (undocumented)
-    readonly atmosphericScattering?: AtmosphericScattering.Settings;
+    readonly atmosphere?: Atmosphere.Settings;
     // (undocumented)
     readonly backgroundMapOn: boolean;
     // (undocumented)
@@ -9569,11 +9563,11 @@ export interface RenderPlan {
     // (undocumented)
     readonly clipStyle: ClipStyle;
     // (undocumented)
-    readonly ellipsoidCenter?: Point3d;
-    // (undocumented)
-    readonly ellipsoidRadii?: Point3d;
-    // (undocumented)
-    readonly ellipsoidRotation?: Matrix3d;
+    readonly ellipsoid?: {
+        readonly ellipsoidCenter: Point3d;
+        readonly ellipsoidRotation: Matrix3d;
+        readonly ellipsoidRadii: Point3d;
+    };
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
@@ -9704,9 +9698,9 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
-    createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal?: boolean, _isMapTile?: boolean): RenderGraphic | undefined;
+    createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean, _isMapTile?: boolean): RenderGraphic | undefined;
+    createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
@@ -9716,7 +9710,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
     // @internal (undocumented)
-    createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal?: boolean, _isMapTile?: boolean): RenderTerrainGeometry | undefined;
+    createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal?: boolean): RenderTerrainGeometry | undefined;
     // (undocumented)
     createTexture(_args: CreateTextureArgs): RenderTexture | undefined;
     // @internal
@@ -11256,7 +11250,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get wantAmbientOcclusion(): boolean;
     // (undocumented)
-    get wantAtmosphericScattering(): boolean;
+    get wantAtmosphere(): boolean;
     // (undocumented)
     get wantInvertBlackBackground(): boolean;
     // (undocumented)
@@ -14340,7 +14334,7 @@ export class ViewRedoTool extends ViewTool {
 }
 
 // @public
-export abstract class ViewState extends ElementState implements ViewportDecorator {
+export abstract class ViewState extends ElementState {
     // @internal
     protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
     adjustAspectRatio(aspect: number): void;
