@@ -62,6 +62,11 @@ const computeSkySphereColorTexture = `
   return TEXTURE(s_skyTxtr, vec2(u, v));
 `;
 
+/**
+ * Eye Space for the SkySphere is unique because the ViewportQuad is already aligned with the view.
+ * For this reason, the modelView matrix is not useful in calculating eyeSpace.
+ * Instead, we can calculate the eyeSpace coordinates via the frustum values directly.
+ */
 const computeEyeSpace = `
 vec3 computeEyeSpace(vec4 rawPos) {
   vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
@@ -74,7 +79,7 @@ vec3 computeEyeSpace(vec4 rawPos) {
   return vec3(
     mix(left, right, pos01.x),
     mix(bottom, top, pos01.y),
-    -u_frustum.x
+    -u_frustum.y
   );
 }`;
 
@@ -99,7 +104,6 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
     builder.addGlobal("horizonSize", VariableType.Float, ShaderType.Both, "0.0015", true);
   } else
     builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
-  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
 
   const vert = builder.vert;
   vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {
@@ -132,16 +136,6 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
       }
     });
   });
-  vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
-    prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
-      uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
-    });
-  });
-  vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
-    prg.addGraphicUniform("u_frustum", (uniform, params) => {
-      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
-    });
-  });
   if (isGradient) {
     vert.addUniform("u_skyParams", VariableType.Vec3, (shader) => {
       shader.addGraphicUniform("u_skyParams", (uniform, params) => {
@@ -156,7 +150,6 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
       });
     });
   }
-  vert.addFunction(computeEyeSpace);
 
   const frag = builder.frag;
   if (isGradient) {
@@ -251,8 +244,23 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
   }
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
-  if (flags.enableAtmosphere)
+  vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
+    prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
+      uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
+    });
+  });
+  vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
+    prg.addGraphicUniform("u_frustum", (uniform, params) => {
+      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
+    });
+  });
+
+  vert.addFunction(computeEyeSpace);
+  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
+
+  if (flags.enableAtmosphere) {
     addAtmosphericScatteringEffect(builder, true, true);
+  }
 
   builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
   builder.frag.headerComment = `//!F! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
