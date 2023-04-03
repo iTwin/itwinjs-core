@@ -11,13 +11,37 @@ import { ClipPlane, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Frustum } from "../Frustum";
 import { BoundingSphere } from "./BoundingSphere";
 
+/*
+The following visualizes the contents of frustum.points, which is sent to computeFrustumPlanes().
+The below numbers are the indices into that array.
+
+   2----------3
+  /|         /|
+ / 0--------/-1
+6----------7  /
+| /        | /
+|/         |/
+4__________5
+
+0 = left bottom rear
+1 = right bottom rear
+2 = left top right
+3 = right top rear
+4 = left bottom front
+5 = right bottom front
+6 = left top front
+7 = right top front
+*/
+
+// Ordering of sub-arrays is: [origin, a, b]
 const planePointIndices = [
-  [1, 3, 5],  // right
-  [0, 4, 2],  // left
-  [2, 6, 3],  // top
-  [0, 1, 4],  // bottom
-  [0, 2, 1],  // back
-  [4, 5, 6],  // front
+  [1, 5, 3], // right
+  [0, 2, 4], // left
+  [2, 3, 6], // top
+  [0, 4, 1], // bottom
+  [0, 1, 2], // back
+  // Skip front plane because it can be too small. Instead derive it from back plane.
+  // Otherwise, it would be: [4, 6, 5]
 ];
 
 function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
@@ -25,9 +49,10 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
   const points = frustum.points;
   const expandPlaneDistance = 1e-6;
 
+  let normal: Vector3d | undefined;
   for (const indices of planePointIndices) {
     const i0 = indices[0], i1 = indices[1], i2 = indices[2];
-    const normal = Vector3d.createCrossProductToPoints(points[i2], points[i1], points[i0]);
+    normal = Vector3d.createCrossProductToPoints(points[i0], points[i1], points[i2]);
     normal.normalizeInPlace();
 
     const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[i0]) - expandPlaneDistance);
@@ -36,6 +61,19 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
 
     planes.push(plane);
   }
+
+  // Derive front plane from back plane due to fact that front plane can become very tiny and cause precision issues, resulting in zero frustum planes. Deriving the front plane from the rear rect resolves this problem.
+  // The back plane was the last plane processed above, so we can just consult the current value of `normal`.
+  if (undefined !== normal) {
+    normal.negate(normal); // negate the back plane
+    // NB: Below, we make sure we calculate the distance based on a point on the front rect, not the rear rect!
+    const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[4]) - expandPlaneDistance);
+    if (!plane)
+      return [];
+
+    planes.push(plane);
+  } else
+    return [];
 
   assert(planes.length === 6);
   return planes;
@@ -58,6 +96,7 @@ export class FrustumPlanes {
 
   /** Compute the six planes of the specified frustum.
    * If the frustum is degenerate - that is, its points do not represent a truncated pyramid - then the returned `FrustumPlanes` will contain zero planes.
+   * @note This method assumes that the front plane is parallel to the back plane.
    * @see [[isValid]] to test this condition.
    */
   public static fromFrustum(frustum: Frustum): FrustumPlanes {
@@ -88,6 +127,7 @@ export class FrustumPlanes {
 
   /** Recompute the planes from the specified frustum.
    * @returns true upon success, or false if the input frustum was degenerate, in which case [[isValid]] will be `false`.
+   * @note This method assumes that the front plane is parallel to the back plane.
    */
   public init(frustum: Frustum): boolean {
     this._planes = computeFrustumPlanes(frustum);
