@@ -10,12 +10,26 @@ import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
-/** @beta */
+/**
+ * Facilitates interaction with cloud tile cache.
+ * @beta
+ */
 export class TileStorage {
-  public constructor(public readonly storage: ServerStorage) { }
+  /**
+   * Allows using the underlying `ServerStorage` API directly.
+   * @see https://github.com/iTwin/object-storage/
+   */
+  public readonly storage: ServerStorage;
+
+  public constructor(storage: ServerStorage) {
+    this.storage = storage;
+  }
 
   private _initializedIModels: Set<string> = new Set();
 
+  /**
+   * Ensures any required cloud storage resources for a specific iModel are ready to use.
+   */
   public async initialize(iModelId: string): Promise<void> {
     if (this._initializedIModels.has(iModelId))
       return;
@@ -25,6 +39,10 @@ export class TileStorage {
     this._initializedIModels.add(iModelId);
   }
 
+  /**
+   * Returns config that can be used by frontends to download tiles
+   * @see [TileStorage]($frontend)
+   */
   public async getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig> {
     try {
       return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, expiresInSeconds);
@@ -34,6 +52,9 @@ export class TileStorage {
     }
   }
 
+  /**
+   * Uploads a tile to the cloud cache.
+   */
   public async uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void> {
     try {
       await this.storage.upload(
@@ -48,6 +69,9 @@ export class TileStorage {
     }
   }
 
+  /**
+   * Downloads a tile from the cloud cache.
+   */
   public async downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array> {
     try {
       const buffer = await this.storage.download(
@@ -61,6 +85,9 @@ export class TileStorage {
     }
   }
 
+  /**
+   * Returns a list of all tiles that are found in the cloud cache.
+   */
   public async getCachedTiles(iModelId: string): Promise<{ treeId: string, contentId: string, guid?: string }[]> {
     return (await this.storage.listObjects({ baseDirectory: iModelId }))
       .map((objectReference) => ({
@@ -86,6 +113,9 @@ export class TileStorage {
       });
   }
 
+  /**
+   * Returns a boolean indicating whether a tile exists in the cloud cache
+   */
   public async isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean> {
     return this.storage.objectExists(getTileObjectReference(iModelId, changesetId, treeId, contentId, guid));
   }
