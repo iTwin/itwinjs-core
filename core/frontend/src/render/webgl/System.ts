@@ -232,9 +232,8 @@ export class IdMap implements WebGLDisposable {
       return tex;
 
     const handle = TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
-    if (!handle) {
+    if (!handle)
       return undefined;
-    }
 
     const ownership = params.key ? { key: params.key, iModel: this._iModel } : (params.isOwned ? "external" : undefined);
     tex = new Texture({ handle, ownership, type: params.type, transparency: TextureTransparency.Opaque });
