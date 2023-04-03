@@ -79,7 +79,7 @@ vec3 computeEyeSpace(vec4 rawPos) {
   return vec3(
     mix(left, right, pos01.x),
     mix(bottom, top, pos01.y),
-    -u_frustum.y
+    -u_frustum.x
   );
 }`;
 
