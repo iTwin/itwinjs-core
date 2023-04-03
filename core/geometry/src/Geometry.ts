@@ -294,6 +294,7 @@ export class Geometry {
    */
   public static inverseMetricDistance(distance: number): number | undefined {
     return (Math.abs(distance) <= Geometry.smallMetricDistance) ? undefined : 1.0 / distance;
+  }
   /**
    * Return the inverse distance squared.
    * * If `distanceSqrt` magnitude is smaller than `smallMetricDistanceSquared` (i.e. distanceSqrt is large enough
