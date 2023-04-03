@@ -5097,6 +5097,29 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 // @internal
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
 
+// @beta (undocumented)
+export class TileStorage {
+    constructor(storage: ServerStorage);
+    // (undocumented)
+    downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
+    // (undocumented)
+    getCachedTiles(iModelId: string): Promise<{
+        treeId: string;
+        contentId: string;
+        guid?: string;
+    }[]>;
+    // (undocumented)
+    getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
+    // (undocumented)
+    initialize(iModelId: string): Promise<void>;
+    // (undocumented)
+    isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean>;
+    // (undocumented)
+    readonly storage: ServerStorage;
+    // (undocumented)
+    uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void>;
+}
+
 // @public
 export class TitleText extends DetailingSymbol {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
