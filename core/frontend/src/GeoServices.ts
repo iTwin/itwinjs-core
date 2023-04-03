@@ -323,6 +323,7 @@ export class GeoConverter {
   }
 }
 
+/** @internal */
 export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 
 /** The Geographic Services available for an [[IModelConnection]].

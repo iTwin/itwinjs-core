@@ -111,6 +111,7 @@ import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
 import { default as Fuse_2 } from 'fuse.js';
+import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
@@ -144,6 +145,7 @@ import { ImageSource } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
 import { IModelConnectionProps } from '@itwin/core-common';
+import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-common';
@@ -1377,11 +1379,11 @@ export class BackgroundMapGeometry {
     // (undocumented)
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
-    cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    cartographicToDbFromGcs(cartographic: Cartographic[]): Promise<Point3d[]>;
     // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
     // (undocumented)
-    dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    dbToCartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -2057,9 +2059,11 @@ export class CoordinateConverter {
     // (undocumented)
     protected getFromCache(inputs: XYZProps[]): PointWithStatus[];
     // (undocumented)
-    protected readonly _iModel: IModelConnection;
-    // (undocumented)
     protected _inflight: SortedArray<XYAndZ>;
+    // (undocumented)
+    get isIdle(): boolean;
+    // (undocumented)
+    protected readonly _isIModelClosed: () => boolean;
     // (undocumented)
     protected readonly _maxPointsPerRequest: number;
     // (undocumented)
@@ -2084,7 +2088,8 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
-    iModel: IModelConnection;
+    // (undocumented)
+    isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
     requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 }
@@ -3504,7 +3509,7 @@ export interface GenericAbortSignal {
 // @public
 export class GeoConverter {
     // @internal
-    constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
+    constructor(opts: GeoConverterOptions);
     convertFromIModelCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]>;
     convertToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]>;
     // @internal (undocumented)
@@ -3513,6 +3518,20 @@ export class GeoConverter {
     getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps>;
     // @internal (undocumented)
     getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps>;
+    // @internal
+    readonly onAllRequestsCompleted: BeEvent<() => void>;
+}
+
+// @internal
+export interface GeoConverterOptions {
+    // (undocumented)
+    readonly datum: string;
+    // (undocumented)
+    fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
+    // (undocumented)
+    isIModelClosed: () => boolean;
+    // (undocumented)
+    toIModelCoords: (request: IModelCoordinatesRequestProps) => Promise<PointWithStatus[]>;
 }
 
 // @beta
@@ -3583,9 +3602,14 @@ export interface GeometryTileTreeReference extends TileTreeReference {
 // @public
 export class GeoServices {
     // @internal
-    constructor(iModel: IModelConnection);
+    constructor(options: GeoServicesOptions);
+    // @internal (undocumented)
+    static createForIModel(iModel: IModelConnection): GeoServices;
     getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined;
 }
+
+// @internal (undocumented)
+export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 
 // @public
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
@@ -5363,6 +5387,7 @@ export abstract class IModelConnection extends IModel {
     protected constructor(iModelProps: IModelConnectionProps);
     // @internal
     protected beforeClose(): void;
+    cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]>;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     readonly categories: IModelConnection.Categories;
@@ -5432,6 +5457,7 @@ export abstract class IModelConnection extends IModel {
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
+    spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]>;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
@@ -14555,6 +14581,7 @@ export abstract class ViewState3d extends ViewState {
     protected _cameraOn: boolean;
     cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
     cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
+    cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined>;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
     // @internal
@@ -14627,6 +14654,7 @@ export abstract class ViewState3d extends ViewState {
     readonly origin: Point3d;
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
     rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
+    rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined>;
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;
