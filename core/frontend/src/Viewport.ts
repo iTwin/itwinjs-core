@@ -1003,7 +1003,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const worldPoint = hit.hitPoint.clone();
     const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+      featureInfo.hitPoint = (await backgroundMapGeometry.dbToCartographicFromGcs([worldPoint]))[0];
     }
 
     const results = await Promise.all(promises);
