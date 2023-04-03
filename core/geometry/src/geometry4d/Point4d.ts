@@ -94,7 +94,6 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    */
   public static createPlaneFrom(source: PlaneAltitudeEvaluator): Point4d | undefined {
     return new Point4d(source.normalX(), source.normalY(), source.normalZ(), source.altitudeXYZ(0, 0, 0));
-    return undefined;
   }
   /** Copy coordinates from `other`. */
   public setFrom(other: Point4d): Point4d {
@@ -240,7 +239,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * other structure with members x,y and optional z,w
    * * array of numbers
    * * default z is 0.0
-   * * default 2 is 1.0  (array[3] can replace)
+   * * default w is 1.0  (array[3] can replace)
    */
 
   public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
@@ -258,10 +257,10 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
       const w1 = point.length > 3 ? point[3] : 1.0;
       return new Point4d(x1, y1, z1, w1);
     }
-    const x = point.hasOwnProperty("x") ? point.x : 0.0;
-    const y = point.hasOwnProperty("y") ? point.y : 0.0;
+    const x = point.x;
+    const y = point.y;
     const z = point.hasOwnProperty("z") ? (point as any).z : 0.0;
-    const w = point.hasOwnProperty("w") ? (point as any).w : 0.0;
+    const w = point.hasOwnProperty("w") ? (point as any).w : 1.0;
     return new Point4d(x, y, z, w);
 
   }
@@ -390,7 +389,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public normalizeWeight(result?: Point4d): Point4d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     result = result ? result : new Point4d();
     return this.safeDivideOrNull(mag, result);
   }
@@ -400,7 +399,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public realPoint(result?: Point3d): Point3d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     if (mag === 0.0)
       return undefined;
     const a = 1.0 / mag; // in zero case everything multiplies right back to true zero.
@@ -412,7 +411,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * If `this.w` is zero, return a Vector3d `(x,y,z)`
    */
   public realPointOrVector(): Point3d | Vector3d {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     if (mag === 0.0)
       return Vector3d.create(this.x, this.y, this.z);
     const a = 1.0 / mag; // in zero case everything multiplies right back to true zero.
@@ -428,7 +427,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public static createRealPoint3dDefault000(x: number, y: number, z: number, w: number, result?: Point3d): Point3d {
-    const mag = Geometry.correctSmallMetricDistance(w);
+    const mag = Geometry.correctSmallFraction(w);
     const a = mag === 0 ? 0.0 : (1.0 / mag); // in zero case everything multiplies right back to true zero.
     return Point3d.create(x * a, y * a, z * a, result);
   }
@@ -446,7 +445,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public static createRealDerivativeRay3dDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, result?: Ray3d): Ray3d {
-    const mag = Geometry.correctSmallMetricDistance(w);
+    const mag = Geometry.correctSmallFraction(w);
     // real point is X/w.
     // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
     const a = mag === 0 ? 0.0 : (1.0 / mag); // in zero case everything multiplies right back to true zero.
@@ -467,7 +466,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param result optional result
    */
   public static createRealDerivativePlane3dByOriginAndVectorsDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, ddx: number, ddy: number, ddz: number, ddw: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    const mag = Geometry.correctSmallMetricDistance(w);
+    const mag = Geometry.correctSmallFraction(w);
     // real point is X/w.
     // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
     const a = mag === 0 ? 0.0 : (1.0 / mag); // in zero case everything multiplies right back to true zero.
@@ -485,7 +484,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * If this.w is zero, return 000
    */
   public realPointDefault000(result?: Point3d): Point3d {
-    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     if (mag === 0.0)
       return Point3d.create(0, 0, 0, result);
     result = result ? result : new Point3d();
@@ -498,7 +497,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * Use normalizeWeight to divide by the w component.
    */
   public normalizeXYZW(result?: Point4d): Point4d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.magnitudeXYZW());
+    const mag = Geometry.correctSmallFraction(this.magnitudeXYZW());
     result = result ? result : new Point4d();
     return this.safeDivideOrNull(mag, result);
   }
