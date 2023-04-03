@@ -461,6 +461,39 @@ export abstract class IModelConnection extends IModel {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
   }
 
+  public async cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    if (this.noGcsDefined)
+      return spatial.map((p) => this.spatialToCartographicFromEcef(p));
+
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+
+    if (spatial.length === 0)
+      return [];
+
+    const geoConverter = this.geoServices.getConverter();
+    assert(undefined !== geoConverter);
+
+    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates(spatial);
+    if (coordResponse.geoCoords.length !== spatial.length)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    return coordResponse.geoCoords.map((coord) => {
+      switch (coord.s) {
+        case GeoCoordStatus.NoGCSDefined:
+          throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+        case GeoCoordStatus.Success:
+          const llh = Point3d.fromJSON(coord.p);
+          return Cartographic.fromDegrees({ longitude: llh.x, latitude: llh.y, height: llh.z });
+        default:
+          throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting spatial to cartographic");
+      }
+    });
+  }
+
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
@@ -498,6 +531,39 @@ export abstract class IModelConnection extends IModel {
    */
   public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     return (this.noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
+  }
+
+  public async spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]> {
+    if (this.noGcsDefined)
+      return cartographic.map((p) => this.cartographicToSpatialFromEcef(p));
+
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+
+    if (cartographic.length === 0)
+      return [];
+
+    const geoConverter = this.geoServices.getConverter();
+    assert(undefined !== geoConverter);
+
+    const geoCoords = cartographic.map((p) => Point3d.create(p.longitudeDegrees, p.latitudeDegrees, p.height));
+    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates(geoCoords);
+    if (coordResponse.iModelCoords.length !== cartographic.length)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    return coordResponse.iModelCoords.map((coord) => {
+      switch (coord.s) {
+        case GeoCoordStatus.NoGCSDefined:
+          throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+        case GeoCoordStatus.Success:
+          return Point3d.fromJSON(coord.p);
+        default:
+          throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting cartographic to spatial");
+      }
+    });
   }
 
   /** Expand this iModel's [[displayedExtents]] to include the specified range.
