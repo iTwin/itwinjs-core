@@ -230,6 +230,11 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
     return emptyResult;
   }
 
+  int numPartitions = u_numInScatteringPoints - 1;
+  if (numPartitions <= 0) {
+    return emptyResult;
+  }
+
   // Before light reaches the camera, it must first travel from the sun through the atmosphere, where it is scattered in various directions through atmospheric interference.
   // The particular formulas describing exactly how the light is scattered involve integral calculus, but we can approximate their solutions through riemann sums.
   // These sums are computed by sampling atmospheric density at discrete points along the path the light is assumed to travel towards the camera.
@@ -242,7 +247,6 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   // Because each sample point has a different orientation to the sun, the optical depth for all of them must be calculated separately.
   // However, because scatter points are initially selected along a shared ray originating from the camera, we are able to memoize the optical depth values between related points.
 
-  int numPartitions = u_numInScatteringPoints - 1; // TODO: require 2 points or account for only 1 sample
   float stepSize = distanceThroughAtmosphere / float(numPartitions);
   vec3 step = rayDir * stepSize;
   vec3 firstPointInAtmosphere = rayDir * atmosphereHitInfo[0] + rayOrigin;
@@ -261,7 +265,6 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
     opticalDepthFromRayOriginToSamplePoints[i] = opticalDepthForCurrentPartition + opticalDepthFromRayOriginToSamplePoints[i-1];
 
     vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
-    // TODO: Calculate an appropriate number of samples for sun ray optical depth based off the stepSize (so we don't take too many samples when the density doesn't change much)
     float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numOpticalDepthPoints);
 
     float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
