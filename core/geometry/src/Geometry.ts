@@ -256,6 +256,18 @@ export class Geometry {
     return distance;
   }
   /**
+   * Correct `fraction` to `replacement` if `fraction` is undefined or too small.
+   * @param fraction number to test
+   * @param replacement value to return if `fraction` is too small
+   * @returns `fraction` if its absolute value is at least `Geometry.smallFraction`; otherwise returns `replacement`
+   */
+  public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
+    if (fraction === undefined || Math.abs(fraction) < Geometry.smallFraction) {
+      return replacement;
+    }
+    return fraction;
+  }
+  /**
  * If `a` is large enough for safe division, return `1/a`, using Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
  * @param a denominator of division
  */
