@@ -92,13 +92,14 @@ The existing [readGltfGraphics]($frontend) function returns an opaque [RenderGra
 
 ### Atmospheric Scattering
 
-You can now display an atmospheric scattering effect by toggling [Environment.displayAtmosphere]($common).
+A physics-based Atmospheric Scattering effect is now available for the rendering system.
 
 ![Globe View of Atmospheric Scattering](.\assets\atmosphere_globe.jpg)
 
-The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettings.backgroundMap]($common) set to a backgroundMap with [BackgroundMapSettings.globeMode]($common) equal to [GlobeMode.Ellipsoid]($common). It wouldn't make sense to display it otherwise.
+This effect can be toggled via [Environment.displayAtmosphere]($common) and adjusted through [Environment.atmosphere]($common).
+It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
 
-The effect can be controlled using [Environment.atmosphere]($common). It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
+The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettings.backgroundMap]($common) set to a backgroundMap with [BackgroundMapSettings.globeMode]($common) equal to [GlobeMode.Ellipsoid]($common).
 
 ![Sky View of Atmospheric Scattering](.\assets\atmosphere_distance.jpg)
 ![Atmospheric Scattering from Space](.\assets\atmosphere_space.jpg)
