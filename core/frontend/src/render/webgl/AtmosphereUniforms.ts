@@ -20,13 +20,12 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
 
   // Atmosphere effect parameters
   private _earthCenter = new Point3d();
-  private _earthScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
-  private _inverseEllipsoidRotationMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
+  private _earthScaleMatrix = new Matrix3d(new Float64Array([1, 0, 0, 0, 1, 0, 0, 0, 1]));
+  private _inverseEllipsoidRotationMatrix = new Matrix3d(new Float64Array([1, 0, 0, 0, 1, 0, 0, 0, 1]));
   private _atmosphereRadiusScaleFactor = 1.0;
-  private _atmosphereScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
+  private _atmosphereScaleMatrix = new Matrix3d(new Float64Array([1, 0, 0, 0, 1, 0, 0, 0, 1]));
   private _atmosphereMaxDensityThresholdScaleFactor = 1.0;
   private _densityFalloff = 0.0;
-  private _inScatteringIntensity = 1.0;
   private _outScatteringIntensity = 1.0;
   private _exposure = 0.0;
   private _scatteringCoefficients = new Float32Array(3);
@@ -56,7 +55,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._updateDensityFalloff(this.atmosphere.densityFalloff);
     this._updateEarthCenter(plan.ellipsoid.ellipsoidCenter, target.uniforms.frustum.viewMatrix);
     this._updateEarthScaleMatrix(plan.ellipsoid.ellipsoidRadii);
-    this._updateInScatteringIntensity(this.atmosphere.inScatteringIntensity);
     this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
     this._updateAtmosphereRadiusScaleFactor(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateAtmosphereMaxDensityThresholdScaleFactor(this.atmosphere.depthBelowEarthForMaxDensity);
@@ -75,10 +73,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     ellipsoidRotation.multiplyMatrixInverseMatrix(this._scratchMatrix3d, this._inverseEllipsoidRotationMatrix);
   }
 
-  private _updateInScatteringIntensity(inScatteringIntensity: number) {
-    this._inScatteringIntensity = inScatteringIntensity;
-  }
-
   private _updateOutScatteringIntensity(outScatteringIntensity: number) {
     this._outScatteringIntensity = outScatteringIntensity;
   }
@@ -90,7 +84,7 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   }
   private _updateAtmosphereScaleMatrix(heightAboveSurface: number) {
     const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
-    const scaleFactor =  earthPolarRadius === 0 ? 1.0 : (earthPolarRadius + heightAboveSurface) / earthPolarRadius;
+    const scaleFactor = earthPolarRadius === 0 ? 1.0 : (earthPolarRadius + heightAboveSurface) / earthPolarRadius;
     this._earthScaleMatrix.scale(scaleFactor, this._atmosphereScaleMatrix);
   }
 
@@ -154,11 +148,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
       this._atmosphereScaleMatrix.multiplyMatrixInverseMatrix(this._inverseEllipsoidRotationMatrix, this._scratchMatrix3d);
       uniform.setMatrix3(Matrix3.fromMatrix3d(this._scratchMatrix3d));
     }
-  }
-
-  public bindInScatteringIntensity(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform1f(this._inScatteringIntensity);
   }
 
   public bindOutScatteringIntensity(uniform: UniformHandle): void {
@@ -225,5 +214,5 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     return true;
   }
 
-  public dispose() {}
+  public dispose() { }
 }

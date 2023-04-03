@@ -310,7 +310,7 @@ vec3 calculateReflectedLightIntensity(float opticalDepth) {
 
     float averageScatteringValue = (u_scatteringCoefficients.x + u_scatteringCoefficients.y + u_scatteringCoefficients.z) / 3.0;
     vec3 equalScatteringByWavelength = vec3(averageScatteringValue);
-    vec3 scatteringStrength = mix(equalScatteringByWavelength, u_scatteringCoefficients, u_inScatteringIntensity);
+    vec3 scatteringStrength = mix(equalScatteringByWavelength, u_scatteringCoefficients, 0.5);
     vec3 outScatteredLight = opticalDepth * u_outScatteringIntensity * scatteringStrength;
 
     vec3 sunlightColor = vec3(1.0, 0.95, 0.925);
@@ -475,15 +475,6 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
       });
     },
     VariablePrecision.High
-  );
-  shader.addUniform(
-    "u_inScatteringIntensity",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
-      });
-    }
   );
   shader.addUniform(
     "u_outScatteringIntensity",
