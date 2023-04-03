@@ -11,6 +11,7 @@ import { RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 describe("RealityMeshParamsBuilder", () => {
   it("supports 8-, 16-, and 32-bit indices", () => {
     function test(numIndices: number, expectedType: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array): void {
+      console.log(`Running test with ${numIndices} indices`);
       const lastIndex = numIndices - 1;
       const builder = new RealityMeshParamsBuilder({ positionRange: new Range3d(-1, -2, -3, 1, 2, 3) });
       for (let i = 0; i < lastIndex; i++) {
@@ -105,7 +106,7 @@ describe("RealityMeshParamsBuilder", () => {
         wantNormals,
       });
 
-      const addVertex = () => builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0}, supplyNormals ? 100 : undefined);
+      const addVertex = () => builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0 }, supplyNormals ? 100 : undefined);
       if (expectThrow)
         expect(addVertex).to.throw("Logic Error");
       else
