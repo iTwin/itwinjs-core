@@ -127,7 +127,7 @@ export class Angle implements BeJSONFunctions {
 }
 
 // @public
-export type AngleProps = {
+export type AngleProps = number | {
     degrees: number;
 } | {
     radians: number;
@@ -135,7 +135,7 @@ export type AngleProps = {
     _radians: number;
 } | {
     _degrees: number;
-} | number;
+};
 
 // @public
 export class AngleSweep implements BeJSONFunctions {
@@ -190,14 +190,14 @@ export class AngleSweep implements BeJSONFunctions {
 }
 
 // @public
-export type AngleSweepProps = AngleSweep | {
+export type AngleSweepProps = AngleSweep | [
+number,
+number
+] | {
     degrees: [number, number];
 } | {
     radians: [number, number];
-} | [
-number,
-number
-];
+};
 
 // @internal
 export class AnnotatedLineString3d {
@@ -2099,6 +2099,7 @@ export class Geometry {
     static equalStringNoCase(string1: string, string2: string): boolean;
     static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean;
     static readonly fullCircleRadiansMinusSmallAngle: number;
+    // @deprecated
     static readonly hugeCoordinate = 1000000000000;
     static hypotenuseSquaredXY(x: number, y: number): number;
     static hypotenuseSquaredXYZ(x: number, y: number, z: number): number;
@@ -2109,28 +2110,30 @@ export class Geometry {
     static interpolate(a: number, f: number, b: number): number;
     static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF?: number, defaultResult?: number): number | undefined;
     static inverseInterpolate01(f0: number, f1: number, targetF?: number): number | undefined;
-    static inverseMetricDistance(a: number): number | undefined;
-    static inverseMetricDistanceSquared(a: number): number | undefined;
-    static isAlmostEqualNumber(a: number, b: number): boolean;
+    static inverseMetricDistance(distance: number): number | undefined;
+    static inverseMetricDistanceSquared(distanceSqrt: number): number | undefined;
+    static isAlmostEqualNumber(a: number, b: number, tolerance?: number): boolean;
     static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
-    static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean;
+    static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance?: number): boolean;
     static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
-    static isDistanceWithinTol(distance: number, tol?: number): boolean;
+    static isDistanceWithinTol(distance: number, tolerance?: number): boolean;
+    // @deprecated
     static isHugeCoordinate(x: number): boolean;
     static isIn01(x: number, apply01?: boolean): boolean;
     static isIn01WithTolerance(x: number, tolerance: number): boolean;
+    static isLargeCoordinateResult(x: number): boolean;
     static isNumberArray(json: any, minEntries?: number): boolean;
     static isOdd(x: number): boolean;
-    static isSameCoordinate(x: number, y: number, tol?: number): boolean;
-    static isSameCoordinateSquared(x: number, y: number): boolean;
+    static isSameCoordinate(x: number, y: number, tolerance?: number): boolean;
+    static isSameCoordinateSquared(x: number, y: number, tolerance?: number): boolean;
     static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean;
-    static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tol?: number): boolean;
-    static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean;
-    static isSamePoint3d(dataA: Point3d, dataB: Point3d): boolean;
-    static isSamePoint3dXY(dataA: Point3d, dataB: Point3d): boolean;
-    static isSameVector2d(dataA: Vector2d, dataB: Vector2d): boolean;
-    static isSameVector3d(dataA: Vector3d, dataB: Vector3d): boolean;
-    static isSameXYZ(dataA: XYZ, dataB: XYZ): boolean;
+    static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tolerance?: number): boolean;
+    static isSamePoint2d(dataA: Point2d, dataB: Point2d, tolerance?: number): boolean;
+    static isSamePoint3d(dataA: Point3d, dataB: Point3d, tolerance?: number): boolean;
+    static isSamePoint3dXY(dataA: Point3d, dataB: Point3d, tolerance?: number): boolean;
+    static isSameVector2d(dataA: Vector2d, dataB: Vector2d, tolerance?: number): boolean;
+    static isSameVector3d(dataA: Vector3d, dataB: Vector3d, tolerance?: number): boolean;
+    static isSameXYZ(dataA: XYZ, dataB: XYZ, tolerance?: number): boolean;
     static isSmallAngleRadians(value: number): boolean;
     static isSmallMetricDistance(distance: number): boolean;
     static isSmallMetricDistanceSquared(distanceSquared: number): boolean;
@@ -2147,6 +2150,7 @@ export class Geometry {
     static maxXYZ(a: number, b: number, c: number): number;
     static meanCurvatureOfRadii(r0: number, r1: number): number;
     static minXY(a: number, b: number): number;
+    static minXYZ(a: number, b: number, c: number): number;
     static modulo(a: number, period: number): number;
     static resolveNumber(value: number | undefined, defaultValue?: number): number;
     static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined;
