@@ -1,6 +1,6 @@
 # Custom property value renderers
 
-Data in [PropertyGrid]($components-react) and [Table]($components-react) components is displayed by property value renderers. By defining and registering custom renderers, users can extend property rendering system to support new data types and UI interactions.
+Generally, data in [Property Grid]($components-react:PropertyGrid) and Table components is rendered by property value renderers. By defining and registering custom renderers, users can extend property rendering system to support new data types and UI interactions.
 
 A custom renderer can be used by assigning it to specific properties through a property override. See [`PropertySpecification.renderer` section](../content/PropertySpecification.md#attribute-renderer) for an example.
 

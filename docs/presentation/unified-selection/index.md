@@ -2,16 +2,20 @@
 
 The purpose of unified selection is to act as a single source of truth of what is selected in an iTwin.js application.
 
-> **Contents**
->
-> - [Selection Levels](#selection-levels)
-> - [Selection Handling](#selection-handling)
->   - [Tree](#tree)
->   - [Table](#table)
->   - [Property Grid](#property-grid)
->   - [Viewport](#viewport)
-> - [Reference](#reference)
-> - [Examples](#examples)
+**Contents:**
+
+- [Selection levels](#selection-levels)
+- [Selection handling](#selection-handling)
+  - [Tree](#tree)
+  - [Table](#table)
+  - [Property grid](#property-grid)
+  - [Viewport](#viewport)
+    - [Hilite set](#hilite-set)
+    - [Selection scopes](#selection-scopes)
+- [Reference](#reference)
+- [Caveats](#caveats)
+- [Examples](#examples)
+- [External resources](#external-resources)
 
 ## Selection levels
 
@@ -39,7 +43,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 
 ## Selection handling
 
-The `@itwin/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($components-react), [Table]($components-react), [Property Grid]($components-react:PropertyGrid) and [ViewportComponent]($imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
+The `@itwin/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [Tree]($components-react:Tree), Table, [Property Grid]($components-react:PropertyGrid) and [Viewport]($imodel-components-react:Viewport). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
 ### Tree
 
@@ -51,6 +55,8 @@ The rules for interacting with unified selection are very simple in this case:
 - when a node is selected, we add *ECInstance* represented by the node to unified selection storage
 
 In short, this is similar to how *Component A* works in the [selection levels example](#selection-levels).
+
+See [Setting up a Tree component for Unified Selection](./Tree.md) page for an example.
 
 ### Table
 
@@ -64,6 +70,8 @@ The rules for interacting with unified selection are:
 
 In short, this is similar to how *Component B* works in the [selection levels example](#selection-levels).
 
+See [Setting up a Table component for Unified Selection](./Table.md) page for an example.
+
 ### Property grid
 
 Property grid is a component that can show multiple categorized property label - value pairs. In the context of [EC](../../bis/ec/index.md), it shows properties of one *ECInstance*. It can also show properties of multiple *ECInstances* by merging them into one before displaying.
@@ -71,6 +79,8 @@ Property grid is a component that can show multiple categorized property label -
 The property grid has no way to change the selection and reacts to unified selection changes by simply displaying properties of *ECInstances* that got selected during the last selection change (no matter the selection level).
 
 In short, this is similar to how *Component C* works in the [selection levels example](#selection-levels).
+
+See [Setting up a Property Grid component for Unified Selection](./PropertyGrid.md) page for an example.
 
 ### Viewport
 
@@ -82,6 +92,8 @@ The rules for interacting with unified selection are:
 - when an element is selected in the viewport, we compute the selection based on [selection scope](#selection-scopes) and add that to our unified selection storage at the top level.
 
 The two key concepts - hilite set and selection scope are explained next.
+
+See [Setting up a Viewport component for Unified Selection](./Viewport.md) page for an example.
 
 #### Hilite set
 
@@ -124,13 +136,15 @@ For each type of component described in [selection handling section](#selection-
   - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($components-react) that can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.
 
 - Table
-  - [tableWithUnifiedSelection]($presentation-components) HOC takes a [Table]($components-react) component as input and returns a component with injected handling for unified selection as described in [this section](#table).
+  - `usePresentationTableWithUnifiedSelection` (`@itwin/presentation-components`) hook registers a unified selection listener and causes the Table to be re-rendered with the new `KeySet` whenever the selection changes.
 
 - Property Grid
   - [usePropertyDataProviderWithUnifiedSelection]($presentation-components) hook takes an [IPresentationPropertyDataProvider]($presentation-components) as an input and ensures the provider is updated with current selection as soon as there are changes in unified selection storage. It also returns some cues about the selection that help the component with various edge cases, like nothing being selected or overly large number of selected elements.
 
 - Viewport
   - [viewWithUnifiedSelection]($presentation-components) HOC takes a [ViewportComponent]($imodel-components-react) as input and returns a component with injected handling for unified selection as described in [this section](#viewport).
+
+See [examples section](#examples) for how to use each of these APIs.
 
 ## Caveats
 
@@ -148,12 +162,16 @@ Generally, if an application uses unified selection, it should be interacting wi
 - adding a (non-graphical) element to selection doesn't select it in other components
 - etc.
 
+## Examples
+
+- [Setting up a Tree component for Unified Selection](./Tree.md)
+- [Setting up a Table component for Unified Selection](./Table.md)
+- [Setting up a Property Grid component for Unified Selection](./PropertyGrid.md)
+- [Setting up a Viewport component for Unified Selection](./Viewport.md)
+
 ## External resources
 
-- [Hooking a tree into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Tree)
-- [Hooking a table into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Table)
-- [Hooking a property grid into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20PropertyGrid)
-- Hooking 3rd party components into unified selection
+- Hooking 3rd party components into unified selection:
   - [Blog post](https://medium.com/itwinjs/hooking-3rd-party-component-into-unified-selection-c4daec69789d)
   - [Sandbox of custom property grid implementation](https://www.itwinjs.org/sandboxes/grigas/Element%20Properties%20Loader)
 - [Using unified selection APIs directly](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Directly)

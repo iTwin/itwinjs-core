@@ -13,7 +13,6 @@ import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 /**
  * Context to build a grid with
  * * XY Coordinates are in a grid within specified range.

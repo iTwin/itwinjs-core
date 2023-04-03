@@ -18,14 +18,14 @@ import { XYAndZ } from "./XYZProps";
  * @public
  */
 export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
-  /** reference to array being queried. */
+  /** Reference to array being queried. */
   public data: Point3d[];
   /** CAPTURE caller supplied array ... */
   public constructor(data: Point3d[]) {
     super();
     this.data = data;
   }
-  /** test if `index` is a valid index into the array. */
+  /** Test if `index` is a valid index into the array. */
   public isValidIndex(index: number): boolean {
     return index >= 0 && index < this.data.length;
   }
@@ -67,23 +67,23 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     return undefined;
   }
   /**
-   * access x of indexed point
+   * Access x of indexed point
    * * WARNING: make sure `pointIndex` is a valid index, otherwise, you get random results
-   * */
+   */
   public getXAtUncheckedPointIndex(pointIndex: number): number {
     return this.data[pointIndex].x;
   }
   /**
-   * access y of indexed point
+   * Access y of indexed point
    * * WARNING: make sure `pointIndex` is a valid index, otherwise, you get random results
-   * */
+   */
   public getYAtUncheckedPointIndex(pointIndex: number): number {
     return this.data[pointIndex].y;
   }
   /**
-   * access z of indexed point
+   * Access z of indexed point
    * * WARNING: make sure `pointIndex` is a valid index, otherwise, you get random results
-   * */
+   */
   public getZAtUncheckedPointIndex(pointIndex: number): number {
     return this.data[pointIndex].z;
   }
@@ -119,7 +119,9 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param result caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined {
+  public crossProductXYAndZIndexIndex(
+    origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d
+  ): Vector3d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
       return Vector3d.createCrossProductToPoints(origin, this.data[indexA], this.data[indexB], result);
     return undefined;
@@ -132,7 +134,9 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param result caller-allocated vector.
    * @returns return true if indexA, indexB both valid
    */
-  public crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined {
+  public crossProductIndexIndexIndex(
+    originIndex: number, indexA: number, indexB: number, result?: Vector3d
+  ): Vector3d | undefined {
     if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
       return Vector3d.createCrossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB], result);
     return undefined;
@@ -154,10 +158,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
         data[indexB].x, data[indexB].y, data[indexB].z
       );
   }
-  /**
-   * Accumulate scale times the x,y,z values at index to the sum.
-   * No action if index is out of bounds.
-   */
+  /** Accumulate scale times the x,y,z values at index to the sum. No action if index is out of bounds */
   public accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void {
     if (this.isValidIndex(index)) {
       const point = this.data[index];
@@ -166,20 +167,19 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
       sum.z += scale * point.z;
     }
   }
-  /**
-   * read-only property for number of XYZ in the collection.
-   */
+  /** Read-only property for number of XYZ in the collection */
   public get length(): number {
     return this.data.length;
   }
-  /** push a (clone of) point onto the collection
+  /**
+   * Push a (clone of) point onto the collection
    * * point itself is not pushed -- xyz data is extracted into the native form of the collection.
    */
   public push(data: Point3d): void {
     this.data.push(data.clone());
   }
   /**
-   * push a new point (given by coordinates) onto the collection
+   * Push a new point (given by coordinates) onto the collection
    * @param x x coordinate
    * @param y y coordinate
    * @param z z coordinate
@@ -189,26 +189,26 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
       Point3d.create(x === undefined ? 0.0 : x, y === undefined ? 0.0 : y, z === undefined ? 0.0 : z)
     );
   }
-  /** extract (copy) the final point */
+  /** Extract (copy) the final point */
   public back(result?: Point3d): Point3d | undefined {
     if (this.data.length > 0) {
       return this.data[this.data.length - 1].clone(result);
     }
     return undefined;
   }
-  /** extract (copy) the first point */
+  /** Extract (copy) the first point */
   public front(result?: Point3d): Point3d | undefined {
     if (this.data.length > 0) {
       return this.data[0].clone(result);
     }
     return undefined;
   }
-  /** remove the final point. */
+  /** Remove the final point. */
   public pop(): void {
     if (this.data.length > 0)
       this.data.pop();
   }
-  /** remove all points. */
+  /** Remove all points. */
   public clear(): void {
     this.data.length = 0;
   }

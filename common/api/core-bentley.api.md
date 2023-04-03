@@ -1485,6 +1485,11 @@ export enum RepositoryStatus {
     SyncError = 86019
 }
 
+// @public
+export type RequireAtLeastOne<T> = {
+    [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];
+
 // @beta
 export enum RpcInterfaceStatus {
     IncompatibleVersion = 135168,
@@ -1507,7 +1512,7 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     slice(start?: number, end?: number): SortedArray<T>;
 }
 
-// @alpha
+// @public
 export enum SpanKind {
     // (undocumented)
     CLIENT = 2,
@@ -1566,7 +1571,7 @@ export abstract class SuccessCategory extends StatusCategory {
     error: boolean;
 }
 
-// @alpha
+// @public
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
     static setAttributes(attributes: SpanAttributes): void;

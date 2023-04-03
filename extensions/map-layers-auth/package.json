@@ -1,14 +1,13 @@
 {
   "name": "@itwin/map-layers-auth",
-  "version": "4.0.0-dev.34",
+  "version": "4.0.0-dev.66",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers-auth.js",
   "module": "lib/esm/map-layers-auth.js",
   "typings": "lib/cjs/map-layers-auth",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -21,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/map-layers-auth"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "extensions/map-layers-auth"
   },
   "keywords": [
     "iModel",
@@ -38,7 +38,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
     "@types/sinon": "^9.0.0",
@@ -53,7 +53,7 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
     "source-map-support": "^0.5.6",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*"

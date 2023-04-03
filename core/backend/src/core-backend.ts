@@ -5,6 +5,7 @@
 export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangeSummaryManager";
+export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CloudSqlite";
@@ -53,8 +54,6 @@ export * from "./IpcHost";
 export * from "./NativeAppStorage";
 export * from "./NativeHost";
 export * from "./PropertyStore";
-export * from "./CloudStorageBackend";
-export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";

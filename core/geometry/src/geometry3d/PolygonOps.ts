@@ -378,7 +378,7 @@ export class PolygonOps {
       }
     }
     s *= 0.5;
-    // console.log ("polygon area ", s, points);
+    // GeometryCoreTestIO.consoleLog("polygon area ", s, points);
     return s;
   }
   /** These values are the integrated area moment products [xx,xy,xz, x]
@@ -810,15 +810,12 @@ export class PolygonOps {
     return numReverse;
   }
   /**
-   * Reverse loops as necessary to make them all have CCW orientation for given outward normal.
-   * * Return an array of arrays which capture the input pointers.
-   * * In each first level array:
-   *    * The first loop is an outer loop.
-   *    * all subsequent loops are holes
-   *    * The outer loop is CCW
-   *    * The holes are CW.
-   * * Call RegionOps.sortOuterAndHoleLoopsXY to have the result returned as a UnionRegion
-   * @param loops multiple loops to sort and reverse.
+   * Reverse and reorder loops in the xy-plane for consistency and containment.
+   * @param loops multiple polygons in any order and orientation, z-coordinates ignored
+   * @returns array of arrays of polygons that capture the input pointers. In each first level array:
+   * * The first polygon is an outer loop, oriented counterclockwise.
+   * * Any subsequent polygons are holes of the outer loop, oriented clockwise.
+   * @see [[RegionOps.sortOuterAndHoleLoopsXY]]
    */
   public static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][] {
     const loopAndArea: SortablePolygon[] = [];
@@ -832,6 +829,7 @@ export class PolygonOps {
    * Exactly like `sortOuterAndHoleLoopsXY` but allows loops in any plane.
    * @param loops multiple loops to sort and reverse.
    * @param defaultNormal optional normal for the loops, if known
+   * @see [[sortOuterAndHoleLoopsXY]]
    */
   public static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][] {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, loops);

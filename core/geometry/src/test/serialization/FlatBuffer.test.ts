@@ -3,32 +3,35 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Checker } from "../Checker";
 import { flatbuffers } from "flatbuffers";
-import { BGFBAccessors } from "../../serialization/BGFBAccessors";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Arc3d } from "../../curve/Arc3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { prettyPrint } from "../testFunctions";
-import { Transform } from "../../geometry3d/Transform";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { PointString3d } from "../../curve/PointString3d";
-import { AuxChannelDataType } from "../../polyface/AuxData";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { AuxChannelDataType } from "../../polyface/AuxData";
 import { TaggedNumericData } from "../../polyface/TaggedNumericData";
+import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
+import { BGFBAccessors } from "../../serialization/BGFBAccessors";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 // cSpell:word flatbuffers
 // cSpell:word fbjs
-/* eslint-disable no-console, comma-dangle, quote-props */
+// cSpell:word BGFB
+
 it("HelloWorld", () => {
   const ck = new Checker();
   const builder = new flatbuffers.Builder(1024);
@@ -37,16 +40,16 @@ it("HelloWorld", () => {
   builder.finish(oLine);
   const bytes = builder.asUint8Array();
   if (Checker.noisy.flatBuffer)
-    console.log({ finalBytes: bytes, lineOffset: oLine });
+    GeometryCoreTestIO.consoleLog({ finalBytes: bytes, lineOffset: oLine });
   const buffer = new flatbuffers.ByteBuffer(bytes);
   const oLineA = BGFBAccessors.LineSegment.getRootAsLineSegment(buffer);
   const oSegmentA = oLineA.segment();
 
   if (Checker.noisy.flatBuffer)
-    console.log({
+    GeometryCoreTestIO.consoleLog({
       lineOffset: oLineA,
       x0: oSegmentA?.point0X(), y0: oSegmentA?.point0Y(), z0: oSegmentA?.point0Z(),
-      x1: oSegmentA?.point1X(), y1: oSegmentA?.point1Y(), z1: oSegmentA?.point1Z()
+      x1: oSegmentA?.point1X(), y1: oSegmentA?.point1Y(), z1: oSegmentA?.point1Z(),
     });
 
   ck.testExactNumber(1, oSegmentA!.point0X());
@@ -133,8 +136,8 @@ function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQu
   if (!g)
     return;
   if (Checker.noisy.flatBuffer) {
-    console.log("---------------------------------------");
-    console.log("INPUT geometry: ", prettyPrint(IModelJson.Writer.toIModelJson(g)));
+    GeometryCoreTestIO.consoleLog("---------------------------------------");
+    GeometryCoreTestIO.consoleLog("INPUT geometry: ", prettyPrint(IModelJson.Writer.toIModelJson(g)));
   }
   if (g instanceof GeometryQuery) {
     const justTheBytes = BentleyGeometryFlatBuffer.geometryToBytes(g);
@@ -145,8 +148,8 @@ function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQu
         ck.announceError("Unexpected array from flat buffer");
       } if (ck.testType(g1 as (GeometryQuery | undefined), GeometryQuery)) {
         if (!ck.testTrue(g.isAlmostEqual(g1 as GeometryQuery))) {
-          console.log("input (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g)));
-          console.log("OUTPUT (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g1)));
+          GeometryCoreTestIO.consoleLog("input (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g)));
+          GeometryCoreTestIO.consoleLog("OUTPUT (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g1)));
           const g2 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
           if (g2 instanceof GeometryQuery)
             ck.testTrue(g.isAlmostEqual(g2));
@@ -263,23 +266,23 @@ it("HelloNativeBytes", () => {
   for (const nativeBytes of [sphereBytes, singleSegmentBytes, singleArcBytes, arcBytes]) {
     const g0 = BentleyGeometryFlatBuffer.bytesToGeometry(nativeBytes, true);
     if (Checker.noisy.flatBuffer)
-      console.log("nativeBytes=>g types", geometryTypes(g0));
+      GeometryCoreTestIO.consoleLog("nativeBytes=>g types", geometryTypes(g0));
     if (ck.testDefined(g0, "native bytes to geometry") && g0) {
       testGeometryQueryRoundTrip(ck, g0);
       const jsBytes = BentleyGeometryFlatBuffer.geometryToBytes(g0, true);
       if (Checker.noisy.flatBuffer) {
-        console.log({ nativeBytesLength: nativeBytes?.length });
-        console.log({ jsBytesLength: jsBytes?.length });
+        GeometryCoreTestIO.consoleLog({ nativeBytesLength: nativeBytes?.length });
+        GeometryCoreTestIO.consoleLog({ jsBytesLength: jsBytes?.length });
       }
       if (ck.testDefined(jsBytes, "geometry to bytes") && jsBytes) {
         const g1 = BentleyGeometryFlatBuffer.bytesToGeometry(jsBytes, true);
         if (ck.testDefined(g1, "jsBytes to geometry") && g1)
-          console.log("nativeBytes=>g=>jsBytes=>g types", geometryTypes(g1));
+          GeometryCoreTestIO.consoleLog("nativeBytes=>g=>jsBytes=>g types", geometryTypes(g1));
         testGeometryQueryRoundTrip(ck, g1);
         if (isGeometry(g1) && isGeometry(g0)) {
           if (!ck.testGeometry(g0, g1, "nativeBytes=>g0=>jsBytes=>g1")) {
-            console.log({ nativeBytesLength: nativeBytes.length });
-            console.log({ jsBytesLength: jsBytes.length });
+            GeometryCoreTestIO.consoleLog({ nativeBytesLength: nativeBytes.length });
+            GeometryCoreTestIO.consoleLog({ jsBytesLength: jsBytes.length });
           }
         }
       }

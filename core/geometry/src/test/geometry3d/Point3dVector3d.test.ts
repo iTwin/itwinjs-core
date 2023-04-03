@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
-import { Ray3d } from "../../core-geometry";
 import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { XYZProps } from "../../geometry3d/XYZProps";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
-/* eslint-disable no-console */
+// cSpell:words Jcross CCWXY CWXY
 describe("Point3d", () => {
   it("zeros", () => {
     const ck = new bsiChecker.Checker();
@@ -278,6 +277,7 @@ it("NormalizeWithDefault", () => {
   ck.checkpoint("Point3dArray.HelloWorld");
   expect(ck.getNumErrors()).equals(0);
 });
+
 it("RotateVectorAroundVector", () => {
   const ck = new bsiChecker.Checker();
   const vectorA = Vector3d.create(1, 2, 3);

@@ -261,6 +261,7 @@ export interface MapLayerScaleRangeVisibility {
  *
  * @see [[ViewManager]]
  * @public
+ * @extensions
  */
 export abstract class Viewport implements IDisposable, TileUser {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
@@ -371,7 +372,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     IModelApp.requestNextAnimation();
   }
 
-  /** Mark the viewport's scene as invalid, so that the next call to [[renderFrame]] will recreate it.
+  /** Mark the viewport's scene as having changed, so that the next call to [[renderFrame]] will recreate it.
    * This method is not typically invoked directly - the scene is automatically invalidated in response to events such as moving the viewing frustum,
    * changing the set of viewed models, new tiles being loaded, etc.
    */
@@ -381,13 +382,18 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.invalidateDecorations();
   }
 
-  /** @internal */
+  /** Mark the viewport's "render plan" as having changed, so that the next call to [[renderFrame]] will recreate it.
+   * This method is not typically invoked directly - the render plan is automatically invalidated in response to events such as changing aspects
+   * of the viewport's [[displayStyle]].
+   */
   public invalidateRenderPlan(): void {
     this._renderPlanValid = false;
     this.invalidateScene();
   }
 
-  /** @internal */
+  /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
+   * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   */
   public invalidateController(): void {
     this._controllerValid = this._analysisFractionValid = false;
     this.invalidateRenderPlan();
@@ -749,13 +755,8 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    for (const categoryId of Id64.iterable(categoryIds)) {
-      const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
-      if (undefined !== subCategoryIds) {
-        for (const subCategoryId of subCategoryIds)
-          this.changeSubCategoryDisplay(subCategoryId, true);
-      }
-    }
+    if (this.displayStyle.enableAllLoadedSubCategories(categoryIds))
+      this.maybeInvalidateScene();
   }
 
   /** @internal */
@@ -766,20 +767,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
-    const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
-    if (undefined === app)
-      return; // category not enabled or subcategory not found
-
-    const curOvr = this.getSubCategoryOverride(subCategoryId);
-    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
-    if (isAlreadyVisible === display)
-      return;
-
-    // Preserve existing overrides - just flip the visibility flag.
-    const json = undefined !== curOvr ? curOvr.toJSON() : {};
-    json.invisible = !display;
-    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
-    this.maybeInvalidateScene();
+    if (this.displayStyle.setSubCategoryVisible(subCategoryId, display))
+      this.maybeInvalidateScene();
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -1268,10 +1257,10 @@ export abstract class Viewport implements IDisposable, TileUser {
         IModelApp.requestNextAnimation();
     }
   }
-  /** This gives each Viewport a unique Id, which can be used for comparing and sorting Viewport objects inside collections.
-   * @internal
+
+  /** A unique integer Id assigned to this Viewport upon construction.
+   * It can be useful for comparing and sorting Viewport objects inside of collections like [SortedArray]($core-bentley).
    */
-  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($core-bentley)s. */
   public get viewportId(): number {
     return this._viewportId;
   }
@@ -1447,6 +1436,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.maybeInvalidateScene();
   }
 
+  /** @internal */
+  public invalidateSymbologyOverrides(): void {
+    this.setFeatureOverrideProviderChanged();
+  }
+
   /** The [[TiledGraphicsProvider]]s currently registered with this viewport.
    * @see [[addTiledGraphicsProvider]].
    */
@@ -1472,7 +1466,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
-  /** @internal */
+  /** Apply a function to every [[TileTreeReference]] displayed by this viewport. */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.view.forEachTileTreeRef(func);
     this.forEachTiledGraphicsProviderTree(func);
@@ -2118,9 +2112,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.animate();
   }
 
-  /** Used strictly by TwoWayViewportSync to change the reactive viewport's view to a clone of the active viewport's ViewState.
-   * Does *not* trigger "ViewState changed" events.
-   * @internal
+  /** Replace this viewport's [[ViewState]] **without** triggering events like [[onChangeView]].
+   * This is chiefly useful when you are synchronizing the states of two or more viewports, as in [[TwoWayViewportSync]], to avoid triggering unwanted "echo"
+   * events during synchronization.
+   * In all other scenarios, [[changeView]] is the correct method to use.
    */
   public applyViewState(val: ViewState) {
     this.updateChangeFlags(val);
@@ -2521,13 +2516,13 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @internal */
   public isPixelSelectable(pixel: Pixel.Data) {
-    if (undefined === pixel.featureTable || undefined === pixel.elementId)
+    if (undefined === pixel.modelId || undefined === pixel.elementId)
       return false;
 
-    if (pixel.featureTable.modelId === pixel.elementId)
+    if (pixel.modelId === pixel.elementId)
       return false;    // Reality Models not selectable
 
-    return undefined === this.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
+    return undefined === this.mapLayerFromIds(pixel.modelId, pixel.elementId);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.
@@ -2651,7 +2646,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       if (!preserveModelDisplayTransforms) {
         const pixel = pixels.getPixel(x, y);
-        const modelId = pixel.featureTable?.modelId;
+        const modelId = pixel.modelId;
         if (undefined !== modelId) {
           const transform = this.view.computeDisplayTransform({ modelId, elementId: pixel.feature?.elementId });
           transform?.multiplyInversePoint3d(npc, npc);
@@ -2671,7 +2666,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return queryVisibleFeatures(this, options, callback);
   }
 
-  /** @internal */
+  /** Record graphics memory consumed by this viewport. */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);
@@ -2837,6 +2832,7 @@ export abstract class Viewport implements IDisposable, TileUser {
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
  * ```
  * @public
+ * @extensions
  */
 export class ScreenViewport extends Viewport {
   /** Settings that may be adjusted to control the way animations are applied to a [[ScreenViewport]] by methods like
@@ -2996,9 +2992,7 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport
-   * @beta
-   */
+  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport. */
   public get logo() { return this._logo; }
 
   /** @internal */
@@ -3283,7 +3277,7 @@ export class ScreenViewport extends Viewport {
     this.canvas.style.cursor = cursor;
   }
 
-  /** @internal */
+  /** See [[Viewport.synchWithView]]. */
   public override synchWithView(options?: ViewChangeOptions): void {
     options = options ?? {};
 
@@ -3601,6 +3595,7 @@ export interface OffScreenViewportOptions {
  * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImageBuffer]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
  * @public
+ * @extensions
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
