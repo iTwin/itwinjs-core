@@ -924,7 +924,12 @@ export class Vector3d extends XYZ {
   public static unitZ(scale: number = 1): Vector3d {
     return new Vector3d(0, 0, scale);
   }
-  /** Divide by denominator, but return undefined if denominator is zero. */
+  /**
+   * Scale the instance by 1.0/`denominator`.
+   * @param denominator number by which to divide the coordinates of this instance
+   * @param result optional pre-allocated object to return
+   * @return scaled vector, or undefined if `denominator` is exactly zero (in which case instance is untouched).
+  */
   public safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined {
     if (denominator !== 0.0) {
       return this.scale(1.0 / denominator, result);
@@ -932,18 +937,20 @@ export class Vector3d extends XYZ {
     return undefined;
   }
   /**
-   * Return a pair object containing (a) property `v` which is a unit vector in the direction of the input
-   * and (b) property mag which is the magnitude (length) of the input (instance) prior to normalization.
-   * If the instance (input) is a near zero length the `v` property of the output is undefined.
-   * @param result optional result.
+   * Return a normalized instance and instance length.
+   * @param result optional pre-allocated object to return as `v` property
+   * @returns object containing the properties:
+   *  * `v`: unit vector in the direction of the instance, or undefined if `mag` is near zero
+   *  * `mag`: length of the instance prior to normalization
    */
   public normalizeWithLength(result?: Vector3d): {
     v: Vector3d | undefined;
     mag: number;
   } {
-    const magnitude = Geometry.correctSmallMetricDistance(this.magnitude());
+    const originalMagnitude = this.magnitude();
+    const correctedMagnitude = Geometry.correctSmallFraction(originalMagnitude);
     result = result ? result : new Vector3d();
-    return { v: this.safeDivideOrNull(magnitude, result), mag: magnitude };
+    return { v: this.safeDivideOrNull(correctedMagnitude, result), mag: originalMagnitude };
   }
   /**
    * Return a unit vector parallel with this. Return undefined if this.magnitude is near zero.
@@ -954,16 +961,10 @@ export class Vector3d extends XYZ {
   }
   /**
    * If this vector has nonzero length, divide by the length to change to a unit vector.
-   * @returns true if normalization completed.
+   * @returns true if normalization was successful
    */
   public normalizeInPlace(): boolean {
-    const a = Geometry.inverseMetricDistance(this.magnitude());
-    if (a === undefined)
-      return false;
-    this.x *= a;
-    this.y *= a;
-    this.z *= a;
-    return true;
+    return this.normalizeWithLength(this).v !== undefined;
   }
   /**
    * Create a normalized vector from the inputs.
@@ -1213,7 +1214,7 @@ export class Vector3d extends XYZ {
    * @param result optional preallocated result
    */
   public scaleToLength(length: number, result?: Vector3d): Vector3d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.magnitude());
+    const mag = Geometry.correctSmallFraction(this.magnitude());
     if (mag === 0)
       return undefined;
     return this.scale(length / mag, result);
@@ -1265,7 +1266,7 @@ export class Vector3d extends XYZ {
    * @param smallestMagnitude smallest magnitude allowed as divisor.
    * @returns false if magnitude is too small.  In this case the vector is unchanged.
    */
-  public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallMetricDistance): boolean {
+  public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallFraction): boolean {
     const a = this.magnitude();
     if (a < smallestMagnitude || a === 0.0)
       return false;
