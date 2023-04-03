@@ -213,18 +213,15 @@ export class AccuSnap implements Decorator {
   public onInitialized() { }
   private get _searchDistance(): number { return this.isLocateEnabled ? 1.0 : this._settings.searchDistance; }
   private get _hotDistanceInches(): number { return IModelApp.locateManager.apertureInches * this._settings.hotDistanceFactor; }
-  /** Whether locate of elements under the cursor is enabled by the current InteractiveTool.
-   * @public
-   */
+  /** Whether locate of elements under the cursor is enabled by the current InteractiveTool. */
   public get isLocateEnabled(): boolean { return this.toolState.locate; }
-  /** Whether snapping to elements under the cursor is enabled by the current InteractiveTool.
-   * @public
-   */
+  /** Whether snapping to elements under the cursor is enabled by the current InteractiveTool. */
   public get isSnapEnabled(): boolean { return this.toolState.enabled; }
-  /** Whether the user setting for snapping is enabled. Snapping is done only when both the user and current InteractiveTool have enabled it.
-   * @public
-   */
+  /** Whether the user setting for snapping is enabled. Snapping is done only when both the user and current InteractiveTool have enabled it. */
   public get isSnapEnabledByUser(): boolean { return this._settings.enableFlag; }
+  /** AccuSnap user settings */
+  public get userSettings() { return this._settings; }
+
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
   private needsFlash(view: Viewport): boolean { return (this.needFlash.has(view)); }
   private setNeedsFlash(view: Viewport) {

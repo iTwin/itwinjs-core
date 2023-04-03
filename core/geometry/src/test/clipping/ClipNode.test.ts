@@ -27,7 +27,6 @@ import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 
-/* eslint-disable no-console, @typescript-eslint/naming-convention */
 /**
  *
  * @param origin
@@ -42,6 +41,7 @@ function makePanel(origin: Point3d, vectorA: Vector3d, a0: number, a1: number, v
   return Loop.createPolygon([point00, point10, point11, point01, point00]);
 }
 
+// cspell:word NXOR
 describe("ClipNodes", () => {
 
   it("ClipManyBooleans", () => {

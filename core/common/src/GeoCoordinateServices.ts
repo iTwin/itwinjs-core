@@ -14,7 +14,8 @@ import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 
 /** This enumeration lists all possible status as returned from a coordinate conversion to or from a
  * [[GeographicCRS]] and either another [[GeographicCRS]] or a [[GeodeticDatum]].
- * @see the [[PointWithStatus]] included in an [[IModelCoordinatesResponseProps]] or [[GeoCoordinatesResponseProps]].
+ * @see [[GeoConverter]] to perform coordinate conversions.
+ * @see [[PointWithStatus]] for the result of a coordinate conversion, including its status code.
  * @public
  * @extensions
  */
@@ -88,11 +89,14 @@ export interface IModelCoordinatesRequestProps {
   geoCoords: XYZProps[];
 }
 
-/** Information returned from a request to convert an array of Geographic coordinates (Longitude/Latitude) to iModel coordinates
- * @beta
+/** A point converted to iModel coordinates to geographic coordinates or vice-versa by a [[GeoConverter]].
+ * The status [[s]] indicates the converted point [[p]]'s degree of accuracy.
+ * @public
  */
 export interface PointWithStatus {
+  /** A JSON representation of the converted point. */
   p: XYZProps;
+  /** A status code indicating the degree of accuracy with the point [[p]] was converted. */
   s: GeoCoordStatus;
 }
 

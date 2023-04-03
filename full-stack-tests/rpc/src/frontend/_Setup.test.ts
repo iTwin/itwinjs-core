@@ -20,8 +20,10 @@ function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
   const mobilePort = port + 2000;
 
-  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
-  config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${port}`;
+  const config = BentleyCloudRpcManager.initializeClient({
+    info: { title: "rpc-full-stack-test", version: "v1.0" },
+    pathPrefix: `${protocol}://${window.location.hostname}:${port}`,
+  }, rpcInterfaces);
 
   initializeMultipleClientsTest(config.protocol.pathPrefix);
   initializeAttachedInterfacesTest(config);
@@ -77,7 +79,8 @@ before(async () => {
       BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces);
       return LocalhostIpcApp.startup({
         localhostIpcApp: { socketUrl },
-        iModelApp: { localization: new EmptyLocalization() } });
+        iModelApp: { localization: new EmptyLocalization() },
+      });
   }
 });
 

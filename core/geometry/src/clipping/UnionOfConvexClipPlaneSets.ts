@@ -15,12 +15,12 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /** Wire format describing a [[UnionOfConvexClipPlaneSets]].
  * @public
@@ -103,12 +103,13 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
    */
   public addConvexSet(toAdd: ConvexClipPlaneSet | undefined) {
     if (toAdd)
-    this._convexSets.push(toAdd);
+      this._convexSets.push(toAdd);
   }
-
-  /** Test if there is any intersection with a ray defined by origin and direction.
+  /**
+   * Test if there is any intersection with a ray defined by origin and direction.
    * * Optionally record the range (null or otherwise) in caller-allocated result.
-   * * If the ray is unbounded inside the clip, result can contain positive or negative "Geometry.hugeCoordinate" values
+   * * If the ray is unbounded inside the clip, result can contain positive or negative
+   * "Geometry.largeCoordinateResult" values
    * * If no result is provide, there are no object allocations.
    * @param maximalRange optional Range1d to receive parameters along the ray.
    */

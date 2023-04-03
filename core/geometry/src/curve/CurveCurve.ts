@@ -71,11 +71,8 @@ export class CurveCurve {
     return handler.grabResults();
   }
   /**
-   * Return xy intersections of 2 curves.
-   * @param geometryA first geometry
-   * @param extendA true to allow geometryA to extend
-   * @param geometryB second geometry
-   * @param extendB true to allow geometryB to extend
+   * Return xy intersections of input curves.
+   * @param primitives input curves to intersect
    * @param tolerance optional distance tolerance for coincidence
    */
   public static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance): CurveLocationDetailPair[] {

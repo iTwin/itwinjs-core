@@ -3,20 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { expect } from "chai";
-import { LineSegment3d } from "../../core-geometry";
-import { Geometry } from "../../Geometry";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { ConvexPolygon2d, Ray2d } from "../../numerics/ConvexPolygon2d";
 import { Checker } from "../Checker";
-
-/* eslint-disable no-console, no-trailing-spaces */
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // Form rays from centroid to each point.
 // Compute points fractionally on the chord.

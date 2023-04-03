@@ -51,8 +51,8 @@ export interface AbstractStatusBarItem extends ProvidedItem {
 
 // @public @deprecated
 export class AbstractStatusBarItemUtilities {
-    static createActionItem: (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, tooltip: string | ConditionalStringValue, execute: () => void, overrides?: Partial<AbstractStatusBarCustomItem> | undefined) => AbstractStatusBarActionItem;
-    static createLabelItem: (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, labelSide?: StatusBarLabelSide, overrides?: Partial<AbstractStatusBarLabelItem> | undefined) => AbstractStatusBarLabelItem;
+    static createActionItem: (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, tooltip: string | ConditionalStringValue, execute: () => void, overrides?: Partial<AbstractStatusBarCustomItem>) => AbstractStatusBarActionItem;
+    static createLabelItem: (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, labelSide?: StatusBarLabelSide, overrides?: Partial<AbstractStatusBarLabelItem>) => AbstractStatusBarLabelItem;
 }
 
 // @public @deprecated
@@ -205,8 +205,8 @@ export enum BackstageItemType {
 
 // @public @deprecated
 export class BackstageItemUtilities {
-    static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string | ConditionalStringValue, subtitle?: string | ConditionalStringValue | undefined, icon?: string | ConditionalStringValue | undefined, overrides?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
-    static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string | ConditionalStringValue, subtitle?: string | ConditionalStringValue | undefined, icon?: string | ConditionalStringValue | undefined, overrides?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
+    static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string | ConditionalStringValue, subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageActionItem>) => BackstageActionItem;
+    static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string | ConditionalStringValue, subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageStageLauncher>) => BackstageStageLauncher;
 }
 
 // @public @deprecated
@@ -271,11 +271,11 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
 
 // @public @deprecated
 export class BaseUiItemsProvider implements UiItemsProvider {
-    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider | undefined) => boolean) | undefined);
+    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider) => boolean) | undefined);
     // (undocumented)
     get id(): string;
     // (undocumented)
-    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider | undefined) => boolean) | undefined;
+    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider) => boolean) | undefined;
     // (undocumented)
     onUnregister(): void;
     provideBackstageItems(): BackstageItem[];
@@ -1519,7 +1519,6 @@ export interface PropertyDescription {
     displayLabel: string;
     editor?: PropertyEditorInfo;
     enum?: EnumerationChoicesInfo;
-    // @alpha
     hideCompositePropertyLabel?: boolean;
     name: string;
     // @alpha
@@ -2005,8 +2004,8 @@ export class ToolbarItemsManager {
 
 // @public
 export class ToolbarItemUtilities {
-    static createActionButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton> | undefined) => ActionButton;
-    static createGroupButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton> | undefined) => GroupButton;
+    static createActionButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton>) => ActionButton;
+    static createGroupButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>) => GroupButton;
     static isActionButton(item: CommonToolbarItem): item is ActionButton;
     static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition;
     static isGroupButton(item: CommonToolbarItem): item is GroupButton;

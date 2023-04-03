@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ImageSourceFormat, IModel, NormalMapProps, RenderMaterialAssetProps, TextureMapProps } from "@itwin/core-common";
+import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetProps, TextureMapProps } from "@itwin/core-common";
 import { RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -246,13 +246,13 @@ describe("RenderMaterialElement", () => {
       test({
         normalMap: {
           TextureId: id,
-          NormalFlags: 0xff00,
+          NormalFlags: 0xff00 as NormalMapFlags,
         },
       }, {
         Map: {
           Normal: {
             TextureId: id,
-            NormalFlags: 0xff00,
+            NormalFlags: 0xff00 as NormalMapFlags,
           },
         },
       });

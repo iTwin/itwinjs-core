@@ -18,7 +18,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;
   ck.testCoordinate(expectedValue, s, "basis sum");
@@ -198,9 +197,9 @@ describe("BSplineSurface", () => {
     const surfaceA = Sample.createPseudoTorusBsplineSurface(
       4.0, 1.0, // radii
       12, 6, orderU, orderV)!;
-      const surfaceB = Sample.createPseudoTorusBsplineSurface(
-        4.0, 1.0, // radii
-        12, 6, orderU, orderV)!;
+    const surfaceB = Sample.createPseudoTorusBsplineSurface(
+      4.0, 1.0, // radii
+      12, 6, orderU, orderV)!;
     surfaceB.tryTranslateInPlace(10, 0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceA, 0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceB, 0, 0);

@@ -1118,7 +1118,7 @@ export class PowerPolynomial {
     return this.degreeKnownEvaluate(coff, degree, x);
   }
   /**
-   * * Accumulate Q*scale into P.Both are treated as full degree.
+   * * Accumulate Q*scale into P. Both are treated as full degree.
    * * (Expect Address exceptions if P is smaller than Q)
    * * Returns degree of result as determined by comparing trailing coefficients to zero
    */
@@ -1217,7 +1217,7 @@ export class TrigPolynomial {
         // No roots, but not degenerate.
         // status = true;
       } else if (degree === 1) {
-        // p(t) = coff[1] * t + coff[0]...
+        // p(t) = coff[1] * t + coff[0]
         roots.push(- coff[0] / coff[1]);
       } else if (degree === 2) {
         AnalyticRoots.appendQuadraticRoots(coff, roots);
@@ -1251,16 +1251,16 @@ export class TrigPolynomial {
   }
   private static readonly _coefficientRelTol = 1.0e-12;
   /**
-   * Compute intersections of unit circle `x ^ 2 + y 2 = 1` with general quadric
-   * `axx * x ^ 2 + axy * x * y + ayy * y ^ 2 + ax * x + ay * y + a1 = 0`
-   * Solutions are returned as angles.Sine and Cosine of the angles are the x, y results.
-   * @param axx  Coefficient of x ^ 2
+   * Compute intersections of unit circle `x^2 + y^2 = 1` with general quadric
+   * `axx * x^2 + axy * x * y + ayy * y^2 + ax * x + ay * y + a1 = 0`
+   * Solutions are returned as angles. Sine and Cosine of the angles are the x, y results.
+   * @param axx  Coefficient of x^2
    * @param axy  Coefficient of xy
-   * @param ayy  Coefficient of y ^ 2
+   * @param ayy  Coefficient of y^2
    * @param ax  Coefficient of x
    * @param ay  Coefficient of y
    * @param a1  Constant coefficient
-   * @param angles  solution angles
+   * @param radians  solution angles
    * @param numAngle  number of solution angles(Passed as array to make changes to reference)
    */
   public static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number,
@@ -1297,7 +1297,7 @@ export class TrigPolynomial {
     for (const theta of angles) {
       const c = theta.cos();
       const s = theta.sin();
-      console.log({
+      GeometryCoreTestIO.consoleLog({
         angle: theta, co: c, si: s,
         f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a1});
   } */
@@ -1337,7 +1337,7 @@ export class TrigPolynomial {
     return status;
   }
   /**
-   * Compute intersections of unit circle x^2 + y 2 = w^2 with the ellipse
+   * Compute intersections of unit circle x^2 + y^2 = w^2 with the ellipse
    *         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)/ (cw + uw Math.Cos + vw * Math.Sin)
    * Solutions are returned as angles in the ellipse space.
    * @param cx center x
@@ -1691,14 +1691,14 @@ export class SmallSystem {
     xyzA: Point3d, normalA: Vector3d,
     xyzB: Point3d, normalB: Vector3d,
     xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined {
-      return this.linearSystem3d (
-        normalA.x, normalA.y, normalA.z,
-        normalB.x, normalB.y, normalB.z,
-        normalC.x, normalC.y, normalC.z,
-        Geometry.dotProductXYZXYZ (xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
-        Geometry.dotProductXYZXYZ (xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
-        Geometry.dotProductXYZXYZ (xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
-    }
+    return this.linearSystem3d(
+      normalA.x, normalA.y, normalA.z,
+      normalB.x, normalB.y, normalB.z,
+      normalC.x, normalC.y, normalC.z,
+      Geometry.dotProductXYZXYZ(xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
+      Geometry.dotProductXYZXYZ(xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
+      Geometry.dotProductXYZXYZ(xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
+  }
 
   /**
    * * in rowB, replace `rowB[j] += a * rowB[pivot] * rowA[j] / rowA[pivot]` for `j>pivot`
@@ -1868,10 +1868,10 @@ export class ImplicitLineXY {
   /**
    * constant coefficient
    */
-   public a: number;
-   /**
-   * x coefficient
-   */
+  public a: number;
+  /**
+  * x coefficient
+  */
   public ax: number;
   /**
    * y coefficient
@@ -1888,8 +1888,8 @@ export class ImplicitLineXY {
    * * the start and endpoints are distance `b` from the projection of the origin onto the ImplicitLineXY
    * @returns undefined if ax,ay are both zero.   Otherwise the two points of the segment.
    */
-  public convertToSegmentPoints(b: number): Point3d[] | undefined{
-    const q = Math.sqrt (this.ax * this.ax + this.ay * this.ay);
+  public convertToSegmentPoints(b: number): Point3d[] | undefined {
+    const q = Math.sqrt(this.ax * this.ax + this.ay * this.ay);
     const alpha = Geometry.conditionalDivideCoordinate(1.0, q, 1.0e10);
     if (alpha === undefined)
       return undefined;
@@ -1910,10 +1910,10 @@ export class ImplicitLineXY {
   /**
    * add scale * (a,ax,ay) to the respective coefficients.
    */
-   public addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number) {
-     this.a += scale * a;
-     this.ax += scale * ax;
-     this.ay += scale * ay;
+  public addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number) {
+    this.a += scale * a;
+    this.ax += scale * ax;
+    this.ay += scale * ay;
   }
 
 }

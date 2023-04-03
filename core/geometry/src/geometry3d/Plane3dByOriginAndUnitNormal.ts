@@ -6,7 +6,8 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
+import { Plane3d } from "./Plane3d";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
@@ -16,16 +17,16 @@ import { XAndY } from "./XYZProps";
 
 /**
  * A plane defined by
- *
  * * Any point on the plane.
  * * a unit normal.
  * @public
  */
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
+export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunctions {
   private _origin: Point3d;
   private _normal: Vector3d;
   // constructor captures references !!!
   private constructor(origin: Point3d, normal: Vector3d) {
+    super();
     this._origin = origin;
     this._normal = normal;
   }
@@ -60,20 +61,42 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
       return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 0, 1, 0);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 1, 0);
   }
-  /** create a new  Plane3dByOriginAndUnitNormal with given origin and normal.
+  /** Create a new Plane3dByOriginAndUnitNormal with given origin and normal.
    * * The inputs are NOT captured.
-   * * Returns undefined if the normal vector is all zeros.
+   * * Returns undefined if `normal.normalize()` returns undefined.
    */
   public static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
-    const normalized = normal.normalize();
-    if (!normalized)
-      return undefined;
     if (result) {
-      result.set(origin, normalized);
+      if (normal.normalize(result._normal) === undefined)
+        return undefined;
+      origin.clone(result._origin);
       return result;
     }
+    const normalized = normal.normalize();
+    if (normalized === undefined)
+      return undefined;
     return new Plane3dByOriginAndUnitNormal(origin.clone(), normalized);
   }
+  /** Create a new Plane3dByOriginAndUnitNormal from a variety of plane types.
+   * * The inputs are NOT captured.
+   * * Returns undefined if `source.getUnitNormal()` returns undefined.
+   */
+  public static createFrom(source: Plane3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
+    if (source instanceof Plane3dByOriginAndUnitNormal)
+      return source.clone(result);
+    if (result) {
+      if (source.getUnitNormal(result._normal) === undefined)
+        return undefined;
+      source.getAnyPointOnPlane(result._origin);
+      return result;
+    }
+    const normal = source.getUnitNormal();
+    if (normal === undefined)
+      return undefined;
+    const origin = source.getAnyPointOnPlane();
+    return new Plane3dByOriginAndUnitNormal(origin, normal);
+  }
+
   /** create a new  Plane3dByOriginAndUnitNormal with direct coordinates of origin and normal.
    * * Returns undefined if the normal vector is all zeros.
    * * If unable to normalize return undefined. (And if result is given it is left unchanged)
@@ -97,7 +120,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   public static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
     const ux = target.x - origin.x;
     const uy = target.y - origin.y;
-    return  this.createXYZUVW(origin.x, origin.y, 0.0, uy, -ux, 0.0, result);
+    return this.createXYZUVW(origin.x, origin.y, 0.0, uy, -ux, 0.0, result);
   }
 
   /** create a new  Plane3dByOriginAndUnitNormal with xy origin (at z=0) and normal angle in xy plane.
@@ -119,6 +142,30 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
    */
   public static createPointPointVectorInPlane(pointA: Point3d, pointB: Point3d, vector: Vector3d): Plane3dByOriginAndUnitNormal | undefined {
     const cross = vector.crossProductStartEnd(pointA, pointB);
+    if (cross.tryNormalizeInPlace())
+      return new Plane3dByOriginAndUnitNormal(pointA, cross);
+    return undefined;
+  }
+
+  /** Create a plane defined by three points.
+   * @param pointA any point in the plane.  This will be the origin.
+   * @param pointB any other point in the plane
+   * @param pointC any third point in the plane but not on the line of pointA and pointB
+   */
+  public static createOriginAndTargets(pointA: Point3d, pointB: Point3d, pointC: Point3d): Plane3dByOriginAndUnitNormal | undefined {
+    const cross = pointA.crossProductToPoints(pointB, pointC);
+    if (cross.tryNormalizeInPlace())
+      return new Plane3dByOriginAndUnitNormal(pointA, cross);
+    return undefined;
+  }
+
+  /** Create a plane defined by a point and two vectors in the plane
+   * @param pointA any point in the plane
+   * @param vectorB any vector in the plane
+   * @param vectorC any vector in the plane but not parallel to vectorB
+   */
+  public static createOriginAndVectors(pointA: Point3d, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined {
+    const cross = vectorB.crossProduct(vectorC);
     if (cross.tryNormalizeInPlace())
       return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
@@ -216,22 +263,33 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   /**
    * Return the x component of the normal used to evaluate altitude.
    */
-   public normalX(): number {return this._normal.x; }
-   /**
-    * Return the x component of the normal used to evaluate altitude.
-    */
-    public normalY(): number {return this._normal.y; }
-   /**
-    * Return the z component of the normal used to evaluate altitude.
-    */
-    public normalZ(): number {return this._normal.z; }
-
-  /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
+  public normalX(): number { return this._normal.x; }
+  /**
+   * Return the x component of the normal used to evaluate altitude.
+   */
+  public normalY(): number { return this._normal.y; }
+  /**
+   * Return the z component of the normal used to evaluate altitude.
+   */
+  public normalZ(): number { return this._normal.z; }
+  /**
+   * Return (a clone of) the unit normal.
+   */
+  public override getUnitNormal(result?: Vector3d): Vector3d | undefined {
+    return this._normal.clone(result);
+  }
+  /**
+   * Return (a clone of) the origin.
+   */
+  public override getAnyPointOnPlane(result?: Point3d): Point3d {
+    return this._origin.clone(result);
+  }
+  /** Return the signed altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {
     return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint);
   }
 
-  /** return a point at specified (signed) altitude */
+  /** return any point at specified (signed) altitude. */
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {
     return this._origin.plusScaled(this._normal, altitude, result);
   }
@@ -255,6 +313,11 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
-  /** Returns true of spacePoint is within distance tolerance of the plane. */
-  public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
+  /** Returns true if spacePoint is within distance tolerance of the plane.
+   * * This logic is identical to the [[Plane3d]] method but avoids a level of function call.
+  */
+  public override isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
+    const altitude = this._normal.dotProductStartEnd(this._origin, spacePoint);
+    return Math.abs(altitude) <= tolerance;
+  }
 }

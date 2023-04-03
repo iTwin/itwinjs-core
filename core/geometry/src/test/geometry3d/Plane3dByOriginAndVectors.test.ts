@@ -109,7 +109,7 @@ describe("Plane3dByOriginAndVectors", () => {
   it("Orthogonalize", () => {
     const ck = new Checker();
     const planeA = Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(3, 2, 4, 1, 5, 0.4, 0.2, 3, 5);
-    const normal = planeA.unitNormal()!;
+    const normal = planeA.getUnitNormal()!;
     const frame = planeA.toRigidFrame()!;
     ck.testParallel(normal, frame.matrix.columnZ());
     ck.testPerpendicular(planeA.vectorU, normal);

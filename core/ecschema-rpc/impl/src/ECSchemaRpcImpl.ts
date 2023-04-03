@@ -56,6 +56,7 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
     // a typed row instance instead of any.
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of iModelDb.query(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const schemaDefinitionRow = row as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;

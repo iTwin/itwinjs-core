@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "4.0.0-dev.48",
+  "version": "4.0.0-dev.66",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -8,7 +8,6 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -21,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/common"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/common"
   },
   "keywords": [
     "Bentley",
@@ -41,14 +41,14 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.48",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.48"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.66",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.66"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
@@ -59,7 +59,7 @@
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

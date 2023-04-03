@@ -464,7 +464,7 @@ class Joint {
   public static removeDegeneratePrimitives(start: Joint, options: JointOptions, maxTest: number): { newStart: Joint, numJointRemoved: number } {
     /*
     if (Checker.noisy.PolygonOffset)
-      console.log("\nENTER removeDegenerates");
+      GeometryCoreTestIO.consoleLog("\nENTER removeDegenerates");
     */
     let jointA: Joint | undefined = start;
     let numRemoved = 0;
@@ -486,10 +486,10 @@ class Joint {
           // f0 and f1 are fractions on the single primitive between these joints.
           /*
             if (Checker.noisy.PolygonOffset) {
-              console.log("joint candidate");
-              console.log(prettyPrint(jointA.shallowExtract()));
-              console.log(prettyPrint(jointB.shallowExtract()));
-              console.log("FRACTIONS ", { fA1: f0, fB0: f1 });
+              GeometryCoreTestIO.consoleLog("joint candidate");
+              GeometryCoreTestIO.consoleLog(prettyPrint(jointA.shallowExtract()));
+              GeometryCoreTestIO.consoleLog(prettyPrint(jointB.shallowExtract()));
+              GeometryCoreTestIO.consoleLog("FRACTIONS ", { fA1: f0, fB0: f1 });
             }
           */
           const eliminateF = f0 >= f1 || f0 > 1.0;
@@ -506,8 +506,8 @@ class Joint {
               newJoint.nextJoint.annotateJointMode(options);
             /*
             if (Checker.noisy.PolygonOffset) {
-              console.log(" NEW DOUBLE CUT");
-              console.log(prettyPrint(newJoint.shallowExtract()));
+              GeometryCoreTestIO.consoleLog(" NEW DOUBLE CUT");
+              GeometryCoreTestIO.consoleLog(prettyPrint(newJoint.shallowExtract()));
             }
             */
           } else if (eliminateF) {
@@ -519,8 +519,8 @@ class Joint {
             newJoint.nextJoint!.annotateJointMode(options);
             /*
             if (Checker.noisy.PolygonOffset) {
-              console.log(" NEW JOINT");
-              console.log(prettyPrint(newJoint.shallowExtract()));
+              GeometryCoreTestIO.consoleLog(" NEW JOINT");
+              GeometryCoreTestIO.consoleLog(prettyPrint(newJoint.shallowExtract()));
             }
           */
             numRemoved++;
@@ -530,7 +530,7 @@ class Joint {
             if (numRemoved >= maxRemove) {
               /*
               if (Checker.noisy.PolygonOffset)
-                console.log(" EXIT removeDegenerates at maxRemove\n");
+                GeometryCoreTestIO.consoleLog(" EXIT removeDegenerates at maxRemove\n");
               */
               return { newStart: start, numJointRemoved: numRemoved };
             }
@@ -606,8 +606,8 @@ export class PolygonWireOffsetContext {
         break;
       /*
       if (Checker.noisy.PolygonOffset) {
-        console.log("  POST REMOVE DEGENERATES  " + state.numJointRemoved);
-        Joint.visitJointsOnChain(joint0, (joint: Joint) => { console.log(prettyPrint(joint.shallowExtract())); return true; });
+        GeometryCoreTestIO.consoleLog("  POST REMOVE DEGENERATES  " + state.numJointRemoved);
+        Joint.visitJointsOnChain(joint0, (joint: Joint) => { GeometryCoreTestIO.consoleLog(prettyPrint(joint.shallowExtract())); return true; });
       }
       */
     }

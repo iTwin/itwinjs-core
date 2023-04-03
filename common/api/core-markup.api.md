@@ -195,7 +195,6 @@ export class Markup {
     groupSelected(): void;
     // @internal (undocumented)
     readonly markupDiv: HTMLDivElement;
-    // @internal (undocumented)
     readonly selected: MarkupSelected;
     sendToBack(): void;
     setCursor(cursor: string): void;
@@ -207,7 +206,6 @@ export class Markup {
     readonly svgDynamics?: G;
     // @internal (undocumented)
     readonly svgMarkup?: G;
-    // @internal (undocumented)
     readonly undo: UndoManager;
     ungroupSelected(): void;
     // (undocumented)
