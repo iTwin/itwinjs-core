@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import sinon from "sinon";
-import { request } from "../request/Request";
+import { HttpResponseError, request, RequestBasicCredentials } from "../request/Request";
 import { assert, expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 
@@ -15,6 +15,23 @@ describe("request()", async () => {
 
   afterEach(() => {
     sandbox.restore();
+  });
+
+  it("Should throw HttpResponseError if response status is not in 200-299 range", async () => {
+    const response = new Response(undefined, { status: 500 });
+
+    const fetchStub = sandbox.stub(window, "fetch");
+    fetchStub.resolves(response);
+
+    let thrownError;
+    try {
+      await request("https://www.itwinjs.org/", "text");
+    } catch (error: unknown) {
+      thrownError = error;
+    }
+
+    assert(thrownError instanceof HttpResponseError);
+    assert(thrownError.status === response.status);
   });
 
   it("Should retry n times before failing if retryCount is specified", async () => {
@@ -55,5 +72,26 @@ describe("request()", async () => {
 
     assert(fetchStub.calledOnce);
     assert(fetchStub.getCall(0).args[1]?.signal);
+  });
+
+  it("Should generate valid basic auth token if username and password are provided", async () => {
+    const auth: RequestBasicCredentials = {
+      user: "TestUsername",
+      password: "TestPassword",
+    };
+
+    const fetchStub = sandbox.stub(window, "fetch");
+    fetchStub.resolves(new Response());
+
+    await request("https://www.itwinjs.org/", "text", { auth });
+
+    const headers = fetchStub.getCall(0).args[1]?.headers as any;
+
+    const token = headers?.authorization;
+    assert(typeof token === "string");
+    assert(/^Basic /.test(token));
+
+    const base64Str = token.substring(6);
+    assert(window.atob(base64Str) === `${auth.user}:${auth.password}`);
   });
 });
