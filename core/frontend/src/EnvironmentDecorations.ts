@@ -6,17 +6,17 @@
  * @module Views
  */
 
-import { assert, Id64} from "@itwin/core-bentley";
+import { assert, Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import {
-  ColorDef, Environment, GlobeMode, Gradient, GraphicParams, RenderTexture, SkyBox, SkyCube, SkyGradient, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { ViewState3d } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
 import { tryImageElementFromUrl } from "./ImageUtil";
 import { GraphicType } from "./render/GraphicBuilder";
-import { RenderSkyBoxParams, RenderSkyGradientParams } from "./render/RenderSystem";
+import { RenderSkyBoxParams } from "./render/RenderSystem";
 
 /** @internal */
 export interface GroundPlaneDecorations {
@@ -51,7 +51,7 @@ export class EnvironmentDecorations {
     this._view = view;
     this._onLoaded = onLoaded;
     this._onDispose = onDispose;
-    this._sky = { };
+    this._sky = {};
     this.loadSkyBox();
     if (this._environment.displayGround)
       this.loadGround();
@@ -130,7 +130,7 @@ export class EnvironmentDecorations {
   private createGroundParams(above: boolean): GraphicParams | undefined {
     // Create a gradient texture.
     const ground = this._environment.ground;
-    const values = [0, 0.25, 0.5 ];
+    const values = [0, 0.25, 0.5];
     const color = above ? ground.aboveColor : ground.belowColor;
     const alpha = above ? 0x80 : 0x85;
     const groundColors = [color.withTransparency(0xff), color, color];
