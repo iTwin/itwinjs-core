@@ -233,8 +233,13 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   if (!props)
     return { graphic, rtcCenter };
 
-  if (featureValue.RTC_CENTER)
+  let batchRange = range;
+  if (featureValue.RTC_CENTER) {
     rtcCenter = Point3d.fromJSON(featureValue.RTC_CENTER);
+    batchRange = range.clone();
+    batchRange.low.minus(rtcCenter, batchRange.low);
+    batchRange.high.minus(rtcCenter, batchRange.high);
+  }
 
   if (!props.colors) {
     // ###TODO we really should support uniform color instead of allocating an RGB value per point...
@@ -256,7 +261,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);
-  const voxelSize = props.params.rangeDiagonal.maxAbs() / 256;
+  const voxelSize = batchRange.diagonal().maxAbs() / 256;
 
   graphic = system.createPointCloud({
     positions: props.points,
@@ -267,6 +272,6 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     colorFormat: "rgb",
   }, iModel);
 
-  graphic = system.createBatch(graphic!, PackedFeatureTable.pack(featureTable), range);
+  graphic = system.createBatch(graphic!, PackedFeatureTable.pack(featureTable), batchRange);
   return { graphic, rtcCenter };
 }

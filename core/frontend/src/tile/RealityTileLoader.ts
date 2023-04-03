@@ -119,7 +119,7 @@ export abstract class RealityTileLoader {
             xform = Transform.createTranslation(rtcCenter);
           else {
             if (rtcCenter) {
-              const tileOrg = tile.transformToRoot?.origin;
+              const tileOrg = tile.transformToRoot!.origin;
               xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot!.origin), tile.transformToRoot!.matrix);
             }
             else
