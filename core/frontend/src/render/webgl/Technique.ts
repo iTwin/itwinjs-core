@@ -166,14 +166,6 @@ export abstract class VariedTechnique implements Technique {
     const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
-    if (System.instance.supportsLogZBuffer) {
-      addLogDepth(builder);
-
-      assert(!builder.frag.requiresEarlyZWorkaround);
-      if (System.instance.fragDepthDoesNotDisableEarlyZ)
-        builder.frag.requiresEarlyZWorkaround = -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
-    }
-
     const index = this.getShaderIndex(flags);
     this.addProgram(builder, index, gl);
 
@@ -193,15 +185,27 @@ export abstract class VariedTechnique implements Technique {
     assert(this._clippingPrograms[index] !== undefined);
   }
 
+  protected addLogDepth(builder: ProgramBuilder, flags: TechniqueFlags): void {
+    if (System.instance.supportsLogZBuffer) {
+      addLogDepth(builder);
+
+      assert(!builder.frag.requiresEarlyZWorkaround);
+      if (System.instance.fragDepthDoesNotDisableEarlyZ)
+        builder.frag.requiresEarlyZWorkaround = -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
+    }
+  }
+
   protected addHiliteShader(gl: WebGL2RenderingContext, instanced: IsInstanced, classified: IsClassified, posType: PositionType, create: CreateHiliter): void {
     const builder = create(instanced, classified, posType);
     scratchHiliteFlags.initForHilite(0, instanced, classified, posType);
+    this.addLogDepth(builder, scratchHiliteFlags);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
   protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGL2RenderingContext): void {
     flags.isTranslucent = true;
     addTranslucency(builder);
+    this.addLogDepth(builder, flags);
     this.addShader(builder, flags, gl);
   }
 
@@ -325,6 +329,7 @@ class SurfaceTechnique extends VariedTechnique {
                         flags.isWiremesh = wiremesh;
 
                         const builder = createSurfaceBuilder(flags);
+                        this.addLogDepth(builder, flags);
                         this.addShader(builder, flags, gl);
                       }
                     }
@@ -356,6 +361,7 @@ class SurfaceTechnique extends VariedTechnique {
               if (flags.isTranslucent)
                 addTranslucency(builder);
 
+              this.addLogDepth(builder, flags);
               this.addShader(builder, flags, gl);
             }
           }
@@ -456,6 +462,7 @@ class PolylineTechnique extends VariedTechnique {
 
           this.addFeatureId(builder, featureMode);
           flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
+          this.addLogDepth(builder, flags);
           this.addShader(builder, flags, gl);
         }
       }
@@ -518,6 +525,7 @@ class EdgeTechnique extends VariedTechnique {
             this.addFeatureId(builder, featureMode);
             flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
             flags.isAnimated = iAnimate;
+            this.addLogDepth(builder, flags);
             this.addShader(builder, flags, gl);
           }
         }
@@ -579,6 +587,7 @@ class PointStringTechnique extends VariedTechnique {
 
           this.addFeatureId(builder, featureMode);
           flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
+          this.addLogDepth(builder, flags);
           this.addShader(builder, flags, gl);
         }
       }
@@ -625,6 +634,7 @@ class PointCloudTechnique extends VariedTechnique {
           }
 
           this.addFeatureId(builder, featureMode);
+          this.addLogDepth(builder, flags);
           this.addShader(builder, flags, gl);
         }
       }
@@ -685,6 +695,7 @@ class RealityMeshTechnique extends VariedTechnique {
                   } else
                     this.addFeatureId(builder, featureMode);
 
+                  this.addLogDepth(builder, flags);
                   this.addShader(builder, flags, gl);
                 }
               }
