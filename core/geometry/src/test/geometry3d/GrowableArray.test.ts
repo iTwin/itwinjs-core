@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { GrowableXYArray } from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -19,9 +19,9 @@ import { ClusterableArray } from "../../numerics/ClusterableArray";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console */
 /** point whose coordinates are a function of i only. */
 function testPointI(i: number): Point3d {
   return Point3d.create(i, 2 * i + 1, i * i * 3 + i * 2 - 4);
@@ -158,21 +158,21 @@ describe("BlockedArray", () => {
 
     // get clusters !!!!
     // note that the order the clusters appear has no relationship to 012345 above.
-    if (Checker.noisy.cluster) console.log(blocks.toJSON());
+    if (Checker.noisy.cluster) GeometryCoreTestIO.consoleLog(blocks.toJSON());
     const clusterIndices = blocks.clusterIndicesLexical(tolerance);
-    if (Checker.noisy.cluster) console.log(blocks.toJSON());
-    if (Checker.noisy.cluster) console.log(JSON.stringify(clusterIndices));
+    if (Checker.noisy.cluster) GeometryCoreTestIO.consoleLog(blocks.toJSON());
+    if (Checker.noisy.cluster) GeometryCoreTestIO.consoleLog(JSON.stringify(clusterIndices));
     for (let i = 0; i < clusterIndices.length; i++) {
       const k0 = clusterIndices[i];
       if (!ClusterableArray.isClusterTerminator(k0)) {
         const clusterIndex0 = blocks.getExtraData(k0, 0);
         const uv0 = blocks.getPoint2d(k0);
-        if (Checker.noisy.cluster) console.log("cluster seed ", k0, uv0);
+        if (Checker.noisy.cluster) GeometryCoreTestIO.consoleLog("cluster seed ", k0, uv0);
         for (; i < clusterIndices.length; i++) {
           const k1 = clusterIndices[i];
           if (ClusterableArray.isClusterTerminator(k1)) break;
           const uv1 = blocks.getPoint2d(k1);
-          if (Checker.noisy.cluster) console.log("    cluster member", k1, uv1);
+          if (Checker.noisy.cluster) GeometryCoreTestIO.consoleLog("    cluster member", k1, uv1);
           const clusterIndex1 = blocks.getExtraData(k1, 0);
           ck.testExactNumber(clusterIndex0, clusterIndex1);
           ck.testLE(
@@ -363,11 +363,11 @@ describe("GrowablePoint3dArray", () => {
         Vector3d.create(b, 0, 0), Vector3d.create(0, h, 0), 2, 2, false, false, false);
       const moments = PolyfaceQuery.computePrincipalAreaMoments(polyface);
       if (Checker.noisy.rectangleMoments) {
-        console.log("Rectangle lower left", origin);
-        console.log(prettyPrint(polyface));
-        console.log(prettyPrint(moments!));
-        console.log("expected IX", IX);
-        console.log("expected IY", IY);
+        GeometryCoreTestIO.consoleLog("Rectangle lower left", origin);
+        GeometryCoreTestIO.consoleLog(prettyPrint(polyface));
+        GeometryCoreTestIO.consoleLog(prettyPrint(moments!));
+        GeometryCoreTestIO.consoleLog("expected IX", IX);
+        GeometryCoreTestIO.consoleLog("expected IY", IY);
       }
     }
     expect(ck.getNumErrors()).equals(0);
@@ -722,14 +722,14 @@ describe("GrowableArray", () => {
     const ck = new Checker();
 
     // extend array types so we can cover protected copyData()
-    class MyGrowableBlockedArray extends GrowableBlockedArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
-    class MyGrowableFloat64Array extends GrowableFloat64Array { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
-    class MyGrowableXYZArray extends GrowableXYZArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
-    class MyGrowableXYArray extends GrowableXYArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
+    class MyGrowableBlockedArray extends GrowableBlockedArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): { count: number, offset: number } { return this.copyData(source, sourceCount, destOffset); } }
+    class MyGrowableFloat64Array extends GrowableFloat64Array { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): { count: number, offset: number } { return this.copyData(source, sourceCount, destOffset); } }
+    class MyGrowableXYZArray extends GrowableXYZArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): { count: number, offset: number } { return this.copyData(source, sourceCount, destOffset); } }
+    class MyGrowableXYArray extends GrowableXYArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): { count: number, offset: number } { return this.copyData(source, sourceCount, destOffset); } }
 
     // NOTE: copyData does not increase number of blocks/floats/points in use!
     const coverCopyData = (array: MyGrowableBlockedArray | MyGrowableFloat64Array | MyGrowableXYZArray | MyGrowableXYArray) => {
-      const copyValues: number[] = [1,2,3,4,5,6,7,8,9,10,11];
+      const copyValues: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
       const a1 = new Float64Array(copyValues);
       const args: ((number | undefined)[])[] = [[undefined, undefined], [100, -1], [0, 100], [5, 58], [100, 7]];  // sourceCount, destOffset
       for (let i = 0; i < args.length; ++i) {
@@ -777,7 +777,7 @@ describe("GrowableArray", () => {
       if (a0 instanceof GrowableBlockedArray && a1 instanceof GrowableBlockedArray) {
         if (!ck.testTrue(a0.numPerBlock === a1.numPerBlock))
           return false;
-        for (let iBlock = 0; iBlock < count ; ++iBlock)
+        for (let iBlock = 0; iBlock < count; ++iBlock)
           for (let iComponent = 0; iComponent < a0.numPerBlock; ++iComponent)
             if (!ck.testExactNumber(a0.component(offset0 + iBlock, iComponent), a1.component(offset1 + iBlock, iComponent), "Original array contents preserved"))
               return false;
@@ -787,12 +787,12 @@ describe("GrowableArray", () => {
             return false;
       } else if (a0 instanceof GrowableXYArray && a1 instanceof GrowableXYArray) {
         for (let iPoint = 0; iPoint < count; ++iPoint)
-          for(let iComponent = 0; iComponent < 2; ++iComponent)
+          for (let iComponent = 0; iComponent < 2; ++iComponent)
             if (!ck.testExactNumber(a0.component(offset0 + iPoint, iComponent), a1.component(offset1 + iPoint, iComponent), "Original array contents preserved"))
               return false;
       } else if (a0 instanceof GrowableXYZArray && a1 instanceof GrowableXYZArray) {
         for (let iPoint = 0; iPoint < count; ++iPoint)
-          for(let iComponent = 0; iComponent < 3; ++iComponent)
+          for (let iComponent = 0; iComponent < 3; ++iComponent)
             if (!ck.testExactNumber(a0.component(offset0 + iPoint, iComponent), a1.component(offset1 + iPoint, iComponent), "Original array contents preserved"))
               return false;
       } else {
@@ -835,7 +835,7 @@ describe("GrowableArray", () => {
 
     /** ASSUME: array was constructed with growthFactor */
     const testGrowthFactor = (array: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, growthFactor: number | undefined) => {
-      const caps1: number[] = [4,7,15,33];
+      const caps1: number[] = [4, 7, 15, 33];
       for (const newCap of caps1) {
         const oldArray = array.clone();   // in general, preserves only active structs
         const oldCap = getCapacity(array);
@@ -848,7 +848,7 @@ describe("GrowableArray", () => {
       if (growthFactor === undefined || growthFactor < 1)
         growthFactor = 1.5;   // the default growth factor in growable arrays
 
-      const caps2: number[] = [30,33,40,57];
+      const caps2: number[] = [30, 33, 40, 57];
       for (const newCap of caps2) {
         const oldArray = array.clone();   // in general, preserves only active structs
         const oldCap = getCapacity(array);

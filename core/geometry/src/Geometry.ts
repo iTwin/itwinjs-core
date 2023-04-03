@@ -95,11 +95,14 @@ export interface TrigValues {
   /** The radians value */
   radians: number;
 }
+
 /**
- * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
- * Specific implementors are
- * * Plane3dByOriginAndUnitNormal
- * * Point4d (used for homogeneous plane coefficients)
+ * Plane Evaluation methods.
+ * * These provide the necessary queries to implement clipping operations without knowing if the plane in use
+ * is a [[ClipPlane]], [[Plane3dByOriginAndUnitNormal]], [[Plane3dByOriginAndVectors]], [[Point4d]].
+ * * The Plane3d class declares obligation to implement these methods, and
+ * passes the obligation on to concrete implementations by declaring them as abstract members which the particular classes can implement.
+ * * It is intended that this interface be deprecated because its implementation by [[Plane3d]] provides all of its functionality and allows more to be added.
  * @public
  */
 export interface PlaneAltitudeEvaluator {
@@ -296,6 +299,18 @@ export class Geometry {
     return distance;
   }
   /**
+   * Correct `fraction` to `replacement` if `fraction` is undefined or too small.
+   * @param fraction number to test
+   * @param replacement value to return if `fraction` is too small
+   * @returns `fraction` if its absolute value is at least `Geometry.smallFraction`; otherwise returns `replacement`
+   */
+  public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
+    if (fraction === undefined || Math.abs(fraction) < Geometry.smallFraction) {
+      return replacement;
+    }
+    return fraction;
+  }
+  /**
    * Return the inverse distance.
    * * If `distance` magnitude is smaller than `smallMetricDistance` (i.e. distance is large enough for safe division),
    * then return `1/distance`. Otherwise return `undefined`.
@@ -319,7 +334,7 @@ export class Geometry {
     let d = x - y;
     if (d < 0)
       d = -d;
-    return d < tolerance;
+    return d <= tolerance;
   }
   /**
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using
@@ -339,12 +354,12 @@ export class Geometry {
     let d = x1 - x0;
     if (d < 0)
       d = -d;
-    if (d >= tolerance)
+    if (d > tolerance)
       return false;
     d = y1 - y0;
     if (d < 0)
       d = -d;
-    return d < tolerance;
+    return d <= tolerance;
   }
   /**
    * Boolean test for squared metric coordinate near-equality (i.e., if `sqrt(x)` and `sqrt(y)` are
@@ -354,7 +369,7 @@ export class Geometry {
   public static isSameCoordinateSquared(
     x: number, y: number, tolerance: number = Geometry.smallMetricDistance
   ): boolean {
-    return Math.abs(Math.sqrt(x) - Math.sqrt(y)) < tolerance;
+    return Math.abs(Math.sqrt(x) - Math.sqrt(y)) <= tolerance;
   }
   /**
    * Boolean test for small `dataA.distance(dataB)` within `tolerance`.
@@ -363,7 +378,7 @@ export class Geometry {
   public static isSamePoint3d(
     dataA: Point3d, dataB: Point3d, tolerance: number = Geometry.smallMetricDistance
   ): boolean {
-    return dataA.distance(dataB) < tolerance;
+    return dataA.distance(dataB) <= tolerance;
   }
   /**
    * Boolean test for small xyz-distance within `tolerance`.
@@ -373,7 +388,7 @@ export class Geometry {
   public static isSameXYZ(
     dataA: XYZ, dataB: XYZ, tolerance: number = Geometry.smallMetricDistance
   ): boolean {
-    return dataA.distance(dataB) < tolerance;
+    return dataA.distance(dataB) <= tolerance;
   }
   /**
    * Boolean test for small xy-distance (ignoring z) within `tolerance`.
@@ -382,7 +397,7 @@ export class Geometry {
   public static isSamePoint3dXY(
     dataA: Point3d, dataB: Point3d, tolerance: number = Geometry.smallMetricDistance
   ): boolean {
-    return dataA.distanceXY(dataB) < tolerance;
+    return dataA.distanceXY(dataB) <= tolerance;
   }
   /**
    * Boolean test for small xyz-distance within `tolerance`.
@@ -391,7 +406,7 @@ export class Geometry {
   public static isSameVector3d(
     dataA: Vector3d, dataB: Vector3d, tolerance: number = Geometry.smallMetricDistance
   ): boolean {
-    return dataA.distance(dataB) < tolerance;
+    return dataA.distance(dataB) <= tolerance;
   }
   /**
    * Boolean test for small xy-distance within `tolerance`.
@@ -400,7 +415,7 @@ export class Geometry {
   public static isSamePoint2d(
     dataA: Point2d, dataB: Point2d, tolerance: number = Geometry.smallMetricDistance
   ): boolean {
-    return dataA.distance(dataB) < tolerance;
+    return dataA.distance(dataB) <= tolerance;
   }
   /**
    * Boolean test for small xy-distance within `tolerance`.
@@ -409,7 +424,7 @@ export class Geometry {
   public static isSameVector2d(
     dataA: Vector2d, dataB: Vector2d, tolerance: number = Geometry.smallMetricDistance
   ): boolean {
-    return dataA.distance(dataB) < tolerance;
+    return dataA.distance(dataB) <= tolerance;
   }
   /**
    * Lexical comparison of (a.x, a.y) and (b.x, b.y) with x as first test and y as second (z is ignored).
@@ -602,6 +617,19 @@ export class Geometry {
     if (x > 0.0)
       return outPositive;
     return outZero;
+  }
+  /**
+   * Examine the value (particularly sign) of x.
+   * * If x is negative, return -1
+   * * If x is true zero, return 0
+   * * If x is positive, return 1
+   */
+  public static split3Way01(x: number, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
+    if (x > tolerance)
+      return 1;
+    if (x < -tolerance)
+      return -1;
+    return 0;
   }
   /** Return the square of x */
   public static square(x: number): number {

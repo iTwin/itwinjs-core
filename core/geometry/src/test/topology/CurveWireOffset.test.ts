@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import { AnyCurve } from "../../curve/CurveChain";
 import { GeometryQuery } from "../../curve/GeometryQuery";

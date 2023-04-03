@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Promote `PropertyDescription.hideCompositePropertyLabel` to `@public`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

@@ -261,6 +261,7 @@ export interface MapLayerScaleRangeVisibility {
  *
  * @see [[ViewManager]]
  * @public
+ * @extensions
  */
 export abstract class Viewport implements IDisposable, TileUser {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
@@ -754,13 +755,8 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    for (const categoryId of Id64.iterable(categoryIds)) {
-      const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
-      if (undefined !== subCategoryIds) {
-        for (const subCategoryId of subCategoryIds)
-          this.changeSubCategoryDisplay(subCategoryId, true);
-      }
-    }
+    if (this.displayStyle.enableAllLoadedSubCategories(categoryIds))
+      this.maybeInvalidateScene();
   }
 
   /** @internal */
@@ -771,20 +767,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
-    const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
-    if (undefined === app)
-      return; // category not enabled or subcategory not found
-
-    const curOvr = this.getSubCategoryOverride(subCategoryId);
-    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
-    if (isAlreadyVisible === display)
-      return;
-
-    // Preserve existing overrides - just flip the visibility flag.
-    const json = undefined !== curOvr ? curOvr.toJSON() : {};
-    json.invisible = !display;
-    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
-    this.maybeInvalidateScene();
+    if (this.displayStyle.setSubCategoryVisible(subCategoryId, display))
+      this.maybeInvalidateScene();
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -2848,6 +2832,7 @@ export abstract class Viewport implements IDisposable, TileUser {
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
  * ```
  * @public
+ * @extensions
  */
 export class ScreenViewport extends Viewport {
   /** Settings that may be adjusted to control the way animations are applied to a [[ScreenViewport]] by methods like
@@ -3610,6 +3595,7 @@ export interface OffScreenViewportOptions {
  * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImageBuffer]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
  * @public
+ * @extensions
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;

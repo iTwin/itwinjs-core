@@ -6,8 +6,7 @@
 import { expect } from "chai";
 import { UnionFindContext } from "../../numerics/UnionFind";
 import { Checker } from "../Checker";
-
-/* eslint-disable no-console */
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("UnionFind", () => {
   it("BinaryTree", () => {
@@ -19,7 +18,7 @@ describe("UnionFind", () => {
       // confirm counts drop at expected times.
       // confirm immediate parents after each merge.
       if (noisy)
-        console.log(`tree size ${numLeaf}`);
+        GeometryCoreTestIO.consoleLog(`tree size ${numLeaf}`);
       // variant calls to constructor to get coverage . ..
       let context: UnionFindContext;
       if (numLeaf < 20) {
@@ -43,7 +42,7 @@ describe("UnionFind", () => {
       // after merging (i0, i0+1, i0 +blockSize-1) the number of roots is decreased.
       for (let blockSize = 1; blockSize < numLeaf; blockSize *= 2) {
         if (noisy)
-          console.log(`blockSize ${blockSize}`);
+          GeometryCoreTestIO.consoleLog(`blockSize ${blockSize}`);
         for (let i0 = 0; i0 < numLeaf; i0 += blockSize) {
           for (let i = 0; i < blockSize; i++) {
             context.mergeSubsets(i0, i0 + i);

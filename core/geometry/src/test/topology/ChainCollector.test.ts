@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import * as fs from "fs";
 import { AnyCurve } from "../../curve/CurveChain";
@@ -76,7 +74,7 @@ describe("ChainCollector", () => {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.insideOffsets, x0, y0, 0.01);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.01);
           }
-          console.log(`output to ${filename}`);
+          GeometryCoreTestIO.consoleLog(`output to ${filename}`);
           GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", filename);
           xOut += 2 * range.xLength();
         }
@@ -114,7 +112,7 @@ describe("ChainCollector", () => {
             for (const compressionFactor of compressionFactors) {
               y0 += yShift;
               const compressionDistance = compressionFactor * offsetDistance;
-              console.log({ offset: offsetDistance, compress: compressionDistance });
+              GeometryCoreTestIO.consoleLog({ offset: offsetDistance, compress: compressionDistance });
               const pointsB = PolylineOps.compressByChordError(pointsA.getPoint3dArray(), compressionDistance);
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0, 0.01);
               const loopB = Loop.createPolygon(pointsB);
@@ -142,7 +140,7 @@ describe("ChainCollector", () => {
             }
             x0 += 2.5 * range.xLength();
           }
-          console.log(`output to ${filename}`);
+          GeometryCoreTestIO.consoleLog(`output to ${filename}`);
           GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetCleanup", filename);
           xOut += 2 * range.xLength();
         }

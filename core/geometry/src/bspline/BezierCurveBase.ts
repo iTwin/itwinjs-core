@@ -25,8 +25,6 @@ import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { KnotVector } from "./KnotVector";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
-
 /**
  * Base class for CurvePrimitive (necessarily 3D) with _polygon.
  * * This has a Bezier1dNd polygon as a member, and implements dimension-independent methods
