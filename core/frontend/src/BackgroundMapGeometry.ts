@@ -117,7 +117,7 @@ export class BackgroundMapGeometry {
 
   public async dbToCartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]> {
     const scratch = new Point3d();
-    const promises = db.map((p) => {
+    const promises = db.map(async (p) => {
       return this.cartesianRange.containsPoint(Point3d.createFrom(p, scratch)) ? this._iModel.spatialToCartographic(p) : this.dbToCartographic(p);
     });
 
@@ -152,7 +152,7 @@ export class BackgroundMapGeometry {
     if (this._iModel.noGcsDefined)
       return db;
 
-    const promises = db.map((p, i) => {
+    const promises = db.map(async (p, i) => {
       return this.cartesianRange.containsPoint(p) ? this._iModel.cartographicToSpatialFromGcs(cartographic[i]) : p;
     });
 
