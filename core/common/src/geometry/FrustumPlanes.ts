@@ -62,9 +62,6 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
     planes.push(plane);
   }
 
-<<<<<<< HEAD
-  assert(planes.length === 6);
-=======
   // Derive front plane from back plane due to fact that front plane can become very tiny and cause precision issues, resulting in zero frustum planes. Deriving the front plane from the rear rect resolves this problem.
   // The back plane was the last plane processed above, so we can just consult the current value of `normal`.
   if (undefined !== normal) {
@@ -78,7 +75,7 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
   } else
     return [];
 
->>>>>>> 3865c7a39f (Harden computeFrustumPlanes() in FrustumPlanes.ts (#5328))
+  assert(planes.length === 6);
   return planes;
 }
 
