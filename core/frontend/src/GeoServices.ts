@@ -243,6 +243,9 @@ export interface CachedIModelCoordinatesResponseProps {
   missing?: XYZProps[];
 }
 
+/** Options used to create a [[GeoConverter]].
+ * @internal exported strictly for tests.
+ */
 export interface GeoConverterOptions {
   readonly datum: string;
   isIModelClosed: () => boolean;

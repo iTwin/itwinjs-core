@@ -429,6 +429,7 @@ export abstract class IModelConnection extends IModel {
    * @param result If defined, use this for output
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
+   * @see [[cartographicFromSpatial]] if you have more than one point to convert, or you don't know whether the iModel has a GCS.
    */
   public async spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     if (!this.isGeoLocated && this.noGcsDefined)
@@ -454,13 +455,20 @@ export abstract class IModelConnection extends IModel {
    * @param result If defined, use this for output
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
-   * @see [[spatialToCartographicFromGcs]]
-   * @see [[spatialToCartographicFromEcef]]
+   * @see [[cartographicFromSpatial]] to convert multiple points at once.
+   * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
   }
 
+  /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param spatial Coordiantes to be converted from the iModel's spatial coordinate system
+   * @returns The `spatial` coordinates converted to cartographic coordinates, of the same length and order as the `spatial`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[spatialFromCartographic]] to perform the inverse conversion.
+   * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
+   */
   public async cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
     if (this.noGcsDefined)
       return spatial.map((p) => this.spatialToCartographicFromEcef(p));
@@ -494,11 +502,12 @@ export abstract class IModelConnection extends IModel {
     });
   }
 
-  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
+  /** Convert a [Cartographic]($common) to a point in this iModel's spatial coordinate system using a [[GeoConverter]].
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
    * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
+   * @see [[spatialFromCartographic]] to convert multiple points at once, or you don't know whether the iModel has a GCS.
    */
   public async cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     if (!this.isGeoLocated && this.noGcsDefined)
@@ -521,18 +530,24 @@ export abstract class IModelConnection extends IModel {
     return result;
   }
 
-  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+  /** Convert a [Cartographic]($common) to a point in this iModel's Spatial coordinates using a [[GeoConverter]] or[[IModel.ecefLocation]($common).
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
    * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
-   * @see [[cartographicToSpatialFromGcs]]
-   * @see [[cartographicToSpatialFromEcef]]
+   * @see [[spatialFromCartographic]] to convert multiple points at once.
+   * @see [[cartographicToSpatialFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     return (this.noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
   }
 
+  /** Convert [Cartographic]($common) coordinates into points in this iModel's spatial coordinate system using a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param cartographic Coordinates to be converted to the iModel's spatial coordinate system.
+   * @returns The `cartographic` coordinates converted to spatial coordinates, of the same length and order as `cartographic`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[cartographicFromSpatial]] to perform the inverse conversion.
+   */
   public async spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]> {
     if (this.noGcsDefined)
       return cartographic.map((p) => this.cartographicToSpatialFromEcef(p));
