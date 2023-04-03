@@ -1642,6 +1642,11 @@ export abstract class ViewState3d extends ViewState {
     return carto.clone(result);
   }
 
+  public async rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.dbToCartographicFromGcs(root);
+  }
+
   /** Convert a cartographic coordinate to a point in spatial coordinates using the GCS reprojection. */
   public async cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
@@ -1650,6 +1655,11 @@ export abstract class ViewState3d extends ViewState {
 
     const root = (await backgroundMapGeometry.cartographicToDbFromGcs([cartographic]))[0];
     return root.clone(result);
+  }
+
+  public async cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.cartographicToDbFromGcs(cartographic);
   }
 
   public override setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus {
