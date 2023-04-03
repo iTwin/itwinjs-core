@@ -69,7 +69,7 @@ steps:
     parameters:
       workingDir: ${{ parameters.workingDir }}
       stagingDir: ${{ parameters.stagingDir }}
-      pipelineId: 9048 # iTwin Transformer/Transformer Generate Docs
+      pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
       artifactName: Transformer Docs
       defaultBranch: refs/heads/main
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
