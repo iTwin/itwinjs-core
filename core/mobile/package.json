@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "4.0.0-dev.55",
+  "version": "4.0.0-dev.66",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -8,7 +8,6 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-mobile/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
@@ -19,7 +18,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/core-mobile"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/mobile"
   },
   "keywords": [
     "Bentley",
@@ -32,11 +32,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.0.0-dev.55",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.55",
-    "@itwin/core-common": "workspace:^4.0.0-dev.55",
-    "@itwin/core-frontend": "workspace:^4.0.0-dev.55",
-    "@itwin/presentation-common": "workspace:^4.0.0-dev.55"
+    "@itwin/core-backend": "workspace:^4.0.0-dev.66",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.66",
+    "@itwin/core-common": "workspace:^4.0.0-dev.66",
+    "@itwin/core-frontend": "workspace:^4.0.0-dev.66",
+    "@itwin/presentation-common": "workspace:^4.0.0-dev.66"
   },
   "dependencies": {
     "deep-assign": "^2.0.0",

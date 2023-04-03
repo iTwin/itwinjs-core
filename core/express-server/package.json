@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "4.0.0-dev.55",
+  "version": "4.0.0-dev.66",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
@@ -10,7 +10,6 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
@@ -21,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/express-server"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/express-server"
   },
   "keywords": [
     "Bentley",

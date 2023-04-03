@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -36,8 +34,8 @@ function _offsetDebugFunction(message: string, graph: HalfEdgeGraph,
   breakMaskA: HalfEdgeMask,
   breakMaskB: HalfEdgeMask) {
   if (Checker.noisy.offsetMesh) {
-    console.log((""));
-    console.log(` DebugGraph ${message}`);
+    GeometryCoreTestIO.consoleLog((""));
+    GeometryCoreTestIO.consoleLog(` DebugGraph ${message}`);
     GraphChecker.dumpGraph(graph,
       (node: HalfEdge) => {
         const xx = node.isMaskSet(HalfEdgeMask.EXTERIOR) ? "X" : " ";
@@ -70,7 +68,7 @@ describe("OffsetMeshContext", () => {
     // OffsetMeshContext.graphDebugFunction = _offsetDebugFunction;
     // Checker.noisy.offsetMesh = true;
     if (Checker.noisy.offsetMesh)
-      OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+      OffsetMeshContext.stringDebugFunction = (message: string) => { GeometryCoreTestIO.consoleLog(message); };
 
     for (const xScale of [2.0]) {
       for (const height of [2.0, 0.05, 2.0, 1.0, 3.0, 10.0]) {
@@ -87,7 +85,7 @@ describe("OffsetMeshContext", () => {
           // upward cone
           builder.addTriangleFan(apex, strokes, false);
           const polyface = builder.claimPolyface();
-          // console.log({ height, numEdge });
+          // GeometryCoreTestIO.consoleLog({ height, numEdge });
           x0 = testOffsets(ck, allGeometry, polyface, [0.10], signs, x0, globalSeparateFaceEdgeAndVertexOutputs);
         }
       }
@@ -160,7 +158,7 @@ describe("OffsetMeshContext", () => {
     const yB = 1.0; // point B (0, yB, 0) is on Y axis above, with image at (0,-yB,0).  These are start and end of ellipse apron
     const xC = -3.0; // point C (xC, 0, zC) is an extreme point of the ellipse apron.
     const zC = 0.0;
-    // OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+    // OffsetMeshContext.stringDebugFunction = (message: string) => { GeometryCoreTestIO.consoleLog(message); };
 
     for (const zCone of [2.0, 0.5, -0.5, 2.0, -2.0, 4.0, -4.0, 10.0]) {  // height of cone point.
       for (const numApronEdges of [8, 2, 4]) {
@@ -198,7 +196,7 @@ describe("OffsetMeshContext", () => {
 
     /*
     OffsetMeshContext.stringDebugFunction =
-      (message: string) => { console.log(message); };
+      (message: string) => { GeometryCoreTestIO.consoleLog(message); };
     */
     for (const densityMultiplier of [1, 2, 4, 8]) {
       const numX = numX0 * densityMultiplier;
@@ -216,7 +214,7 @@ describe("OffsetMeshContext", () => {
             return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
           });
       if (densityMultiplier < 1)
-        OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+        OffsetMeshContext.stringDebugFunction = (message: string) => { GeometryCoreTestIO.consoleLog(message); };
       x0 = testOffsets(ck, allGeometry, mesh, [0.10], [1.0], x0, globalSeparateFaceEdgeAndVertexOutputs);
       OffsetMeshContext.stringDebugFunction = undefined;
     }
@@ -232,7 +230,7 @@ describe("OffsetMeshContext", () => {
     facetOptions.shouldTriangulate = true;
     // Checker.noisy.offsetMesh = true;
     if (Checker.noisy.offsetMesh)
-      OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+      OffsetMeshContext.stringDebugFunction = (message: string) => { GeometryCoreTestIO.consoleLog(message); };
 
     for (const s of closedSweeps) {
       const builder = PolyfaceBuilder.create(facetOptions);
@@ -259,7 +257,7 @@ describe("OffsetMeshContext", () => {
     facetOptions.shouldTriangulate = true;
     // Checker.noisy.offsetMesh = true;
     if (Checker.noisy.offsetMesh)
-      OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+      OffsetMeshContext.stringDebugFunction = (message: string) => { GeometryCoreTestIO.consoleLog(message); };
     const optionsA = OffsetMeshOptions.create();
     optionsA.chamferAngleBetweenNormals = Angle.createDegrees(150);
     const optionsB = OffsetMeshOptions.create();
@@ -298,7 +296,7 @@ describe("OffsetMeshContext", () => {
     facetOptions.shouldTriangulate = true;
     // Checker.noisy.offsetMesh = true;
     if (Checker.noisy.offsetMesh)
-      OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+      OffsetMeshContext.stringDebugFunction = (message: string) => { GeometryCoreTestIO.consoleLog(message); };
     const optionsA = OffsetMeshOptions.create();
     optionsA.chamferAngleBetweenNormals = Angle.createDegrees(150);
     const optionsB = OffsetMeshOptions.create();

@@ -43,7 +43,6 @@ function captureEyeStroke(allGeometry: GeometryQuery[], map: Map4d, pointA: Poin
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(point0, point1), dx, dy);
   }
 }
-/* eslint-disable no-console */
 function testIntersectionsXY(
   ck: Checker,
   worldToLocal: Matrix4d | undefined,
@@ -106,7 +105,6 @@ function verifyLocalPointXY(ck: Checker, pointAWorld: Point3d | undefined, point
   }
 }
 
-/* eslint-disable no-console */
 function testIntersectionPairsXY(
   ck: Checker,
   worldToLocal: Matrix4d | undefined,
@@ -445,8 +443,8 @@ describe("CurveCurveXY", () => {
 
   it("intersectXY-with-tolerance", () => {
     const ck = new Checker();
-    const geomA = LineSegment3d.createXYXY(-4,4,-4,-4);
-    const geomB = LineSegment3d.createXYXY(-4,4,-4.0001,-4);
+    const geomA = LineSegment3d.createXYXY(-4, 4, -4, -4);
+    const geomB = LineSegment3d.createXYXY(-4, 4, -4.0001, -4);
     const intersectionsTight = CurveCurve.allIntersectionsAmongPrimitivesXY([geomA, geomB]);
     if (ck.testExactNumber(1, intersectionsTight.length, "found 1 intersection with default (tight) tol"))
       ck.testTrue(intersectionsTight[0].detailA.isIsolated && intersectionsTight[0].detailB.isIsolated, "tight tol intersection is isolated point");

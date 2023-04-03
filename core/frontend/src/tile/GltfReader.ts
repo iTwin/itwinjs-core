@@ -1663,6 +1663,7 @@ export abstract class GltfReader {
 
 /** Arguments supplied to [[readGltfGraphics]] to produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset.
  * @public
+ * @extensions
  */
 export interface ReadGltfGraphicsArgs {
   /** A representation of the glTF data as one of:
@@ -1710,6 +1711,7 @@ export interface GltfGraphic {
  * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
  * @see [[readGltf]] to obtain more information about the glTF model.
  * @public
+ * @extensions
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
   const result = await readGltf(args);

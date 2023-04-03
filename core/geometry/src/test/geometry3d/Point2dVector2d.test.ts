@@ -12,7 +12,6 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
-/* eslint-disable no-console */
 describe("Point2d", () => {
   it("zeros", () => {
     const ck = new bsiChecker.Checker();

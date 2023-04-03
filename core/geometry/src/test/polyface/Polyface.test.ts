@@ -43,8 +43,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console */
-
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
   longEdgeIsHidden: boolean) {
@@ -117,8 +115,8 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
         const a = visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1));
         const v = visitor1.getEdgeVisible(i);
         if (!ck.testBoolean(a < perimeter / 3.0, v, "diagonals hidden")) {
-          console.log({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
-          console.log({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
+          GeometryCoreTestIO.consoleLog({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
+          GeometryCoreTestIO.consoleLog({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
         }
       }
     }
@@ -169,7 +167,6 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
   }
 }
 
-/* eslint-disable no-console */
 describe("Polyface.HelloWorld", () => {
   it("Polyface.HelloWorld", () => {
     const origin = Point3d.create(1, 2, 3);
@@ -213,8 +210,8 @@ describe("Polyface.HelloWorld", () => {
     for (const pf of [polyface0, polyface1, polyface2]) {
       const loops = PolyfaceQuery.indexedPolyfaceToLoops(pf);
       ck.testExactNumber(pf.facetCount, loops.children.length, "facet count");
-      // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
-      // console.log(loops);
+      // GeometryCoreTestIO.consoleLog("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
+      // GeometryCoreTestIO.consoleLog(loops);
       ck.testCoordinate(expectedArea, PolyfaceQuery.sumFacetAreas(pf), "unit square facets area");
       ck.testCoordinate(expectedArea, PolyfaceQuery.sumFacetAreas(pf), "unit square facets area");
       ck.testCoordinate(loops.sumLengths(), expectedEdgeLength);
@@ -263,8 +260,8 @@ describe("Polyface.HelloWorld", () => {
     polyface.terminateFacet();
     polyface.data.compress();
     const loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
-    // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
-    // console.log(loops);
+    // GeometryCoreTestIO.consoleLog("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
+    // GeometryCoreTestIO.consoleLog(loops);
     ck.testCoordinate(1.0, PolyfaceQuery.sumFacetAreas(polyface), "unit square facets area");
     ck.testCoordinate(loops.sumLengths(),
       4 + 2 * Math.sqrt(2));
@@ -307,14 +304,14 @@ describe("Polyface.Box", () => {
     expect(ck.getNumErrors()).equals(0);
 
     const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
-    // console.log("imjs polyface", jsPolyface);
+    // GeometryCoreTestIO.consoleLog("imjs polyface", jsPolyface);
     const polyfaceB = IModelJson.Reader.parse(jsPolyface) as IndexedPolyface;
     ck.testBoolean(true, polyface.isAlmostEqual(polyfaceB), "polyface round trip");
     polyfaceB.data.pointIndex[0] += 1;
     ck.testBoolean(false, polyface.isAlmostEqual(polyfaceB), "index change detection");
     polyfaceB.data.pointIndex[0] -= 1;
     ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
-    // console.log(polyfaceB);
+    // GeometryCoreTestIO.consoleLog(polyfaceB);
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -495,12 +492,12 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
       }
       const isClosedSolid = g.isClosedVolume;
       if (polyface.isEmpty) {
-        console.log(fileName1, `${gCount}  of ${geometry.length} is empty polyface`);
+        GeometryCoreTestIO.consoleLog(fileName1, `${gCount}  of ${geometry.length} is empty polyface`);
       } else if (isClosedMesh !== isClosedSolid) {
-        console.log(fileName1, `${gCount} of ${geometry.length}`, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
+        GeometryCoreTestIO.consoleLog(fileName1, `${gCount} of ${geometry.length}`, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
         PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface);
         const isClosedMesh1 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
-        // console.log("After Reorient " + fileName1, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
+        // GeometryCoreTestIO.consoleLog("After Reorient " + fileName1, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
         if (isClosedSolid !== isClosedMesh1) {
           if (options.hasMaxEdgeLength) {
             // hm . we think there is a bug in edge length splits.  Let's see if we can fix it up with TVertex logic ...
@@ -511,12 +508,12 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
             allMesh.push(polyface2);
             if (checkClosure)
               ck.testBoolean(isClosedSolid, isClosedMesh2, "Closure after TVertex Fixup");
-            console.log(`After Reorient AND T VERTEX ${fileName1}`,
+            GeometryCoreTestIO.consoleLog(`After Reorient AND T VERTEX ${fileName1}`,
               { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing2: isClosedMesh2 });
 
           } else if (checkClosure) {
             if (!ck.testBoolean(isClosedSolid, isClosedMesh1, " post-fixup solid closure"))
-              console.log(`After Reorient ${fileName1}`,
+              GeometryCoreTestIO.consoleLog(`After Reorient ${fileName1}`,
                 { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
           }
         }
@@ -671,7 +668,7 @@ describe("Polyface.Facets", () => {
       allCountsB.push(countsB);
       allCountsC.push(countsC);
     }
-    console.log({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
+    GeometryCoreTestIO.consoleLog({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -935,7 +932,7 @@ it("PartialSawToothTriangulation", () => {
     const polyface = builder.claimPolyface(true);
     if (!ck.testExactNumber(polygonPoints.length - 2, polyface.facetCount, "Triangle count in polygon")) {
       const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
-      console.log(prettyPrint(jsPolyface));
+      GeometryCoreTestIO.consoleLog(prettyPrint(jsPolyface));
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygonPoints), x0, y0);
     GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0 += dy);
@@ -1088,7 +1085,7 @@ it("SolidPrimitiveBoundary", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
         if (capped) {
           if (!ck.testUndefined(boundary1, "capped solid should have no boundary"))
-            GeometryCoreTestIO.captureCloneGeometry (allGeometry, boundary1, x0, y1, z1);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary1, x0, y1, z1);
         } else {
           ck.testDefined(boundary1, "uncapped solid should have boundary");
         }
@@ -1582,7 +1579,7 @@ it("synchroPolyface", () => {
     const pointIndexArray = enumerateToNumberArray(polyfaceJson.data.pointIndex);
     const paramIndexArray = enumerateToNumberArray(polyfaceJson.data.paramIndex);
     const normalIndexArray = enumerateToNumberArray(polyfaceJson.data.normalIndex);
-    console.log({ numXYZ: xyzArray.length });
+    GeometryCoreTestIO.consoleLog({ numXYZ: xyzArray.length });
     const polyfaceB = IndexedPolyface.create(true, true, false, true);
     polyfaceB.data.point.pushFrom(xyzArray);
     for (let i = 0; i + 1 < paramArray.length; i += 2)
@@ -1602,8 +1599,8 @@ it("synchroPolyface", () => {
     }
     const errors = checkPolyfaceIndexErrors(polyfaceB);
     if (!ck.testUndefined(errors, "index error description"))
-      console.log(errors);
-// EDL July 2021 twoSided is flipping?
+      GeometryCoreTestIO.consoleLog(errors);
+    // EDL July 2021 twoSided is flipping?
     polyfaceB.twoSided = polyfaceA.twoSided;
     ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
   }
@@ -1674,7 +1671,7 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
       }
     }
     if (lastJ !== -1)
-      console.log(`lastJ error ${lastJ}`);
+      GeometryCoreTestIO.consoleLog(`lastJ error ${lastJ}`);
   }
   return polyface;
 }

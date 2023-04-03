@@ -9,7 +9,6 @@
   },
   "scripts": {
     "build": "",
-    "build:ci": "",
     "clean": "",
     "docs": "",
     "lint": "",
