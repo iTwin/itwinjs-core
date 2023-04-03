@@ -338,7 +338,6 @@ export namespace Atmosphere {
         depthBelowEarthForMaxDensity?: number;
         display?: boolean;
         exposure?: number;
-        inScatteringIntensity?: number;
         numInScatteringPoints?: number;
         numOpticalDepthPoints?: number;
         outScatteringIntensity?: number;
@@ -358,7 +357,6 @@ export namespace Atmosphere {
         static fromJSON(json?: Props): Settings;
         // (undocumented)
         static readonly highQuality: Settings;
-        readonly inScatteringIntensity: number;
         readonly numInScatteringPoints: number;
         readonly numOpticalDepthPoints: number;
         readonly outScatteringIntensity: number;
