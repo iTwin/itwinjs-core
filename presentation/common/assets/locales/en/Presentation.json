@@ -11,5 +11,9 @@
   "selectedItems": {
     "categoryLabel": "Selected Item(s)",
     "categoryDescription": "Contains properties of selected item(s)"
+  },
+  "value": {
+    "true": "True",
+    "false": "False"
   }
 }

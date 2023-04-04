@@ -331,6 +331,13 @@ export enum ContentFlags {
     ShowLabels = 4
 }
 
+// @alpha (undocumented)
+export class ContentFormatter {
+    constructor(_propertyValueFormatter: ContentPropertyValueFormatter, _unitSystem?: UnitSystemKey | undefined);
+    // (undocumented)
+    formatContent(content: Content): Promise<Content>;
+}
+
 // @public
 export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
     displayType?: string;
@@ -375,9 +382,17 @@ export interface ContentModifiersList {
 
 // @alpha (undocumented)
 export class ContentPropertyValueFormatter {
-    constructor(_propertyValueFormatter: PropertyValueFormatter, _unitSystem: UnitSystemKey);
+    constructor(_koqValueFormatter: KoqPropertyValueFormatter);
     // (undocumented)
-    formatContent(content: Content): Promise<Content>;
+    formatArrayValue(type: ArrayTypeDescription, value: Value): DisplayValue[];
+    // (undocumented)
+    formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value): string;
+    // (undocumented)
+    formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue>;
+    // (undocumented)
+    formatStructValue(type: StructTypeDescription, value: Value): DisplayValuesMap;
+    // (undocumented)
+    formatValue(type: TypeDescription, value: Value): DisplayValue;
 }
 
 // @public
@@ -391,6 +406,8 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
 export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     descriptor: TDescriptor;
     keys: TKeySet;
+    // @alpha
+    omitFormattedValues?: boolean;
 }
 
 // @public
@@ -923,28 +940,6 @@ export interface EnumerationInfo {
     isStrict: boolean;
 }
 
-// @alpha (undocumented)
-export interface ExpandedNodeUpdateRecord {
-    // (undocumented)
-    node: Node_2;
-    // (undocumented)
-    position: number;
-}
-
-// @alpha (undocumented)
-export namespace ExpandedNodeUpdateRecord {
-    export function fromJSON(json: ExpandedNodeUpdateRecordJSON): ExpandedNodeUpdateRecord;
-    export function toJSON(obj: ExpandedNodeUpdateRecord): ExpandedNodeUpdateRecordJSON;
-}
-
-// @alpha (undocumented)
-export interface ExpandedNodeUpdateRecordJSON {
-    // (undocumented)
-    node: NodeJSON;
-    // (undocumented)
-    position: number;
-}
-
 // @public
 export interface ExtendedDataRule extends RuleBase {
     condition?: string;
@@ -1042,7 +1037,7 @@ export interface FormatOptions {
     // (undocumented)
     koqName: string;
     // (undocumented)
-    unitSystem: UnitSystemKey;
+    unitSystem?: UnitSystemKey;
 }
 
 // @internal (undocumented)
@@ -1175,46 +1170,7 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
 export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKey, RulesetVariableJSON>>;
 
 // @alpha (undocumented)
-export type HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[];
-
-// @alpha (undocumented)
-export namespace HierarchyUpdateInfo {
-    export function fromJSON(json: HierarchyUpdateInfoJSON): HierarchyUpdateInfo;
-    export function toJSON(obj: HierarchyUpdateInfo): HierarchyUpdateInfoJSON;
-}
-
-// @alpha (undocumented)
-export type HierarchyUpdateInfoJSON = typeof UPDATE_FULL | HierarchyUpdateRecordJSON[];
-
-// @alpha (undocumented)
-export interface HierarchyUpdateRecord {
-    // (undocumented)
-    expandedNodes?: ExpandedNodeUpdateRecord[];
-    // (undocumented)
-    instanceFilter?: string;
-    // (undocumented)
-    nodesCount: number;
-    // (undocumented)
-    parent?: NodeKey;
-}
-
-// @alpha (undocumented)
-export namespace HierarchyUpdateRecord {
-    export function fromJSON(json: HierarchyUpdateRecordJSON): HierarchyUpdateRecord;
-    export function toJSON(obj: HierarchyUpdateRecord): HierarchyUpdateRecordJSON;
-}
-
-// @alpha (undocumented)
-export interface HierarchyUpdateRecordJSON {
-    // (undocumented)
-    expandedNodes?: ExpandedNodeUpdateRecordJSON[];
-    // (undocumented)
-    instanceFilter?: string;
-    // (undocumented)
-    nodesCount: number;
-    // (undocumented)
-    parent?: NodeKeyJSON;
-}
+export type HierarchyUpdateInfo = typeof UPDATE_FULL;
 
 // @public
 export interface IContentVisitor {
@@ -1592,6 +1548,17 @@ export interface KindOfQuantityInfo {
     persistenceUnit: string;
 }
 
+// @alpha (undocumented)
+export class KoqPropertyValueFormatter {
+    constructor(_schemaContext: SchemaContext);
+    // (undocumented)
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
+    // (undocumented)
+    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec | undefined>;
+    // (undocumented)
+    getParserSpec(options: FormatOptions): Promise<ParserSpec | undefined>;
+}
+
 // @public
 export interface LabelCompositeValue {
     // (undocumented)
@@ -1751,6 +1718,13 @@ export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     isTargetPolymorphic: boolean;
     // (undocumented)
     targetClassInfo: TClassInfoJSON;
+}
+
+// @public
+export interface NavigationPropertyValue {
+    className: string;
+    id: InstanceId;
+    label: LabelDefinition;
 }
 
 // @public
@@ -2150,7 +2124,6 @@ export enum PresentationIpcEvents {
 export interface PresentationIpcInterface {
     setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
     unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
-    updateHierarchyState(params: UpdateHierarchyStateParams<NodeKey>): Promise<void>;
 }
 
 // @alpha
@@ -2499,17 +2472,6 @@ export enum PropertyValueFormat {
     Array = "Array",
     Primitive = "Primitive",
     Struct = "Struct"
-}
-
-// @alpha (undocumented)
-export class PropertyValueFormatter {
-    constructor(_schemaContext: SchemaContext);
-    // (undocumented)
-    format(value: number, options: FormatOptions): Promise<string | undefined>;
-    // (undocumented)
-    getFormatterSpec(options: FormatOptions): Promise<FormatterSpec | undefined>;
-    // (undocumented)
-    getParserSpec(options: FormatOptions): Promise<ParserSpec | undefined>;
 }
 
 // @public
@@ -3154,20 +3116,6 @@ export interface UnsetRulesetVariableParams extends CommonIpcParams {
 // @alpha (undocumented)
 export const UPDATE_FULL = "FULL";
 
-// @internal (undocumented)
-export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
-    // (undocumented)
-    imodelKey: string;
-    // (undocumented)
-    rulesetId: string;
-    // (undocumented)
-    stateChanges: Array<{
-        nodeKey: TNodeKey | undefined;
-        isExpanded?: boolean;
-        instanceFilters?: string[];
-    }>;
-}
-
 // @alpha (undocumented)
 export interface UpdateInfo {
     // (undocumented)
@@ -3179,25 +3127,8 @@ export interface UpdateInfo {
     };
 }
 
-// @alpha (undocumented)
-export namespace UpdateInfo {
-    export function fromJSON(json: UpdateInfoJSON): UpdateInfo;
-    export function toJSON(obj: UpdateInfo): UpdateInfoJSON;
-}
-
-// @alpha (undocumented)
-export interface UpdateInfoJSON {
-    // (undocumented)
-    [imodel: string]: {
-        [rulesetId: string]: {
-            hierarchy?: HierarchyUpdateInfoJSON;
-            content?: ContentUpdateInfo;
-        };
-    };
-}
-
 // @public
-export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[];
+export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NavigationPropertyValue | NestedContentValue[];
 
 // @public (undocumented)
 export namespace Value {
@@ -3205,6 +3136,7 @@ export namespace Value {
     export function fromJSON(json: ValueJSON): Value;
     export function isArray(value: Value): value is ValuesArray;
     export function isMap(value: Value): value is ValuesMap;
+    export function isNavigationValue(value: Value): value is NavigationPropertyValue;
     export function isNestedContent(value: Value): value is NestedContentValue[];
     export function isPrimitive(value: Value): value is string | number | boolean | undefined;
     // @deprecated
@@ -3212,7 +3144,7 @@ export namespace Value {
 }
 
 // @public @deprecated
-export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[];
+export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[];
 
 // @public
 export interface ValuesArray extends Array<Value> {
