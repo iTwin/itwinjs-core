@@ -2088,43 +2088,43 @@ describe("IModelTransformer", () => {
 
     /* eslint-disable @typescript-eslint/indent */
     for (const sourceDb of sourceDbs)
-      for (const targetSeed of targetSeeds)
-        /* eslint-disable @typescript-eslint/indent */
-        for (const doUpgrade of doUpgradeVariants) {
-          if (IModelJsFs.existsSync(targetDbPath))
-            IModelJsFs.unlinkSync(targetDbPath);
+    for (const targetSeed of targetSeeds)
+    /* eslint-disable @typescript-eslint/indent */
+    for (const doUpgrade of doUpgradeVariants) {
+      if (IModelJsFs.existsSync(targetDbPath))
+        IModelJsFs.unlinkSync(targetDbPath);
 
-          let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
-          targetDb.close();
-          setToStandalone(targetDbPath);
-          if (doUpgrade)
-            StandaloneDb.upgradeStandaloneSchemas(targetDbPath);
-          targetDb = StandaloneDb.openFile(targetDbPath);
+      let targetDb: IModelDb = SnapshotDb.createFrom(targetSeed, targetDbPath);
+      targetDb.close();
+      setToStandalone(targetDbPath);
+      if (doUpgrade)
+        StandaloneDb.upgradeStandaloneSchemas(targetDbPath);
+      targetDb = StandaloneDb.openFile(targetDbPath);
 
-          const transformer = new IModelTransformer(sourceDb, targetDb);
-          try {
-            await transformer.processSchemas();
-          } catch (err) {
-            const wasExpected = expectedFailureCases.find((c) =>
-              c.sourceDb.pathName === sourceDb.pathName
-              && c.targetSeed.pathName === targetSeed.pathName
-              && c.doUpgrade === doUpgrade
-            );
-            if (!wasExpected) {
-              // eslint-disable-next-line no-console
-              console.log([
-                "Unexpected failure:",
-                `sourceDb: ${sourceDb.pathName}`,
-                `targetSeed: ${targetSeed.pathName}`,
-                `doUpgrade: ${doUpgrade}`,
-              ].join("\n"));
-              throw err;
-            }
-          }
-
-          transformer.dispose();
-          targetDb.close();
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      try {
+        await transformer.processSchemas();
+      } catch (err) {
+        const wasExpected = expectedFailureCases.find((c) =>
+          c.sourceDb.pathName === sourceDb.pathName
+          && c.targetSeed.pathName === targetSeed.pathName
+          && c.doUpgrade === doUpgrade
+        );
+        if (!wasExpected) {
+          // eslint-disable-next-line no-console
+          console.log([
+            "Unexpected failure:",
+            `sourceDb: ${sourceDb.pathName}`,
+            `targetSeed: ${targetSeed.pathName}`,
+            `doUpgrade: ${doUpgrade}`,
+          ].join("\n"));
+          throw err;
         }
+      }
+
+      transformer.dispose();
+      targetDb.close();
+    }
 
     oldDb.close();
     newDb.close();
