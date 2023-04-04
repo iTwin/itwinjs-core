@@ -186,26 +186,26 @@ export interface BeJSONFunctions {
  * @public
  */
 export type AngleProps =
-  number |
   { degrees: number } |
   { radians: number } |
   { _radians: number } |
-  { _degrees: number };
+  { _degrees: number } |
+  number;
 /**
  * The properties for a JSON representation of an `AngleSweep`.
- * * The json data is always `start` and `end` angles as a pair in an array.
- * * If AngleSweepProps data is an array of two numbers, those are both angles in **degrees**.
- * * If AngleSweepProps data is an object with key degrees, the degrees value must be an array with the two
- * degrees angles as numbers.
- * * If the AngleSweepProps is an object with key radians, the radians value must be an array with the two
- * radians angles as numbers.
+ * * The json data is always *start* and *end* angles as a pair in an array.
+ * * If AngleSweepProps data is an array of two numbers, those are both angles in `degrees`.
+ * * If AngleSweepProps data is an object with key `degrees`, then the corresponding value must be an array of
+ * two numbers, the start and end angles in degrees.
+ * * If the AngleSweepProps is an object with key `radians`, then the corresponding value must be an array of
+ * two numbers, the start and end angles in radians.
  * @public
  */
 export type AngleSweepProps =
   AngleSweep |
-  [number, number] |
   { degrees: [number, number] } |
-  { radians: [number, number] };
+  { radians: [number, number] } |
+  [number, number];
 /**
 * Interface for method with a clone operation.
 * @public
@@ -311,7 +311,7 @@ export class Geometry {
     return fraction;
   }
   /**
-   * Return the inverse distance.
+   * Return the inverse of `distance`.
    * * If `distance` magnitude is smaller than `smallMetricDistance` (i.e. distance is large enough for safe division),
    * then return `1/distance`. Otherwise return `undefined`.
    */
@@ -319,12 +319,12 @@ export class Geometry {
     return (Math.abs(distance) <= Geometry.smallMetricDistance) ? undefined : 1.0 / distance;
   }
   /**
-   * Return the inverse distance squared.
-   * * If `distanceSqrt` magnitude is smaller than `smallMetricDistanceSquared` (i.e. distanceSqrt is large enough
-   * for safe division), then return `1/distanceSqrt`. Otherwise return `undefined`.
+   * Return the inverse of `distanceSquared`.
+   * * If `distanceSquared ` magnitude is smaller than `smallMetricDistanceSquared` (i.e. distanceSquared  is large
+   * enough for safe division), then return `1/distanceSquared `. Otherwise return `undefined`.
    */
-  public static inverseMetricDistanceSquared(distanceSqrt: number): number | undefined {
-    return (Math.abs(distanceSqrt) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / distanceSqrt;
+  public static inverseMetricDistanceSquared(distanceSquared: number): number | undefined {
+    return (Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / distanceSquared;
   }
   /**
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using `tolerance`.
@@ -510,8 +510,8 @@ export class Geometry {
    * * `Geometry.smallAngleRadians` is used if tolerance is `undefined`.
    */
   public static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance: number = Geometry.smallAngleRadians): boolean {
-    const sumAbs = 1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y);
-    return (Math.abs(a.x - b.x) <= tolerance * sumAbs) && (Math.abs(a.y - b.y) <= tolerance * sumAbs);
+    const tol = tolerance * (1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y));
+    return (Math.abs(a.x - b.x) <= tol) && (Math.abs(a.y - b.y) <= tol);
   }
   /**
    * Toleranced equality test using caller-supplied `tolerance`.
@@ -986,16 +986,14 @@ export class Geometry {
       const a2b2r = 1.0 / a2b2; // 1/(a^2+b^2)
       const d2a2b2 = d2 * a2b2r; // d^2/(a^2+b^2)
       const criteria = 1.0 - d2a2b2; // 1 - d^2/(a^2+b^2); the criteria to specify how many solutions we got
-      if (criteria < -Geometry.smallMetricDistanceSquared)
-        return result; // nSolution = 0
+      if (criteria < -Geometry.smallMetricDistanceSquared) // nSolution = 0
+        return result;
       const da2b2 = -constCoff * a2b2r; // -d/(a^2+b^2)
       const c0 = da2b2 * cosCoff; // -ad/(a^2+b^2)
       const s0 = da2b2 * sinCoff; // -bd/(a^2+b^2)
-      // observed criteria = -2.22e-16 in rotated system
-      if (-Geometry.smallMetricDistanceSquared <= criteria && criteria <= 0.0) {
-        result = [Vector2d.create(c0, s0)]; // nSolution = 1
-      } else if (criteria > 0.0) {
-        // nSolution = 2
+      if (criteria <= 0.0) { // nSolution = 1 (observed criteria = -2.22e-16 in rotated system)
+        result = [Vector2d.create(c0, s0)];
+      } else if (criteria > 0.0) { // nSolution = 2
         const s = Math.sqrt(criteria * a2b2r); // sqrt(a^2+b^2-d^2)) / (a^2+b^2)
         result = [
           Vector2d.create(c0 - s * sinCoff, s0 + s * cosCoff),
@@ -1014,7 +1012,7 @@ export class Geometry {
   ): number | undefined {
     /**
      * Line equation is "fTarget-f0 = (f1-f0)/(x1-x0) * (x-x0)" or "(fTarget-f0)/(f1-f0) = (x-x0)/(x1-x0)".
-     * The right hand side is known so if we call it "fr" (short for "fraction") we get "(x-x0)/(x1-x0) = fr".
+     * The left hand side is known so if we call it "fr" (short for "fraction") we get "fr = (x-x0)/(x1-x0)".
      * Therefore, "x = x0*(1-fr) + x1*fr". This is same as interpolation between "x0" and "x1" with fraction "fr".
      */
     const fr = Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0); // (fTarget-f0)/(f1-f0)
@@ -1088,7 +1086,7 @@ export class Geometry {
     return numSteps;
   }
   /**
-   * Test if `x` is in simple 0..1 interval (but skip the test if `apply01 = false`).
+   * Test if `x` is in the interval [0,1] (but skip the test if `apply01 = false`).
    * * This odd behavior is very convenient for code that sometimes does not do the filtering.
    * @param x value to test.
    * @param apply01 if false, return `true` for all values of `x`.
@@ -1097,7 +1095,7 @@ export class Geometry {
     return apply01 ? x >= 0.0 && x <= 1.0 : true;
   }
   /**
-   * Test if x is in simple 0..1 interval for a given positive `tolerance`.
+   * Test if `x` is in the interval [0,1] for a given positive `tolerance`.
    * * Make sure to pass a positive `tolerance` because there is no check for that in the code.
    * @param x value to test.
    * @param tolerance the tolerance.
@@ -1135,7 +1133,7 @@ export class Geometry {
   }
   /**
    * Test for exact match of two number arrays.
-   * Returns `true` if both arrays have the same length and have the same entries (or both are empty arrays).
+   * Returns `true` if both arrays have the same length and entries, or if both arrays are empty or `undefined`.
    */
   public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
     if (Array.isArray(a) && a.length === 0)
@@ -1221,7 +1219,7 @@ export class Geometry {
     return false;
   }
   /**
-   * Clone an `array` of type `T` whose members have a clone method.
+   * Clone an array whose members have type `T`, which implements the clone method.
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
    */
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {

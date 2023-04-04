@@ -6,8 +6,8 @@ import { assert } from "chai";
 
 import { Cloneable, Geometry } from "../Geometry";
 
-describe("Transform.isAlmostEqualOptional", () => {
-  it("Transform.isAlmostEqualOptional", () => {
+describe("Geometry.isAlmostEqualOptional", () => {
+  it("Geometry.isAlmostEqualOptional", () => {
     const number1 = 1;
     const number2 = 1.2;
     const tolerance = 0.1;
@@ -17,8 +17,8 @@ describe("Transform.isAlmostEqualOptional", () => {
   });
 });
 
-describe("Transform.minXYZ", () => {
-  it("Transform.minXYZ", () => {
+describe("Geometry.minXYZ", () => {
+  it("Geometry.minXYZ", () => {
     const a = 1;
     let b = 2;
     let c = 3;
@@ -30,8 +30,8 @@ describe("Transform.minXYZ", () => {
   });
 });
 
-describe("Transform.minXY", () => {
-  it("Transform.minXY", () => {
+describe("Geometry.minXY", () => {
+  it("Geometry.minXY", () => {
     const a = 1;
     let b = 2;
     assert.equal(Geometry.minXY(a, b), a);
@@ -40,8 +40,8 @@ describe("Transform.minXY", () => {
   });
 });
 
-describe("Transform.solveTrigForm", () => {
-  it("Transform.solveTrigForm", () => {
+describe("Geometry.solveTrigForm", () => {
+  it("Geometry.solveTrigForm", () => {
     const constCoff = 1;
     const cosCoff = 0;
     const sinCoff = 0;
@@ -49,8 +49,8 @@ describe("Transform.solveTrigForm", () => {
   });
 });
 
-describe("Transform.inverseInterpolate", () => {
-  it("Transform.inverseInterpolate", () => {
+describe("Geometry.inverseInterpolate", () => {
+  it("Geometry.inverseInterpolate", () => {
     const x0: number = 2;
     const f0: number = 10;
     const x1: number = 4;
@@ -67,24 +67,24 @@ describe("Transform.inverseInterpolate", () => {
   });
 });
 
-describe("Transform.exactEqualNumberArrays", () => {
-  it("Transform.exactEqualNumberArrays", () => {
+describe("Geometry.exactEqualNumberArrays", () => {
+  it("Geometry.exactEqualNumberArrays", () => {
     const arr1: number[] = [];
     const arr2: number[] = [];
     assert.isTrue(Geometry.exactEqualNumberArrays(arr1, arr2));
   });
 });
 
-describe("Transform.almostEqualArrays", () => {
-  it("Transform.almostEqualArrays", () => {
+describe("Geometry.almostEqualArrays", () => {
+  it("Geometry.almostEqualArrays", () => {
     const arr1: number[] = [];
     const arr2: number[] = [];
     assert.isTrue(Geometry.almostEqualArrays<number>(arr1, arr2, Geometry.isAlmostEqualNumber));
   });
 });
 
-describe("Transform.almostEqualNumberArrays", () => {
-  it("Transform.almostEqualNumberArrays", () => {
+describe("Geometry.almostEqualNumberArrays", () => {
+  it("Geometry.almostEqualNumberArrays", () => {
     let arr1: number[] = [];
     let arr2: number[] = [];
     assert.isTrue(Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
@@ -97,8 +97,8 @@ describe("Transform.almostEqualNumberArrays", () => {
   });
 });
 
-describe("Transform.areEqualAllowUndefined", () => {
-  it("Transform.areEqualAllowUndefined", () => {
+describe("Geometry.areEqualAllowUndefined", () => {
+  it("Geometry.areEqualAllowUndefined", () => {
     const num1 = undefined;
     const num2 = undefined;
     assert.isTrue(Geometry.areEqualAllowUndefined<number>(num1, num2));
@@ -120,8 +120,8 @@ class Widget implements Cloneable<Widget> {
   }
 }
 
-describe("Transform.cloneMembers", () => {
-  it("Transform.cloneMembers", () => {
+describe("Geometry.cloneMembers", () => {
+  it("Geometry.cloneMembers", () => {
     let clonedWidgets = Geometry.cloneMembers<Widget>(undefined);
     assert.equal(clonedWidgets, undefined);
     const widgets: Widget[] = [new Widget(5), new Widget(6), new Widget(7)];
