@@ -184,7 +184,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
 /**
  * Methods for accessing services of IModelHub from an iTwin.js backend.
  * Generally direct access to these methods should not be required, since higher-level apis are provided.
- * @public
+ * @internal
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
