@@ -5,15 +5,16 @@
 
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Angle, Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
+import {  Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
 import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
-import { ArcGisFeatureCanvasRenderer, ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisFeaturePBF } from "./ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "./ArcGisFeatureJSON";
 import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
+import { ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureGraphicsRenderer";
+import { ArcGisFeatureCanvasRenderer } from "./ArcGisFeatureCanvasRenderer";
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -271,7 +272,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
+  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void> {
     if (!this._querySupported || this.format === undefined)
       return;
 
@@ -311,9 +312,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     try {
-      const returnGeometry = true;
-      // const responseData = await doFeatureInfoQuery(this.format, "*", returnGeometry);
-      const responseData = await doFeatureInfoQuery("JSON", "*", returnGeometry);
+      // Feature Info requests are always made in JSON for now.
+      const responseData = await doFeatureInfoQuery("JSON", "*", true);
       if (!responseData) {
         Logger.logError(loggerCategory, `Could not get feature info data`);
         return;
@@ -322,12 +322,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         Logger.logError(loggerCategory, `Could not get feature info : transfer limit exceeded.`);
         return;
       }
-      // const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+
       const featureReader = new ArcGisFeatureJSON(this._settings, this._layerMetadata);
 
-      // const renderer = new ArcGisFeatureGraphicsRenderer(hit.viewport.backgroundMapGeometry);
-      // DISABLE reprojection for now.
-      const renderer = new ArcGisFeatureGraphicsRenderer(undefined);
+      const renderer = new ArcGisFeatureGraphicsRenderer(hit.iModel, hit.viewport.backgroundMapGeometry);
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {

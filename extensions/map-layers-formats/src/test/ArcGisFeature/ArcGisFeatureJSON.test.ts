@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
 import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
-import { ArcGisFeatureCanvasRenderer } from "../../ArcGisFeature/ArcGisFeatureRenderer";
+import { ArcGisFeatureCanvasRenderer } from "../../ArcGisFeature/ArcGisFeatureCanvasRenderer";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";

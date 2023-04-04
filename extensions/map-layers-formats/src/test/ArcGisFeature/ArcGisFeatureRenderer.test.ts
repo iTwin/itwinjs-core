@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { fakeContext } from "./Mocks";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { ArcGisFeatureCanvasRenderer } from "../../ArcGisFeature/ArcGisFeatureRenderer";
+import { ArcGisFeatureCanvasRenderer } from "../../ArcGisFeature/ArcGisFeatureCanvasRenderer";
 import { Point3d, Transform } from "@itwin/core-geometry";
 
 describe("ArcGisFeatureCanvasRenderer", () => {
@@ -71,7 +71,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
 
     const applyFillStyleSpy = sandbox.spy(symbolRenderer, "applyFillStyle");
     const applyStrokeStyleSpy = sandbox.spy(symbolRenderer, "applyStrokeStyle");
-    renderer.renderPath([2], coords, true, 2, true);
+    await renderer.renderPath([2], coords, true, 2, true);
 
     expect(beginPathSpy.calledOnce).to.be.true;
     expect(moveToSpy.calledOnce).to.be.true;
@@ -99,7 +99,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
     const renderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1,2,3,4,5,6];
 
-    renderer.renderPath([2], coords, false, 3, true);
+    await renderer.renderPath([2], coords, false, 3, true);
 
     expect(beginPathSpy.calledOnce).to.be.true;
     expect(moveToSpy.calledOnce).to.be.true;
@@ -125,7 +125,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
     const applyFillStyleSpy = sandbox.spy(symbolRenderer, "applyFillStyle");
     const applyStrokeStyleSpy = sandbox.spy(symbolRenderer, "applyStrokeStyle");
 
-    renderer.renderPath([2], coords, false, 2, true);
+    await renderer.renderPath([2], coords, false, 2, true);
 
     expect(beginPathSpy.calledOnce).to.be.true;
     expect(moveToSpy.calledOnce).to.be.true;
@@ -151,10 +151,10 @@ describe("ArcGisFeatureCanvasRenderer", () => {
     const renderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1,2,3,4];
 
-    renderer.renderPath([2], coords, false, 1, true);
-    renderer.renderPath([2], coords, false, 4, true);
-    renderer.renderPoint([2], coords, 1, true);
-    renderer.renderPoint([2], coords, 4, true);
+    await renderer.renderPath([2], coords, false, 1, true);
+    await renderer.renderPath([2], coords, false, 4, true);
+    await renderer.renderPoint([2], coords, 1, true);
+    await renderer.renderPoint([2], coords, 4, true);
 
     expect(lineToSpy.calledOnce).to.be.false;
     expect(strokeSpy.calledOnce).to.be.false;
@@ -170,7 +170,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
     const renderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset,fakeOffset)));
     const coords = [1,2,3,4];
 
-    renderer.renderPath([2], coords, false, 2, false);
+    await renderer.renderPath([2], coords, false, 2, false);
 
     expect(beginPathSpy.calledOnce).to.be.true;
     expect(moveToSpy.calledOnce).to.be.true;
@@ -193,7 +193,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
 
     const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1,2];
-    renderer.renderPoint([], coords, 2, false);
+    await renderer.renderPoint([], coords, 2, false);
 
     expect(drawPointStub.calledOnce).to.be.true;
     expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]);
@@ -210,7 +210,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
 
     const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1,2];
-    renderer.renderPoint([], coords, 2, false);
+    await renderer.renderPoint([], coords, 2, false);
 
     expect(drawPointStub.calledOnce).to.be.true;
     expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]+fakeOffset);
@@ -226,7 +226,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
 
     const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1,2,3,4];
-    renderer.renderPoint([2], coords, 2, false);
+    await renderer.renderPoint([2], coords, 2, false);
 
     expect(drawPointStub.getCalls().length).to.equals(2);
     expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]);
@@ -244,7 +244,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
 
     const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1,2,3,4];
-    renderer.renderPoint([2], coords, 2, false);
+    await renderer.renderPoint([2], coords, 2, false);
 
     expect(drawPointStub.getCalls().length).to.equals(2);
     expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]+fakeOffset);
@@ -262,7 +262,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
 
     const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1,2,3,4];
-    renderer.renderPoint([2], coords, 2, true);
+    await renderer.renderPoint([2], coords, 2, true);
 
     expect(drawPointStub.getCalls().length).to.equals(2);
     expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]+fakeOffset);
@@ -279,7 +279,7 @@ describe("ArcGisFeatureCanvasRenderer", () => {
     const renderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset,fakeOffset)));
     const coords = [1,2,3,4];
 
-    renderer.renderPath([2], coords, false, 2, true);
+    await renderer.renderPath([2], coords, false, 2, true);
 
     expect(beginPathSpy.calledOnce).to.be.true;
     expect(moveToSpy.calledOnce).to.be.true;

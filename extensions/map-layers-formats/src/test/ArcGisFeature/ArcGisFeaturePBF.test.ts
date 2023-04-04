@@ -9,7 +9,7 @@ import { MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
-import { ArcGisFeatureCanvasRenderer } from "../../ArcGisFeature/ArcGisFeatureRenderer";
+import { ArcGisFeatureCanvasRenderer } from "../../ArcGisFeature/ArcGisFeatureCanvasRenderer";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
 import { esriFeatureSampleSource, fakeContext } from "./Mocks";

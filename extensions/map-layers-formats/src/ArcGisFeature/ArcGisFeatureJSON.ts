@@ -8,8 +8,9 @@ import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
-import { ArcGisFeatureGraphicsRenderer, ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
+import { ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureGraphicsRenderer";
 
 /** @internal */
 export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
@@ -57,7 +58,7 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
     } else if (responseObj?.geometryType === "esriGeometryPoint" || responseObj?.geometryType === "esriGeometryMultiPoint") {
       for (const feature of responseObj.features) {
         // TODO: Add support for multipoint
-        this.readPoints(feature, renderer, renderer.transform === undefined);
+        await this.readPoints(feature, renderer, renderer.transform === undefined);
       }
     }
   }

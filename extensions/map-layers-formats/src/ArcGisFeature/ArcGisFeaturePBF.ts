@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ArcGisFeatureGraphicsRenderer, ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
 import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -12,6 +12,7 @@ import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { Logger } from "@itwin/core-bentley";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
+import { ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureGraphicsRenderer";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
