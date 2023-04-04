@@ -13,7 +13,7 @@ import {
   BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { G, Marker, Element as MarkupElement, SVG } from "@svgdotjs/svg.js";
+import { G, Marker, Element as MarkupElement } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
