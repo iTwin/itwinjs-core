@@ -13,6 +13,7 @@ import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
 import { IModelTransformer } from "@itwin/imodel-transformer";
 import { KnownTestLocations } from "./IModelTestUtils";
 

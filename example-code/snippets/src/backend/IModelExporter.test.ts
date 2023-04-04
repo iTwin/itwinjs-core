@@ -6,6 +6,7 @@
 
 import { Code, CodeSpec } from "@itwin/core-common";
 import { Element, IModelJsFs as fs, IModelDb, SnapshotDb } from "@itwin/core-backend";
+process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
 import { IModelExporter, IModelExportHandler } from "@itwin/imodel-transformer";
 
 /** CodeExporter creates a CSV output file containing all Codes from the specified iModel. */

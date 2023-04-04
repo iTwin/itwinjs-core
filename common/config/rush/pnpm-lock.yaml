@@ -1308,7 +1308,7 @@ importers:
       '@itwin/ecschema-editing': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.32
-      '@itwin/imodel-transformer': ^0.1.0
+      '@itwin/imodel-transformer': ^0.1.1
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/projects-client': ^0.6.0
       '@itwin/service-authorization': ^0.6.3
@@ -1334,7 +1334,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodel-transformer': 0.1.0_b120c43d476259da971bfaebcf810965
+      '@itwin/imodel-transformer': 0.1.1_b120c43d476259da971bfaebcf810965
       '@itwin/projects-client': 0.6.0
       '@itwin/service-authorization': 0.6.3
       '@xmldom/xmldom': 0.8.6
@@ -5858,8 +5858,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@itwin/imodel-transformer/0.1.0_b120c43d476259da971bfaebcf810965:
-    resolution: {integrity: sha512-NntIZhoY23Jv2MNLPMSzCrtUje8FSrd7FYcK/ia2h3jpSYn6HHEBgd01DpZ4gMDDj/vd8KMEVDduH//Ykb2U3Q==}
+  /@itwin/imodel-transformer/0.1.1_b120c43d476259da971bfaebcf810965:
+    resolution: {integrity: sha512-93BvB8H1rUpOVb6+qzaLyBzU42Xh67lyGnbrsaeOre3U3WiK6taoKjVjKOHjRcQnRZ7+enbZXAOUzfGtquaxIQ==}
     engines: {node: ^18.0.0}
     peerDependencies:
       '@itwin/core-backend': 3.6.0 - 3.6.1
