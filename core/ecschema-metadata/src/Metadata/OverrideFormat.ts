@@ -8,7 +8,7 @@
 
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { DecimalPrecision, FormatProps, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
@@ -108,7 +108,37 @@ export class OverrideFormat {
   public static isOverrideFormat(object: any): object is OverrideFormat {
     const overrideFormat = object as OverrideFormat;
 
-    return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined &&
-             overrideFormat.parent.schemaItemType === SchemaItemType.Format;
+    return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined && overrideFormat.parent.schemaItemType === SchemaItemType.Format;
+  }
+
+  /**
+   * Returns a JSON object that contains the specification for OverrideFormat.
+   */
+  public toJSON(): FormatProps {
+    const formatJson = this.parent.toJSON() as any;
+
+    // Update Precision overriden property
+    formatJson.precision = this.precision;
+
+    if (this.units !== undefined) {
+      // Update Units overriden property
+      const composite: any = {};
+      if (this.spacer !== " ")
+        composite.spacer = this.spacer;
+
+      if (this.includeZero === false)
+        composite.includeZero = this.includeZero;
+
+      composite.units = [];
+      for (const unit of this.units) {
+        composite.units.push({
+          name: unit[0].fullName,
+          label: unit[1],
+        });
+      }
+      formatJson.composite = composite;
+    }
+
+    return formatJson;
   }
 }

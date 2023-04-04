@@ -86,9 +86,11 @@ describe("OverrideFormat", () => {
 
     assert.isDefined(overrideFormat.units);
     expect(overrideFormat.units!.length).eq(1);
+
+    expect(JSON.stringify(overrideFormat.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Fractional","precision":2,"roundFactor":5,"showSignOption":"NoSign","formatTraits":["TrailZeroes","PrependUnitLabel"],"decimalSeparator":",","thousandSeparator":".","uomSeparator":"-","minWidth":4,"composite":{"spacer":"-","includeZero":false,"units":[{"name":"Formats.YRD","label":"yard(s)"}]}}`);
   });
 
-  it("with precision override", () => {
+  it("with only precision override", () => {
     const schemaJson = createSchemaJson({
       type: "Fractional",
       precision: 2,
@@ -102,9 +104,11 @@ describe("OverrideFormat", () => {
     expect(overrideFormat.parent.precision).eq(FractionalPrecision.Two);
     assert.equal(overrideFormat.fullName, "TestSchema.TestFormat(8)");
     assert.equal(overrideFormat.name, "TestSchema.TestFormat(8)"); // name and full name are the same for override strings
+
+    expect(JSON.stringify(overrideFormat.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Fractional","precision":8}`);
   });
 
-  it("with unit overrides", () => {
+  it("with only unit overrides", () => {
     const schemaJson = createSchemaJson({
       type: "Fractional",
       precision: 2,
@@ -132,6 +136,8 @@ describe("OverrideFormat", () => {
     assert.equal(overrideFormatMile.fullName, "TestSchema.TestFormat[Formats.MILE]");
     assert.equal(overrideFormatMile.name, "TestSchema.TestFormat[Formats.MILE]");
 
+    expect(JSON.stringify(overrideFormatMile.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Fractional","precision":2,"composite":{"units":[{"name":"Formats.MILE"}]}}`);
+
     const overrideFormatYrd = new OverrideFormat(format!, undefined, unitListYrd);
     assert.isDefined(overrideFormatYrd.units);
     expect(overrideFormatYrd.units!.length).eq(1);
@@ -139,5 +145,43 @@ describe("OverrideFormat", () => {
     expect(overrideFormatYrd.units![0][1]).eq("yd");
     assert.equal(overrideFormatYrd.fullName, "TestSchema.TestFormat[Formats.YRD|yd]");
     assert.equal(overrideFormatYrd.name, "TestSchema.TestFormat[Formats.YRD|yd]");
+
+    expect(JSON.stringify(overrideFormatYrd.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Fractional","precision":2,"composite":{"units":[{"name":"Formats.YRD","label":"yd"}]}}`);
+  });
+
+  it("with precision and unit overrides", () => {
+    const schemaJson = createSchemaJson({
+      type: "Fractional",
+      precision: 2,
+      composite: {
+        includeZero: false,
+        spacer: "-",
+        units: [
+          {
+            name: "Formats.YRD",
+            label: "yard(s)",
+          },
+        ],
+      },
+    });
+
+    const schema = Schema.fromJsonSync(schemaJson, context);
+    const format = schema.getItemSync<Format>("TestFormat");
+    assert.isDefined(format);
+
+    const mileU = schema.lookupItemSync<Unit>("Formats.MILE");
+    assert.isDefined(mileU);
+
+    const unitListMile = new Array<[Unit | InvertedUnit, string | undefined]>();
+    unitListMile.push([mileU!, "mi"]);
+
+    const overridePrecisionAndUnit = new OverrideFormat(format!, FractionalPrecision.Four, unitListMile);
+    assert.isDefined(overridePrecisionAndUnit.units);
+    expect(overridePrecisionAndUnit.units!.length).eq(1);
+    expect(overridePrecisionAndUnit.units![0][0]).eq(mileU);
+    assert.equal(overridePrecisionAndUnit.fullName, "TestSchema.TestFormat(4)[Formats.MILE|mi]");
+    assert.equal(overridePrecisionAndUnit.name, "TestSchema.TestFormat(4)[Formats.MILE|mi]");
+
+    expect(JSON.stringify(overridePrecisionAndUnit.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Fractional","precision":4,"composite":{"spacer":"-","includeZero":false,"units":[{"name":"Formats.MILE","label":"mi"}]}}`);
   });
 });

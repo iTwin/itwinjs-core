@@ -191,9 +191,16 @@ describe("KindOfQuantity", () => {
       assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
+      expect(JSON.stringify(defaultFormat?.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":2}`);
+
       expect(testKoq!.presentationFormats[0].precision).eq(DecimalPrecision.Two);
+      expect(JSON.stringify(testKoq!.presentationFormats[0].toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":2}`);
+
       expect(testKoq!.presentationFormats[1].precision).eq(DecimalPrecision.Three);
+      expect(JSON.stringify(testKoq!.presentationFormats[1].toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":3}`);
+
       expect(testKoq!.presentationFormats[2].precision).eq(DecimalPrecision.Four);
+      expect(JSON.stringify(testKoq!.presentationFormats[2].toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":4}`);
 
       expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal(2)");
       expect(testKoq!.presentationFormats[0].fullName).eq("Formats.DefaultReal(2)");
@@ -217,8 +224,13 @@ describe("KindOfQuantity", () => {
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
       expect(testKoq!.presentationFormats[0].precision).eq(DecimalPrecision.Two);
+      expect(JSON.stringify(testKoq!.presentationFormats[0].toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":2}`);
+
       expect(testKoq!.presentationFormats[1].precision).eq(DecimalPrecision.Three);
+      expect(JSON.stringify(testKoq!.presentationFormats[1].toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":3}`);
+
       expect(testKoq!.presentationFormats[2].precision).eq(DecimalPrecision.Four);
+      expect(JSON.stringify(testKoq!.presentationFormats[2].toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":4}`);
 
       expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal(2)");
       expect(testKoq!.presentationFormats[0].fullName).eq("Formats.DefaultReal(2)");
@@ -255,6 +267,9 @@ describe("KindOfQuantity", () => {
       const unitOverride = defaultFormat!.units![0];
       const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
       assert.strictEqual(unitOverride[0], unitFromSchema);
+
+      expect(defaultOverrideFormat.precision).to.be.equal(defaultOverrideFormat.parent.precision);
+      expect(JSON.stringify(defaultOverrideFormat.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":6,"composite":{"units":[{"name":"Formats.IN"}]}}`);
     });
     it("sync - single unit override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitOverride), context);
@@ -272,6 +287,8 @@ describe("KindOfQuantity", () => {
       const unitOverride = defaultFormat!.units![0];
       const unitFromSchema = schema.lookupItemSync(unitOverride[0].fullName) as Unit;
       assert.strictEqual(unitOverride[0], unitFromSchema);
+
+      expect(JSON.stringify(defaultFormat!.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":6,"composite":{"units":[{"name":"Formats.IN"}]}}`);
     });
 
     // single unit label override
@@ -298,6 +315,8 @@ describe("KindOfQuantity", () => {
       const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
       assert.strictEqual(unitOverride[0], unitFromSchema);
       expect(unitOverride[1]).to.be.eq(" in");
+
+      expect(JSON.stringify(defaultFormat!.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":6,"composite":{"units":[{"name":"Formats.IN","label":" in"}]}}`);
     });
     it("sync - single unit label override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitLabelOverride), context);
@@ -314,6 +333,8 @@ describe("KindOfQuantity", () => {
       const unitFromSchema = schema.lookupItemSync(unitOverride[0].fullName) as Unit;
       assert.strictEqual(unitOverride[0], unitFromSchema);
       expect(unitOverride[1]).to.be.eq(" in");
+
+      expect(JSON.stringify(defaultFormat!.toJSON())).to.be.equal(`{"schemaItemType":"Format","type":"Decimal","precision":6,"composite":{"units":[{"name":"Formats.IN","label":" in"}]}}`);
     });
 
     // failure cases
