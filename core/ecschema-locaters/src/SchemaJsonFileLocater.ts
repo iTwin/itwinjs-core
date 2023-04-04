@@ -8,7 +8,7 @@ import * as path from "path";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import { FileSchemaKey, ReadSchemaText, SchemaFileLocater } from "./SchemaFileLocater";
 
 /** @packageDocumentation
  * @module Locaters
@@ -53,7 +53,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    const candidates: FileSchemaKey[] = await this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 
@@ -61,11 +61,9 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    // Load the file
-    if (!await this.fileExists(schemaPath))
-      return undefined;
+    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
 
-    const schemaText = await this.readUtf8FileToString(schemaPath);
+    const schemaText = await this.getSchemaText(schemaPath);
     if (!schemaText)
       return undefined;
 
@@ -84,7 +82,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 
@@ -103,6 +101,35 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
     const schema = Schema.fromJsonSync(schemaText, context);
+    return schema as T;
+  }
+
+  /**
+   * Attempts to retrieve a partially-loaded Schema with the given SchemaKey by using the configured
+   * search paths to locate the JSON schema file from the file system.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
+  public async getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+    // Grab all schema files that match the schema key
+    const candidates: FileSchemaKey[] = await this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    if (!candidates || candidates.length === 0)
+      return undefined;
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const schemaPath = maxCandidate.fileName;
+
+    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
+
+    const schemaText = await this.getSchemaText(schemaPath);
+    if (!schemaText)
+      return undefined;
+
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
+
+    const schema = await Schema.fromJsonLoadingSchema(schemaText, context);
     return schema as T;
   }
 }
