@@ -314,21 +314,8 @@ export class ArrowTool extends RedlineTool {
   protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
 
   protected getOrCreateArrowMarker(color: string): Marker {
-    // NOTE: Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
     const arrowProps = MarkupApp.props.active.arrow;
-    const arrowLength = arrowProps.length;
-    const arrowWidth = arrowProps.width;
-    const arrowMarkerId = `ArrowMarker${arrowLength}x${arrowWidth}-${color}`;
-    let marker = SVG(`#${arrowMarkerId}`) as Marker;
-    if (null === marker) {
-      marker = this.markup.svgMarkup!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
-      marker.polygon([0, 0, arrowLength, arrowWidth * 0.5, 0, arrowWidth]);
-      marker.attr("orient", "auto-start-reverse");
-      marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...
-      marker.attr("refX", arrowLength);
-      marker.css({ stroke: color, fill: color });
-    }
-    return marker;
+    return this.markup.createArrowMarker(color, arrowProps.length, arrowProps.width);
   }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
