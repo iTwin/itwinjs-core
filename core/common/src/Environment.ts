@@ -21,7 +21,7 @@ export interface EnvironmentProps {
   ground?: GroundPlaneProps;
   /** See [[Environment.sky]] and [[Environment.displaySky]]. */
   sky?: SkyBoxProps;
-  /** See [[Environment.atmosphere]] and [[Environment.displayAtmosphere]]. */
+  /** @beta See [[Environment.atmosphere]] and [[Environment.displayAtmosphere]]. */
   atmosphere?: Atmosphere.Props;
 }
 
@@ -47,7 +47,9 @@ export class Environment {
    * @see [[withDisplay]] or [[DisplayStyle3dSettings.toggleGroundPlane]] to change this.
    */
   public readonly displayGround: boolean;
-  /** If true, the atmosphere will be displayed.
+  /**
+   * @beta
+   * If true, the atmosphere will be displayed.
    * Default: false.
    * @see [[withDisplay]] or [[DisplayStyle3dSettings.toggleAtmosphere]] to change this.
    */
@@ -57,7 +59,7 @@ export class Environment {
   public readonly sky: SkyBox;
   /** Describes how the ground plane should be drawn. */
   public readonly ground: GroundPlane;
-  /** Describes how the atmosphere should be drawn */
+  /** @beta Describes how the atmosphere should be drawn */
   public readonly atmosphere: Atmosphere.Settings;
 
   protected constructor(props?: Partial<EnvironmentProperties>) {

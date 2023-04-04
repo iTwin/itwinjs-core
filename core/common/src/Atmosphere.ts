@@ -8,7 +8,7 @@
 import { JsonUtils } from "@itwin/core-bentley";
 
 /** Namespace containing types controlling how atmospheric scattering should be rendered.
- * @public
+ * @beta
  * The techniques used to render the atmosphere approximate the physical behavior of light when interacting with particles in the air (Rayleigh Scattering and Mie Scattering)
  * Presently, only Rayleigh Scattering is implemented here
  *
@@ -29,14 +29,14 @@ import { JsonUtils } from "@itwin/core-bentley";
  */
 export namespace Atmosphere {
 
-  /** JSON representation of a [[Wavelengths]] object */
+  /** @internal JSON representation of a [[Wavelengths]] object */
   export interface WavelengthsProps {
     r: number;
     g: number;
     b: number;
   }
 
-  /** An immutable container of wavelength values for the red, green and blue pixel components. Values are in nanometers. */
+  /** @internal An immutable container of wavelength values for the red, green and blue pixel components. Values are in nanometers. */
   export class Wavelengths {
     public readonly r: number;
     public readonly g: number;
@@ -81,23 +81,23 @@ export namespace Atmosphere {
   export interface Props {
     /** Whether the ground plane should be displayed. Defaults to false. */
     display?: boolean;
-    /** See [[Settings.atmosphereHeightAboveEarth]] */
+    /** @internal See [[Settings.atmosphereHeightAboveEarth]] */
     atmosphereHeightAboveEarth?: number;
     /** See [[Settings.exposure]] */
     exposure?: number;
-    /** See [[Settings.densityFalloff]] */
+    /** @internal See [[Settings.densityFalloff]] */
     densityFalloff?: number;
-    /** See [[Settings.minDensityHeightBelowEarth]] */
+    /** @internal See [[Settings.minDensityHeightBelowEarth]] */
     depthBelowEarthForMaxDensity?: number;
     /** See [[Settings.numViewRaySamples]] */
     numViewRaySamples?: number;
     /** See [[Settings.numSunRaySamples]] */
     numSunRaySamples?: number;
-    /** See [[Settings.outScatteringIntensity]] */
+    /** @internal See [[Settings.outScatteringIntensity]] */
     outScatteringIntensity?: number;
-    /** See [[Settings.scatteringStrength]] */
+    /** @internal See [[Settings.scatteringStrength]] */
     scatteringStrength?: number;
-    /** See [[Settings.wavelengths]] */
+    /** @internal See [[Settings.wavelengths]] */
     wavelengths?: WavelengthsProps;
   }
 
@@ -118,23 +118,23 @@ export namespace Atmosphere {
     public static readonly defaults = new Settings({});
     public static readonly highQuality = new Settings({ numViewRaySamples: this._highQualityNumViewRaySamples });
 
-    /** If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
+    /** @internal If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
-    /** If defined, this value is used to simulate the aperture of a camera. Higher values allow more light in. Defaults to 2.5 */
+    /** If defined, this value is used to simulate the aperture of a camera. Higher values allow more light in. This value should be adjusted in situations without much sunlight (like sunset) to brighten the image. Defaults to 2.5 */
     public readonly exposure: number;
-    /** If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 10.0. */
+    /** @internal If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 10.0. */
     public readonly densityFalloff: number;
-    /** If defined, corresponds to the height in meters below the earth's pole at which the atmosphere is at its densest. Physically, this is the point at which there is the most air molecules to interfere with light transmission. Defaults to 0.0. */
+    /** @internal If defined, corresponds to the height in meters below the earth's pole at which the atmosphere is at its densest. Physically, this is the point at which there is the most air molecules to interfere with light transmission. Defaults to 0.0. */
     public readonly depthBelowEarthForMaxDensity: number;
     /** If defined, corresponds to the number of atmospheric density samples used to compute the amount of light scattered along each view ray. For each sample point, another ray will be cast toward the sun to compute the amount of light reaching the sample point. Higher values increase fidelity, but greatly decrease performance because sun rays must be cast from each additional sample point. The range is 1 to 40. Defaults to 10. */
     public readonly numViewRaySamples: number;
     /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered along each sun ray. Higher values increase fidelity slightly but greatly decreases performance. Minimal improvement is observable with values above 5. The range is 1 to 40. Defaults to 5. */
     public readonly numSunRaySamples: number;
-    /** If defined, multiplies the amount of light scattered away from the viewing eye by this value. Higher values result in less light being transmitted to the camera. Defaults to 1.0. */
+    /** @internal If defined, multiplies the amount of light scattered away from the viewing eye by this value. Higher values result in less light being transmitted to the camera. Defaults to 1.0. */
     public readonly outScatteringIntensity: number;
-    /** If defined, controls how strongly the atmosphere's air diverts light. Defaults to 5.0.  */
+    /** @internal If defined, controls how strongly the atmosphere's air diverts light. Defaults to 5.0.  */
     public readonly scatteringStrength: number;
-    /** If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red light component scatter as if it physically were a cyan light ray. The default value is {r:700.0, g:530.0, b:440.0}. */
+    /** @internal If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red light component scatter as if it physically were a cyan light ray. The default value is {r:700.0, g:530.0, b:440.0}. */
     public readonly wavelengths: Wavelengths;
 
     public equals(other: Settings): boolean {

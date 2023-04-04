@@ -1290,6 +1290,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** Toggle display of the [[environment]]'s [[Atmosphere]].
+   * @beta
    * @param display Whether to display the atmosphere, or `undefined` to toggle the current display.
    */
   public toggleAtmosphere(display?: boolean): void {
