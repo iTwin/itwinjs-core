@@ -12,10 +12,7 @@ import {
   BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
-  SkyBox,
-  SkyGradient,
-  SkySphere,
-  SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, TextureTransparency, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, TileHeader, ViewFlags,
+  SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -28,8 +25,6 @@ import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
 import { GeometricModelState } from "./ModelState";
-import { imageElementFromImageSource, imageElementFromUrl } from "./ImageUtil";
-import { RenderSystem } from "./render/RenderSystem";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -413,7 +408,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    *
    */
-  public attachMapLayer(options: { settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number}): void {
+  public attachMapLayer(options: { settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number }): void {
     const layerSettings = options.settings.clone({});
     if (undefined === layerSettings)
       return;
@@ -432,12 +427,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public attachMapLayerProps(options: { props: MapLayerProps, isOverlay?: boolean, insertIndex?: number}): void {
+  public attachMapLayerProps(options: { props: MapLayerProps, isOverlay?: boolean, insertIndex?: number }): void {
     const settings = MapLayerSettings.fromJSON(options.props);
     if (undefined === settings)
       return;
 
-    this.attachMapLayer({settings, isOverlay: options.isOverlay, insertIndex:options.insertIndex});
+    this.attachMapLayer({ settings, isOverlay: options.isOverlay, insertIndex: options.insertIndex });
   }
 
   /** @internal */
@@ -497,7 +492,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
     } else {
-      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({ transparency });
     }
     this._synchBackgroundMapImagery();
   }
@@ -547,7 +542,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return;
 
     if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
-      assert (false);
+      assert(false);
       return;
     }
 
@@ -583,7 +578,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
       return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
-    if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
+    if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
       assert(false);
       return undefined;
     }
