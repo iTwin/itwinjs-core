@@ -325,7 +325,6 @@ export class ViewAttributes {
 
     this.addAmbientOcclusion();
     this.addThematicDisplay();
-    this.addAtmosphere();
 
     // Set initial states
     this.update();
@@ -485,11 +484,6 @@ export class ViewAttributes {
   private addThematicDisplay(): void {
     const thematic = new ThematicDisplayEditor(this._vp, this._element);
     this._updates.push((view) => thematic.update(view));
-  }
-
-  private addAtmosphere(): void {
-    const atmosphere = new AtmosphereEditor(this._vp, this._element);
-    this._updates.push((view) => atmosphere.update(view));
   }
 
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }

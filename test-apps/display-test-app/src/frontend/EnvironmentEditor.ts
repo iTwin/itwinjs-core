@@ -9,6 +9,7 @@ import {
 import { ColorDef, Environment, RenderMode, SkyBox, SkyBoxProps, SkyGradient } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { LightingEditor } from "./LightingEditor";
+import { AtmosphereEditor } from "./Atmosphere";
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -57,6 +58,11 @@ export class EnvironmentEditor {
 
     lightingDiv.appendChild(document.createElement("hr"));
     nestedMenu.appendChild(lightingDiv);
+
+    const atmosphereDiv = document.createElement("div");
+    const atmosphereEditor = new AtmosphereEditor(vp, atmosphereDiv);
+    this._updates.push((view: ViewState) => { atmosphereEditor.update(view); });
+    nestedMenu.appendChild(atmosphereDiv);
 
     this._eeBackgroundColor = createColorInput({
       parent: nestedMenu,

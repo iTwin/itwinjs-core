@@ -24,8 +24,8 @@ export class AtmosphereEditor {
   private readonly _wavelengthR: LabeledNumericInput;
   private readonly _wavelengthG: LabeledNumericInput;
   private readonly _wavelengthB: LabeledNumericInput;
-  private readonly _numInScatteringPoints: LabeledNumericInput;
-  private readonly _numOpticalDepthPoints: LabeledNumericInput;
+  private readonly _numViewRaySamples: LabeledNumericInput;
+  private readonly _numSunRaySamples: LabeledNumericInput;
   private readonly _exposure: LabeledNumericInput;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
@@ -51,7 +51,7 @@ export class AtmosphereEditor {
     const checkboxInterface = createCheckBox({
       parent: atmosphereMenu.body,
       handler: (cb) => enableAtmosphere(cb.checked),
-      name: "Atmosphere",
+      name: "Enable Atmosphere",
       id: "cbx_Atmosphere",
     });
     const checkbox = checkboxInterface.checkbox;
@@ -94,7 +94,7 @@ export class AtmosphereEditor {
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "outScatteringIntensity: ",
+      name: "Out Scattering Intensity: ",
     });
     this._exposure = createLabeledNumericInput({
       id: "atmosphere_exposure",
@@ -241,34 +241,34 @@ export class AtmosphereEditor {
     spanSamplePoints.style.display = "flex";
     atmosphereControlsDiv.appendChild(spanSamplePoints);
 
-    this._numInScatteringPoints = createLabeledNumericInput({
-      id: "atmosphere_numInScatteringPoints",
+    this._numViewRaySamples = createLabeledNumericInput({
+      id: "atmosphere_numViewRaySamples",
       parent: spanSamplePoints,
       value: 10,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
-        props.numInScatteringPoints = value;
+        props.numViewRaySamples = value;
         return props;
       }),
       min: 1,
       max: 20,
       step: 1,
-      name: "InScattering Points: ",
+      name: "# Samples per View Ray: ",
     });
 
-    this._numOpticalDepthPoints = createLabeledNumericInput({
-      id: "atmosphere_numOpticalDepthPoints",
+    this._numSunRaySamples = createLabeledNumericInput({
+      id: "atmosphere_numSunRaySamples",
       parent: spanSamplePoints,
       value: 10,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
-        props.numOpticalDepthPoints = value;
+        props.numSunRaySamples = value;
         return props;
       }),
       min: 1,
       max: 20,
       step: 1,
-      name: "Optical Depth Points: ",
+      name: "# Samples per Sun Ray: ",
     });
 
     this._update = (view) => {
@@ -316,8 +316,8 @@ export class AtmosphereEditor {
     this._wavelengthR.input.value = settings.wavelengths.r.toString();
     this._wavelengthG.input.value = settings.wavelengths.g.toString();
     this._wavelengthB.input.value = settings.wavelengths.b.toString();
-    this._numInScatteringPoints.input.value = settings.numInScatteringPoints.toString();
-    this._numOpticalDepthPoints.input.value = settings.numOpticalDepthPoints.toString();
+    this._numViewRaySamples.input.value = settings.numViewRaySamples.toString();
+    this._numSunRaySamples.input.value = settings.numSunRaySamples.toString();
     this._exposure.input.value = settings.exposure.toString();
   }
 

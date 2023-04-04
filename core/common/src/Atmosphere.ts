@@ -89,10 +89,10 @@ export namespace Atmosphere {
     densityFalloff?: number;
     /** See [[Settings.minDensityHeightBelowEarth]] */
     depthBelowEarthForMaxDensity?: number;
-    /** See [[Settings.numInScatteringPoints]] */
-    numInScatteringPoints?: number;
-    /** See [[Settings.numOpticalDepthPoints]] */
-    numOpticalDepthPoints?: number;
+    /** See [[Settings.numViewRaySamples]] */
+    numViewRaySamples?: number;
+    /** See [[Settings.numSunRaySamples]] */
+    numSunRaySamples?: number;
     /** See [[Settings.outScatteringIntensity]] */
     outScatteringIntensity?: number;
     /** See [[Settings.scatteringStrength]] */
@@ -111,12 +111,12 @@ export namespace Atmosphere {
     private static _defaultScatteringStrength: number = 5;
     private static _defaultWavelengths: Wavelengths = new Wavelengths({ r: 700.0, g: 530.0, b: 440.0 });
 
-    private static _defaultNumInScatteringPoints: number = 10;
-    private static _highQualityNumInScatteringPoints: number = 20;
-    private static _defaultNumOpticalDepthPoints: number = 5;
+    private static _defaultNumViewRaySamples: number = 10;
+    private static _highQualityNumViewRaySamples: number = 20;
+    private static _defaultNumSunRaySamples: number = 5;
 
     public static readonly defaults = new Settings({});
-    public static readonly highQuality = new Settings({ numInScatteringPoints: this._highQualityNumInScatteringPoints });
+    public static readonly highQuality = new Settings({ numViewRaySamples: this._highQualityNumViewRaySamples });
 
     /** If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
@@ -126,10 +126,10 @@ export namespace Atmosphere {
     public readonly densityFalloff: number;
     /** If defined, corresponds to the height in meters below the earth's pole at which the atmosphere is at its densest. Physically, this is the point at which there is the most air molecules to interfere with light transmission. Defaults to 0.0. */
     public readonly depthBelowEarthForMaxDensity: number;
-    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light reflected toward the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 40. Defaults to 10. */
-    public readonly numInScatteringPoints: number;
-    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered away from the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 40. Defaults to 5. */
-    public readonly numOpticalDepthPoints: number;
+    /** If defined, corresponds to the number of atmospheric density samples used to compute the amount of light scattered along each view ray. For each sample point, another ray will be cast toward the sun to compute the amount of light reaching the sample point. Higher values increase fidelity, but greatly decrease performance because sun rays must be cast from each additional sample point. The range is 1 to 40. Defaults to 10. */
+    public readonly numViewRaySamples: number;
+    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered along each sun ray. Higher values increase fidelity slightly but greatly decreases performance. Minimal improvement is observable with values above 5. The range is 1 to 40. Defaults to 5. */
+    public readonly numSunRaySamples: number;
     /** If defined, multiplies the amount of light scattered away from the viewing eye by this value. Higher values result in less light being transmitted to the camera. Defaults to 1.0. */
     public readonly outScatteringIntensity: number;
     /** If defined, controls how strongly the atmosphere's air diverts light. Defaults to 5.0.  */
@@ -146,9 +146,9 @@ export namespace Atmosphere {
         return false;
       if (this.depthBelowEarthForMaxDensity !== other.depthBelowEarthForMaxDensity)
         return false;
-      if (this.numInScatteringPoints !== other.numInScatteringPoints)
+      if (this.numViewRaySamples !== other.numViewRaySamples)
         return false;
-      if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints)
+      if (this.numSunRaySamples !== other.numSunRaySamples)
         return false;
       if (this.outScatteringIntensity !== other.outScatteringIntensity)
         return false;
@@ -164,8 +164,8 @@ export namespace Atmosphere {
       this.exposure = JsonUtils.asDouble(json.exposure, Settings._defaultExposure);
       this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings._defaultDensityFalloff);
       this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(json.depthBelowEarthForMaxDensity, Settings._defaultMinDensityHeightBelowEarth);
-      this.numInScatteringPoints = JsonUtils.asDouble(json.numInScatteringPoints, Settings._defaultNumInScatteringPoints);
-      this.numOpticalDepthPoints = JsonUtils.asDouble(json.numOpticalDepthPoints, Settings._defaultNumOpticalDepthPoints);
+      this.numViewRaySamples = JsonUtils.asDouble(json.numViewRaySamples, Settings._defaultNumViewRaySamples);
+      this.numSunRaySamples = JsonUtils.asDouble(json.numSunRaySamples, Settings._defaultNumSunRaySamples);
       this.outScatteringIntensity = JsonUtils.asDouble(json.outScatteringIntensity, Settings._defaultOutScatteringIntensity);
       this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings._defaultScatteringStrength);
       this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths);
@@ -183,8 +183,8 @@ export namespace Atmosphere {
         exposure: this.exposure,
         densityFalloff: this.densityFalloff,
         depthBelowEarthForMaxDensity: this.depthBelowEarthForMaxDensity,
-        numInScatteringPoints: this.numInScatteringPoints,
-        numOpticalDepthPoints: this.numOpticalDepthPoints,
+        numViewRaySamples: this.numViewRaySamples,
+        numSunRaySamples: this.numSunRaySamples,
         outScatteringIntensity: this.outScatteringIntensity,
         scatteringStrength: this.scatteringStrength,
         wavelengths: this.wavelengths.toJSON(),

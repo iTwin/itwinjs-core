@@ -230,7 +230,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
     return emptyResult;
   }
 
-  int numPartitions = u_numInScatteringPoints - 1;
+  int numPartitions = u_numViewRaySamples - 1;
   if (numPartitions <= 0) {
     return emptyResult;
   }
@@ -265,7 +265,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
     opticalDepthFromRayOriginToSamplePoints[i] = opticalDepthForCurrentPartition + opticalDepthFromRayOriginToSamplePoints[i-1];
 
     vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
-    float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numOpticalDepthPoints);
+    float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numSunRaySamples);
 
     float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
     float averageDensityAcrossPartition = opticalDepthForCurrentPartition / stepSize;
@@ -385,22 +385,22 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariablePrecision.High
   );
   shader.addUniform(
-    "u_numInScatteringPoints",
+    "u_numViewRaySamples",
     VariableType.Int,
     (prog) => {
-      prog.addProgramUniform("u_numInScatteringPoints", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindNumInScatteringPoints(
+      prog.addProgramUniform("u_numViewRaySamples", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindNumViewRaySamples(
           uniform
         );
       });
     }
   );
   shader.addUniform(
-    "u_numOpticalDepthPoints",
+    "u_numSunRaySamples",
     VariableType.Int,
     (prog) => {
-      prog.addProgramUniform("u_numOpticalDepthPoints", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindNumOpticalDepthPoints(
+      prog.addProgramUniform("u_numSunRaySamples", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindNumSunRaySamples(
           uniform
         );
       });

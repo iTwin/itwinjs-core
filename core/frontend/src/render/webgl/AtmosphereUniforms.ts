@@ -31,8 +31,8 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _scatteringCoefficients = new Float32Array(3);
 
   // Iteration parameters
-  private _numInScatteringPoints = 0.0;
-  private _numOpticalDepthPoints = 0.0;
+  private _numViewRaySamples = 0.0;
+  private _numSunRaySamples = 0.0;
 
   // utility
   public syncKey = 0;
@@ -58,8 +58,8 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
     this._updateAtmosphereRadiusScaleFactor(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateAtmosphereMaxDensityThresholdScaleFactor(this.atmosphere.depthBelowEarthForMaxDensity);
-    this._updateNumInScatteringPoints(this.atmosphere.numInScatteringPoints);
-    this._updateNumOpticalDepthPoints(this.atmosphere.numOpticalDepthPoints);
+    this._updateNumViewRaySamples(this.atmosphere.numViewRaySamples);
+    this._updateNumSunRaySamples(this.atmosphere.numSunRaySamples);
     this._updateOutScatteringIntensity(this.atmosphere.outScatteringIntensity);
     this._updateScatteringCoefficients(this.atmosphere.scatteringStrength, this.atmosphere.wavelengths);
   }
@@ -118,12 +118,12 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._scatteringCoefficients[2] = ((violetLightWavelength / wavelengths.b) ** 4.0) * scatteringStrength;
   }
 
-  private _updateNumInScatteringPoints(numInScatteringPoints: number) {
-    this._numInScatteringPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numInScatteringPoints));
+  private _updateNumViewRaySamples(numViewRaySamples: number) {
+    this._numViewRaySamples = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numViewRaySamples));
   }
 
-  private _updateNumOpticalDepthPoints(numOpticalDepthPoints: number) {
-    this._numOpticalDepthPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numOpticalDepthPoints));
+  private _updateNumSunRaySamples(numSunRaySamples: number) {
+    this._numSunRaySamples = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numSunRaySamples));
   }
 
   private _updateExposure(exposure: number) {
@@ -200,14 +200,14 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
       uniform.setUniform3fv(this._scatteringCoefficients);
   }
 
-  public bindNumInScatteringPoints(uniform: UniformHandle): void {
+  public bindNumViewRaySamples(uniform: UniformHandle): void {
     if (!sync(this, uniform))
-      uniform.setUniform1i(this._numInScatteringPoints);
+      uniform.setUniform1i(this._numViewRaySamples);
   }
 
-  public bindNumOpticalDepthPoints(uniform: UniformHandle): void {
+  public bindNumSunRaySamples(uniform: UniformHandle): void {
     if (!sync(this, uniform))
-      uniform.setUniform1i(this._numOpticalDepthPoints);
+      uniform.setUniform1i(this._numSunRaySamples);
   }
 
   public get isDisposed(): boolean {
