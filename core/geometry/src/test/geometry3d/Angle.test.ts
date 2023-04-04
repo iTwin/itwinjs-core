@@ -15,9 +15,6 @@ import { Range1d } from "../../geometry3d/Range";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-// allow _radians and _degrees as property names
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable no-console */
 /* cspell:word isnan */
 
 class AngleTests {
@@ -68,7 +65,7 @@ class AngleTests {
         const theta1 = Angle.createDegreesAdjustPositive(degrees);
         const theta2 = Angle.createDegreesAdjustSigned180(degrees);
         if (this.noisy)
-          console.log(
+          GeometryCoreTestIO.consoleLog(
             "adjust angle:", theta0.degrees,
             "    positive:", theta1.degrees,
             "    signed:", theta2.degrees
@@ -399,7 +396,7 @@ describe("MiscAngles", () => {
     ck.testTrue(0 === maxDeltaStepADegrees, "degree shifts are exact");
     ck.testFalse(0 === maxDeltaStepBRadians, "radians shifts are not exact");
 
-    console.log({
+    GeometryCoreTestIO.consoleLog({
       maxErrDegrees: maxDeltaStepADegrees,
       maxErrRadians: maxDeltaStepBRadians,
       maxErrRadiansConvertedToDegrees: Angle.radiansToDegrees(maxDeltaStepBRadians),
@@ -448,8 +445,8 @@ describe("MiscAngles", () => {
       ck.testTrue(angleA.isAlmostEqualNoPeriodShift(angleD));
       const angleZ = Angle.fromJSON(undefined);
       ck.testCoordinate(angleZ.degrees, 0);
-      const angleRa = Angle.fromJSON({ _radians: angleA.radians });
-      const angleDe = Angle.fromJSON({ _degrees: angleA.degrees });
+      const angleRa = Angle.fromJSON({ _radians: angleA.radians }); // eslint-disable-line @typescript-eslint/naming-convention
+      const angleDe = Angle.fromJSON({ _degrees: angleA.degrees }); // eslint-disable-line @typescript-eslint/naming-convention
       ck.testAngleNoShift(angleA, angleRa);
       ck.testAngleNoShift(angleA, angleDe);
     }

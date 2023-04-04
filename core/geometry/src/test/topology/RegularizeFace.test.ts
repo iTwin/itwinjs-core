@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -92,15 +90,15 @@ describe("Regularize", () => {
     const ax = 6;
     const ay = 10;
     for (const data of [
-      new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(-1, -2, -2, - 1, ax, ay, 0, 0),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, -2, -2, - 1, ax, ay, 0, 0),
         3, 3, 0, 0, 1, 1),
-      new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(-1, 0, -2, - 1, ax, ay, 0, 0),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, 0, -2, - 1, ax, ay, 0, 0),
         4, 2, 0, 0, 1, 1),
-      new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, -2, - 1, ax, ay, 0, 0),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, -2, - 1, ax, ay, 0, 0),
         4, 2, 1, 0, 2, 1),
-      new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, 2, - 1, ax, ay, 0, 0),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 2, - 1, ax, ay, 0, 0),
         3, 3, 1, 1, 2, 2),
-      new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0),
         3, 3, 1, 0, 2, 1)]) {
       const graph = new HalfEdgeGraph();
       const seed = Triangulator.createFaceLoopFromCoordinates(graph, data.points, true, false);
@@ -123,11 +121,11 @@ describe("Regularize", () => {
     const allGeometry: GeometryQuery[] = [];
     for (const maxEdgeLength of [4.0, 2.0, 1.2, 20.0]) {
       for (const basePoints of [
-        Sample.creatVerticalStaggerPolygon(1, 0, 0, -2, ax, ay, 0, 0),
-        Sample.creatVerticalStaggerPolygon(-1, -2, -2, - 1, ax, ay, 0, 0),
-        Sample.creatVerticalStaggerPolygon(-1, -2, 0, - 1, ax, ay, 0, 0),
-        Sample.creatVerticalStaggerPolygon(-1, -2, 0, -3, ax, ay, 0, 0),
-        Sample.creatVerticalStaggerPolygon(1, 0, 0, -2, ax, ay, 0, 0)]) {
+        Sample.createVerticalStaggerPolygon(1, 0, 0, -2, ax, ay, 0, 0),
+        Sample.createVerticalStaggerPolygon(-1, -2, -2, - 1, ax, ay, 0, 0),
+        Sample.createVerticalStaggerPolygon(-1, -2, 0, - 1, ax, ay, 0, 0),
+        Sample.createVerticalStaggerPolygon(-1, -2, 0, -3, ax, ay, 0, 0),
+        Sample.createVerticalStaggerPolygon(1, 0, 0, -2, ax, ay, 0, 0)]) {
         const points = Point3dArray.cloneWithMaxEdgeLength(basePoints, maxEdgeLength);
         const graph = new HalfEdgeGraph();
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), outputX0, outputY0 += outputStepY);
@@ -389,7 +387,7 @@ function testRegularize(
         if (!RegularizationContext.isMonotoneFace(f))
           numBad++;
       }
-      console.log(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
+      GeometryCoreTestIO.consoleLog(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(range.fractionToPoint(r0, r0, 0), range.fractionToPoint(r1, r1, 0)), dx + bx, dy, 0.0);
       dumpEdges = true;
     }
@@ -462,7 +460,7 @@ function testFullGraphRegularize(
         if (!RegularizationContext.isMonotoneFace(f))
           numBad++;
       }
-      console.log(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
+      GeometryCoreTestIO.consoleLog(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(range.fractionToPoint(r0, r0, 0), range.fractionToPoint(r1, r1, 0)), dx + bx, dy, 0.0);
       dumpEdges = true;
     }
@@ -573,7 +571,7 @@ function testStars(method: number, filename: string) {
         Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 3, true),
         Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 5, true),
       ]) {
-        // console.log([outputX0, outputY0]);
+        // GeometryCoreTestIO.consoleLog([outputX0, outputY0]);
         transform.multiplyPoint3dArrayArrayInPlace(loops);
         for (const loop of loops)
           GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(loop), outputX0, outputY0);
@@ -663,15 +661,15 @@ it("SingleFaceTriangulation", () => {
   let dx = 0.0;
   let dy = 0.0;
   for (const data of [
-    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(-1, -2, -2, - 1, ax, ay, 0, 0),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, -2, -2, - 1, ax, ay, 0, 0),
       3, 3, 0, 0, 1, 1),
-    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(-1, 0, -2, - 1, ax, ay, 0, 0),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, 0, -2, - 1, ax, ay, 0, 0),
       4, 2, 0, 0, 1, 1),
-    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, -2, - 1, ax, ay, 0, 0),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, -2, - 1, ax, ay, 0, 0),
       4, 2, 1, 0, 2, 1),
-    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, 2, - 1, ax, ay, 0, 0),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 2, - 1, ax, ay, 0, 0),
       3, 3, 1, 1, 2, 2),
-    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0),
       3, 3, 1, 0, 2, 1)]) {
     testFullGraphRegularizeAndTriangulate(ck, allGeometry, dx, dy, [data.points]);
     dx += 20.0;
@@ -716,7 +714,7 @@ it("SingleFaceTriangulation", () => {
     Point3d.create(3000, -125, 139.642813),
     Point3d.create(2458.903271, -125, 270.731123),
   ];
-  console.log("outerCurvePts = ", outerCurvePts.length / 3);
+  GeometryCoreTestIO.consoleLog("outerCurvePts = ", outerCurvePts.length / 3);
 
   const innerCurvePts = [Point3d.create(-1515.307337, -125, 55.112819),
   Point3d.create(-1528.284271, -125, 63.783729),
@@ -785,8 +783,8 @@ it("SingleFaceTriangulation", () => {
     const rotateAroundX = Transform.createFixedPointAndMatrix(outerCurvePts[0], Matrix3d.createRotationAroundAxisIndex(AxisIndex.X, Angle.createDegrees(90)));
     rotateAroundX.multiplyPoint3dArrayInPlace(outerCurvePts);
     rotateAroundX.multiplyPoint3dArrayInPlace(innerCurvePts);
-    console.log({ areaA: PolygonOps.areaXY(outerCurvePts) });
-    console.log({ areaB: PolygonOps.areaXY(innerCurvePts) });
+    GeometryCoreTestIO.consoleLog({ areaA: PolygonOps.areaXY(outerCurvePts) });
+    GeometryCoreTestIO.consoleLog({ areaB: PolygonOps.areaXY(innerCurvePts) });
 
     const graph1 = Triangulator.createTriangulatedGraphFromLoops([outerCurvePts, innerCurvePts]);
     if (graph1) {

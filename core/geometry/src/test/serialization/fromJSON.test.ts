@@ -5,20 +5,20 @@
 
 // import { expect } from "chai";
 import * as g from "../../core-geometry";
-/* eslint-disable no-console */
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { SimpleFactory } from "../SimpleFactory";
 
 let noisy = 0;
 function report(a: any, b: any) {
   if (noisy > 0)
-    console.log(a);
+    GeometryCoreTestIO.consoleLog(a);
   if (noisy > 10)
-    console.log(b);
+    GeometryCoreTestIO.consoleLog(b);
 }
 function reportType(a: any) {
   if (noisy > 0)
-    console.log(a);
+    GeometryCoreTestIO.consoleLog(a);
 }
 /**
  * Verify toJSON and fromJSON for various classes.

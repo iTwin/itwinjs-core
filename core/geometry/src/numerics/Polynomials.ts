@@ -1297,7 +1297,7 @@ export class TrigPolynomial {
     for (const theta of angles) {
       const c = theta.cos();
       const s = theta.sin();
-      console.log({
+      GeometryCoreTestIO.consoleLog({
         angle: theta, co: c, si: s,
         f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a1});
   } */
@@ -1691,14 +1691,14 @@ export class SmallSystem {
     xyzA: Point3d, normalA: Vector3d,
     xyzB: Point3d, normalB: Vector3d,
     xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined {
-      return this.linearSystem3d (
-        normalA.x, normalA.y, normalA.z,
-        normalB.x, normalB.y, normalB.z,
-        normalC.x, normalC.y, normalC.z,
-        Geometry.dotProductXYZXYZ (xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
-        Geometry.dotProductXYZXYZ (xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
-        Geometry.dotProductXYZXYZ (xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
-    }
+    return this.linearSystem3d(
+      normalA.x, normalA.y, normalA.z,
+      normalB.x, normalB.y, normalB.z,
+      normalC.x, normalC.y, normalC.z,
+      Geometry.dotProductXYZXYZ(xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
+      Geometry.dotProductXYZXYZ(xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
+      Geometry.dotProductXYZXYZ(xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
+  }
 
   /**
    * * in rowB, replace `rowB[j] += a * rowB[pivot] * rowA[j] / rowA[pivot]` for `j>pivot`
@@ -1868,10 +1868,10 @@ export class ImplicitLineXY {
   /**
    * constant coefficient
    */
-   public a: number;
-   /**
-   * x coefficient
-   */
+  public a: number;
+  /**
+  * x coefficient
+  */
   public ax: number;
   /**
    * y coefficient
@@ -1888,8 +1888,8 @@ export class ImplicitLineXY {
    * * the start and endpoints are distance `b` from the projection of the origin onto the ImplicitLineXY
    * @returns undefined if ax,ay are both zero.   Otherwise the two points of the segment.
    */
-  public convertToSegmentPoints(b: number): Point3d[] | undefined{
-    const q = Math.sqrt (this.ax * this.ax + this.ay * this.ay);
+  public convertToSegmentPoints(b: number): Point3d[] | undefined {
+    const q = Math.sqrt(this.ax * this.ax + this.ay * this.ay);
     const alpha = Geometry.conditionalDivideCoordinate(1.0, q, 1.0e10);
     if (alpha === undefined)
       return undefined;
@@ -1910,10 +1910,10 @@ export class ImplicitLineXY {
   /**
    * add scale * (a,ax,ay) to the respective coefficients.
    */
-   public addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number) {
-     this.a += scale * a;
-     this.ax += scale * ax;
-     this.ay += scale * ay;
+  public addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number) {
+    this.a += scale * a;
+    this.ax += scale * ax;
+    this.ay += scale * ay;
   }
 
 }

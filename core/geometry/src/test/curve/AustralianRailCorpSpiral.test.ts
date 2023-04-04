@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Transform } from "../../geometry3d/Transform";
 import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
+import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { Range1d } from "../../geometry3d/Range";
-import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
+import { Transform } from "../../geometry3d/Transform";
 import { Quadrature } from "../../numerics/Quadrature";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 describe("AustralianRailCorpSpiral", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -56,7 +56,7 @@ describe("AustralianRailCorpSpiral", () => {
         const distanceB = spiral.curveLengthBetweenFractions(0, fractionOfX);
         distanceRoundTripErrorRange.extendX(distanceA - distanceB);
       }
-      console.log(distanceRoundTripErrorRange);
+      GeometryCoreTestIO.consoleLog(distanceRoundTripErrorRange);
     }
     ck.checkpoint("AustralianRailCorpSpiral.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
@@ -78,7 +78,7 @@ describe("AustralianRailCorpSpiral", () => {
       const f = Math.abs(czechLength - gaussLength10);
       ck.testLE(f, 0.01 * e, " confirm czech excess length within 1%");
       if (noisy)
-        console.log({ czechLengthA: czechLength, gaussLengthA: gaussLength10, fOverE: f / e });
+        GeometryCoreTestIO.consoleLog({ czechLengthA: czechLength, gaussLengthA: gaussLength10, fOverE: f / e });
       const distanceRoundTripErrorRange = Range1d.createNull();
       for (const fractionOfX of [0, 0.2, 0.8, 1.0]) {
         const xA = fractionOfX * spiral.nominalL1;
@@ -88,7 +88,7 @@ describe("AustralianRailCorpSpiral", () => {
           distanceRoundTripErrorRange.extendX(xA - xB);
       }
       if (noisy)
-        console.log(distanceRoundTripErrorRange);
+        GeometryCoreTestIO.consoleLog(distanceRoundTripErrorRange);
       ck.testLT(distanceRoundTripErrorRange.length(), 1.e-12);
     }
     expect(ck.getNumErrors()).equals(0);
@@ -121,5 +121,5 @@ describe("AustralianRailCorpSpiral", () => {
     ck.testTrue((phiC2 - phiC1) * (phiC1 - phiC0) > 0, "normal phi variation is monotone");
     ck.testFalse(evaluator.isAlmostEqual(undefined));
     expect(ck.getNumErrors()).equals(0);
-});
+  });
 });

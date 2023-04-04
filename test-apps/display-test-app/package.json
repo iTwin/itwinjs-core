@@ -12,8 +12,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run -s build:backend && npm run -s build:frontend",
-    "build:ci": "npm run -s build:backend && npm run -s build:frontend-webpack",
+    "build": "npm run -s build:backend && npm run -s build:frontend && npm run -s build:frontend-webpack",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",

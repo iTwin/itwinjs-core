@@ -550,26 +550,30 @@ export enum BatchType {
     VolumeClassifier = 1
 }
 
-// @internal
+// @beta
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
     static readonly accessControl: {
         allowOrigin: string;
         allowMethods: string;
         allowHeaders: string;
     };
+    // @internal
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
-// @internal
+// @beta
 export class BentleyCloudRpcManager extends RpcManager {
     static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfiguration;
     static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration;
 }
 
-// @internal
+// @beta
 export interface BentleyCloudRpcParams {
     info: OpenAPIInfo;
+    pathPrefix?: string;
+    // @internal
     pendingRequestListener?: RpcRequestEventHandler;
+    // @internal
     protocol?: typeof BentleyCloudRpcProtocol;
     uriPrefix?: string;
 }
@@ -1118,98 +1122,6 @@ export interface ClipStyleProps {
 export interface CloudContainerUri {
     // (undocumented)
     readonly uriParams: string;
-}
-
-// @beta @deprecated (undocumented)
-export abstract class CloudStorageCache<TContentId, TContentType> {
-    constructor();
-    // (undocumented)
-    protected formContainerKey(id: TContentId): string;
-    // (undocumented)
-    abstract formContainerName(id: TContentId): string;
-    // (undocumented)
-    abstract formResourceName(id: TContentId): string;
-    // (undocumented)
-    protected getContainer(id: TContentId): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    protected abstract instantiateResource(response: Response): Promise<TContentType | undefined>;
-    // (undocumented)
-    protected abstract obtainContainerUrl(id: TContentId, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    provider: CloudStorageProvider;
-    // (undocumented)
-    protected requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response>;
-    // (undocumented)
-    retrieve(id: TContentId): Promise<TContentType | undefined>;
-    // (undocumented)
-    protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageContainerDescriptor {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    provider?: CloudStorageProvider;
-    // (undocumented)
-    resource?: string;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageContainerUrl {
-    // (undocumented)
-    bound?: boolean;
-    // (undocumented)
-    descriptor: CloudStorageContainerDescriptor;
-    // (undocumented)
-    expires: number;
-    // (undocumented)
-    headers?: Record<string, string>;
-    // (undocumented)
-    method?: string;
-    // (undocumented)
-    url: string;
-    // (undocumented)
-    valid: number;
-}
-
-// @beta @deprecated (undocumented)
-export namespace CloudStorageContainerUrl {
-    // (undocumented)
-    export function empty(): CloudStorageContainerUrl;
-}
-
-// @beta @deprecated (undocumented)
-export enum CloudStorageProvider {
-    // (undocumented)
-    AliCloud = 2,
-    // (undocumented)
-    Amazon = 1,
-    // (undocumented)
-    Azure = 0,
-    // (undocumented)
-    External = 3,
-    // (undocumented)
-    Unknown = 4
-}
-
-// @beta @deprecated (undocumented)
-export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
-    protected constructor();
-    // (undocumented)
-    protected formContainerKey(id: TileContentIdentifier): string;
-    // (undocumented)
-    formContainerName(id: TileContentIdentifier): string;
-    // (undocumented)
-    formResourceName(id: TileContentIdentifier): string;
-    // (undocumented)
-    static getCache(): CloudStorageTileCache;
-    // (undocumented)
-    protected instantiateResource(response: Response): Promise<Uint8Array | undefined>;
-    // (undocumented)
-    protected obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    supplyExpiryForContainerUrl(_id: CloudStorageContainerDescriptor): Date;
 }
 
 // @public
@@ -4798,14 +4710,10 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
-    // @beta (undocumented)
+    // @beta
     getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined>;
-    // @beta @deprecated
-    getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
-    // @internal @deprecated
-    isUsingExternalTileCache(): Promise<boolean>;
     // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
@@ -5824,6 +5732,7 @@ export interface NormalMapParams {
     greenUp?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
+    useConstantLod?: boolean;
 }
 
 // @public
@@ -7775,39 +7684,43 @@ export interface RpcActivity extends SessionProps {
 // @internal (undocumented)
 export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
-// @internal
+// @beta
 export abstract class RpcConfiguration {
-    // (undocumented)
+    // @internal (undocumented)
     allowAttachedInterfaces: boolean;
+    // @internal
     static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
     static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: new () => RpcConfiguration): void;
-    // (undocumented)
+    // @internal (undocumented)
     attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
-    // (undocumented)
+    // @internal (undocumented)
     attached: RpcInterfaceDefinition[];
-    // (undocumented)
+    // @internal (undocumented)
     get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition>;
+    // @internal
     readonly controlChannel: RpcControlChannel;
     static developmentMode: boolean;
     static disableRoutingValidation: boolean;
     static initializeInterfaces(configuration: RpcConfiguration): void;
     abstract readonly interfaces: () => RpcInterfaceDefinition[];
     static obtain<T extends RpcConfiguration>(configurationConstructor: new () => T): T;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
     pendingOperationRetryInterval: number;
+    // @internal
     abstract readonly protocol: RpcProtocol;
+    // @internal
     static requestContext: RpcRequestContext;
-    // (undocumented)
+    // @internal (undocumented)
     readonly routing: RpcRoutingToken;
     static strictMode: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
     static throwOnTokenMismatch: boolean;
     transientFaultLimit: number;
@@ -7904,7 +7817,7 @@ export abstract class RpcInterface {
     readonly routing: RpcRoutingToken;
 }
 
-// @internal (undocumented)
+// @beta
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     // (undocumented)
     interfaceName: string;
@@ -7914,7 +7827,7 @@ export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     prototype: T;
 }
 
-// @internal
+// @beta
 export interface RpcInterfaceEndpoints {
     // (undocumented)
     compatible: boolean;
@@ -7926,7 +7839,7 @@ export interface RpcInterfaceEndpoints {
     operationNames: string[];
 }
 
-// @internal (undocumented)
+// @beta
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 // @internal
@@ -7964,7 +7877,7 @@ export interface RpcManagedStatus {
     } | RpcNotFoundResponse;
 }
 
-// @internal
+// @beta
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
@@ -8430,7 +8343,7 @@ export namespace RpcRoutingMap {
     export function create(): RpcRoutingMap;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class RpcRoutingToken {
     // (undocumented)
     readonly debugLabel: string;
@@ -9216,6 +9129,18 @@ export class TextureMapping {
 
 // @public (undocumented)
 export namespace TextureMapping {
+    export interface ConstantLodParamProps {
+        maxDistClamp?: number;
+        minDistClamp?: number;
+        offset?: XAndY;
+        repetitions?: number;
+    }
+    export interface ConstantLodParams {
+        maxDistClamp: number;
+        minDistClamp: number;
+        offset: XAndY;
+        repetitions: number;
+    }
     export enum Mode {
         // @internal (undocumented)
         Cubic = 4,
@@ -9239,9 +9164,11 @@ export namespace TextureMapping {
         Spherical = 5
     }
     export interface ParamProps {
+        constantLodParams?: ConstantLodParamProps;
         mapMode?: TextureMapping.Mode;
         textureMat2x3?: TextureMapping.Trans2x3;
         textureWeight?: number;
+        useConstantLod?: boolean;
         // @internal (undocumented)
         worldMapping?: boolean;
     }
@@ -9249,8 +9176,10 @@ export namespace TextureMapping {
         constructor(props?: TextureMapping.ParamProps);
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+        constantLodParams: ConstantLodParams;
         mode: TextureMapping.Mode;
         textureMatrix: TextureMapping.Trans2x3;
+        useConstantLod: boolean;
         weight: number;
         // @internal (undocumented)
         worldMapping: boolean;
@@ -9450,8 +9379,6 @@ export interface TileContentIdentifier {
     contentId: string;
     // (undocumented)
     guid: string | undefined;
-    // (undocumented)
-    tokenProps: IModelRpcProps;
     // (undocumented)
     treeId: string;
 }

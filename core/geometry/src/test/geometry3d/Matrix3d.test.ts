@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { AxisIndex, AxisOrder, Geometry, StandardViewIndex } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { InverseMatrixState, Matrix3d, PackedMatrix3dOps } from "../../geometry3d/Matrix3d";
@@ -15,8 +14,8 @@ import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT rigids ATTV
 
 export class MatrixTests {
@@ -138,8 +137,8 @@ describe("Matrix3d.Construction", () => {
 function checkInverse(ck: bsiChecker.Checker, matrixA: Matrix3d) {
   const matrixAInverse = matrixA.inverse();
   ck.testPointer(matrixAInverse, "inverse");
-  // console.log("matrixA", matrixA);
-  // console.log("matrixAInverse", matrixAInverse);
+  // GeometryCoreTestIO.consoleLog("matrixA", matrixA);
+  // GeometryCoreTestIO.consoleLog("matrixAInverse", matrixAInverse);
   if (matrixAInverse) {
     const AB = matrixA.multiplyMatrixMatrix(matrixAInverse);
     ck.testBoolean(true, AB.isIdentity, "A * AInverse = I");
@@ -250,14 +249,14 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
         const matrixBU = matrixB.multiplyMatrixMatrix(matrixC);
         const matrixBTB = matrixB.multiplyMatrixTransposeMatrix(matrixB);
         if (bsiChecker.Checker.noisy.factorPerpendicularColumns) {
-          console.log("A", matrixA);
-          console.log("diagonal elements of BTB: ",
+          GeometryCoreTestIO.consoleLog("A", matrixA);
+          GeometryCoreTestIO.consoleLog("diagonal elements of BTB: ",
             matrixBTB.at(0, 0), " - ", matrixBTB.at(1, 1), " - ", matrixBTB.at(1, 1),
             ". error: ", matrixBTB.sumSquares() - matrixBTB.sumDiagonalSquares()
           );
-          console.log("B", matrixB);
-          console.log("C", matrixC);
-          console.log("BTB", matrixBTB);
+          GeometryCoreTestIO.consoleLog("B", matrixB);
+          GeometryCoreTestIO.consoleLog("C", matrixC);
+          GeometryCoreTestIO.consoleLog("BTB", matrixBTB);
         }
         ck.testCoordinate(0, matrixA.maxDiff(matrixBU), "A = B*C");
         ck.testBoolean(true, matrixBTB.isDiagonal, "BT*B is diagonal");
@@ -530,7 +529,7 @@ describe("AxisOrder.ShiftAxis", () => {
       [AxisOrder.XYZ, AxisOrder.YZX, AxisOrder.ZXY, AxisOrder.XZY, AxisOrder.YXZ, AxisOrder.ZYX]
     ) {
       if (bsiChecker.Checker.noisy.axisOrderVerify) {
-        console.log(
+        GeometryCoreTestIO.consoleLog(
           "AxisOrder", axisOrder,
           Geometry.axisOrderToAxis(axisOrder, 0),
           Geometry.axisOrderToAxis(axisOrder, 1),
@@ -667,10 +666,10 @@ describe("Matrix3d.AxisAndAngleOfRotation", () => {
     let maxDiff12 = 0;
     for (const vector of vectors) {
       if (bsiChecker.Checker.noisy.rotMatrixAxisAndAngle)
-        console.log("*** vector *** ", vector);
+        GeometryCoreTestIO.consoleLog("*** vector *** ", vector);
       for (const degrees of [0.01, 10, -14, 78, 128, 0.01, 0.328]) {
         if (bsiChecker.Checker.noisy.rotMatrixAxisAndAngle)
-          console.log("*** degrees *** ", degrees);
+          GeometryCoreTestIO.consoleLog("*** degrees *** ", degrees);
         const matrix1 = Matrix3d.createRotationAroundVector(vector, Angle.createDegrees(degrees))!;
         const data = matrix1.getAxisAndAngleOfRotation();
         // We do not directly compare data.axis and axis because they might be negated.
@@ -684,7 +683,7 @@ describe("Matrix3d.AxisAndAngleOfRotation", () => {
         if (matrix2) {
           const diff12 = matrix2.maxDiff(matrix1);
           if (bsiChecker.Checker.noisy.rotMatrixAxisAndAngle)
-            console.log("matrix1.maxDiff(matrix2) ", diff12);
+            GeometryCoreTestIO.consoleLog("matrix1.maxDiff(matrix2) ", diff12);
           maxDiff12 = Math.max(maxDiff12, diff12);
         }
       }
@@ -1534,9 +1533,9 @@ function checkInverseRelationship(ck: bsiChecker.Checker, name: string, matrix: 
   expectedInverseState: InverseMatrixState | undefined) {
   if (matrix !== undefined) {
     if (bsiChecker.Checker.noisy.matrixMultiplyAliasing) {
-      console.log("-------------------------------");
-      console.log(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
-      console.log(`cached inverse    ${matrix.inverseCoffs}`);
+      GeometryCoreTestIO.consoleLog("-------------------------------");
+      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
+      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs}`);
     }
     if (expectedInverseState !== undefined)
       ck.testExactNumber(expectedInverseState, matrix.inverseState, `${name} inverse state`);

@@ -4,17 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Angle } from "../../geometry3d/Angle";
 import { LineString3d } from "../../curve/LineString3d";
-
-/* eslint-disable no-console */
+import { Angle } from "../../geometry3d/Angle";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 describe("InterpolationCurve3d", () => {
   it("HelloWorld", () => {
@@ -59,10 +57,10 @@ describe("InterpolationCurve3d", () => {
       InterpolationCurve3dOptions.create({ fitPoints: circlePoints, closed: true, isChordLenKnots: 1 }),
     ]) {
       if (noisy)
-        console.log(`InterpolationCurve index ${count}`);
+        GeometryCoreTestIO.consoleLog(`InterpolationCurve index ${count}`);
       count++;
       x0 += delta;
-      testInterpolationCurveConstruction (ck, allGeometry, options, x0, y0, delta);
+      testInterpolationCurveConstruction(ck, allGeometry, options, x0, y0, delta);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "HelloWorld");
     expect(ck.getNumErrors()).equals(0);
@@ -74,9 +72,9 @@ describe("InterpolationCurve3d", () => {
     const points = [
       Point3d.create(53.44488806143417, -26.616949756940954, 1.0000000000000036),
       Point3d.create(53.44488806143417, -28.649852653892122, 1.0000000000000036),
-      Point3d.create(52.155105205956495,-31.11087513966227,  1.000000000000007),
-      Point3d.create(51.81089204818833, -31.38045503480483,  1.000000000000007),
-      Point3d.create(51.616695380910535,-31.499726679972767, 1.000000000000007)];
+      Point3d.create(52.155105205956495, -31.11087513966227, 1.000000000000007),
+      Point3d.create(51.81089204818833, -31.38045503480483, 1.000000000000007),
+      Point3d.create(51.616695380910535, -31.499726679972767, 1.000000000000007)];
     const startTan = Vector3d.create(0, -1, 0);
     const endTan = Vector3d.create(1, 0, 0);
     const options = InterpolationCurve3dOptions.create({ fitPoints: points, startTangent: startTan, endTangent: endTan, isChordLenKnots: 1, isColinearTangents: 1 });
@@ -96,7 +94,7 @@ describe("InterpolationCurve3d", () => {
     const point1 = Point3d.create(0, 2);
     const point2 = Point3d.create(1, 3);
     const point3 = Point3d.create(2, 0);
-    for (const isChordLenKnots of [0,1]){
+    for (const isChordLenKnots of [0, 1]) {
       // counts are EDGE counts
       for (const count0 of [1, 3]) {
         x0 = 0.0;
@@ -106,13 +104,13 @@ describe("InterpolationCurve3d", () => {
             pushInterpolatedInteriorPoints(points, point0, point1, 0, count0, count0);
             pushInterpolatedInteriorPoints(points, point1, point2, 1, count1, count1);
             pushInterpolatedInteriorPoints(points, point2, point3, 1, count2, count2);
-            const options = InterpolationCurve3dOptions.create({fitPoints: points, isChordLenKnots});
+            const options = InterpolationCurve3dOptions.create({ fitPoints: points, isChordLenKnots });
             x0 += deltaX;
-            testInterpolationCurveConstruction (ck, allGeometry, options, x0, y0, deltaY);
+            testInterpolationCurveConstruction(ck, allGeometry, options, x0, y0, deltaY);
           }
           x0 += 2.0 * deltaX;
         }
-      y0 += 4.0 * deltaY;
+        y0 += 4.0 * deltaY;
       }
       y0 += 10.0 * deltaY;
     }
@@ -122,7 +120,7 @@ describe("InterpolationCurve3d", () => {
 
 });
 
-function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQuery[], options: InterpolationCurve3dOptions, x0: number=0, y0: number=0, delta: number=0) {
+function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQuery[], options: InterpolationCurve3dOptions, x0: number = 0, y0: number = 0, delta: number = 0) {
   const curve = InterpolationCurve3d.create(options);
   if (ck.testType(curve, InterpolationCurve3d, `Expect interpolation curve for options ${options}`)) {
     if (ck.testType(curve.options, InterpolationCurve3dOptions)) {
@@ -164,7 +162,7 @@ function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQu
 */
 function pushInterpolatedInteriorPoints(points: Point3d[], point0: Point3d, point1: Point3d,
   index0: number, index1: number, count: number) {
-  for (let i = index0; i <= index1; i++){
+  for (let i = index0; i <= index1; i++) {
     points.push(point0.interpolate(i / count, point1));
   }
 }

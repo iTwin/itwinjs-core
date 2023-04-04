@@ -1,14 +1,13 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "4.0.0-dev.55",
+  "version": "4.0.0-dev.67",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
   "typings": "lib/cjs/map-layers-formats",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -21,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/map-layers-formats"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "extensions/map-layers-formats"
   },
   "keywords": [
     "iModel",
