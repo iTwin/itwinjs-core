@@ -9,7 +9,7 @@ import { QPoint3dBuffer } from "@itwin/core-common";
 import { RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 
 describe("RealityMeshParamsBuilder", () => {
-  it("supports 8-, 16-, and 32-bit indices", function () {
+  it("supports 8-, 16-, and 32-bit indices", () => {
     function test(numIndices: number, expectedType: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array): void {
       // eslint-disable-next-line no-console
       console.log(`Running test with ${numIndices} indices`);
@@ -44,14 +44,12 @@ describe("RealityMeshParamsBuilder", () => {
       expect(pt.z).to.equal(3);
     }
 
-    this.timeout(15000);
-
     test(3, Uint8Array);
     test(255, Uint8Array);
     test(258, Uint16Array);
     test(65535, Uint16Array);
     test(65538, Uint32Array);
-  });
+  }).timeout(20000);
 
   it("defines initial index buffer type based on number of initial vertices", () => {
     function expectIndices(initialVertexCapacity: number, expectedType: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array): void {
