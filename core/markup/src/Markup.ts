@@ -10,7 +10,7 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
+import { adopt, create, G, Marker, Element as MarkupElement, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
@@ -485,5 +485,39 @@ export class Markup {
   public ungroupSelected() {
     if (undefined !== this.svgMarkup)
       this.selected.ungroupAll(this.undo);
+  }
+
+  /** Check if the supplied MarkupElement is a group of MarkupText and the MarkupText's outline Rect.
+   * @param el the markup element to check
+   * @returns true if boxed text
+   */
+  public isBoxedText(el: MarkupElement): boolean {
+    return el.type === "g" &&
+      el.node.classList.length > 0 &&
+      el.node.classList[0] === MarkupApp.boxedTextClass &&
+      el.children().length === 2;
+  }
+
+  /** Get an existing or create a new reusable symbol representing an arrow head.
+   * If a Marker for the supplied color and size already exists it is returned, otherwise a new Marker is created.
+   * @param color the arrow head color
+   * @param length the arrow head length
+   * @param width the arrow head width
+   * @note Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
+   */
+  public createArrowMarker(color: string, length: number, width: number): Marker {
+    length = Math.ceil(length); // Don't allow "." in selector string...
+    width = Math.ceil(width);
+    const arrowMarkerId = `ArrowMarker${length}x${width}-${color}`;
+    let marker = SVG(`#${arrowMarkerId}`) as Marker;
+    if (null === marker) {
+      marker = this.svgMarkup!.marker(length, width).id(arrowMarkerId);
+      marker.polygon([0, 0, length, width * 0.5, 0, width]);
+      marker.attr("orient", "auto-start-reverse");
+      marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...
+      marker.attr("refX", length);
+      marker.css({ stroke: color, fill: color });
+    }
+    return marker;
   }
 }
