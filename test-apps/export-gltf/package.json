@@ -6,7 +6,6 @@
   "description": "Example of exporting graphics from an iModel",
   "scripts": {
     "build": "tsc 1>&2",
-    "build:ci": "npm run -s build",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "test": "",
