@@ -15,8 +15,8 @@ import { ShaderProgram } from "../ShaderProgram";
 import { Texture } from "../Texture";
 
 const computeBaseColor = `return vec4(0, 0, 0, 0);`;
-const assignFragData = `FragColor = baseColor;`;
-const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y); v_eyeSpace = pos.xyz; return pos.xyzz;`; // rawPos swizzling accounts for iModel rotation.
+const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;
+const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y); return pos.xyzz;`; // rawPos swizzling accounts for iModel rotation.
 const computeTexDir = `v_texDir = rawPosition.xyz;`;
 
 const scratchRotMatrix = new Matrix3();
