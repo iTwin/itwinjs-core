@@ -7,6 +7,7 @@
 import { BaseFormat } from '@itwin/core-quantity';
 import { BentleyError } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
+import { FormatProps } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
@@ -1015,6 +1016,7 @@ export class OverrideFormat {
     get stationSeparator(): string;
     // (undocumented)
     get thousandSeparator(): string;
+    toJSON(): FormatProps;
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
