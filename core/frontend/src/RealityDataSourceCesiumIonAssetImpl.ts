@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request, RequestOptions } from "./request/Request";
+import { request } from "./request/Request";
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { CesiumIonAssetProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
@@ -84,15 +84,6 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     else
       this._baseUrl = `${urlParts.join("/")}/`;
   }
-  private async _doRequest(url: string, responseType: "json" | "arraybuffer"): Promise<any> {
-    const options: RequestOptions = {
-      headers: {
-        authorization: this._requestAuthorization,
-      },
-    };
-
-    return request(url, responseType as "json", options);
-  }
 
   /**
    * This method returns the URL to access the actual 3d tiles from the service provider.
@@ -130,16 +121,19 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
 
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
-    return this._doRequest(url, "json");
+    const headers = { authorization: this._requestAuthorization };
+
+    return request(url, "json", { headers });
   }
 
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
-  public async getTileContent(name: string): Promise<any> {
+  public async getTileContent(name: string): Promise<ArrayBuffer> {
     const tileUrl = this._baseUrl + name;
+    const headers = { authorization: this._requestAuthorization };
 
-    return this._doRequest(tileUrl, "arraybuffer");
+    return request(tileUrl, "arraybuffer", { headers });
   }
 
   /**
@@ -147,8 +141,9 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    */
   public async getTileJson(name: string): Promise<any> {
     const tileUrl = this._baseUrl + name;
+    const headers = { authorization: this._requestAuthorization };
 
-    return this._doRequest(tileUrl, "json");
+    return request(tileUrl, "json", { headers });
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {
