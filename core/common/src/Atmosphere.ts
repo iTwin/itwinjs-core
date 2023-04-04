@@ -104,11 +104,11 @@ export namespace Atmosphere {
   /** Describes the properties with which the atmospheric scattering effect should be drawn. Theses properties correspond to a physics-based approximation of atmospheric scattering phenomenons. */
   export class Settings {
     private static _defaultAtmosphereHeightAboveEarth: number = 100000.0;
-    private static _defaultExposure: number = 2.5;
+    private static _defaultExposure: number = 2.0;
     private static _defaultDensityFalloff: number = 10.0;
     private static _defaultMinDensityHeightBelowEarth: 0.0;
     private static _defaultOutScatteringIntensity: number = 1.0;
-    private static _defaultScatteringStrength: number = 5;
+    private static _defaultScatteringStrength: number = 100;
     private static _defaultWavelengths: Wavelengths = new Wavelengths({ r: 700.0, g: 530.0, b: 440.0 });
 
     private static _defaultNumViewRaySamples: number = 10;
@@ -120,7 +120,7 @@ export namespace Atmosphere {
 
     /** @internal If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
-    /** If defined, this value is used to simulate the aperture of a camera. Higher values allow more light in. This value should be adjusted in situations without much sunlight (like sunset) to brighten the image. Defaults to 2.5 */
+    /** If defined, this value is used to simulate the aperture of a camera. Higher values allow more light in. This value might need to be adjusted slightly in situations without much sunlight (like sunset) to brighten the image. Defaults to 2.0 */
     public readonly exposure: number;
     /** @internal If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 10.0. */
     public readonly densityFalloff: number;
@@ -132,7 +132,7 @@ export namespace Atmosphere {
     public readonly numSunRaySamples: number;
     /** @internal If defined, multiplies the amount of light scattered away from the viewing eye by this value. Higher values result in less light being transmitted to the camera. Defaults to 1.0. */
     public readonly outScatteringIntensity: number;
-    /** @internal If defined, controls how strongly the atmosphere's air diverts light. Defaults to 5.0.  */
+    /** @internal If defined, controls how strongly the atmosphere's air diverts light. Defaults to 100.0.  */
     public readonly scatteringStrength: number;
     /** @internal If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red light component scatter as if it physically were a cyan light ray. The default value is {r:700.0, g:530.0, b:440.0}. */
     public readonly wavelengths: Wavelengths;

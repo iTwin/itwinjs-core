@@ -92,14 +92,14 @@ export class AtmosphereEditor {
       }),
       min: 0.0,
       max: 1000.0,
-      step: 1.0,
+      step: 0.1,
       parseAsFloat: true,
       name: "Out Scattering Intensity: ",
     });
     this._exposure = createLabeledNumericInput({
       id: "atmosphere_exposure",
       parent: spanIntensity,
-      value: 1.0,
+      value: 2.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         props.exposure = value;
@@ -118,15 +118,15 @@ export class AtmosphereEditor {
     this._atmosphereHeightAboveEarth = createLabeledNumericInput({
       id: "atmosphere_atmosphereHeightAboveEarth",
       parent: spanAtmosphereScale,
-      value: 0.0,
+      value: 100000.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         props.atmosphereHeightAboveEarth = value;
         return props;
       }),
       min: 0.0,
-      max: 1000.0,
-      step: 1.0,
+      max: 1000000.0,
+      step: 10000.0,
       parseAsFloat: true,
       name: "Atmosphere Height Above Earth: ",
     });
@@ -140,8 +140,8 @@ export class AtmosphereEditor {
         return props;
       }),
       min: 0.0,
-      max: 1000.0,
-      step: 1.0,
+      max: 1000000.0,
+      step: 10000.0,
       parseAsFloat: true,
       name: "Depth Below Earth For Max Density",
     });
@@ -152,7 +152,7 @@ export class AtmosphereEditor {
     this._scatteringStrength = createLabeledNumericInput({
       id: "atmosphere_scatteringStrength",
       parent: spanScattering,
-      value: 0.0,
+      value: 100.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         props.scatteringStrength = value;
@@ -168,7 +168,7 @@ export class AtmosphereEditor {
     this._wavelengthR = createLabeledNumericInput({
       id: "atmosphere_wavelengthR",
       parent: spanScattering,
-      value: 0.0,
+      value: 700.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         const wavelenghts = props.wavelengths!;
@@ -187,7 +187,7 @@ export class AtmosphereEditor {
     this._wavelengthG = createLabeledNumericInput({
       id: "atmosphere_wavelengthG",
       parent: spanScattering,
-      value: 0.0,
+      value: 530.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         const wavelenghts = props.wavelengths!;
@@ -206,7 +206,7 @@ export class AtmosphereEditor {
     this._wavelengthB = createLabeledNumericInput({
       id: "atmosphere_wavelengthB",
       parent: spanScattering,
-      value: 0.0,
+      value: 400.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         const wavelenghts = props.wavelengths!;
@@ -224,7 +224,7 @@ export class AtmosphereEditor {
     this._densityFalloff = createLabeledNumericInput({
       id: "atmosphere_densityFalloff",
       parent: atmosphereControlsDiv,
-      value: 0.0,
+      value: 10.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         props.densityFalloff = value;
@@ -251,7 +251,7 @@ export class AtmosphereEditor {
         return props;
       }),
       min: 1,
-      max: 20,
+      max: 40,
       step: 1,
       name: "# Samples per View Ray: ",
     });
@@ -259,14 +259,14 @@ export class AtmosphereEditor {
     this._numSunRaySamples = createLabeledNumericInput({
       id: "atmosphere_numSunRaySamples",
       parent: spanSamplePoints,
-      value: 10,
+      value: 5,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
         props.numSunRaySamples = value;
         return props;
       }),
       min: 1,
-      max: 20,
+      max: 40,
       step: 1,
       name: "# Samples per Sun Ray: ",
     });
