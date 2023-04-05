@@ -105,7 +105,7 @@ export class QueryReader {
         if (key === "toRow") {
           return () => target.formatCurrentRow(true);
         }
-        if (key === "getArray" || key === "toJSON") {
+        if (key === "toArray") {
           return () => this.getRowInternal();
         }
       }
