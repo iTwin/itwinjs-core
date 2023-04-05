@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@itwin/core-common";
+import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GeographicCRSProps, GlobeMode } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { WebMercatorTilingScheme } from "./tile/internal";
@@ -119,6 +119,10 @@ export class BackgroundMapGeometry {
     return this.cartesianRange.containsPoint(Point3d.createFrom(db)) ? this._iModel.spatialToCartographic(db, result) : this.dbToCartographic(db, result);
   }
 
+  public async dbToCartographicFromGcs2(db: XYAndZ, result?: Cartographic, datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic> {
+    return this.cartesianRange.containsPoint(Point3d.createFrom(db)) ? this._iModel.spatialToCartographic2(db, result, datumOrGCRS) : this.dbToCartographic(db, result);
+  }
+
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
     if (undefined === result)
       result = Cartographic.createZero();
@@ -143,6 +147,19 @@ export class BackgroundMapGeometry {
     }
     return (!this._iModel.noGcsDefined && this.cartesianRange.containsPoint(db)) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
   }
+
+  public async cartographicToDbFromGcs2(cartographic: Cartographic, result?: Point3d, datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d> {
+    let db;
+    if (this.globeMode === GlobeMode.Plane) {
+      const fraction = Point2d.create(0, 0);
+      this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
+      db = this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
+    } else {
+      db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
+    }
+    return (!this._iModel.noGcsDefined && this.cartesianRange.containsPoint(db)) ? this._iModel.cartographicToSpatialFromGcs2(cartographic, undefined,datumOrGCRS) : db;
+  }
+
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);

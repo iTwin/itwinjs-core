@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
-  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, PointWithStatus, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
@@ -446,6 +446,25 @@ export abstract class IModelConnection extends IModel {
     return Cartographic.fromDegrees({ longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z }, result);
   }
 
+  public async spatialToCartographicFromGcs2(spatial: XYAndZ, result?: Cartographic, datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic> {
+    if (!this.isGeoLocated && this.noGcsDefined)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    const geoConverter = this.geoServices.getConverter(datumOrGCRS)!;
+    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
+
+    if (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s) {
+      const geoServiceStatus = mapToGeoServiceStatus(coordResponse.geoCoords[0].s);
+      throw new IModelError(geoServiceStatus, "Error converting spatial to cartographic");
+    }
+
+    const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    return Cartographic.fromDegrees({ longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z }, result);
+  }
+
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
@@ -456,6 +475,10 @@ export abstract class IModelConnection extends IModel {
    */
   public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
+  }
+
+  public async spatialToCartographic2(spatial: XYAndZ, result?: Cartographic, datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic> {
+    return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs2(spatial, result, datumOrGCRS));
   }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
@@ -496,6 +519,27 @@ export abstract class IModelConnection extends IModel {
     }
 
     return geoConverter.getIModelCoordinatesFromGeoCoordinates(geoCoords);
+  }
+
+  public async cartographicToSpatialFromGcs2(cartographic: Cartographic, result?: Point3d, datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d> {
+    if (!this.isGeoLocated && this.noGcsDefined)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    const geoConverter = this.geoServices.getConverter(datumOrGCRS)!;
+    const geoCoord = Point3d.create(cartographic.longitudeDegrees, cartographic.latitudeDegrees, cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
+
+    if (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s) {
+      const geoServiceStatus = mapToGeoServiceStatus(coordResponse.iModelCoords[0].s);
+      throw new IModelError(geoServiceStatus, "Error converting cartographic to spatial");
+    }
+
+    result = result ? result : Point3d.createZero();
+    result.setFromJSON(coordResponse.iModelCoords[0].p);
+    return result;
   }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
