@@ -5,6 +5,7 @@
     "ECObjects-3": "Schema '{0}' has reference cycles: {1}",
     "ECObjects-100": "Class '{0}' cannot derive from sealed base class '{1}'.",
     "ECObjects-101": "Class '{0}' cannot derive from base class '{1}' of type '{2}'.",
+    "ECObjects-102": "Abstract Class '{0}' cannot derive from base class '{1}' because it is not an abstract class.",
     "ECObjects-500": "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class.",
     "ECObjects-501": "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' whose schema is not referenced by the container's Schema.",
     "ECObjects-502": "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which cannot be found.",
