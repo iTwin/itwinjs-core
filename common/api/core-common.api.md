@@ -330,25 +330,34 @@ export namespace AreaPattern {
     }
 }
 
-// @public
+// @beta
 export namespace Atmosphere {
     export interface Props {
+        // @internal
         atmosphereHeightAboveEarth?: number;
+        // @internal
         densityFalloff?: number;
+        // @internal
         depthBelowEarthForMaxDensity?: number;
         display?: boolean;
         exposure?: number;
-        numInScatteringPoints?: number;
-        numOpticalDepthPoints?: number;
+        numSunRaySamples?: number;
+        numViewRaySamples?: number;
+        // @internal
         outScatteringIntensity?: number;
+        // @internal
         scatteringStrength?: number;
+        // @internal
         wavelengths?: WavelengthsProps;
     }
     export class Settings {
+        // @internal
         readonly atmosphereHeightAboveEarth: number;
         // (undocumented)
         static readonly defaults: Settings;
+        // @internal
         readonly densityFalloff: number;
+        // @internal
         readonly depthBelowEarthForMaxDensity: number;
         // (undocumented)
         equals(other: Settings): boolean;
@@ -357,14 +366,18 @@ export namespace Atmosphere {
         static fromJSON(json?: Props): Settings;
         // (undocumented)
         static readonly highQuality: Settings;
-        readonly numInScatteringPoints: number;
-        readonly numOpticalDepthPoints: number;
+        readonly numSunRaySamples: number;
+        readonly numViewRaySamples: number;
+        // @internal
         readonly outScatteringIntensity: number;
+        // @internal
         readonly scatteringStrength: number;
         // (undocumented)
         toJSON(display?: boolean): Props;
+        // @internal
         readonly wavelengths: Wavelengths;
     }
+    // @internal
     export class Wavelengths {
         constructor(props: WavelengthsProps);
         // (undocumented)
@@ -380,6 +393,7 @@ export namespace Atmosphere {
         // (undocumented)
         toJSON(): WavelengthsProps;
     }
+    // @internal
     export interface WavelengthsProps {
         // (undocumented)
         b: number;
@@ -2049,6 +2063,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get sunTime(): number | undefined;
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
+    // @beta
     toggleAtmosphere(display?: boolean): void;
     toggleGroundPlane(display?: boolean): void;
     toggleSkyBox(display?: boolean): void;
@@ -2888,10 +2903,12 @@ export class EntityReferenceSet extends Set<EntityReference> {
 // @public
 export class Environment {
     protected constructor(props?: Partial<EnvironmentProperties>);
+    // @beta
     readonly atmosphere: Atmosphere.Settings;
     clone(changedProps?: Partial<EnvironmentProperties>): Environment;
     static create(props?: Partial<EnvironmentProperties>): Environment;
     static readonly defaults: Environment;
+    // @beta
     readonly displayAtmosphere: boolean;
     readonly displayGround: boolean;
     readonly displaySky: boolean;
@@ -2911,6 +2928,7 @@ export type EnvironmentProperties = NonFunctionPropertiesOf<Environment>;
 
 // @public
 export interface EnvironmentProps {
+    // @beta
     atmosphere?: Atmosphere.Props;
     ground?: GroundPlaneProps;
     sky?: SkyBoxProps;
