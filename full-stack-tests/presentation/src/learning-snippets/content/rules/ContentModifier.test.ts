@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset } from "@itwin/presentation-common";
+import { KeySet, NestedContentValue, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { getFieldByLabel, tryGetFieldByLabel } from "../../../Utils";
+import { getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
@@ -196,12 +196,11 @@ describe("Learning Snippets", () => {
                     className: "SpatialViewDefinitionUsesModelSelector",
                   },
                   direction: "Backward",
-                  targetClass: { schemaName: "BisCore", className: "SpatialViewDefinition" },
                 },
               }],
             }],
           }, {
-            // apply related and calculated properties on nested properties
+            // add a content modifier for `SpatialViewDefinition` elements
             ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
             relatedProperties: [{
@@ -211,13 +210,13 @@ describe("Learning Snippets", () => {
                   className: "ViewDefinitionUsesDisplayStyle",
                 },
                 direction: "Forward",
-                targetClass: { schemaName: "BisCore", className: "DisplayStyle" },
               },
             }],
             calculatedProperties: [{
               label: "Calculated for SpatialViewDefinition",
-              value: "this.Extents",
+              value: "this.Pitch",
             }],
+            // set `applyOnNestedContent: true` to get this modifier applied when `SpatialViewDefinition` content is loaded indirectly
             applyOnNestedContent: true,
           }],
         };
@@ -259,10 +258,13 @@ describe("Learning Snippets", () => {
             ],
           },
         ]);
-        const spatialViewDefinition = content!.contentSet[0].displayValues[getFieldByLabel(content!.descriptor.fields, "Spatial View Definition").name] as DisplayValuesArray;
+        const spatialViewDefinition = content!.contentSet[0].values[getFieldByLabel(content!.descriptor.fields, "Spatial View Definition").name] as NestedContentValue[];
         expect(spatialViewDefinition.length).to.eq(1);
-        const spatialViewDefinitionProperties = (spatialViewDefinition[0] as DisplayValuesMap).displayValues as DisplayValuesMap;
-        expect(spatialViewDefinitionProperties[getFieldByLabel(content!.descriptor.fields, "Calculated for SpatialViewDefinition").name]).to.eq("5.9371887957409877,3.2424499696297646,40");
+        expect(spatialViewDefinition[0].values[getFieldByLabel(content!.descriptor.fields, "Calculated for SpatialViewDefinition").name]).to.not.be.empty;
+        const nestedDisplayStyle = getFieldsByLabel(content!.descriptor.fields, "Display Style").find((field) => field.isNestedContentField());
+        const displayStyle = spatialViewDefinition[0].values[nestedDisplayStyle!.name] as NestedContentValue[];
+        expect(displayStyle.length).to.eq(1);
+        expect(displayStyle[0].values).to.not.be.empty;
       });
 
       it("uses `relatedProperties` attribute", async () => {

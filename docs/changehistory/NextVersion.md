@@ -100,6 +100,10 @@ Previously, the backend would return a "timeout" status if creating the response
 
 Now, the two timeout configs on the backend and the frontend have been separated. The timeout on the frontend is set through [PresentationManagerProps.requestTimeout]($presentation-frontend) and defaults to 10 minutes. Presentation manager will repeat the RPC request as many times as needed to wait at least 10 minutes until returning the "timeout" response to the requestor. With this change the timeout configuration on the backend becomes less important as it merely affects how often the frontend will have to repeat the request. It can still be changed through [PresentationPropsBase.requestTimeout]($presentation-backend), but the default value has been reduced to 5 seconds.
 
+### Use content modifiers on nested content
+
+Previously, the calculated and related properties defined in the content modifier were only applied to displayed instances, but not to related instances. In most cases, when showing related instance properties, we also want to apply them to all nested content. Now, the content modifier has an attribute `applyOnNestedContent` which indicates if the modifier should be used on nested content. See [content modifier](../presentation/content/ContentModifier.md) for more details.
+
 ### Dependency updates
 
 In addition to upgrading iTwin.js core dependencies to `4.0`, there are some other notable upgrades:
