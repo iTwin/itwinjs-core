@@ -57,7 +57,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
 export type QueryValueType = any;
 
 /** @beta */
-export interface QueryRowProxy {
+export interface QueryRow {
   toRow(): any;
   toArray(): QueryValueType[];
   getMetaData(): QueryPropertyMetaData[];
@@ -76,7 +76,7 @@ export interface QueryStats {
 }
 
 /** @beta */
-export class ECSqlReader {
+export class QueryReader {
   private static readonly _maxRetryCount = 10;
   private _localRows: any[] = [];
   private _localOffset: number = 0;
@@ -88,8 +88,8 @@ export class ECSqlReader {
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
   private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0 };
-  private _rowProxy = new Proxy<ECSqlReader>(this, {
-    get: (target: ECSqlReader, key: string | Symbol) => {
+  private _rowProxy = new Proxy<QueryReader>(this, {
+    get: (target: QueryReader, key: string | Symbol) => {
       if (typeof key === "string") {
         const idx = Number.parseInt(key, 10);
         if (!Number.isNaN(idx)) {
@@ -105,16 +105,16 @@ export class ECSqlReader {
         if (key === "toRow") {
           return () => target.formatCurrentRow(true);
         }
-        if (key === "getArray" || key === "toJSON") {
+        if (key === "toArray") {
           return () => this.getRowInternal();
         }
       }
       return undefined;
     },
-    has: (target: ECSqlReader, p: string | symbol) => {
+    has: (target: QueryReader, p: string | symbol) => {
       return !target._props.findByNoCase(p as string);
     },
-    ownKeys: (target: ECSqlReader) => {
+    ownKeys: (target: QueryReader) => {
       const keys = [];
       for (const prop of target._props) {
         keys.push(prop.name);
@@ -170,7 +170,7 @@ export class ECSqlReader {
     }
     this._done = false;
   }
-  public get current(): QueryRowProxy { return (this._rowProxy as any); }
+  public get current(): QueryRow { return (this._rowProxy as any); }
   // clear all bindings
   public resetBindings() {
     this._param = new QueryBinder().serialize();
@@ -195,7 +195,7 @@ export class ECSqlReader {
     if (this._globalCount === 0) {
       return [];
     }
-    const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames? DbValueFormat.JsNames :DbValueFormat.ECSqlNames;
+    const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
     const request: DbQueryRequest = {
       ... this._options,
       kind: DbRequestKind.ECSql,
@@ -211,7 +211,7 @@ export class ECSqlReader {
       this._props = new PropertyMetaDataMap(resp.meta);
     }
     for (const row of resp.data) {
-      ECSqlReader.replaceBase64WithUint8Array(row);
+      QueryReader.replaceBase64WithUint8Array(row);
     }
     return resp.data;
   }
@@ -229,7 +229,7 @@ export class ECSqlReader {
       this.stats.totalTime += (Date.now() - startTime);
       return rs;
     };
-    let retry = ECSqlReader._maxRetryCount;
+    let retry = QueryReader._maxRetryCount;
     let resp = await execQuery(request);
     DbQueryError.throwIfError(resp, request);
     while (--retry > 0 && needRetry(resp)) {

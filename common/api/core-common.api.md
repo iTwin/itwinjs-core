@@ -2359,36 +2359,6 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta (undocumented)
-export class ECSqlReader {
-    // @internal
-    constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    // (undocumented)
-    get current(): QueryRowProxy;
-    // (undocumented)
-    get done(): boolean;
-    // (undocumented)
-    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
-    // (undocumented)
-    getMetaData(): Promise<QueryPropertyMetaData[]>;
-    // (undocumented)
-    getRowInternal(): any[];
-    // (undocumented)
-    readonly query: string;
-    // (undocumented)
-    reset(options?: QueryOptions): void;
-    // (undocumented)
-    resetBindings(): void;
-    // (undocumented)
-    setParams(param: QueryBinder): void;
-    // (undocumented)
-    get stats(): QueryStats;
-    // (undocumented)
-    step(): Promise<boolean>;
-    // (undocumented)
-    toArray(): Promise<any[]>;
-}
-
 // @public
 export enum ECSqlSystemProperty {
     // (undocumented)
@@ -6939,15 +6909,38 @@ export interface QueryQuota {
     time?: number;
 }
 
-// @public
-export enum QueryRowFormat {
-    UseECSqlPropertyIndexes = 1,
-    UseECSqlPropertyNames = 0,
-    UseJsPropertyNames = 2
+// @beta (undocumented)
+export class QueryReader {
+    // @internal
+    constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
+    // (undocumented)
+    get current(): QueryRow;
+    // (undocumented)
+    get done(): boolean;
+    // (undocumented)
+    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // (undocumented)
+    getMetaData(): Promise<QueryPropertyMetaData[]>;
+    // (undocumented)
+    getRowInternal(): any[];
+    // (undocumented)
+    readonly query: string;
+    // (undocumented)
+    reset(options?: QueryOptions): void;
+    // (undocumented)
+    resetBindings(): void;
+    // (undocumented)
+    setParams(param: QueryBinder): void;
+    // (undocumented)
+    get stats(): QueryStats;
+    // (undocumented)
+    step(): Promise<boolean>;
+    // (undocumented)
+    toArray(): Promise<any[]>;
 }
 
 // @beta (undocumented)
-export interface QueryRowProxy {
+export interface QueryRow {
     // (undocumented)
     [propertyName: string]: QueryValueType;
     // (undocumented)
@@ -6958,6 +6951,13 @@ export interface QueryRowProxy {
     toArray(): QueryValueType[];
     // (undocumented)
     toRow(): any;
+}
+
+// @public
+export enum QueryRowFormat {
+    UseECSqlPropertyIndexes = 1,
+    UseECSqlPropertyNames = 0,
+    UseJsPropertyNames = 2
 }
 
 // @beta (undocumented)
