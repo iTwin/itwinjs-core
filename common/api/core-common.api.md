@@ -2359,36 +2359,6 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta (undocumented)
-export class ECSqlReader {
-    // @internal
-    constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    // (undocumented)
-    get current(): QueryRowProxy;
-    // (undocumented)
-    get done(): boolean;
-    // (undocumented)
-    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
-    // (undocumented)
-    getMetaData(): Promise<QueryPropertyMetaData[]>;
-    // (undocumented)
-    getRowInternal(): any[];
-    // (undocumented)
-    readonly query: string;
-    // (undocumented)
-    reset(options?: QueryOptions): void;
-    // (undocumented)
-    resetBindings(): void;
-    // (undocumented)
-    setParams(param: QueryBinder): void;
-    // (undocumented)
-    get stats(): QueryStats;
-    // (undocumented)
-    step(): Promise<boolean>;
-    // (undocumented)
-    toArray(): Promise<any[]>;
-}
-
 // @public
 export enum ECSqlSystemProperty {
     // (undocumented)
@@ -6937,6 +6907,36 @@ export interface QueryPropertyMetaData {
 export interface QueryQuota {
     memory?: number;
     time?: number;
+}
+
+// @beta (undocumented)
+export class QueryReader {
+    // @internal
+    constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
+    // (undocumented)
+    get current(): QueryRowProxy;
+    // (undocumented)
+    get done(): boolean;
+    // (undocumented)
+    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // (undocumented)
+    getMetaData(): Promise<QueryPropertyMetaData[]>;
+    // (undocumented)
+    getRowInternal(): any[];
+    // (undocumented)
+    readonly query: string;
+    // (undocumented)
+    reset(options?: QueryOptions): void;
+    // (undocumented)
+    resetBindings(): void;
+    // (undocumented)
+    setParams(param: QueryBinder): void;
+    // (undocumented)
+    get stats(): QueryStats;
+    // (undocumented)
+    step(): Promise<boolean>;
+    // (undocumented)
+    toArray(): Promise<any[]>;
 }
 
 // @public

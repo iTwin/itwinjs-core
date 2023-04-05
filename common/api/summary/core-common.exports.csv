@@ -198,7 +198,6 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
@@ -589,6 +588,7 @@ public;QueryOptions
 public;QueryOptionsBuilder
 beta;QueryPropertyMetaData
 public;QueryQuota
+beta;QueryReader
 public;QueryRowFormat
 beta;QueryRowProxy
 beta;QueryStats
