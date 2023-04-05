@@ -86,10 +86,10 @@ export class Ray3d implements BeJSONFunctions {
   public projectPointToRay(spacePoint: Point3d): Point3d {
     /**
      * To project a point to the ray, we can create a vector called "v" from ray origin to the spacePoint and project
-     * that vector to the ray "r". The projection is "((v.r)/||r||^2) r" where "v.r" is the dort product. Note that
-     * pointToFraction returns "(v.r)/||r||^2".
-     * Note: If ray is the normal of a plane, then projection length "(v.r)/||r||" is the altitude of the spacePoint
-     * with respect to the plane.
+     * that vector to the ray direction vector "r". The projection is "((v.r)/||r||^2) r" where "v.r" is the dot
+     * product. Note that pointToFraction returns "(v.r)/||r||^2".
+     * Note: If r is the normal of a plane, then projection length "(v.r)/||r||" is the signed altitude of the
+     * spacePoint with respect to the plane.
      */
     return this.origin.plusScaled(this.direction, this.pointToFraction(spacePoint));
   }
@@ -105,6 +105,11 @@ export class Ray3d implements BeJSONFunctions {
      */
     if (!this.direction.isParallelTo(other.direction, true))
       return false;
+    /**
+     * In exact math, we consider a ray to have an infinite line as direction (not a finite vector).
+     * Therefore, in exact math it is not possible for one origin to be on the other ray but not vice
+     * versa. However, we test both ways because first check may pass due to round-off errors.
+     */
     let workPoint = this.projectPointToRay(other.origin);
     if (!other.origin.isAlmostEqualMetric(workPoint))
       return false;
@@ -239,7 +244,7 @@ export class Ray3d implements BeJSONFunctions {
   }
   /**
    * Return a transform for rigid axes at ray origin with z in ray direction.
-   * * If the direction vector is zero, axes default to identity (from createHeadsUpTriad)
+   * * If the direction vector is zero, axes default to identity (from [[Matrix3d.createRigidHeadsUp]])
    */
   public toRigidZFrame(): Transform | undefined {
     const axes = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY);
@@ -290,7 +295,7 @@ export class Ray3d implements BeJSONFunctions {
     return false;
   }
   /**
-   * Convert an Angle to a JSON object.
+   * Construct a JSON object from this Ray3d.
    * @return {*} [origin,normal]
    */
   public toJSON(): any {
