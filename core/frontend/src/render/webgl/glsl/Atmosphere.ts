@@ -10,6 +10,7 @@ import {
   VariablePrecision,
   VariableType,
   VertexShaderBuilder,
+  VertexShaderComponent,
 } from "../ShaderBuilder";
 
 const computeRayDir = `
@@ -224,6 +225,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
     return emptyResult;
   }
 
+  // Because the skybox is drawn behind the earth, atmospheric effects do not need to be calculated on the skybox where the earth is obscuring it
   float ignoreDistanceThreshold = diameterOfEarthAtPole * 0.15; // need to accomodate a small threshold to ensure skybox atmosphere overlaps with the uneven earth mesh
   bool ignoreRaycastsIntersectingEarth = isSkyBox;
   if (ignoreRaycastsIntersectingEarth && earthHitInfo[1] > ignoreDistanceThreshold) {
@@ -288,8 +290,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 
   vec3 reflectedLightIntensity = isSkyBox ? vec3(1.0) : calculateReflectedLightIntensity(opticalDepthFromSunToCameraThroughLastSamplePoint);
 
-  mat3 result = mat3(totalLightScatteredTowardsCamera, reflectedLightIntensity, vec3(0.0));
-  return result;
+  return mat3(totalLightScatteredTowardsCamera, reflectedLightIntensity, vec3(0.0));
 }
 `;
 
@@ -319,9 +320,21 @@ vec3 calculateReflectedLightIntensity(float opticalDepth) {
 }
 `;
 
+const computeAtmosphericScatteringVaryingsOnSky = `
+  mat3 atmosphericScatteringOutput = computeAtmosphericScattering(true);
+  v_atmosphericScatteringColor = atmosphericScatteringOutput[0];
+  v_reflectedLightIntensity = atmosphericScatteringOutput[1];
+`;
+
+const computeAtmosphericScatteringVaryingsOnRealityMesh = `
+  mat3 atmosphericScatteringOutput = computeAtmosphericScattering(false);
+  v_atmosphericScatteringColor = atmosphericScatteringOutput[0];
+  v_reflectedLightIntensity = atmosphericScatteringOutput[1];
+`;
+
 const computeAtmosphericScatteringFragmentFromVaryings = `
 mat3 computeAtmosphericScatteringFragment() {
-  return v_atmosphericScattering;
+  return mat3(v_atmosphericScatteringColor, v_reflectedLightIntensity, vec3(0.0));
 }
 `;
 
@@ -539,8 +552,14 @@ export function addAtmosphericScatteringEffect(
       builder.frag.addFunction(computeAtmosphericScatteringFragmentOnRealityMesh);
     }
   } else {
-    const functionCall = isSkyBox ? `computeAtmosphericScattering(true)` : `computeAtmosphericScattering(false)`;
-    builder.addFunctionComputedVaryingWithArgs("v_atmosphericScattering", VariableType.Mat3, functionCall, computeAtmosphericScatteringFromScratch);
+    builder.vert.addFunction(computeAtmosphericScatteringFromScratch);
+    builder.addVarying("v_atmosphericScatteringColor", VariableType.Vec3);
+    builder.addVarying("v_reflectedLightIntensity", VariableType.Vec3);
+    if (isSkyBox) {
+      builder.vert.set(VertexShaderComponent.ComputeAtmosphericScatteringVaryings, computeAtmosphericScatteringVaryingsOnSky);
+    } else {
+      builder.vert.set(VertexShaderComponent.ComputeAtmosphericScatteringVaryings, computeAtmosphericScatteringVaryingsOnRealityMesh);
+    }
     builder.frag.addFunction(computeAtmosphericScatteringFragmentFromVaryings);
   }
 

@@ -680,6 +680,9 @@ export const enum VertexShaderComponent {
   // (Required) Return this vertex's position in clip space.
   // vec4 computePosition(vec4 rawPos)
   ComputePosition,
+  // (Optional) Compute all atmospheric scattering values in one pass and assign them to varyings (For Skybox and RealityMesh only)
+  // void computeAtmosphericScatteringVaryings
+  ComputeAtmosphericScatteringVaryings,
   // (Optional) After all output (varying) values have been computed, return true if this vertex should be discarded.
   // bool checkForLateDiscard()
   CheckForLateDiscard,
@@ -698,7 +701,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap, true); }
 
-  public constructor(flags: ShaderBuilderFlags = { }) {
+  public constructor(flags: ShaderBuilderFlags = {}) {
     super(VertexShaderComponent.COUNT, flags);
 
     this.addDefine("MAT_NORM", "g_nmx");
@@ -826,6 +829,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
       main.addline(`  ${comp}`);
     }
 
+    const computeAtmosphericScatteringVaryings = this.get(VertexShaderComponent.ComputeAtmosphericScatteringVaryings);
+    if (undefined !== computeAtmosphericScatteringVaryings) {
+      prelude.addFunction("void computeAtmosphericScatteringVaryings()", computeAtmosphericScatteringVaryings);
+      main.addline("  computeAtmosphericScatteringVaryings();");
+    }
+
     const checkForLateDiscard = this.get(VertexShaderComponent.CheckForLateDiscard);
     if (undefined !== checkForLateDiscard) {
       prelude.addFunction("bool checkForLateDiscard()", checkForLateDiscard);
@@ -909,7 +918,7 @@ export const enum FragmentShaderComponent {
   // (Optional) Override render order to be output to pick buffers.
   // float overrideRenderOrder(float renderOrder)
   OverrideRenderOrder,
-  // (Optional) Override apply atmospheric scattering effect to Skybox and RealityMesh
+  // (Optional) Apply atmospheric scattering effect. (For Skybox and RealityMesh only)
   // vec4 applyAtmosphericScattering()
   ApplyAtmosphericScattering,
   // (Optional) Override normal
@@ -924,7 +933,7 @@ export const enum FragmentShaderComponent {
 export class FragmentShaderBuilder extends ShaderBuilder {
   public requiresEarlyZWorkaround = false;
 
-  public constructor(flags: ShaderBuilderFlags = { }) {
+  public constructor(flags: ShaderBuilderFlags = {}) {
     super(FragmentShaderComponent.COUNT, flags);
     this.addFragOutput("FragColor", -1);
   }
@@ -1129,7 +1138,7 @@ export class ProgramBuilder {
   private readonly _flags: ShaderBuilderFlags;
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(attrMap?: Map<string, AttributeDetails>, flags: ShaderBuilderFlags = { }) {
+  public constructor(attrMap?: Map<string, AttributeDetails>, flags: ShaderBuilderFlags = {}) {
     this._attrMap = attrMap;
     this.vert = new VertexShaderBuilder(flags);
     this.frag = new FragmentShaderBuilder(flags);
