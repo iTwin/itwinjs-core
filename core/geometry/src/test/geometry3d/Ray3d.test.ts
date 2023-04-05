@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
 import { AxisOrder, Geometry } from "../../Geometry";
@@ -16,8 +17,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 
-/** create rays, using optional result (which may be undefined)
- */
+/** create rays, using optional result (which may be undefined) */
 function createRays(ck: Checker, target?: Ray3d) {
   const pointA = Point3d.create(1, 2, 3);
   const directionA = Vector3d.create(4, 5, 6);
@@ -150,7 +150,9 @@ describe("Ray3d", () => {
           rayE1.origin.addInPlace(vector12);
           // rayE2 at fraction f2 has been moved to rayE1 at fraction f1.  Confirm intersection there . .
           const approachE = Ray3d.closestApproachRay3dRay3d(rayE1, rayE2);
-          ck.testExactNumber(approachE.approachType!, CurveCurveApproachType.Intersection, "forced intersection", [indexA, indexB]);
+          ck.testExactNumber(
+            approachE.approachType!, CurveCurveApproachType.Intersection, "forced intersection", [indexA, indexB]
+          );
           ck.testCoordinate(f1, approachE.detailA.fraction);
           ck.testCoordinate(f2, approachE.detailB.fraction);
         }
@@ -193,8 +195,12 @@ describe("Ray3d", () => {
         if (!interval.isNull) {
           for (const intervalFraction of [0.999999, 0.5, 0.000001, -0.001, 1.001]) {
             const point = ray.fractionToPoint(interval.fractionToPoint(intervalFraction));
-            if (!ck.testBoolean(Geometry.isIn01(intervalFraction), range.containsPoint(point), "fractional point vs range", intervalFraction, point,
-              prettyPrint(ray), prettyPrint(range)))
+            if (
+              !ck.testBoolean(
+                Geometry.isIn01(intervalFraction), range.containsPoint(point), "fractional point vs range",
+                intervalFraction, point, prettyPrint(ray), prettyPrint(range)
+              )
+            )
               ray.intersectionWithRange3d(range);
           }
           const interval1 = ray1.intersectionWithRange3d(range);
@@ -228,7 +234,6 @@ describe("Ray3d", () => {
               ray.intersectionWithRange3d(range);
           }
         }
-
       }
     }
     ck.testLE(0, numOutside, "Confirm some outside rays were vetted");
