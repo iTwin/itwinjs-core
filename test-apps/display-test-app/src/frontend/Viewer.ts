@@ -29,6 +29,8 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
+import { TerrainDrapeTool } from "./TerrainDrapeTool";
+import { DefaultMapFeatureInfoTool } from "./MapFeatureInfoTool";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -405,6 +407,15 @@ export class Viewer extends Window {
       },
       tooltip: "Point cloud settings",
     });
+
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue928",
+      click: async () => {
+        const tool = new  DefaultMapFeatureInfoTool();
+        await tool.run();
+      },
+      tooltip: "MapFeatureInfo",
+    }));
 
     this.updateTitle();
     this.updateActiveSettings();

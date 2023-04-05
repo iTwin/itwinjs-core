@@ -59,6 +59,7 @@ import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { DefaultMapFeatureInfoTool } from "./MapFeatureInfoTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -336,6 +337,7 @@ export class DisplayTestApp {
       SyncViewportFrustaTool,
       SyncViewportsTool,
       TerrainDrapeTool,
+      DefaultMapFeatureInfoTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
