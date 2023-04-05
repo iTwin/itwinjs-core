@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "@itwin/core-frontend";
-import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 describe("BriefcaseTxns", () => {
@@ -67,12 +67,12 @@ describe("BriefcaseTxns", () => {
       const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
       await expectCommit("onElementsChanged");
 
       const code = await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue());
-      const model = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, code);
+      const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, code);
       await imodel.saveChanges();
       await expectCommit("onElementsChanged", "onModelsChanged");
 

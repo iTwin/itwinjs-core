@@ -6,8 +6,6 @@
  * @module Bspline
  */
 
-// import { Point2d } from "../Geometry2d";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
@@ -290,11 +288,13 @@ export class KnotVector {
   /** Convert localFraction within the interval following an indexed knot to a knot value. */
   public baseKnotFractionToKnot(knotIndex0: number, localFraction: number): number {
     const knot0 = this.knots[knotIndex0];
+    localFraction = Geometry.clamp(localFraction, 0, 1);
     return knot0 + localFraction * (this.knots[knotIndex0 + 1] - knot0);
   }
   /** Convert localFraction within an indexed bezier span to a knot value. */
   public spanFractionToKnot(spanIndex: number, localFraction: number): number {
     const k = this.spanIndexToLeftKnotIndex(spanIndex);
+    localFraction = Geometry.clamp(localFraction, 0, 1);
     return this.knots[k] + localFraction * (this.knots[k + 1] - this.knots[k]);
   }
   /** Convert localFraction within an indexed bezier span to fraction of active knot range. */
@@ -304,6 +304,7 @@ export class KnotVector {
   }
   /** Return fraction of active knot range to knot value. */
   public fractionToKnot(fraction: number): number {
+    fraction = Geometry.clamp(fraction, 0, 1);   // B-splines are not extendable
     return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
   /**

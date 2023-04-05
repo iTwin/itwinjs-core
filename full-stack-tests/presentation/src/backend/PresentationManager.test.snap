@@ -6,7 +6,7 @@ Array [
     "class": "Physical Object",
     "id": "0x74",
     "items": Object {
-      "@ECPresentation:CATEGORY_LABEL_SelectedItems@": Object {
+      "Selected Item(s)": Object {
         "items": Object {
           "Category": Object {
             "type": "primitive",
@@ -177,7 +177,7 @@ Array [
     "class": "Physical Object",
     "id": "0x75",
     "items": Object {
-      "@ECPresentation:CATEGORY_LABEL_SelectedItems@": Object {
+      "Selected Item(s)": Object {
         "items": Object {
           "Category": Object {
             "type": "primitive",

@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 alpha;ArcMethod
+internal;basicManipulationIpc: PickAsyncMethods
 alpha;BCurveMethod
 alpha;class BlendEdgesTool 
 alpha;class BooleanOperationTool 
@@ -33,12 +34,13 @@ alpha;CutSolidElementsTool
 alpha;DeleteElementsTool 
 alpha;DeleteSubEntitiesTool 
 alpha;DynamicGraphicsProvider
-alpha;EditorOptions
-alpha;EditTools
+beta;EditTools
+beta;EditTools
 alpha;class ElementGeometryCacheTool 
 alpha;ElementGeometryGraphicsProvider
 alpha;EmbossSolidElementsTool 
 alpha;ExtendCurveTool 
+alpha;ExtrudeCurveTool 
 alpha;FaceLocationData
 alpha;HollowFacesTool 
 alpha;ImprintSolidElementsTool 
@@ -48,7 +50,10 @@ alpha;isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean
 alpha;class LocateFaceOrProfileTool 
 alpha;class LocateSubEntityTool 
 alpha;LoftProfilesTool 
+beta;makeEditToolIpc
 alpha;class ModifyCurveTool 
+alpha;class ModifyElementTool 
+alpha;class ModifyElementWithDynamicsTool 
 alpha;MoveElementsTool 
 alpha;OffsetCurveTool 
 alpha;OffsetFacesTool 
@@ -63,11 +68,15 @@ beta;ProjectLocationHideTool
 beta;ProjectLocationSaveTool 
 beta;ProjectLocationShowTool 
 alpha;RedoTool 
+alpha;RegionBooleanMode
+alpha;RegionBooleanTool 
+alpha;RevolveCurveTool 
 alpha;RotateAbout
 alpha;RotateElementsTool 
 alpha;RotateMethod
 alpha;RoundEdgesTool 
 alpha;SewSheetElementsTool 
+internal;solidModelingIpc: PickAsyncMethods
 alpha;class SolidPrimitiveTool 
 alpha;SpinFacesTool 
 alpha;SubEntityData

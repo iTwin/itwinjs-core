@@ -67,9 +67,20 @@ export class ViewingSpace {
   private readonly _clientHeight: number;
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
-  private get _viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
+  private get _viewRect(): ViewRect {
+    this._viewRange.init(0, 0, this._clientWidth, this._clientHeight);
+    return this._viewRange;
+  }
 
-  private static _copyOutput(from: XYZ, to?: XYZ) { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; }
+  private static _copyOutput(from: XYZ, to?: XYZ) {
+    let pt = from;
+    if (to) {
+      to.setFrom(from);
+      pt = to;
+    }
+
+    return pt;
+  }
 
   /** @internal */
   public toViewOrientation(from: XYZ, to?: XYZ) { this.rotation.multiplyVectorInPlace(ViewingSpace._copyOutput(from, to)); }

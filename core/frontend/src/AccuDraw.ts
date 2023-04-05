@@ -31,6 +31,7 @@ import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
 
 /** @internal */
 export enum AccuDrawFlags {
+  None = 0,
   SetModePolar = 1,
   SetModeRect = 1 << 1,
   SetOrigin = (1 << 2),
@@ -55,19 +56,31 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @alpha */
+/** AccuDraw coordinate input mode
+ * @public
+ */
 export enum CompassMode {
+  /** Coordinate input using distance and angle */
   Polar = 0,
+  /** Coordinate input using x, y, and z deltas */
   Rectangular = 1,
 }
 
-/** @alpha */
+/** AccuDraw compass base rotation
+ * @public
+ */
 export enum RotationMode {
+  /** Aligned with standard view top or ACS top when [[ToolAdmin.acsContextLock]] is enabled */
   Top = 1,
+  /** Aligned with standard view front or ACS front when [[ToolAdmin.acsContextLock]] is enabled */
   Front = 2,
+  /** Aligned with standard view right or ACS right when [[ToolAdmin.acsContextLock]] is enabled */
   Side = 3,
+  /** Aligned with view */
   View = 4,
+  /** Aligned with view ACS */
   ACS = 5,
+  /** Not aligned with a standard rotation or ACS */
   Context = 6,
 }
 
@@ -82,12 +95,18 @@ export enum LockedStates {
   ANGLE_BM = (XY_BM | VEC_BM),
 }
 
-/** @internal */
+/** AccuDraw enabled states
+ * @public
+ */
 export enum CurrentState {
-  NotEnabled = 0, // Compass disabled/unwanted for this session.
-  Deactivated = 1, // Compass deactivated but CAN be activated by user.
-  Inactive = 2, // Compass not displayed awaiting automatic activation (default tool state).
-  Active = 3, // Compass displayed and adjusting points.
+  /** Compass disabled/unwanted for this session */
+  NotEnabled = 0,
+  /** Compass deactivated but CAN be activated by user */
+  Deactivated = 1,
+  /** Compass not displayed awaiting automatic activation (default tool state) */
+  Inactive = 2,
+  /** Compass displayed and adjusting points */
+  Active = 3,
 }
 
 /** @internal */
@@ -100,12 +119,19 @@ export enum ContextMode {
   None = 15,
 }
 
-/** @alpha */
+/** AccuDraw coordinate input fields
+ * @public
+ */
 export enum ItemField {
+  /** Distance for polar mode */
   DIST_Item = 0,
+  /** Angle for polar mode */
   ANGLE_Item = 1,
+  /** X delta for rectangular mode */
   X_Item = 2,
+  /** Y delta for rectangular mode */
   Y_Item = 3,
+  /** Z delta (3d only) */
   Z_Item = 4,
 }
 
@@ -131,7 +157,13 @@ export class AccudrawData {
   public readonly vector = new Vector3d(); // if ACCUDRAW_SetXAxis, etc.
   public distance = 0; // if ACCUDRAW_SetDistance
   public angle = 0; // if ACCUDRAW_SetAngle
-  public zero() { this.flags = this.distance = this.angle = 0; this.origin.setZero(); this.delta.setZero(); this.vector.setZero(); this.rMatrix.setIdentity(); }
+  public zero() {
+    this.flags = this.distance = this.angle = 0;
+    this.origin.setZero();
+    this.delta.setZero();
+    this.vector.setZero();
+    this.rMatrix.setIdentity();
+  }
 }
 
 /** @internal */
@@ -203,19 +235,25 @@ export class ThreeAxes {
     return result;
   }
   public toMatrix3d(out?: Matrix3d) { return Matrix3d.createRows(this.x, this.y, this.z, out); }
-  public clone(): ThreeAxes { const out = new ThreeAxes(); out.setFrom(this); return out; }
+  public clone(): ThreeAxes {
+    const out = new ThreeAxes();
+    out.setFrom(this);
+    return out;
+  }
+
   public equals(other: ThreeAxes): boolean { return this.x.isExactEqual(other.x) && this.y.isExactEqual(other.y) && this.z.isExactEqual(other.z); }
 }
 
 /** Accudraw is an aide for entering coordinate data.
- * @internal
+ * This class is public to allow applications to provide a user interface for AccuDraw, either by implementing their own, or
+ * using the one supplied by the itwin appui package.
+ * @note When writing an [[InteractiveTool]] it is not correct to call methods on AccuDraw directly, tools should instead
+ * provide hints to AccuDraw using [[AccuDrawHintBuilder]].
+ * @public
  */
 export class AccuDraw {
-  /** @internal */
   public currentState = CurrentState.NotEnabled; // Compass state
-  /** @internal */
   public compassMode = CompassMode.Rectangular; // Compass mode
-  /** @internal */
   public rotationMode = RotationMode.View; // Compass rotation
   /** @internal */
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
@@ -309,7 +347,13 @@ export class AccuDraw {
   /** @internal */
   public onInitialized() { this.enableForSession(); }
   /** @internal */
-  public getRotation(rMatrix?: Matrix3d): Matrix3d { if (!rMatrix) rMatrix = this._rMatrix; Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
+  public getRotation(rMatrix?: Matrix3d): Matrix3d {
+    if (!rMatrix)
+      rMatrix = this._rMatrix;
+
+    Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix);
+    return rMatrix;
+  }
 
   public get isActive(): boolean { return CurrentState.Active === this.currentState; }
   public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
@@ -317,14 +361,12 @@ export class AccuDraw {
   public get isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
   /** @internal */
   protected setNewFocus(index: ItemField) { this.newFocus = index; }
-  /** @internal */
+  /** Get the current lock state for the supplied input field */
   public getFieldLock(index: ItemField): boolean { return this._fieldLocked[index]; }
   /** @internal */
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
 
-  /** Implement this method to set focus to the AccuDraw UI.
-   * @internal
-   */
+  /** Implement this method to set focus to the AccuDraw UI. */
   public grabInputFocus() { }
 
   /** @internal */
@@ -343,23 +385,29 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
-  /** @internal */
+  /** Change current compass input mode to either polar or rectangular */
   public setCompassMode(mode: CompassMode): void {
-    if (mode === this.compassMode) return;
+    if (mode === this.compassMode)
+      return;
+
     this.compassMode = mode;
     this.onCompassModeChange();
   }
 
-  /** @internal */
+  /** Change current compass orientation */
   public setRotationMode(mode: RotationMode): void {
-    if (mode === this.rotationMode) return;
+    if (mode === this.rotationMode)
+      return;
+
     this.rotationMode = mode;
     this.onRotationModeChange();
   }
 
-  /** @internal */
+  /** Change the lock status for the supplied input field */
   public setFieldLock(index: ItemField, locked: boolean): void {
-    if (locked === this._fieldLocked[index]) return;
+    if (locked === this._fieldLocked[index])
+      return;
+
     this._fieldLocked[index] = locked;
     this.onFieldLockChange(index);
   }
@@ -578,6 +626,7 @@ export class AccuDraw {
     let rMatrix: Matrix3d;
     let myAxes: ThreeAxes;
     const vecP = Vector3d.createZero();
+    /* eslint-disable max-statements-per-line */
     switch (this.flags.baseRotation) {
       case RotationMode.Top:
         switch (whichVec) {
@@ -632,6 +681,8 @@ export class AccuDraw {
         }
         break;
     }
+    /* eslint-enable max-statements-per-line */
+
     return vecP;
   }
 
@@ -896,7 +947,7 @@ export class AccuDraw {
     }
   }
 
-  /** @internal */
+  /** Get the current value for the supplied input field */
   public getValueByIndex(index: ItemField): number {
     switch (index) {
       case ItemField.X_Item: return this.delta.x;
@@ -909,7 +960,7 @@ export class AccuDraw {
     }
   }
 
-  /** @internal */
+  /** Set the current value for the supplied input field */
   public setValueByIndex(index: ItemField, value: number): void {
     switch (index) {
       case ItemField.X_Item:
@@ -1117,7 +1168,7 @@ export class AccuDraw {
     return (!IModelApp.toolAdmin.gridLock);
   }
 
-  /** @internal */
+  /** Call from an AccuDraw UI event to sync the supplied input field value */
   public async processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void> {
     const isBearing = false;
 
@@ -1917,7 +1968,7 @@ export class AccuDraw {
     if (context.viewport.viewFlags.acsTriad) {
       context.viewport.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
       if (undefined === this._acsPickId)
-        this._acsPickId = context.viewport.iModel.transientIds.next;
+        this._acsPickId = context.viewport.iModel.transientIds.getNext();
       const acsPickBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._acsPickId);
       const color = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor, 50);
       acsPickBuilder.setSymbology(color, color, 6);
@@ -1986,7 +2037,8 @@ export class AccuDraw {
         radius = 1.0 + (factor * this._percentChanged);
       }
 
-      let angle = 0.0; const delta = (Math.PI * 2) / nSides;
+      let angle = 0.0;
+      const delta = (Math.PI * 2) / nSides;
       const pts: Point3d[] = [];
 
       for (let iSide = 0; iSide < nSides; iSide++, angle += delta)
@@ -2108,17 +2160,17 @@ export class AccuDraw {
     }
   }
 
-  /** @internal */
+  /** Called after compass mode is changed between polar and rectangular */
   public onCompassModeChange(): void { }
-  /** @internal */
+  /** Called after compass rotation is changed */
   public onRotationModeChange(): void { }
-  /** @internal */
+  /** Called after input field locked state is changed */
   public onFieldLockChange(_index: ItemField) { }
-  /** @internal */
+  /** Called after input field value changes */
   public onFieldValueChange(_index: ItemField) { }
-  /** @internal */
+  /** Whether AccuDraw currently has input focus */
   public get hasInputFocus() { return true; }
-  /** @internal */
+  /** Set focus to the specified input field */
   public setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
@@ -2133,7 +2185,6 @@ export class AccuDraw {
     let projectionVector = new Vector3d();
 
     if (perpendicular) {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
         const rMatrix = vp.getAuxCoordRotation(AccuDraw._tempRot);
         const axes = ThreeAxes.createFromMatrix3d(rMatrix);
@@ -2700,7 +2751,6 @@ export class AccuDraw {
       return false; // Disallow AccuDraw being enabled for exaggerated views...
 
     // NOTE: If ACS Plane lock setup initial and base rotation to ACS...
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     if (vp && AccuDraw.useACSContextRotation(vp, false)) {
       this.setRotationMode(RotationMode.ACS);
       this.flags.baseRotation = RotationMode.ACS;
@@ -2754,7 +2804,6 @@ export class AccuDraw {
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
    * axis isn't locked to support "smart lock".
-   * @internal
    */
   public onMotion(_ev: BeButtonEvent): void { }
 
@@ -3133,7 +3182,10 @@ export class AccuDrawHintBuilder {
   public enableSmartRotation = false;
 
   /** Add hint to specify a new compass origin */
-  public setOrigin(origin: Point3d): void { this._origin = origin.clone(); this._flagOrigin = true; }
+  public setOrigin(origin: Point3d): void {
+    this._origin = origin.clone();
+    this._flagOrigin = true;
+  }
 
   /** Add hint to fully specify compass orientation from a Matrix3d */
   public setMatrix(matrix: Matrix3d): boolean {
@@ -3145,28 +3197,56 @@ export class AccuDrawHintBuilder {
   }
 
   /** @internal Add hint to fully specify compass orientation from a Matrix3d in row format */
-  public setRotation(rowMatrix: Matrix3d): void { this._rMatrix = rowMatrix.clone(); this._flagRotation = true; this._flagXAxis = this._flagNormal = false; }
+  public setRotation(rowMatrix: Matrix3d): void {
+    this._rMatrix = rowMatrix.clone();
+    this._flagRotation = true;
+    this._flagXAxis = this._flagNormal = false;
+  }
 
   /** Add hint to change compass orientation by combining the supplied x axis direction with the current base rotation */
-  public setXAxis(xAxis: Vector3d): void { this._axis = xAxis.clone(); this._flagXAxis = true; this._flagRotation = this._flagNormal = this._flagXAxis2 = false; }
+  public setXAxis(xAxis: Vector3d): void {
+    this._axis = xAxis.clone();
+    this._flagXAxis = true;
+    this._flagRotation = this._flagNormal = this._flagXAxis2 = false;
+  }
 
   /** Add hint to change compass orientation by combining the supplied x axis direction with the current base rotation preferring the result most closely aligned to the view */
-  public setXAxis2(xAxis: Vector3d): void { this._axis = xAxis.clone(); this._flagXAxis2 = true; this._flagRotation = this._flagNormal = this._flagXAxis = false; }
+  public setXAxis2(xAxis: Vector3d): void {
+    this._axis = xAxis.clone();
+    this._flagXAxis2 = true;
+    this._flagRotation = this._flagNormal = this._flagXAxis = false;
+  }
 
   /** Add hint to change compass orientation by combining the supplied z axis direction with the current base rotation */
-  public setNormal(normal: Vector3d): void { this._axis = normal.clone(); this._flagNormal = true; this._flagRotation = this._flagXAxis = this._flagXAxis2 = false; }
+  public setNormal(normal: Vector3d): void {
+    this._axis = normal.clone();
+    this._flagNormal = true;
+    this._flagRotation = this._flagXAxis = this._flagXAxis2 = false;
+  }
 
   /** Add hint to change compass to polar mode */
-  public setModePolar(): void { this._flagModePolar = true; this._flagModeRectangular = false; }
+  public setModePolar(): void {
+    this._flagModePolar = true;
+    this._flagModeRectangular = false;
+  }
 
   /** Add hint to change compass to rectangular mode */
-  public setModeRectangular(): void { this._flagModeRectangular = true; this._flagModePolar = false; }
+  public setModeRectangular(): void {
+    this._flagModeRectangular = true;
+    this._flagModePolar = false;
+  }
 
   /** Set current distance value in polar mode */
-  public setDistance(distance: number): void { this._distance = distance; this._flagDistance = true; }
+  public setDistance(distance: number): void {
+    this._distance = distance;
+    this._flagDistance = true;
+  }
 
   /** Set current angle value in polar mode */
-  public setAngle(angle: number): void { this._angle = angle; this._flagAngle = true; }
+  public setAngle(angle: number): void {
+    this._angle = angle;
+    this._flagAngle = true;
+  }
 
   /** Enable AccuDraw for the current tool without sending any hints */
   public static activate(): void { IModelApp.accuDraw.activate(); }
@@ -3186,21 +3266,36 @@ export class AccuDrawHintBuilder {
    */
   public sendHints(activate = true): boolean {
     let flags = 0;
-    if (this._flagOrigin) flags |= AccuDrawFlags.SetOrigin;
-    if (this.setOriginFixed) flags |= AccuDrawFlags.FixedOrigin;
-    if (this.setOriginAlways) flags |= AccuDrawFlags.AlwaysSetOrigin;
-    if (this._flagRotation) flags |= AccuDrawFlags.SetRMatrix;
-    if (this._flagXAxis) flags |= AccuDrawFlags.SetXAxis;
-    if (this._flagXAxis2) flags |= AccuDrawFlags.SetXAxis2;
-    if (this._flagNormal) flags |= AccuDrawFlags.SetNormal;
-    if (this._flagModePolar) flags |= AccuDrawFlags.SetModePolar;
-    if (this._flagModeRectangular) flags |= AccuDrawFlags.SetModeRect;
-    if (this.setLockDistance) flags |= AccuDrawFlags.LockDistance;
-    if (this.setLockAngle) flags |= AccuDrawFlags.LockAngle;
-    if (this.setLockX) flags |= AccuDrawFlags.Lock_X;
-    if (this.setLockY) flags |= AccuDrawFlags.Lock_Y;
-    if (this.setLockZ) flags |= AccuDrawFlags.Lock_Z;
-    if (this.enableSmartRotation) flags |= AccuDrawFlags.SmartRotation;
+    if (this._flagOrigin)
+      flags |= AccuDrawFlags.SetOrigin;
+    if (this.setOriginFixed)
+      flags |= AccuDrawFlags.FixedOrigin;
+    if (this.setOriginAlways)
+      flags |= AccuDrawFlags.AlwaysSetOrigin;
+    if (this._flagRotation)
+      flags |= AccuDrawFlags.SetRMatrix;
+    if (this._flagXAxis)
+      flags |= AccuDrawFlags.SetXAxis;
+    if (this._flagXAxis2)
+      flags |= AccuDrawFlags.SetXAxis2;
+    if (this._flagNormal)
+      flags |= AccuDrawFlags.SetNormal;
+    if (this._flagModePolar)
+      flags |= AccuDrawFlags.SetModePolar;
+    if (this._flagModeRectangular)
+      flags |= AccuDrawFlags.SetModeRect;
+    if (this.setLockDistance)
+      flags |= AccuDrawFlags.LockDistance;
+    if (this.setLockAngle)
+      flags |= AccuDrawFlags.LockAngle;
+    if (this.setLockX)
+      flags |= AccuDrawFlags.Lock_X;
+    if (this.setLockY)
+      flags |= AccuDrawFlags.Lock_Y;
+    if (this.setLockZ)
+      flags |= AccuDrawFlags.Lock_Z;
+    if (this.enableSmartRotation)
+      flags |= AccuDrawFlags.SmartRotation;
 
     const accuDraw = IModelApp.accuDraw;
     if (BentleyStatus.SUCCESS !== accuDraw.setContext(flags, this._origin, this._flagRotation ? this._rMatrix : this._axis, undefined, this._flagDistance ? this._distance : undefined, this._flagAngle ? this._angle : undefined))

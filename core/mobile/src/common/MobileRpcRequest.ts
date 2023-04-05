@@ -9,7 +9,9 @@
 import { RpcRequest, RpcRequestFulfillment, RpcSerializedValue } from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
-/** @beta */
+/* eslint-disable deprecation/deprecation */
+
+/** @internal */
 export class MobileRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
@@ -22,7 +24,9 @@ export class MobileRpcRequest extends RpcRequest {
     this.protocol.requests.set(this.id, this);
     const parts = await MobileRpcProtocol.encodeRequest(this);
     this.protocol.sendToBackend(parts);
-    return new Promise<number>((resolve) => { this._res = resolve; });
+    return new Promise<number>((resolve) => {
+      this._res = resolve;
+    });
   }
 
   /** Loads the request. */

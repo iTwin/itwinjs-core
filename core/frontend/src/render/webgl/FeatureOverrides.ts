@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose, Id64 } from "@itwin/core-bentley";
-import { PackedFeature, PackedFeatureTable } from "@itwin/core-common";
+import { PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
 import { BatchOptions } from "../GraphicBuilder";
@@ -15,14 +15,14 @@ import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
-import { OvrFlags, TextureUnit } from "./RenderFlags";
+import { EmphasisFlags, OvrFlags, TextureUnit } from "./RenderFlags";
 import { sync, SyncObserver } from "./Sync";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
-  const maxSize = System.instance.capabilities.maxTextureSize;
+  const maxSize = System.instance.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry * nTables + nExtraRgba;
 
   if (nRgba < maxSize)
@@ -65,6 +65,8 @@ export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isMod
 /** @internal */
 export type FeatureOverridesCleanup = () => void;
 
+const scratchPackedFeature = PackedFeature.createWithIndex();
+
 /** @internal */
 export class FeatureOverrides implements WebGLDisposable {
   public readonly target: Target;
@@ -80,7 +82,7 @@ export class FeatureOverrides implements WebGLDisposable {
   private _anyOpaque = true;
   private _anyHilited = true;
   private _lutParams = new Float32Array(2);
-  private _uniformSymbologyFlags = 0;
+  private _uniformSymbologyFlags: EmphasisFlags = EmphasisFlags.None;
   private _cleanup?: FeatureOverridesCleanup;
 
   public get anyOverridden() { return this._anyOverridden; }
@@ -94,19 +96,28 @@ export class FeatureOverrides implements WebGLDisposable {
   public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
   public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
-  public get isUniformFlashed() {
-    if (!this.isUniform || undefined === this._lut)
-      return false;
-
-    const lut = this._lut;
-    const flags = lut.dataBytes![0];
-    return 0 !== (flags & OvrFlags.Flashed);
-  }
 
   private updateUniformSymbologyFlags(): void {
-    this._uniformSymbologyFlags = this.anyHilited ? 2 : 0;
-    if (this.isUniformFlashed)
-      this._uniformSymbologyFlags += 1;
+    this._uniformSymbologyFlags = EmphasisFlags.None;
+    if (!this.isUniform || !this._lut)
+      return;
+
+    let flags = this._lut.dataBytes![0];
+    if (0 !== (flags & OvrFlags.Flashed))
+      this._uniformSymbologyFlags |= EmphasisFlags.Flashed;
+
+    if (0 !== (flags & OvrFlags.NonLocatable))
+      this._uniformSymbologyFlags |= EmphasisFlags.NonLocatable;
+
+    if (!this._anyHilited)
+      return;
+
+    flags = this._lut.dataBytes![1] << 8;
+    if (0 !== (flags & OvrFlags.Hilited))
+      this._uniformSymbologyFlags |= EmphasisFlags.Hilite;
+
+    if (0 !== (flags & OvrFlags.Emphasized))
+      this._uniformSymbologyFlags |= EmphasisFlags.Emphasized;
   }
 
   public getUniformOverrides(): Uint8Array {
@@ -116,7 +127,7 @@ export class FeatureOverrides implements WebGLDisposable {
     return this._lut.dataBytes;
   }
 
-  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
+  private _initialize(map: RenderFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims = computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
@@ -133,7 +144,7 @@ export class FeatureOverrides implements WebGLDisposable {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  private _update(map: PackedFeatureTable, lut: Texture2DHandle, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
+  private _update(map: RenderFeatureTable, lut: Texture2DHandle, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs) {
@@ -146,13 +157,13 @@ export class FeatureOverrides implements WebGLDisposable {
     lut.update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, ovr: FeatureSymbology.Overrides, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
     const allowHilite = true !== this._options.noHilite;
     const allowFlash = true !== this._options.noFlash;
     const allowEmphasis = true !== this._options.noEmphasis;
 
-    const modelIdParts = Id64.getUint32Pair(map.modelId);
-    const isModelHilited = allowHilite && hilites.models.hasPair(modelIdParts);
+    let isModelHilited = false;
+    const prevModelId = { lower: -1, upper: -1 };
 
     this._anyOpaque = this._anyTranslucent = this._anyViewIndependentTranslucent = this._anyHilited = false;
 
@@ -167,16 +178,22 @@ export class FeatureOverrides implements WebGLDisposable {
     //  [1]
     //      RGB = rgb
     //      A = alpha
-    for (let i = 0; i < map.numFeatures; i++) {
-      const feature = map.getPackedFeature(i);
+    for (const feature of map.iterable(scratchPackedFeature)) {
+      const i = feature.index;
       const dataIndex = i * 4 * 2;
+
+      if (prevModelId.lower !== feature.modelId.lower || prevModelId.upper !== feature.modelId.upper) {
+        prevModelId.lower = feature.modelId.lower;
+        prevModelId.upper = feature.modelId.upper;
+        isModelHilited = allowHilite && hilites.models.hasPair(feature.modelId);
+      }
 
       const app = this.target.currentBranch.getFeatureAppearance(
         ovr,
         feature.elementId.lower, feature.elementId.upper,
         feature.subCategoryId.lower, feature.subCategoryId.upper,
         feature.geometryClass,
-        modelIdParts.lower, modelIdParts.upper,
+        feature.modelId.lower, feature.modelId.upper,
         map.type, feature.animationNodeId);
 
       // NB: If the appearance is fully transparent, then:
@@ -262,7 +279,7 @@ export class FeatureOverrides implements WebGLDisposable {
   }
 
   // NB: If hilites is undefined, it means that the hilited set has not changed.
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashed?: Id64.Uint32Pair, hilites?: Hilites) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: RenderFeatureTable, flashed?: Id64.Uint32Pair, hilites?: Hilites) {
     if (!hilites || true === this._options.noHilite) {
       this.updateFlashed(data, map, flashed);
       return;
@@ -271,15 +288,9 @@ export class FeatureOverrides implements WebGLDisposable {
     const allowFlash = true !== this._options.noFlash;
     const intersect = "intersection" === hilites.modelSubCategoryMode;
 
-    let isModelHilited = false;
-    if (!hilites.models.isEmpty) {
-      const modelId = Id64.getUint32Pair(map.modelId);
-      isModelHilited = hilites.models.hasPair(modelId);
-    }
-
     this._anyOverridden = this._anyHilited = false;
-    for (let i = 0; i < map.numFeatures; i++) {
-      const dataIndex = i* 4 * 2;
+    for (const feature of map.iterable(scratchPackedFeature)) {
+      const dataIndex = feature.index * 4 * 2;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
         // If it's invisible, none of the other flags matter. We can't flash it and don't want to hilite it.
@@ -287,25 +298,18 @@ export class FeatureOverrides implements WebGLDisposable {
         continue;
       }
 
-      let elemId;
+      const isModelHilited = hilites.models.hasPair(feature.modelId);
       let isHilited = isModelHilited && !intersect;
-      if (!isHilited && !hilites.elements.isEmpty) {
-        elemId = map.getElementIdPair(i);
-        isHilited = hilites.elements.hasPair(elemId);
-      }
+      if (!isHilited)
+        isHilited = hilites.elements.hasPair(feature.elementId);
 
-      if (!isHilited && !hilites.subcategories.isEmpty) {
-        if (isModelHilited || !intersect) {
-          const subcat = map.getSubCategoryIdPair(i);
-          isHilited = hilites.subcategories.hasPair(subcat);
-        }
-      }
+      if (!isHilited)
+        if (isModelHilited || !intersect)
+          isHilited = hilites.subcategories.hasPair(feature.subCategoryId);
 
       let isFlashed = false;
-      if (flashed && allowFlash) {
-        elemId = elemId ?? map.getElementIdPair(i);
-        isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
-      }
+      if (flashed && allowFlash)
+        isFlashed = feature.elementId.lower === flashed.lower && feature.elementId.upper === flashed.upper;
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
@@ -320,12 +324,12 @@ export class FeatureOverrides implements WebGLDisposable {
     this.updateUniformSymbologyFlags();
   }
 
-  private updateFlashed(data: Texture2DDataUpdater, map: PackedFeatureTable, flashed?: Id64.Uint32Pair): void {
+  private updateFlashed(data: Texture2DDataUpdater, map: RenderFeatureTable, flashed?: Id64.Uint32Pair): void {
     if (true === this._options.noFlash)
       return;
 
     this._anyOverridden = false;
-
+    const elemId = { lower: 0, upper: 0 };
     for (let i = 0; i < map.numFeatures; i++) {
       const dataIndex = i * 4 * 2;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
@@ -337,7 +341,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
       let isFlashed = false;
       if (flashed) {
-        const elemId = map.getElementIdPair(i);
+        map.getElementIdPair(i, elemId);
         isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
       }
 
@@ -370,7 +374,7 @@ export class FeatureOverrides implements WebGLDisposable {
     }
   }
 
-  public initFromMap(map: PackedFeatureTable) {
+  public initFromMap(map: RenderFeatureTable) {
     const nFeatures = map.numFeatures;
     assert(0 < nFeatures);
 
@@ -384,7 +388,7 @@ export class FeatureOverrides implements WebGLDisposable {
     this._hiliteSyncObserver = {};
   }
 
-  public update(features: PackedFeatureTable) {
+  public update(features: RenderFeatureTable) {
     let ovrs: FeatureSymbology.Overrides | undefined = this.target.currentFeatureSymbologyOverrides;
     const ovrsUpdated = ovrs !== this._mostRecentSymbologyOverrides;
     if (ovrsUpdated)

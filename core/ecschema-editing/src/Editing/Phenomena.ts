@@ -19,13 +19,15 @@ export class Phenomena {
 
   public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newPhenomenon = (await schema.createPhenomenon(name)) as MutablePhenomenon;
-    if (newPhenomenon === undefined) {
+    if (newPhenomenon === undefined)
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
-    }
-    if (displayLabel) { newPhenomenon.setDisplayLabel(displayLabel); }
+
+    if (displayLabel)
+      newPhenomenon.setDisplayLabel(displayLabel);
 
     await newPhenomenon.setDefinition(definition);
 
@@ -34,13 +36,15 @@ export class Phenomena {
 
   public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    if (phenomenonProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+    if (phenomenonProps.name === undefined)
+      return { errorMessage: `No name was supplied within props.` };
+
     const newPhenomenon = (await schema.createPhenomenon(phenomenonProps.name));
-    if (newPhenomenon === undefined) {
+    if (newPhenomenon === undefined)
       return { errorMessage: `Failed to create class ${phenomenonProps.name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     await newPhenomenon.fromJSON(phenomenonProps);
     return { itemKey: newPhenomenon.key };

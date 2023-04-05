@@ -249,8 +249,12 @@ export class InterpolationCurve3d extends ProxyCurve {
     super(proxyCurve);
     this._options = properties;
   }
-  public override dispatchToGeometryHandler(handler: GeometryHandler) {
-    return handler.handleInterpolationCurve3d(this);
+
+  public override dispatchToGeometryHandler(handler: GeometryHandler): any {
+    let result = handler.handleInterpolationCurve3d(this);
+    if (undefined === result) // if handler doesn't specialize on interpolation curves, default to proxy
+      result = this._proxyCurve.dispatchToGeometryHandler(handler);
+    return result;
   }
   /**
    * Create an [[InterpolationCurve3d]] based on points, knots, and other properties in the [[InterpolationCurve3dProps]] or [[InterpolationCurve3dOptions]].

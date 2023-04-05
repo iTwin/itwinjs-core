@@ -10,7 +10,7 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
+import { adopt, create, G, Marker, Element as MarkupElement, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
@@ -169,7 +169,11 @@ export class MarkupApp {
     return (undefined !== matrix ? matrix : new Matrix());
   }
   /** @internal */
-  public static getVpToScreenMtx(): Matrix { const rect = this.markup!.markupDiv.getBoundingClientRect(); return (new Matrix()).translateO(rect.left, rect.top); }
+  public static getVpToScreenMtx(): Matrix {
+    const rect = this.markup!.markupDiv.getBoundingClientRect();
+    return (new Matrix()).translateO(rect.left, rect.top);
+  }
+
   /** @internal */
   public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
   /** @internal */
@@ -366,7 +370,11 @@ export class MarkupApp {
   public static get textEditorClass() { return `${this.markupPrefix}textEditor`; }
 }
 
-const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
+const removeSvgNamespace = (svg: Svg) => {
+  svg.node.removeAttribute("xmlns:svgjs");
+  return svg;
+};
+
 const newSvgElement = (name: string) => adopt(create(name));
 
 /**
@@ -377,9 +385,9 @@ const newSvgElement = (name: string) => adopt(create(name));
 export class Markup {
   /** @internal */
   public readonly markupDiv: HTMLDivElement;
-  /** @internal */
+  /** Support undo/redo of markup operations */
   public readonly undo = new UndoManager();
-  /** @internal */
+  /** The set of currently selected markup elements */
   public readonly selected!: MarkupSelected;
   /** @internal */
   public readonly svgContainer?: Svg;
@@ -393,7 +401,8 @@ export class Markup {
   /** create the drop-shadow filter in the Defs section of the supplied svg element */
   private createDropShadow(svg: Svg) {
     const filter = SVG(`#${MarkupApp.dropShadowId}`); // see if we already have one?
-    if (filter) filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
+    if (filter)
+      filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
 
     // create a new filter, and add it to the Defs of the supplied svg
     svg.defs()
@@ -467,7 +476,48 @@ export class Markup {
   /** Send all the entries in the selection set to the back. */
   public sendToBack() { this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back()); }
   /** Group all the entries in the selection set, then select the group. */
-  public groupSelected() { if (undefined !== this.svgMarkup) this.selected.groupAll(this.undo); }
+  public groupSelected() {
+    if (undefined !== this.svgMarkup)
+      this.selected.groupAll(this.undo);
+  }
+
   /** Ungroup all the group entries in the selection set. */
-  public ungroupSelected() { if (undefined !== this.svgMarkup) this.selected.ungroupAll(this.undo); }
+  public ungroupSelected() {
+    if (undefined !== this.svgMarkup)
+      this.selected.ungroupAll(this.undo);
+  }
+
+  /** Check if the supplied MarkupElement is a group of MarkupText and the MarkupText's outline Rect.
+   * @param el the markup element to check
+   * @returns true if boxed text
+   */
+  public isBoxedText(el: MarkupElement): boolean {
+    return el.type === "g" &&
+      el.node.classList.length > 0 &&
+      el.node.classList[0] === MarkupApp.boxedTextClass &&
+      el.children().length === 2;
+  }
+
+  /** Get an existing or create a new reusable symbol representing an arrow head.
+   * If a Marker for the supplied color and size already exists it is returned, otherwise a new Marker is created.
+   * @param color the arrow head color
+   * @param length the arrow head length
+   * @param width the arrow head width
+   * @note Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
+   */
+  public createArrowMarker(color: string, length: number, width: number): Marker {
+    length = Math.ceil(length); // Don't allow "." in selector string...
+    width = Math.ceil(width);
+    const arrowMarkerId = `ArrowMarker${length}x${width}-${color}`;
+    let marker = SVG(`#${arrowMarkerId}`) as Marker;
+    if (null === marker) {
+      marker = this.svgMarkup!.marker(length, width).id(arrowMarkerId);
+      marker.polygon([0, 0, length, width * 0.5, 0, width]);
+      marker.attr("orient", "auto-start-reverse");
+      marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...
+      marker.attr("refX", length);
+      marker.css({ stroke: color, fill: color });
+    }
+    return marker;
+  }
 }

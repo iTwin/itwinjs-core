@@ -31,7 +31,10 @@ class AddAction extends UndoAction {
     this._index = _elem.position();
   }
   public reinstate() { this._parent.add(this._elem, this._index); }
-  public reverse() { MarkupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
+  public reverse() {
+    MarkupApp.markup!.selected.drop(this._elem);
+    this._elem.remove();
+  }
 }
 
 /** created when an existing element is deleted from the markup
@@ -47,7 +50,10 @@ class DeleteAction extends UndoAction {
     this._index = _elem.position();
   }
   public reverse() { this._parent.add(this._elem, this._index); }
-  public reinstate() { MarkupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
+  public reinstate() {
+    MarkupApp.markup!.selected.drop(this._elem);
+    this._elem.remove();
+  }
 }
 
 /** created when an existing element's position is moved in the display order. This can also include re-parenting
@@ -63,8 +69,15 @@ class RepositionAction extends UndoAction {
     assert(this._newParent !== undefined);
     this._newIndex = _elem.position();
   }
-  public reinstate() { this._newParent.add(this._elem, this._newIndex); }
-  public reverse() { this._oldParent.add(this._elem, this._oldIndex); if (this._elem.inSelection) MarkupApp.markup!.selected.drop(this._elem); }
+  public reinstate() {
+    this._newParent.add(this._elem, this._newIndex);
+  }
+
+  public reverse() {
+    this._oldParent.add(this._elem, this._oldIndex);
+    if (this._elem.inSelection)
+      MarkupApp.markup!.selected.drop(this._elem);
+  }
 }
 
 /** created when an existing element's properties are modified.
@@ -76,8 +89,15 @@ class ModifyAction extends UndoAction {
     assert(_newElem !== undefined && _oldElement !== undefined);
     MarkupApp.markup!.selected.replace(_oldElement, _newElem);
   }
-  public reinstate() { this._oldElement.replace(this._newElem); MarkupApp.markup!.selected.replace(this._oldElement, this._newElem); }
-  public reverse() { this._newElem.replace(this._oldElement); MarkupApp.markup!.selected.replace(this._newElem, this._oldElement); }
+  public reinstate() {
+    this._oldElement.replace(this._newElem);
+    MarkupApp.markup!.selected.replace(this._oldElement, this._newElem);
+  }
+
+  public reverse() {
+    this._newElem.replace(this._oldElement);
+    MarkupApp.markup!.selected.replace(this._newElem, this._oldElement);
+  }
 }
 
 /** Stores the sequence of operations performed on a Markup. Facilitates undo/redo of the operations.
@@ -99,8 +119,16 @@ export class UndoManager {
 
   /** @internal */
   public get size() { return this._stack.length; }
-  private startCommand() { if (0 === this._grouped) ++this._currentCmd; }
-  private startGroup() { this.startCommand(); ++this._grouped; }
+  private startCommand() {
+    if (0 === this._grouped)
+      ++this._currentCmd;
+  }
+
+  private startGroup() {
+    this.startCommand();
+    ++this._grouped;
+  }
+
   private endGroup() { --this._grouped; }
 
   /** Perform a series of changes to markup elements that should all be reversed as a single operation.
@@ -108,7 +136,12 @@ export class UndoManager {
    * the operations in the undo buffer.
    * @note all of the onXXX methods of this class should *only* be called from within the callback function of this method.
    */
-  public performOperation(cmdName: string, fn: VoidFunction) { this._cmdName = cmdName; this.startGroup(); fn(); this.endGroup(); }
+  public performOperation(cmdName: string, fn: VoidFunction) {
+    this._cmdName = cmdName;
+    this.startGroup();
+    fn();
+    this.endGroup();
+  }
 
   /** call this from within a [[performOperation]] function *after* an element has been added to a markup */
   public onAdded(elem: MarkupElement) { this.addAction(new AddAction(this._cmdName, elem)); }

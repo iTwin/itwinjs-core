@@ -163,7 +163,10 @@ export class ElementPicker {
   /** Return a hit from the list of hits created the last time pickElements was called. */
   public getHit(i: number): HitDetail | undefined { return this.hitList ? this.hitList.getHit(i) : undefined; }
 
-  public resetCurrentHit(): void { if (this.hitList) this.hitList.resetCurrentHit(); }
+  public resetCurrentHit(): void {
+    if (this.hitList)
+      this.hitList.resetCurrentHit();
+  }
 
   private getPixelPriority(pixel: Pixel.Data) {
     switch (pixel.type) {
@@ -183,12 +186,19 @@ export class ElementPicker {
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
     const priority1 = this.getPixelPriority(pixel1);
     const priority2 = this.getPixelPriority(pixel2);
-    if (priority1 < priority2) return -1;
-    if (priority1 > priority2) return 1;
-    if (distXY1 < distXY2) return -1;
-    if (distXY1 > distXY2) return 1;
-    if (pixel1.distanceFraction > pixel2.distanceFraction) return -1;
-    if (pixel1.distanceFraction < pixel2.distanceFraction) return 1;
+    if (priority1 < priority2)
+      return -1;
+    if (priority1 > priority2)
+      return 1;
+    if (distXY1 < distXY2)
+      return -1;
+    if (distXY1 > distXY2)
+      return 1;
+    if (pixel1.distanceFraction > pixel2.distanceFraction)
+      return -1;
+    if (pixel1.distanceFraction < pixel2.distanceFraction)
+      return 1;
+
     return 0;
   }
 
@@ -209,6 +219,8 @@ export class ElementPicker {
     const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
     let pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
+    if (rect.isNull)
+      return 0;
     let result: number = 0;
     vp.readPixels(rect, Pixel.Selector.All, (pixels) => {
       if (undefined === pixels)
@@ -257,7 +269,7 @@ export class ElementPicker {
         if (!hitPointWorld)
           continue;
 
-        const modelId = undefined !== pixel.featureTable ? pixel.featureTable.modelId : undefined;
+        const modelId = pixel.modelId;
         const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass, modelId, pixel.iModel, pixel.tileId, pixel.isClassifier);
         this.hitList!.addHit(hit);
 

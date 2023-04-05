@@ -65,7 +65,11 @@ export class FenceClassifySelectedTool extends Tool {
       return !isActive;
 
     const candidates: Id64Array = [];
-    vp.iModel.selectionSet.elements.forEach((val) => { if (!Id64.isInvalid(val) && !Id64.isTransient(val)) candidates.push(val); });
+    vp.iModel.selectionSet.elements.forEach((val) => {
+      if (!Id64.isInvalid(val) && !Id64.isTransient(val))
+        candidates.push(val);
+    });
+
     if (0 === candidates.length)
       return false;
 

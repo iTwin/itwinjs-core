@@ -7,7 +7,7 @@
  */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { Buffer } from "buffer";
+import { Base64 } from "js-base64";
 
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
@@ -86,6 +86,12 @@ export interface BaseReaderOptions {
   usePrimaryConn?: boolean;
   /** Restrict time or memory for query but use as hint and may be changed base on backend settings */
   quota?: QueryQuota;
+  /**
+   * @internal
+   * Allow query to be be deferred by milliseconds specified. This parameter is ignore by default unless
+   * concurrent query is configure to honour it.
+   */
+  delay?: number;
 }
 /**
  * ECSql query config
@@ -129,26 +135,162 @@ export interface BlobOptions extends BaseReaderOptions {
 export class QueryOptionsBuilder {
   public constructor(private _options: QueryOptions = {}) { }
   public getOptions(): QueryOptions { return this._options; }
-  public setPriority(val: number) { this._options.priority = val; return this; }
-  public setRestartToken(val: string) { this._options.restartToken = val; return this; }
-  public setQuota(val: QueryQuota) { this._options.quota = val; return this; }
-  public setUsePrimaryConnection(val: boolean) { this._options.usePrimaryConn = val; return this; }
-  public setAbbreviateBlobs(val: boolean) { this._options.abbreviateBlobs = val; return this; }
-  public setSuppressLogErrors(val: boolean) { this._options.suppressLogErrors = val; return this; }
-  public setConvertClassIdsToNames(val: boolean) { this._options.convertClassIdsToClassNames = val; return this; }
-  public setLimit(val: QueryLimit) { this._options.limit = val; return this; }
-  public setRowFormat(val: QueryRowFormat) { this._options.rowFormat = val; return this; }
+  /**
+   * @internal
+   * Allow to set priority of query. Query will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
+   * @param val integer value which can be negative as well. By default its zero.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setPriority(val: number) {
+    this._options.priority = val;
+    return this;
+  }
+  /**
+   * Allow to set restart token. If restart token is set then any other query(s) in queue with same token is cancelled if its not already executed.
+   * @param val A string token identifying a use case in which previous query with same token is cancelled.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setRestartToken(val: string) {
+    this._options.restartToken = val;
+    return this;
+  }
+  /**
+   * Allow to set quota restriction for query. Its a hint and may be overriden or ignored by concurrent query manager.
+   * @param val @type QueryQuota Specify time and memory that can be used by a query.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setQuota(val: QueryQuota) {
+    this._options.quota = val;
+    return this;
+  }
+  /**
+   * Force a query to be executed synchronously against primary connection. This option is ignored if provided by frontend.
+   * @param val A boolean value to force use primary connection on main thread to execute query.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setUsePrimaryConnection(val: boolean) {
+    this._options.usePrimaryConn = val;
+    return this;
+  }
+  /**
+   * By default all blobs are abbreviated to save memory and network bandwidth. If set to false, all blob data will be returned by query as is.
+   * Use @type BlobReader to access blob data more efficiently.
+   * @param val A boolean value, if set to false will return complete blob type property data. This could cost time and network bandwidth.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setAbbreviateBlobs(val: boolean) {
+    this._options.abbreviateBlobs = val;
+    return this;
+  }
+  /**
+   * When query fail to prepare it will log error. This setting will suppress log errors in case where query come from user typing it and its expected to fail often.
+   * @param val A boolean value, if set to true, any error logging will be suppressed.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setSuppressLogErrors(val: boolean) {
+    this._options.suppressLogErrors = val;
+    return this;
+  }
+  /**
+   * If set ECClassId, SourceECClassId and TargetECClassId system properties will return qualified name of class instead of a @typedef Id64String.
+   * @param val A boolean value.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setConvertClassIdsToNames(val: boolean) {
+    this._options.convertClassIdsToClassNames = val;
+    return this;
+  }
+  /**
+   * Specify limit for query. Limit determine number of rows and offset in result-set.
+   * @param val Specify count and offset from within the result-set of a ECSQL query.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setLimit(val: QueryLimit) {
+    this._options.limit = val;
+    return this;
+  }
+  /**
+   * Specify row format returned by concurrent query manager.
+   * @param val @enum QueryRowFormat specifying format for result.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setRowFormat(val: QueryRowFormat) {
+    this._options.rowFormat = val;
+    return this;
+  }
+  /**
+   * @internal
+   * Defers execution of query in queue by specified milliseconds. This parameter is ignored by default unless concurrent query is configure to not ignore it.
+   * @param val Number of milliseconds.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setDelay(val: number) {
+    this._options.delay = val;
+    return this;
+  }
 }
 /** @beta */
 export class BlobOptionsBuilder {
   public constructor(private _options: BlobOptions = {}) { }
   public getOptions(): BlobOptions { return this._options; }
-  public setPriority(val: number) { this._options.priority = val; return this; }
-  public setRestartToken(val: string) { this._options.restartToken = val; return this; }
-  public setQuota(val: QueryQuota) { this._options.quota = val; return this; }
-  public setUsePrimaryConnection(val: boolean) { this._options.usePrimaryConn = val; return this; }
-  public setRange(val: BlobRange) { this._options.range = val; return this; }
+  /**
+   * @internal
+   * Allow to set priority of blob request. Blob request will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
+   * @param val integer value which can be negative as well. By default its zero.
+   * @returns @type BlobOptionsBuilder for fluent interface.
+   */
+  public setPriority(val: number) {
+    this._options.priority = val;
+    return this;
+  }
+  /**
+   * Allow to set restart token. If restart token is set then any other blob request in queue with same token is cancelled if its not already executed.
+   * @param val A string token identifying a use case in which previous blob request with same token is cancelled.
+   * @returns @type BlobOptionsBuilder for fluent interface.
+   */
+  public setRestartToken(val: string) {
+    this._options.restartToken = val;
+    return this;
+  }
+  /**
+   * Allow to set quota restriction for blob request. Its a hint and may be overriden or ignored by concurrent query manager.
+   * @param val @type QueryQuota Specify time and memory that can be used by a query.
+   * @returns @type BlobOptionsBuilder for fluent interface.
+   */
+  public setQuota(val: QueryQuota) {
+    this._options.quota = val;
+    return this;
+  }
+  /**
+   * Force a blob request to be executed synchronously against primary connection. This option is ignored if provided by frontend.
+   * @param val A boolean value to force use primary connection on main thread to execute blob request.
+   * @returns @type BlobOptionsBuilder for fluent interface.
+   */
+  public setUsePrimaryConnection(val: boolean) {
+    this._options.usePrimaryConn = val;
+    return this;
+  }
+  /**
+   * Specify range with in the blob that need to be returned.
+   * @param val Specify offset and count of bytes that need to be returned.
+   * @returns @type BlobOptionsBuilder for fluent interface.
+   */
+  public setRange(val: BlobRange) {
+    this._options.range = val;
+    return this;
+  }
+  /**
+   * @internal
+   * Defers execution of blob request in queue by specified milliseconds. This parameter is ignored by default unless concurrent query is configure to not ignore it.
+   * @param val Number of milliseconds.
+   * @returns @type BlobOptionsBuilder for fluent interface.
+   */
+  public setDelay(val: number) {
+    this._options.delay = val;
+    return this;
+  }
 }
+
 /** @internal */
 enum QueryParamType {
   Boolean = 0,
@@ -166,7 +308,10 @@ enum QueryParamType {
   Blob = 10,
   Struct = 11,
 }
-/** @public */
+/**
+ * @public
+ * QueryBinder allow to bind values to a ECSQL query.
+ * */
 export class QueryBinder {
   private _args = {};
   private verify(indexOrName: string | number) {
@@ -180,6 +325,12 @@ export class QueryBinder {
       }
     }
   }
+  /**
+   * Bind boolean value to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val Boolean value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindBoolean(indexOrName: string | number, val: boolean) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -192,10 +343,16 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind blob value to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val Blob value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindBlob(indexOrName: string | number, val: Uint8Array) {
     this.verify(indexOrName);
     const name = String(indexOrName);
-    const base64 = Buffer.from(val).toString("base64");
+    const base64 = Base64.fromUint8Array(val);
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.Blob,
@@ -204,6 +361,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind double value to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val Double value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindDouble(indexOrName: string | number, val: number) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -215,6 +378,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind @typedef Id64String value to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val @typedef Id64String value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindId(indexOrName: string | number, val: Id64String) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -226,6 +395,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind @type OrderedId64Iterable to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val @type OrderedId64Iterable value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindIdSet(indexOrName: string | number, val: OrderedId64Iterable) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -238,6 +413,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind integer to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val Integer value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindInt(indexOrName: string | number, val: number) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -249,6 +430,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind struct to ECSQL statement. Struct specified as object.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val struct value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindStruct(indexOrName: string | number, val: object) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -260,6 +447,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind long to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val Long value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindLong(indexOrName: string | number, val: number) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -271,6 +464,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind string to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val String value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindString(indexOrName: string | number, val: string) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -282,6 +481,11 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind null to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindNull(indexOrName: string | number) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -293,6 +497,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind @type Point2d to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val @type Point2d  value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindPoint2d(indexOrName: string | number, val: Point2d) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -304,6 +514,12 @@ export class QueryBinder {
     });
     return this;
   }
+  /**
+   * Bind @type Point3d to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val @type Point3d  value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public bindPoint3d(indexOrName: string | number, val: Point3d) {
     this.verify(indexOrName);
     const name = String(indexOrName);
@@ -338,6 +554,11 @@ export class QueryBinder {
       throw new Error("unsupported type");
     }
   }
+  /**
+   * Allow bulk bind either parameters by index as value array or by parameter names as object.
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of reach value.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
   public static from(args: any[] | object | undefined): QueryBinder {
     const params = new QueryBinder();
     if (typeof args === "undefined")
@@ -440,4 +661,13 @@ export class DbQueryError extends BentleyError {
 /** @internal */
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
   execute(request: TRequest): Promise<TResponse>;
+}
+
+/** @internal */
+export interface DbQueryConfig {
+  globalQuota?: QueryQuota;
+  ignoreDelay?: boolean;
+  ignorePriority?: boolean;
+  requestQueueSize?: number;
+  workerThreads?: number;
 }

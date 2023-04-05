@@ -20,7 +20,8 @@ export const enum FrustumUniformType { // eslint-disable-line no-restricted-synt
   Perspective,
 }
 
-const enum Plane { // eslint-disable-line no-restricted-syntax
+/** @internal */
+export const enum Plane { // eslint-disable-line no-restricted-syntax
   kTop,
   kBottom,
   kLeft,
@@ -229,9 +230,15 @@ function dotDifference(pt: Point3d, origin: Point3d, vec: Vector3d): number {
 
 function lookIn(eye: Point3d, viewX: Vector3d, viewY: Vector3d, viewZ: Vector3d, result: Transform) {
   const rot = result.matrix.coffs;
-  rot[0] = viewX.x; rot[1] = viewX.y; rot[2] = viewX.z;
-  rot[3] = viewY.x; rot[4] = viewY.y; rot[5] = viewY.z;
-  rot[6] = viewZ.x; rot[7] = viewZ.y; rot[8] = viewZ.z;
+  rot[0] = viewX.x;
+  rot[1] = viewX.y;
+  rot[2] = viewX.z;
+  rot[3] = viewY.x;
+  rot[4] = viewY.y;
+  rot[5] = viewY.z;
+  rot[6] = viewZ.x;
+  rot[7] = viewZ.y;
+  rot[8] = viewZ.z;
 
   result.origin.x = -viewX.dotProduct(eye);
   result.origin.y = -viewY.dotProduct(eye);

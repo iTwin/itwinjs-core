@@ -19,8 +19,14 @@ import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputC
 
 // cSpell:ignore dont unlockedz
 
-function normalizedDifference(point1: Point3d, point2: Point3d, out: Vector3d): number { return point2.vectorTo(point1).normalizeWithLength(out).mag; }
-function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): number { return vec1.crossProduct(vec2, out).normalizeWithLength(out).mag; }
+function normalizedDifference(point1: Point3d, point2: Point3d, out: Vector3d): number {
+  return point2.vectorTo(point1).normalizeWithLength(out).mag;
+}
+
+function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): number {
+  return vec1.crossProduct(vec2, out).normalizeWithLength(out).mag;
+}
+
 /**
  * A shortcut may require no user input (immediate) or it may install a tool to collect the needed input. AccuDrawShortcuts are how users control AccuDraw.
  * A tool implementor should not use this class to setup AccuDraw, instead use AccuDrawHintBuilder to provide hints.
@@ -1002,94 +1008,163 @@ export class AccuDrawShortcuts {
 /** @internal */
 export class AccuDrawSetOriginTool extends Tool {
   public static override toolId = "AccuDraw.SetOrigin";
-  public override async run() { AccuDrawShortcuts.setOrigin(); return true; }
+  public override async run() {
+    AccuDrawShortcuts.setOrigin();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawSetLockSmartTool extends Tool {
   public static override toolId = "AccuDraw.LockSmart";
-  public override async run() { AccuDrawShortcuts.lockSmart(); return true; }
+  public override async run() {
+    AccuDrawShortcuts.lockSmart();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawSetLockXTool extends Tool {
   public static override toolId = "AccuDraw.LockX";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockX(); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.lockX();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawSetLockYTool extends Tool {
   public static override toolId = "AccuDraw.LockY";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockY(); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.lockY();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawSetLockZTool extends Tool {
   public static override toolId = "AccuDraw.LockZ";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockZ(); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.lockZ();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawSetLockDistanceTool extends Tool {
   public static override toolId = "AccuDraw.LockDistance";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockDistance(); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.lockDistance();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawSetLockAngleTool extends Tool {
   public static override toolId = "AccuDraw.LockAngle";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockAngle(); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.lockAngle();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawChangeModeTool extends Tool {
   public static override toolId = "AccuDraw.ChangeMode";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.changeCompassMode(); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.changeCompassMode();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawRotateCycleTool extends Tool {
   public static override toolId = "AccuDraw.RotateCycle";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.rotateCycle(); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.rotateCycle();
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawRotateTopTool extends Tool {
   public static override toolId = "AccuDraw.RotateTop";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.Top); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawRotateFrontTool extends Tool {
   public static override toolId = "AccuDraw.RotateFront";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.Front); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawRotateSideTool extends Tool {
   public static override toolId = "AccuDraw.RotateSide";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.Side); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
+    return true;
+  }
 }
 
 /** @internal */
 export class AccuDrawRotateViewTool extends Tool {
   public static override toolId = "AccuDraw.RotateView";
-  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.View); return true; }
+  public override async run(): Promise<boolean> {
+    AccuDrawShortcuts.setStandardRotation(RotationMode.View);
+    return true;
+  }
 }
 
 /** @internal */
 abstract class AccuDrawShortcutsTool extends InputCollector {
   private _cancel: boolean;
-  public constructor() { super(); this._cancel = true; }
-  public override async onPostInstall() { await super.onPostInstall(); this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None); this.doManipulationStart(); } // NOTE: InputCollector inherits suspended primitive's state, set everything...
+  public constructor() {
+    super();
+    this._cancel = true;
+  }
+
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None);
+    this.doManipulationStart();
+  } // NOTE: InputCollector inherits suspended primitive's state, set everything...
+
   public override async onCleanup() { this.doManipulationStop(this._cancel); }
-  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this.doManipulation(ev, false)) { this._cancel = false; await this.exitTool(); } return EventHandled.No; }
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (this.doManipulation(ev, false)) {
+      this._cancel = false;
+      await this.exitTool();
+    }
+
+    return EventHandled.No;
+  }
+
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { this.doManipulation(ev, true); }
-  public override async exitTool() { await super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
+  public override async exitTool() {
+    await super.exitTool();
+    AccuDrawShortcuts.requestInputFocus();
+  } // re-grab focus when auto-focus tool setting set...
 
   public activateAccuDrawOnStart() { return true; }
-  public doManipulationStart() { if (this.activateAccuDrawOnStart()) IModelApp.accuDraw.activate(); this.doManipulation(undefined, true); }
-  public doManipulationStop(cancel: boolean) { if (!cancel) IModelApp.accuDraw.savedStateInputCollector.ignoreFlags = this.onManipulationComplete(); }
+  public doManipulationStart() {
+    if (this.activateAccuDrawOnStart())
+      IModelApp.accuDraw.activate();
+
+    this.doManipulation(undefined, true);
+  }
+
+  public doManipulationStop(cancel: boolean) {
+    if (!cancel)
+      IModelApp.accuDraw.savedStateInputCollector.ignoreFlags = this.onManipulationComplete();
+  }
+
   public onManipulationComplete(): AccuDrawFlags { return 0; }
   public abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
 }

@@ -7,17 +7,17 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 730:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\":
 /***/ (() => {
 
 const pathBar = \\"./bar\\";const bar = require(pathBar);
 
 /***/ }),
 
-/***/ 585:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-const foo = __webpack_require__(730);
+const foo = __webpack_require__(\\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\");
 
 /***/ })
 
@@ -28,7 +28,7 @@ const foo = __webpack_require__(730);
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(585));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -40,17 +40,17 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 730:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\":
 /***/ (() => {
 
 const optional = true;let req = (optional) ? require : console.log;const bar = req(\\"./bar\\");
 
 /***/ }),
 
-/***/ 585:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-const foo = __webpack_require__(730);
+const foo = __webpack_require__(\\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\");
 
 /***/ })
 
@@ -61,7 +61,7 @@ const foo = __webpack_require__(730);
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(585));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -73,17 +73,17 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 730:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\":
 /***/ (() => {
 
 try {const bar = require(\\"./bar\\");} catch {}
 
 /***/ }),
 
-/***/ 585:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-const foo = __webpack_require__(730);
+const foo = __webpack_require__(\\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\");
 
 /***/ })
 
@@ -94,7 +94,7 @@ const foo = __webpack_require__(730);
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(585));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -106,24 +106,24 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 593:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/bar.js\\":
 /***/ (() => {
 
 console.log(\\"This is bar\\");
 
 /***/ }),
 
-/***/ 730:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-const bar = __webpack_require__(593);
+const bar = __webpack_require__(\\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/bar.js\\");
 
 /***/ }),
 
-/***/ 585:
+/***/ \\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-const foo = __webpack_require__(730);
+const foo = __webpack_require__(\\"./lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js\\");
 
 /***/ })
 
@@ -134,7 +134,7 @@ const foo = __webpack_require__(730);
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(585));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/optional-dependencies-plugin-test/test.js\\"));
 
 })();"
 `;

@@ -68,10 +68,10 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ providerData: { mapType: BackgroundMapType.Street } }, "input");
     roundTrip({ providerData: { mapType: BackgroundMapType.Aerial } }, "input");
 
-    roundTrip({  providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } }, "input");
-    roundTrip({  providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } }, "input");
+    roundTrip({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } }, "input");
+    roundTrip({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } }, "input");
 
-    roundTrip({ providerData: { mapType: -123 } }, {});
+    roundTrip({ providerData: { mapType: -123 as BackgroundMapType } }, {});
 
     roundTrip({ transparency: false }, {});
     roundTrip({ transparency: 0 }, "input");
@@ -87,10 +87,10 @@ describe("BackgroundMapSettings", () => {
 
     roundTrip({ globeMode: GlobeMode.Ellipsoid }, {});
     roundTrip({ globeMode: GlobeMode.Plane }, "input");
-    roundTrip({ globeMode: 42 }, {});
+    roundTrip({ globeMode: 42 as GlobeMode }, {});
 
     roundTrip({ terrainSettings: { providerName: "CesiumWorldTerrain" } }, {});
-    roundTrip({ terrainSettings: { providerName: "UnknownProvider" } }, {});
+    roundTrip({ terrainSettings: { providerName: "CustomProvider" } }, "input");
 
     roundTrip({ terrainSettings: { exaggeration: 1 } }, {});
     roundTrip({ terrainSettings: { exaggeration: 99 } }, "input");
@@ -107,7 +107,7 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
-    roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
+    roundTrip({ terrainSettings: { heightOriginMode: -99 as TerrainHeightOriginMode } }, {});
 
     roundTrip({ terrainSettings: { nonLocatable: false } }, {});
     roundTrip({ terrainSettings: { nonLocatable: true } }, "input");

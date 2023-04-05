@@ -21,10 +21,10 @@ describe("QuantityFormatter", () => {
   });
 
   after(async () => {
-    await TestUtility.shutdownFrontend();
-
     if (undefined !== imodel)
       await imodel.close();
+
+    await TestUtility.shutdownFrontend();
   });
 
   it("QuantityFormatter initialized properly using units schema from iModel", async () => {

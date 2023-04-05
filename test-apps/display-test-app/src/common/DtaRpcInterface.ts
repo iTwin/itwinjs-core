@@ -8,7 +8,7 @@ import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
 
 /** Display Test App RPC interface. */
-export class DtaRpcInterface extends RpcInterface {
+export class DtaRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SVTRpcInterface";
 
@@ -30,4 +30,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async writeExternalFile(_filename: string, _content: string): Promise<void> { return this.forward(arguments); }
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
+  public async getAccessToken(): Promise<string> { return this.forward(arguments); }
 }

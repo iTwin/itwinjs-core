@@ -51,16 +51,19 @@ export class XmlParser extends AbstractParser<Element> {
     const schemaInfo = rawSchema.documentElement;
 
     const schemaName = schemaInfo.getAttribute("schemaName");
-    if (schemaName) this._schemaName = schemaName;
+    if (schemaName)
+      this._schemaName = schemaName;
 
     this._schemaAlias = "";
     const schemaAlias = schemaInfo.getAttribute("alias");
-    if (schemaAlias) this._schemaAlias = schemaAlias;
+    if (schemaAlias)
+      this._schemaAlias = schemaAlias;
 
     this._schemaReferenceNames = new Map<string, string>();
 
     const schemaVersion = schemaInfo.getAttribute("version");
-    if (schemaVersion) this._schemaVersion = schemaVersion;
+    if (schemaVersion)
+      this._schemaVersion = schemaVersion;
 
     const xmlNamespace = schemaInfo.getAttribute("xmlns");
     if (xmlNamespace) {
@@ -122,7 +125,8 @@ export class XmlParser extends AbstractParser<Element> {
       const schemaItems = this.getSchemaChildren();
       for (const item of schemaItems) {
         let rawItemType = item.nodeName;
-        if (NON_ITEM_SCHEMA_ELEMENTS.includes(rawItemType)) continue;
+        if (NON_ITEM_SCHEMA_ELEMENTS.includes(rawItemType))
+          continue;
 
         // Differentiate a Mixin from an EntityClass
         const customAttributesResult = this.getElementChildrenByTagName(item, "ECCustomAttributes");
@@ -729,9 +733,12 @@ export class XmlParser extends AbstractParser<Element> {
 
   private parseBoolean(text: string, parseErrorMsg: string): boolean {
     const textString = text.toLowerCase();
-    if ("true" === textString) return true;
-    else if ("false" === textString) return false;
-    else throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
+    if ("true" === textString)
+      return true;
+    else if ("false" === textString)
+      return false;
+    else
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
   }
 
   private getRequiredAttribute(xmlElement: Element, attributeName: string, errorMsg: string): string {

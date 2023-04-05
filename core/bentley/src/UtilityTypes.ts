@@ -88,6 +88,11 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
  */
 export type AsyncFunction = (...args: any) => Promise<any>;
 
+/** The members of `T` that are async functions (functions that return a promise), and no other properties
+ * @public
+ */
+export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never; };
+
 /** Extracts the names of all function properties of `T` that return a Promise.
  * @public
  */
@@ -98,7 +103,33 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
-/** Extracts a subset of literals `U` from a union of literals `T` in a type-safe way.
- * @beta
+/** A runtime property omitter, makes a shallow copy of the given object without the specified properties
+ * Compatible with the typescript `Omit` mapped type:
+ * ```js
+ * const testvar: Omit<{x: string, y: object}, "y"> = omit({x: "hello", y: {}}, ["y"]);
+ * ```
+ * @public
  */
-export type ExtractLiterals<T, U extends T> = Extract<T, U>;
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
+  const clone = { ...t };
+  for (const key of keys)
+    delete clone[key];
+  return clone;
+}
+
+/** Defines a type wherein at least one of the properties of T is required to exist.
+ * In the following example, paying for a coffee requires a customer to have either a credit card, some cash, or both in their wallet.
+ * ```ts
+ *  interface Wallet {
+ *    cash?: number;
+ *    card?: CreditCard;
+ *  }
+ *
+ *  function payForCoffee(wallet: RequireAtLeastOne<Wallet>) { ... }
+ * ```
+ * Source: [@azure/keyvault-certificates](https://learn.microsoft.com/en-us/javascript/api/@azure/keyvault-certificates/requireatleastone?view=azure-node-latest).
+ * @public
+ */
+export type RequireAtLeastOne<T> = {
+  [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];

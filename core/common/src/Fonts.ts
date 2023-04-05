@@ -60,9 +60,13 @@ export class FontMap {
   }
   /** look up a font by name or number and return its FontProps */
   public getFont(arg: string | FontId): FontProps | undefined {
-    if (typeof arg === "number") return this.fonts.get(arg);
+    if (typeof arg === "number")
+      return this.fonts.get(arg);
+
     for (const font of this.fonts.values())
-      if (font.name === arg) return font;
+      if (font.name === arg)
+        return font;
+
     return undefined;
   }
 }

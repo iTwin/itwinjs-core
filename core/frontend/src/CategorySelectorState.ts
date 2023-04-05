@@ -21,7 +21,6 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export class CategorySelectorState extends ElementState {
-  /** @internal */
   public static override get className() { return "CategorySelector"; }
 
   private readonly _categories = new ObservableSet<string>();
@@ -93,5 +92,10 @@ export class CategorySelectorState extends ElementState {
    * @param arg The categories to add or remove
    * @param add If true, categories will be added; otherwise they will be removed.
    */
-  public changeCategoryDisplay(arg: Id64Arg, add: boolean): void { if (add) this.addCategories(arg); else this.dropCategories(arg); }
+  public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
+    if (add)
+      this.addCategories(arg);
+    else
+      this.dropCategories(arg);
+  }
 }

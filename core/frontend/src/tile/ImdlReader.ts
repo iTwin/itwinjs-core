@@ -10,8 +10,8 @@ import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
-  ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
-  RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  ImageSource, ImageSourceFormat, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d,
+  readTileContentDescription, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -53,10 +53,10 @@ export class GltfHeader extends TileHeader {
 
   public constructor(stream: ByteStream) {
     super(stream);
-    this.gltfLength = stream.nextUint32;
+    this.gltfLength = stream.readUint32();
 
-    this.sceneStrLength = stream.nextUint32;
-    const value5 = stream.nextUint32;
+    this.sceneStrLength = stream.readUint32();
+    const value5 = stream.readUint32();
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
@@ -76,8 +76,8 @@ export class GltfHeader extends TileHeader {
       const sceneChunkType = value5;
       this.scenePosition = stream.curPos;
       stream.curPos = stream.curPos + this.sceneStrLength;
-      const binaryLength = stream.nextUint32;
-      const binaryChunkType = stream.nextUint32;
+      const binaryLength = stream.readUint32();
+      const binaryChunkType = stream.readUint32();
       if (GltfV2ChunkTypes.JSON !== sceneChunkType || GltfV2ChunkTypes.Binary !== binaryChunkType || 0 === binaryLength) {
         this.invalidate();
         return;
@@ -142,6 +142,12 @@ interface ImdlTextureMapping {
     mode?: TextureMapping.Mode;
     /** @see [TextureMapping.Params.worldMapping]($common). Default: false. */
     worldMapping?: boolean;
+  };
+  /** @see [NormalMapParams]($common). */
+  normalMapParams?: {
+    textureName?: string;
+    greenUp?: boolean;
+    scale?: number;
   };
 }
 
@@ -335,7 +341,7 @@ interface ImdlAreaPattern {
   readonly type: "areaPattern";
   /** The Id of the [[ImdlAreaPatternSymbol]] containing the pattern geometry. */
   readonly symbolName: string;
-  /** A [ClipVector]($geometry-core) used to clip symbols to the pattern region's boundary. */
+  /** A [ClipVector]($core-geometry) used to clip symbols to the pattern region's boundary. */
   readonly clip: ClipVectorProps;
   /** Uniform scale applied to the pattern geometry. */
   readonly scale: number;
@@ -445,6 +451,10 @@ export interface Imdl {
   scene: string;
   /** The collection of ImdlScenes included in the tile. */
   scenes: ImdlDictionary<ImdlScene>;
+  /** Specifies point to which all vertex positions in the tile are relative, as an array of 3 numbers.
+   * Currently only used for requestElementGraphics - see GraphicsRequestProps.useAbsolutePositions.
+   */
+  rtcCenter?: number[];
   /** Maps each node Id to the Id of the corresponding mesh in [[meshes]]. */
   nodes: ImdlDictionary<string>;
   meshes: ImdlDictionary<ImdlMesh>;
@@ -515,6 +525,8 @@ export class ImdlReader {
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
   private readonly _timeline?: RenderSchedule.ModelTimeline;
+  private readonly _rtcCenter?: Point3d;
+  private readonly _hasMultiModelFeatureTable: boolean;
 
   private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
@@ -553,17 +565,19 @@ export class ImdlReader {
         renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials),
         namedTextures: JsonUtils.asObject(sceneValue.namedTextures),
         patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols),
+        rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
       };
 
-      return undefined !== imdl.meshes ? new ImdlReader(imdl, gltfHeader.binaryPosition, args) : undefined;
+      return undefined !== imdl.meshes ? new ImdlReader(imdl, gltfHeader.binaryPosition, args, 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable)) : undefined;
     } catch (_) {
       return undefined;
     }
   }
 
-  private constructor(imdl: Imdl, binaryPosition: number, args: ImdlReaderCreateArgs) {
+  private constructor(imdl: Imdl, binaryPosition: number, args: ImdlReaderCreateArgs, hasMultiModelFeatureTable: boolean) {
     this._buffer = args.stream;
     this._binaryData = new Uint8Array(this._buffer.arrayBuffer, binaryPosition);
+    this._hasMultiModelFeatureTable = hasMultiModelFeatureTable;
 
     this._animationNodes = JsonUtils.asObject(imdl.animationNodes);
     this._bufferViews = imdl.bufferViews;
@@ -573,6 +587,7 @@ export class ImdlReader {
     this._renderMaterials = imdl.renderMaterials ?? { };
     this._namedTextures = imdl.namedTextures ?? { };
     this._patternSymbols = imdl.patternSymbols ?? {};
+    this._rtcCenter = imdl.rtcCenter ? Point3d.fromJSON(imdl.rtcCenter) : undefined;
 
     this._iModel = args.iModel;
     this._modelId = args.modelId;
@@ -719,7 +734,22 @@ export class ImdlReader {
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
     };
 
-    return new TextureMapping(texture, new TextureMapping.Params(paramProps));
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params(paramProps));
+
+    const normalMapJson = json.normalMapParams;
+    if (normalMapJson) {
+      let normalMap;
+      const normalTexName = JsonUtils.asString(normalMapJson.textureName);
+      if (normalTexName.length === 0 || undefined !== (normalMap = this._namedTextures[normalTexName]?.renderTexture)) {
+        textureMapping.normalMapParams = {
+          normalMap,
+          greenUp: JsonUtils.asBool(normalMapJson.greenUp),
+          scale: JsonUtils.asDouble(normalMapJson.scale, 1),
+        };
+      }
+    }
+
+    return textureMapping;
   }
 
   private async loadNamedTextures(): Promise<void> {
@@ -796,7 +826,7 @@ export class ImdlReader {
   }
 
   /** @internal */
-  protected readFeatureTable(startPos: number): PackedFeatureTable | undefined {
+  protected readFeatureTable(startPos: number): RenderFeatureTable | undefined {
     this._buffer.curPos = startPos;
     const header = FeatureTableHeader.readFrom(this._buffer);
     if (undefined === header || 0 !== header.length % 4)
@@ -808,35 +838,41 @@ export class ImdlReader {
     if (this._buffer.isPastTheEnd)
       return undefined;
 
-    let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
-    const animationNodes = this._animationNodes;
-    if (undefined !== animationNodes) {
-      const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
-      const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
-      const bufferViewJson = this._bufferViews[bufferViewId];
-      if (undefined !== bufferViewJson) {
-        const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
-        const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-        const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
-        switch (bytesPerId) {
-          case 1:
-            animNodesArray = new Uint8Array(bytes);
-            break;
-          case 2:
-            // NB: A *copy* of the subarray.
-            animNodesArray = Uint16Array.from(new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2));
-            break;
-          case 4:
-            // NB: A *copy* of the subarray.
-            animNodesArray = Uint32Array.from(new Uint32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4));
-            break;
+    let featureTable: RenderFeatureTable;
+    if (this._hasMultiModelFeatureTable) {
+      featureTable = MultiModelPackedFeatureTable.create(packedFeatureArray, this._modelId, header.count, this._type, header.numSubCategories);
+    } else {
+      let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
+      const animationNodes = this._animationNodes;
+      if (undefined !== animationNodes) {
+        const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
+        const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
+        const bufferViewJson = this._bufferViews[bufferViewId];
+        if (undefined !== bufferViewJson) {
+          const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+          const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+          const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+          switch (bytesPerId) {
+            case 1:
+              animNodesArray = new Uint8Array(bytes);
+              break;
+            case 2:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint16Array.from(new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2));
+              break;
+            case 4:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint32Array.from(new Uint32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4));
+              break;
+          }
         }
       }
+
+      featureTable = new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, this._type, animNodesArray);
     }
 
     this._buffer.curPos = startPos + header.length;
-
-    return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
+    return featureTable;
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
@@ -1079,7 +1115,6 @@ export class ImdlReader {
       indices,
       fillFlags: displayParams.fillFlags,
       hasBakedLighting: false,
-      hasFixedNormals: false,
       material,
       textureMapping,
     };
@@ -1366,7 +1401,7 @@ export class ImdlReader {
       output.push(this._system.createBranch(branch, Transform.createIdentity()));
   }
 
-  private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
+  private finishRead(isLeaf: boolean, featureTable: RenderFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
     const graphics: RenderGraphic[] = [];
 
     if (undefined === this._nodes.Node_Root) {
@@ -1395,6 +1430,7 @@ export class ImdlReader {
         if ("Node_Root" === nodeKey) {
           if (this._timeline) {
             // Split up the root node into transform nodes.
+            assert(featureTable instanceof PackedFeatureTable, "multi-model feature tables never include animation branches");
             this.readAnimationBranches(graphics, meshValue, featureTable);
           } else if (this._containsTransformNodes) {
             // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
@@ -1437,8 +1473,14 @@ export class ImdlReader {
         break;
     }
 
-    if (undefined !== tileGraphic && false !== this._options)
+    if (tileGraphic && false !== this._options)
       tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange, this._options);
+
+    if (tileGraphic && this._rtcCenter) {
+      const rtcBranch = new GraphicBranch(true);
+      rtcBranch.add(tileGraphic);
+      tileGraphic = this._system.createBranch(rtcBranch, Transform.createTranslation(this._rtcCenter));
+    }
 
     return {
       readStatus: TileReadStatus.Success,

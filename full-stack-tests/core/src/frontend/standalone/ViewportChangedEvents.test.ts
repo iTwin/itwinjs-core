@@ -645,9 +645,16 @@ describe("Viewport changed events", async () => {
     ViewportChangedHandler.test(vp, (mon) => {
       const expectChange = (state: ViewportState, func: () => void) => mon.expect(ChangeFlag.None, state, func);
 
-      expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.createEmpty());
+      expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.fromJSON([{
+        shape: {
+          points: [
+            [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0],
+          ],
+        },
+      }]));
+
       expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
-      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: (_id, _tf) => Transform.createIdentity() });
+      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: () => Transform.createIdentity() });
     });
   });
 

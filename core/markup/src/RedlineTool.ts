@@ -13,7 +13,7 @@ import {
   BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { G, Marker, Element as MarkupElement, SVG } from "@svgdotjs/svg.js";
+import { G, Marker, Element as MarkupElement } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
@@ -174,7 +174,12 @@ export class PolygonTool extends RedlineTool {
     const delta = (Math.PI * 2.0) / numSides;
     const vec = center.vectorTo(edge);
     let angle = Vector3d.unitX().planarRadiansTo(vec, Vector3d.unitZ());
-    if (!inscribe) { const theta = delta * 0.5; angle -= theta; radius /= Math.cos(theta); }
+    if (!inscribe) {
+      const theta = delta * 0.5;
+      angle -= theta;
+      radius /= Math.cos(theta);
+    }
+
     const rtmp = Point3d.create();
     const stmp = Point3d.create();
     for (let i = 0; i < numSides; i++, angle += delta) {
@@ -309,21 +314,8 @@ export class ArrowTool extends RedlineTool {
   protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
 
   protected getOrCreateArrowMarker(color: string): Marker {
-    // NOTE: Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
     const arrowProps = MarkupApp.props.active.arrow;
-    const arrowLength = arrowProps.length;
-    const arrowWidth = arrowProps.width;
-    const arrowMarkerId = `ArrowMarker${arrowLength}x${arrowWidth}-${color}`;
-    let marker = SVG(`#${arrowMarkerId}`) as Marker;
-    if (null === marker) {
-      marker = this.markup.svgMarkup!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
-      marker.polygon([0, 0, arrowLength, arrowWidth * 0.5, 0, arrowWidth]);
-      marker.attr("orient", "auto-start-reverse");
-      marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...
-      marker.attr("refX", arrowLength);
-      marker.css({ stroke: color, fill: color });
-    }
-    return marker;
+    return this.markup.createArrowMarker(color, arrowProps.length, arrowProps.width);
   }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
@@ -357,7 +349,11 @@ export class DistanceTool extends ArrowTool {
   protected readonly _startPointWorld = new Point3d();
 
   protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
-  protected override setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None; super.setupAndPromptForNextAction(); }
+  protected override setupAndPromptForNextAction(): void {
+    IModelApp.accuSnap.enableSnap(true);
+    IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None;
+    super.setupAndPromptForNextAction();
+  }
 
   protected getFormattedDistance(distance: number): string | undefined {
     const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
@@ -393,7 +389,11 @@ export class DistanceTool extends ArrowTool {
     if (!isDynamics) {
       const markup = this.markup;
       const undo = markup.undo;
-      undo.performOperation(this.keyin, () => { undo.onAdded(distanceLine); undo.onAdded(textWithBg); });
+      undo.performOperation(this.keyin, () => {
+        undo.onAdded(distanceLine);
+        undo.onAdded(textWithBg);
+      });
+
       markup.selected.restart(textWithBg); // Select text+box so that user can freely position relative to distance line...
     }
   }
@@ -424,8 +424,16 @@ export class SketchTool extends RedlineTool {
       return;
     const pts: number[] = [];
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint);
-    this._points.forEach((pt) => { pts.push(pt.x); pts.push(pt.y); });
-    if (isDynamics && !evPt.isAlmostEqualXY(this._points[this._points.length - 1])) { pts.push(evPt.x); pts.push(evPt.y); }
+    this._points.forEach((pt) => {
+      pts.push(pt.x);
+      pts.push(pt.y);
+    });
+
+    if (isDynamics && !evPt.isAlmostEqualXY(this._points[this._points.length - 1])) {
+      pts.push(evPt.x);
+      pts.push(evPt.y);
+    }
+
     const isClosed = (this._points.length > 2 && (this._points[0].distanceSquaredXY(isDynamics ? evPt : this._points[this._points.length - 1]) < this._minDistSquared * 2));
     const element = isClosed ? svgMarkup.polygon(pts) : svgMarkup.polyline(pts);
     this.setCurrentStyle(element, isClosed);
@@ -452,8 +460,15 @@ export class SymbolTool extends RedlineTool {
 
   constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
 
-  public override async onInstall(): Promise<boolean> { if (undefined === this._symbolData) return false; return super.onInstall(); }
-  protected override showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`, true); }
+  public override async onInstall(): Promise<boolean> {
+    if (undefined === this._symbolData)
+      return false;
+    return super.onInstall();
+  }
+
+  protected override showPrompt(): void {
+    this.provideToolAssistance(0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`, true);
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (undefined === this._symbolData)
@@ -473,7 +488,10 @@ export class SymbolTool extends RedlineTool {
         symbol.remove();
         this._symbolData = undefined;
       }
-      try { symbol.flatten(symbol); } catch { }
+      try {
+        symbol.flatten(symbol);
+      } catch { }
+
       this._symbol = symbol;
     } else if (!isDynamics) {
       svgMarkup.add(this._symbol);

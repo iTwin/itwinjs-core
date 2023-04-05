@@ -33,7 +33,7 @@ describe("Blank Connection", () => {
     });
   });
   after(async () => {
-    if (blankConnection) { await blankConnection.close(); }
+    await blankConnection?.close();
     await TestUtility.shutdownFrontend();
   });
 

@@ -9,8 +9,9 @@
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { AnyCurve } from "./CurveChain";
 import { CurveLocationDetail } from "./CurveLocationDetail";
@@ -21,9 +22,11 @@ import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
 import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
 import { GapSearchContext } from "./internalContexts/GapSearchContext";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
 import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
 import { LineString3d } from "./LineString3d";
+import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
 
 /** Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be used in conditional statements for type-switching.
@@ -188,7 +191,16 @@ export abstract class CurveCollection extends GeometryQuery {
       }
     return undefined;
   }
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  }
 }
+
 /** Shared base class for use by both open and closed paths.
  * - A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
  * - A single entry in the chain can in fact contain multiple curve primitives if the entry itself is (for instance) `CurveChainWithDistanceIndex`
@@ -283,11 +295,22 @@ export abstract class CurveChain extends CurveCollection {
       curve.reverseInPlace();
     this._curves.reverse();
   }
-  /** Return the index where target is found in the array of children */
-  public childIndex(target: CurvePrimitive | undefined): number | undefined {
+  /** Return the index where target is found in the array of children
+   * @param alsoSearchProxies whether to also check proxy curves of the children
+  */
+  public childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined {
     for (let i = 0; i < this._curves.length; i++){
       if (this._curves[i] === target)
-      return i;
+        return i;
+    }
+    if (alsoSearchProxies ?? false) {
+      for (let i = 0; i < this._curves.length; i++) {
+        const childCurve = this._curves[i];
+        if (childCurve instanceof ProxyCurve) {
+          if (childCurve.proxyCurve === target)
+            return i;
+        }
+      }
     }
     return undefined;
   }

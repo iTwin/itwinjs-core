@@ -6,7 +6,7 @@
 
 /// <reference types="node" />
 
-import type { Attributes } from '@opentelemetry/api';
+import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
 import type { Tracer } from '@opentelemetry/api';
@@ -15,7 +15,7 @@ import type { Tracer } from '@opentelemetry/api';
 export class AbandonedError extends Error {
 }
 
-// @beta
+// @public
 export type AccessToken = string;
 
 // @public
@@ -34,14 +34,6 @@ export type AsyncFunction = (...args: any) => Promise<any>;
 export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
 }[keyof T];
-
-// @alpha
-export class AsyncMutex {
-    lock(): Promise<AsyncMutexUnlockFnType>;
-}
-
-// @alpha
-export type AsyncMutexUnlockFnType = () => void;
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -128,7 +120,7 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
-// @beta
+// @public
 export enum BriefcaseStatus {
     // (undocumented)
     BRIEFCASE_STATUS_BASE = 131072,
@@ -172,21 +164,38 @@ export class ByteStream {
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
+    // @deprecated (undocumented)
     get nextFloat32(): number;
+    // @deprecated (undocumented)
     get nextFloat64(): number;
+    // @deprecated (undocumented)
     get nextId64(): Id64String;
+    // @deprecated (undocumented)
     get nextInt32(): number;
+    // @deprecated (undocumented)
     get nextUint16(): number;
+    // @deprecated (undocumented)
     get nextUint24(): number;
+    // @deprecated (undocumented)
     get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
+    // @deprecated (undocumented)
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
+    readFloat32(): number;
+    readFloat64(): number;
+    readId64(): Id64String;
+    readInt32(): number;
+    readUint16(): number;
+    readUint24(): number;
+    readUint32(): number;
+    readUint8(): number;
+    get remainingLength(): number;
     reset(): void;
     rewind(numBytes: number): boolean;
 }
 
-// @beta
+// @public
 export enum ChangeSetStatus {
     ApplyError = 90113,
     CannotMergeIntoMaster = 90136,
@@ -197,6 +206,7 @@ export enum ChangeSetStatus {
     ChangeTrackingNotEnabled = 90114,
     CorruptedChangeStream = 90115,
     CouldNotOpenDgnDb = 90131,
+    DownloadCancelled = 90138,
     FileNotFound = 90116,
     FileWriteError = 90117,
     HasLocalChanges = 90118,
@@ -319,6 +329,7 @@ export enum DbResult {
     BE_SQLITE_ERROR_BadDbProfile = 100663306,
     BE_SQLITE_ERROR_ChangeTrackError = 218103818,
     BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = 352321546,
+    BE_SQLITE_ERROR_DataTransformRequired = 385875978,
     BE_SQLITE_ERROR_FileExists = 16777226,
     BE_SQLITE_ERROR_FileNotFound = 67108874,
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
@@ -520,9 +531,6 @@ export abstract class ErrorCategory extends StatusCategory {
     error: boolean;
 }
 
-// @beta
-export type ExtractLiterals<T, U extends T> = Extract<T, U>;
-
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -650,7 +658,7 @@ export interface IDisposable {
     dispose(): void;
 }
 
-// @beta
+// @public
 export enum IModelHubStatus {
     // (undocumented)
     AnotherUserPushing = 102409,
@@ -1144,6 +1152,8 @@ export class Logger {
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logInfo: LogFunction | undefined;
+    // @internal (undocumented)
+    static logLevelChangedFn?: VoidFunction;
     static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logTrace: LogFunction | undefined;
@@ -1275,6 +1285,9 @@ export class ObservableSet<T> extends Set<T> {
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
 
+// @public
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
+
 // @beta
 export class OneAtATimeAction<T> {
     constructor(run: (...args: any[]) => Promise<T>, msg?: string);
@@ -1343,6 +1356,11 @@ export class PerfLogger implements IDisposable {
     // (undocumented)
     dispose(): void;
 }
+
+// @public
+export type PickAsyncMethods<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
@@ -1433,6 +1451,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
         equal: boolean;
     };
     protected _remove(value: T): number;
+    slice(start?: number, end?: number): ReadonlySortedArray<T>;
 }
 
 // @alpha
@@ -1445,7 +1464,7 @@ export enum RealityDataStatus {
     Success = 0
 }
 
-// @beta
+// @internal
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
@@ -1466,6 +1485,11 @@ export enum RepositoryStatus {
     SyncError = 86019
 }
 
+// @public
+export type RequireAtLeastOne<T> = {
+    [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];
+
 // @beta
 export enum RpcInterfaceStatus {
     IncompatibleVersion = 135168,
@@ -1485,9 +1509,10 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     extractArray(): T[];
     insert(value: T, onInsert?: (value: T) => any): number;
     remove(value: T): number;
+    slice(start?: number, end?: number): SortedArray<T>;
 }
 
-// @alpha
+// @public
 export enum SpanKind {
     // (undocumented)
     CLIENT = 2,
@@ -1518,7 +1543,7 @@ export abstract class StatusCategory {
 // @alpha (undocumented)
 export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
 
-// @beta
+// @internal
 export interface StatusCodeWithMessage<ErrorCodeType> {
     // (undocumented)
     message: string;
@@ -1546,16 +1571,93 @@ export abstract class SuccessCategory extends StatusCategory {
     error: boolean;
 }
 
-// @alpha
+// @public
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
-    static setAttributes(attributes: Attributes): void;
+    static setAttributes(attributes: SpanAttributes): void;
     static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public
 export class TransientIdSequence {
+    getNext(): Id64String;
+    // @deprecated
     get next(): Id64String;
+    peekNext(): Id64String;
+}
+
+// @public
+export class TupleKeyedMap<K extends readonly any[], V> {
+    // (undocumented)
+    [Symbol.iterator](): IterableIterator<[K, V]>;
+    // (undocumented)
+    get [Symbol.toStringTag](): string;
+    constructor(entries?: readonly (readonly [K, V])[] | null);
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    get(key: K): V | undefined;
+    // (undocumented)
+    has(key: K): boolean;
+    // (undocumented)
+    set(key: K, value: V): this;
+    // (undocumented)
+    get size(): number;
+}
+
+// @public
+export class TypedArrayBuilder<T extends UintArray> {
+    protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions);
+    append(values: T): void;
+    at(index: number): number;
+    get capacity(): number;
+    protected _constructor: Constructor<T>;
+    protected _data: T;
+    ensureCapacity(newCapacity: number): number;
+    readonly growthFactor: number;
+    get length(): number;
+    protected _length: number;
+    push(value: number): void;
+    toTypedArray(includeUnusedCapacity?: boolean): T;
+}
+
+// @public
+export interface TypedArrayBuilderOptions {
+    growthFactor?: number;
+    initialCapacity?: number;
+}
+
+// @public
+export class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+}
+
+// @public
+export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+    toUint8Array(includeUnusedCapacity?: boolean): Uint8Array;
+}
+
+// @public
+export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+}
+
+// @public
+export type UintArray = Uint8Array | Uint16Array | Uint32Array;
+
+// @public
+export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
+    constructor(options?: UintArrayBuilderOptions);
+    append(values: UintArray): void;
+    get bytesPerElement(): number;
+    protected ensureBytesPerElement(newValues: Iterable<number>): void;
+    push(value: number): void;
+}
+
+// @public
+export interface UintArrayBuilderOptions extends TypedArrayBuilderOptions {
+    initialType?: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array;
 }
 
 // @public

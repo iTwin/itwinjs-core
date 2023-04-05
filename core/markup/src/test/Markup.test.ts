@@ -105,7 +105,9 @@ describe("Markup", () => {
   it("Markup hiliting", () => {
     nested.clear();
     const checkColor = (elem: Element | Element[], stroke: string, fill: string, msg: string) => {
-      if (elem instanceof Element) elem = [elem];
+      if (elem instanceof Element)
+        elem = [elem];
+
       elem.forEach((e) => {
         const css = window.getComputedStyle(e.node);
         assert.equal(css.stroke, stroke, `${msg} stroke`);

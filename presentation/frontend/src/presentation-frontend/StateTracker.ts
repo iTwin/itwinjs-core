@@ -6,6 +6,7 @@
  * @module Core
  */
 
+import { IDisposable, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
@@ -20,93 +21,162 @@ export interface NodeIdentifier {
 }
 
 /**
- * Data structure that describes expanded node.
+ * @internal
  */
-interface ExpandedNode {
-  key: NodeKey;
-  /** Set of source ids in which this node is expanded. */
-  expandedIn: Set<string>;
+export interface NodeState {
+  isExpanded?: boolean;
+  instanceFilter?: string;
 }
 
-/** Maps node ids to expanded nodes. */
-type ExpandedHierarchy = Map<string, ExpandedNode>;
+interface MergedNodeState {
+  isExpanded?: boolean;
+  instanceFilters?: string[];
+}
 
-/** @internal */
+interface ReportedNodeState extends MergedNodeState {
+  nodeKey: NodeKey | undefined;
+}
+
+interface NodeStatesEntry {
+  key: NodeKey | undefined;
+  states: Map<string, NodeState>; // per-component node state
+}
+
+/**
+ * The tracker stores up-to-date UI state of the hierarchies on the frontend and reports
+ * just the state changes to the backend as soon as component sends in a new hierarchy state.
+ *
+ * @internal
+ */
 export class StateTracker {
-  private _expandedHierarchies: Map<string, ExpandedHierarchy>;
+  // Ruleset ID => Node ID => Node state info
+  private _hierarchyStates: Map<string, Map<string | undefined, NodeStatesEntry>>;
   private _ipcRequestsHandler: IpcRequestsHandler;
 
   constructor(ipcRequestsHandler: IpcRequestsHandler) {
     this._ipcRequestsHandler = ipcRequestsHandler;
-    this._expandedHierarchies = new Map<string, ExpandedHierarchy>();
+    this._hierarchyStates = new Map();
   }
 
-  private async updateHierarchyStateIfNeeded(imodelKey: string, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", nodeKeys: NodeKey[]) {
-    if (nodeKeys.length === 0)
+  private async updateHierarchyStateIfNeeded(imodelKey: string, rulesetId: string, stateChanges: ReportedNodeState[]) {
+    if (stateChanges.length === 0)
       return;
-    await this._ipcRequestsHandler.updateHierarchyState({ imodelKey, rulesetId, changeType, nodeKeys });
+    await this._ipcRequestsHandler.updateHierarchyState({ imodelKey, rulesetId, stateChanges });
   }
 
   public async onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string) {
-    const hierarchy = this._expandedHierarchies.get(rulesetId);
-    if (!hierarchy)
+    const hierarchyState = this._hierarchyStates.get(rulesetId);
+    if (!hierarchyState)
       return;
 
-    const removedKeys: NodeKey[] = [];
-    for (const [nodeId, expandedNode] of hierarchy) {
-      expandedNode.expandedIn.delete(sourceId);
-      // if there are other sources that have this node expanded leave it.
-      if (expandedNode.expandedIn.size !== 0)
-        continue;
+    const stateChanges: ReportedNodeState[] = [];
+    hierarchyState.forEach((entry) => {
+      if (!entry.states.has(sourceId)) {
+        // the node has no state for this source - nothing to do
+        return;
+      }
+      using(new MergedNodeStateChangeReporter(entry, stateChanges), (_) => {
+        entry.states.delete(sourceId);
+      });
+    });
 
-      hierarchy.delete(nodeId);
-      removedKeys.push(expandedNode.key);
-    }
-
-    if (hierarchy.size === 0)
-      this._expandedHierarchies.delete(rulesetId);
-
-    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesCollapsed", removedKeys);
+    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, stateChanges);
   }
 
-  public async onExpandedNodesChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]) {
-    let hierarchy = this._expandedHierarchies.get(rulesetId);
-    if (expandedNodes.length === 0 && !hierarchy)
-      return;
-    if (!hierarchy) {
-      hierarchy = new Map<string, ExpandedNode>();
-      this._expandedHierarchies.set(rulesetId, hierarchy);
+  public async onHierarchyStateChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, newHierarchyState: Array<{ node: NodeIdentifier | undefined, state: NodeState }>) {
+    let hierarchyState = this._hierarchyStates.get(rulesetId);
+    if (!hierarchyState) {
+      if (newHierarchyState.length === 0)
+        return;
+
+      hierarchyState = new Map();
+      this._hierarchyStates.set(rulesetId, hierarchyState);
     }
 
-    const removedKeys: NodeKey[] = [];
-    const addedKeys: NodeKey[] = [];
-    for (const [key, existingNode] of hierarchy) {
-      // existing node is in new expanded nodes list. Add current source
-      if (expandedNodes.find((expandedNode) => expandedNode.id === key)) {
-        existingNode.expandedIn.add(sourceId);
-        continue;
+    const handledNodeIds = new Set<string | undefined>();
+    const stateChanges: ReportedNodeState[] = [];
+
+    // step 1: walk over new state and report all changes
+    newHierarchyState.forEach(({ node, state }) => {
+      const nodeId = node?.id;
+      const nodeKey = node?.key;
+      const existingNodeEntry = hierarchyState!.get(nodeId);
+      if (existingNodeEntry) {
+        using(new MergedNodeStateChangeReporter(existingNodeEntry, stateChanges), (_) => {
+          existingNodeEntry.states.set(sourceId, state);
+        });
+      } else {
+        hierarchyState!.set(nodeId, { key: nodeKey, states: new Map([[sourceId, state]]) });
+        stateChanges.push({ ...calculateMergedNodeState([state].values()), nodeKey });
+      }
+      handledNodeIds.add(nodeId);
+    });
+
+    // step 2: walk over old state and remove all state that's not in the new state
+    const erasedNodeIds = new Set<string | undefined>();
+    hierarchyState.forEach((entry, nodeId) => {
+      if (handledNodeIds.has(nodeId)) {
+        // the node was handled with the new state - nothing to do here
+        return;
       }
 
-      // node was not found in expanded nodes list. Remove current source
-      existingNode.expandedIn.delete(sourceId);
-      if (existingNode.expandedIn.size !== 0)
-        continue;
+      if (!entry.states.has(sourceId)) {
+        // the node had no state for this source, so it's not affected by this report
+        return;
+      }
 
-      removedKeys.push(existingNode.key);
-      hierarchy.delete(key);
+      using(new MergedNodeStateChangeReporter(entry, stateChanges), (_) => {
+        entry.states.delete(sourceId);
+      });
+
+      // istanbul ignore next
+      if (entry.states.size === 0) {
+        // there are no more components holding state for this node
+        erasedNodeIds.add(nodeId);
+      }
+    });
+
+    // step 3: cleanup erased node ids and possibly the whole hierarchy state
+    for (const nodeId of erasedNodeIds) {
+      hierarchyState.delete(nodeId);
     }
+    if (hierarchyState.size === 0)
+      this._hierarchyStates.delete(rulesetId);
 
-    // add any new nodes that were not in expanded nodes hierarchy already
-    for (const expandedNode of expandedNodes) {
-      const existingNode = hierarchy.get(expandedNode.id);
-      if (existingNode)
-        continue;
+    // finally, report
+    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, stateChanges);
+  }
+}
 
-      hierarchy.set(expandedNode.id, { key: expandedNode.key, expandedIn: new Set<string>([sourceId]) });
-      addedKeys.push(expandedNode.key);
+function calculateMergedNodeState(perComponentStates: IterableIterator<NodeState>): MergedNodeState {
+  const merged: MergedNodeState = {};
+  for (const state of perComponentStates) {
+    if (state.isExpanded)
+      merged.isExpanded = true;
+    if (state.instanceFilter) {
+      if (!merged.instanceFilters)
+        merged.instanceFilters = [state.instanceFilter];
+      else if (!merged.instanceFilters.includes(state.instanceFilter))
+        merged.instanceFilters.push(state.instanceFilter);
     }
+  }
+  return merged;
+}
 
-    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesCollapsed", removedKeys);
-    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesExpanded", addedKeys);
+class MergedNodeStateChangeReporter implements IDisposable {
+  private _entry: NodeStatesEntry;
+  private _stateBefore: MergedNodeState;
+  private _outStateChanges: ReportedNodeState[];
+  public constructor(entry: NodeStatesEntry, outStateChanges: ReportedNodeState[]) {
+    this._entry = entry;
+    this._stateBefore = calculateMergedNodeState(this._entry.states.values());
+    this._outStateChanges = outStateChanges;
+  }
+  public dispose() {
+    const stateAfter = calculateMergedNodeState(this._entry.states.values());
+    const expandedFlagsDiffer = !!stateAfter.isExpanded !== !!this._stateBefore.isExpanded;
+    const instanceFiltersDiffer = (stateAfter.instanceFilters?.length ?? 0) !== (this._stateBefore.instanceFilters?.length ?? 0);
+    if (expandedFlagsDiffer || instanceFiltersDiffer)
+      this._outStateChanges.push({ ...stateAfter, nodeKey: this._entry.key });
   }
 }

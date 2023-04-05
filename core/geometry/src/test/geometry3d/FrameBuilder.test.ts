@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
@@ -25,9 +26,8 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { MatrixTests } from "./Point3dVector3d.test";
+import { MatrixTests } from "./Matrix3d.test";
 
-/* eslint-disable no-console */
 describe("FrameBuilder", () => {
 
   it("HelloWorldA", () => {
@@ -140,7 +140,7 @@ describe("FrameBuilder", () => {
     ]) {
       builder.clear();
       const linestring = LineString3d.create(points);
-      const curve = InterpolationCurve3d.create(InterpolationCurve3dOptions.create({fitPoints: points}));
+      const curve = InterpolationCurve3d.create(InterpolationCurve3dOptions.create({ fitPoints: points }));
       builder.clear();
       builder.announce(linestring);
       const frameA = builder.getValidatedFrame();
@@ -218,13 +218,15 @@ describe("FrameBuilder", () => {
         AxisScaleSelect.NonUniformRangeContainment]) {
         const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(range, select, 0, 0, 0, 2.0);
         if (ck.testPointer(localToWorld)) {
-          MatrixTests.checkProperties(ck,
+          MatrixTests.checkProperties(
+            ck,
             localToWorld.matrix,
             select === AxisScaleSelect.Unit,  // unit axes in range are identity
             select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
             select === AxisScaleSelect.Unit,  // and of course rigid.
             true, // always invertible
-            true);  // always diagonal
+            true // always diagonal
+          );
           const worldCorners = range.corners();
           worldCorners.push(range.fractionToPoint(0.5, 0.5, 0.5));
         }
@@ -251,10 +253,10 @@ describe("FrameBuilder", () => {
         Geometry.isSmallMetricDistance(zz), curvesToPlane(loop) !== undefined, "planarity test");
 
       const rawSums = RegionOps.computeXYAreaMoments(loop)!;
-      console.log("curves", prettyPrint(IModelJson.Writer.toIModelJson(loop)));
-      console.log("raw moment products", prettyPrint(rawSums.toJSON()));
+      GeometryCoreTestIO.consoleLog("curves", prettyPrint(IModelJson.Writer.toIModelJson(loop)));
+      GeometryCoreTestIO.consoleLog("raw moment products", prettyPrint(rawSums.toJSON()));
       const principalMoments = MomentData.inertiaProductsToPrincipalAxes(rawSums.origin, rawSums.sums)!;
-      console.log("inertia", prettyPrint(principalMoments.toJSON()));
+      GeometryCoreTestIO.consoleLog("inertia", prettyPrint(principalMoments.toJSON()));
       GeometryCoreTestIO.captureGeometry(allGeometry, loop, x0, y0, 0);
       GeometryCoreTestIO.showMomentData(allGeometry, rawSums, false, x0, y0, 0);
       x0 += 2.0 * a;

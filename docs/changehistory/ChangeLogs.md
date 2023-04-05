@@ -2,7 +2,7 @@
 
 - [core-backend](../reference/core-backend/changelog)
 
-- [core-transformer](../reference/core-transformer/changelog)
+- [transformer](../reference/imodel-transformer/changelog)
 
 - [core-frontend](../reference/core-frontend/changelog)
 

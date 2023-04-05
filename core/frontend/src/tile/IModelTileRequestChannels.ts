@@ -57,7 +57,7 @@ class IModelTileChannel extends TileRequestChannel {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      IpcApp.callIpcHost("cancelTileContentRequests", imodel.getRpcProps(), treeContentIds);
+      IpcApp.appFunctionIpc.cancelTileContentRequests(imodel.getRpcProps(), treeContentIds);
     }
 
     this._canceled.clear();

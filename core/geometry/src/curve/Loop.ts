@@ -65,6 +65,12 @@ export class Loop extends CurveChain {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
+    // eliminate near-duplicate points between children
+    strokes.removeDuplicatePoints();
+    if (strokes.isPhysicallyClosed) {
+      strokes.popPoint();
+      strokes.addClosurePoint();
+    }
     return Loop.create(strokes);
   }
   /** Return the boundary type (2) of a corresponding  MicroStation CurveVector */
@@ -82,7 +88,7 @@ export class Loop extends CurveChain {
 }
 
 /**
- * structure carrying a pair of loops with curve geometry.
+ * Structure carrying a pair of loops with curve geometry.
  * @public
  */
 export class LoopCurveLoopCurve {
@@ -115,13 +121,12 @@ export class LoopCurveLoopCurve {
  * @public
  */
 export interface SignedLoops {
-  /** Array of loops that have positive area sign.  (i.e. counterclockwise loops) */
+  /** Array of loops that have positive area sign (i.e. counterclockwise loops). */
   positiveAreaLoops: Loop[];
-  /** Array of loops that have negative area sign. (i.e. clockwise loops. */
+  /** Array of loops that have negative area sign (i.e. clockwise loops). */
   negativeAreaLoops: Loop[];
   /** slivers where there are coincident sections of input curves. */
   slivers: Loop[];
 /** Array indicating edges between loops */
   edges?: LoopCurveLoopCurve[];
-
 }

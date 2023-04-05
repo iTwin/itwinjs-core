@@ -15,7 +15,7 @@ import { Pixel } from "./Pixel";
 
 /** Represents a [Feature]($common) determined to be visible within a [[Viewport]].
  * @see [[Viewport.queryVisibleFeatures]].
- * @beta
+ * @public
  */
 export interface VisibleFeature {
   /** The Id of the [Element]($backend) associated with the feature. May be invalid or transient. */
@@ -34,7 +34,7 @@ export interface VisibleFeature {
  * This method of determining visibility considers a feature "visible" if it lit up at least one pixel.
  * @note A pixel that is behind another, transparent pixel is not considered visible.
  * @see [[QueryVisibleFeaturesOptions]].
- * @beta
+ * @public
  */
 export interface QueryScreenFeaturesOptions {
   /** Union discriminator for [[QueryVisibleFeaturesOptions]]. */
@@ -52,7 +52,7 @@ export interface QueryScreenFeaturesOptions {
  * @note If a clip volume is applied to the view, features contained in tiles that *intersect* the clip volume are considered visible regardless of whether
  * their geometry would actually be entirely clipped out by the clip volume.
  * @see [[QueryVisibleFeaturesOptions]].
- * @beta
+ * @public
  */
 export interface QueryTileFeaturesOptions {
   /** Union discriminator for [[QueryVisibleFeaturesOptions]]. */
@@ -63,14 +63,14 @@ export interface QueryTileFeaturesOptions {
 
 /** Options specifying how to query for visible [Feature]($common)s.
  * @see [[Viewport.queryVisibleFeatures]].
- * @beta
+ * @public
  */
 export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 
 /** A function supplied to [[Viewport.queryVisibleFeatures]] to process the results. The iterable supplied to the callback consists of all of the
  * [Feature]($common)s determined to be visible. The same feature may recur multiple times.
  * @note The iterable supplied to the callback is usable only within the callback. Once the callback exits, the iterable becomes empty.
- * @beta
+ * @public
  */
 export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
 
@@ -124,12 +124,12 @@ class ScreenFeatures implements Iterable<VisibleFeature> {
       for (let x = rect.left; x < rect.right; x++) {
         for (let y = rect.top; y < rect.bottom; y++) {
           const pixel = pixels.getPixel(x, y);
-          if (pixel.feature && pixel.featureTable) {
+          if (pixel.feature && pixel.modelId) {
             yield {
               elementId: pixel.feature.elementId,
               subCategoryId: pixel.feature.subCategoryId,
               geometryClass: pixel.feature.geometryClass,
-              modelId: pixel.featureTable.modelId,
+              modelId: pixel.modelId,
               iModel: pixel.iModel ?? iModel,
             };
           }

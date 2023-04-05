@@ -46,7 +46,8 @@ export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "
 function getMinScaleViewW(vp: Viewport): number {
   let zHigh;
   const origin = vp.view.getCenter();
-  const direction = vp.view.getZVector(); direction.scaleInPlace(-1);
+  const direction = vp.view.getZVector();
+  direction.scaleInPlace(-1);
   const corners = vp.view.iModel.projectExtents.corners();
   const delta = Vector3d.create();
   for (const corner of corners) {
@@ -126,7 +127,11 @@ export class Marker implements CanvasDecoration {
   public drawFunc?(ctx: CanvasRenderingContext2D): void;
 
   /** Called when the mouse pointer enters this Marker. */
-  public onMouseEnter(ev: BeButtonEvent) { this._isHilited = true; this._hiliteColor = ev.viewport!.hilite.color; IModelApp.accuSnap.clear(); }
+  public onMouseEnter(ev: BeButtonEvent) {
+    this._isHilited = true;
+    this._hiliteColor = ev.viewport!.hilite.color;
+    IModelApp.accuSnap.clear();
+  }
 
   /** Called when the mouse pointer leaves this Marker. */
   public onMouseLeave() { this._isHilited = false; }

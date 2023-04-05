@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../IntegrationTests";
+import { initialize, terminate, testLocalization } from "../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "localization test",
@@ -26,7 +26,9 @@ describe("Localization", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await initialize();
+    await initialize({ localization: testLocalization });
+    await IModelApp.localization.registerNamespace("Test");
+    Presentation.presentation.activeLocale = "en";
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;

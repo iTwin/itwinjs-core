@@ -67,7 +67,6 @@ export interface SurfaceParams {
   readonly indices: VertexIndices;
   readonly fillFlags: FillFlags;
   readonly hasBakedLighting: boolean;
-  readonly hasFixedNormals: boolean;
   readonly textureMapping?: {
     texture: RenderTexture;
     alwaysDisplayed: boolean;

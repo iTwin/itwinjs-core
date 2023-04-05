@@ -8,8 +8,7 @@ import {
   DisplayValue, DisplayValueGroup, DisplayValuesArray, DisplayValuesArrayJSON, DisplayValuesMap, DisplayValuesMapJSON, NestedContentValue,
   NestedContentValueJSON, Value, ValuesArray, ValuesArrayJSON, ValuesMap, ValuesMapJSON,
 } from "../../presentation-common/content/Value";
-import { InstanceKey } from "../../presentation-common/EC";
-import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "../_helpers/random";
+import { createRandomECInstanceKey } from "../_helpers/random";
 
 describe("Value", () => {
 
@@ -85,12 +84,14 @@ describe("Value", () => {
   describe("fromJSON", () => {
 
     it("returns undefined for null value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(Value.fromJSON(null)).to.eq(undefined);
     });
 
     it("returns valid nested content value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const v: NestedContentValueJSON = {
-        primaryKeys: [createRandomECInstanceKeyJSON()],
+        primaryKeys: [createRandomECInstanceKey()],
         values: {
           key1: faker.random.word(),
           key2: null,
@@ -100,9 +101,10 @@ describe("Value", () => {
         },
         mergedFieldNames: [faker.random.word()],
       };
+      // eslint-disable-next-line deprecation/deprecation
       const result = Value.fromJSON([v]);
       expect(result).to.deep.eq([{
-        primaryKeys: v.primaryKeys.map(InstanceKey.fromJSON),
+        primaryKeys: v.primaryKeys,
         values: {
           key1: v.values.key1,
           key2: undefined,
@@ -115,15 +117,19 @@ describe("Value", () => {
     });
 
     it("returns valid array value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const v: ValuesArrayJSON = [faker.random.word(), faker.random.word()];
+      // eslint-disable-next-line deprecation/deprecation
       expect(Value.fromJSON(v)).to.deep.eq(v);
     });
 
     it("returns valid map value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const v: ValuesMapJSON = {
         a: faker.random.word(),
         b: faker.random.number(),
       };
+      // eslint-disable-next-line deprecation/deprecation
       expect(Value.fromJSON(v)).to.deep.eq(v);
     });
 
@@ -132,10 +138,12 @@ describe("Value", () => {
   describe("toJSON", () => {
 
     it("returns null for undefined value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(Value.toJSON(undefined)).to.eq(null);
     });
 
     it("returns 0 for 0 number value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(Value.toJSON(0)).to.eq(0);
     });
 
@@ -151,9 +159,10 @@ describe("Value", () => {
         },
         mergedFieldNames: [faker.random.word()],
       };
+      // eslint-disable-next-line deprecation/deprecation
       const result = Value.toJSON([v]);
       expect(result).to.deep.eq([{
-        primaryKeys: v.primaryKeys.map(InstanceKey.toJSON),
+        primaryKeys: v.primaryKeys,
         values: {
           key1: v.values.key1,
           key2: null,
@@ -167,6 +176,7 @@ describe("Value", () => {
 
     it("returns valid JSON for array value", () => {
       const v: ValuesArray = [faker.random.word(), faker.random.word()];
+      // eslint-disable-next-line deprecation/deprecation
       expect(Value.toJSON(v)).to.deep.eq(v);
     });
 
@@ -175,6 +185,7 @@ describe("Value", () => {
         a: faker.random.word(),
         b: faker.random.number(),
       };
+      // eslint-disable-next-line deprecation/deprecation
       expect(Value.toJSON(v)).to.deep.eq(v);
     });
 
@@ -234,18 +245,23 @@ describe("DisplayValue", () => {
   describe("fromJSON", () => {
 
     it("returns undefined for null value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.fromJSON(null)).to.eq(undefined);
     });
 
     it("returns valid array value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const v: DisplayValuesArrayJSON = [faker.random.word(), faker.random.word()];
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.fromJSON(v)).to.deep.eq(v);
     });
 
     it("returns valid map value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       const v: DisplayValuesMapJSON = {
         a: faker.random.word(),
       };
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.fromJSON(v)).to.deep.eq(v);
     });
 
@@ -254,15 +270,18 @@ describe("DisplayValue", () => {
   describe("toJSON", () => {
 
     it("returns null for undefined value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.toJSON(undefined)).to.eq(null);
     });
 
     it("returns \"\" for empty string value", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.toJSON("")).to.eq("");
     });
 
     it("returns valid JSON for array value", () => {
       const v: DisplayValuesArray = [faker.random.word(), faker.random.word()];
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.toJSON(v)).to.deep.eq(v);
     });
 
@@ -270,6 +289,7 @@ describe("DisplayValue", () => {
       const v: DisplayValuesMap = {
         a: faker.random.word(),
       };
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.toJSON(v)).to.deep.eq(v);
     });
 
@@ -282,6 +302,7 @@ describe("DisplayValueGroup", () => {
   describe("fromJSON", () => {
 
     it("returns valid DisplayValueGroup object", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValueGroup.fromJSON({
         displayValue: "test",
         groupedRawValues: ["a"],
@@ -296,6 +317,7 @@ describe("DisplayValueGroup", () => {
   describe("toJSON", () => {
 
     it("returns valid JSON", () => {
+      // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValueGroup.toJSON({
         displayValue: "test",
         groupedRawValues: ["a"],

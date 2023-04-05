@@ -42,7 +42,8 @@ export class FormatterSpec {
     this._name = name;
     this._format = format;
     this._persistenceUnit = persistenceUnit;
-    if (conversions) this._conversions = conversions;
+    if (conversions)
+      this._conversions = conversions;
   }
 
   public get name(): string { return this._name; }

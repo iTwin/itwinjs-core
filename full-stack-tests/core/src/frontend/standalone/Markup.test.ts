@@ -23,7 +23,7 @@ describe("Markup tests", async () => {
 
   after(async () => {
     vp.dispose();
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -83,7 +83,10 @@ describe("Markup tests", async () => {
     assert.equal(undo.undoString, "one");
     assert.equal(children.length, 1, "add redone");
 
-    undo.performOperation("two", () => { undo.onDelete(rect); rect.remove(); });
+    undo.performOperation("two", () => {
+      undo.onDelete(rect);
+      rect.remove();
+    });
     assert.equal(children.length, 0, "deleted rect");
     assert.isTrue(undo.undoPossible);
     assert.equal(undo.undoString, "two");
@@ -102,7 +105,7 @@ describe("Markup tests", async () => {
     clone.css({ stroke: "white" });
     rect.replace(clone);
 
-    undo.performOperation("three", () => { undo.onModified(clone, rect); });
+    undo.performOperation("three", () => undo.onModified(clone, rect));
     assert.equal((children[0] as LinkedHTMLElement).instance.css("stroke"), "white", "element is now white");
     undo.doUndo();
     assert.equal((children[0] as LinkedHTMLElement).instance.css("stroke"), "red", "element is now red");

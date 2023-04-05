@@ -73,7 +73,10 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   protected _targetMaskModel?: Id64String | ContextRealityModelState;
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
 
   public override async onUnsuspend() { this.showPrompt(); }
   private setupAndPromptForNextAction(): void {

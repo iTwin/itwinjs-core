@@ -139,6 +139,21 @@ describe("Render Compatibility", () => {
     expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.StandardDerivatives)).to.not.equal(-1);
   });
 
+  it("should query proper render compatibility info assuming lack of float rendering support with webgl1", () => {
+    const context = makeTestContext(false);
+    const caps = new Capabilities();
+    const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FloatRendering)).to.not.equal(-1);
+  });
+
+  it("should query proper render compatibility info assuming lack of float rendering support with webgl2", () => {
+    const context = makeTestContext(true);
+    const caps = new Capabilities();
+    const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
+  });
+
   it("detects early Z culling driver bug", () => {
     const renderers = [
       [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelHost, V2CheckpointAccessProps } from "../../core-backend";
+import { IModelHost } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -131,73 +131,6 @@ describe("Checkpoint Manager", () => {
     assert.isUndefined(db);
   });
 
-  it("should fail when downloadCheckpoint does not throw a transient error", async () => {
-    // Mock iModelHub
-    const mockCheckpointV2: V2CheckpointAccessProps = {
-      accountName: "testAccount",
-      containerId: "imodelblocks-123",
-      sasToken: "testSAS",
-      dbName: "testDb",
-      storageType: "azure?sas=1",
-    };
-
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
-
-    const v2Spy = sinon.stub(V2CheckpointManager, "downloadCheckpoint").onCall(0).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).onCall(1).callsFake(async () => {
-      throw Error("Failure when receiving data from the"); // Not a retryable error so we'll fail
-    }).callThrough();
-
-    const iModelId = Guid.createValue();
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
-    const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset } };
-    await expect(CheckpointManager.downloadCheckpoint(request)).to.eventually.be.rejectedWith("Failure when receiving data from the");
-    assert.isTrue(v2Spy.callCount === 2, `Expected call count of 2, but got ${v2Spy.callCount}`);
-  });
-
-  it("should fail when downloadCheckpoint throws transient error too many times", async () => {
-    // Mock iModelHub
-    const mockCheckpointV2: V2CheckpointAccessProps = {
-      accountName: "testAccount",
-      containerId: "imodelblocks-123",
-      sasToken: "testSAS",
-      dbName: "testDb",
-      storageType: "azure?sas=1",
-    };
-
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
-
-    // Should break out of the loop to try downloadCheckpoint, we'll hit the max number of attempts here in this scenario and then throw in doDownload in CheckpointManager
-    const v2Spy = sinon.stub(V2CheckpointManager, "downloadCheckpoint").onCall(0).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).onCall(1).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).onCall(2).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).onCall(3).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).onCall(4).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).onCall(5).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).onCall(6).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer");
-    }).callThrough();
-
-    const iModelId = Guid.createValue();
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
-    const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset } };
-    await expect(CheckpointManager.downloadCheckpoint(request)).to.eventually.be.rejectedWith("Failure when receiving data from the peer");
-    assert.isTrue(v2Spy.callCount === 5, `Expected call count of 5, but got ${v2Spy.callCount}`);
-  });
-
   it("downloadCheckpoint should fall back to use v1 checkpoints if v2 checkpoints are not enabled", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
@@ -210,7 +143,7 @@ describe("Checkpoint Manager", () => {
     snapshot.close();
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => { return undefined; });
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);

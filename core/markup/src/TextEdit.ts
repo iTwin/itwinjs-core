@@ -48,7 +48,10 @@ export class PlaceTextTool extends RedlineTool {
       await new EditTextTool(text, true).run(); // text is now positioned, open text editor
     }
   }
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.exitTool();
+    return EventHandled.Yes;
+  }
 }
 
 /** Tool for editing text. Started automatically by the place text tool and by clicking on text from the SelectTool
@@ -199,7 +202,18 @@ export class EditTextTool extends MarkupTool {
     return true;
   }
 
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
-  public override async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
-  public override async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.exitTool();
+    return EventHandled.Yes;
+  }
+
+  public override async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.exitTool();
+    return EventHandled.Yes;
+  }
+
+  public override async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.exitTool();
+    return EventHandled.Yes;
+  }
 }

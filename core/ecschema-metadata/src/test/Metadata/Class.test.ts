@@ -1645,7 +1645,10 @@ describe("ECClass", () => {
       const testClass = await schema.getItem<ECClass>("H");
       expect(testClass).to.exist;
 
-      await testClass!.traverseBaseClasses((ecClass, arg) => { result.push({ name: ecClass.name, arg }); return false; }, "testArg");
+      await testClass!.traverseBaseClasses((ecClass, arg) => {
+        result.push({ name: ecClass.name, arg });
+        return false;
+      }, "testArg");
 
       expect(result).to.eql(expectedCallBackObjects);
     });
@@ -1659,7 +1662,10 @@ describe("ECClass", () => {
       const testClass = schema.getItemSync<ECClass>("H");
       expect(testClass).to.exist;
 
-      testClass!.traverseBaseClassesSync((ecClass, arg) => { result.push({ name: ecClass.name, arg }); return false; }, "testArg");
+      testClass!.traverseBaseClassesSync((ecClass, arg) => {
+        result.push({ name: ecClass.name, arg });
+        return false;
+      }, "testArg");
 
       expect(result).to.eql(expectedCallBackObjects);
     });

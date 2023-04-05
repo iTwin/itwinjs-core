@@ -108,7 +108,10 @@ export class SubCategoriesCache {
         this._byCategoryId.set(id, invalidCategoryIdEntry);
   }
 
-  private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+  /** Exposed strictly for tests.
+   * @internal
+   */
+  public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
     let set = this._byCategoryId.get(categoryId);
     if (undefined === set)
       this._byCategoryId.set(categoryId, set = new Set<string>());
@@ -151,7 +154,6 @@ export class SubCategoriesCache {
     const map = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
     for (const id of subCategoryIds) {
       const appearance = this._appearances.get(id);
-      assert(undefined !== appearance);
       if (appearance)
         map.set(id, { id, categoryId, appearance });
     }

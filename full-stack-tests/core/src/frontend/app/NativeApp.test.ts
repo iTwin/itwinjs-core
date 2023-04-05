@@ -20,13 +20,10 @@ if (ProcessDetector.isElectronAppFrontend) {
       await TestUtility.shutdownFrontend();
     });
 
-    // FIXME: The ElectronApp.shutdown() has side-effects that aren't currently cleaned up properly
-    // so that a new ElectronApp.startup() has a clean slate. It is somewhere in Ipc land as the error
-    // is a missing Ipc method.
-    it.skip("should startup offline without errors", async () => {
+    it("should startup offline without errors", async () => {
       await usingOfflineScope(async () => {
         await ElectronApp.shutdown();
-        await ElectronApp.startup(); // restart with no network available
+        await ElectronApp.startup({ iModelApp: TestUtility.iModelAppOptions }); // restart with no network available
         assert.isTrue(ElectronApp.isValid);
       });
     });

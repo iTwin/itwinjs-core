@@ -14,7 +14,7 @@ export interface CustomAttribute {
   [propName: string]: any;
 }
 
-/** @beta */
+/** @internal */
 export interface CustomAttributeSet {
   [Symbol.iterator]: () => IterableIterator<[string, CustomAttribute]>;
   has(className: string): boolean;
@@ -28,7 +28,7 @@ export interface CustomAttributeContainerProps {
   schema: Schema;
 }
 
-/** @beta */
+/** @internal */
 export function serializeCustomAttributes(customAttributes: CustomAttributeSet | undefined): any[] | undefined {
   if (undefined !== customAttributes) { // custom attributes is optional
     const attributes: any[] = [];

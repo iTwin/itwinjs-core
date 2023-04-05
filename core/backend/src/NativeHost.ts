@@ -12,10 +12,10 @@ import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { Downloads } from "./CheckpointManager";
+import { BriefcaseManager, RequestNewBriefcaseArg } from "./BriefcaseManager";
+import { Downloads, ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
-import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
+import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /**
@@ -41,31 +41,27 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     return BriefcaseManager.getFileName(props);
   }
   public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean, progressInterval?: number): Promise<LocalBriefcaseProps> {
-    const args = {
+    const args: RequestNewBriefcaseArg = {
       ...request,
+      accessToken: await this.getAccessToken(),
       onProgress: (_a: number, _b: number) => checkAbort(),
     };
 
-    if (reportProgress) {
-      const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
-      let nextTime = Date.now() + interval;
-      args.onProgress = (loaded, total) => {
-        const now = Date.now();
-        if (loaded >= total || now >= nextTime) {
-          nextTime = now + interval;
-          IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
-        }
-        return checkAbort();
-      };
-    }
-
-    const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     const checkAbort = () => {
       assert(undefined !== args.fileName);
       const job = Downloads.isInProgress(args.fileName);
-      return (job && (job.request as any).abort === 1) ? 1 : 0;
+      return (job && (job.request as any).abort === 1) ? ProgressStatus.Abort : ProgressStatus.Continue;
     };
-    return downloadPromise;
+
+    if (reportProgress) {
+      const progressCallback: ProgressFunction = (loaded, total) => {
+        IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        return checkAbort();
+      };
+      args.onProgress = throttleProgressCallback(progressCallback, checkAbort, progressInterval);
+    }
+
+    return BriefcaseManager.downloadBriefcase(args);
   }
 
   public async requestCancelDownloadBriefcase(fileName: string): Promise<boolean> {

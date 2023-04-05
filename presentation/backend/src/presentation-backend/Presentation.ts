@@ -16,8 +16,6 @@ import { PresentationManager, PresentationManagerProps } from "./PresentationMan
 import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
 
-const defaultRequestTimeout: number = 90000;
-
 /**
  * Base props for initializing the [[Presentation]] library.
  *
@@ -120,7 +118,7 @@ export class Presentation {
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
 
     this._rpcImpl = new PresentationRpcImpl({
-      requestTimeout: this._initProps.requestTimeout ?? defaultRequestTimeout,
+      requestTimeout: this._initProps.requestTimeout,
     });
     RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
     RpcManager.supplyImplInstance(PresentationRpcInterface, this._rpcImpl);

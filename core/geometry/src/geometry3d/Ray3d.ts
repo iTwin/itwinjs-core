@@ -54,9 +54,27 @@ export class Ray3d implements BeJSONFunctions {
     }
     return new Ray3d(Point3d.createZero(), Vector3d.createZero());
   }
-  /** Test for nearly equal rays. */
+  /** Test for nearly equal Ray3d objects.
+   * * This tests for near equality of origin and direction -- i.e. member-by-member comparison.
+   * * Use [[isAlmostEqualPointSet]] to allow origins to be anywhere along the common ray and to have to allow the directions to be scaled or opposing.
+  */
   public isAlmostEqual(other: Ray3d): boolean {
     return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
+  }
+  /** Test for nearly equal rays, allowing origin float and direction scaling.
+   * * Use [[isAlmostEqual]] to require member-by-member comparison.
+  */
+  public isAlmostEqualPointSet(other: Ray3d): boolean {
+    if (!this.direction.isParallelTo(other.direction, true))
+      return false;
+    // In exact math, it is not possible for one origin to be on the other ray but not vice versa.  But we'll test both ways.
+    let workPoint = this.projectPointToRay(other.origin);
+    if (!other.origin.isAlmostEqualMetric(workPoint))
+      return false;
+    workPoint = other.projectPointToRay(this.origin);
+    if (!this.origin.isAlmostEqualMetric(workPoint))
+      return false;
+    return true;
   }
   /** Create a ray from origin and direction. */
   public static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d {
@@ -340,12 +358,12 @@ export class Ray3d implements BeJSONFunctions {
   }
 
   /**
-   * Return a ray whose ray.origin is interpolated, and ray.direction is the vector between points with a
-   * scale factor applied.
-   * @param pt1 start point of interpolation
+   * Return a ray with `ray.origin` interpolated between pt1 and pt2 at the given fraction
+   * and `ray.direction` set to the vector from pt1 to pt2 multiplied by the given scale factor.
+   * @param pt1 start point of interpolation.
    * @param fraction fractional position between points.
-   * @param pt2 endpoint of interpolation
-   * @param tangentScale scale factor to apply to the startToEnd vector
+   * @param pt2 endpoint of interpolation.
+   * @param tangentScale scale factor to apply to the startToEnd vector.
    * @param result optional receiver.
    */
   public static interpolatePointAndTangent(pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d): Ray3d {

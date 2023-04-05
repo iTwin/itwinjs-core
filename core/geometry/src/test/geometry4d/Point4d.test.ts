@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Geometry } from "../../Geometry";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
-
-/* eslint-disable no-console, @typescript-eslint/naming-convention */
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {
   ck.testExactNumber(x, point.x);
@@ -136,6 +137,81 @@ describe("Point4d", () => {
     ck.testDefined(planeC, "plane through origin");
     const planeD = Point4d.create(0, 0, 0, 1).toPlane3dByOriginAndUnitNormal();
     ck.testUndefined(planeD, "plane with undefined normal");
+
+    // coverage
+    const workPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.createZero(), workPlane);
+    const zeroPoint = Point4d.createZero();
+    zeroPoint.setComponent(3,1);  // homogeneous "zero" has weight 1
+    const testPoint = Point4d.createFromPoint([1,4,9,16]);
+    let workPoint = Point4d.createFromPoint(testPoint);
+    ck.testPoint4d(testPoint, workPoint);
+    workPoint = Point4d.createFromPoint([]);
+    ck.testPoint4d(zeroPoint, workPoint);
+    workPoint = Point4d.createFromPoint(Point2d.createFrom(testPoint));
+    ck.testCoordinate(testPoint.x, workPoint.x);
+    ck.testCoordinate(testPoint.y, workPoint.y);
+    ck.testCoordinate(0, workPoint.z);
+    ck.testCoordinate(1, workPoint.w);
+    workPoint = Point4d.createFromPoint(Point3d.createFrom(testPoint));
+    ck.testCoordinate(testPoint.x, workPoint.x);
+    ck.testCoordinate(testPoint.y, workPoint.y);
+    ck.testCoordinate(testPoint.z, workPoint.z);
+    ck.testCoordinate(1, workPoint.w);
+    workPoint = Point4d.createFromPoint({x: testPoint.x, y: testPoint.y, z: testPoint.z, w: testPoint.w});
+    ck.testPoint4d(testPoint, workPoint);
+    workPoint = Point4d.createFromPoint({x: testPoint.x, y: testPoint.y});
+    ck.testCoordinate(testPoint.x, workPoint.x);
+    ck.testCoordinate(testPoint.y, workPoint.y);
+    ck.testCoordinate(0, workPoint.z);
+    ck.testCoordinate(1, workPoint.w);
+
+    // lambda implements original implementation
+    const toPlane3dByOriginAndUnitNormalOrig = (pt: Point4d): Plane3dByOriginAndUnitNormal | undefined => {
+      const a = Math.sqrt(pt.magnitudeSquaredXYZ());
+      const direction = Vector3d.create(pt.x, pt.y, pt.z);
+      const w = pt.w;
+      const divA = Geometry.conditionalDivideFraction(1.0, a);  // much tighter than smallMetricTol!
+      if (divA !== undefined) {
+        const divASquared = divA * divA;
+        const b = -w * divASquared;
+        direction.scaleInPlace(divASquared);  // wrong, but renormalized later
+        return Plane3dByOriginAndUnitNormal.create(Point3d.create(pt.x * b, pt.y * b, pt.z * b), direction);
+      }
+      return undefined;
+    };
+    // lambda to generate one of size*{-1,-f,0,f,1} randomly, for random f
+    const randomCoordinate = (size: number) => {
+      let c = 1;
+      const sign = 5 * Math.random();
+      if (sign < 1)
+        c = -1;
+      else if (sign < 2)
+        c = -Math.random();
+      else if (sign < 3)
+        c = 0;
+      else if (sign < 4)
+        c = Math.random();
+      return c * size;
+    };
+    // verify new impl is at least as successful and accurate as old impl
+    for (let size = 1.0e-7; size < 1.e8; size *= 10) {
+      for (let count = 0; count < 100; ++count) {
+        const pt = Point4d.create(randomCoordinate(size), randomCoordinate(size), randomCoordinate(size), randomCoordinate(size));
+        const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
+        const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
+        ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
+        if (oldPlane && newPlane) {
+          ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), "plane implementations have same origins");
+          ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), "plane implementations have same normals");
+        } else if (!!oldPlane && !newPlane) {  // error case: recompute to debug
+          const oldPlane1 = toPlane3dByOriginAndUnitNormalOrig(pt);
+          const newPlane1 = pt.toPlane3dByOriginAndUnitNormal();
+          ck.testDefined(oldPlane1); ck.testUndefined(newPlane1);  // silence linter
+        }
+      }
+    }
+
     expect(ck.getNumErrors()).equals(0);
   });
 

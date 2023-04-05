@@ -10,7 +10,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
+  BisCodeSpec, Code, CodeScopeSpec, EntityReferenceSet, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
@@ -33,7 +33,8 @@ export class ExternalSource extends InformationReferenceElement {
   /** @internal */
   public constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
-    if (props.repository) this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
+    if (props.repository)
+      this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
   }
   /** @internal */
   public override toJSON(): ExternalSourceProps { // This override only specializes the return type
@@ -56,6 +57,13 @@ export class ExternalSource extends InformationReferenceElement {
   public static createCode(iModelDb: IModelDb, codeValue: string): Code {
     const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
     return new Code({ spec: codeSpec.id, scope: IModel.rootSubjectId, value: codeValue });
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    if (this.repository)
+      referenceIds.addElement(this.repository.id);
   }
 }
 
@@ -83,9 +91,14 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   /** @internal */
   public constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
-    if (props.attaches) this.attaches = new ExternalSourceAttachmentAttachesSource(RelatedElement.idFromJson(props.attaches));
-    if (props.translation) this.translation = Point3d.fromJSON(props.translation);
-    if (props.scale) this.scale = Point3d.fromJSON(props.scale);
+    if (props.attaches)
+      this.attaches = new ExternalSourceAttachmentAttachesSource(RelatedElement.idFromJson(props.attaches));
+
+    if (props.translation)
+      this.translation = Point3d.fromJSON(props.translation);
+
+    if (props.scale)
+      this.scale = Point3d.fromJSON(props.scale);
   }
   /** @internal */
   public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type

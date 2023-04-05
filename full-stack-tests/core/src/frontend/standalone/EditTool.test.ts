@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
-import { EditTools } from "@itwin/editor-frontend";
+import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 
@@ -24,24 +24,29 @@ class TestEditTool1 extends PrimitiveTool {
   public static override toolId = "TestEditTool1";
   public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
   public async onRestartTool() { return this.exitTool(); }
-  public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
-  }
 
-  public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
-    cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);
-    testOut = await TestEditTool1.callCommand("testMethod1", str1, str2, obj1);
+  public testIpc = makeEditToolIpc<TestCommandIpc>();
+
+  public async go(commandId: string, str1: string, str2: string, obj1: TestCmdOjb1) {
+    cmdStr = await EditTools.startCommand<string>({ commandId, iModelKey: iModel.key }, cmdArg);
+    testOut = await this.testIpc.testMethod1(str1, str2, obj1);
   }
 }
 
 if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
 
+    let busyCalls = 0;
     before(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       const namespace = "TestApp";
       await IModelApp.localization.registerNamespace(namespace);
       IModelApp.tools.register(TestEditTool1, namespace);
+      EditTools.busyRetry = async (attempt: number, msg: string) => {
+        expect(attempt).equals(busyCalls++);
+        expect(msg).equals("edit command is busy");
+        return 0;
+      };
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     });
@@ -49,6 +54,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
     after(async () => {
       await iModel.close();
       await TestUtility.shutdownFrontend();
+      EditTools.busyRetry = undefined;
     });
 
     it("should start edit commands", async () => {
@@ -74,6 +80,12 @@ if (!ProcessDetector.isMobileAppFrontend) {
       assert.equal(testOut.num, -10);
       assert.equal(testOut.str, "defabc");
       assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -32]);
+      expect(busyCalls).equal(4);
+
+      busyCalls = 0;
+      await EditTools.startCommand({ commandId: "", iModelKey: "" });
+      expect(busyCalls).equal(4);
+
     });
 
   });

@@ -22,7 +22,8 @@ describe("Cached decorations", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    if (imodel)
+      await imodel.close();
     await TestUtility.shutdownFrontend();
   });
 

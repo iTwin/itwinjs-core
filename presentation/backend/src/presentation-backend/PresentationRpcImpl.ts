@@ -10,14 +10,15 @@ import { IModelDb } from "@itwin/core-backend";
 import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
-  ClientDiagnostics, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
-  ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON, Diagnostics, DisplayLabelRpcRequestOptions,
-  DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties,
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, Node, NodeJSON, NodeKey, NodeKeyJSON,
-  NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
-  PresentationRpcResponseData, PresentationStatus, RpcDiagnosticsOptions, Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
-  SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  ClientDiagnostics, ComputeSelectionRequestOptions, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags,
+  ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON,
+  Diagnostics, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
+  DistinctValuesRpcRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
+  HierarchyLevelDescriptorRpcRequestOptions, HierarchyLevelJSON, HierarchyRpcRequestOptions, isComputeSelectionRequestOptions, ItemJSON, KeySet,
+  KeySetJSON, LabelDefinition, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions,
+  PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationRpcResponseData, PresentationStatus, RpcDiagnosticsOptions,
+  Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -34,6 +35,8 @@ export const MAX_ALLOWED_PAGE_SIZE = 1000;
 /** @internal */
 export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
 
+const DEFAULT_REQUEST_TIMEOUT = 5000;
+
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
  * responsible for is forwarding calls to [[Presentation.manager]].
@@ -46,13 +49,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
   private _cancelEvents: Map<string, BeEvent<() => void>>;
 
-  public constructor(props?: { requestTimeout: number }) {
+  public constructor(props?: { requestTimeout?: number }) {
     super();
-    this._requestTimeout = props?.requestTimeout ?? 90 * 1000;
+    this._requestTimeout = props?.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT;
     this._pendingRequests = new TemporaryStorage({
       // remove the pending request after request timeout + 10 seconds - this gives
       // frontend 10 seconds to re-send the request until it's removed from requests' cache
-      unusedValueLifetime: this._requestTimeout + 10 * 1000,
+      unusedValueLifetime: (this._requestTimeout > 0) ? (this._requestTimeout + 10 * 1000) : undefined,
 
       // attempt to clean up every second
       cleanupInterval: 1000,
@@ -74,6 +77,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   public get requestTimeout() { return this._requestTimeout; }
+
+  public get pendingRequests() { return this._pendingRequests; }
 
   /** Returns an ok response with result inside */
   private successResponse<TResult>(result: TResult, diagnostics?: ClientDiagnostics) {
@@ -186,7 +191,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     let timeout: NodeJS.Timeout;
     const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
-        reject("Timed out");
+        reject();
       }, this._requestTimeout);
     });
 
@@ -195,10 +200,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     return Promise
       .race([resultPromise, timeoutPromise])
       .catch<PresentationRpcResponseData>(() => {
+        // note: error responses from the manager get handled when creating `resultPromise`, so we can only get here due
+        // to a timeout exception
         Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
         return this.errorResponse(PresentationStatus.BackendTimeout);
       })
-      .then((response: PresentationRpcResponseData<any>) => {
+      .then((response: PresentationRpcResponseData<TResult>) => {
         if (response.statusCode !== PresentationStatus.BackendTimeout) {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request completed, returning result.`);
           this._pendingRequests.deleteValue(requestKey);
@@ -219,30 +226,50 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public override async getPagedNodes(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> {
     return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
       options = enforceValidPageSize({
         ...options,
         parentKey: nodeKeyFromJson(options.parentKey),
       });
-      const [nodes, count] = await Promise.all([
-        this.getManager(requestOptions.clientId).getNodes(options),
+      const [serializedNodesJson, count] = await Promise.all([
+        this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      return { total: count, items: nodes.map(Node.toJSON) };
+      // eslint-disable-next-line deprecation/deprecation
+      const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
+      return {
+        total: count,
+        items: nodesJson.nodes,
+      };
     });
   }
 
+  public override async getNodesDescriptor(token: IModelRpcProps, requestOptions: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined> {
+    return this.makeRequest(token, "getNodesDescriptor", requestOptions, async (options) => {
+      options = {
+        ...options,
+        parentKey: nodeKeyFromJson(options.parentKey),
+      };
+      return this.getManager().getDetail().getNodesDescriptor(options);
+    });
+  }
+
+  // eslint-disable-next-line deprecation/deprecation
   public override async getNodePaths(token: IModelRpcProps, requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
       const result = await this.getManager(requestOptions.clientId).getNodePaths(options);
+      // eslint-disable-next-line deprecation/deprecation
       return result.map(NodePathElement.toJSON);
     });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public override async getFilteredNodePaths(token: IModelRpcProps, requestOptions: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
       const result = await this.getManager(requestOptions.clientId).getFilteredNodePaths(options);
+      // eslint-disable-next-line deprecation/deprecation
       return result.map(NodePathElement.toJSON);
     });
   }
@@ -293,7 +320,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (!content)
@@ -316,10 +343,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   public override async getElementProperties(token: IModelRpcProps, requestOptions: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      return this.getManager(requestOptions.clientId).getElementProperties(options);
+      return this.getManager(requestOptions.clientId).getDetail().getElementProperties(options);
     });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public override async getPagedDistinctValues(token: IModelRpcProps, requestOptions: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
     return this.makeRequest(token, "getPagedDistinctValues", requestOptions, async (options) => {
       options = enforceValidPageSize({
@@ -329,6 +357,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       const response = await this.getManager(requestOptions.clientId).getPagedDistinctValues(options);
       return {
         ...response,
+        // eslint-disable-next-line deprecation/deprecation
         items: response.items.map(DisplayValueGroup.toJSON),
       };
     });
@@ -348,7 +377,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (size === 0 || !content)
@@ -361,22 +390,22 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     });
   }
 
-  public override async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> {
+  public override async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinition> {
     return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (options) => {
-      const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition(options);
-      return LabelDefinition.toJSON(label);
+      const label = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinition(options);
+      return label;
     });
   }
 
-  public override async getPagedDisplayLabelDefinitions(token: IModelRpcProps, requestOptions: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinitionJSON>> {
+  public override async getPagedDisplayLabelDefinitions(token: IModelRpcProps, requestOptions: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinition>> {
     const pageOpts = enforceValidPageSize({ paging: { start: 0, size: requestOptions.keys.length } });
     if (pageOpts.paging.size < requestOptions.keys.length)
       requestOptions.keys.splice(pageOpts.paging.size);
     return this.makeRequest(token, "getPagedDisplayLabelDefinitions", requestOptions, async (options) => {
-      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
+      const labels = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinitions({ ...options, keys: options.keys });
       return {
         total: options.keys.length,
-        items: labels.map(LabelDefinition.toJSON),
+        items: labels,
       };
     });
   }
@@ -396,7 +425,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
           scope: { id: scopeId! },
         };
       }
-      const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
+      const keys = await this.getManager(requestOptions.clientId).computeSelection(options as ComputeSelectionRequestOptions<IModelDb>);
       return keys.toJSON();
     });
   }
@@ -414,8 +443,10 @@ const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
   return (requestedSize === 0 || requestedSize > maxPageSize) ? maxPageSize : requestedSize;
 };
 
+// eslint-disable-next-line deprecation/deprecation
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
   if (!json)
     return undefined;
+  // eslint-disable-next-line deprecation/deprecation
   return NodeKey.fromJSON(json);
 };

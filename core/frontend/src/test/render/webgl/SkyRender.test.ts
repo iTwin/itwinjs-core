@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBoxImageType } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBoxImageType } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
@@ -51,12 +51,15 @@ describe("Sky rendering", () => {
         return;
 
       await this.sky.promise;
-      return BeDuration.wait(1);
+      return BeDuration.wait(1).then(() => {
+        expect(this.sky.promise).to.be.undefined;
+        expect(this.sky.params).not.to.be.undefined;
+      });
     }
   }
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
 
     // 1x1 red png image
     const redPngData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0, 144, 119, 83, 222, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 12, 73, 68, 65, 84, 24, 87, 99, 248, 207, 192, 0, 0, 3, 1, 1, 0, 99, 36, 85, 211, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
@@ -66,17 +69,32 @@ describe("Sky rendering", () => {
       format: ImageSourceFormat.Png,
     };
 
-    const createTexture = () => {
+    const createdTexturesById = new Map<string, RenderTexture>();
+    const makeTexture = (id: string | undefined) => {
       const img = textureImage.image;
-      return { texture: Texture2DHandle.createForImage(img, RenderTexture.Type.SkyBox) } as unknown as RenderTexture;
+      const tex = { texture: Texture2DHandle.createForImage(img, RenderTexture.Type.SkyBox) } as unknown as RenderTexture;
+      if (id)
+        createdTexturesById.set(id, tex);
+
+      return tex;
     };
-    const createTextureCube = () => {
+
+    IModelApp.renderSystem.createTexture = (args) => {
+      const id = args.ownership && "external" !== args.ownership && typeof args.ownership.key === "string" ? args.ownership.key : undefined;
+      return makeTexture(id);
+    };
+
+    IModelApp.renderSystem.createTextureFromCubeImages = (_a, _b, _c, _d, _e, _f, _g, params) => {
       const img = textureImage.image;
-      return { texture: TextureCubeHandle.createForCubeImages(img, img, img, img, img, img) } as unknown as RenderTexture;
+      const tex = { texture: TextureCubeHandle.createForCubeImages(img, img, img, img, img, img) } as unknown as RenderTexture;
+      if (typeof params.key === "string")
+        createdTexturesById.set(params.key, tex);
+
+      return tex;
     };
-    IModelApp.renderSystem.createTextureFromCubeImages = createTextureCube;
-    IModelApp.renderSystem.createTexture = createTexture;
+
     IModelApp.renderSystem.loadTextureImage = async () => Promise.resolve(textureImage);
+    IModelApp.renderSystem.findTexture = (key) => typeof key === "string" ? createdTexturesById.get(key) : undefined;
 
     iModel = createBlankConnection();
   });

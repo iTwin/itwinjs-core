@@ -85,7 +85,9 @@ export class ImageBuffer {
  * @note Floating point inputs are truncated.
  * @public
  */
-export function isPowerOfTwo(num: number): boolean { return 0 === (num & (num - 1)); }
+export function isPowerOfTwo(num: number): boolean {
+  return 0 === (num & (num - 1));
+}
 
 /** Returns the first power-of-two value greater than or equal to the input.
  * @note Floating point inputs are truncated.

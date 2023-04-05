@@ -32,6 +32,7 @@ export interface RadioBox {
   label?: HTMLLabelElement;
   setValue: (newValue: number | string) => boolean;
   div: HTMLDivElement;
+  form: HTMLFormElement;
 }
 
 /** @alpha */
@@ -110,5 +111,5 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
     return validValue;
   };
 
-  return { div, label, setValue };
+  return { div, label, setValue, form };
 }

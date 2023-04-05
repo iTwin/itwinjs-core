@@ -65,5 +65,9 @@ export class FeatureIndex {
 
   public get isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
   public get isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
-  public reset(): void { this.type = FeatureIndexType.Empty; this.featureID = 0; this.featureIDs = undefined; }
+  public reset(): void {
+    this.type = FeatureIndexType.Empty;
+    this.featureID = 0;
+    this.featureIDs = undefined;
+  }
 }

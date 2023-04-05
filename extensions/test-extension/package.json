@@ -9,8 +9,7 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc --project ./src 1>&2",
-    "build:ci": "npm run -s build",
-    "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --target=es2020 --external:os --minify",
+    "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --external:os --minify",
     "clean": "rimraf lib dist",
     "lint": "",
     "//lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
@@ -31,11 +30,11 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.32",
     "esbuild": "^0.13.8",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "dependencies": {
     "@itwin/core-extension": "workspace:*",

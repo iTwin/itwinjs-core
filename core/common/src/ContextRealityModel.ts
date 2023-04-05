@@ -10,6 +10,7 @@ import { assert, BeEvent } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
+import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
@@ -159,6 +160,10 @@ export interface ContextRealityModelProps {
   planarClipMask?: PlanarClipMaskProps;
   /** See [[ContextRealityModel.appearanceOverrides]]. */
   appearanceOverrides?: FeatureAppearanceProps;
+  /** See [[ContextRealityModel.displaySettings]].
+   * @beta
+   */
+  displaySettings?: RealityModelDisplayProps;
 }
 
 /** @public */
@@ -188,6 +193,12 @@ export namespace ContextRealityModelProps {
       output.appearanceOverrides = { ...input.appearanceOverrides };
       if (input.appearanceOverrides.rgb)
         output.appearanceOverrides.rgb = { ...input.appearanceOverrides.rgb };
+    }
+
+    if (input.displaySettings) {
+      output.displaySettings = { ...input.displaySettings };
+      if (input.displaySettings.pointCloud)
+        output.displaySettings.pointCloud = { ...output.displaySettings.pointCloud };
     }
 
     if (input.planarClipMask)
@@ -228,11 +239,17 @@ export class ContextRealityModel {
   /** @alpha */
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
   protected _appearanceOverrides?: FeatureAppearance;
+  /** @beta */
+  protected _displaySettings: RealityModelDisplaySettings;
   protected _planarClipMask?: PlanarClipMaskSettings;
   /** Event dispatched just before assignment to [[planarClipMaskSettings]]. */
   public readonly onPlanarClipMaskChanged = new BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>();
   /** Event dispatched just before assignment to [[appearanceOverrides]]. */
   public readonly onAppearanceOverridesChanged = new BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>();
+  /** Event dispatched just before assignment to [[displaySettings]].
+   * @beta
+   */
+  public readonly onDisplaySettingsChanged = new BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>();
 
   /** Construct a new context reality model.
    * @param props JSON representation of the reality model, which will be kept in sync with changes made via the ContextRealityModel's methods.
@@ -246,6 +263,8 @@ export class ContextRealityModel {
     this.realityDataId = props.realityDataId;
     this.description = props.description ?? "";
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
+    this._displaySettings = RealityModelDisplaySettings.fromJSON(props.displaySettings);
+
     if (props.planarClipMask && props.planarClipMask.mode !== PlanarClipMaskMode.None)
       this._planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
 
@@ -281,6 +300,18 @@ export class ContextRealityModel {
     this._appearanceOverrides = overrides;
   }
 
+  /** Settings controlling how this reality model is displayed in a [Viewport]($frontend).
+   * @beta
+   */
+  public get displaySettings(): RealityModelDisplaySettings {
+    return this._displaySettings;
+  }
+  public set displaySettings(settings: RealityModelDisplaySettings) {
+    this.onDisplaySettingsChanged.raiseEvent(settings, this);
+    this._props.displaySettings = settings.toJSON();
+    this._displaySettings = settings;
+  }
+
   /** Convert this model to its JSON representation. */
   public toJSON(): ContextRealityModelProps {
     return ContextRealityModelProps.clone(this._props);
@@ -301,6 +332,22 @@ export class ContextRealityModel {
 export interface ContextRealityModelsContainer {
   /** The list of reality models. */
   contextRealityModels?: ContextRealityModelProps[];
+  /** @internal used for type discrimination with ContextRealityModelsArgs. */
+  container?: never;
+}
+
+/** Arguments supplied to the constructor of [[ContextRealityModels]].
+ * @public
+ */
+export interface ContextRealityModelsArgs {
+  /** The object that holds the JSON representation of the list of context reality models. */
+  container: ContextRealityModelsContainer;
+  /** Optional function used to instantiate each [[ContextRealityModel]] in the list. */
+  createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+  /** If true, the list will not be populated by the constructor. Instead, the caller is responsible for calling [[ContextRealityModels.populate]] exactly once after construction.
+   * This is chiefly intended for use internally by the [DisplayStyleState]($frontend) constructor.
+   */
+  deferPopulating?: boolean;
 }
 
 /** A list of [[ContextRealityModel]]s attached to a [[DisplayStyleSettings]]. The list may be presented to the user with the name and description of each model.
@@ -317,20 +364,55 @@ export class ContextRealityModels {
   public readonly onPlanarClipMaskChanged = new BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>();
   /** Event dispatched just before [[ContextRealityModel.appearanceOverrides]] is modified for one of the reality models. */
   public readonly onAppearanceOverridesChanged = new BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>();
+  /** Event dispatched just before [[ContextRealityModel.displaySettings]] is modified for one of the reality models.
+   * @beta
+   */
+  public readonly onDisplaySettingsChanged = new BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>();
   /** Event dispatched when a model is [[add]]ed, [[delete]]d, [[replace]]d, or [[update]]d. */
   public readonly onChanged = new BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>();
 
-  /** Construct a new list of reality models from its JSON representation. THe list will be initialized from `container.classifiers` and that JSON representation
-   * will be kept in sync with changes made to the list. The caller should not directly modify `container.classifiers` or its contents as that will cause the list
+  /** Construct a new list of reality models from its JSON representation. The list will be initialized from `container.contextRealityModels` and that JSON representation
+   * will be kept in sync with changes made to the list. The caller should not directly modify `container.contextRealityModels` or its contents as that will cause the list
    * to become out of sync with the JSON representation.
    * @param container The object that holds the JSON representation of the list.
-   * @param createContextRealityModel Optional function used to instantiate ContextRealityModels added to the list.
+   * @param createContextRealityModel Optional function used to instantiate each [[ContextRealityModel]] in the list.
    */
-  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+
+  /** Construct a new list of reality models from its JSON representation. The list will be initialized from `args.container.contextRealityModels` and that JSON representation
+   * will be kept in sync with changes made to the list. The caller should not directly modify `container.contextRealityModels` or its contents as that will cause the list
+   * to become out of sync with the JSON representation.
+   * @param args Specifies the container and optionally customizes how the list of models is populated.
+   */
+  public constructor(args: ContextRealityModelsArgs);
+
+  /** @internal */
+  public constructor(arg0: ContextRealityModelsContainer | ContextRealityModelsArgs, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+    let container: ContextRealityModelsContainer;
+    let defer = false;
+    if (arg0.container) {
+      container = arg0.container;
+      createContextRealityModel = arg0.createContextRealityModel;
+      defer = true === arg0.deferPopulating;
+    } else {
+      container = arg0;
+    }
+
     this._container = container;
     this._createModel = createContextRealityModel ?? ((props) => new ContextRealityModel(props));
 
-    const models = container.contextRealityModels;
+    if (!defer)
+      this.populate();
+  }
+
+  /** @internal needs to be invoked after DisplayStyleSettings constructor by DisplayStyleState constructor.*/
+  /** Populate the list of [[models]] from the container that was supplied to the constructor.
+   * This should only be invoked once, and only if [[ContextRealityModelsArgs.deferPopulating]] was specified as `true` when calling the constructor.
+   * @public
+   */
+  public populate(): void {
+    assert(this._models.length === 0, "do not call ContextRealityModels.populate more than once");
+    const models = this._container.contextRealityModels;
     if (models)
       for (const model of models)
         this._models.push(this.createModel(model));
@@ -447,6 +529,8 @@ export class ContextRealityModels {
     model.onPlanarClipMaskChanged.addListener(this.handlePlanarClipMaskChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.addListener(this.handleAppearanceOverridesChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    model.onDisplaySettingsChanged.addListener(this.handleDisplaySettingsChanged, this);
     return model;
   }
 
@@ -455,6 +539,8 @@ export class ContextRealityModels {
     model.onPlanarClipMaskChanged.removeListener(this.handlePlanarClipMaskChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.removeListener(this.handleAppearanceOverridesChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    model.onDisplaySettingsChanged.removeListener(this.handleDisplaySettingsChanged, this);
   }
 
   private handlePlanarClipMaskChanged(mask: PlanarClipMaskSettings | undefined, model: ContextRealityModel): void {
@@ -463,5 +549,9 @@ export class ContextRealityModels {
 
   private handleAppearanceOverridesChanged(app: FeatureAppearance | undefined, model: ContextRealityModel): void {
     this.onAppearanceOverridesChanged.raiseEvent(model, app);
+  }
+
+  private handleDisplaySettingsChanged(settings: RealityModelDisplaySettings, model: ContextRealityModel): void {
+    this.onDisplaySettingsChanged.raiseEvent(model, settings);
   }
 }

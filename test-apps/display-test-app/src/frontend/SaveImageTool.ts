@@ -33,6 +33,7 @@ export class SaveImageTool extends Tool {
 
     const copy = opts?.copyToClipboard ?? false;
 
+    await vp.waitForSceneCompletion();
     const buffer = vp.readImageBuffer({ size: new Point2d(width, height) });
     if (!buffer) {
       alert("Failed to read image");
@@ -58,7 +59,7 @@ export class SaveImageTool extends Tool {
 
       // ClipboardItem currently unsupported in Firefox. Chrome expects a resolved promise; safari (and typescript type definitions) an unresolved promise.
       // Tested only in chrome+electron.
-      const blob = ProcessDetector.isChromium ? (await getBlob()) as unknown as Promise<ClipboardItemDataType> : getBlob();
+      const blob = ProcessDetector.isChromium ? (await getBlob()) as unknown as Promise<string | Blob> : getBlob();
       await navigator.clipboard.write([
         new ClipboardItem({
           "image/png": blob,

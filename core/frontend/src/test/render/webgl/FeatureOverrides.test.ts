@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
 import { ViewRect } from "../../../ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -17,7 +17,7 @@ import { OvrFlags } from "../../../render/webgl/RenderFlags";
 import { testBlankViewport } from "../../openBlankViewport";
 
 describe("FeatureOverrides", () => {
-  before(async () =>  IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   function makeTarget(): Target {

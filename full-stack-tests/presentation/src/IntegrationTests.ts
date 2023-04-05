@@ -2,22 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import chaiSubset from "chai-subset";
+
 import * as cpx from "cpx2";
 import * as fs from "fs";
+import Backend from "i18next-http-backend";
 import * as path from "path";
+import rimraf from "rimraf";
 import sinon from "sinon";
-import sinonChai from "sinon-chai";
-import { Logger, LogLevel } from "@itwin/core-bentley";
+import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
+import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
+import {
+  AuthorizationClient, EmptyLocalization, IModelReadRpcInterface, Localization, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
-import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
-import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { getOutputRoot } from "./Utils";
+
+const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -33,9 +41,6 @@ function loadEnv(envFile: string) {
 
   dotenvExpand(envResult);
 }
-
-chai.use(sinonChai);
-chai.use(chaiSubset);
 
 loadEnv(path.join(__dirname, "..", ".env"));
 
@@ -73,73 +78,94 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 }
 
-const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean }) => {
+const initializeCommon = async (props: {
+  backendTimeout?: number;
+  frontendTimeout?: number;
+  authorizationClient?: AuthorizationClient;
+  localization?: Localization;
+}) => {
   // init logging
   Logger.initializeToConsole();
+  Logger.turnOffCategories();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
+  Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
-  const libDir = path.resolve("lib");
-  const hierarchiesCacheDir = path.join(libDir, "cache");
-  if (!fs.existsSync(hierarchiesCacheDir))
-    fs.mkdirSync(hierarchiesCacheDir);
+  // prepare an empty, process-unique output directory
+  const outputRoot = getOutputRoot();
+  fs.existsSync(outputRoot) && IModelJsFs.removeSync(outputRoot);
+  fs.mkdirSync(outputRoot, { recursive: true });
+
+  const tempCachesDir = path.join(outputRoot, "caches");
+  if (!fs.existsSync(tempCachesDir))
+    fs.mkdirSync(tempCachesDir);
 
   const backendInitProps: PresentationBackendProps = {
-    requestTimeout: props.backendTimeout ?? 0,
-    rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
-    localeDirectories: [path.join(libDir, "assets", "locales")],
+    id: `test-${Guid.createValue()}`,
+    requestTimeout: props.backendTimeout,
+    rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
         mode: HierarchyCacheMode.Disk,
-        directory: hierarchiesCacheDir,
+        directory: tempCachesDir,
       },
     },
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {
+      requestTimeout: props.frontendTimeout,
       activeLocale: "en-PSEUDO",
     },
   };
 
   const frontendAppOptions: IModelAppOptions = {
-    authorizationClient: props.useClientServices
-      ? TestUtility.getAuthorizationClient(TestUsers.regular)
-      : undefined,
-    localization: new ITwinLocalization({ urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}` }),
+    authorizationClient: props.authorizationClient,
+    localization: props.localization ?? new EmptyLocalization(),
   };
 
-  if (props.useClientServices)
-    await (frontendAppOptions.authorizationClient! as TestBrowserAuthorizationClient).signIn();
-
-  const presentationTestingInitProps: PresentationTestingInitProps = {
+  const presentationTestingInitProps: PresentationInitProps = {
     backendProps: backendInitProps,
-    backendHostProps: { cacheDir: path.join(__dirname, ".cache") },
+    backendHostProps: { cacheDir: tempCachesDir },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,
   };
 
-  await initializeTesting(presentationTestingInitProps);
+  await initializePresentation(presentationTestingInitProps);
 
   global.requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 0);
   });
+
+  // eslint-disable-next-line no-console
+  console.log(`[${new Date().toISOString()}] Tests initialized`);
 };
 
-export const initialize = async (backendTimeout: number = 0) => {
-  await initializeCommon({ backendTimeout });
+export const initialize = async (props?: {
+  backendTimeout?: number;
+  frontendTimeout?: number;
+  localization?: Localization;
+}) => {
+  await initializeCommon({
+    backendTimeout: DEFAULT_BACKEND_TIMEOUT,
+    ...props,
+  });
 };
 
 export const initializeWithClientServices = async () => {
-  await initializeCommon({ useClientServices: true });
+  const authorizationClient = TestUtility.getAuthorizationClient(TestUsers.regular);
+  await authorizationClient.signIn();
+  await initializeCommon({ authorizationClient });
 };
 
 export const terminate = async () => {
   delete (global as any).requestAnimationFrame;
-  await terminateTesting();
+  await terminatePresentation();
+  // eslint-disable-next-line no-console
+  console.log(`[${new Date().toISOString()}] Tests terminated`);
 };
 
 export const resetBackend = () => {
@@ -147,3 +173,104 @@ export const resetBackend = () => {
   PresentationBackend.terminate();
   PresentationBackend.initialize(props);
 };
+
+export const testLocalization = new ITwinLocalization({
+  urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+  initOptions: {
+    preload: ["test"],
+  },
+  backendHttpOptions: {
+    request: (options, url, payload, callback) => {
+      /**
+       * A few reasons why we need to modify this request fn:
+       * - The above urlTemplate uses the file:// protocol
+       * - Node v18's fetch implementation does not support file://
+       * - i18n-http-backend uses fetch if it defined globally
+       */
+      const fileProtocol = "file://";
+      const request = new Backend().options.request?.bind(this as void);
+
+      if (url.startsWith(fileProtocol)) {
+        try {
+          const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
+          callback(null, { status: 200, data });
+        } catch (error) {
+          callback(error, { status: 500, data: "" });
+        }
+      } else {
+        request!(options, url, payload, callback);
+      }
+    },
+  },
+});
+
+interface PresentationInitProps {
+  backendProps: PresentationBackendProps;
+  backendHostProps: IModelHostOptions;
+  frontendProps: PresentationFrontendProps;
+  frontendApp: { startup: (opts?: IModelAppOptions) => Promise<void> };
+  frontendAppOptions: IModelAppOptions;
+}
+
+let isInitialized = false;
+async function initializePresentation(props: PresentationInitProps) {
+  if (isInitialized)
+    return;
+
+  // set up rpc interfaces
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+
+  // init backend
+  // make sure backend gets assigned an id which puts its resources into a unique directory
+  await IModelHost.startup(props.backendHostProps);
+  PresentationBackend.initialize(props.backendProps);
+
+  // init frontend
+  await props.frontendApp.startup(props.frontendAppOptions);
+  await PresentationFrontend.initialize(props.frontendProps);
+
+  isInitialized = true;
+}
+
+async function terminatePresentation(frontendApp = IModelApp) {
+  if (!isInitialized)
+    return;
+
+  // store directory that needs to be cleaned-up
+  let hierarchiesCacheDirectory: string | undefined;
+  const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
+  if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.directory;
+  else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.disk?.directory;
+
+  // terminate backend
+  PresentationBackend.terminate();
+  await IModelHost.shutdown();
+  if (hierarchiesCacheDirectory)
+    rimraf.sync(hierarchiesCacheDirectory);
+
+  // terminate frontend
+  PresentationFrontend.terminate();
+  await frontendApp.shutdown();
+
+  isInitialized = false;
+}
+
+function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
+  const config = class extends RpcDefaultConfiguration {
+    public override interfaces: any = () => interfaces;
+  };
+
+  for (const definition of interfaces)
+    RpcConfiguration.assign(definition, () => config);
+
+  const instance = RpcConfiguration.obtain(config);
+
+  try {
+    RpcConfiguration.initializeInterfaces(instance);
+  } catch {
+    // this may fail with "Error: RPC interface "xxx" is already initialized." because
+    // multiple different tests want to set up rpc interfaces
+  }
+}

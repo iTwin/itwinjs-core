@@ -9,6 +9,10 @@ import {
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
+/** @packageDocumentation
+ * @module Locaters
+ */
+
 function isECv2Schema(schemaText: string): boolean {
   return /<ECSchema[^>]*xmlns=".*ECXML.2.0"/.test(schemaText);
 }

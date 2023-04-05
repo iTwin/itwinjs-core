@@ -56,8 +56,10 @@ export class Logger {
   protected static _logWarning: LogFunction | undefined;
   protected static _logInfo: LogFunction | undefined;
   protected static _logTrace: LogFunction | undefined;
-  private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
-  private static _minLevel: LogLevel | undefined = undefined;
+  /** @internal */
+  public static logLevelChangedFn?: VoidFunction;
+  private static _categoryFilter = new Map<string, LogLevel>(); // do not change the name of this member, it is referenced directly from node addon
+  private static _minLevel: LogLevel | undefined = undefined; // do not change the name of this member, it is referenced directly from node addon
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
@@ -106,7 +108,8 @@ export class Logger {
 
   /** Set the least severe level at which messages should be displayed by default. Call setLevel to override this default setting for specific categories. */
   public static setLevelDefault(minLevel: LogLevel): void {
-    Logger._minLevel = minLevel;
+    this._minLevel = minLevel;
+    this.logLevelChangedFn?.();
   }
 
   /** Set the minimum logging level for the specified category. The minimum level is least severe level at which messages in the
@@ -114,6 +117,7 @@ export class Logger {
    */
   public static setLevel(category: string, minLevel: LogLevel) {
     Logger._categoryFilter.set(category, minLevel);
+    this.logLevelChangedFn?.();
   }
 
   /** Interpret a string as the name of a LogLevel */

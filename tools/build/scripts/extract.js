@@ -8,7 +8,7 @@ const argv = require("yargs").argv;
 const path = require("path");
 const paths = require("./config/paths");
 const fs = require("fs-extra");
-const readDirectory = require("recursive-readdir");
+const { readDirectory } = require("./utils/recursiveReaddir");
 
 const __PUBLISH_EXTRACT_START__ = "__PUBLISH_EXTRACT_START__";
 const __PUBLISH_EXTRACT_END__ = "__PUBLISH_EXTRACT_END__";

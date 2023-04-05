@@ -107,7 +107,7 @@ public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve
 public;CurveSearchStatus
 internal;CutLoop
 internal;CutLoopMergeContext
-internal;DeepCompare
+public;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
@@ -132,12 +132,14 @@ public;GrowableBlockedArray
 public;GrowableFloat64Array
 public;GrowableXYArray 
 public;GrowableXYZArray 
-internal;HalfEdge
+internal;HalfEdge 
 internal;HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean
 internal;HalfEdgeGraph
 internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
+internal;HalfEdgeUserData
 public;HasZ = Readonly
+public;HoleFillOptions
 public;IModelJson
 internal;ImplicitLineXY
 public;IndexedCollectionInterval
@@ -185,6 +187,8 @@ internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NullGeometryHandler 
 public;NumberArray
+public;OffsetMeshOptions
+public;OffsetMeshSelectiveOutputOptions
 public;OffsetOptions
 public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
 internal;Order2Bezier 
@@ -198,6 +202,8 @@ public;ParityRegion
 internal;PascalCoefficients
 public;Path 
 public;PathFragment
+public;PerpParallelOptions
+public;class Plane3d 
 public;Plane3dByOriginAndUnitNormal 
 public;Plane3dByOriginAndVectors 
 public;PlaneAltitudeEvaluator
@@ -221,6 +227,8 @@ public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
 public;PolygonClipper
+public;PolygonLocation
+public;PolygonLocationDetail
 public;PolygonOps
 internal;PolygonWireOffsetContext
 public;PolylineOps
@@ -242,7 +250,7 @@ public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 
 public;RegionBinaryOpType
 internal;RegionMomentsXY 
-beta;RegionOps
+public;RegionOps
 public;RotationalSweep 
 public;RuledSweep 
 alpha;Sample
@@ -254,6 +262,7 @@ public;SmallSystem
 public;SmoothTransformBetweenFrusta
 public;class SolidPrimitive 
 public;SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe"
+public;SpacePolygonTriangulation
 public;Sphere 
 internal;SphereImplicit
 public;StandardViewIndex
@@ -271,6 +280,7 @@ public;TorusPipe
 public;Transform 
 public;TransformProps = number[][] | number[] |
 public;class TransitionSpiral3d 
+public;TriangleLocationDetail
 internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial

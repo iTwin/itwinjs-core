@@ -7,7 +7,6 @@ packageClassification:  [
          "core-frontend",
          "core-common",
          "core-backend",
-         "core-transformer",
          "core-markup",
          "core-mobile",
          "core-i18n",
@@ -18,7 +17,8 @@ packageClassification:  [
          "core-geometry",
          "frontend-devtools",
          "hypermodeling-frontend",
-         "webgl-compatibility"
+         "webgl-compatibility",
+         "map-layers-formats"
       ]
    },
    {
@@ -51,6 +51,13 @@ packageClassification:  [
          "linear-referencing-backend",
          "linear-referencing-common",
          "physical-material-backend"
+      ]
+   },
+   {
+      "order":"6",
+      "header":"Transformer",
+      "packages":[
+         "imodel-transformer"
       ]
    }
 ]

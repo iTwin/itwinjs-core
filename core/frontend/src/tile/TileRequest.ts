@@ -163,8 +163,12 @@ export class TileRequest {
         data = response;
       else if (response instanceof ArrayBuffer)
         data = new Uint8Array(response);
-      else if (typeof response === "object" && undefined !== response.content)
-        content = response.content;
+      else if (typeof response === "object") {
+        if ("content" in response)
+          content = response.content;
+        else if ("data" in response)
+          data = response;
+      }
     }
 
     if (!content && !data) {
@@ -173,6 +177,7 @@ export class TileRequest {
     }
 
     try {
+      const start = Date.now();
       if (!content) {
         assert(undefined !== data);
         content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
@@ -183,7 +188,7 @@ export class TileRequest {
       this._state = TileRequest.State.Completed;
       this.tile.setContent(content);
       this.notifyAndClear();
-      this.channel.recordCompletion(this.tile, content);
+      this.channel.recordCompletion(this.tile, content, Date.now() - start);
     } catch (_err) {
       this.setFailed();
     }
@@ -197,12 +202,12 @@ export namespace TileRequest { // eslint-disable-line no-redeclare
    * can produce a [[RenderGraphic]].
    * @public
    */
-  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | { content: TileContent } | undefined;
+  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | { content: TileContent } | { data: any } | undefined;
 
   /** The input to [[Tile.readContent]], to be converted into a [[RenderGraphic]].
    * @public
    */
-  export type ResponseData = Uint8Array | ImageSource;
+  export type ResponseData = Uint8Array | ImageSource | { data: any };
 
   /** The states through which a [[TileRequest]] proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined,
    * and its [[Tile.LoadStatus]] is computed based on the state of its request.

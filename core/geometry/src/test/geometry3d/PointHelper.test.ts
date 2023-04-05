@@ -33,7 +33,6 @@ import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 /* eslint-disable deprecation/deprecation */
 /**
  * Return the radius of a circle with area matching centroidData.a
@@ -168,6 +167,12 @@ function testCentroidNormal(ck: Checker, pointsA: Point3d[], expectedArea: numbe
 describe("PointHelper.centroid", () => {
   it("PointHelper.centroid", () => {
     const ck = new Checker();
+
+    const zero = Point3d.create();
+    const unitX = Point3d.create(1);
+    for (const invalidPoly of [[], [zero], [zero, unitX], [zero, unitX, zero], [zero, unitX, unitX]])
+      ck.testUndefined(PolygonOps.areaNormalGo(GrowableXYZArray.create(invalidPoly)), "areaNormalGo is undefined for invalid polygon");
+
     for (const pointsA of Sample.createSimpleXYPointLoops()) {
       const areaXY = PolygonOps.areaXY(pointsA);
       testCentroidNormal(ck, pointsA, areaXY);
@@ -210,13 +215,13 @@ describe("MomentData.HelloWorld", () => {
           arc.tryTransformInPlace(Transform.createFixedPointAndMatrix(Point3d.create(1, 0, 0), axes0));
 
           if (Checker.noisy.momentData) {
-            console.log("******************************");
-            console.log("   Data rotation degrees Y*Z*data", degreesY, degreesZ);
-            console.log("            X", axes0.columnX());
-            console.log("            Y", axes0.columnY());
-            console.log("            Z", axes0.columnZ());
-            console.log("   Radius ratio", radiusA);
-            console.log("Arc center", arc.center);
+            GeometryCoreTestIO.consoleLog("******************************");
+            GeometryCoreTestIO.consoleLog("   Data rotation degrees Y*Z*data", degreesY, degreesZ);
+            GeometryCoreTestIO.consoleLog("            X", axes0.columnX());
+            GeometryCoreTestIO.consoleLog("            Y", axes0.columnY());
+            GeometryCoreTestIO.consoleLog("            Z", axes0.columnZ());
+            GeometryCoreTestIO.consoleLog("   Radius ratio", radiusA);
+            GeometryCoreTestIO.consoleLog("Arc center", arc.center);
           }
           const ls = LineString3d.create();
           const options = StrokeOptions.createForCurves();
@@ -225,12 +230,12 @@ describe("MomentData.HelloWorld", () => {
           ls.popPoint(); // eliminate the closure point -- now the center really is the centroid
           const moments = MomentData.pointsToPrincipalAxes(ls.points)!;
           if (Checker.noisy.momentData) {
-            console.log("RawMoments Diagonal", moments.sums.diagonal().toJSON());
-            console.log("origin", moments.localToWorldMap.origin);
-            console.log("X", moments.localToWorldMap.matrix.columnX());
-            console.log("Y", moments.localToWorldMap.matrix.columnY());
-            console.log("Z", moments.localToWorldMap.matrix.columnZ());
-            console.log("radius", moments.radiusOfGyration.toJSON());
+            GeometryCoreTestIO.consoleLog("RawMoments Diagonal", moments.sums.diagonal().toJSON());
+            GeometryCoreTestIO.consoleLog("origin", moments.localToWorldMap.origin);
+            GeometryCoreTestIO.consoleLog("X", moments.localToWorldMap.matrix.columnX());
+            GeometryCoreTestIO.consoleLog("Y", moments.localToWorldMap.matrix.columnY());
+            GeometryCoreTestIO.consoleLog("Z", moments.localToWorldMap.matrix.columnZ());
+            GeometryCoreTestIO.consoleLog("radius", moments.radiusOfGyration.toJSON());
           }
           ck.testPoint3d(arc.center, moments.origin, "Moment centroid matches ellipse");
           ck.testTrue(moments.radiusOfGyration.x <= moments.radiusOfGyration.y, "Moment.x <= moment.y");

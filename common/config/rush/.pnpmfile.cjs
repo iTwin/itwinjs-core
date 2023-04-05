@@ -1,10 +1,9 @@
 function readPackage(pkg) {
   if (
-    (pkg.name == "typedoc" || pkg.name == "@microsoft/api-extractor") &&
-    pkg.dependencies &&
-    pkg.dependencies["typescript"]
+    (pkg.name == "typedoc") &&
+    pkg.dependencies
   ) {
-    pkg.dependencies["typescript"] = "~4.4.0";
+    pkg.dependencies["typescript"] = "~4.7.0";
   }
 
   // Hacky mess: For external packages to this monorepo that have peer dependencies on packages
@@ -25,13 +24,15 @@ function readPackage(pkg) {
   }
 
   // https://github.com/iTwin/auth-clients
-  else if (pkg.name == "@itwin/browser-authorization") {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-  } else if (pkg.name == "@itwin/electron-authorization") {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-  } else if (pkg.name == "@itwin/oidc-signin-tool") {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-  } else if (pkg.name == "@itwin/node-cli-authorization") {
+  else if (
+    [
+      "@itwin/browser-authorization",
+      "@itwin/electron-authorization",
+      "@itwin/oidc-signin-tool",
+      "@itwin/node-cli-authorization",
+      "@itwin/service-authorization",
+    ].includes(pkg.name)
+  ) {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
   }
 

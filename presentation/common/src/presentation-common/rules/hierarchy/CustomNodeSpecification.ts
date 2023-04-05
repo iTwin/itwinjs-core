@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./ChildNodeSpecification";
+import { ChildNodeSpecificationBase } from "./ChildNodeSpecification";
 
 /**
  * Returns a static custom-defined node that's not based on an ECInstance.
@@ -16,7 +16,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./Child
  */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: ChildNodeSpecificationTypes.CustomNode;
+  specType: "CustomNode";
 
   /** Specifies node type, which is assigned to node's key. */
   type: string;

@@ -5,10 +5,13 @@
 export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangeSummaryManager";
+export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
+export * from "./CloudSqlite";
 export * from "./CodeService";
 export * from "./CodeSpecs";
+export * from "./EntityReferences";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
@@ -19,6 +22,7 @@ export * from "./ElementTreeWalker";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./GeoCoordConfig";
 export * from "./LocalHub";
 export * from "./HubMock";
 export * from "./IModelJsFs";
@@ -31,7 +35,7 @@ export * from "./BackendLoggerCategory";
 export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";
-export * from "./RpcBackend";
+export * from "./rpc/tracing";
 export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./SQLiteDb";
@@ -42,15 +46,15 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export { CloudSqlite, IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export * from "./IModelElementCloneContext";
 export * from "./IModelCloneContext";
+export * from "./TileStorage";
 export * from "./IModelHost";
-export * from "./IModelSchemaLoader";
 export * from "./IpcHost";
 export * from "./NativeAppStorage";
 export * from "./NativeHost";
-export * from "./CloudStorageBackend";
-export * from "./AliCloudStorageService";
+export * from "./PropertyStore";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
@@ -158,6 +162,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description AliCloudStorageService
  * Classes for working with cloud storage using AliCloud.
+ */
+/**
+ * @docs-group-description TileStorage
+ * Class for working with cloud storage using iTwin/object-storage cloud providers
  */
 /**
  * @docs-group-description Authentication

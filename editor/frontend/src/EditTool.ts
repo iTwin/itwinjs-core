@@ -6,50 +6,62 @@
  * @module Editing
  */
 
-import { editorChannel } from "@itwin/editor-common";
+import { BeDuration } from "@itwin/core-bentley";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
-import { DeleteElementsTool } from "./DeleteElementsTool";
-import { ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool, SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool } from "./SolidModelingTools";
-import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
-import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
-import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
-import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
-import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
-import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
-import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool } from "./SolidPrimitiveTools";
+import { editorIpcStrings } from "@itwin/editor-common";
 
-/** @alpha Options for [[EditTools.initialize]]. */
-export interface EditorOptions {
-  /** If true, all tools will be registered. */
-  registerAllTools?: true | undefined;
-  /** If true, tools for undo/redo will be registered. */
-  registerUndoRedoTools?: true | undefined;
-  /** If true, tools for updating the project extents and geolocation will be registered. */
-  registerProjectLocationTools?: true | undefined;
-  /** If true, tools for basic manipulation will be registered. */
-  registerBasicManipulationTools?: true | undefined;
-  /** If true, tools for sketching will be registered. */
-  registerSketchTools?: true | undefined;
-  /** If true, tools for solid modeling will be registered. */
-  registerSolidModelingTools?: true | undefined;
+import * as UndoRedoTools from "./UndoRedoTool";
+import * as DeleteElementsTool from "./DeleteElementsTool";
+import * as ModifyCurveTools from "./ModifyCurveTools";
+import * as ProjectLocation from "./ProjectLocation/ProjectExtentsDecoration";
+import * as ProjectGeoLocation from "./ProjectLocation/ProjectGeolocation";
+import * as SketchTools from "./SketchTools";
+import * as SolidModelingTools from "./SolidModelingTools";
+import * as SolidPrimitiveTools from "./SolidPrimitiveTools";
+import * as TransformTools from "./TransformElementsTool";
+
+/** @beta */
+export namespace EditTools {
+  export interface StartArgs {
+    commandId: string;
+    iModelKey: string;
+  }
+  /** handler for retries when an EditTool attempts to start but a backend command is busy and can't finish its work.
+   * @param attempt the number of times this handler was previously called for this EditTool
+   * @param msg the message about what's happening from the currently busy EditCommand.
+   * @returns the delay (in milliseconds) before attempting again. If `undefined` use default (usually 1 second)
+   */
+  export type BusyRetry = (attempt: number, msg: string) => Promise<number | undefined>;
 }
 
-/** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
+/**
+ * Supports PrimitiveTool and InputCollector sub-classes.
+ * @beta
+ */
 export class EditTools {
-  public static namespace = "Editor";
-  public static tools = "Editor:tools.";
+  public static readonly namespace = "Editor";
+  public static readonly tools = "Editor:tools.";
+  public static busyRetry?: EditTools.BusyRetry;
   private static _initialized = false;
 
-  public static async startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T> {
-    return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
-  }
-
-  public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
-    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
+  public static async startCommand<T>(startArg: EditTools.StartArgs, ...cmdArgs: any[]): Promise<T> {
+    let attempt = 0;
+    while (true) {
+      try {
+        return await (IpcApp.callIpcChannel(editorIpcStrings.channel, "startCommand", startArg.commandId, startArg.iModelKey, ...cmdArgs) as Promise<T>);
+      } catch (e: any) {
+        if (e.name !== editorIpcStrings.commandBusy)
+          throw e; // unknown backend error
+        const delay = await this.busyRetry?.(attempt++, e.message) ?? 1000;
+        await BeDuration.fromMilliseconds(delay).wait();
+      }
+    }
   }
 
   /** @internal */
-  public static translate(prompt: string) { return IModelApp.localization.getLocalizedString(this.tools + prompt); }
+  public static translate(prompt: string) {
+    return IModelApp.localization.getLocalizedString(this.tools + prompt);
+  }
 
   /** Call this before using the package (e.g., before attempting to use any of its tools.)
    * To initialize when starting up your app:
@@ -58,106 +70,29 @@ export class EditTools {
    *   await EditorTools.initialize();
    * ```
    */
-  public static async initialize(options?: EditorOptions): Promise<void> {
+  public static async initialize(): Promise<void> {
     if (this._initialized)
       return;
 
-    // NOTE: We should clear the active command whenever a new PrimitiveTool is installed.
-    //       As tool run/install isn't currently async ToolAdmin.activeToolChanged can't be used at this time.
-    //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
 
     // clean up if we're being shut down
     IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
-    const registerAllTools = options?.registerAllTools;
 
-    // Register requested tools...
-    if (registerAllTools || options?.registerUndoRedoTools) {
-      const tools = [
-        UndoAllTool,
-        UndoTool,
-        RedoTool,
-      ];
+    const tools = IModelApp.tools;
+    tools.registerModule(UndoRedoTools, this.namespace);
 
-      for (const tool of tools)
-        tool.register(this.namespace);
-    }
-
-    if (registerAllTools || options?.registerProjectLocationTools) {
-      const tools = [
-        ProjectLocationShowTool,
-        ProjectLocationHideTool,
-        ProjectLocationCancelTool,
-        ProjectLocationSaveTool,
-        ProjectGeolocationMoveTool,
-        ProjectGeolocationPointTool,
-        ProjectGeolocationNorthTool,
-      ];
-
-      for (const tool of tools)
-        tool.register(this.namespace);
-    }
-
-    if (registerAllTools || options?.registerBasicManipulationTools) {
-      const tools = [
-        DeleteElementsTool,
-        MoveElementsTool,
-        CopyElementsTool,
-        RotateElementsTool,
-      ];
-
-      for (const tool of tools)
-        tool.register(this.namespace);
-    }
-
-    if (registerAllTools || options?.registerSketchTools) {
-      const tools = [
-        CreateArcTool,
-        CreateBCurveTool,
-        CreateCircleTool,
-        CreateEllipseTool,
-        CreateLineStringTool,
-        CreateRectangleTool,
-        BreakCurveTool,
-        ExtendCurveTool,
-        OffsetCurveTool,
-      ];
-
-      for (const tool of tools)
-        tool.register(this.namespace);
-    }
-
-    if (registerAllTools || options?.registerSolidModelingTools) {
-      const tools = [
-        CreateSphereTool,
-        CreateCylinderTool,
-        CreateConeTool,
-        CreateBoxTool,
-        CreateTorusTool,
-        UniteSolidElementsTool,
-        SubtractSolidElementsTool,
-        IntersectSolidElementsTool,
-        SewSheetElementsTool,
-        ThickenSheetElementsTool,
-        CutSolidElementsTool,
-        EmbossSolidElementsTool,
-        ImprintSolidElementsTool,
-        SweepAlongPathTool,
-        LoftProfilesTool,
-        OffsetFacesTool,
-        HollowFacesTool,
-        SweepFacesTool,
-        SpinFacesTool,
-        RoundEdgesTool,
-        ChamferEdgesTool,
-        DeleteSubEntitiesTool,
-      ];
-
-      for (const tool of tools)
-        tool.register(this.namespace);
-    }
+    // TODO: TEMPORARY - Register tools for testing. To be moved into apps.
+    tools.registerModule(ProjectLocation, this.namespace);
+    tools.registerModule(ProjectGeoLocation, this.namespace);
+    tools.registerModule(SketchTools, this.namespace);
+    tools.registerModule(SolidModelingTools, this.namespace);
+    tools.registerModule(SolidPrimitiveTools, this.namespace);
+    tools.registerModule(TransformTools, this.namespace);
+    tools.registerModule(DeleteElementsTool, this.namespace);
+    tools.registerModule(ModifyCurveTools, this.namespace);
 
     return namespacePromise;
   }

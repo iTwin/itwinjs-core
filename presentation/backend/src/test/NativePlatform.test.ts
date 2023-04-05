@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { join } from "path";
+import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
-import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import { BeEvent } from "@itwin/core-bentley";
-import sinon from "sinon";
-import { join } from "path";
+import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 
 describe("default NativePlatform", () => {
 
@@ -34,9 +33,7 @@ describe("default NativePlatform", () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
-      localeDirectories: [],
       taskAllocationsMap: {},
-      mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,
     });
     nativePlatform = new TNativePlatform();
@@ -97,6 +94,13 @@ describe("default NativePlatform", () => {
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
+    });
+
+    it("throws on `ResultSetTooLarge` error response", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.ResultSetTooLarge, message: "test" } }), cancel: () => { } }));
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test").with.property("errorNumber", PresentationStatus.ResultSetTooLarge);
     });
 
     it("adds listener to cancel event and calls it only after first invocation", async () => {
@@ -227,10 +231,10 @@ describe("default NativePlatform", () => {
   });
 
   it("calls addon's updateHierarchyState", async () => {
-    addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", "nodesExpanded", "[]"))
+    addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", []))
       .returns(() => ({ result: undefined }))
       .verifiable();
-    nativePlatform.updateHierarchyState({}, "test-ruleset-id", "nodesExpanded", "[]");
+    nativePlatform.updateHierarchyState({}, "test-ruleset-id", []);
     addonMock.verifyAll();
   });
 

@@ -6,11 +6,14 @@
 /** @packageDocumentation
  * @module Polyface
  */
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { PolyfaceData } from "./PolyfaceData";
-import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+
 import { Geometry } from "../Geometry";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+import { PolyfaceData } from "./PolyfaceData";
+
 /* eslint-disable @itwin/prefer-get */
+
 /**
  * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.
  * * The visitor extends a `PolyfaceData ` class, so it can at any time hold all the data of a single facet.
@@ -42,7 +45,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   public setNumWrap(numWrap: number) { this._numWrap = numWrap; }
 
   /** Return the number of edges in the current facet.
-   * * Not that if this visitor has `numWrap` greater than zero, the number of edges is smaller than the number of points.
+   * * Note that if this visitor has `numWrap` greater than zero, the number of edges is smaller than the number of points.
    */
   public get numEdgesThisFacet(): number { return this._numEdges; }
   /** Create a visitor for iterating the facets of `polyface`, with indicated number of points to be added to each facet to produce closed point arrays
@@ -158,7 +161,6 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
       this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
   }
-
 }
 /**
  * * shift to right by shiftBits.
@@ -215,7 +217,7 @@ export function interpolateColor(color0: number, fraction: number, color1: numbe
  */
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   private _parentFacetIndices: number[];
-  // index WITHIN THE _activeFacetIndices array.
+  // index WITHIN THE _parentFacetIndices array.
   private _nextActiveIndex: number;
   private constructor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number) {
     super(polyface, numWrap);

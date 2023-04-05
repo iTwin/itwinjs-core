@@ -62,7 +62,6 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
  * @extensions
  */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
-  /** @internal */
   public static override get className() { return "AuxCoordSystem"; }
   public type: number;
   public description?: string;
@@ -249,7 +248,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     shapePts[5] = Point3d.create(ACSDisplaySizes.ArrowTipStart, -ACSDisplaySizes.ArrowBaseWidth);
     shapePts[6] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, -ACSDisplaySizes.ArrowTipWidth);
     shapePts[7] = shapePts[0].clone();
-    if (1 === axis) { shapePts.forEach((tmpPt) => { tmpPt.set(tmpPt.y, tmpPt.x); }); }
+    if (1 === axis)
+      shapePts.forEach((tmpPt) => tmpPt.set(tmpPt.y, tmpPt.x));
 
     builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
     builder.addLineString(shapePts);
@@ -303,7 +303,6 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
-  /** @internal */
   public static override get className() { return "AuxCoordSystem2d"; }
   public readonly origin: Point2d;
   public angle: number; // in degrees
@@ -338,7 +337,6 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
-  /** @internal */
   public static override get className() { return "AuxCoordSystem3d"; }
   public readonly origin: Point3d;
   public yaw: number; // in degrees
@@ -382,6 +380,5 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
-  /** @internal */
   public static override get className() { return "AuxCoordSystemSpatial"; }
 }

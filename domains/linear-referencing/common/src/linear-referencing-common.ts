@@ -7,7 +7,7 @@ export * from "./LinearReferencingCommon";
 export * from "./LinearReferencingElementProps";
 
 /** @docs-package-description
- * The `@itwin/linear-referencing-common` package contains classes for working with the LinearReferencing schema on the frontend and backend.
+ * The `@itwin/linear-referencing-common` package contains types for working with the LinearReferencing schema on the frontend and backend.
  */
 
 /** @docs-group-description LinearReferencing

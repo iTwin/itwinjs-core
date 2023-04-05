@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { WebpackOptionsDefaulter, WebpackOptionsNormalized } from "webpack";
 
-/** @deprecated */
+/** @deprecated in 3.x, will be removed in 4.0, currently a no-op */
 export class IModelJsOptionsDefaulter extends WebpackOptionsDefaulter {
   constructor(private _enableSourceMaps = true) {
     super();

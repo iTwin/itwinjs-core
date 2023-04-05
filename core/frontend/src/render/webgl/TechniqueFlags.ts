@@ -172,17 +172,29 @@ export class TechniqueFlags {
 
   public buildDescription(): string {
     const parts = [this.isTranslucent ? "Translucent" : "Opaque"];
-    if (this.isInstanced) parts.push("Instanced");
-    if (this.isEdgeTestNeeded) parts.push("EdgeTestNeeded");
-    if (this.isAnimated) parts.push("Animated");
-    if (this.isHilite) parts.push("Hilite");
-    if (this.isClassified) parts.push("Classified");
-    if (this.hasClip) parts.push("Clip");
-    if (this.isShadowable) parts.push("Shadowable");
-    if (this.isThematic) parts.push("Thematic");
-    if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
-    if (this.isWiremesh) parts.push("Wiremesh");
-    if (this.positionType === "unquantized") parts.push("Unquantized");
+    if (this.isInstanced)
+      parts.push("Instanced");
+    if (this.isEdgeTestNeeded)
+      parts.push("EdgeTestNeeded");
+    if (this.isAnimated)
+      parts.push("Animated");
+    if (this.isHilite)
+      parts.push("Hilite");
+    if (this.isClassified)
+      parts.push("Classified");
+    if (this.hasClip)
+      parts.push("Clip");
+    if (this.isShadowable)
+      parts.push("Shadowable");
+    if (this.isThematic)
+      parts.push("Thematic");
+    if (this.hasFeatures)
+      parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
+    if (this.isWiremesh)
+      parts.push("Wiremesh");
+    if (this.positionType === "unquantized")
+      parts.push("Unquantized");
+
     return parts.join("-");
   }
 

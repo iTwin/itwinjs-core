@@ -9,10 +9,6 @@ import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
 import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
 
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
-/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-
 const isProductionLikeMode = (
   options: Configuration | WebpackOptionsNormalized
 ) => {
@@ -63,7 +59,8 @@ export class BackendDefaultsPlugin {
       value: any,
       options: Configuration
     ) => {
-      if (value) return value;
+      if (value)
+        return value;
 
       if (isProductionLikeMode(options))
         return (info: any) =>
@@ -77,6 +74,10 @@ export class BackendDefaultsPlugin {
       return (info: any) => info.absoluteResourcePath.replace(/\\/g, "/");
     };
 
+    if (compiler.options.ignoreWarnings === undefined)
+      compiler.options.ignoreWarnings = [];
+    compiler.options.ignoreWarnings.push((warn) => /Failed to parse source map/.test(warn.message));
+
     // Add default plugins
     const plugins = [
       new CopyAppAssetsPlugin("assets"),
@@ -85,7 +86,6 @@ export class BackendDefaultsPlugin {
       new DefinePlugin({
         "global.GENTLY": false,
       }),
-      new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }),
       new IgnoreOptionalDependenciesPlugin([
         "debug",
         "diagnostic-channel-publishers",
@@ -112,7 +112,6 @@ export class BackendDefaultsPlugin {
         "@bentley/imodeljs-native",
         "@bentley/imodeljs-native/package.json",
         "dtrace-provider",
-        "node-report/api",
         "applicationinsights-native-metrics",
         "@opentelemetry/tracing",
         "keytar",

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
@@ -50,7 +50,6 @@ export interface OsmBuildingDisplayOptions {
  * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  /** @internal */
   public static override get className() { return "DisplayStyle"; }
   private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
@@ -60,7 +59,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _assigningScript = false;
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated use [[onScheduleScriptChanged]].
+   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just before the [[scheduleScript]] property is changed. */
@@ -318,7 +317,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated Use [[scheduleScript]].
+   * @deprecated in 3.x. Use [[scheduleScript]].
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
@@ -577,7 +576,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const modelRange = await model.queryModelRange();
       const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
 
-      return MapCartoRectangle.create(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+      return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
     if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
       assert(false);
@@ -796,7 +795,50 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
-  /** @internal */
+  /** For each subcategory belonging to any of the specified categories, make it visible by turning off the "invisible" flag in its subcategory appearance.
+   * This requires that the categories and subcategories have been previously loaded by, e.g., a call to IModelConnection.querySubCategories.
+   * @returns true if the visibility of any subcategory was modified.
+   * @see Viewport.changeCategoryDisplay
+   * @see ViewCreator3dOptions.allSubCategoriesVisible
+   * @internal
+   */
+  public enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean {
+    let anyChanged = false;
+    for (const categoryId of Id64.iterable(categoryIds)) {
+      const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
+      if (undefined !== subCategoryIds)
+        for (const subCategoryId of subCategoryIds)
+          if (this.setSubCategoryVisible(subCategoryId, true))
+            anyChanged = true;
+    }
+
+    return anyChanged;
+  }
+
+  /** Change the "invisible" flag for the given subcategory's appearance.
+   * This requires that the subcategory appearance has been previously loaded by, e.g., a call to IModelConnection.Categories.getSubCategoryInfo.
+   * @returns true if the visibility of any subcategory was modified.
+   * @see [[enableAllLoadedSubCategories]]
+   * @internal
+   */
+  public setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean {
+    const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+    if (undefined === app)
+      return false; // category not enabled or subcategory not found
+
+    const curOvr = this.getSubCategoryOverride(subCategoryId);
+    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
+    if (isAlreadyVisible === visible)
+      return false;
+
+    // Preserve existing overrides - just flip the visibility flag.
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
+    json.invisible = !visible;
+    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
+    return true;
+  }
+
+  /** Returns true if solar shadow display is enabled by this display style. */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
@@ -851,7 +893,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
-  /** @internal */
   public static override get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -862,7 +903,12 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
-    this._settings = new DisplayStyleSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyleSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 }
@@ -872,7 +918,6 @@ export class DisplayStyle2dState extends DisplayStyleState {
  * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  /** @internal */
   public static override get className() { return "DisplayStyle3d"; }
   private _settings: DisplayStyle3dSettings;
 
@@ -880,7 +925,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
     super(props, iModel, source);
-    this._settings = new DisplayStyle3dSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 

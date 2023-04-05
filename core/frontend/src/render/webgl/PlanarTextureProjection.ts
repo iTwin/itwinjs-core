@@ -25,7 +25,15 @@ const scratchMatrix4d = Matrix4d.createIdentity();
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, sceneContext: SceneContext, target: { tiles: Tile[], location: Transform }, drapeRefs: TileTreeReference[], viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+  public static computePlanarTextureProjection(
+    texturePlane: Plane3dByOriginAndUnitNormal,
+    sceneContext: SceneContext,
+    target: { tiles: Tile[], location: Transform },
+    drapeRefs: TileTreeReference[],
+    viewState: ViewState3d,
+    textureWidth: number,
+    textureHeight: number,
+    _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     const viewingSpace = sceneContext.viewingSpace;
     const viewX = viewingSpace.rotation.rowX();
@@ -49,8 +57,8 @@ export class PlanarTextureProjection {
     const textureMatrix = Matrix3d.createRows(frustumX, frustumY, frustumZ);
     const textureTransform = Transform.createRefs(Point3d.createZero(), textureMatrix);
     const viewFrustum = viewingSpace.getFrustum().transformBy(textureTransform);
-    const viewPlanes = new FrustumPlanes(viewFrustum);
-    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes!);
+    const viewPlanes = FrustumPlanes.fromFrustum(viewFrustum);
+    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes);
 
     let textureRange = Range3d.createNull();
     const tileToTexture = textureTransform.multiplyTransformTransform(target.location);
@@ -71,7 +79,8 @@ export class PlanarTextureProjection {
         return {};
       if (drapeTree.isContentUnbounded) {
         let heightRange = viewingSpace.getTerrainHeightRange();
-        if (!heightRange) heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
+        if (!heightRange)
+          heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
 
         textureRange.low.x = Math.min(textureRange.low.x, heightRange.low);
         textureRange.high.x = Math.max(textureRange.high.x, heightRange.high);

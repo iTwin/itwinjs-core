@@ -18,7 +18,7 @@ describe("White-on-white reversal", async () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 

@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
@@ -23,7 +23,6 @@ import { ViewState } from "./ViewState";
  * @extensions
  */
 export class ModelState extends EntityState implements ModelProps {
-  /** @internal */
   public static override get className() { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -78,7 +77,6 @@ export class ModelState extends EntityState implements ModelProps {
  * @extensions
  */
 export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
-  /** @internal */
   public static override get className() { return "GeometricModel"; }
   /** @internal */
   public geometryGuid?: string;
@@ -103,13 +101,15 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   public get treeModelId(): Id64String { return this.id; }
 
   /** Query for the union of the ranges of all the elements in this GeometricModel.
-   * @internal
+   * @note This value is cached after the first time it is called.
+   * @public
    */
   public async queryModelRange(): Promise<Range3d> {
     if (undefined === this._modelRange) {
-      const ranges = await this.iModel.models.queryModelRanges(this.id);
-      this._modelRange = Range3d.fromJSON(ranges[0]);
+      const ranges = await this.iModel.models.queryExtents(this.id);
+      this._modelRange = Range3d.fromJSON(ranges[0]?.extents);
     }
+
     return this._modelRange;
   }
 
@@ -119,6 +119,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
+    const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
@@ -130,6 +131,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+          getDisplaySettings,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -138,6 +140,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+          getDisplaySettings,
         });
       return treeRef;
     }
@@ -164,6 +167,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         orbitGtBlob,
         name: orbitGtName,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        getDisplaySettings,
       });
     }
 
@@ -180,6 +184,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        getDisplaySettings,
       });
     }
 
@@ -191,7 +196,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
  * @extensions
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
-  /** @internal */
   public static override get className() { return "GeometricModel2d"; }
   /** @internal */
   public readonly globalOrigin: Point2d;
@@ -218,7 +222,6 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
  * @extensions
  */
 export class GeometricModel3dState extends GeometricModelState {
-  /** @internal */
   public static override get className() { return "GeometricModel3d"; }
 
   constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState) {
@@ -263,7 +266,6 @@ export class GeometricModel3dState extends GeometricModelState {
  * @extensions
  */
 export class SheetModelState extends GeometricModel2dState {
-  /** @internal */
   public static override get className() { return "SheetModel"; }
 }
 
@@ -275,7 +277,6 @@ export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
   public readonly classifiers?: SpatialClassifiers;
 
-  /** @internal */
   public static override get className() { return "SpatialModel"; }
   /** @internal */
   public override get asSpatialModel(): SpatialModelState { return this; }
@@ -296,7 +297,6 @@ export class SpatialModelState extends GeometricModel3dState {
  * @extensions
  */
 export class PhysicalModelState extends SpatialModelState {
-  /** @internal */
   public static override get className() { return "PhysicalModel"; }
 }
 
@@ -305,7 +305,6 @@ export class PhysicalModelState extends SpatialModelState {
  * @extensions
  */
 export class SpatialLocationModelState extends SpatialModelState {
-  /** @internal */
   public static override get className() { return "SpatialLocationModel"; }
 }
 
@@ -314,7 +313,6 @@ export class SpatialLocationModelState extends SpatialModelState {
  * @extensions
  */
 export class DrawingModelState extends GeometricModel2dState {
-  /** @internal */
   public static override get className() { return "DrawingModel"; }
 }
 
@@ -323,6 +321,5 @@ export class DrawingModelState extends GeometricModel2dState {
  * @extensions
  */
 export class SectionDrawingModelState extends DrawingModelState {
-  /** @internal */
   public static override get className() { return "SectionDrawingModel"; }
 }

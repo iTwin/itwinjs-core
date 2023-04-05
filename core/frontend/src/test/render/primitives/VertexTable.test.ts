@@ -94,9 +94,18 @@ describe("VertexLUT", () => {
       uvParams: [new Point2d(-1, 1), new Point2d(1, 0), new Point2d(0, -1)],
     };
 
-    expected[0].push(0x00); expected[0].push(0x00); expected[0].push(0xff); expected[0].push(0xff);
-    expected[1].push(0xff); expected[1].push(0xff); expected[1].push(0x00); expected[1].push(0x80);
-    expected[2].push(0x00); expected[2].push(0x80); expected[2].push(0x00); expected[2].push(0x00);
+    expected[0].push(0x00);
+    expected[0].push(0x00);
+    expected[0].push(0xff);
+    expected[0].push(0xff);
+    expected[1].push(0xff);
+    expected[1].push(0xff);
+    expected[1].push(0x00);
+    expected[1].push(0x80);
+    expected[2].push(0x00);
+    expected[2].push(0x80);
+    expected[2].push(0x00);
+    expected[2].push(0x00);
 
     const qUVParams = QParams2d.fromNormalizedRange();
     expectMeshParams(args, args.colors, expected, undefined, qUVParams);
@@ -108,8 +117,14 @@ describe("VertexLUT", () => {
     args.features.featureIDs[1] = 0xc001bead;
     args.features.featureIDs[2] = 0;
 
-    expected[0][8] = 0x0d; expected[0][9] = 0xf0; expected[0][10] = 0xad; expected[0][11] = 0xba;
-    expected[1][8] = 0xad; expected[1][9] = 0xbe; expected[1][10] = 0x01; expected[1][11] = 0xc0;
+    expected[0][8] = 0x0d;
+    expected[0][9] = 0xf0;
+    expected[0][10] = 0xad;
+    expected[0][11] = 0xba;
+    expected[1][8] = 0xad;
+    expected[1][9] = 0xbe;
+    expected[1][10] = 0x01;
+    expected[1][11] = 0xc0;
 
     expectMeshParams(args, args.colors, expected);
 
@@ -127,9 +142,12 @@ describe("VertexLUT", () => {
     const colorIndices = [0, 0x0001, 0xffee];
     args.colors.initNonUniform(colors, colorIndices, true);
 
-    expected[0][6] = 0x00; expected[0][7] = 0x00;
-    expected[1][6] = 0x01; expected[1][7] = 0x00;
-    expected[2][6] = 0xee; expected[2][7] = 0xff;
+    expected[0][6] = 0x00;
+    expected[0][7] = 0x00;
+    expected[1][6] = 0x01;
+    expected[1][7] = 0x00;
+    expected[2][6] = 0xee;
+    expected[2][7] = 0xff;
 
     // NB: The color values in VertexLUT.Params have premultiplied alpha, and alpha set to (255 - transparency)
     const expectedColors = [
@@ -217,9 +235,18 @@ describe("VertexLUT", () => {
     };
 
     const exp = makeExpected();
-    exp[0][16] = 0x00; exp[0][17] = 0x00; exp[0][18] = 0xff; exp[0][19] = 0xff;
-    exp[1][16] = 0xff; exp[1][17] = 0xff; exp[1][18] = 0x00; exp[1][19] = 0x80;
-    exp[2][16] = 0x00; exp[2][17] = 0x80; exp[2][18] = 0x00; exp[2][19] = 0x00;
+    exp[0][16] = 0x00;
+    exp[0][17] = 0x00;
+    exp[0][18] = 0xff;
+    exp[0][19] = 0xff;
+    exp[1][16] = 0xff;
+    exp[1][17] = 0xff;
+    exp[1][18] = 0x00;
+    exp[1][19] = 0x80;
+    exp[2][16] = 0x00;
+    exp[2][17] = 0x80;
+    exp[2][18] = 0x00;
+    exp[2][19] = 0x00;
 
     expectMeshParams(args, args.colors, transpose(exp), undefined, QParams2d.fromNormalizedRange());
 
@@ -230,8 +257,14 @@ describe("VertexLUT", () => {
     args.features.featureIDs[1] = 0xc001bead;
     args.features.featureIDs[2] = 0;
 
-    exp[0][12] = 0x0d; exp[0][13] = 0xf0; exp[0][14] = 0xad; exp[0][15] = 0xba;
-    exp[1][12] = 0xad; exp[1][13] = 0xbe; exp[1][14] = 0x01; exp[1][15] = 0xc0;
+    exp[0][12] = 0x0d;
+    exp[0][13] = 0xf0;
+    exp[0][14] = 0xad;
+    exp[0][15] = 0xba;
+    exp[1][12] = 0xad;
+    exp[1][13] = 0xbe;
+    exp[1][14] = 0x01;
+    exp[1][15] = 0xc0;
 
     expectMeshParams(args, args.colors, transpose(exp));
 
@@ -245,8 +278,12 @@ describe("VertexLUT", () => {
     args.colors.initNonUniform(colors, colorIndices, true);
 
     exp[0][18] = exp[0][19] = 0;
-    exp[1][16] = 0x01; exp[1][17] = 0x00; exp[1][18] = exp[1][19] = 0;
-    exp[2][16] = 0xee; exp[2][17] = 0xff; exp[2][18] = exp[2][19] = 0;
+    exp[1][16] = 0x01;
+    exp[1][17] = 0x00;
+    exp[1][18] = exp[1][19] = 0;
+    exp[2][16] = 0xee;
+    exp[2][17] = 0xff;
+    exp[2][18] = exp[2][19] = 0;
 
     // NB: The color values in VertexLUT.Params have premultiplied alpha, and alpha set to (255 - transparency)
     const expectedColors = [

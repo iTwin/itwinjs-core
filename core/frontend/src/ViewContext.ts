@@ -30,6 +30,7 @@ import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
+ * @extensions
  */
 export class RenderContext {
   /** ViewFlags extracted from the context's [[Viewport]]. */
@@ -44,7 +45,7 @@ export class RenderContext {
     this._viewport = vp;
     this.viewFlags = vp.viewFlags;
     this.frustum = frustum ? frustum : vp.getFrustum();
-    this.frustumPlanes = new FrustumPlanes(this.frustum);
+    this.frustumPlanes = FrustumPlanes.fromFrustum(this.frustum);
   }
 
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
@@ -130,6 +131,7 @@ export class DynamicsContext extends RenderContext {
 
 /** Provides context for a [[ViewportDecorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
  * @public
+ * @extensions
  */
 export class DecorateContext extends RenderContext {
   private readonly _decorations: Decorations;

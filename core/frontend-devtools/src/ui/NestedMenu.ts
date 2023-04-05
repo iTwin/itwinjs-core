@@ -65,7 +65,10 @@ export function createNestedMenu(props: NestedMenuProps): NestedMenu {
 
   header.appendChild(document.createElement("hr"));
 
-  if (undefined !== props.parent) props.parent.appendChild(div);
-  if (undefined !== props.id) div.id = props.id;
+  if (undefined !== props.parent)
+    props.parent.appendChild(div);
+  if (undefined !== props.id)
+    div.id = props.id;
+
   return { body, label, div };
 }

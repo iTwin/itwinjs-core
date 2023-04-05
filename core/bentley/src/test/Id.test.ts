@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import {
-  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable,
+  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable, TransientIdSequence,
 } from "../core-bentley";
 
 class Uint64Id {
@@ -538,7 +538,11 @@ describe("CompressedId64Set", () => {
 
       // Round-tripping removes duplicate Ids.
       const duplicates: string[] = [];
-      ids.forEach((x) => { duplicates.push(x); duplicates.push(x); });
+      ids.forEach((x) => {
+        duplicates.push(x);
+        duplicates.push(x);
+      });
+
       const decompressedDuplicates = CompressedId64Set.compressArray(duplicates);
       expect(decompressedDuplicates).to.equal(compressedArray);
     };
@@ -585,9 +589,26 @@ describe("MutableCompressedId64Set", () => {
   it("should buffer insertions and removals", () => {
     type Test = [OrderedId64Iterable, (set: MutableCompressedId64Set) => void, OrderedId64Iterable];
     const tests: Test[] = [
-      [[], (set) => { set.add("0x1"); set.add("0x2"); set.add("0x3"); }, ["0x1", "0x2", "0x3"]],
-      [["0x1", "0x2", "0x3"], (set) => { set.delete("0x3"); set.delete("0x1"); set.delete("0x4"); }, ["0x2"]],
-      [["0x1", "0x3", "0xe"], (set) => { set.delete("0x1"); set.add("0x4"); set.add("0x1"); set.add("0x1"); set.add("0x4"); set.delete("0x4"); set.delete("0x5"); set.add("0x5"); }, ["0x1", "0x3", "0x5", "0xe"]],
+      [[], (set) => {
+        set.add("0x1");
+        set.add("0x2");
+        set.add("0x3");
+      }, ["0x1", "0x2", "0x3"]],
+      [["0x1", "0x2", "0x3"], (set) => {
+        set.delete("0x3");
+        set.delete("0x1");
+        set.delete("0x4");
+      }, ["0x2"]],
+      [["0x1", "0x3", "0xe"], (set) => {
+        set.delete("0x1");
+        set.add("0x4");
+        set.add("0x1");
+        set.add("0x1");
+        set.add("0x4");
+        set.delete("0x4");
+        set.delete("0x5");
+        set.add("0x5");
+      }, ["0x1", "0x3", "0x5", "0xe"]],
     ];
 
     for (const test of tests) {
@@ -608,5 +629,23 @@ describe("MutableCompressedId64Set", () => {
       expect(set.equals(test[2])).to.be.true;
       expect(set.equals(expected)).to.be.true;
     }
+  });
+});
+
+describe("TransientIdSequence", () => {
+  it("should produce an ordered sequence of Ids beginning with 0xffffff0000000001", () => {
+    const ids = new TransientIdSequence();
+    expect(ids.getNext()).to.equal("0xffffff0000000001");
+    expect(ids.getNext()).to.equal("0xffffff0000000002");
+    expect(ids.getNext()).to.equal("0xffffff0000000003");
+    expect(ids.getNext()).to.equal("0xffffff0000000004");
+  });
+
+  it("should preview the next Id in the sequence without consuming it", () => {
+    const ids = new TransientIdSequence();
+    expect(ids.peekNext()).to.equal("0xffffff0000000001");
+    expect(ids.getNext()).to.equal("0xffffff0000000001");
+    expect(ids.peekNext()).to.equal("0xffffff0000000002");
+    expect(ids.getNext()).to.equal("0xffffff0000000002");
   });
 });

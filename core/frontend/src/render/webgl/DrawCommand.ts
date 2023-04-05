@@ -7,6 +7,7 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { PackedFeature } from "@itwin/core-common";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -28,7 +29,11 @@ export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
 
-  public get target(): Target { assert(undefined !== this._target); return this._target; }
+  public get target(): Target {
+    assert(undefined !== this._target);
+    return this._target;
+  }
+
   public get renderPass() { return this._renderPass; }
 
   public get projectionMatrix() { return this.target.uniforms.getProjectionMatrix32(this.isViewCoords); }
@@ -49,13 +54,22 @@ export class DrawParams {
   private _programParams?: ShaderProgramParams;
   private _geometry?: CachedGeometry;
 
-  public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry; }
-  public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams; }
+  public get geometry(): CachedGeometry {
+    assert(undefined !== this._geometry);
+    return this._geometry;
+  }
+
+  public get programParams(): ShaderProgramParams {
+    assert(undefined !== this._programParams);
+    return this._programParams;
+  }
 
   public get target() { return this.programParams.target; }
   public get renderPass() { return this.programParams.renderPass; }
   public get projectionMatrix() { return this.programParams.projectionMatrix; }
-  public get isViewCoords() { return this.programParams.isViewCoords; }
+  public get isViewCoords() {
+    return this.programParams.isViewCoords || this.target.currentBranch.forceViewCoords;
+  }
   public get isOverlayPass() { return this.programParams.isOverlayPass; }
   public get context() { return this.programParams.context; }
 
@@ -201,7 +215,7 @@ export class PrimitiveCommand {
     if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
       isThematic = IsThematic.No;
 
-    const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
+    const wiremesh = target.currentViewFlags.wiremesh && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
     const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
@@ -252,7 +266,9 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
       let j = i - 1;
       while (j >= 0 && "pushBatch" !== cmds[j].opcode) // Find batch for this primitive
         j--;
-      if (j < 0) continue;
+      if (j < 0)
+        continue;
+
       const pushBatch = cmds[j] as PushBatchCommand;
       const elemId = pushBatch.batch.featureTable.findElementId(surface.mesh.uniformFeatureId);
       if (undefined !== elemId && elemId === flashedId) {
@@ -263,6 +279,8 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
 
   return undefined;
 }
+
+const scratchFeature = PackedFeature.create();
 
 /** @internal */
 export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: DrawCommands): DrawCommands {
@@ -296,8 +314,8 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
           if (undefined === surface || undefined === surface.mesh.uniformFeatureId)
             continue;
 
-          const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId);
-          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(batch.featureTable.modelId)))
+          const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId, scratchFeature);
+          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(Id64.fromUint32PairObject(feature.modelId))))
             continue;
 
           break;

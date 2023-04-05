@@ -16,7 +16,7 @@ function indent() {
 }
 
 function outdent() {
-  prefix = prefix.substr(2);
+  prefix = prefix.substring(2);
 }
 
 function log(msg: string) {
@@ -48,6 +48,7 @@ function setToStandalone(iModelName: string) {
   try {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
+    nativeDb.enableWalMode();
     nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
     nativeDb.saveChanges(); // save change to iTwinId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId

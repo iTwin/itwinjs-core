@@ -247,7 +247,7 @@ class ElementPropertiesBuilder implements IContentVisitor {
   public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void { }
 
   public startItem(props: StartItemProps): boolean {
-    this._elementPropertiesAppender = new ElementPropertiesAppender(props.item, (item) => { this._items.push(item); });
+    this._elementPropertiesAppender = new ElementPropertiesAppender(props.item, (item) => this._items.push(item));
     this._appendersStack.push(this._elementPropertiesAppender);
     return true;
   }

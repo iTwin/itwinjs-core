@@ -13,9 +13,10 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../Viewport";
+import { GltfWrapMode } from "../gltf/GltfSchema";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, GltfWrapMode, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
+  RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
@@ -55,6 +56,7 @@ export abstract class RealityTileLoader {
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
+  public get maximumScreenSpaceError(): number | undefined { return undefined; }
 
   public processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[] { return selected; }
 
@@ -69,7 +71,7 @@ export abstract class RealityTileLoader {
 
   private _getFormat(streamBuffer: ByteStream) {
     const position = streamBuffer.curPos;
-    const format = streamBuffer.nextUint32;
+    const format = streamBuffer.readUint32();
     streamBuffer.curPos = position;
     return format;
 
@@ -94,8 +96,18 @@ export abstract class RealityTileLoader {
       isCanceled = () => !tile.isLoading;
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
-    let reader: GltfReader | undefined;
+    let reader: GltfReader | ImdlReader | undefined;
     switch (format) {
+      case TileFormat.IModel:
+        reader = ImdlReader.create({
+          stream: streamBuffer,
+          iModel,
+          modelId,
+          is3d,
+          system,
+          isCanceled,
+        });
+        break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
         let graphic = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
@@ -106,21 +118,35 @@ export abstract class RealityTileLoader {
         }
 
         return { graphic };
-
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
         break;
       case TileFormat.I3dm:
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
         break;
+      case TileFormat.Gltf:
+        const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
+        if (props) {
+          reader = new GltfGraphicsReader(props, {
+            iModel,
+            gltf: props.glTF,
+            contentRange: tile.contentRange,
+            transform: tile.transformToRoot,
+            hasChildren: !tile.isLeaf,
+          });
+        }
+
+        break;
       case TileFormat.Cmpt:
         const header = new CompositeTileHeader(streamBuffer);
-        if (!header.isValid) return {};
+        if (!header.isValid)
+          return {};
+
         const branch = new GraphicBranch(true);
         for (let i = 0; i < header.tileCount; i++) {
           const tilePosition = streamBuffer.curPos;
           streamBuffer.advance(8);    // Skip magic and version.
-          const tileBytes = streamBuffer.nextUint32;
+          const tileBytes = streamBuffer.readUint32();
           streamBuffer.curPos = tilePosition;
           const result = await this.loadGraphicsFromStream(tile, streamBuffer, system, isCanceled);
           if (result.graphic)
@@ -138,7 +164,8 @@ export abstract class RealityTileLoader {
     if (undefined !== reader) {
       // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
       // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
-      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+      if (reader instanceof GltfReader)
+        reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
       try {
         content = await reader.read();
       } catch (_err) {

@@ -6,9 +6,11 @@
  * @module RpcInterface
  */
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
+
+/* eslint-disable deprecation/deprecation */
 
 /** RPC interface configuration for an Electron-based application.
  * @internal
@@ -55,5 +57,18 @@ export class ElectronRpcManager extends RpcManager {
     RpcConfiguration.initializeInterfaces(instance);
 
     return instance;
+  }
+
+  /** Terminates ElectronRpcManager for the frontend of an application. */
+  public static terminateFrontend() {
+    return ElectronRpcManager.performTermination();
+  }
+
+  private static performTermination() {
+    const definitions = RpcRegistry.instance.definitionClasses;
+
+    for (const [, interfaceDef] of definitions) {
+      RpcManager.terminateInterface(interfaceDef);
+    }
   }
 }

@@ -19,8 +19,18 @@ export abstract class MarkupTool extends PrimitiveTool {
   public static toolKey = "MarkupTools:tools.Markup.";
   public override requireWriteableTarget(): boolean { return false; }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp === IModelApp.toolAdmin.markupView); }
-  public override async onInstall(): Promise<boolean> { if (undefined === MarkupApp.markup) return false; this.markup = MarkupApp.markup; return super.onInstall(); }
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onInstall(): Promise<boolean> {
+    if (undefined === MarkupApp.markup)
+      return false;
+
+    this.markup = MarkupApp.markup;
+    return super.onInstall();
+  }
+
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
   public override async onUnsuspend() { this.showPrompt(); }
   public async onRestartTool() { return this.exitTool(); }
 

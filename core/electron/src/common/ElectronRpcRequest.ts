@@ -6,7 +6,9 @@
 import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@itwin/core-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
-/** @beta */
+/* eslint-disable deprecation/deprecation */
+
+/** @internal */
 export class ElectronRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
@@ -24,7 +26,9 @@ export class ElectronRpcRequest extends RpcRequest {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
     }
 
-    return new Promise<number>((resolve) => { this._res = resolve; });
+    return new Promise<number>((resolve) => {
+      this._res = resolve;
+    });
   }
 
   /** Loads the request. */

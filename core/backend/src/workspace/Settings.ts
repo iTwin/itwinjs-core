@@ -280,7 +280,11 @@ export class BaseSettings implements Settings {
    */
   public inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[] {
     const all: SettingInspector<T>[] = [];
-    this.resolveSetting<T>(name, (value, dictionary, priority) => { all.push({ value, dictionary, priority }); return undefined; });
+    this.resolveSetting<T>(name, (value, dictionary, priority) => {
+      all.push({ value, dictionary, priority });
+      return undefined;
+    });
+
     return all;
   }
 

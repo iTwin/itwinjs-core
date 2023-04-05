@@ -212,6 +212,48 @@
         "IdentifyEnd": "Identify end to modify"
       }
     },
+    "ExtrudeCurve": {
+      "keyin": "editor extrude curve",
+      "flyover": "Extrude Curve",
+      "Label": {
+        "Length": "Length",
+        "Orthogonal": "Orthogonal",
+        "Capped": "Solid",
+        "KeepProfile": "Keep Profile"
+      },
+      "Prompts": {
+        "LengthPoint": "Define length"
+      }
+    },
+    "RevolveCurve": {
+      "keyin": "editor revolve curve",
+      "flyover": "Revolve Curve",
+      "Label": {
+        "Angle": "Sweep Angle",
+        "Capped": "Solid",
+        "KeepProfile": "Keep Profile"
+      },
+      "Prompts": {
+        "AxisPoint": "Define point on axis",
+        "AxisDirection": "Define axis direction"
+      }
+    },
+    "RegionBoolean": {
+      "keyin": "editor region boolean",
+      "flyover": "Perform boolean on selected regions",
+      "Label": {
+        "Mode": "Mode",
+        "KeepOriginal": "Keep Original"
+      },
+      "Mode": {
+        "Unite": "Unite",
+        "Subtract": "Subtract",
+        "Intersect": "Intersect"
+      },
+      "Error": {
+        "NonCoplanar": "Regions are non coplanar"
+      }
+    },
     "UniteSolids": {
       "keyin": "editor unite solids",
       "flyover": "Unite selected solids"

@@ -2,6 +2,384 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.6.0",
+      "tag": "@itwin/core-backend_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add CodeSpecs.updateProperties"
+          },
+          {
+            "comment": "add flag schemaLockHeld"
+          },
+          {
+            "comment": "Added getOriginPropertyName() method to column info."
+          },
+          {
+            "comment": "add allowPreceding as an optional boolean to CheckpointProps interface"
+          },
+          {
+            "comment": "Log a warning when we fail to download a v2 checkpoint, but download a v1 checkpoint successfully."
+          },
+          {
+            "comment": "Promote IModelHost.authorizationClient to public."
+          },
+          {
+            "comment": "Add support for material elements with normal maps"
+          },
+          {
+            "comment": "React to RPC deprecations."
+          },
+          {
+            "comment": "Fix documentation of ExternalSourceAspectProps.jsonProperties. It must be a string."
+          },
+          {
+            "comment": "Element.toJSON should not include undefined values for userLabel or federationGuid"
+          },
+          {
+            "comment": "allow passing a custom schema read context to IModelDb.importSchemas"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.6",
+      "tag": "@itwin/core-backend_v3.5.6",
+      "date": "Fri, 24 Feb 2023 16:02:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.5",
+      "tag": "@itwin/core-backend_v3.5.5",
+      "date": "Thu, 26 Jan 2023 22:53:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.4",
+      "tag": "@itwin/core-backend_v3.5.4",
+      "date": "Wed, 18 Jan 2023 15:27:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.3",
+      "tag": "@itwin/core-backend_v3.5.3",
+      "date": "Fri, 13 Jan 2023 17:23:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.2",
+      "tag": "@itwin/core-backend_v3.5.2",
+      "date": "Wed, 11 Jan 2023 16:46:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "security fixes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.1",
+      "tag": "@itwin/core-backend_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/core-backend_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add EntityReferences and associated utilities"
+          },
+          {
+            "comment": "Added node-dependent RPC function implementations (that previously contaminated common)."
+          },
+          {
+            "comment": "add exportGraphics test for fixed-block mesh"
+          },
+          {
+            "comment": "return empty change summary array on empty changeset range in ChangeSummaryManager"
+          },
+          {
+            "comment": "WorkspaceContainer.Props.syncOnConnect now defaults to true"
+          },
+          {
+            "comment": "Expose Progress API for changeset(s) download in higher levels (BriefcaseManager, IpcAppHandler, etc.)"
+          },
+          {
+            "comment": "add \"maybe\" binding methods to SqliteStatement"
+          },
+          {
+            "comment": "Add IModelHostOptions.maxTileCacheDbSize for limiting the amount of disk space consumed by local tile cache databases."
+          },
+          {
+            "comment": "deprecate ExternalSourceAspects.findBySource, add findAllBySource"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/core-backend_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/core-backend_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/core-backend_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.4",
+      "tag": "@itwin/core-backend_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix ClassRegistry.getRootMetaData mixin handling, handle null ExternalSourceAspect.scope"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/core-backend_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/core-backend_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add asynchronous functions to obtain the extents of geometric models."
+          },
+          {
+            "comment": "Return a pending response from calls to IModelReadRpcInterface.getCustomViewState3dData if they take too long."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.1",
+      "tag": "@itwin/core-backend_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add EntityReferences and associated utilities"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/core-backend_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed IModelSchemaLoader, replaced with function to return schema from iModel by and a generic SchemaLoader added to ecschema-metadata"
+          },
+          {
+            "comment": "Chunk traversal options for ChangedElementsDb"
+          },
+          {
+            "comment": "Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage"
+          },
+          {
+            "comment": "added \"onlyBaseProperties\" to ElementLoadOptions to limit properties to only those in ElementProps, not subclasses"
+          },
+          {
+            "comment": "BoxProps.origin name changed to baseOrigin to agree with json format"
+          },
+          {
+            "comment": "Replace node-report crash reporting with Node.js Diagnostic Reporting"
+          },
+          {
+            "comment": "Clarify RenderMaterialElement documentation"
+          },
+          {
+            "comment": "`IModelJsFs.readdirSync` will now check if dir exists before reading"
+          },
+          {
+            "comment": "add tokenFunc argument to getWorkspaceDb"
+          },
+          {
+            "comment": "Add some logging in CustomViewState3dCreator."
+          },
+          {
+            "comment": "add querySubCategories function"
+          },
+          {
+            "comment": "call container.checkForChanges before attempting to open a v2 checkpoint"
+          },
+          {
+            "comment": "remove typescript retries for v2 checkpoint downloads"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          },
+          {
+            "comment": "add PropertyStore interface"
+          },
+          {
+            "comment": "delete definition models"
+          },
+          {
+            "comment": "IModelDb.Elements.queryParent"
+          },
+          {
+            "comment": " deleteElementTree and deleteElementSubTrees"
+          },
+          {
+            "comment": "add doc for CloudCache.setLogMask"
+          },
+          {
+            "comment": "added @beta CloudSqlite"
+          },
+          {
+            "comment": "generate correct date format in local hub changesets"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/core-backend_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add some logging in CustomViewState3dCreator."
+          },
+          {
+            "comment": "time getmodelextents per modelid"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/core-backend_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:04 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "call container.checkForChanges before attempting to open a v2 checkpoint"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/core-backend_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Chunk traversal options for ChangedElementsDb"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.2",
+      "tag": "@itwin/core-backend_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "await new promise in CustomViewState3dCreator getModelExtents"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-backend_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-backend_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Update links to BIS documentation."
+          },
+          {
+            "comment": "vacuum is now an instance method"
+          },
+          {
+            "comment": "enable loading gcs data from workspace at https://geocoord-workspace.itwinjs.org/"
+          },
+          {
+            "comment": "Progress API for downloading changesets."
+          },
+          {
+            "comment": "IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance"
+          },
+          {
+            "comment": "added computeSchemaChecksum function to IModelHost"
+          },
+          {
+            "comment": "Transport RPC requests over IPC when available."
+          },
+          {
+            "comment": "make prefetch opt-in instead of opt-out"
+          },
+          {
+            "comment": "move HubMock to core-backend"
+          },
+          {
+            "comment": "retry v2checkpoint downloads when they fail with \"Failure when receiving data from the peer\""
+          },
+          {
+            "comment": "set cloud cache size to 50G"
+          },
+          {
+            "comment": "move LocalHub to @internal in core-backend"
+          },
+          {
+            "comment": "deprecate collectPredecessorIds and getPredecessorIds in favor of collectReferenceIds and getReferenceIds"
+          },
+          {
+            "comment": "added SQLiteDb.withOpenDb"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-backend_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@3.2.15"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.8",
       "tag": "@itwin/core-backend_v3.2.8",
       "date": "Tue, 09 Aug 2022 15:52:41 GMT",

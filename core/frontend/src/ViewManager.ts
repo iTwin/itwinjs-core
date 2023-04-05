@@ -11,7 +11,6 @@ import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
-import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { ScreenViewport, ViewportDecorator } from "./Viewport";
 import { System } from "./render/webgl/System";
@@ -70,12 +69,13 @@ export interface SelectedViewportChangedArgs {
   previous?: ScreenViewport;
 }
 
-/** An object which customizes the locate tooltip.
- * @internal
+/** An object that can contribute customizations to the tooltip displayed when mousing over an element or other entity in a [[Viewport]].
+ * @see [[ViewManager.addToolTipProvider]] to register a tooltip provider.
+ * @public
  */
 export interface ToolTipProvider {
-  /** Augment or replace tooltip for the specified HitDetail.
-   * To cooperate with other tooltip providers, replacing the input tooltip instead of appending information is discouraged.
+  /** Augment or replace the tooltip for the specified HitDetail.
+   * @note To cooperate with other tooltip providers, prefer to *append* information to the input tooltip instead of replacing it entirely.
    */
   augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
 }
@@ -145,6 +145,13 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
     this._selectedView = undefined;
+  }
+
+  /** Returns true if the specified viewport is currently being managed by this ViewManager.
+   * @see [[addViewport]] to enable management of a viewport and [[dropViewport]] to disable it.
+   */
+  public hasViewport(viewport: ScreenViewport) {
+    return this._viewports.includes(viewport);
   }
 
   /** Called after the selected view changes.
@@ -262,10 +269,11 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @note raises onViewOpen event with newVp.
    */
   public addViewport(newVp: ScreenViewport): BentleyStatus {
-    if (this._viewports.includes(newVp)) // make sure its not already added
+    if (this.hasViewport(newVp)) // make sure its not already added
       return BentleyStatus.ERROR;
 
-    newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
+    newVp.onViewManagerAdd();
+
     this._viewports.push(newVp);
     this.updateRenderToScreen();
     this.setSelectedView(newVp);// eslint-disable-line @typescript-eslint/no-floating-promises
@@ -301,7 +309,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     // make sure tools don't think the cursor is still in this viewport
     IModelApp.toolAdmin.forgetViewport(vp);
 
-    vp.setEventController(undefined);
+    vp.onViewManagerDrop();
+
     this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
@@ -439,23 +448,21 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return IModelApp.formatElementToolTip(msg);
   }
 
-  /** Add a new [[ToolTipProvider]] to customize the locate tooltip.
-   * @internal
+  /** Register a new [[ToolTipProvider]] to customize the locate tooltip.
    * @param provider The new tooltip provider to add.
-   * @throws Error if provider is already active.
+   * @throws Error if `provider` is already registered.
    * @returns a function that may be called to remove this provider (in lieu of calling [[dropToolTipProvider]].)
-   * @see [[dropToolTipProvider]]
    */
   public addToolTipProvider(provider: ToolTipProvider): () => void {
     if (this.toolTipProviders.includes(provider))
       throw new Error("tooltip provider already registered");
+
     this.toolTipProviders.push(provider);
-    return () => { this.dropToolTipProvider(provider); };
+    return () => this.dropToolTipProvider(provider);
   }
 
   /** Drop (remove) a [[ToolTipProvider]] so it is no longer active.
-   * @internal
-   * @param provider The tooltip to drop.
+   * @param provider The tooltip provider to drop.
    * @note Does nothing if provider is not currently active.
    */
   public dropToolTipProvider(provider: ToolTipProvider) {
@@ -476,7 +483,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     this.decorators.push(decorator);
     this.invalidateDecorationsAllViews();
-    return () => { this.dropDecorator(decorator); };
+    return () => this.dropDecorator(decorator);
   }
 
   /** Drop (remove) a [[Decorator]] so it is no longer active.

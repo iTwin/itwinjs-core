@@ -124,35 +124,35 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
   /** Query if the briefcase has any pending Txns waiting to be pushed. */
   public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return IpcApp.callIpcHost("hasPendingTxns", this._iModel.key);
+    return IpcApp.appFunctionIpc.hasPendingTxns(this._iModel.key);
   }
 
   /** Determine if any reversible (undoable) changes exist.
    * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
    */
   public async isUndoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return IpcApp.callIpcHost("isUndoPossible", this._iModel.key);
+    return IpcApp.appFunctionIpc.isUndoPossible(this._iModel.key);
   }
 
   /** Determine if any reinstatable (redoable) changes exist.
    * @see [[reinstateTxn]] to redo changes.
    */
   public async isRedoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return IpcApp.callIpcHost("isRedoPossible", this._iModel.key);
+    return IpcApp.appFunctionIpc.isRedoPossible(this._iModel.key);
   }
 
   /** Get the description of the operation that would be reversed by calling [[reverseTxns]]`(1)`.
    * This is useful for showing the operation that would be undone, for example in a menu.
    */
   public async getUndoString(): Promise<string> {
-    return IpcApp.callIpcHost("getUndoString", this._iModel.key);
+    return IpcApp.appFunctionIpc.getUndoString(this._iModel.key);
   }
 
   /** Get a description of the operation that would be reinstated by calling [[reinstateTxn]].
    * This is useful for showing the operation that would be redone, in a pull-down menu for example.
    */
   public async getRedoString(): Promise<string> {
-    return IpcApp.callIpcHost("getRedoString", this._iModel.key);
+    return IpcApp.appFunctionIpc.getRedoString(this._iModel.key);
   }
 
   /** Reverse (undo) the most recent operation.
@@ -173,7 +173,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    * @note If numOperations is too large only the number of reversible operations are reversed.
    */
   public async reverseTxns(numOperations: number): Promise<IModelStatus> {
-    return IpcApp.callIpcHost("reverseTxns", this._iModel.key, numOperations);
+    return IpcApp.appFunctionIpc.reverseTxns(this._iModel.key, numOperations);
   }
 
   /** Reverse (undo) all changes back to the beginning of the session.
@@ -182,7 +182,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    * @see [[isUndoPossible]] to determine if any reversible operations exist.
    */
   public async reverseAll(): Promise<IModelStatus> {
-    return IpcApp.callIpcHost("reverseAllTxn", this._iModel.key);
+    return IpcApp.appFunctionIpc.reverseAllTxn(this._iModel.key);
   }
 
   /** Reinstate (redo) the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
@@ -193,7 +193,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
    */
   public async reinstateTxn(): Promise<IModelStatus> {
-    return IpcApp.callIpcHost("reinstateTxn", this._iModel.key);
+    return IpcApp.appFunctionIpc.reinstateTxn(this._iModel.key);
   }
 
   /** Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed
@@ -203,7 +203,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    * Probably a good idea to alert the user it happened.
    */
   public async restartTxnSession(): Promise<void> {
-    await IpcApp.callIpcHost("restartTxnSession", this._iModel.key);
+    await IpcApp.appFunctionIpc.restartTxnSession(this._iModel.key);
   }
 
   /** @internal */

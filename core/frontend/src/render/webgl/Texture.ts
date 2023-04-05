@@ -20,8 +20,6 @@ import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
 import { TextureOwnership } from "../RenderTexture";
 
-type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
-
 /** @internal */
 export type Texture2DData = Uint8Array | Float32Array;
 
@@ -41,7 +39,7 @@ function computeBytesUsed(width: number, height: number, format: GL.Texture.Form
 }
 
 /** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
-function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData, element?: CanvasOrImage): void {
+function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData, source?: TexImageSource): void {
   handle.bytesUsed = undefined !== bytes ? bytes.byteLength : computeBytesUsed(params.width, params.height, params.format, params.dataType);
 
   const tex = handle.getHandle()!;
@@ -56,20 +54,18 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   // Figure out the internal format.  For all but WebGL2 float/half-float datatypes it is just same as format.
   // TODO: probably need to just support internal format types in Texture2DCreateParams.
   let internalFormat = params.format;
-  if (System.instance.capabilities.isWebGL2) {
-    const context2 = System.instance.context as WebGL2RenderingContext;
-    if (GL.Texture.Format.Rgba === params.format) {
-      if (GL.Texture.DataType.Float === params.dataType)
-        internalFormat = context2.RGBA32F;
-      else if (context2.HALF_FLOAT === params.dataType)
-        internalFormat = context2.RGBA16F;
-    } else if (GL.Texture.Format.DepthStencil === params.format)
-      internalFormat = context2.DEPTH24_STENCIL8;
-  }
+  const context2 = System.instance.context;
+  if (GL.Texture.Format.Rgba === params.format) {
+    if (GL.Texture.DataType.Float === params.dataType)
+      internalFormat = context2.RGBA32F;
+    else if (context2.HALF_FLOAT === params.dataType)
+      internalFormat = context2.RGBA16F;
+  } else if (GL.Texture.Format.DepthStencil === params.format)
+    internalFormat = context2.DEPTH24_STENCIL8;
 
   // send the texture data
-  if (undefined !== element) {
-    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, element);
+  if (undefined !== source) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, source);
   } else {
     const pixelData = undefined !== bytes ? bytes : null;
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.width, params.height, 0, params.format, params.dataType, pixelData);
@@ -93,10 +89,12 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 }
 
-function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData): void { loadTexture2DImageData(handle, params, bytes); }
+function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData): void {
+  loadTexture2DImageData(handle, params, bytes);
+}
 
 /** Associate cube texture data with a WebGLTexture from an image. */
-function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: CanvasOrImage[]): void {
+function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: TexImageSource[]): void {
   handle.bytesUsed = computeBytesUsed(params.dim * 6, params.dim, params.format, params.dataType);
 
   const tex = handle.getHandle()!;
@@ -217,11 +215,10 @@ class Texture2DCreateParams {
     let targetWidth = image.naturalWidth;
     let targetHeight = image.naturalHeight;
 
-    const caps = System.instance.capabilities;
     if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+    } else if (!System.instance.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
         // NPOT are supported but not mipmaps
         // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
@@ -234,11 +231,11 @@ class Texture2DCreateParams {
     }
 
     // Cap texture dimensions to system WebGL capabilities
-    const maxTexSize = System.instance.capabilities.maxTextureSize;
+    const maxTexSize = System.instance.maxTextureSize;
     targetWidth = Math.min(targetWidth, maxTexSize);
     targetHeight = Math.min(targetHeight, maxTexSize);
 
-    let element: CanvasOrImage = image;
+    let element: TexImageSource = image;
     if (targetWidth !== image.naturalWidth || targetHeight !== image.naturalHeight) {
       // Resize so dimensions are powers-of-two
       const canvas = document.createElement("canvas");
@@ -261,11 +258,10 @@ class Texture2DCreateParams {
     let targetWidth = image.width;
     let targetHeight = image.height;
 
-    const caps = System.instance.capabilities;
     if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+    } else if (!System.instance.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
         // NPOT are supported but not mipmaps
         // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
@@ -277,15 +273,20 @@ class Texture2DCreateParams {
       }
     }
 
-    // Always draw to canvas for ImageBitmap
-    const canvas = document.createElement("canvas");
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-    const context = canvas.getContext("2d")!;
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    // If we have to resize, use a canvas
+    let source: TexImageSource = image;
+    if (image.width !== targetWidth || image.height !== targetHeight) {
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext("2d")!;
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      source = canvas;
+    }
 
     return new Texture2DCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, canvas), props.useMipMaps, props.interpolate, props.anisotropicFilter);
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, source), props.useMipMaps, props.interpolate, props.anisotropicFilter);
   }
 
   private static getImageProperties(type: RenderTexture.Type): TextureImageProperties {
@@ -631,7 +632,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
     try {
       if (!req.imodel.isClosed) {
-        const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
+        const maxTextureSize = System.instance.maxTexSizeAllow;
         const texData = await req.imodel.queryTextureData({ name: req.name, maxTextureSize });
         if (undefined !== texData) {
           const cnvReq = { req, texData };
@@ -660,7 +661,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       const cnvReq = this._convertRequests.shift();
       if (undefined !== cnvReq) {
         const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.texData.format);
-        if (System.instance.capabilities.supportsCreateImageBitmap) {
+        if (System.instance.supportsCreateImageBitmap) {
           const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
           const image = await createImageBitmap(blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
           if (!cnvReq.req.imodel.isClosed) {
@@ -783,7 +784,11 @@ export class Texture2DDataUpdater {
     this.setByteAtIndex(index + 1, (value & 0xff00) >> 8);
   }
 
-  public getByteAtIndex(index: number): number { assert(index < this.data.length); return this.data[index]; }
+  public getByteAtIndex(index: number): number {
+    assert(index < this.data.length);
+    return this.data[index];
+  }
+
   public getOvrFlagsAtIndex(index: number): OvrFlags {
     const lo = this.getByteAtIndex(index);
     const hi = this.getByteAtIndex(index + 1);

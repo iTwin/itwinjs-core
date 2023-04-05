@@ -34,4 +34,8 @@ export class PolyfacePrimitive {
 }
 
 /** @internal */
-export class PolyfacePrimitiveList extends Array<PolyfacePrimitive> { constructor(...args: PolyfacePrimitive[]) { super(...args); } }
+export class PolyfacePrimitiveList extends Array<PolyfacePrimitive> {
+  constructor(...args: PolyfacePrimitive[]) {
+    super(...args);
+  }
+}

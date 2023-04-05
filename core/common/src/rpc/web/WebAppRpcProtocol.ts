@@ -7,8 +7,8 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { Readable, Writable } from "stream";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BackendReadable, BackendWritable } from "../../BackendTypes";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
@@ -17,10 +17,13 @@ import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI"
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** An HTTP server request object.
  * @public
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
-export interface HttpServerRequest extends Readable {
+export interface HttpServerRequest extends BackendReadable {
   aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
@@ -31,12 +34,13 @@ export interface HttpServerRequest extends Readable {
   rawHeaders: string[];
   trailers: { [key: string]: string | undefined };
   rawTrailers: string[];
+  setTimeout(msecs: number, callback: () => void): void;
   setTimeout(msecs: number, callback: () => void): this;
   url?: string;
   statusCode?: number;
   statusMessage?: string;
   socket: any;
-  destroy(error?: Error): void;
+  destroy(error?: Error): this;
   body: string | Buffer;
   path: string;
   method: string;
@@ -46,8 +50,9 @@ export interface HttpServerRequest extends Readable {
 
 /** An HTTP server response object.
  * @public
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
-export interface HttpServerResponse extends Writable {
+export interface HttpServerResponse extends BackendWritable {
   send(body?: any): HttpServerResponse;
   status(code: number): HttpServerResponse;
   set(field: string, value: string): void;
@@ -122,6 +127,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case 502: return RpcRequestStatus.BadGateway;
       case 503: return RpcRequestStatus.ServiceUnavailable;
       case 504: return RpcRequestStatus.GatewayTimeout;
+      case 408: return RpcRequestStatus.RequestTimeout;
+      case 429: return RpcRequestStatus.TooManyRequests;
       default: return RpcRequestStatus.Unknown;
     }
   }
@@ -137,6 +144,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case RpcRequestStatus.BadGateway: return 502;
       case RpcRequestStatus.ServiceUnavailable: return 503;
       case RpcRequestStatus.GatewayTimeout: return 504;
+      case RpcRequestStatus.RequestTimeout: return 408;
+      case RpcRequestStatus.TooManyRequests: return 429;
       default: return 501;
     }
   }

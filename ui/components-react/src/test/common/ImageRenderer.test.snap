@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`ImageRenderer render renders svg 1`] = `
-"<div><i class=\\"icon core-svg-icon\\"><div><svg-loader encoding=\\"UTF-8\\" version=\\"1.0\\" src=\\"<?xml\\">
-    
-  &gt;</svg-loader></div></i></div>"
-`;

@@ -37,7 +37,10 @@ export class ColorInfo {
 
   public get isUniform() { return undefined !== this._uniform; }
   public get isNonUniform() { return !this.isUniform; }
-  public get uniform(): FloatRgba { assert(this.isUniform); return this._uniform!; }
+  public get uniform(): FloatRgba {
+    assert(this.isUniform);
+    return this._uniform!;
+  }
 
   private static _nonUniformTranslucent = new ColorInfo(true);
   private static _nonUniformOpaque = new ColorInfo(false);

@@ -163,7 +163,7 @@ describe("DgnDbWorker", () => {
     imodel.close();
     openIModel();
 
-    await expect(Promise.all(workers.map((x) => x.promise))).rejectedWith("canceled");
+    await expect(Promise.all(workers.map(async (x) => x.promise))).rejectedWith("canceled");
 
     expect(cancel.every((x) => x.isCanceled)).to.be.true;
     expect(cancel.every((x) => x.isAborted || x.isSkipped)).to.be.true;

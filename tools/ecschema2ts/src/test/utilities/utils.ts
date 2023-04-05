@@ -50,9 +50,12 @@ export function getHeaderString(): string {
 
 export function getTestSchemaString(classString?: string, classPropsString?: string, expectedImportsString?: string): string {
   let returnString = "";
-  if (expectedImportsString) returnString += expectedImportsString;
-  if (classPropsString) returnString += classPropsString;
-  if (classString) returnString += classString;
+  if (expectedImportsString)
+    returnString += expectedImportsString;
+  if (classPropsString)
+    returnString += classPropsString;
+  if (classString)
+    returnString += classString;
 
   return returnString;
 }

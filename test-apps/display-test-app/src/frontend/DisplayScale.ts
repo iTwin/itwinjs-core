@@ -10,12 +10,8 @@ import { parseArgs } from "@itwin/frontend-devtools";
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }
 
-  public getModelDisplayTransform(modelId: string, baseTransform: Transform): Transform {
-    if (!this._models.has(modelId))
-      return baseTransform;
-
-    // Apply scale as last part of model to world transform.
-    return this._scaleTransform.multiplyTransformTransform(baseTransform);
+  public getModelDisplayTransform(modelId: string): Transform | undefined {
+    return this._models.has(modelId) ? this._scaleTransform.clone() : undefined;
   }
 
   public get transform(): Transform { return this._scaleTransform.clone(); }

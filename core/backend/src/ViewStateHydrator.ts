@@ -69,7 +69,7 @@ export class ViewStateHydrator {
   }
 
   private async handleSpatialViewId(response: HydrateViewStateResponseProps, spatialViewId: Id64String, viewStateLoadProps?: ViewStateLoadProps) {
-    response.spatialViewProps = this._imodel.views.getViewStateData(spatialViewId, viewStateLoadProps);
+    response.spatialViewProps = await this._imodel.views.getViewStateProps(spatialViewId, viewStateLoadProps);
   }
 
   private async handleAcsId(response: HydrateViewStateResponseProps, acsId: string) {
@@ -93,7 +93,7 @@ export class ViewStateHydrator {
     for (const attachment of attachmentProps) {
       const loadView = async () => {
         try {
-          const view = this._imodel.views.getViewStateData(attachment.view.id, viewStateLoadProps);
+          const view = await this._imodel.views.getViewStateProps(attachment.view.id, viewStateLoadProps);
           return view;
         } catch {
           return undefined;

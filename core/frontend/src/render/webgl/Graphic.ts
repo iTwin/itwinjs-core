@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -202,7 +202,7 @@ export class PerTargetData {
 /** @internal */
 export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
-  public readonly featureTable: PackedFeatureTable;
+  public readonly featureTable: RenderFeatureTable;
   public readonly range: ElementAlignedBox3d;
   private readonly _context: BatchContext = { batchId: 0 };
   /** Public strictly for tests. */
@@ -229,7 +229,7 @@ export class Batch extends Graphic {
     this._context.iModel = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
+  public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
@@ -321,7 +321,10 @@ export class Branch extends Graphic {
 
     if (opts.secondaryClassifiers) {
       this.secondaryClassifiers = new Array<PlanarClassifier>();
-      opts.secondaryClassifiers.forEach((classifier) => { if (classifier instanceof PlanarClassifier) this.secondaryClassifiers?.push(classifier); });
+      opts.secondaryClassifiers.forEach((classifier) => {
+        if (classifier instanceof PlanarClassifier)
+          this.secondaryClassifiers?.push(classifier);
+      });
     }
   }
 

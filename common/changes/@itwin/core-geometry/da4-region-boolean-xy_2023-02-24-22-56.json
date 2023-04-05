@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "add merge tolerance to regionBooleanXY",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

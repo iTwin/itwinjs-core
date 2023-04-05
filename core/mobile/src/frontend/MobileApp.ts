@@ -26,8 +26,6 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
     MobileApp.onMemoryWarning.raiseEvent();
   }
   public notifyOrientationChanged() { MobileApp.onOrientationChanged.raiseEvent(); }
-  public notifyEnterForeground() { MobileApp.onEnterBackground.raiseEvent(); }
-  public notifyEnterBackground() { MobileApp.onEnterBackground.raiseEvent(); }
   public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
   public notifyAuthAccessTokenChanged(accessToken: string | undefined, expirationDate: string | undefined) {
     MobileApp.onAuthAccessTokenChanged.raiseEvent(accessToken, expirationDate);
@@ -50,6 +48,8 @@ export class MobileApp {
   public static get isValid() { return this._isValid; }
   /** @beta */
   public static async startup(opts?: MobileAppOpts) {
+    attachDirectEventCallbacks();
+
     const iModelAppOpts: IModelAppOptions = {
       ...opts?.iModelApp,
     };
@@ -61,7 +61,7 @@ export class MobileApp {
         authorizationClient.setAccessToken(accessToken, expirationDate);
       });
 
-      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface];
+      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface]; // eslint-disable-line deprecation/deprecation
       MobileRpcManager.initializeClient(rpcInterfaces);
       this._isValid = true;
     }
@@ -71,4 +71,19 @@ export class MobileApp {
 
     MobileAppNotifyHandler.register(); // receives notifications from backend
   }
+}
+
+/*
+  The suspend/resume lifecycle events cannot be reliably sent from the backend due to timing issues that arise when
+  inter-operating with the actual suspend and resume behavior on the native side.
+  Instead, they are sent directly to the browser here from platform-specific code.
+*/
+function attachDirectEventCallbacks() {
+  (window as any)._imodeljs_rpc_lifecycle = (evt: "suspend" | "resume") => {
+    if (evt === "suspend") {
+      MobileApp.onEnterBackground.raiseEvent();
+    } else if (evt === "resume") {
+      MobileApp.onEnterForeground.raiseEvent();
+    }
+  };
 }

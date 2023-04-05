@@ -11,15 +11,20 @@ export function createFilePath(filePath: string) {
   const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
   let curFile = "";
   for (const file of files) {
-    if (file === "") break;
+    if (file === "")
+      break;
+
     curFile += `${file}\\`;
-    if (!IModelJsFs.existsSync(curFile)) IModelJsFs.mkdirSync(curFile);
+    if (!IModelJsFs.existsSync(curFile))
+      IModelJsFs.mkdirSync(curFile);
   }
 }
 
 export function createNewCsvFile(filePath: string, fileName: string, data: Map<string, number | string>): boolean {
   const file = path.join(filePath, fileName);
-  if (!IModelJsFs.existsSync(filePath)) createFilePath(filePath);
+  if (!IModelJsFs.existsSync(filePath))
+    createFilePath(filePath);
+
   if (!IModelJsFs.existsSync(file)) {
     try {
       let colNames = "";
@@ -48,7 +53,9 @@ function addColumn(origFile: string, newName: string, columnsIndex: number): str
         pos = line.indexOf(",", pos + 1);
         curIndex++;
       }
-      if (pos < 0) pos = line.length;
+      if (pos < 0)
+        pos = line.length;
+
       newFile += `${line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" || newName === "Other Props" ? "" : 0))
         + (line[pos] !== "," ? "," : "") + line.slice(pos)}\r\n`;
     }

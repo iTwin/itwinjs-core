@@ -19,10 +19,19 @@ import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
-/** @internal */
+/* eslint-disable deprecation/deprecation */
+
+/**
+ * Specifies the required static properties of an RpcInterface class.
+ * These properties are used to identify RPC requests and responses.
+ * @beta
+ */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 
-/** @internal */
+/**
+ * A class that implements the operations of an RPC interface.
+ * @beta
+ */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,

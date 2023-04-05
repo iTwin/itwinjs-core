@@ -26,6 +26,8 @@ export enum TypeOfChange {
   Indirect = 0b1000,
   /** Hidden properties of the element changed */
   Hidden = 0b10000,
+  /** The top-most parent of the element has changed */
+  Parent = 0b100000,
 }
 
 /** Changed elements found in a changeset or between a range of changesets.

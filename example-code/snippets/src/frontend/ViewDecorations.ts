@@ -43,7 +43,7 @@ export class ExamplePickableGraphicDecoration {
 
     // Get next available Id to represent our decoration for it's life span.
     if (undefined === this._decoId)
-      this._decoId = vp.iModel.transientIds.next;
+      this._decoId = vp.iModel.transientIds.getNext();
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._decoId);
     builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 2);
@@ -66,7 +66,9 @@ export class ExampleCanvasDecoration {
     const vp = context.viewport;
     const size = Math.floor(vp.pixelsPerInch * 0.25) + 0.5;
     const sizeOutline = size + 1;
-    const position = context.viewport.npcToView(NpcCenter); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const position = context.viewport.npcToView(NpcCenter);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       // Show black outline (with shadow) around white line for good visibility regardless of view background color.
       ctx.beginPath();
@@ -376,7 +378,7 @@ export async function displayGltfAsset(iModel: IModelConnection): Promise<boolea
     const buffer = await file.arrayBuffer();
 
     // Allocate a new transient Id to identify the graphic so it can be picked.
-    const id = iModel.transientIds.next;
+    const id = iModel.transientIds.getNext();
 
     // Convert the glTF into a RenderGraphic.
     let graphic = await readGltfGraphics({

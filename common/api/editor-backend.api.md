@@ -68,6 +68,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
     // (undocumented)
+    onStart(): Promise<string>;
+    // (undocumented)
     requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
@@ -83,17 +85,13 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     updateProjectExtents(extents: Range3dProps): Promise<void>;
 }
 
-// @alpha
+// @beta
 export class EditCommand implements EditCommandIpc {
     constructor(iModel: IModelDb, ..._args: any[]);
     static commandId: string;
     // (undocumented)
     get ctor(): EditCommandType;
     readonly iModel: IModelDb;
-    // (undocumented)
-    onCleanup(): void;
-    // (undocumented)
-    onFinish(): void;
     // (undocumented)
     onStart(): Promise<any>;
     // (undocumented)
@@ -102,24 +100,27 @@ export class EditCommand implements EditCommandIpc {
         version: string;
         [propName: string]: any;
     }>;
+    requestFinish(): Promise<"done" | string>;
     // (undocumented)
     static version: string;
 }
 
-// @alpha
+// @beta
 export class EditCommandAdmin {
     // (undocumented)
     static get activeCommand(): EditCommand | undefined;
     // (undocumented)
     static readonly commands: Map<string, typeof EditCommand>;
+    // @internal (undocumented)
+    static finishCommand(): Promise<void>;
     static register(commandType: EditCommandType): void;
     static registerModule(moduleObj: any): void;
-    // (undocumented)
-    static runCommand(cmd?: EditCommand): Promise<any> | undefined;
+    // @internal
+    static runCommand(cmd: EditCommand): Promise<any>;
     static unRegister(commandId: string): void;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type EditCommandType = typeof EditCommand;
 
 // @alpha (undocumented)
@@ -197,6 +198,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    onStart(): Promise<string>;
+    // (undocumented)
     sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
@@ -210,8 +213,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
-    }
-
+}
 
 // (No @packageDocumentation comment for this package)
 

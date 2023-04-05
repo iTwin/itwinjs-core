@@ -120,7 +120,8 @@ export class UnitGraph {
    * @param unit Current unit to be added to graph
    */
   public async addUnit(unit: Unit | Constant): Promise<void> {
-    if (this._graph.hasNode(unit.key.fullName)) return;
+    if (this._graph.hasNode(unit.key.fullName))
+      return;
 
     this._graph.setNode(unit.key.fullName, unit);
     if (this.isIdentity(unit))

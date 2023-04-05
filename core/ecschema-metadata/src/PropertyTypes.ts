@@ -53,14 +53,30 @@ export enum PropertyType {
 
 /** @beta */
 export namespace PropertyTypeUtils {
-  export function isArray(t: PropertyType) { return (t === (PropertyFlags.Array | t)); }
-  export function isPrimitive(t: PropertyType) { return (t === (PropertyFlags.Primitive | t)); }
-  export function isStruct(t: PropertyType) { return (t === (PropertyFlags.Struct | t)); }
-  export function isNavigation(t: PropertyType) { return (t === (PropertyFlags.Navigation | t)); }
-  export function isEnumeration(t: PropertyType) { return (t === (PropertyFlags.Enumeration | t)); }
-  export function asArray(t: PropertyType): PropertyType { return t | PropertyFlags.Array; }
-  export function getPrimitiveType(t: PropertyType): PrimitiveType { return (0xFF01 & t); }
-  export function fromPrimitiveType(t: PrimitiveType): PropertyType { return t | 0; }
+  export function isArray(t: PropertyType) {
+    return (t === (PropertyFlags.Array | t));
+  }
+  export function isPrimitive(t: PropertyType) {
+    return (t === (PropertyFlags.Primitive | t));
+  }
+  export function isStruct(t: PropertyType) {
+    return (t === (PropertyFlags.Struct | t));
+  }
+  export function isNavigation(t: PropertyType) {
+    return (t === (PropertyFlags.Navigation | t));
+  }
+  export function isEnumeration(t: PropertyType) {
+    return (t === (PropertyFlags.Enumeration | t));
+  }
+  export function asArray(t: PropertyType): PropertyType {
+    return t | PropertyFlags.Array;
+  }
+  export function getPrimitiveType(t: PropertyType): PrimitiveType {
+    return (0xFF01 & t);
+  }
+  export function fromPrimitiveType(t: PrimitiveType): PropertyType {
+    return t | 0;
+  }
 }
 
 /** @beta */

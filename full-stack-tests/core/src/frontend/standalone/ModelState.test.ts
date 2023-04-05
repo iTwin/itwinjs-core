@@ -22,9 +22,9 @@ describe("ModelState", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
-    if (imodel2) await imodel2.close();
-    if (imodel3) await imodel3.close();
+    await imodel?.close();
+    await imodel2?.close();
+    await imodel3?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -102,6 +102,7 @@ describe("ModelState", () => {
     assert.isNotTrue(modelProps[1].isTemplate);
 
     let propsCount = 0;
+    // eslint-disable-next-line deprecation/deprecation
     for await (const props of imodel.models.query({ from: "BisCore:DictionaryModel", wantPrivate: true, wantTemplate: true, limit: 1 })) {
       propsCount++;
       assert.equal(props.classFullName, "BisCore:DictionaryModel");

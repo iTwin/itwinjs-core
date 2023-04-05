@@ -6,9 +6,7 @@
  * @module Bspline
  */
 
-// import { Point2d } from "./Geometry2d";
 import { GeometryQuery } from "../curve/GeometryQuery";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { AxisOrder, Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";

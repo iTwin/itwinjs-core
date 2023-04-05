@@ -265,7 +265,9 @@ export class LRUCache<K, V> {
    */
   public delete(key: K): V | undefined {
     const entry = this._container.get(key);
-    if (!entry) return;
+    if (!entry)
+      return;
+
     this._container.delete(entry.key);
     if (entry.newer && entry.older) {
       // re-link the older entry with the newer entry
@@ -315,7 +317,7 @@ export class LRUCache<K, V> {
   /**  Call `fun` for each entry, starting with the oldest entry. */
   public forEach(fun: (value: V, key: K, m: LRUCache<K, V>) => void, thisObj?: any): void {
     if (typeof thisObj !== "object") {
-      thisObj = this;
+      thisObj = this; // eslint-disable-line @typescript-eslint/no-this-alias
     }
     let entry = this.oldest;
     while (entry) {

@@ -164,7 +164,7 @@ describe("WorkspaceFile", () => {
     fontsDb.close();
 
     const fontList = settings.getArray<string>("workspace/fontDbs")!;
-    const fonts = workspace.getWorkspaceDb(fontList[0]);
+    const fonts = await workspace.getWorkspaceDb(fontList[0]);
     expect(fonts).to.not.be.undefined;
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");

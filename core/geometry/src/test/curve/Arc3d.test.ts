@@ -3,10 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -19,11 +23,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { BuildingCodeOffsetOps } from "./BuildingCodeOffsetOps";
-
-/* eslint-disable no-console */
 
 function sampleSweeps(): AngleSweep[] {
   return [AngleSweep.create360(), AngleSweep.createStartEndDegrees(0, 40), AngleSweep.createStartEndDegrees(0, 2), AngleSweep.createStartEndDegrees(-1, 3), AngleSweep.createStartEndDegrees(88, 91),
@@ -150,13 +150,13 @@ describe("Arc3d", () => {
           factorRange1.extendX(factor);
           //        const scale = arc.getFractionToDistanceScale();
           if (!ck.testLE(arcLength, 1.1 * quickLength, "arc length .LE.  1.1 * quickLength")) {
-            console.log(prettyPrint(arc));
+            GeometryCoreTestIO.consoleLog(prettyPrint(arc));
           }
         }
       }
-      // console.log(prettyPrint(sweep) + prettyPrint(factorRange1));
+      // GeometryCoreTestIO.consoleLog(prettyPrint(sweep) + prettyPrint(factorRange1));
     }
-    // console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
+    // GeometryCoreTestIO.consoleLog("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
     ck.testLT(0.95, factorRange.low, "QuickLength FactorRange Low");
     ck.testLT(factorRange.high, 1.06, "QuickLength FactorRange Low");
 
@@ -173,7 +173,7 @@ describe("Arc3d", () => {
     for (const numGauss of [1, 2, 3, 4, 5]) {
       let maxFactor = 0;
       if (noisy)
-        console.log(`\n\n  ******************* numGauss ${numGauss}`);
+        GeometryCoreTestIO.consoleLog(`\n\n  ******************* numGauss ${numGauss}`);
       for (let e2 = 1.0; e2 < 1000.0; e2 *= 2.0) {
         const e = Math.sqrt(e2);
         const arc = Arc3d.create(Point3d.createZero(),
@@ -201,14 +201,14 @@ describe("Arc3d", () => {
         }
         const factor = lastNumInterval / e;
         if (noisy) {
-          console.log("---");
-          console.log(` eccentricity ${e} ${lengths.toString()}(n ${lastNumInterval})(n / (fe) ${factor}`);
-          console.log(` deltas                             ${deltas.toString()}`);
+          GeometryCoreTestIO.consoleLog("---");
+          GeometryCoreTestIO.consoleLog(` eccentricity ${e} ${lengths.toString()}(n ${lastNumInterval})(n / (fe) ${factor}`);
+          GeometryCoreTestIO.consoleLog(` deltas                             ${deltas.toString()}`);
         }
         maxFactor = Math.max(factor, maxFactor);
       }
       if (noisy)
-        console.log(`Eccentric ellipse integration  (numGauss ${numGauss})   (maxFactor  {maxFactor})`);
+        GeometryCoreTestIO.consoleLog(`Eccentric ellipse integration  (numGauss ${numGauss})   (maxFactor  {maxFactor})`);
       if (numGauss === 5)
         ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integration factor");
     }
@@ -327,7 +327,7 @@ describe("Arc3d", () => {
       x0 = 0;
       y0 += dx;
     }
-    console.log(`chord error range ${rangeE.toJSON()}`);
+    GeometryCoreTestIO.consoleLog(`chord error range ${rangeE.toJSON()}`);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "PreciseRange");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -509,4 +509,34 @@ describe("Arc3d", () => {
     ck.checkpoint("Arc3d.CreateCenterNormalRadius");
     expect(ck.getNumErrors()).equals(0);
   });
+  // compare arc properties as CurvePrimitive and in equivalent 2-arc CurveChainWithDistanceIndex
+  it("CurvatureTest", () => {
+    const ck = new Checker();
+    const radius = 100.0;
+    const curvature = 1.0 / radius;
+    const circle = Arc3d.createXY(Point3d.createZero(), 100.0);
+    // two arcs of unequal sweep that join to cover the full circle
+    const arc1 = Arc3d.createXY(Point3d.createZero(), 100.0, AngleSweep.createStartEndDegrees(0, 90));
+    const arc2 = Arc3d.createXY(Point3d.createZero(), 100.0, AngleSweep.createStartEndDegrees(90, 360));
+    const path = new Path();
+    path.children.push(arc1);
+    path.children.push(arc2);
+    const indexed = CurveChainWithDistanceIndex.createCapture(path);
+
+    for (const fraction of [0.0, 0.125]) {
+      const circleCurvature = circle.fractionToCurvature(fraction)!;
+      const circleDerivatives = circle.fractionToPointAnd2Derivatives(0.0)!;
+      ck.testCoordinate(circleCurvature, curvature, "curvature from full circle");
+      assert.isTrue(Geometry.isAlmostEqualNumber(circleCurvature, curvature));
+
+      const pathCurvature = indexed.fractionToCurvature(fraction)!;
+      ck.testCoordinate(pathCurvature, curvature, "curvature from arcs in path");
+      const pathDerivatives = indexed.fractionToPointAnd2Derivatives(0.0)!;
+      ck.testPoint3d(circleDerivatives.origin, pathDerivatives.origin, "point");
+      ck.testVector3d(circleDerivatives.vectorU, pathDerivatives.vectorU, "vectorU");
+      ck.testVector3d(circleDerivatives.vectorV, pathDerivatives.vectorV, "vectorV");
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

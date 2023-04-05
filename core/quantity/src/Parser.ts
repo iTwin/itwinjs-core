@@ -58,8 +58,10 @@ class ParseToken {
   public value: number | string;
 
   constructor(value: string | number) {
-    if (typeof value === "string") this.value = value.trim();
-    else this.value = value;
+    if (typeof value === "string")
+      this.value = value.trim();
+    else
+      this.value = value;
   }
 
   public get isString(): boolean { return typeof this.value === "string"; }
@@ -75,7 +77,8 @@ class ScientificToken {
 
   constructor(index: number, exponent?: string) {
     this.index = index;
-    if (exponent) this.exponent = exponent;
+    if (exponent)
+      this.exponent = exponent;
   }
 }
 
@@ -89,7 +92,8 @@ class FractionToken {
 
   constructor(index: number, fraction?: number) {
     this.index = index;
-    if (fraction) this.fraction = fraction;
+    if (fraction)
+      this.fraction = fraction;
   }
 }
 
@@ -149,7 +153,9 @@ export class Parser {
         if (processingNumerator && (charCode === QuantityConstants.CHAR_SLASH || charCode === QuantityConstants.CHAR_DIVISION_SLASH || charCode === QuantityConstants.CHAR_DIVISION_SLASH)) {
           processingNumerator = false;
         } else {
-          if (uomSeparatorToIgnore !== charCode) i = i - 1; // skip over uom separator after fraction
+          if (uomSeparatorToIgnore !== charCode)
+            i = i - 1; // skip over uom separator after fraction
+
           break;
         }
       }
@@ -221,7 +227,9 @@ export class Parser {
             if (fractSymbol.fraction !== 0.0) {
               wipToken = "";
               if (signToken.length > 0) {
-                if (signToken === "-") fraction = 0 - fraction;
+                if (signToken === "-")
+                  fraction = 0 - fraction;
+
                 signToken = "";
               }
 
@@ -238,7 +246,9 @@ export class Parser {
                 i = fractSymbol.index;
                 if (signToken.length > 0) {
                   wipToken = signToken + wipToken;
-                  if (signToken === "-") fraction = 0 - fraction;
+                  if (signToken === "-")
+                    fraction = 0 - fraction;
+
                   signToken = "";
                 }
 
@@ -272,7 +282,8 @@ export class Parser {
           }
 
           // ignore any codes in skipCodes
-          if (skipCodes.findIndex((ref) => ref === charCode) !== -1) continue;
+          if (skipCodes.findIndex((ref) => ref === charCode) !== -1)
+            continue;
 
           if (signToken.length > 0) {
             wipToken = signToken + wipToken;

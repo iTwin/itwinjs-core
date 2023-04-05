@@ -65,7 +65,9 @@ export class ColorDef {
     return this.fromTbgr(this.computeTbgr(val));
   }
 
-  /** @internal */
+  /** Compute the 0xTTBBGGRR value corresponding to the specified representation of a color.
+   * @see [[fromString]] for a description of valid string representations.
+   */
   public static computeTbgr(val?: string | ColorDefProps): ColorDefProps {
     switch (typeof val) {
       case "number":
@@ -175,10 +177,10 @@ export class ColorDef {
       const hasPercent = (str: string) => str[str.length - 1] === "%";
       const floatOrPercent = (str: string) => {
         const v = parseFloat(str);
-        return 255 * Geometry.clamp(hasPercent(str) ? v / 100. : v, 0, 1);
+        return 255 * Geometry.clamp(hasPercent(str) ? v / 100 : v, 0, 1);
       };
       const intOrPercent = (str: string) => {
-        const v = hasPercent(str) ? (parseFloat(str) / 100.) * 255 : parseInt(str, 10);
+        const v = hasPercent(str) ? (parseFloat(str) / 100) * 255 : parseInt(str, 10);
         return Geometry.clamp(v, 0, 255);
       };
 
@@ -440,11 +442,18 @@ export class ColorDef {
   /** Compute the 0xTTBBGGRR color corresponding to the specified hue, saturation, lightness values. */
   public static computeTbgrFromHSL(h: number, s: number, l: number, transparency = 0): ColorDefProps {
     const torgb = (p1: number, q1: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p1 + (q1 - p1) * 6 * t;
-      if (t < 1 / 2) return q1;
-      if (t < 2 / 3) return p1 + (q1 - p1) * 6 * (2 / 3 - t);
+      if (t < 0)
+        t += 1;
+      if (t > 1)
+        t -= 1;
+
+      if (t < 1 / 6)
+        return p1 + (q1 - p1) * 6 * t;
+      if (t < 1 / 2)
+        return q1;
+      if (t < 2 / 3)
+        return p1 + (q1 - p1) * 6 * (2 / 3 - t);
+
       return p1;
     };
 
@@ -490,10 +499,17 @@ export class ColorDef {
       const delta = max - min;
       saturation = lightness <= 0.5 ? delta / (max + min) : delta / (2 - max - min);
       switch (max) {
-        case col.r: hue = (col.g - col.b) / delta + (col.g < col.b ? 6 : 0); break;
-        case col.g: hue = (col.b - col.r) / delta + 2; break;
-        case col.b: hue = (col.r - col.g) / delta + 4; break;
+        case col.r:
+          hue = (col.g - col.b) / delta + (col.g < col.b ? 6 : 0);
+          break;
+        case col.g:
+          hue = (col.b - col.r) / delta + 2;
+          break;
+        case col.b:
+          hue = (col.r - col.g) / delta + 4;
+          break;
       }
+
       hue /= 6;
     }
 
@@ -573,12 +589,14 @@ export class ColorDef {
 
     let r = 0, b = 0, g = 0;
     switch (hueIntpart) {
+      /* eslint-disable max-statements-per-line */
       case 0: r = v; g = t; b = p; break; // reddish
       case 1: r = q, g = v; b = p; break; // yellowish
       case 2: r = p, g = v; b = t; break; // greenish
       case 3: r = p, g = q; b = v; break; // cyanish
       case 4: r = t, g = p; b = v; break; // bluish
       case 5: r = v, g = p; b = q; break; // magenta-ish
+      /* eslint-enable max-statements-per-line */
     }
 
     return ColorDef.from(r, g, b, transparency);

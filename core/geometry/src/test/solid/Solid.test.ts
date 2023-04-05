@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
@@ -13,7 +12,6 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { IndexedPolyface, PolyfaceQuery } from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -22,9 +20,11 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { RuledSweep } from "../../solid/RuledSweep";
@@ -34,14 +34,8 @@ import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
-
-/* eslint-disable no-console */
-let outputFolderPath = "./src/test/output";
-// Output folder typically not tracked by git... make directory if not there
-if (!fs.existsSync(outputFolderPath))
-  fs.mkdirSync(outputFolderPath);
-outputFolderPath = `${outputFolderPath}/`;
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 
 function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any) {
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
@@ -64,12 +58,10 @@ function exerciseUVToWorld(ck: Checker, s: SolidPrimitive, u: number, v: number,
     vector01.scaleInPlace(1.0 / deltaUV);
     ck.testPoint3d(point00, plane00.origin, "same point on variant evaluators");
     if (!ck.testLT(vector10.angleTo(plane00.vectorU).degrees, toleranceDegrees))
-      console.log(" U", vector10, plane00.vectorU);
+      GeometryCoreTestIO.consoleLog(" U", vector10, plane00.vectorU);
     if (!ck.testLT(vector01.angleTo(plane00.vectorV).degrees, toleranceDegrees))
-      console.log(" V", vector01, plane00.vectorV);
-
+      GeometryCoreTestIO.consoleLog(" V", vector01, plane00.vectorV);
   }
-
 }
 function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 2), Matrix3d.createUniformScale(2));
@@ -85,26 +77,32 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
         if (ck.testPointer(s2) && s1.tryTransformInPlace(scaleTransform)) {
           ck.testFalse(s2.isAlmostEqual(s), "scaled is different from original");
           ck.testTrue(s1.isAlmostEqual(s2), "clone transform commute");
-          const range2A = Range3d.create();
-          const range2B = Range3d.create();
-          s2.extendRange(range2A);
-          s.extendRange(range2B, scaleTransform);
-          range2B.expandInPlace(0.10 * range2B.diagonal().magnitude());    // HACK -- ranges are not precise.  Allow fuzz.
-          if (!ck.testTrue(range2B.containsRange(range2A), "range commutes with scale transform",
-            range2B.low.toJSON(),
-            range2A.low.toJSON(),
-            range2A.high.toJSON(),
-            range2B.high.toJSON())) {
-            console.log("s", prettyPrint(IModelJson.Writer.toIModelJson(s)));
-            console.log("s.range", prettyPrint(s.range()));
-            console.log("s1", prettyPrint(IModelJson.Writer.toIModelJson(s1)));
-            console.log("s2", prettyPrint(IModelJson.Writer.toIModelJson(s2)));
-            const range2C = Range3d.create();
-            const range2D = Range3d.create();
-            s2.extendRange(range2C);
-            s.extendRange(range2D, scaleTransform);
+          const range = Range3d.create();
+          s.extendRange(range);
+          const rangeScaled = Range3d.create();
+          s.extendRange(rangeScaled, scaleTransform);
+          const rangeScaledExpanded = rangeScaled.clone();
+          rangeScaledExpanded.expandInPlace(0.10 * rangeScaledExpanded.diagonal().magnitude());    // HACK -- ranges are not precise.  Allow fuzz.
+          const range2 = Range3d.create();
+          s2.extendRange(range2);
+          if (!ck.testTrue(rangeScaledExpanded.containsRange(range2), "scaled range of solid commutes with range of scaled solid",
+            rangeScaledExpanded.low.toJSON(),
+            range2.low.toJSON(),
+            range2.high.toJSON(),
+            rangeScaledExpanded.high.toJSON())) {
+            const allGeometry: GeometryQuery[] = [];
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+              [s, Box.createRange(range, true)!,
+                Box.createRange(rangeScaled, true)!,
+                Box.createRange(rangeScaledExpanded, true)!,
+                s2, Box.createRange(range2, true)!]);
+            GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "ExerciseSolids");
+            // compute ranges again to debug failure
+            const myRangeScaled = Range3d.create();
+            s.extendRange(myRangeScaled, scaleTransform);
+            const myRange2 = Range3d.create();
+            s2.extendRange(myRange2);
           }
-
           exerciseUVToWorld(ck, s, 0.01, 0.02, 0.0001);
         }
       }
@@ -220,6 +218,7 @@ describe("Solids", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("TransformedSpheres", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -238,6 +237,47 @@ describe("Solids", () => {
       x0 += 5.0 * radius;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TransformedSpheres");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("RoundTrippedEllipsoids", () => {
+    const ck = new Checker();
+    const origin = Point3d.createZero();
+    const radii = Point3d.create(1, 3, 4);
+    const ellipsoid = Sphere.createEllipsoid(Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)), AngleSweep.create(), false);
+    testGeometryQueryRoundTrip(ck, ellipsoid);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  // add uv and average normals to convex mesh centered at origin
+  it("CartesianToSpherical", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testPointer(mesh, "created mesh")) {
+      const vertex = Point3d.createZero();
+      let radius = 0.0;
+      for (let i = 0; i < mesh.data.pointCount; ++i) {
+        const mag = mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex).magnitude();
+        if (radius < mag)
+          radius = mag;
+      }
+      mesh.data.param?.clear();
+      for (let i = 0; i < mesh.data.pointCount; ++i) {
+        mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex);
+        if (vertex.isZero) continue;
+        vertex.scaleInPlace(radius / vertex.magnitude()); // push vertex out radially onto sphere
+        let theta = Math.atan2(vertex.y, vertex.x);
+        if (theta < 0.0)
+          theta += 2 * Math.PI; // theta in [0,2pi]
+        const phi = Math.asin(vertex.z / radius); // phi in [-pi/2,pi/2]
+        mesh.addParamUV(theta, phi);
+      }
+      mesh.data.paramIndex = mesh.data.pointIndex.slice(); // param indices are same as vertex indices
+      PolyfaceQuery.buildAverageNormals(mesh, Angle.createDegrees(35));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "CartesianToSpherical");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -266,11 +306,11 @@ describe("Solids", () => {
       };
       ck.testTrue(matrix.inverse() !== undefined, "Expect sample box to have good coordinate frame.");
       const rangeA = transformAndFacet(allGeometry, b, undefined, undefined, x0, y0, announcePolyface);
-      const rangeB = transformAndFacet(allGeometry, b, undefined, options, x0, y0 + 5.0 * rangeA.yLength (), announcePolyface);
+      const rangeB = transformAndFacet(allGeometry, b, undefined, options, x0, y0 + 5.0 * rangeA.yLength(), announcePolyface);
       const rangeC = transformAndFacet(allGeometry, b, undefined, optionsC, x0, y0 + 15.0 * rangeA.yLength(), announcePolyface);
       // verify same surface area for all . . . .
       const area0 = PolyfaceQuery.sumFacetAreas(allPolyfaces[0]);
-      for (let i = 1; i < allPolyfaces.length; i++){
+      for (let i = 1; i < allPolyfaces.length; i++) {
         ck.testCoordinate(area0, PolyfaceQuery.sumFacetAreas(allPolyfaces[i]));
       }
       ck.testRange3d(rangeA, rangeB);
@@ -459,7 +499,7 @@ function transformAndFacet(allGeometry: GeometryQuery[],
   transform: Transform | undefined,
   options: StrokeOptions | undefined,
   x0: number, y0: number,
-announcePolyface?: AnnouncePolyface): Range3d {
+  announcePolyface?: AnnouncePolyface): Range3d {
   const g1 = transform ? g.cloneTransformed(transform) : g;
   if (g1) {
     const builder = PolyfaceBuilder.create(options);

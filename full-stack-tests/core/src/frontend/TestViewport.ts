@@ -254,7 +254,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
       return;
     }
 
-    this.onRender.addOnce((_) => { this._frameRendered = true; });
+    this.onRender.addOnce((_) => this._frameRendered = true);
     await new Promise<void>((resolve: any) => requestAnimationFrame(resolve));
     return this.waitForRenderFrame();
   }

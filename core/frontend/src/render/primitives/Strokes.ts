@@ -16,7 +16,11 @@ export class StrokesPrimitivePointList {
 }
 
 /** @internal */
-export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList> { constructor(...args: StrokesPrimitivePointList[]) { super(...args); } }
+export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList> {
+  constructor(...args: StrokesPrimitivePointList[]) {
+    super(...args);
+  }
+}
 
 /** @internal */
 export class StrokesPrimitive {
@@ -44,4 +48,8 @@ export class StrokesPrimitive {
 }
 
 /** @internal */
-export class StrokesPrimitiveList extends Array<StrokesPrimitive> { constructor(...args: StrokesPrimitive[]) { super(...args); } }
+export class StrokesPrimitiveList extends Array<StrokesPrimitive> {
+  constructor(...args: StrokesPrimitive[]) {
+    super(...args);
+  }
+}

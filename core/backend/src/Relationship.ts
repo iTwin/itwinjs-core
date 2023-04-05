@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -89,6 +89,13 @@ export class ElementRefersToElements extends Relationship {
   public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
     const relationship: T = this.create(iModel, sourceId, targetId);
     return iModel.relationships.insertInstance(relationship.toJSON());
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet,): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.sourceId);
+    referenceIds.addElement(this.targetId);
   }
 }
 
@@ -392,7 +399,7 @@ export class ElementDrivesElement extends Relationship {
     this.priority = props.priority;
   }
 
-  public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
+  public static create<T extends ElementDrivesElement>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
     const props: ElementDrivesElementProps = { sourceId, targetId, priority, status: 0, classFullName: this.classFullName };
     return iModel.relationships.createInstance(props) as T;
   }
@@ -402,6 +409,30 @@ export class ElementDrivesElement extends Relationship {
     props.status = this.status;
     props.priority = this.priority;
     return props;
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet,): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.sourceId);
+    referenceIds.addElement(this.targetId);
+  }
+}
+
+/** The third (and last) possible link-table relationship base class in an iModel.
+ * Has no external use, but is included for completeness of the [Entity.collectReferenceConcreteIds]($backend)
+ * implementations for link-table relationships. Generating the types of the source and target automatically would require
+ * coupling this package with ecschema-metadata which we do not want to do.
+ * @internal
+ */
+export class ModelSelectorRefersToModels extends Relationship {
+  /** @internal */
+  public static override get className(): string { return "ModelSelectorRefersToModels"; }
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.sourceId);
+    referenceIds.addModel(this.targetId);
   }
 }
 

@@ -1216,7 +1216,7 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     isPrimitive(): this is AnyPrimitiveProperty;
     // @internal (undocumented)
-    static isProperty(object: any): object is Property;
+    static isProperty(object: any): object is AnyProperty;
     // (undocumented)
     get isReadOnly(): boolean;
     // (undocumented)
@@ -1555,7 +1555,7 @@ export class Schema implements CustomAttributeContainerProps {
     protected _alias?: string;
     get context(): SchemaContext;
     // @alpha (undocumented)
-    protected createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T;
+    protected createClass<T extends AnyClass>(type: (new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T;
     protected createConstant(name: string): Promise<Constant>;
     // (undocumented)
     protected createConstantSync(name: string): Constant;
@@ -1575,7 +1575,7 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected createInvertedUnitSync(name: string): InvertedUnit;
     // @alpha (undocumented)
-    protected createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T;
+    protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T;
     protected createKindOfQuantity(name: string): Promise<KindOfQuantity>;
     // (undocumented)
     protected createKindOfQuantitySync(name: string): KindOfQuantity;
@@ -1829,6 +1829,13 @@ export function schemaItemTypeToString(value: SchemaItemType): string;
 // @internal (undocumented)
 export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
+// @alpha
+export class SchemaJsonLocater implements ISchemaLocater {
+    constructor(_getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
+}
+
 // @beta
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
@@ -1862,6 +1869,13 @@ export interface SchemaKeyProps {
     readonly name: string;
     readonly read: number;
     readonly write: number;
+}
+
+// @alpha
+export class SchemaLoader {
+    constructor(getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaName: string): T;
+    tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
 
 // @beta (undocumented)
@@ -1916,6 +1930,9 @@ export interface SchemaProps {
     // (undocumented)
     readonly version: string;
 }
+
+// @alpha
+export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 // @internal
 export class SchemaReadHelper<T = unknown> {

@@ -126,7 +126,10 @@ export abstract class IdPicker extends ToolBarDropDown {
   protected _close(): void { this._element.style.display = "none"; }
   public override get onViewChanged(): Promise<void> { return this.populate(); }
 
-  protected showOrHide(element: HTMLElement, show: boolean) { if (element) element.style.display = show ? "block" : "none"; }
+  protected showOrHide(element: HTMLElement, show: boolean) {
+    if (element)
+      element.style.display = show ? "block" : "none";
+  }
 
   protected addCheckbox(name: string, id: string, isChecked: boolean): CheckBox {
     this._availableIds.add(id);
@@ -201,6 +204,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     const elemIds = `(${Array.from(selectedElems).join(",")})`;
     const ecsql = `SELECT DISTINCT ${elementType}.Id FROM bis.GeometricElement${is2d ? "2d" : "3d"} WHERE ECInstanceId IN ${elemIds}`;
     const rows = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of this._vp.view.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
@@ -254,6 +258,7 @@ export class CategoryPicker extends IdPicker {
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows: any[] = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of view.iModel.query(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
@@ -406,7 +411,11 @@ export class ModelPicker extends IdPicker {
 
     const query = { from: GeometricModel3dState.classFullName, wantPrivate: true };
     const props = await view.iModel.models.queryProps(query);
-    props.forEach((prop) => { if (prop.isPrivate) prop.name = `~${prop.name}`; });
+    props.forEach((prop) => {
+      if (prop.isPrivate)
+        prop.name = `~${prop.name}`;
+    });
+
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
     const selector = view.modelSelector;

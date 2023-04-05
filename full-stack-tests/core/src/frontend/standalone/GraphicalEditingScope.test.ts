@@ -11,16 +11,22 @@ import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
-import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
 const dummyRange = new Range3d();
-function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) }; }
-function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Update, range: (range ?? dummyRange) }; }
-function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
+function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange {
+  return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) };
+}
+function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange {
+  return { id, type: DbOpcode.Update, range: (range ?? dummyRange) };
+}
+function makeDelete(id: Id64String): ElementGeometryChange {
+  return { id, type: DbOpcode.Delete };
+}
 
 describe("GraphicalEditingScope", () => {
   if (!ProcessDetector.isMobileAppFrontend) {
@@ -139,9 +145,9 @@ describe("GraphicalEditingScope", () => {
 
     it("accumulates geometry changes", async () => {
       imodel = await openWritable();
-      const modelId = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
 
       // Enter an editing scope.
@@ -241,9 +247,9 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       // Initial geometric model contains one line element.
-      const modelId = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
       await imodel.saveChanges();
 

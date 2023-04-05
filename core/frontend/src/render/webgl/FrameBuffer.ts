@@ -57,6 +57,16 @@ export class FrameBuffer implements WebGLDisposable {
     return this._colorTextures[ndx];
   }
 
+  public getColorTargets(useMSBuffers: boolean, ndx: number): { tex: TextureHandle, msBuf: RenderBufferMultiSample | undefined } {
+    let msBuf;
+    if (useMSBuffers) {
+      assert (ndx < this._colorMsBuffers.length);
+      msBuf =  this._colorMsBuffers[ndx];
+    }
+    assert(ndx < this._colorTextures.length);
+    return { tex: this._colorTextures[ndx], msBuf };
+  }
+
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer,
     colorMsBuffers?: RenderBufferMultiSample[], msFilters?: GL.MultiSampling.Filter[], depthBufferMs?: DepthBuffer) {
     this._fbo = fbo;
@@ -172,7 +182,10 @@ export class FrameBuffer implements WebGLDisposable {
     this._bindState = FrameBufferBindState.Unbound;
   }
 
-  public suspend() { assert(this.isBound); this._bindState = FrameBufferBindState.Suspended; }
+  public suspend() {
+    assert(this.isBound);
+    this._bindState = FrameBufferBindState.Suspended;
+  }
 
   public markTargetsDirty(): void {
     for (const msBuff of this._colorMsBuffers) {
@@ -189,7 +202,7 @@ export class FrameBuffer implements WebGLDisposable {
     if (!this._fboMs)
       return;
     System.instance.frameBufferStack.suspend();
-    const gl2 = System.instance.context as WebGL2RenderingContext;
+    const gl2 = System.instance.context;
     const attachments = [];
     const max = (undefined === ndx ? this._colorMsBuffers.length : ndx + 1);
     for (let i = 0; i < max; ++i) {
@@ -233,7 +246,7 @@ export class FrameBuffer implements WebGLDisposable {
    */
   public invalidate(invDepth: boolean, invStencil: boolean, withMultiSampling: boolean, indices?: number[]): void {
     const gl = System.instance.context;
-    const attachments = invDepth ? (invStencil ? [gl.DEPTH_STENCIL_ATTACHMENT] : [System.instance.context.DEPTH_ATTACHMENT]) : (invDepth ? [gl.STENCIL_ATTACHMENT] : []);
+    const attachments: number[] = invDepth ? (invStencil ? [gl.DEPTH_STENCIL_ATTACHMENT] : [System.instance.context.DEPTH_ATTACHMENT]) : (invDepth ? [gl.STENCIL_ATTACHMENT] : []);
     if (undefined !== indices) {
       if (indices.length > 0) {
         for (const i of indices)

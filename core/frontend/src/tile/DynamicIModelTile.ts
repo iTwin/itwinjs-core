@@ -377,7 +377,7 @@ class GraphicsTile extends Tile {
     const stream = ByteStream.fromUint8Array(data);
 
     const position = stream.curPos;
-    const format = stream.nextUint32;
+    const format = stream.readUint32();
     stream.curPos = position;
 
     // ###TODO: IModelGraphics format wraps IModel format.

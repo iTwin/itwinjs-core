@@ -12,7 +12,6 @@ import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primi
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { IsThematic } from "../TechniqueFlags";
 import { octDecodeNormal } from "./Surface";
 import { unquantizePosition } from "./Vertex";
 
@@ -183,7 +182,7 @@ function computeAnimParams(params: Float32Array, channel: AuxChannel, fraction: 
 }
 
 /** @internal */
-export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isThematic: IsThematic): void {
+export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): void {
   // Lookup table
   vert.addGlobal("g_anim_step", VariableType.Vec2);
   vert.addGlobal("g_anim_center", VariableType.Vec2);
@@ -272,35 +271,33 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
       });
     });
 
-    if (isThematic === IsThematic.No) {
-      vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
-        prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
-          const scalars = getScalarChannel(params);
-          const animParams = getAnimParams(3, -1.0);
-          if (scalars)
-            computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
+    vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
+        const scalars = getScalarChannel(params);
+        const animParams = getAnimParams(3, -1.0);
+        if (scalars)
+          computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
 
-          uniform.setUniform3fv(animParams);
-        });
+        uniform.setUniform3fv(animParams);
       });
+    });
 
-      vert.addUniform("u_animScalarQParams", VariableType.Vec2, (prog) => {
-        prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
-          const scalars = getScalarChannel(params);
-          const animParams = getAnimParams(2, 1.0);
-          if (scalars) {
-            const range = scalars.scalar.range;
-            let rangeScale = range.high - range.low;
-            if (rangeScale === 0)
-              rangeScale = 1;
+    vert.addUniform("u_animScalarQParams", VariableType.Vec2, (prog) => {
+      prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
+        const scalars = getScalarChannel(params);
+        const animParams = getAnimParams(2, 1.0);
+        if (scalars) {
+          const range = scalars.scalar.range;
+          let rangeScale = range.high - range.low;
+          if (rangeScale === 0)
+            rangeScale = 1;
 
-            animParams[0] = ThematicGradientSettings.margin + (scalars.channel.qOrigin - range.low) / rangeScale;
-            animParams[1] = ThematicGradientSettings.contentRange * scalars.channel.qScale / rangeScale;
-          }
+          animParams[0] = ThematicGradientSettings.margin + (scalars.channel.qOrigin - range.low) / rangeScale;
+          animParams[1] = ThematicGradientSettings.contentRange * scalars.channel.qScale / rangeScale;
+        }
 
-          uniform.setUniform2fv(animParams);
-        });
+        uniform.setUniform2fv(animParams);
       });
-    }
+    });
   }
 }

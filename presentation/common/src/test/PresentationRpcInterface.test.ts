@@ -15,10 +15,11 @@ import {
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
   ComputeSelectionRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, PresentationRpcResponseData, SingleElementPropertiesRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyLevelDescriptorRpcRequestOptions, PresentationRpcResponseData,
+  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
-import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
+import { createRandomECInstanceKey, createRandomECInstancesNodeKey } from "./_helpers/random";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {
@@ -50,7 +51,9 @@ describe("PresentationRpcInterface", () => {
     RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface);
   });
 
-  function toArguments(..._arguments: any[]) { return arguments; }
+  function toArguments(..._arguments: any[]) {
+    return arguments;
+  }
 
   describe("calls forwarding", () => {
 
@@ -83,9 +86,18 @@ describe("PresentationRpcInterface", () => {
     it("forwards getPagedNodes call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
-        parentKey: createRandomECInstancesNodeKeyJSON(),
+        parentKey: createRandomECInstancesNodeKey(),
       };
       await rpcInterface.getPagedNodes(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+    });
+
+    it("forwards getNodesDescriptor call", async () => {
+      const options: HierarchyLevelDescriptorRpcRequestOptions = {
+        rulesetOrId: "test-ruleset",
+        parentKey: createRandomECInstancesNodeKey(),
+      };
+      await rpcInterface.getNodesDescriptor(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
@@ -131,10 +143,7 @@ describe("PresentationRpcInterface", () => {
       });
 
       it("parses string response into DescriptorJSON", async () => {
-        const descriptorJson = createTestContentDescriptor({ inputKeysHash: "", fields: [] }).toJSON();
-        // Undefined properties won't be serialized to JSON string and will be missing once we deserialize the string
-        // back to object representation. Delete contentOptions property so that we can use deep equality comparison.
-        delete descriptorJson.contentOptions;
+        const descriptorJson = createTestContentDescriptor({ fields: [] }).toJSON();
         const presentationResponse: PresentationRpcResponseData<string> = {
           statusCode: PresentationStatus.Success,
           result: JSON.stringify(descriptorJson),
@@ -236,6 +245,7 @@ describe("PresentationRpcInterface", () => {
       };
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
+      // eslint-disable-next-line deprecation/deprecation
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
     });

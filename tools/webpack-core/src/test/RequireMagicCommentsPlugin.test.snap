@@ -7,17 +7,17 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 578:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/node_modules/bar/index.js\\":
 /***/ (() => {
 
 console.log(\\"Module bar\\");
 
 /***/ }),
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__(/*test*/578);
+__webpack_require__(/*test*/\\"./lib/test/assets/require-magic-comments-plugin-test/node_modules/bar/index.js\\");
 
 /***/ })
 
@@ -28,7 +28,7 @@ __webpack_require__(/*test*/578);
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -40,21 +40,21 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 861:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/bar.txt?BeWebpack-COPYFILE}\\":
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-module.exports = (__webpack_require__(17).resolve)(__dirname, __webpack_require__.p + \\"static/bar.d9b9bf.txt\\");
+module.exports = (__webpack_require__(\\"path\\").resolve)(__dirname, __webpack_require__.p + \\"static/bar.d9b9bf.txt\\");
 
 /***/ }),
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__(/*webpack: copyfile*/861);
+__webpack_require__(/*webpack: copyfile*/\\"./lib/test/assets/require-magic-comments-plugin-test/bar.txt?BeWebpack-COPYFILE}\\");
 
 /***/ }),
 
-/***/ 17:
+/***/ \\"path\\":
 /***/ ((module) => {
 
 \\"use strict\\";
@@ -69,7 +69,7 @@ module.exports = require(\\"path\\");
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -81,21 +81,21 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 861:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/bar.txt?BeWebpack-COPYFILE}\\":
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-module.exports = (__webpack_require__(17).resolve)(__dirname, __webpack_require__.p + \\"static/bar.d9b9bf.txt\\");
+module.exports = (__webpack_require__(\\"path\\").resolve)(__dirname, __webpack_require__.p + \\"static/bar.d9b9bf.txt\\");
 
 /***/ }),
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__(/*webpack: copyfile*/861);
+__webpack_require__(/*webpack: copyfile*/\\"./lib/test/assets/require-magic-comments-plugin-test/bar.txt?BeWebpack-COPYFILE}\\");
 
 /***/ }),
 
-/***/ 17:
+/***/ \\"path\\":
 /***/ ((module) => {
 
 \\"use strict\\";
@@ -110,7 +110,7 @@ module.exports = require(\\"path\\");
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -122,21 +122,21 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 861:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/bar.txt?BeWebpack-COPYFILE}\\":
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-module.exports = (__webpack_require__(17).resolve)(__dirname, __webpack_require__.p + \\"static/bar.d9b9bf.txt\\");
+module.exports = (__webpack_require__(\\"path\\").resolve)(__dirname, __webpack_require__.p + \\"static/bar.d9b9bf.txt\\");
 
 /***/ }),
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ (() => {
 
-/*require.resolve*/(/*webpack: copyfile*/861);
+/*require.resolve*/(/*webpack: copyfile*/\\"./lib/test/assets/require-magic-comments-plugin-test/bar.txt?BeWebpack-COPYFILE}\\");
 
 /***/ }),
 
-/***/ 17:
+/***/ \\"path\\":
 /***/ ((module) => {
 
 \\"use strict\\";
@@ -151,7 +151,7 @@ module.exports = require(\\"path\\");
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -163,14 +163,14 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__(/*webpack: external*/222);
+__webpack_require__(/*webpack: external*/\\"BeWebpack-EXTERNAL:foo\\");
 
 /***/ }),
 
-/***/ 222:
+/***/ \\"BeWebpack-EXTERNAL:foo\\":
 /***/ ((module) => {
 
 \\"use strict\\";
@@ -185,7 +185,7 @@ module.exports = require(\\"foo\\");
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -197,17 +197,17 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 578:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/node_modules/bar/index.js\\":
 /***/ (() => {
 
 console.log(\\"Module bar\\");
 
 /***/ }),
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__(/*test*/578);
+__webpack_require__(/*test*/\\"./lib/test/assets/require-magic-comments-plugin-test/node_modules/bar/index.js\\");
 
 /***/ })
 
@@ -218,7 +218,7 @@ __webpack_require__(/*test*/578);
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -230,17 +230,17 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 578:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/node_modules/bar/index.js\\":
 /***/ (() => {
 
 console.log(\\"Module bar\\");
 
 /***/ }),
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ (() => {
 
-/*require.resolve*/(/*test*/578);
+/*require.resolve*/(/*test*/\\"./lib/test/assets/require-magic-comments-plugin-test/node_modules/bar/index.js\\");
 
 /***/ })
 
@@ -251,7 +251,7 @@ console.log(\\"Module bar\\");
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -263,14 +263,14 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__(/*webpack: external*/222);
+__webpack_require__(/*webpack: external*/\\"BeWebpack-EXTERNAL:foo\\");
 
 /***/ }),
 
-/***/ 222:
+/***/ \\"BeWebpack-EXTERNAL:foo\\":
 /***/ ((module) => {
 
 \\"use strict\\";
@@ -285,7 +285,7 @@ module.exports = require(\\"foo\\");
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;
@@ -297,14 +297,14 @@ exports.id = 179;
 exports.ids = [179];
 exports.modules = {
 
-/***/ 67:
+/***/ \\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\":
 /***/ (() => {
 
-/*require.resolve*/(/*webpack: external*/222);
+/*require.resolve*/(/*webpack: external*/\\"BeWebpack-EXTERNAL:foo\\");
 
 /***/ }),
 
-/***/ 222:
+/***/ \\"BeWebpack-EXTERNAL:foo\\":
 /***/ ((module) => {
 
 \\"use strict\\";
@@ -319,7 +319,7 @@ module.exports = require(\\"foo\\");
 var __webpack_require__ = require(\\"./runtime~main.js\\");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__(67));
+var __webpack_exports__ = (__webpack_exec__(\\"./lib/test/assets/require-magic-comments-plugin-test/test.js\\"));
 
 })();"
 `;

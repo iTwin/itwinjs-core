@@ -284,7 +284,7 @@ class ResponseGenerator {
       case "box":
         const box: Box = (solid as Box);
         return `${summary}'
-        ' baseOrigin: ${JSON.stringify(box.getBaseOrigin().toJSON())}'
+        ' origin: ${JSON.stringify(box.getBaseOrigin().toJSON())}'
         ' topOrigin: ${JSON.stringify(box.getTopOrigin().toJSON())}'
         ' baseX: ${box.getBaseX()}'
         ' baseY: ${box.getBaseY()}`;

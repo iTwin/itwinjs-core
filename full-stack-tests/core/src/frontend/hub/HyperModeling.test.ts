@@ -261,7 +261,7 @@ describe("HyperModeling (#integration)", () => {
           sectionType: type,
           drawingToSpatialTransform: JSON.stringify(state.drawingToSpatialTransform.toJSON()),
           spatialViewId: state.spatialViewId,
-          sectionLocationId: hypermodel.transientIds.next,
+          sectionLocationId: hypermodel.transientIds.getNext(),
           sectionLocationModelId: model ?? state.model,
           sectionViewId: state.drawingViewId,
           categoryId: categoryId ?? state.category,

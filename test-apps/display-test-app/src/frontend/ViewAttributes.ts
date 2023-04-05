@@ -270,7 +270,10 @@ export class ViewAttributes {
       parent: this._element,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
       expand: ViewAttributes._expandViewFlags,
-      handler: (expanded) => { ViewAttributes._expandViewFlags = expanded; vfMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+      handler: (expanded) => {
+        ViewAttributes._expandViewFlags = expanded;
+        vfMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
       body: flagsDiv,
     });
     (vfMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
@@ -661,12 +664,18 @@ export class ViewAttributes {
     exaggerationDiv.style.textAlign = "left";
     settingsDiv.appendChild(exaggerationDiv);
 
+    const bingCheckbox = this.addCheckbox("Use Bing elevation",
+      (enabled: boolean) => updateTerrainSettings({ providerName: enabled ? "DtaBingTerrain" : "CesiumWorldTerrain" }),
+      settingsDiv
+    ).checkbox;
+
     this._updates.push((view) => {
       const map = view.displayStyle.settings.backgroundMap;
       const terrainSettings = map.terrainSettings;
       heightOriginMode.value = terrainSettings.heightOriginMode.toString();
       heightOrigin.value = terrainSettings.heightOrigin.toString();
       exaggeration.value = terrainSettings.exaggeration.toString();
+      bingCheckbox.checked = "DtaBingTerrain" === terrainSettings.providerName;
     });
 
     return settingsDiv;
@@ -717,7 +726,10 @@ export class ViewAttributes {
       parent: this._element,
       expand: ViewAttributes._expandEdgeDisplay,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-      handler: (expanded) => { ViewAttributes._expandEdgeDisplay = expanded; nestedMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+      handler: (expanded) => {
+        ViewAttributes._expandEdgeDisplay = expanded;
+        nestedMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
       body: edgeDisplayDiv,
     });
     nestedMenu.label.style.fontWeight = "500";
@@ -731,6 +743,7 @@ export class ViewAttributes {
       max: "1.0",
       step: "0.05",
       value: "1.0",
+      readout: "right",
       handler: (_) => this.overrideEdgeSettings({ transThreshold: parseFloat(slider.slider.value) }),
     });
     slider.div.style.textAlign = "left";
@@ -770,7 +783,7 @@ export class ViewAttributes {
 
       nestedMenu.div.hidden = false;
       const settings = this._edgeSettings;
-      slider.slider.value = settings.transparencyThreshold.toString();
+      slider.slider.value = slider.readout.innerText = settings.transparencyThreshold.toString();
 
       const vf = this._vp.viewFlags;
       visEdgesCb.checkbox.checked = vf.visibleEdges;

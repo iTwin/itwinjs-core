@@ -1,6 +1,146 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Tue, 09 Aug 2022 15:52:41 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+
+## 3.6.0
+Wed, 08 Feb 2023 14:58:39 GMT
+
+### Updates
+
+- Added DataTransformRequired flag to DbResult enum.
+- Promote AccessToken to public; and remove beta ExtractLiterals and alpha AsyncMutex.
+- Added TransientIdSequence.peekNext to preview the next Id in the sequence.
+- Deprecate TransientIdSequence.next property in favor of getNext method.
+
+## 3.5.6
+Fri, 24 Feb 2023 16:02:47 GMT
+
+### Updates
+
+- Add SortedArray.slice.
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+_Version update only_
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+### Updates
+
+- Add UintArrayBuilder for constructing typed arrays of unknown number of bytes per element.
+- Deprecate `next` properties on ByteStream; replace with `read` methods.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Add EntityReferences
+- add PickAsyncMethods utility type
+- Add new ChangeSetStatus.DownloadCancelled error code.
+- Add ByteStream.remainingLength.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+### Updates
+
+- Add EntityReferences
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Use older variable names from opentelemetry
+- Updated Node types declaration to support latest v16
+- Add APIs for incrementally constructing typed arrays.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+_Version update only_
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Add ExtractLiterals type.
+- Remove AuthStatus from BentleyError.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT
@@ -741,7 +881,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Added FailedToGetProductSettings error
-- Setup Guid.normalize() for internal use. 
+- Setup Guid.normalize() for internal use.
 - channel rules
 
 ## 2.0.0
@@ -749,12 +889,12 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
 - Update Config.App documentation to reflect the removal of the config.json file
 - Added ContextDoesNotExist error
 - BUG273249
-- Updated docs. 
-- Updated error text. 
+- Updated docs.
+- Updated error text.
 - added raw log method that bypass catogory check
 - order imports.
 - Add a type guard for `IDisposable`
@@ -788,7 +928,7 @@ Wed, 22 Jan 2020 19:24:11 GMT
 
 ### Updates
 
-- VSS$257397: Temporary fix for checking electron renderer. 
+- VSS$257397: Temporary fix for checking electron renderer.
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
@@ -803,7 +943,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - Added non-static wait and executeAfter to BeDuration
 - Fix warnings from static analysis
 - Added `BeDuration.race` for common timeout operations.
@@ -856,7 +996,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Added OneAtATimeActivity class
-- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence.
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -883,10 +1023,10 @@ Mon, 13 May 2019 15:52:05 GMT
 - Logged the fields in ClientRequestContext
 - Logging fixes.
 - Put sourcemap in npm package.
-- Fixed logger to not mutate incoming objects. 
+- Fixed logger to not mutate incoming objects.
 - Improved performance logging
 - Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Use TextDecoder to decode binary utf-8 strings if supported.
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -922,7 +1062,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -1029,7 +1169,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- Changes to debug utilities. 
+- Changes to debug utilities.
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

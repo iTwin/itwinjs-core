@@ -2,13 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { Attributes, AttributeValue, ContextAPI, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
+/** @packageDocumentation
+ * @module Logging
+ */
+
+import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
 import { LogFunction, Logger } from "./Logger";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
 /**
- * Mirrors the SpanKind enum from [@opentelemetry/api](https://open-telemetry.github.io/opentelemetry-js-api/enums/spankind)
- * @alpha
+ * Mirrors the SpanKind enum from [@opentelemetry/api](https://open-telemetry.github.io/opentelemetry-js/enums/_opentelemetry_api.SpanKind.html)
+ * @public
  */
 export enum SpanKind {
   INTERNAL = 0,
@@ -18,13 +22,13 @@ export enum SpanKind {
   CONSUMER = 4
 }
 
-function isValidPrimitive(val: unknown): val is AttributeValue {
+function isValidPrimitive(val: unknown): val is SpanAttributeValue {
   return typeof val === "string" || typeof val === "number" || typeof val === "boolean";
 }
 
 // Only _homogenous_ arrays of strings, numbers, or booleans are supported as OpenTelemetry Attribute values.
 // Per the spec (https://opentelemetry.io/docs/reference/specification/common/common/#attribute), empty arrays and null values are supported too.
-function isValidPrimitiveArray(val: unknown): val is AttributeValue {
+function isValidPrimitiveArray(val: unknown): val is SpanAttributeValue {
   if (!Array.isArray(val))
     return false;
 
@@ -49,7 +53,7 @@ function isPlainObject(obj: unknown): obj is object {
   return typeof obj === "object" && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
-function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, AttributeValue]> {
+function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttributeValue]> {
   if (isValidPrimitiveArray(obj)) {
     yield [path, obj];
     return;
@@ -71,13 +75,13 @@ function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, AttributeVa
     yield* getFlatEntries(val, (path === "") ? key : `${path}.${key}`);
 }
 
-function flattenObject(obj: object): Attributes {
+function flattenObject(obj: object): SpanAttributes {
   return Object.fromEntries(getFlatEntries(obj));
 }
 
 /**
  * Enables OpenTelemetry tracing in addition to traditional logging.
- * @alpha
+ * @public
  */
 export class Tracing {
   private static _tracer?: Tracer;
@@ -121,7 +125,7 @@ export class Tracing {
 
   /**
    * Enable logging to OpenTelemetry. [[Tracing.withSpan]] will be enabled, all log entries will be attached to active span as span events.
-   * [[IModelHost.startup]] will call this automatically if it succeeds in requiring `@opentelemetry/api`.
+   * [IModelHost.startup]($backend) will call this automatically if the `enableOpenTelemetry` option is enabled and it succeeds in requiring `@opentelemetry/api`.
    * @note Node.js OpenTelemetry SDK should be initialized by the user.
    */
   public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
@@ -135,15 +139,17 @@ export class Tracing {
 
   private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {
     return (category, message, metaData) => {
-      Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: isError });
+      try {
+        Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: isError });
+      } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
       base(category, message, metaData);
     };
   }
 
   /** Set attributes on currently active openTelemetry span. Doesn't do anything if openTelemetry logging is not initialized.
-   * @param attributes  The attributes to set
+   * @param attributes The attributes to set
    */
-  public static setAttributes(attributes: Attributes) {
+  public static setAttributes(attributes: SpanAttributes) {
     Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.setAttributes(attributes);
   }
 }

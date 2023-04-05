@@ -1,2 +1,31 @@
-include ':app'
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+Properties properties = new Properties()
+File localProps = new File(rootDir.absolutePath, "local.properties")
+if (localProps.exists()) {
+    properties.load(localProps.newDataInputStream())
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenLocal()
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/itwin/mobile-sdk-android")
+            credentials {
+                username = properties.getProperty("gpr.user") ?: System.getenv("USERNAME") ?: "token"
+                password = properties.getProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+}
 rootProject.name = "imodeljs-test-app"
+include ':app'

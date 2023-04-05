@@ -7,12 +7,12 @@
  * @module WebGL
  */
 
-import { assert, dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
+import { assert, dispose, disposeArray, IDisposable, UintArray } from "@itwin/core-bentley";
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
-import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
+import { RealityMeshParams } from "../RealityMeshParams";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
@@ -176,9 +176,11 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
   public readonly uvParams: QBufferHandle2d;
   public readonly featureID?: number;
   public readonly normals?: BufferHandle;
+  public readonly numBytesPerIndex: 1 | 2 | 4;
 
-  protected constructor(positions: QBufferHandle3d, normals: BufferHandle | undefined, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, featureID?: number) {
+  protected constructor(positions: QBufferHandle3d, normals: BufferHandle | undefined, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, numBytesPerIndex: 1 | 2 | 4, featureID?: number) {
     super(positions, indices, numIndices);
+    this.numBytesPerIndex = numBytesPerIndex;
     let attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.RealityMesh, false);
     assert(attrParams !== undefined);
     this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
@@ -194,21 +196,23 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     this.featureID = featureID;
   }
 
-  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: Uint16Array, normBuf: BufferHandle | undefined, featureID: number) {
+  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: UintArray, normBuf: BufferHandle | undefined, featureID: number) {
     const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
 
     if (undefined === indBuf)
       return undefined;
 
-    return new RealityMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, featureID);
+    const bytesPerIndex = indices.BYTES_PER_ELEMENT;
+    assert(1 === bytesPerIndex || 2 === bytesPerIndex || 4 === bytesPerIndex);
+    return new RealityMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, bytesPerIndex, featureID);
 
   }
 
-  public static createFromRealityMesh(mesh: RealityMeshPrimitive) {
-    const posBuf = QBufferHandle3d.create(mesh.pointQParams, mesh.points);
-    const uvParamBuf = QBufferHandle2d.create(mesh.uvQParams, mesh.uvs);
-    const normalBuf = mesh.normals ? BufferHandle.createArrayBuffer(mesh.normals) : undefined;
-    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, normalBuf, mesh.featureID);
+  public static fromRealityMesh(params: RealityMeshParams) {
+    const posBuf = QBufferHandle3d.create(params.positions.params, params.positions.points);
+    const uvParamBuf = QBufferHandle2d.create(params.uvs.params, params.uvs.points);
+    const normalBuf = params.normals ? BufferHandle.createArrayBuffer(params.normals) : undefined;
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, params.indices, normalBuf, params.featureID ?? 0);
   }
 
   public override get isDisposed(): boolean {
@@ -234,6 +238,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get transform(): Transform | undefined { return this._transform; }
 
   private _realityMeshParams: RealityMeshGeometryParams;
+  private readonly _indexType: GL.DataType;
   public textureParams: RealityTextureParams | undefined;
   private readonly _transform: Transform | undefined;
   public readonly baseColor: ColorDef | undefined;
@@ -259,6 +264,9 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     this._isTerrain = props.isTerrain;
     this._disableTextureDisposal = props.disableTextureDisposal;
     this.hasTextures = undefined !== this.textureParams && this.textureParams.params.some((x) => undefined !== x.texture);
+
+    const bytesPerIndex = props.realityMeshParams.numBytesPerIndex;
+    this._indexType = 1 === bytesPerIndex ? GL.DataType.UnsignedByte : (2 === bytesPerIndex ? GL.DataType.UnsignedShort : GL.DataType.UnsignedInt);
   }
 
   public override dispose() {
@@ -268,16 +276,25 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       dispose(this.textureParams);
   }
 
-  public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined, disableTextureDisposal = false) {
-    const params = RealityMeshGeometryParams.createFromRealityMesh(terrainMesh);
-    return params ? new RealityMeshGeometry({realityMeshParams: params, transform, baseIsTransparent: false, isTerrain: true, disableTextureDisposal}) : undefined;
-  }
-
-  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false): RealityMeshGeometry | undefined {
-    const params = RealityMeshGeometryParams.createFromRealityMesh(realityMesh);
+  public static createForTerrain(mesh: RealityMeshParams, transform: Transform | undefined, disableTextureDisposal = false) {
+    const params = RealityMeshGeometryParams.fromRealityMesh(mesh);
     if (!params)
       return undefined;
-    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
+
+    return new RealityMeshGeometry({
+      realityMeshParams: params,
+      transform,
+      baseIsTransparent: false,
+      isTerrain: true,
+      disableTextureDisposal,
+    });
+  }
+
+  public static createFromRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {
+    const params = RealityMeshGeometryParams.fromRealityMesh(realityMesh);
+    if (!params)
+      return undefined;
+    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
     return new RealityMeshGeometry({realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal});
   }
@@ -378,7 +395,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   public override draw(): void {
     this._params.buffers.bind();
-    System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, GL.DataType.UnsignedShort, 0);
+    System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, this._indexType, 0);
     this._params.buffers.unbind();
   }
 }

@@ -4,15 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { ConcurrentQuery } from "../../ConcurrentQuery";
 
 // cspell:ignore mirukuru ibim
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
+  // eslint-disable-next-line deprecation/deprecation
   for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
     rows.push(row);
   }
@@ -92,36 +94,46 @@ describe("ECSql Query", () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
-    const cb = async () => {
-      return new Promise<void>(async (resolve, reject) => {
-        try {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {
-            rowCount++;
-          }
-          successful++;
-          resolve();
-        } catch (err: any) {
-          // we expect query to be cancelled
-          if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
-            cancelled++;
-            resolve();
-          } else {
-            reject(new Error("rejected"));
-          }
-        }
-      });
-    };
+    try {
+      ConcurrentQuery.shutdown(imodel1.nativeDb);
+      ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
 
-    const queries = [];
-    for (let i = 0; i < 100; i++) {
-      queries.push(cb());
+      const scheduleQuery = async (delay: number) => {
+        return new Promise<void>(async (resolve, reject) => {
+          try {
+            const options = new QueryOptionsBuilder();
+            options.setDelay(delay);
+            // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
+            for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions())) {
+              rowCount++;
+            }
+            successful++;
+            resolve();
+          } catch (err: any) {
+            // we expect query to be cancelled
+            if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
+              cancelled++;
+              resolve();
+            } else {
+              reject(new Error("rejected"));
+            }
+          }
+        });
+      };
+
+      const queries = [];
+      queries.push(scheduleQuery(5000));
+      queries.push(scheduleQuery(0));
+
+      await Promise.all(queries);
+      // We expect at least one query to be cancelled
+      assert.isAtLeast(cancelled, 1, "cancelled should be at least 1");
+      assert.isAtLeast(successful, 1, "successful should be at least 1");
+      assert.isAtLeast(rowCount, 1, "rowCount should be at least 1");
+    } finally {
+      ConcurrentQuery.shutdown(imodel1.nativeDb);
+      ConcurrentQuery.resetConfig(imodel1.nativeDb);
     }
-    await Promise.all(queries);
-    // We expect at least one query to be cancelled
-    assert.isAtLeast(cancelled, 1);
-    assert.isAtLeast(successful, 1);
-    assert.isAtLeast(rowCount, 1);
   });
   it("concurrent query use primary connection", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
@@ -141,6 +153,7 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
+    // eslint-disable-next-line deprecation/deprecation
     for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
       ids.push(row[0]);
     }
@@ -204,6 +217,7 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
+      // eslint-disable-next-line deprecation/deprecation
       pendingRowCount.push(db.queryRowCount(query));
     }
 
@@ -226,6 +240,7 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
+      // eslint-disable-next-line deprecation/deprecation
       for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));

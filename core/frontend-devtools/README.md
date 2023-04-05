@@ -126,41 +126,38 @@ This package provides several keyins to control model overrides.  These override
 This package provides several keyins to control the display of background maps, map layers and terrain.  Thesese settings are stored in the display style and control how the background map is displayed when that display style is used.
 
 * `fdt toggle terrain` - Toggle terrain display for background maps.
+
 * `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach model maplayer <name>` - Attach a model map layer for each unique model of the currently selected elements.
+
 * `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
 * `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].
 * `fdt set map base transparency <transparency>` - Set map base transparency [0..1].
+
 * `fdt detach maplayers` - Detach all map layers.
+
 * `fdt set mapLayer transparency <index, transparency>`.  Set the map layer to the supplied transparency value [0..1].
 * `fdt set mapLayer visibility <index, on|off>`.  Set the map layer visibility.
 * `fdt reorder maplayer <fromIndex, toIndex>`.  Move the map layer at `fromIndex` to `toIndex`.
 * `fdt zoom maplayer <index>` Zoom to map layer. If index is omitted layer 0 is used.
-* `fdt attach wms maplayer <URL, name, username, password>` Attach a WMS map layer. WMS is a very common OGC standard map service that produces images on demand.
- The following arguments can be supplied -- only the URL is required.
-  * `URL` - The URL for the map layer.
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
-* `fdt attach wmts maplayer <URL, name, username, password>` Attach a WTMS map layer. WTMS is an OGC standard map service that produces cached tiles.
-The following arguments can be supplied -- only the URL is required.
-  * `URL` - The URL for the map layer.
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
-* `fdt attach arcgis maplayer <URL, name, username, password>` Attach an ArcGIS map layer.  This uses the ArcGIS rest API directly - the URL in this case will generally end with "MapServer".
-The following arguments can be supplied -- only the URL is required.
-  * `URL` - The URL for the map layer.
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
-* `fdt attach tileurl maplayer <URL, name, username, password>` Attach a map layer from tiles directly from a file server by supplying a URL template.
-The following arguments can be supplied -- only the URL is required.
-  * `URL` - URL template with level, column and row parameters i.e. "https://b.tile.openstreetmap.org/{level}/{column}/{row}.png"
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
+
+#### Specific map layer formats
+
+Several keyins enable attaching map layers of a particular format. Each takes the following arguments -- only the URL is required:
+
+* `URL` - The URL for the map layer.
+* `name` - The map layer name. (if not supplied the URL is used)
+* `username` - User Name (only required if credentials are required by server)
+* `password` - Password (only required if credentials are required by server)
+
+These keyins take the form `fdt attach <format> maplayer <arguments>` where `format` is one of the following:
+
+* `wms` - a very common OGC standard Web Map Service that produces images on demand.
+* `wmts` - a Web Map Tile Service that produces cached tiles.
+* `arcgis` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
+* `arcgisfeature` - obtains vector data from the ArcGIS REST API and converts it to tiles.
+* `tileurl` - obtains tailes directly from a file server using a supplied URL template.
 
 ### Reality model key-ins
 
@@ -259,7 +256,7 @@ These keysins control the planar masking of reality models.
   * "symbology=0|1" where `1` indicates detailed symbology information should be included in the output;
   * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
-  * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is **extremely** inefficient and may take a very long time to process in iModels containing many geometric elements.
+  * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is __extremely__ inefficient and may take a very long time to process in iModels containing many geometric elements.
   * "modal=0|1" where `1` indicates the output should be displayed in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
   * "explodeparts=0|1" where `1` indicates that a summary of the geometry of each geometry part reference should also be output.
@@ -317,9 +314,9 @@ These keysins control the planar masking of reality models.
 * `fdt compile shaders` - Compile all un-compiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
 * `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.
 * `fdt query schedule script` - Queries the schedule script associated with the RenderTimeline or DisplayStyle element specified by Id. All arguments are optional:
-  - "id=<Id>": The Id of the element hosting the script. If omitted, obtains the Id from the schedule script applied to the active viewport.
-  - "action=<break|copy>": Specifies what to do after obtaining the script. "break" causes execution to pause in the debugger. "copy" (the default) copies the script JSON to the clipboard.
-  - "elementIds=<include|count|expand>": Specifies what to do with the list of element Ids in the script. By default, they are omitted.
+  * "id=<Id>": The Id of the element hosting the script. If omitted, obtains the Id from the schedule script applied to the active viewport.
+  * "action=<break|copy>": Specifies what to do after obtaining the script. "break" causes execution to pause in the debugger. "copy" (the default) copies the script JSON to the clipboard.
+  * "elementIds=<include|count|expand>": Specifies what to do with the list of element Ids in the script. By default, they are omitted.
     * "include": Include the Ids as they are stored in the script - possibly in compressed format.
     * "expand": Include the Ids, decompressing them if they are in compressed format.
     * "count": Replace each list of Ids with the number of Ids in that list.
@@ -354,3 +351,4 @@ These keysins control the planar masking of reality models.
 * `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
 The following arguments can also be supplied:
   * `all`: (optional) sets it for all open viewports as well as all future viewports
+* `fdt toggle normalmaps` - toggles the display of normal maps.

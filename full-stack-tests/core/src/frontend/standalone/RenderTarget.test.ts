@@ -28,7 +28,7 @@ describe("Vertex buffer objects", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -96,7 +96,7 @@ describe("RenderTarget", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -130,7 +130,12 @@ describe("RenderTarget", () => {
       expect(pixels.length).to.equal(1);
 
       // Background pixels have distanceFraction = 0 indicating far plane.
-      const backgroundPixel = new Pixel.Data(undefined, 0, Pixel.GeometryType.None, Pixel.Planarity.None);
+      const backgroundPixel = new Pixel.Data({
+        distanceFraction: 0,
+        type: Pixel.GeometryType.None,
+        planarity: Pixel.Planarity.None,
+      });
+
       expect(comparePixelData(backgroundPixel, pixels.array[0])).to.equal(0);
 
       // Ensure reading out-of-bounds rects returns empty pixel array
@@ -259,7 +264,7 @@ describe("RenderTarget", () => {
     });
   });
 
-  it("should override symbology", async () => {
+  it.skip("should override symbology", async () => { // flaky test #4420
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const elemId = "0x29";

@@ -21,7 +21,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** @internal */
 export interface DownloadAndOpenArgs {
-  activity: RpcActivity;
+  activity: RpcActivity; // eslint-disable-line deprecation/deprecation
   tokenProps: IModelRpcOpenProps;
   syncMode: SyncMode;
   fileNameResolvers?: ((arg: BriefcaseProps) => string)[];
@@ -133,7 +133,7 @@ export class RpcBriefcaseUtility {
 
       if (briefcaseDb === undefined) {
         Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({ ...tokenProps }));
-        throw new RpcPendingResponse();
+        throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
       }
       // note: usage is logged in the function BriefcaseManager.downloadNewBriefcaseAndOpen
       return briefcaseDb;
@@ -177,7 +177,7 @@ export class RpcBriefcaseUtility {
 
       if (db === undefined) {
         Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({ ...tokenProps }));
-        throw new RpcPendingResponse();
+        throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
       }
       Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({ ...tokenProps }));
     }
@@ -186,7 +186,9 @@ export class RpcBriefcaseUtility {
     return db;
   }
 
-  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
+  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> { // eslint-disable-line deprecation/deprecation
+    if (tokenProps.iModelId)
+      await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
     return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
   }
 

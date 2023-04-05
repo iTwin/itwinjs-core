@@ -118,12 +118,15 @@ beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
+alpha;SchemaJsonLocater 
 beta;SchemaKey
 beta;SchemaKeyProps
+alpha;SchemaLoader
 beta;SchemaMap 
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
+alpha;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
 internal;SchemaReadHelper
 beta;SchemaReferenceProps
 alpha;SchemaUnitProvider 

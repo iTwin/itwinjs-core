@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
+import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
+  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
@@ -14,6 +14,7 @@ import {
 } from "@itwin/core-frontend";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestUtility } from "../../TestUtility";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
@@ -73,7 +74,9 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
   } as unknown as ViewState;
 }
 
-function delta(a: number, b: number): number { return Math.abs(a - b); }
+function delta(a: number, b: number): number {
+  return Math.abs(a - b);
+}
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
 function processHeader(data: TileTestData, test: TileTestCase, numElements: number) {
@@ -267,16 +270,27 @@ describe("TileIO (WebGL)", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
+
+  function getFeatureTable(batch: Batch): PackedFeatureTable {
+    expect(batch.featureTable).instanceof(PackedFeatureTable);
+    return batch.featureTable as PackedFeatureTable;
+  }
+
+  function expectNumFeatures(batch: Batch, expected: number): void {
+    const table = getFeatureTable(batch);
+    expect(table.numFeatures).to.equal(expected);
+    expect(table.isUniform).to.equal(expected === 1);
+  }
 
   it("should read an iModel tile containing a single rectangle", async () => {
     if (IModelApp.initialized) {
       await processEachRectangle(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.true;
+        expectNumFeatures(batch, 1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
         const mg = batch.graphic as MeshGraphic;
@@ -299,8 +313,7 @@ describe("TileIO (WebGL)", () => {
       await processEachTriangles(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.false;
-        expect(batch.featureTable.numFeatures).to.equal(6);
+        expectNumFeatures(batch, 6);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
@@ -340,8 +353,7 @@ describe("TileIO (WebGL)", () => {
       await processEachLineString(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.true;
-        expect(batch.featureTable.numFeatures).to.equal(1);
+        expectNumFeatures(batch, 1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(Primitive);
         const plinePrim = batch.graphic as Primitive;
@@ -365,8 +377,7 @@ describe("TileIO (WebGL)", () => {
       await processEachLineStrings(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.false;
-        expect(batch.featureTable.numFeatures).to.equal(3);
+        expectNumFeatures(batch, 3);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
@@ -408,7 +419,7 @@ describe("TileIO (WebGL)", () => {
       await processEachCylinder(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
-        expect(batch.featureTable.isUniform).to.be.true;
+        expectNumFeatures(batch, 1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
         const mg = batch.graphic as MeshGraphic;
@@ -437,9 +448,20 @@ describe("TileIO (mock render)", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
+
+  function getFeatureTable(batch: MockRender.Batch): PackedFeatureTable {
+    expect(batch.featureTable).instanceof(PackedFeatureTable);
+    return batch.featureTable as PackedFeatureTable;
+  }
+
+  function expectNumFeatures(batch: MockRender.Batch, expected: number): void {
+    const table = getFeatureTable(batch);
+    expect(table.numFeatures).to.equal(expected);
+    expect(table.isUniform).to.equal(expected === 1);
+  }
 
   it("should support canceling operation", async () => {
     if (IModelApp.initialized) {
@@ -483,7 +505,7 @@ describe("TileIO (mock render)", () => {
     await processEachRectangle(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.true;
+      expectNumFeatures(batch, 1);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).instanceof(MockRender.Graphic);
     });
@@ -493,8 +515,7 @@ describe("TileIO (mock render)", () => {
     await processEachTriangles(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.false;
-      expect(batch.featureTable.numFeatures).to.equal(6);
+      expectNumFeatures(batch, 6);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).instanceof(MockRender.List);
       const list = batch.graphic as MockRender.List;
@@ -506,8 +527,7 @@ describe("TileIO (mock render)", () => {
     await processEachLineString(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.true;
-      expect(batch.featureTable.numFeatures).to.equal(1);
+      expectNumFeatures(batch, 1);
       expect(batch.graphic).not.to.be.undefined;
     });
   });
@@ -516,8 +536,7 @@ describe("TileIO (mock render)", () => {
     await processEachLineStrings(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.false;
-      expect(batch.featureTable.numFeatures).to.equal(3);
+      expectNumFeatures(batch, 3);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).to.be.instanceOf(MockRender.List);
       const list = batch.graphic as MockRender.List;
@@ -529,7 +548,7 @@ describe("TileIO (mock render)", () => {
     await processEachCylinder(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
-      expect(batch.featureTable.isUniform).to.be.true;
+      expectNumFeatures(batch, 1);
       expect(batch.graphic).not.to.be.undefined;
     });
   });
@@ -589,6 +608,9 @@ describe("mirukuru TileTree", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
     await MockRender.App.startup();
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
+
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -606,8 +628,10 @@ describe("mirukuru TileTree", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await MockRender.App.shutdown();
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.shutdown();
   });
 
   // mirukuru contains a model (ID 0x1C) containing a single rectangle.
@@ -671,7 +695,7 @@ describe("mirukuru TileTree", () => {
       const projExt = imodel.projectExtents;
       expect(projExt.xLength()).to.equal(header.contentRange.xLength());
       expect(projExt.yLength()).to.equal(header.contentRange.yLength());
-      expect(header.contentRange.zLength()).to.equal(0); // project extents are chubbed up; content range is tight.
+      expect(header.contentRange.zLength()).to.deep.equalWithFpTolerance(0); // project extents are chubbed up; content range is tight.
     };
 
     // Test current version of tile tree by asking model to load it
@@ -713,7 +737,7 @@ describe("mirukuru TileTree", () => {
 });
 
 // Temporarily skipped while we investigate sporadic apparent crash during Linux CI jobs. Occurs in Electron only, not Chrome.
-describe.skip("TileAdmin", () => {
+describe("TileAdmin", () => {
   let theIModel: IModelConnection | undefined;
 
   const cleanup = async () => {
@@ -736,7 +760,11 @@ describe.skip("TileAdmin", () => {
 
       await super.startup({
         tileAdmin: props,
+        localization: new EmptyLocalization(),
       });
+
+      if (ProcessDetector.isElectronAppFrontend)
+        await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
@@ -759,56 +787,6 @@ describe.skip("TileAdmin", () => {
 
   it("should omit or load edges based on configuration and view flags", async () => {
     class App extends TileAdminApp {
-      private static async testPrimaryTree(imodel: IModelConnection, expectedTreeIdStr: string, animationId?: Id64String) {
-        // Test without edges
-        const requestWithoutEdges = true;
-        let expectedTreeIdStrNoEdges = expectedTreeIdStr;
-        if (requestWithoutEdges) {
-          // "0xabc" => E:0_0xabc"
-          // "A:0x123_0xabc" => "A:0x123_E:0_0xabc"
-          const lastIndex = expectedTreeIdStr.lastIndexOf("0x");
-          expectedTreeIdStrNoEdges = `${expectedTreeIdStr.substring(0, lastIndex)}E:0_${expectedTreeIdStr.substring(lastIndex)}`;
-        }
-
-        const treeId: IModelTileTreeId = { type: BatchType.Primary, edges: false, animationId };
-        let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-        expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
-
-        const treePropsNoEdges = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
-        expect(treePropsNoEdges.id).to.equal(actualTreeIdStr);
-
-        const treeNoEdges = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges.id).to.equal(actualTreeIdStr);
-
-        const treeNoEdges2 = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges2).to.equal(treeNoEdges);
-
-        expect(await this.rootTileHasEdges(treeNoEdges, imodel)).to.equal(!requestWithoutEdges);
-
-        // Test with edges
-        treeId.edges = { indexed: false, smooth: false };
-        actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-        expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
-
-        const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
-        expect(treeProps.id).to.equal(actualTreeIdStr);
-
-        const tree = await getTileTree(imodel, "0x1c", true, animationId);
-        expect(tree.id).to.equal(actualTreeIdStr);
-        expect(tree).not.to.equal(treeNoEdges);
-
-        const tree2 = await getTileTree(imodel, "0x1c", true, animationId);
-        expect(tree2).to.equal(tree);
-
-        expect(await this.rootTileHasEdges(tree, imodel)).to.be.true;
-
-        // Request without edges again.
-        // We used to keep the old tree with edges around if you later requested it without - but that wastes memory.
-        // Change in behavior potentially wastes time instead by reloading a tree without edges.
-        const treeNoEdges3 = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges3).not.to.equal(tree);
-      }
-
       private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
         const response = await tree.staticBranch.requestContent() as Uint8Array;
         expect(response).not.to.be.undefined;
@@ -838,8 +816,26 @@ describe.skip("TileAdmin", () => {
       }
 
       public static async test(imodel: IModelConnection) {
+        const expectTreeId = async (edges: EdgeOptions | false, expectedTreeIdStr: string) => {
+          const treeId: IModelTileTreeId = { type: BatchType.Primary, edges };
+          const actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
+          expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
+
+          const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
+          expect(treeProps.id).to.equal(actualTreeIdStr);
+
+          const tree = await getTileTree(imodel, "0x1c", false !== edges);
+          expect(tree.id).to.equal(actualTreeIdStr);
+
+          const tree2 = await getTileTree(imodel, "0x1c", false !== edges);
+          expect(tree2).to.equal(tree);
+
+          expect(await this.rootTileHasEdges(tree, imodel)).to.equal(false !== edges);
+        };
+
         const version = CurrentImdlVersion.Major.toString(16);
-        await this.testPrimaryTree(imodel, `${version}_1-0x1c`);
+        await expectTreeId(false, `${version}_d-E:0_0x1c`);
+        await expectTreeId({ indexed: true, smooth: true }, `${version}_d-E:4_0x1c`);
       }
     }
 

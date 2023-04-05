@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel } from "../../../Utils";
@@ -14,12 +14,12 @@ describe("Learning Snippets", () => {
 
   let imodel: IModelConnection;
 
-  beforeEach(async () => {
+  before(async () => {
     await initialize();
     imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
-  afterEach(async () => {
+  after(async () => {
     await imodel.close();
     await terminate();
   });
@@ -35,9 +35,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               calculatedProperties: [{
                 label: "My Calculated Property",
                 value: `123`,
@@ -68,9 +68,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               calculatedProperties: [{
                 label: "Element Volume",
                 value: "(this.BBoxHigh.x - this.BBoxLow.x) * (this.BBoxHigh.y - this.BBoxLow.y) * (this.BBoxHigh.z - this.BBoxLow.z)",
@@ -104,9 +104,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               calculatedProperties: [{
                 label: "My Calculated Property",
                 value: `123`,

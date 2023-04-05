@@ -44,11 +44,15 @@ export class OrbitGtContextIModelCreator {
       this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Definitions");
       this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
 
-      if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderNode();
-      if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
+      if (Downloader.INSTANCE == null)
+        Downloader.INSTANCE = new DownloaderNode();
+      if (CRSManager.ENGINE == null)
+        CRSManager.ENGINE = await OnlineEngine.create();
 
       let blobFileURL: string = blobFileName;
-      if (accountName.length > 0) blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
+      if (accountName.length > 0)
+        blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
+
       const urlFS: UrlFS = new UrlFS();
 
       // wrap a caching layer (16 MB) around the blob file

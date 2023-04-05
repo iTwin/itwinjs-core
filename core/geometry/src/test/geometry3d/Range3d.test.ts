@@ -3,17 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range2d, Range3d, RangeBase } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { SineCosinePolynomial } from "../../numerics/Polynomials";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console */
 // (assume points are distinct ...)
 function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {
   const rangeA = Range3d.createTransformedArray(frame, points);
@@ -43,8 +49,8 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
   for (const p of points) {
     frame.multiplyPoint3d(p, q);
     // ck.testTrue(rangeA.containsPoint(p));
-    ck.testTrue(rangeA.containsPoint(q));
     ck.testCoordinate(0, rangeA.distanceToPoint(q));
+    ck.testTrue(rangeA.containsPoint(q));
     ck.testTrue(rangeA.containsPointXY(q));
     ck.testTrue(rangeA.containsPointXY(q.plusXYZ(0, 0, 2.0 * rangeA.zLength() + 1)));
     rangeA1.extendTransformedPoint(frame, p);
@@ -377,7 +383,7 @@ describe("Range3d", () => {
     const rangeA = Range3d.createXYZXYZ(
       intervalA.low, intervalA.low, intervalA.low,
       intervalA.high, intervalA.high, intervalA.high);
-    // console.log("rangeA:", JSON.stringify(rangeA));
+    // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range3d.createXYZXYZOrCorrectToNull(
         intervalB.low, intervalB.low, intervalB.low,
@@ -418,7 +424,7 @@ describe("Range3d", () => {
     const rangeA = Range2d.createXYXY(
       intervalA.low, intervalA.low,
       intervalA.high, intervalA.high);
-    // console.log("rangeA:", JSON.stringify(rangeA));
+    // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range2d.createXYXYOrCorrectToNull(
         intervalB.low, intervalB.low,
@@ -453,6 +459,57 @@ describe("Range3d", () => {
       ck.testTrue(rangeN.isAlmostEqual(rangeB), "createFrom");
     }
     ck.checkpoint("Range3d.DiagonalContainment2d");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("SineWaveRange", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const degreesA = 10.0;
+    const degreesB = 20.0;
+    const degreesC = 290;
+    const a0 = 2.0;
+    const a1 = 1.5;
+    const a2 = -0.3;
+    const trigFunction = new SineCosinePolynomial(a0, a1, a2);
+    const func = (radians: number) => a0 + a1 * Math.cos(radians) + a2 * Math.sin(radians);
+    const x0 = 0;
+    let y0 = 0;
+    const sweeps = [
+      AngleSweep.createStartEndDegrees(degreesA, degreesB),
+      AngleSweep.createStartEndDegrees(degreesA, degreesB + 180),
+      AngleSweep.createStartEndDegrees(degreesA, degreesA + 360),
+      AngleSweep.createStartEndDegrees(degreesA, degreesC),
+      AngleSweep.createStartEndDegrees(degreesA, degreesA - 360)];
+
+    for (let theta0 = 0; theta0 < 360; theta0 += 35) {
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 40));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 85));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, -40));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, -85));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 230));
+    }
+
+    for (const sweep of sweeps) {
+      const sampledRange = Range2d.createNull();
+      const ls = LineString3d.create();
+      for (let f = 0; f <= 1.0; f += 1 / 32) {
+        const theta = sweep.fractionToRadians(f);
+        const y = func(theta);
+        ls.addPointXYZ(theta, y);
+        sampledRange.extendXY(theta, y);
+      }
+      const analyticRange1d = trigFunction.rangeInSweep(sweep);
+      const analyticRange = Range2d.createXYXY(sampledRange.low.x, analyticRange1d.low, sampledRange.high.x, analyticRange1d.high);
+      ck.testTrue(analyticRange.containsRange(sampledRange));
+      const expandedSampledRange = sampledRange.clone();
+      expandedSampledRange.expandInPlace(0.2);
+      ck.testTrue(expandedSampledRange.containsRange(analyticRange));
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, analyticRange, x0, y0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, ls, x0, y0);
+      y0 += 4.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SineWaveRange");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -689,5 +746,12 @@ describe("Range3d", () => {
     ck.testTrue(r3.isNull);
     expect(ck.getNumErrors()).equals(0);
   });
-
+  it("SmallSweep", () => {
+    const ck = new Checker();
+    const sweep = AngleSweep.createStartEndRadians(0.14859042783429374, 0.14859042783429377);
+    const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, sweep);
+    const range = Range3d.createNull();
+    arc.extendRange(range);
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

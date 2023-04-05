@@ -26,8 +26,6 @@ const applyLighting = `
 
   // Extract surface properties
   vec3 rgb = baseColor.rgb;
-  vec3 normal = normalize(v_n.xyz);
-  normal *= 2.0 * float(!u_surfaceFlags[kSurfaceBitIndex_NoFaceFront] &&  gl_FrontFacing) - 1.0;
   vec3 toEye = kFrustumType_Perspective == u_frustum.z ? normalize(v_eyeSpace.xyz) : vec3(0.0, 0.0, -1.0);
 
   // Extract material properties
@@ -44,8 +42,8 @@ const applyLighting = `
 
   float directionalDiffuseIntensity = 0.0;
   float directionalSpecularIntensity = 0.0;
-  computeDirectionalLight(directionalDiffuseIntensity, directionalSpecularIntensity, normal, toEye, u_sunDir, sunIntensity, specularExponent);
-  computeDirectionalLight(directionalDiffuseIntensity, directionalSpecularIntensity, normal ,toEye, portraitDir, portraitIntensity, specularExponent);
+  computeDirectionalLight(directionalDiffuseIntensity, directionalSpecularIntensity, g_normal, toEye, u_sunDir, sunIntensity, specularExponent);
+  computeDirectionalLight(directionalDiffuseIntensity, directionalSpecularIntensity, g_normal ,toEye, portraitDir, portraitIntensity, specularExponent);
 
   const float directionalFudge = 0.92; // leftover from old lighting implementation
   vec3 diffuseAccum = directionalDiffuseIntensity * diffuseWeight * rgb * directionalFudge; // directional light is white.
@@ -65,18 +63,18 @@ const applyLighting = `
   float hemiIntensity = u_lightSettings[11];
 
   //  diffuse
-  float hemiDot = dot(normal, u_upVector);
+  float hemiDot = dot(g_normal, u_upVector);
   float hemiDiffuseWeight = 0.5 * hemiDot + 0.5;
   vec3 hemiColor = mix(ground, sky, hemiDiffuseWeight);
   diffuseAccum += hemiIntensity * hemiColor * rgb;
 
   //  sky specular
-  vec3 reflectSky = normalize(reflect(u_upVector, normal));
+  vec3 reflectSky = normalize(reflect(u_upVector, g_normal));
   float skyDot = max(dot(reflectSky, toEye), 0.0001);
   float hemiSpecWeight = hemiIntensity * pow(skyDot, specularExponent);
 
   //  ground specular
-  vec3 reflectGround = normalize(reflect(-u_upVector, normal));
+  vec3 reflectGround = normalize(reflect(-u_upVector, g_normal));
   float groundDot = max(dot(reflectGround, toEye), 0.0001);
   hemiSpecWeight += hemiIntensity * pow(groundDot, specularExponent);
 
@@ -87,7 +85,7 @@ const applyLighting = `
   // Apply fresnel reflection.
   float fresnelIntensity = u_lightSettings[15];
   if (0.0 != fresnelIntensity) {
-    float fresnel = -dot(toEye, normal);
+    float fresnel = -dot(toEye, g_normal);
     if (fresnelIntensity < 0.0) {
       fresnelIntensity = abs(fresnelIntensity);
       fresnel = 1.0 - fresnel;

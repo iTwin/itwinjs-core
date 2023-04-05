@@ -142,7 +142,10 @@ export class GeometryAccumulator {
     return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams, this.currentFeature));
   }
 
-  public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }
+  public addGeometry(geom: Geometry): boolean {
+    this.geometries.push(geom);
+    return true;
+  }
 
   public clear(): void { this.geometries.clear(); }
 
@@ -186,6 +189,7 @@ export class GeometryAccumulator {
     // Apply the inverse translation to put them back into model space.
     const branch = new GraphicBranch(true);
     let transformOrigin: Point3d | undefined;
+    let meshesRangeOffset = false;
 
     for (const mesh of meshes) {
       const verts = mesh.points;
@@ -195,6 +199,15 @@ export class GeometryAccumulator {
           verts.params.origin.setZero();
         } else {
           transformOrigin = verts.range.center;
+          // In this case we need to modify the qOrigin of the graphic that will get created later since we have translated the origin.
+          // We can't modify it directly, but if we temporarily modify the range of the mesh used to create it the qOrigin will get created properly.
+          // Range is shared (not cloned) by all meshes and the mesh list itself, so modifying the range of the meshlist will modify it for all meshes.
+          // We will then later add this offset back to the range once all of the graphics have been created because it is needed unmodified for locate.
+          if (!meshesRangeOffset) {
+            meshes.range?.low.subtractInPlace(transformOrigin);
+            meshes.range?.high.subtractInPlace(transformOrigin);
+            meshesRangeOffset = true;
+          }
         }
       } else {
         assert(undefined !== transformOrigin);
@@ -202,7 +215,7 @@ export class GeometryAccumulator {
           assert(transformOrigin.isAlmostEqual(verts.params.origin));
           verts.params.origin.setZero();
         } else {
-          assert(transformOrigin.isAlmostEqual(verts.range.center));
+          assert(verts.range.center.isAlmostZero);
         }
       }
 
@@ -215,6 +228,10 @@ export class GeometryAccumulator {
       assert(undefined !== transformOrigin);
       const transform = Transform.createTranslation(transformOrigin);
       graphics.push(this.system.createBranch(branch, transform));
+      if (meshesRangeOffset) { // restore the meshes range that we modified earlier.
+        meshes.range?.low.addInPlace(transformOrigin);
+        meshes.range?.high.addInPlace(transformOrigin);
+      }
     }
 
     return meshes;

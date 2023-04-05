@@ -56,20 +56,31 @@ export class DevTools {
     const pingTimes: Array<number | undefined> = await Promise.all(pings);
 
     const min: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (!acc) return curr;
-      if (!curr) return acc;
+      if (!acc)
+        return curr;
+
+      if (!curr)
+        return acc;
+
       return Math.min(acc, curr);
     }, undefined);
 
     const max: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (typeof acc === "undefined") return undefined;
-      if (!curr) return curr;
+      if (typeof acc === "undefined")
+        return undefined;
+
+      if (!curr)
+        return curr;
+
       return Math.max(acc, curr);
     }, 0);
 
     const total: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (typeof acc === "undefined") return undefined;
-      if (!curr) return undefined;
+      if (typeof acc === "undefined")
+        return undefined;
+      if (!curr)
+        return undefined;
+
       return acc + curr;
     }, 0);
 

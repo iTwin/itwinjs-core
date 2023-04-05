@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -76,7 +74,7 @@ describe("GraphMerge", () => {
       graph.transformInPlace(transform);
       const splits = HalfEdgeGraphMerge.splitIntersectingEdges(graph);
       //
-      console.log(`SPLITS = ${prettyPrint(splits)}`);
+      GeometryCoreTestIO.consoleLog(`SPLITS = ${prettyPrint(splits)}`);
       // There are 8 edges.  2 pairs intersect, each generating 2 individual splits, creating 4 more.  (Each split counts as )
       ck.testExactNumber(4, splits.numSplit, "splits");
       ck.testExactNumber(12, splits.numUpEdge, "up edge");

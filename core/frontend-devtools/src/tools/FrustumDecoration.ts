@@ -76,7 +76,7 @@ class FrustumDecoration {
 
   public static drawPreloadFrustum(builder: GraphicBuilder, frustum: Frustum) {
     const preloadColor = ColorDef.create(ColorByName.coral);
-    builder.setSymbology(preloadColor, preloadColor, 1, 2);
+    builder.setSymbology(preloadColor, preloadColor, 1, LinePixels.Code2);
     builder.addFrustum(frustum);
   }
 
@@ -376,7 +376,11 @@ class ShadowFrustumDecoration {
     this._targetVp = vp;
     const removeDecorator = IModelApp.viewManager.addDecorator(this);
     const removeOnRender = vp.onRender.addListener((_) => this.onRender());
-    this._cleanup = () => { removeDecorator(); removeOnRender(); };
+    this._cleanup = () => {
+      removeDecorator();
+      removeOnRender();
+    };
+
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 

@@ -230,11 +230,17 @@ export const ECRuleSet: IRuleSet = {
 /**
  * Validates schema references against multiple EC rules.
  * @param schema The schema to validate.
+ * @internal
  */
 export async function* validateSchemaReferences(schema: Schema): AsyncIterable<SchemaDiagnostic<any[]>> {
   yield* validateSchemaReferencesSync(schema);
 }
 
+/**
+ * Validates schema references against multiple EC rules.
+ * @param schema The schema to validate.
+ * @internal
+ */
 export function* validateSchemaReferencesSync(schema: Schema): Iterable<SchemaDiagnostic<any[]>> {
   const aliases = new Map();
   for (const schemaRef of schema.references) {
@@ -424,7 +430,10 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
   }
 }
 
-/** Validates Navigation Properties. EC Rules: 1303, 1304 */
+/**
+ * Validates Navigation Properties. EC Rules: 1303, 1304
+ * @internal
+ */
 export async function* validateNavigationProperty(property: AnyProperty): AsyncIterable<PropertyDiagnostic<any[]>> {
   if (!property.isNavigation())
     return;
@@ -607,6 +616,7 @@ export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: 
 
 /**
  * Validates a custom attribute instance and yields EC-500, EC-501, and EC-502 rule violations.
+ * @internal
  */
 export async function* validateCustomAttributeInstance(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
   yield* customAttributeNotOfConcreteClass(container, customAttribute);

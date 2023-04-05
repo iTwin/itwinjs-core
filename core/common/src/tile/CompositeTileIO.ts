@@ -21,8 +21,8 @@ export class CompositeTileHeader extends TileHeader {
 
   public constructor(stream: ByteStream) {
     super(stream);
-    this.length = stream.nextUint32;
-    this.tileCount = stream.nextUint32;
+    this.length = stream.readUint32();
+    this.tileCount = stream.readUint32();
     this.tilePosition = stream.curPos;
 
     if (stream.isPastTheEnd)

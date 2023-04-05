@@ -24,7 +24,10 @@ class TileLoadTimer {
 
     const removeOnRender = vp.onRender.addListener(() => this.onRender());
     const removeOnClose = vp.iModel.onClose.addOnce(() => this.cancel());
-    this._cleanup = () => { removeOnRender(); removeOnClose(); };
+    this._cleanup = () => {
+      removeOnRender();
+      removeOnClose();
+    };
 
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer started."));
     this._stopwatch.start();

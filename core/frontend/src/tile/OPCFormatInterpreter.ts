@@ -74,7 +74,9 @@ export class OPCFormatInterpreter  {
       } catch (e) {
         Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret point cloud`);
         const errorProps = BentleyError.getErrorProps(e);
-        const getMetaData: LoggingMetaData = () => {return { errorProps };};
+        const getMetaData: LoggingMetaData = () => {
+          return { errorProps };
+        };
         const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data", getMetaData);
         throw error;
       }

@@ -31,6 +31,7 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
+export * from "./gltf/GltfSchema";
 export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";
@@ -90,6 +91,8 @@ export * from "./render/InstancedGraphicParams";
 export * from "./render/MockRender";
 export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
+export * from "./render/RealityMeshGraphicParams";
+export * from "./render/RealityMeshParams";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
 export * from "./render/RenderMaterial";
@@ -228,3 +231,7 @@ import "./extension/ExtensionRuntime";
  * @docs-group-description MapLayers
  * Classes supporting map layers display.
  */
+/**
+ * @docs-group-description TileStorage
+ * Class for working with cloud storage using iTwin/object-storage cloud providers
+*/

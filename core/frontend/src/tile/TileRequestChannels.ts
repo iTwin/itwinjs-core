@@ -28,7 +28,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
   public override processCancellations(): void {
     for (const [imodel, requestIds] of this._canceled) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      IpcApp.callIpcHost("cancelElementGraphicsRequests", imodel.key, requestIds);
+      IpcApp.appFunctionIpc.cancelElementGraphicsRequests(imodel.key, requestIds);
       this._statistics.totalAbortedRequests += requestIds.length;
     }
 

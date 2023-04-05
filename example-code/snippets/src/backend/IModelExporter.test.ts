@@ -6,7 +6,8 @@
 
 import { Code, CodeSpec } from "@itwin/core-common";
 import { Element, IModelJsFs as fs, IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { IModelExporter, IModelExportHandler } from "@itwin/core-transformer";
+process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
+import { IModelExporter, IModelExportHandler } from "@itwin/imodel-transformer";
 
 /** CodeExporter creates a CSV output file containing all Codes from the specified iModel. */
 class CodeExporter extends IModelExportHandler {
@@ -42,8 +43,12 @@ import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelExporter", () => {
   let iModelDb: SnapshotDb;
-  before(() => { iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim"); });
-  after(() => { iModelDb.close(); });
+  before(() => {
+    iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim");
+  });
+  after(() => {
+    iModelDb.close();
+  });
 
   it("call CodeExporter example code", async () => {
     const outputDirName = path.join(__dirname, "output");

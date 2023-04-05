@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { assert, Guid, Id64 } from "@itwin/core-bentley";
+import { assert, BeDuration, BeTimePoint, Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
@@ -226,7 +226,7 @@ describe("Content", () => {
         { className: "PCJ_TestSchema:TestClass", id: "0x71" },
       ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
-      const field = getFieldByLabel(descriptor.fields, "Ñámê");
+      const field = getFieldByLabel(descriptor.fields, "Name");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -429,6 +429,73 @@ describe("Content", () => {
 
   });
 
+  describe("Instance filter", () => {
+
+    it("filters content instances using direct property", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: [{ schemaName: "PCJ_TestSchema", classNames: ["TestClass"] }],
+          }],
+        }],
+      };
+
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {
+          instanceFilter: {
+            selectClassName: "PCJ_TestSchema:TestClass",
+            expression: "this.String_Property_4 = \"Yoda\"",
+          },
+        },
+      });
+
+      expect(content?.contentSet.length).to.be.eq(6);
+    });
+
+    it("filters content instances using related property", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: [{ schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true }],
+          }],
+        }],
+      };
+
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {
+          instanceFilter: {
+            selectClassName: "Generic:PhysicalObject",
+            expression: "related.Btu__x002F__lb__x0020____x005B__Btu__x0020__per__x0020__pound__x0020__mass__x005D__ = 1475.699",
+            relatedInstances: [{
+              pathFromSelectToPropertyClass: [{
+                sourceClassName: "Generic:PhysicalObject",
+                targetClassName: "DgnCustomItemTypes_MyProp:area__x0020__per__x0020__time__x0020__squaredElementAspect",
+                relationshipName: "BisCore:ElementOwnsMultiAspects",
+                isForwardRelationship: true,
+              }],
+              alias: "related",
+            }],
+          },
+        },
+      });
+
+      expect(content?.contentSet.length).to.be.eq(1);
+    });
+
+  });
+
   describe("Class descriptor", () => {
 
     it("creates base class descriptor usable for subclasses", async () => {
@@ -502,9 +569,9 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
-                  id: "0x171",
-                  name: "DgnCustomItemTypes_MyProp:areaElementAspect",
-                  label: "area",
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -524,9 +591,241 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
-                  id: "0xb0",
-                  name: "BisCore:PhysicalModel",
-                  label: "Physical Model",
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -539,14 +838,14 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0xb0",
-                  name: "BisCore:PhysicalModel",
-                  label: "Physical Model",
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
                 },
                 targetClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -559,9 +858,9 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 targetClassInfo: {
                   id: "0xa9",
@@ -578,13 +877,119 @@ describe("Content", () => {
                 isForwardRelationship: true,
               },
             ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x8e",
+                  name: "BisCore:GeometricElement3dHasTypeDefinition",
+                  label: "GeometricElement3dHasTypeDefinition",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x8e",
+                  name: "BisCore:GeometricElement3dHasTypeDefinition",
+                  label: "GeometricElement3dHasTypeDefinition",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x8e",
+                  name: "BisCore:GeometricElement3dHasTypeDefinition",
+                  label: "GeometricElement3dHasTypeDefinition",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                targetClassInfo: {
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
           ],
           navigationPropertyClasses: [
             {
               sourceClassInfo: {
-                id: "0x3f",
-                name: "BisCore:Element",
-                label: "Element",
+                id: "0x1a0",
+                name: "PCJ_TestSchema:TestClass",
+                label: "TestClass",
               },
               targetClassInfo: {
                 id: "0x41",
@@ -602,14 +1007,14 @@ describe("Content", () => {
             },
             {
               sourceClassInfo: {
-                id: "0x8b",
-                name: "BisCore:GeometricElement3d",
-                label: "3D Geometric Element",
+                id: "0x1a0",
+                name: "PCJ_TestSchema:TestClass",
+                label: "TestClass",
               },
               targetClassInfo: {
-                id: "0x8d",
-                name: "BisCore:SpatialCategory",
-                label: "Spatial Category",
+                id: "0x3f",
+                name: "BisCore:Element",
+                label: "Element",
               },
               isPolymorphicTargetClass: true,
               relationshipInfo: {
@@ -692,22 +1097,27 @@ describe("Content", () => {
 
   });
 
-  describe("when request in the backend exceeds the backend timeout time", () => {
+  describe("waits for frontend timeout when request exceeds the backend timeout time", () => {
 
     let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;
+    const frontendTimeout = 50;
 
     beforeEach(async () => {
-      // re-initialize to set backend response timeout to 500 ms
       await closeIModel();
       await terminate();
-      await initialize(500);
+      await initialize({
+        // this defaults to 0, which means "no timeouts" - reinitialize with something else
+        backendTimeout: 1,
+        frontendTimeout,
+      });
       await openIModel();
 
       // mock `Promise.race` to always reject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const realRace = Promise.race;
+      const rejectedPromise = Promise.reject();
       raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-        (values as any).push(new Promise((_resolve, reject) => { reject("something"); }));
+        (values as Array<Promise<any>>).splice(0, 0, rejectedPromise);
         return realRace.call(Promise, values);
       });
     });
@@ -728,8 +1138,10 @@ describe("Content", () => {
       const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
       const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
       const keys = new KeySet([key1, key2]);
+      const start = BeTimePoint.now();
       await expect(Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "Grid" }))
         .to.be.eventually.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+      expect(BeTimePoint.now().milliseconds).to.be.greaterThanOrEqual(start.plus(BeDuration.fromMilliseconds(frontendTimeout)).milliseconds);
     });
 
   });

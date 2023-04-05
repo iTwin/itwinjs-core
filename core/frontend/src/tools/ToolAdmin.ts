@@ -90,8 +90,16 @@ export class ToolSettingsState {
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.None;
   public locateCircleOn = false;
-  public setFrom(other: ToolState) { this.coordLockOvr = other.coordLockOvr; this.locateCircleOn = other.locateCircleOn; }
-  public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+  public setFrom(other: ToolState) {
+    this.coordLockOvr = other.coordLockOvr;
+    this.locateCircleOn = other.locateCircleOn;
+  }
+
+  public clone(): ToolState {
+    const val = new ToolState();
+    val.setFrom(this);
+    return val;
+  }
 }
 
 /** @internal */
@@ -160,11 +168,22 @@ export class CurrentInputState {
 
   public isDragging(button: BeButton) { return this.button[button].isDragging; }
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
-  public onInstallTool() { this.clearKeyQualifiers(); this.lastWheelEvent = undefined; this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined; }
+  public onInstallTool() {
+    this.clearKeyQualifiers();
+    this.lastWheelEvent = undefined;
+    this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined;
+  }
+
   public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
-  public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
+  public clearViewport(vp: Viewport) {
+    if (vp === this.viewport)
+      this.viewport = undefined;
+  }
+
   private isAnyDragging() { return this.button.some((button) => button.isDragging); }
-  private setKeyQualifier(qual: BeModifierKeys, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
+  private setKeyQualifier(qual: BeModifierKeys, down: boolean) {
+    this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual));
+  }
 
   public setKeyQualifiers(ev: MouseEvent | KeyboardEvent | TouchEvent): void {
     this.setKeyQualifier(BeModifierKeys.Shift, ev.shiftKey);
@@ -407,9 +426,7 @@ export class ToolAdmin {
    */
   private _toolSettingsChangeHandler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined = undefined;
 
-  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
-   * @internal
-   */
+  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool. */
   public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
   public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
@@ -420,9 +437,7 @@ export class ToolAdmin {
  */
   private _reloadToolSettingsHandler: (() => void) | undefined = undefined;
 
-  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
-   * @internal
-   */
+  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool. */
   public get reloadToolSettingsHandler() { return this._reloadToolSettingsHandler; }
   public set reloadToolSettingsHandler(handler: (() => void) | undefined) {
     this._reloadToolSettingsHandler = handler;
@@ -433,9 +448,7 @@ export class ToolAdmin {
    */
   private _toolSyncUiEventDispatcher: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined = undefined;
 
-  /** Returns the handler registered by the UI layer that will trigger UiSyncEvent processing that informs UI component to refresh their state.
-   * @internal
-   */
+  /** Returns the handler registered by the UI layer that will trigger UiSyncEvent processing that informs UI component to refresh their state. */
   public get toolSyncUiEventDispatcher() { return this._toolSyncUiEventDispatcher; }
   public set toolSyncUiEventDispatcher(handler: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined) {
     this._toolSyncUiEventDispatcher = handler;
@@ -456,10 +469,10 @@ export class ToolAdmin {
 
     ["keydown", "keyup"].forEach((type) => {
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
-      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false); });
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));
     });
 
-    ToolAdmin._removals.push(() => { window.onfocus = null; });
+    ToolAdmin._removals.push(() => window.onfocus = null);
   }
 
   /** @internal */
@@ -809,7 +822,11 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public async onInstallTool(tool: InteractiveTool): Promise<boolean> { this.currentInputState.onInstallTool(); return tool.onInstall(); }
+  public async onInstallTool(tool: InteractiveTool): Promise<boolean> {
+    this.currentInputState.onInstallTool();
+    return tool.onInstall();
+  }
+
   /** @internal */
   public async onPostInstallTool(tool: InteractiveTool) { return tool.onPostInstall(); }
 
@@ -942,7 +959,8 @@ export class ToolAdmin {
     if (this._canvasDecoration && this._canvasDecoration.onMouseLeave)
       this._canvasDecoration.onMouseLeave();
     this._canvasDecoration = dec;
-    if (ev && dec && dec.onMouseEnter) dec.onMouseEnter(ev);
+    if (ev && dec && dec.onMouseEnter)
+      dec.onMouseEnter(ev);
 
     vp.canvas.style.cursor = dec ? (dec.decorationCursor ? dec.decorationCursor : "pointer") : IModelApp.viewManager.cursor;
     vp.invalidateDecorations();
@@ -1088,7 +1106,7 @@ export class ToolAdmin {
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
 
-    snapPromise.then((snapOk) => {
+    snapPromise.then(async (snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
       return processMotion();
@@ -1230,6 +1248,8 @@ export class ToolAdmin {
     if (IModelApp.accuDraw.onPreButtonEvent(ev))
       return;
 
+    let updateDynamics = false;
+
     switch (ev.button) {
       case BeButton.Data: {
         if (undefined === tool) {
@@ -1249,11 +1269,7 @@ export class ToolAdmin {
         if (tool instanceof PrimitiveTool)
           tool.autoLockTarget();
 
-        // Process the active tool's pending hints from onDataButtonDown before calling updateDynamics...
-        IModelApp.accuDraw.processHints();
-
-        // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
-        this.updateDynamics(undefined, true, true);
+        updateDynamics = true; // AccuDraw.onPostButtonEvent needs to process the active tool's pending hints from onDataButtonDown before calling updateDynamics...
         break;
       }
 
@@ -1286,6 +1302,12 @@ export class ToolAdmin {
 
     IModelApp.tentativePoint.onButtonEvent(ev);
     IModelApp.accuDraw.onPostButtonEvent(ev);
+
+    if (!updateDynamics)
+      return;
+
+    // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
+    this.updateDynamics(undefined, true, true);
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
@@ -1629,7 +1651,6 @@ export class ToolAdmin {
    * To "bump" a setting means to toggle a boolean value or cycle through enum values.
    * If no `settingIndex` param is specified, the first setting is bumped.
    * Returns true if the setting was successfully bumped.
-   * @beta
    */
   public async bumpToolSetting(settingIndex?: number): Promise<boolean> {
     return this.currentTool.bumpToolSetting(settingIndex);
@@ -1640,7 +1661,6 @@ export class ToolAdmin {
    * more important user interaction processing is required.
    * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
    * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
-   * @beta
    */
   public dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
     const defaultRefreshEventId = "tool-admin-refresh-ui";
@@ -1659,7 +1679,6 @@ export class ToolAdmin {
    * to be processed together.
    * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
    * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
-   * @beta
    */
   public dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
     const defaultRefreshEventId = "tool-admin-refresh-ui";
@@ -1844,6 +1863,10 @@ export class ToolAdmin {
     this.setLocateCircleOn(enableLocate);
     viewManager.invalidateDecorationsAllViews();
   }
+
+  /** Controls how the button event location is adjusted for the active tool */
+  public get coordinateLockOverrides(): CoordinateLockOverrides { return this.toolState.coordLockOvr; }
+  public set coordinateLockOverrides(coordLockOvr: CoordinateLockOverrides) { this.toolState.coordLockOvr = coordLockOvr; }
 
   /** @internal */
   public async callOnCleanup() {

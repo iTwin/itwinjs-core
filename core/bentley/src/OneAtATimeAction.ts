@@ -66,7 +66,10 @@ export class OneAtATimeAction<T> {
   /** Ctor for OneAtATimePromise.
    * @param run The method that performs an action that creates the Promise.
    */
-  constructor(run: (...args: any[]) => Promise<T>, msg = "abandoned") { this._run = run; this.msg = msg; }
+  constructor(run: (...args: any[]) => Promise<T>, msg = "abandoned") {
+    this._run = run;
+    this.msg = msg;
+  }
 
   /** Add a new request to this OneAtATimePromise. The request will only run when no other outstanding requests are active.
    * @note Callers of this method *must* handle AbandonedError rejections.

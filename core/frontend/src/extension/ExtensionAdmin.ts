@@ -127,7 +127,9 @@ export class ExtensionAdmin {
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
   private async activateExtensionEvents(event: string) {
     for (const extension of this._extensions.values()) {
-      if (!extension.manifest.activationEvents) continue;
+      if (!extension.manifest.activationEvents)
+        continue;
+
       for (const activationEvent of extension.manifest.activationEvents) {
         if (activationEvent === event) {
           this._execute(extension); // eslint-disable-line @typescript-eslint/no-floating-promises

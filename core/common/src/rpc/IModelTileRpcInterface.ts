@@ -6,49 +6,42 @@
  * @module RpcInterface
  */
 
+import type { TransferConfig } from "@itwin/object-storage-core/lib/common";
 import { Id64Array } from "@itwin/core-bentley";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
-import { TileContentIdentifier } from "../CloudStorageTileCache";
 import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcOperation } from "./core/RpcOperation";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
-import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
+import { IModelTileTreeProps, TileContentIdentifier, TileContentSource, TileVersionInfo } from "../TileProps";
 
 /** @public */
-export abstract class IModelTileRpcInterface extends RpcInterface {
+export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   public static getClient(): IModelTileRpcInterface { return RpcManager.getClientForInterface(IModelTileRpcInterface); }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "IModelTileRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.1.0";
+  public static interfaceVersion = "3.2.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
-  /** Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
+  /** Get storage config required to download tiles from the tile cache.
+   * @returns undefined if the backend does not support caching. In that case, tiles must be requested using [[generateTileContent]].
    * @beta
    */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
-  public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
-    return this.forward(arguments);
-  }
-
-  /** Returns true if an external tile cache is configured on the backend.
-   * @internal @deprecated
-   */
-  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return this.forward(arguments);
+  public async getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
+    const response = await this.forward(arguments);
+    return response && { ...response, expiration: new Date(response.expiration) };
   }
 
   /** @internal */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
 
   /** Ask the backend to generate content for the specified tile. This function, unlike the deprecated `requestTileContent`, does not check the cloud storage tile cache -

@@ -1,0 +1,16 @@
+{
+  "FirstTrivial": "First level string (german)",
+  "FirstSubstitution1": "First level {{str}} (german)",
+  "FirstSubstitution2": "First level {{str1}} and {{str2}} (german)",
+  "SecondTrivial": {
+    "Test1": "Second level string 1 (german)",
+    "Test2": "Second level string 2 (german)"
+  },
+  "SecondSubstitution": {
+    "Test1": "Substitute {{varA}} and {{varB}} (german)",
+    "Test2": "Reverse substitute {{varB}} and {{varA}} (german)"
+  },
+  "MyObject": {
+    "ObjectKey1": "ObjectValue1 (german)"
+  }
+}

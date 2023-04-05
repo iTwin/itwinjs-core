@@ -162,8 +162,14 @@ describe("ContextRealityModel", () => {
     let app: FeatureAppearance | undefined;
 
     const model = makeModel({ tilesetUrl: "a" });
-    model.onPlanarClipMaskChanged.addListener((x, m) => { expect(m).to.equal(model); mask = x; });
-    model.onAppearanceOverridesChanged.addListener((x, m) => { expect(m).to.equal(model); app = x; });
+    model.onPlanarClipMaskChanged.addListener((x, m) => {
+      expect(m).to.equal(model);
+      mask = x;
+    });
+    model.onAppearanceOverridesChanged.addListener((x, m) => {
+      expect(m).to.equal(model);
+      app = x;
+    });
 
     const newMask = model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1234 });
     expect(mask).to.equal(newMask);

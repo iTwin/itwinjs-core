@@ -27,9 +27,12 @@ export class ECVersion {
    *
    */
   constructor(read?: number, write?: number, minor?: number) {
-    if (undefined !== read) this._read = read;
-    if (undefined !== write) this._write = write;
-    if (undefined !== minor) this._minor = minor;
+    if (undefined !== read)
+      this._read = read;
+    if (undefined !== write)
+      this._write = write;
+    if (undefined !== minor)
+      this._minor = minor;
 
     if (this._read > 999 || this._read < 0 || this._write > 999 || this._write < 0 || this._minor > 9999999 || this._minor < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
@@ -139,9 +142,12 @@ export class SchemaKey {
    * @return True if they match; otherwise, false.
    */
   public compareByName(rhs: SchemaKey | string | undefined): boolean {
-    if (undefined === rhs) { return false; }
+    if (undefined === rhs)
+      return false;
+
     if (typeof (rhs) === "string")
       return rhs.toLowerCase() === this.name.toLowerCase();
+
     return rhs.name.toLowerCase() === this.name.toLowerCase();
   }
 

@@ -25,7 +25,11 @@ let testVal2: string;
 /** class to test immediate tool */
 class TestImmediate extends Tool {
   public static override toolId = "Test.Immediate";
-  constructor(val1: string, val2: string) { testVal1 = val1; testVal2 = val2; super(); }
+  constructor(val1: string, val2: string) {
+    testVal1 = val1;
+    testVal2 = val2;
+    super();
+  }
 }
 
 class AnotherImmediate extends Tool {
@@ -61,7 +65,12 @@ class TestApp extends MockRender.App {
     IModelApp.toolAdmin.onInitialized();
 
     // register an anonymous class with the toolId "Null.Tool"
-    const testNull = class extends Tool { public static override toolId = "Null.Tool"; public override async run() { testVal1 = "fromNullTool"; return true; } };
+    const testNull = class extends Tool {
+      public static override toolId = "Null.Tool"; public override async run() {
+        testVal1 = "fromNullTool";
+        return true;
+      }
+    };
     testNull.register(namespace);
   }
 

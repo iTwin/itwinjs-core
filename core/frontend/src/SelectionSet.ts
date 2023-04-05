@@ -235,7 +235,6 @@ export class HiliteSet {
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
    * @param syncWithSelectionSet If true, the contents of the `elements` set will be synchronized with those in the `iModel`'s [[SelectionSet]].
-   * @internal
    */
   public constructor(public iModel: IModelConnection, syncWithSelectionSet = true) {
     this._elements = new HilitedElementIds(iModel, syncWithSelectionSet);
@@ -266,6 +265,8 @@ export class HiliteSet {
    * @param onOff True to add the elements to the hilited set, false to remove them.
    */
   public setHilite(arg: Id64Arg, onOff: boolean): void {
+    const oldSize = this.elements.size;
+
     for (const id of Id64.iterable(arg)) {
       if (onOff)
         this.elements.addId(id);
@@ -273,7 +274,8 @@ export class HiliteSet {
         this.elements.deleteId(id);
     }
 
-    IModelApp.viewManager.onSelectionSetChanged(this.iModel);
+    if (oldSize !== this.elements.size)
+      IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
 }
 

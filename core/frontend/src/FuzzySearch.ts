@@ -128,13 +128,19 @@ export interface FuzzySearchResult<T> {
 }
 
 /** Added to each result to support the FuzzySearchResult interface. */
-function getResult(this: any) { return this.item; }
+function getResult(this: any) {
+  return this.item;
+}
 
 /** Added to each result to support the FuzzySearchResult interface. */
-function getMatchedKey(this: any): string { return (this.matches.length > 0) ? this.matches[0].key : this.matchedKey; }
+function getMatchedKey(this: any): string {
+  return (this.matches.length > 0) ? this.matches[0].key : this.matchedKey;
+}
 
 /** Added to each result to support the FuzzySearchResult interface. */
-function getMatchedValue(this: any): string { return (this.matches.length > 0) ? this.matches[0].value : this.matchedValue; }
+function getMatchedValue(this: any): string {
+  return (this.matches.length > 0) ? this.matches[0].value : this.matchedValue;
+}
 
 /** this function is added to each result to support the FuzzySearchResult interface. */
 function getBoldMask(this: any): boolean[] | undefined {

@@ -175,6 +175,24 @@ describe("IModel", () => {
       expectNoChange(imodel, () => imodel.initFromProps({ ...props }));
       expectNoChange(imodel, () => imodel.initFromProps(imodel.getProps()));
     });
+  });
 
+  it("is geolocated IFF it has a valid EcefLocation", () => {
+    const props: TestIModelProps = {
+      rootSubject: { name: "subject", description: "SUBJECT" },
+      projectExtents: { low: [0, 1, 2], high: [3, 4, 5] },
+      globalOrigin: [-1, -2, -3],
+      key: "",
+    };
+
+    expect(new TestIModel(props).isGeoLocated).to.be.false;
+    expect(new TestIModel({
+      ...props,
+      ecefLocation: { origin: [0, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
+    }).isGeoLocated).to.be.false;
+    expect(new TestIModel({
+      ...props,
+      ecefLocation: { origin: [1, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
+    }).isGeoLocated).to.be.true;
   });
 });

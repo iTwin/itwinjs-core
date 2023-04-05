@@ -40,7 +40,10 @@ export class GeometryOptions {
   public readonly preserveOrder: PreserveOrder;
   public readonly edges: GenerateEdges;
   constructor(edges: GenerateEdges, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No, preserveOrder: PreserveOrder = PreserveOrder.No) {
-    this.normals = normals; this.surfaces = surfaces; this.preserveOrder = preserveOrder; this.edges = edges;
+    this.normals = normals;
+    this.surfaces = surfaces;
+    this.preserveOrder = preserveOrder;
+    this.edges = edges;
   }
 
   public get wantSurfacesOnly(): boolean { return this.surfaces === SurfacesOnly.Yes; }

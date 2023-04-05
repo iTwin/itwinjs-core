@@ -85,7 +85,11 @@ export class PolylineData {
     this.numIndices = numIndices;
   }
   public get isValid(): boolean { return 0 < this.numIndices; }
-  public reset(): void { this.numIndices = 0; this.vertIndices = []; }
+  public reset(): void {
+    this.numIndices = 0;
+    this.vertIndices = [];
+  }
+
   public init(polyline: MeshPolyline) {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
@@ -108,7 +112,11 @@ export class MeshPolyline {
 }
 
 /** @internal */
-export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }
+export class MeshPolylineList extends Array<MeshPolyline> {
+  constructor(...args: MeshPolyline[]) {
+    super(...args);
+  }
+}
 
 /** @internal */
 export class MeshEdge {
@@ -175,7 +183,10 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
     return this.isValid;
   }
 
-  public override clear() { this.normals = undefined; super.clear(); }
+  public override clear() {
+    this.normals = undefined;
+    super.clear();
+  }
 }
 
 /** @internal */

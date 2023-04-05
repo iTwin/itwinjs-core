@@ -10,11 +10,11 @@
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
@@ -22,6 +22,8 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Polyface, PolyfaceVisitor } from "../polyface/Polyface";
+import { PolyfaceQuery } from "../polyface/PolyfaceQuery";
 import { ClipPlane, ClipPlaneProps } from "./ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
 
@@ -257,17 +259,19 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     return this._planes;
   }
 
-  /** Test if there is any intersection with a ray defined by origin and direction.
+  /**
+   * Test if there is any intersection with a ray defined by origin and direction.
    * * Optionally record the range (null or otherwise) in caller-allocated result.
-   * * If the ray is unbounded inside the clip, result can contain positive or negative "Geometry.hugeCoordinate" values
+   * * If the ray is unbounded inside the clip, result can contain positive or negative
+   * "Geometry.largeCoordinateResult" values
    * * If no result is provide, there are no object allocations.
    * @param result optional Range1d to receive parameters along the ray.
    */
-  public hasIntersectionWithRay(ray: Ray3d, result?: Range1d, tolerance: number = Geometry.smallMetricDistance ): boolean {
+  public hasIntersectionWithRay(ray: Ray3d, result?: Range1d, tolerance: number = Geometry.smallMetricDistance): boolean {
     // form low and high values in locals that do not require allocation.
     // transfer to caller-supplied result at end
-    let t0 = -Geometry.hugeCoordinate;
-    let t1 = Geometry.hugeCoordinate;
+    let t0 = -Geometry.largeCoordinateResult;
+    let t1 = Geometry.largeCoordinateResult;
     if (result)
       result.setNull();
     const velocityTolerance = 1.0e-13;
@@ -275,7 +279,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
       const vD = plane.velocity(ray.direction);
       const vN = plane.altitude(ray.origin);
 
-      if (Math.abs (vD) <= velocityTolerance) {
+      if (Math.abs(vD) <= velocityTolerance) {
         // Ray is parallel... No need to continue testing if outside halfspace.
         if (vN < -tolerance)
           return false;   // and result is a null range.
@@ -330,7 +334,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   }
 
   /** Return true if `point` satisfies `point.isPointOnOrInside` for all planes */
-  public isPointOnOrInside(point: Point3d, tolerance: number): boolean {
+  public isPointOnOrInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     const interiorTolerance = Math.abs(tolerance);   // Interior tolerance should always be positive. (TFS# 246598).
     for (const plane of this._planes) {
       if (!plane.isPointOnOrInside(point, (plane.interior ? interiorTolerance : tolerance)))
@@ -561,7 +565,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * Add a plane to the convex set.
    * @param plane plane to add
    */
-  public addPlaneToConvexSet(plane: ClipPlane | Plane3dByOriginAndUnitNormal| undefined) {
+  public addPlaneToConvexSet(plane: ClipPlane | Plane3dByOriginAndUnitNormal | undefined) {
     if (plane instanceof ClipPlane)
       this._planes.push(plane);
     else if (plane instanceof Plane3dByOriginAndUnitNormal)
@@ -738,6 +742,45 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     const newInside = this.clipInsidePushOutside(xyz, outsideFragments, arrayCache);
     if (newInside)
       insideFragments.push(newInside);
+  }
+  /** Create a convex clip set from a convex mesh.
+   * * Create a plane for each facet.
+   * * Assemble the planes as a single clip plane set.
+   * * If the facets are closed by edge pairing, use the sign of the computed volume to point the plane normals inward.
+   * * If the facets are not closed, the facet orientation determines plane orientation.
+   * * The implication of this is that if the facets are a convex volume, the returned clip plane set is convex.
+   * @param convexMesh input mesh. For best results, the mesh should be closed and convex.
+   * @param result optional preallocated result to reuse and return
+   * @return clipper and volume (zero if mesh is not closed)
+  */
+  public static createConvexPolyface(convexMesh: Polyface | PolyfaceVisitor, result?: ConvexClipPlaneSet): { clipper: ConvexClipPlaneSet, volume: number } {
+    result = this.createEmpty(result);
+    let vol = 0;
+    let myMesh: Polyface | undefined;
+    let myVisitor: PolyfaceVisitor;
+    if (convexMesh instanceof Polyface) {
+      myMesh = convexMesh;
+      myVisitor = convexMesh.createVisitor(0);
+    } else {
+      myMesh = convexMesh.clientPolyface();
+      myVisitor = convexMesh;
+    }
+    if (myMesh && myVisitor) {
+      if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(myMesh))
+        vol = PolyfaceQuery.sumTetrahedralVolumes(myVisitor);
+      const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
+      const normal = Vector3d.create();
+      const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
+      myVisitor.reset();
+      while (myVisitor.moveToNextFacet()) {
+        if (undefined !== PolygonOps.areaNormalGo(myVisitor.point, normal)) {
+          normal.scaleInPlace(scale);
+          if (undefined !== Plane3dByOriginAndUnitNormal.create(myVisitor.point.front()!, normal, plane))
+            result.addPlaneToConvexSet(plane);
+        }
+      }
+    }
+    return { clipper: result, volume: vol };
   }
 
   // FUNCTIONS SKIPPED DUE TO BSPLINES, VU, OR NON-USAGE IN NATIVE CODE----------------------------------------------------------------

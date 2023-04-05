@@ -7,7 +7,7 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * Sorting rules provide a way to either disable sorting or sort instances by specific properties.
@@ -46,7 +46,7 @@ export type SortingRule = PropertySortingRule | DisabledSortingRule;
  */
 export interface PropertySortingRule extends SortingRuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.PropertySorting;
+  ruleType: "PropertySorting";
 
   /**
    * Specifies name of the property which should be used for sorting.
@@ -67,5 +67,5 @@ export interface PropertySortingRule extends SortingRuleBase {
  */
 export interface DisabledSortingRule extends SortingRuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.DisabledSorting;
+  ruleType: "DisabledSorting";
 }

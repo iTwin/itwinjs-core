@@ -8,7 +8,7 @@
 
 import { disposeArray, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
-  FeatureAppearanceProvider, HiddenLine, RenderSchedule, ViewFlagOverrides, ViewFlags,
+  FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, RenderSchedule, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -18,6 +18,7 @@ import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
+import { Range3d } from "@itwin/core-geometry";
 
 /** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
  * @internal
@@ -55,6 +56,12 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
    * @see [[setViewFlagOverrides]].
    */
   public viewFlagOverrides: ViewFlagOverrides = {};
+  /** Controls how reality models are displayed within this branch.
+   * @beta
+   */
+  public realityModelDisplaySettings?: RealityModelDisplaySettings;
+  /** @internal */
+  public realityModelRange?: Range3d;
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
   /** Optional animation branch Id that incorporates the model Id and, for element timelines, the batch Id.

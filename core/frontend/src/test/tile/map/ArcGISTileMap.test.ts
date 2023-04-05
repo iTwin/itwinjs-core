@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
@@ -101,6 +102,9 @@ const emptyBundleError = {
   },
 };
 
+const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
+const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
+
 describe("ArcGISTileMap", () => {
   const sandbox = sinon.createSandbox();
 
@@ -122,7 +126,7 @@ describe("ArcGISTileMap", () => {
 
   it("Test simple 4x4 tilemap request", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset1.tilemap;
     });
 
@@ -142,7 +146,7 @@ describe("ArcGISTileMap", () => {
       }
     }
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
@@ -176,13 +180,13 @@ describe("ArcGISTileMap", () => {
 
   it("Test 4x4 tilemap request, using call queue", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset1.tilemap;
     });
 
     const parentQuadId = QuadId.createFromContentId(dataset1.parentContentId);
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, 24);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, 24);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
@@ -198,13 +202,13 @@ describe("ArcGISTileMap", () => {
   // no offset should be applied the requested tile (i.e we should not end up with negatives values for row,columns)
   it("Test 4x4 tilemap request, top-left tile of LOD", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset3.tilemap;
     });
 
     const parentQuadId = QuadId.createFromContentId(dataset3.parentContentId);
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, 24);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, 24);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
@@ -219,11 +223,11 @@ describe("ArcGISTileMap", () => {
   // tile map, we need to make sure we can still get the tight tiles visibility.
   it("Test 4x4 tilemap request, response got adjusted to 3x3", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset2.tilemap;
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
     expect(getTileMapStub.calledOnce).to.be.true;
@@ -234,11 +238,11 @@ describe("ArcGISTileMap", () => {
   // As a fallback, a second request should be made with a smaller tilemap should be made
   it("Test 4x4 tilemap request, response got adjusted to 2x2", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset4.tilemap;
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const parentQuadId = QuadId.createFromContentId(dataset4.parentContentId);
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
@@ -254,11 +258,11 @@ describe("ArcGISTileMap", () => {
   // The second request will return the 1x1 tilemap.  available array should have a single tile available.
   it("Test 4x4 tilemap request, response got adjusted to 1x1", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset5.tilemap;  // always returns an 1x1 tilemap
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const parentQuadId = QuadId.createFromContentId(dataset4.parentContentId);
     const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset4.parentContentId).getChildIds());
@@ -285,12 +289,12 @@ describe("ArcGISTileMap", () => {
 
   it("Test empty tilemap response", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return emptyBundleError;
     });
 
     const allFalse = [false,false,false,false];
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
     expect(getTileMapStub.calledOnce).to.be.true;
@@ -304,11 +308,11 @@ describe("ArcGISTileMap", () => {
 
   it("Test 8x8 tilemap request", async () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any>  {
+    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
       return dataset6.tilemap;
     });
     const parentQuadId = QuadId.createFromContentId(dataset6.parentContentId1);
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 8;
     let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
     expect(available).to.eql(dataset6.available1);

@@ -290,7 +290,6 @@ export class MeshParams {
       indices: surfaceIndices,
       fillFlags: args.fillFlags,
       hasBakedLighting: true === args.hasBakedLighting,
-      hasFixedNormals: true === args.hasFixedNormals,
       textureMapping: undefined !== args.textureMapping ? { texture: args.textureMapping.texture, alwaysDisplayed: false } : undefined,
       material: createSurfaceMaterial(args.material),
     };

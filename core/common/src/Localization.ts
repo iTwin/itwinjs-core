@@ -9,7 +9,7 @@
 /** Options for Localization
  * @public
  */
-interface LocalizationOptions {
+export interface TranslationOptions {
   /** for interpolation values */
   [key: string]: any;
   /**
@@ -59,16 +59,18 @@ export interface Localization {
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
    */
-  getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
+  getLocalizedString(key: string | string[], options?: TranslationOptions): string;
   /** Similar to `getLocalizedString` but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
+   * @deprecated in 3.x. Use `getLocalizedString` instead; providing either a key with a namespace `<namespace>:<key>` or
+   * including `{ ns: <namespace> }` in the options.
    */
-  getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+  getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
   /** get the English string for a key. */
-  getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+  getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
   /** Replace all instances of `%{key}` within a string with the translations of those keys.
    * For example:
    * ``` ts
@@ -108,7 +110,14 @@ export interface Localization {
  */
 export class EmptyLocalization implements Localization {
   public async initialize(): Promise<void> { }
-  public getLocalizedString(key: string | string[]): string { return typeof (key) == "string" ? key : key[0]; }
+  public getLocalizedString(key: string | string[]): string {
+    if (typeof (key) !== "string") {
+      key = key[0];
+    }
+    // Simulate correct and simple usage of i18next's translation function
+    // Namely, remove the leading namespace substring if there is one
+    return key.split(":", 2).pop()!;
+  }
   public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
   public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
   public getLocalizedKeys(inputString: string): string { return inputString; }

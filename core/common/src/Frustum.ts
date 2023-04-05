@@ -74,33 +74,76 @@ export class Frustum {
   /** Array of the 8 points of this Frustum. */
   public readonly points: Point3d[] = [];
   /** Constructor for Frustum. Members are initialized to the Npc cube. */
-  public constructor() { for (let i = 0; i < 8; ++i) this.points[i] = NpcCorners[i].clone(); }
+  public constructor() {
+    for (let i = 0; i < 8; ++i)
+      this.points[i] = NpcCorners[i].clone();
+  }
+
   /** Initialize this Frustum to the 8 corners of the NPC cube. */
-  public initNpc() { for (let i = 0; i < 8; ++i) Point3d.createFrom(NpcCorners[i], this.points[i]); return this; }
+  public initNpc() {
+    for (let i = 0; i < 8; ++i)
+      Point3d.createFrom(NpcCorners[i], this.points[i]);
+
+    return this;
+  }
+
   /** Get a corner Point from this Frustum. */
   public getCorner(i: number) { return this.points[i]; }
   /** Get the point at the center of this Frustum (halfway between RightTopFront and LeftBottomRear. */
-  public getCenter(): Point3d { return this.getCorner(Npc.RightTopFront).interpolate(0.5, this.getCorner(Npc.LeftBottomRear)); }
+  public getCenter(): Point3d {
+    return this.getCorner(Npc.RightTopFront).interpolate(0.5, this.getCorner(Npc.LeftBottomRear));
+  }
+
   /** Get the distance between two corners of this Frustum. */
-  public distance(corner1: number, corner2: number): number { return this.getCorner(corner1).distance(this.getCorner(corner2)); }
+  public distance(corner1: number, corner2: number): number {
+    return this.getCorner(corner1).distance(this.getCorner(corner2));
+  }
+
   /** Get the ratio of the length of the diagonal of the front plane to the diagonal of the back plane. */
-  public getFraction(): number { return Geometry.safeDivideFraction(this.distance(Npc.LeftTopFront, Npc.RightBottomFront), this.distance(Npc.LeftTopRear, Npc.RightBottomRear), 0); }
+  public getFraction(): number {
+    return Geometry.safeDivideFraction(this.distance(Npc.LeftTopFront, Npc.RightBottomFront), this.distance(Npc.LeftTopRear, Npc.RightBottomRear), 0);
+  }
+
   /** Multiply all the points of this Frustum by a Transform, in place. */
-  public multiply(trans: Transform): void { trans.multiplyPoint3dArrayInPlace(this.points); }
+  public multiply(trans: Transform): void {
+    trans.multiplyPoint3dArrayInPlace(this.points);
+  }
+
   /** Offset all of the points of this Frustum by a vector. */
-  public translate(offset: XYAndZ): void { for (const pt of this.points) pt.plus(offset, pt); }
+  public translate(offset: XYAndZ): void {
+    for (const pt of this.points)
+      pt.plus(offset, pt);
+  }
+
   /** Transform all the points of this Frustum and return the result in another Frustum. */
-  public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
+  public transformBy(trans: Transform, result?: Frustum): Frustum {
+    result = result ? result : new Frustum();
+    trans.multiplyPoint3dArray(this.points, result.points);
+    return result;
+  }
+
   /** Calculate a bounding range from the 8 points in this Frustum. */
-  public toRange(range?: Range3d): Range3d { range = range ? range : new Range3d(); Range3d.createArray(this.points, range); return range; }
+  public toRange(range?: Range3d): Range3d {
+    return Range3d.createArray(this.points, range);
+  }
+
   /** Make a copy of this Frustum.
    * @param result Optional Frustum for copy. If undefined allocate a new Frustum.
    */
-  public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); result.setFrom(this); return result; }
+  public clone(result?: Frustum): Frustum {
+    result = result ? result : new Frustum();
+    result.setFrom(this);
+    return result;
+  }
+
   /** Set the points of this Frustum to be copies of the points in another Frustum. */
   public setFrom(other: Frustum) { this.setFromCorners(other.points); }
   /** Set the points of this frustum from array of corner points in NPC order. */
-  public setFromCorners(corners: Point3d[]) { for (let i = 0; i < 8; ++i) this.points[i].setFrom(corners[i]); }
+  public setFromCorners(corners: Point3d[]) {
+    for (let i = 0; i < 8; ++i)
+      this.points[i].setFrom(corners[i]);
+  }
+
   /** Scale this Frustum, in place, about its center by a scale factor. */
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
@@ -115,10 +158,14 @@ export class Frustum {
     orig.points[Npc._000].interpolate(f, orig.points[Npc._111], this.points[Npc._111]);
   }
   /** The point at the center of the front face of this frustum */
-  public get frontCenter() { return this.getCorner(Npc.LeftBottomFront).interpolate(.5, this.getCorner(Npc.RightTopFront)); }
+  public get frontCenter() {
+    return this.getCorner(Npc.LeftBottomFront).interpolate(.5, this.getCorner(Npc.RightTopFront));
+  }
 
   /** The point at the center of the rear face of this frustum */
-  public get rearCenter() { return this.getCorner(Npc.LeftBottomRear).interpolate(.5, this.getCorner(Npc.RightTopRear)); }
+  public get rearCenter() {
+    return this.getCorner(Npc.LeftBottomRear).interpolate(.5, this.getCorner(Npc.RightTopRear));
+  }
 
   /** Scale this frustum's XY (viewing) plane about its center */
   public scaleXYAboutCenter(scale: number) {
@@ -168,7 +215,11 @@ export class Frustum {
   }
 
   /** Invalidate this Frustum by setting all 8 points to zero. */
-  public invalidate(): void { for (let i = 0; i < 8; ++i) this.points[i].set(0, 0, 0); }
+  public invalidate(): void {
+    for (let i = 0; i < 8; ++i)
+      this.points[i].set(0, 0, 0);
+  }
+
   /** Return true if this Frustum is equal to another Frustum */
   public equals(rhs: Frustum): boolean {
     for (let i = 0; i < 8; ++i) {
@@ -180,7 +231,14 @@ export class Frustum {
   /** Return true if all of the points in this Frustum are *almost* the same as the points in another Frustum.
    * @see [[equals]], [XYZ.isAlmostEqual]($geometry)
    */
-  public isSame(other: Frustum): boolean { for (let i = 0; i < 8; ++i) { if (!this.points[i].isAlmostEqual(other.points[i])) return false; } return true; }
+  public isSame(other: Frustum): boolean {
+    for (let i = 0; i < 8; ++i) {
+      if (!this.points[i].isAlmostEqual(other.points[i]))
+        return false;
+    }
+
+    return true;
+  }
 
   /** Initialize this Frustum from a Range */
   public initFromRange(range: LowAndHighXYZ | LowAndHighXY): void {
@@ -266,6 +324,5 @@ export class Frustum {
     convexSet.polygonClip(loopPoints, outPoints, workPoints);
 
     return outPoints.length < 4 ? undefined : outPoints.getPoint3dArray();
-
   }
 }

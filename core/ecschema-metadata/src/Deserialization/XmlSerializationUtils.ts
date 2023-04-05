@@ -12,7 +12,7 @@ import { Schema } from "../Metadata/Schema";
 
 /**
  * Namespace holding utility functions for serializing EC types to the EC XML format.
- * @beta
+ * @internal
  */
 export namespace XmlSerializationUtils {
   /**

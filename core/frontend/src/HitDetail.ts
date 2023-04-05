@@ -237,7 +237,11 @@ export class SnapDetail extends HitDetail {
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
   /** Change the snap point. */
-  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
+  public setSnapPoint(point: Point3d, heat: SnapHeat) {
+    this.snapPoint.setFrom(point);
+    this.adjustedPoint.setFrom(point);
+    this.heat = heat;
+  }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
   public setCurvePrimitive(primitive?: CurvePrimitive, localToWorld?: Transform, geomType?: HitGeomType): void {
@@ -394,14 +398,20 @@ export class HitList<T extends HitDetail> {
   public hits: T[] = [];
   public currHit = -1;
   public get length(): number { return this.hits.length; }
-  public empty(): void { this.hits.length = 0; this.currHit = -1; }
+  public empty(): void {
+    this.hits.length = 0;
+    this.currHit = -1;
+  }
+
   public resetCurrentHit(): void { this.currHit = -1; }
 
   /** Get a hit from a particular index into a HitList
    * return the requested hit from the HitList or undefined
    */
   public getHit(hitNum: number): T | undefined {
-    if (hitNum < 0) hitNum = this.length - 1;
+    if (hitNum < 0)
+      hitNum = this.length - 1;
+
     return (hitNum >= this.length) ? undefined : this.hits[hitNum];
   }
 
@@ -419,7 +429,11 @@ export class HitList<T extends HitDetail> {
       this.hits.push(hit);
   }
 
-  public getNextHit(): T | undefined { this.currHit++; return this.getCurrentHit(); }
+  public getNextHit(): T | undefined {
+    this.currHit++;
+    return this.getCurrentHit();
+  }
+
   public getCurrentHit(): T | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
 
   public setCurrentHit(hit: T): void {
@@ -487,20 +501,28 @@ export class HitList<T extends HitDetail> {
     const zOverride2 = this.getPriorityZOverride(hit2.priority);
 
     // Prefer edges over surfaces, this is more important than z because we know the edge isn't obscured...
-    if (zOverride1 < zOverride2) return -1;
-    if (zOverride1 > zOverride2) return 1;
+    if (zOverride1 < zOverride2)
+      return -1;
+    if (zOverride1 > zOverride2)
+      return 1;
 
     // Compare xy distance from pick point, prefer hits closer to center...
-    if (hit1.distXY < hit2.distXY) return -1;
-    if (hit1.distXY > hit2.distXY) return 1;
+    if (hit1.distXY < hit2.distXY)
+      return -1;
+    if (hit1.distXY > hit2.distXY)
+      return 1;
 
     // Compare distance fraction, prefer hits closer to eye...
-    if (hit1.distFraction > hit2.distFraction) return -1;
-    if (hit1.distFraction < hit2.distFraction) return 1;
+    if (hit1.distFraction > hit2.distFraction)
+      return -1;
+    if (hit1.distFraction < hit2.distFraction)
+      return 1;
 
     // Compare geometry class, prefer path/region hits over surface hits when all else is equal...
-    if (hit1.priority < hit2.priority) return -1;
-    if (hit1.priority > hit2.priority) return 1;
+    if (hit1.priority < hit2.priority)
+      return -1;
+    if (hit1.priority > hit2.priority)
+      return 1;
 
     return 0;
   }

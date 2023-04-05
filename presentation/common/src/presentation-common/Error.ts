@@ -25,6 +25,9 @@ export enum PresentationStatus {
   /** Error: Backend is not initialized. */
   NotInitialized = Error + 1,
 
+  /** Error: Result set is too large. */
+  ResultSetTooLarge = Error + 2,
+
   /** Error: Argument is invalid. */
   InvalidArgument = Error + 3,
 

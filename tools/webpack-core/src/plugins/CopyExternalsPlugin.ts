@@ -8,6 +8,7 @@ import { Compilation, Compiler, ExternalModule, Module, WebpackError } from "web
 import { getAppRelativePath } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
+import { externalPrefix } from "./RequireMagicCommentsPlugin";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
@@ -41,7 +42,7 @@ export class CopyExternalsPlugin {
 
     let packageJsonPath = "";
     try {
-      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer?.context ?? ""] });
+      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [compilation.moduleGraph.getIssuer(currentModule)?.context ?? ""] });
     } catch (error) {
       // Always _log_ missing externals as a warning and add it as a compilation warning.
       const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
@@ -86,7 +87,7 @@ export class CopyExternalsPlugin {
   }
 
   private pathToPackageName(p: string) {
-    const parts = p.replace(/^.*node_modules[\\\/]/, "").split(/[\\\/]/);
+    const parts = p.replace(/^.*node_modules[\\\/]/, "").replace(externalPrefix, "").split(/[\\\/]/);
     return (parts[0].startsWith("@")) ? `${parts[0]}/${parts[1]}` : parts[0];
   }
 }

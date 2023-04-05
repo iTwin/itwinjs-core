@@ -83,6 +83,7 @@ export enum PrimitiveTypeCode {
   Point2d = 0x701, // eslint-disable-line @typescript-eslint/no-shadow
   Point3d = 0x801, // eslint-disable-line @typescript-eslint/no-shadow
   String = 0x901,
+  IGeometry = 0xa01, // Used for Bentley.Geometry.Common.IGeometry types
 }
 
 /** A callback function to process properties of an Entity

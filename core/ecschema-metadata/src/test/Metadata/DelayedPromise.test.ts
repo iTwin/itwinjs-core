@@ -41,7 +41,10 @@ describe("DelayedPromise", () => {
 
   it("should not start until a rejection callback is attached", async () => {
     const error = new Error("I like to throw things");
-    const asyncOp = sinon.spy(async () => { throw error; });
+    const asyncOp = sinon.spy(async () => {
+      throw error;
+    });
+
     const promise = new DelayedPromise(asyncOp);
     const callback = sinon.spy((_: Error) => "bar");
 

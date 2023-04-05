@@ -67,20 +67,17 @@ class MyClassHandler extends IpcHandler implements MyInterface
   MyClass.register();
 ```
 
-3. In your frontend code, implement a function like:
+3. In your frontend code, make an Proxy object using `IpcApp.makeIpcProxy`:
 
 ```ts
-  import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-frontend";
 
-  const callMyBackend = async <T extends AsyncMethodsOf<MyInterface>>(methodName: T,...args: Parameters<MyInterface[T]>) => {
-    return IpcApp.callIpcChannel(myChannel, methodName, ...args) as PromiseReturnType<MyInterface[T]>;
-  };
+  const myBackendIpc = IpcApp.makeIpcProxy<MyInterface>(myChannel);
 ```
 
-The TypeScript gobbledygook in Step 3 above creates a type-safe asynchronous function you can use to invoke methods on your backend class from your frontend code.
+This makes a Proxy object to call the methods of `MyInterface` from the frontend.
 
 ```ts
-const method1Val = await callMyBackend("sayHello", "abc", 10, true);
+const hello = await myBackendIpc.sayHello("abc", 10, true);
 ```
 
 > Note that all IPC methods return a `Promise`, so their return value must be `await`ed.

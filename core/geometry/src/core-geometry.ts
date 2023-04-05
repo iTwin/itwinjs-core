@@ -30,6 +30,7 @@
  *   * Transform -- an origin and axes.
  *   * Range1d, Range2d, Range3d -- subsets of 1d, 2d, and 3d space bounded by low and high values.
  *   * Ray3d -- a ray defined by origin and direction vector
+ *   * Plane3d -- an abstract base class extended by Plane3dByOriginAndNormal, Plane3dByOriginAndUnitNormal, Point4d, and ClipPlane
  *   * Plane3dByOriginAndUnitNormal -- a plane defined by an origin and a single vector which is perpendicular to the plane
  *   * plane3dByOriginAndVectors -- a plane defined by an origin and two vectors in the plane.
  * * Angles
@@ -139,6 +140,7 @@ export * from "./geometry3d/IndexedXYCollection";
 export * from "./geometry3d/IndexedXYZCollection";
 export * from "./geometry3d/Matrix3d";
 export * from "./geometry3d/OrderedRotationAngles";
+export * from "./geometry3d/Plane3d";
 export * from "./geometry3d/Plane3dByOriginAndUnitNormal";
 export * from "./geometry3d/Plane3dByOriginAndVectors";
 export * from "./geometry3d/Point2dArrayCarrier";
@@ -247,6 +249,7 @@ export * from "./polyface/PolyfaceClip";
 export * from "./polyface/TaggedNumericData";
 export * from "./topology/Graph";
 export * from "./topology/Triangulation";
+export * from "./topology/SpaceTriangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
 export * from "./serialization/GeometrySamples";

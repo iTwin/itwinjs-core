@@ -29,17 +29,18 @@ export class NativeAppLogger {
   private static _onFlushed: Promise<void> | undefined;
   private static flushToBackend() {
     if (!this._onFlushed && this._messages.length > 0) {
-      this._onFlushed = new Promise<void>(() => { this._onFlushed = undefined; });
+      this._onFlushed = new Promise<void>(() => this._onFlushed = undefined);
       const messages = this._messages;
       this._messages = [];
       setTimeout(async () => this.flushBucket(messages));
     }
   }
+
   private static async flushBucket(messages: LogMessage[]): Promise<void> {
     try {
       while (messages.length > 0) {
         const msg: LogMessage = messages.shift()!;
-        await IpcApp.callIpcHost("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
+        await IpcApp.appFunctionIpc.log(msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
       }
     } finally {
       // Put back unsent messages.
@@ -52,28 +53,35 @@ export class NativeAppLogger {
       }
     }
   }
+
   private static log(level: LogLevel, category: string, message: string, metaData: LoggingMetaData) {
     this._messages.push({ timestamp: Date.now(), level, category, message, metaData: BentleyError.getMetaData(metaData) });
     this.flushToBackend();
   }
+
   public static logError(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Error, category, message, metaData);
   }
+
   public static logInfo(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Info, category, message, metaData);
   }
+
   public static logTrace(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Trace, category, message, metaData);
   }
+
   public static logWarning(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Warning, category, message, metaData);
   }
+
   public static async flush(): Promise<void> {
     this.flushToBackend();
     if (this._onFlushed) {
       return this._onFlushed;
     }
   }
+
   public static initialize() {
     const errCb = (category: string, message: string, metaData: LoggingMetaData) => this.logError(category, message, metaData);
     const warnCb = (category: string, message: string, metaData: LoggingMetaData) => this.logWarning(category, message, metaData);

@@ -46,7 +46,7 @@ export type TextureOwnership = TextureCacheOwnership | "external";
  * @public
  * @extensions
  */
-export type TextureImageSource = HTMLImageElement | ImageBuffer; // ###TODO | HTMLCanvasElement etc
+export type TextureImageSource = HTMLImageElement | ImageBuffer | ImageBitmap; // ###TODO | HTMLCanvasElement etc
 
 /** Describes the image from which to create a [RenderTexture]($common).
  * @see [[CreateTextureArgs.image]]

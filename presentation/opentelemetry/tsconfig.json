@@ -1,0 +1,7 @@
+{
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "esModuleInterop": true
+  },
+  "include": ["./src/**/*.ts"]
+}

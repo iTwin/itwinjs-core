@@ -10,7 +10,9 @@ import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
 describe("RegisteredRuleset", () => {
 
   let uniqueIdentifier: string;
-  const managerMock = moq.Mock.ofInstance(function remove(ruleset: RegisteredRuleset): void { ruleset; });
+  const managerMock = moq.Mock.ofInstance(function remove(ruleset: RegisteredRuleset): void {
+    ruleset;
+  });
 
   beforeEach(() => {
     managerMock.reset();
