@@ -6914,7 +6914,7 @@ export class QueryReader {
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
     // (undocumented)
-    get current(): QueryRowProxy;
+    get current(): QueryRow;
     // (undocumented)
     get done(): boolean;
     // (undocumented)
@@ -6939,15 +6939,8 @@ export class QueryReader {
     toArray(): Promise<any[]>;
 }
 
-// @public
-export enum QueryRowFormat {
-    UseECSqlPropertyIndexes = 1,
-    UseECSqlPropertyNames = 0,
-    UseJsPropertyNames = 2
-}
-
 // @beta (undocumented)
-export interface QueryRowProxy {
+export interface QueryRow {
     // (undocumented)
     [propertyName: string]: QueryValueType;
     // (undocumented)
@@ -6958,6 +6951,13 @@ export interface QueryRowProxy {
     toArray(): QueryValueType[];
     // (undocumented)
     toRow(): any;
+}
+
+// @public
+export enum QueryRowFormat {
+    UseECSqlPropertyIndexes = 1,
+    UseECSqlPropertyNames = 0,
+    UseJsPropertyNames = 2
 }
 
 // @beta (undocumented)

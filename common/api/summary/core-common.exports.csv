@@ -589,8 +589,8 @@ public;QueryOptionsBuilder
 beta;QueryPropertyMetaData
 public;QueryQuota
 beta;QueryReader
+beta;QueryRow
 public;QueryRowFormat
-beta;QueryRowProxy
 beta;QueryStats
 beta;QueryValueType = any
 public;Rank
