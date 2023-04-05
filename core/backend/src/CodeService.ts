@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
-import { CodeProps } from "@itwin/core-common";
+import { CodeProps, FontId, FontType } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
@@ -169,7 +169,7 @@ export interface CodesDb {
  * @alpha
  */
 export interface InternalCodes extends CodesDb {
-  verifyFont(): void;
+  reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
 }
 
 /**
@@ -180,10 +180,7 @@ export interface CodeService {
   /** @internal */
   close: () => void;
 
-  addAllCodes(iModel: IModelDb): Promise<{ internal: number, external: number }>;
-
-  /** @internal */
-  addAllCodeSpecs(iModel: IModelDb): Promise<void>;
+  initialize(iModel: IModelDb): Promise<void>;
 
   /** the code index for this CodeService */
   readonly externalCodes?: CodesDb;
@@ -214,7 +211,7 @@ export namespace CodeService {
   const codeSequences = new Map<string, CodeSequence>();
 
   /** @internal */
-  export let createForIModel: ((db: IModelDb) => CodeService) | undefined;
+  export let createForIModel: (db: IModelDb) => Promise<CodeService>;
 
   /** Register an instance of a`CodeSequence` so it can be looked up by name. */
   export function registerSequence(seq: CodeSequence) {
@@ -501,6 +498,19 @@ export namespace CodeService {
     isValidCode(code: CodeValue): boolean;
   }
 
+  /** @internal */
+  export interface FontIndexProps {
+    fontType: FontType;
+    fontName: string;
+    author: AuthorName;
+  }
+  /** @internal */
+  export interface BisCodeSpecIndexProps {
+    name: string;
+    props: string;
+    author: AuthorName;
+  }
+
   /** Exception class thrown by `CodeService` methods. */
   export class Error extends BentleyError {
     /** A string that indicates the type of problem that caused the exception. */
@@ -527,6 +537,7 @@ export namespace CodeService {
     "GuidIsInUse" |
     "GuidMismatch" |
     "IllegalValue" |
+    "InconsistentIModels" |
     "IndexReadonly" |
     "InvalidCodeScope" |
     "InvalidGuid" |

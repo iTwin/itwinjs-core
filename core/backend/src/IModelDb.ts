@@ -1545,7 +1545,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._iModel.nativeDb.queryModelExtentsAsync(ids);
     }
 
-    /** Computes the union of the volumes of all geoemtric elements within any number of [[GeometricModel]]s, specified by model Id.
+    /** Computes the union of the volumes of all geometric elements within one or more [[GeometricModel]]s, specified by model Id.
      * @see [[queryExtents]] to obtain discrete volumes for each model.
      */
     public async queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d> {
@@ -2337,7 +2337,7 @@ export class BriefcaseDb extends IModelDb {
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
   /** @alpha */
-  public static readonly onCodeServiceCreated = new BeEvent<(service: CodeService) => void>();
+  public static readonly onCodeServiceCreated = new BeEvent<(briefcase: BriefcaseDb) => void>();
 
   public static override findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
@@ -2424,11 +2424,10 @@ export class BriefcaseDb extends IModelDb {
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
-        const codeService = CodeService.createForIModel(briefcaseDb);
-        briefcaseDb._codeService = codeService;
-        this.onCodeServiceCreated.raiseEvent(codeService);
+        briefcaseDb._codeService = await CodeService.createForIModel(briefcaseDb);
+        this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
-        if (e.errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
+        if ((e as CodeService.Error).errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
           throw e;
       }
     }
