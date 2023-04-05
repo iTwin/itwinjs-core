@@ -15,24 +15,26 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSchemaProps, QueryReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
+  DomainOptions, EcefLocation, ECSchemaProps, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
-  SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
+  PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryReader, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
+  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
+  UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
+import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -51,8 +53,6 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
-import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 
 // spell:ignore fontid fontmap
 
