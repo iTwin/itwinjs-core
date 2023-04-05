@@ -57,7 +57,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
 export type QueryValueType = any;
 
 /** @beta */
-export interface QueryRowProxy {
+export interface QueryRow {
   toRow(): any;
   toArray(): QueryValueType[];
   getMetaData(): QueryPropertyMetaData[];
@@ -170,7 +170,7 @@ export class QueryReader {
     }
     this._done = false;
   }
-  public get current(): QueryRowProxy { return (this._rowProxy as any); }
+  public get current(): QueryRow { return (this._rowProxy as any); }
   // clear all bindings
   public resetBindings() {
     this._param = new QueryBinder().serialize();
