@@ -9,7 +9,8 @@ import { ECSqlReader, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
-  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo, createTestSimpleContentField,
+  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo,
+  createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import {
   createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
@@ -28,8 +29,6 @@ describe("FavoritePropertiesManager", () => {
   let iTwinId: string;
   let imodelId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const ecSqlReaderMock = moq.Mock.ofType<ECSqlReader>();
-  const queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
 
   before(() => {
     iTwinId = "itwin-id";
@@ -51,25 +50,24 @@ describe("FavoritePropertiesManager", () => {
     manager = new FavoritePropertiesManager({ storage: storageMock.object });
     imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
     imodelMock.setup((x) => x.iTwinId).returns(() => iTwinId);
-    ecSqlReaderMock.setup((x) => x.current).returns(() => queryRowProxyMock.object);
   });
 
   afterEach(() => {
     manager.dispose();
     storageMock.reset();
     imodelMock.reset();
-    ecSqlReaderMock.reset();
-    queryRowProxyMock.reset();
   });
 
   function setupMocksForQueryingBaseClasses(classBaseClass: Array<{ classFullName: string, baseClassFullName: string }>) {
-    const results = classBaseClass;
-    const resultsIterator = results.values();
-    const resultsHasNextIterator = results.map(() => (true)).concat(false).values();
-
+    let currIndex = -1;
+    const ecSqlReaderMock = moq.Mock.ofType<ECSqlReader>();
+    ecSqlReaderMock.setup(async (x) => x.step()).returns(async () => ++currIndex < classBaseClass.length);
+    ecSqlReaderMock.setup((x) => x.current).returns(() => {
+      const queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
+      queryRowProxyMock.setup((x) => x.toRow()).returns(() => classBaseClass[currIndex]);
+      return queryRowProxyMock.object;
+    });
     imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => ecSqlReaderMock.object);
-    ecSqlReaderMock.setup(async (x) => x.step()).returns(async () => resultsHasNextIterator.next().value);
-    queryRowProxyMock.setup((x) => x.toRow()).returns(() => resultsIterator.next().value);
   }
 
   describe("initializeConnection", () => {
