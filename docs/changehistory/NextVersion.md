@@ -20,6 +20,7 @@ Table of contents:
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
+- [Transformation](#transformation)
 - [Deprecated API removals](#deprecated-api-removals)
 - [AppUI packages moved](#appui-packages-moved)
 
@@ -126,6 +127,10 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
+
+## Transformation
+
+The transformer package `@itwin/core-transformer` was renamed to [`@itwin/imodel-transformer`](https://github.com/iTwin/imodel-transformer) and has its own repository now with supporting packages.
 
 ## Deprecated API removals
 

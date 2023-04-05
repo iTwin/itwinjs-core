@@ -127,7 +127,7 @@ export class Angle implements BeJSONFunctions {
 }
 
 // @public
-export type AngleProps = number | {
+export type AngleProps = {
     degrees: number;
 } | {
     radians: number;
@@ -135,7 +135,7 @@ export type AngleProps = number | {
     _radians: number;
 } | {
     _degrees: number;
-};
+} | number;
 
 // @public
 export class AngleSweep implements BeJSONFunctions {
@@ -190,14 +190,14 @@ export class AngleSweep implements BeJSONFunctions {
 }
 
 // @public
-export type AngleSweepProps = AngleSweep | [
-number,
-number
-] | {
+export type AngleSweepProps = AngleSweep | {
     degrees: [number, number];
 } | {
     radians: [number, number];
-};
+} | [
+number,
+number
+];
 
 // @internal
 export class AnnotatedLineString3d {
@@ -2111,7 +2111,7 @@ export class Geometry {
     static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, fTarget?: number, defaultResult?: number): number | undefined;
     static inverseInterpolate01(f0: number, f1: number, fTarget?: number): number | undefined;
     static inverseMetricDistance(distance: number): number | undefined;
-    static inverseMetricDistanceSquared(distanceSqrt: number): number | undefined;
+    static inverseMetricDistanceSquared(distanceSquared: number): number | undefined;
     static isAlmostEqualNumber(a: number, b: number, tolerance?: number): boolean;
     static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
     static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance?: number): boolean;
