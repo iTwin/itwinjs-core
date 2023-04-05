@@ -6,8 +6,9 @@ public;AkimaCurve3dOptions
 public;AkimaCurve3dProps
 internal;AnalyticRoots
 public;Angle 
-public;AngleProps = number |
+public;AngleProps =
 public;AngleSweep 
+public;AngleSweepProps = AngleSweep |
 internal;AnnotatedLineString3d
 public;AnnounceCurvePrimitive = (cp: CurvePrimitive) => void
 public;AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any
