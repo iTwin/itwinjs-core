@@ -67,6 +67,7 @@ export interface DtaNumberConfiguration {
 
 export interface DtaOtherConfiguration {
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
+  gpuMemoryLimit?:string | number; // see GpuMemoryLimit in core-frontend for supported string values
 }
 
 /** Parameters for starting display-test-app with a specified initial configuration */
@@ -155,6 +156,11 @@ export const getConfig = (): DtaConfiguration => {
   configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
   configuration.noElectronAuth = undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
   configuration.useFrontendTiles = undefined !== process.env.IMJS_USE_FRONTEND_TILES;
+  const gpuMemoryLimit = process.env.IMJS_GPU_MEMORY_LIMIT;
+  if (undefined !== gpuMemoryLimit) {
+    const gpuByteLimit = Number.parseInt(gpuMemoryLimit, 10);
+    configuration.gpuMemoryLimit = Number.isNaN(gpuByteLimit) ? gpuMemoryLimit : gpuByteLimit;
+  }
 
   const parseSeconds = (key: string) => {
     const env = process.env[key];
