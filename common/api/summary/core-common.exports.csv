@@ -48,9 +48,9 @@ public;BaseMapLayerSettings
 public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
-internal;class BentleyCloudRpcConfiguration 
-internal;BentleyCloudRpcManager 
-internal;BentleyCloudRpcParams
+beta;class BentleyCloudRpcConfiguration 
+beta;BentleyCloudRpcManager 
+beta;BentleyCloudRpcParams
 internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
@@ -109,18 +109,6 @@ internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
-beta;class CloudStorageCache
-deprecated;class CloudStorageCache
-beta;CloudStorageContainerDescriptor
-deprecated;CloudStorageContainerDescriptor
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageProvider
-deprecated;CloudStorageProvider
-beta;CloudStorageTileCache 
-deprecated;CloudStorageTileCache 
 public;Code 
 public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
@@ -470,6 +458,8 @@ public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
 public;ModelExtentsProps
+internal;ModelFeature
+internal;ModelFeature
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -482,6 +472,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
+internal;MultiModelPackedFeatureTable 
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -526,7 +517,10 @@ public;OverrideFeatureAppearanceOptions
 public;OverrideModelAppearanceOptions 
 public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
-internal;PackedFeatureTable
+internal;PackedFeature
+internal;PackedFeatureModelTable
+internal;PackedFeatureTable 
+internal;PackedFeatureWithIndex 
 internal;ParsedTileTreeIdAndContentId
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
@@ -553,7 +547,7 @@ beta;PointCloudDisplaySettings
 beta;PointCloudEDLMode = "off" | "on" | "full"
 beta;PointCloudShape = "square" | "round"
 beta;PointCloudSizeMode = "voxel" | "pixel"
-beta;PointWithStatus
+public;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
 internal;PolylineEdgeArgs
@@ -619,6 +613,7 @@ public;RelatedElementProps
 public;RelationshipProps 
 internal;RelTypeInfo
 public;RemoveFunction = () => void
+internal;RenderFeatureTable
 public;class RenderMaterial
 public;RenderMaterial
 public;RenderMaterialAssetMapsProps
@@ -640,7 +635,7 @@ public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
 internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
-internal;class RpcConfiguration
+beta;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
 deprecated;RpcContentType
@@ -652,12 +647,12 @@ internal;RpcDirectRequest
 public;RpcEndpoint
 deprecated;RpcEndpoint
 public;class RpcInterface
-internal;RpcInterfaceDefinition
-internal;RpcInterfaceEndpoints
-internal;RpcInterfaceImplementation
+beta;RpcInterfaceDefinition
+beta;RpcInterfaceEndpoints
+beta;RpcInterfaceImplementation
 internal;RpcInvocation
 internal;RpcManagedStatus
-internal;RpcManager
+beta;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
@@ -700,7 +695,7 @@ public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
-internal;RpcRoutingToken
+beta;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
 internal;RpcSessionInvocation 
@@ -805,6 +800,7 @@ internal;TileOptions
 internal;TileProps
 internal;TileReadError 
 internal;TileReadStatus
+alpha;Tileset3dSchema
 internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps

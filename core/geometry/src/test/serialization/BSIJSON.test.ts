@@ -3,9 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-/* eslint-disable no-console, comma-dangle, quote-props */
-// Requires for grabbing json object from external file
-import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { BagOfCurves } from "../../curve/CurveCollection";
@@ -40,18 +37,9 @@ import { IndexedPolyface } from "../../polyface/Polyface";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // cspell::word bsijson
-
-// Variables used for testing
-let outputFolderPath = "./src/test/output";
-
-// Output folder typically not tracked by git... make directory if not there
-if (!fs.existsSync(outputFolderPath))
-  fs.mkdirSync(outputFolderPath);
-outputFolderPath = `${outputFolderPath}/`;
-if (!fs.existsSync(outputFolderPath))
-  fs.mkdirSync(outputFolderPath);
 
 const bsiJsonPunchList: object[] = [];
 let previousConstructor: object;
@@ -66,7 +54,7 @@ function isDifferentTypeName(obj: object, noisy: boolean = false): boolean {
   if (obj.constructor) {
     if (obj.constructor !== previousConstructor) {
       if (noisy)
-        console.log("First ", obj.constructor.name);
+        GeometryCoreTestIO.consoleLog("First ", obj.constructor.name);
       previousConstructor = obj.constructor;
       return true;
     }
@@ -79,49 +67,49 @@ function isDifferentTypeName(obj: object, noisy: boolean = false): boolean {
 function exerciseGo(obj: any, noisy: boolean): number {
   let errors = 0;
   if (noisy) {
-    console.log("**");
-    console.log("Type", typeof obj);
-    console.log("  log format", obj);
-    console.log("  stringify", JSON.stringify(obj));
+    GeometryCoreTestIO.consoleLog("**");
+    GeometryCoreTestIO.consoleLog("Type", typeof obj);
+    GeometryCoreTestIO.consoleLog("  log format", obj);
+    GeometryCoreTestIO.consoleLog("  stringify", JSON.stringify(obj));
     if ((obj as BeJSONFunctions).toJSON())
-      console.log("BSIJSONValues", (obj as BeJSONFunctions).toJSON());
+      GeometryCoreTestIO.consoleLog("BSIJSONValues", (obj as BeJSONFunctions).toJSON());
   }
   if (obj instanceof GeometryQuery) {
 
     const clone = obj.clone();
     if (!(clone !== undefined && clone instanceof GeometryQuery && clone.isSameGeometryClass(obj))) {
       errors++;
-      console.log("clone failure ", obj);
+      GeometryCoreTestIO.consoleLog("clone failure ", obj);
     }
     const gq = obj;
     // heavy object ... method fulfillment assured by inheritance.
     let imjsObject = IModelJson.Writer.toIModelJson(gq);
     if (!imjsObject) {
-      console.log("GeometryQuery object did not convert to IModelJson", obj);
+      GeometryCoreTestIO.consoleLog("GeometryQuery object did not convert to IModelJson", obj);
       // repeat call for so easy to catch in debugger. ..
       imjsObject = IModelJson.Writer.toIModelJson(gq);
     } else {
       const firstAppearance = isDifferentTypeName(obj);
       let obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
       if (!obj1) {
-        console.log(" imjs object roundtrips to empty ", obj);
+        GeometryCoreTestIO.consoleLog(" imjs object roundtrips to empty ", obj);
         // repeat call for so easy to catch in debugger. ..
         obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
       } else {
         if (noisy || (firstAppearance && Checker.noisy.bsiJSONFirstAppearance)) {
-          console.log("original", obj);
-          console.log("imjsObject", imjsObject);
+          GeometryCoreTestIO.consoleLog("original", obj);
+          GeometryCoreTestIO.consoleLog("imjsObject", imjsObject);
         }
         if (!gq.isAlmostEqual(obj1)) {
           // repeat call for so easy to catch in debugger. ..
           obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
-          console.log("RoundTrip but not equal ", gq.isAlmostEqual(obj1), obj, obj1);
+          GeometryCoreTestIO.consoleLog("RoundTrip but not equal ", gq.isAlmostEqual(obj1), obj, obj1);
           errors++;
         }
       }
     }
   } else if (!obj.toJSON) {
-    console.log("\n   **** not BSIJSONValues ***", obj);
+    GeometryCoreTestIO.consoleLog("\n   **** not BSIJSONValues ***", obj);
     bsiJsonPunchList.push({ toJSONNotSupported: obj });
     errors++;
   } else {
@@ -136,7 +124,7 @@ function exerciseGo(obj: any, noisy: boolean): number {
       bsiJsonPunchList.push({ noAlmostEqualMethod: obj });
 
     if (isDifferentTypeName(obj) && Checker.noisy.bsiJSONFirstAppearance)
-      console.log(obj, "first toJSON() ==>", (obj as BeJSONFunctions).toJSON());
+      GeometryCoreTestIO.consoleLog(obj, "first toJSON() ==>", (obj as BeJSONFunctions).toJSON());
     const jsonFuncs = obj as BeJSONFunctions;
     const asJson = jsonFuncs.toJSON();
     if (asJson === undefined) {
@@ -198,9 +186,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.vector2d) {
         exercise(a);
         let a1 = Vector2d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Vector2d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -211,9 +199,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.createNonZeroVectors()) {
         exercise(a);
         let a1 = Vector3d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Vector3d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -230,7 +218,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       const a = Complex.create(1, 2);
       exercise(a);
       const a1 = Complex.fromJSON(a.toJSON());
-      // console.log(a, a1);
+      // GeometryCoreTestIO.consoleLog(a, a1);
       expect(a.isAlmostEqual(a1)).equals(true);
     }
 
@@ -239,7 +227,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.plane3dByOriginAndUnitNormal) {
         exercise(a);
         const a1 = Plane3dByOriginAndUnitNormal.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqual(a1)).equals(true);
       }
     }
@@ -249,7 +237,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.ray3d) {
         exercise(a);
         const a1 = Ray3d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqual(a1)).equals(true);
       }
     }
@@ -259,7 +247,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.angle) {
         exercise(a);
         const a1 = Angle.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqualNoPeriodShift(a1)).equals(true);
       }
     }
@@ -269,7 +257,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.angleSweep) {
         exercise(a);
         const a1 = AngleSweep.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqualNoPeriodShift(a1)).equals(true);
       }
     }
@@ -279,9 +267,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.lineSegment3d) {
         exercise(a);
         let a1 = LineSegment3d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = LineSegment3d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -296,9 +284,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of linestrings) {
         exercise(a);
         let a1 = LineString3d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = LineString3d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -309,9 +297,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.range1d) {
         exercise(a);
         let a1 = Range1d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Range1d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -322,9 +310,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.range2d) {
         exercise(a);
         let a1 = Range2d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Range2d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -335,9 +323,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.range3d) {
         exercise(a);
         let a1 = Range3d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Range3d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -350,9 +338,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
         exercise(a);
         let a1 = Transform.fromJSON(a.toJSON());
         // console.log (a.toJSON ());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Transform.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -370,9 +358,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
         exercise(a);
         let a1 = Matrix3d.fromJSON(a.toJSON());
         // console.log (a.toJSON ());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Matrix3d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -385,9 +373,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of matrix4d) {
         exercise(a);
         let a1 = Matrix4d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Matrix4d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -400,9 +388,9 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of map4d) {
         exercise(a);
         let a1 = Map4d.fromJSON(a.toJSON());
-        // console.log(a, a1);
+        // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
-          console.log("FAIL", a, a1);
+          GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Map4d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
@@ -447,7 +435,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     ck.testExactNumber(0, errors, "errors exercising geometry");
     //    errors += exercise({ q: 1 });
     if (bsiJsonPunchList.length > 0)
-      console.log(bsiJsonPunchList);
+      GeometryCoreTestIO.consoleLog(bsiJsonPunchList);
 
     ck.checkpoint("BSIJSON.ExerciseAllTypes");
     expect(ck.getNumErrors()).equals(0);
@@ -457,8 +445,8 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 
 function exerciseBSIJSONValuesQuick(name: string, obj: any) {
   if (Checker.noisy.bsiJsonValuesQuick && obj as BeJSONFunctions) {
-    console.log(`${name}.toJSON():`);
-    console.log(obj.toJSON());
+    GeometryCoreTestIO.consoleLog(`${name}.toJSON():`);
+    GeometryCoreTestIO.consoleLog(obj.toJSON());
   }
 }
 

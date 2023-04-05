@@ -35,7 +35,7 @@ import { FrameBuilder } from "../../geometry3d/FrameBuilder";
  *   * many times
  *       * `   context.captureCurve (anyCurve, searchAllPaths)`
  *       * `   context.captureCurvePrimitive (primitive, searchAllPaths)`
- *   * end:        ` result = context.grabResults (formLoopsIfClosed)`
+ *   * end:        ` result = context.grabResult (formLoopsIfClosed)`
  * @internal
  */
 export class MultiChainCollector {
@@ -263,7 +263,7 @@ export class MultiChainCollector {
   }
 
   /** Return the collected results, structured as the simplest possible type. */
-  public grabResult(makeLoopIfClosed: boolean = false): CurvePrimitive | Path | BagOfCurves | Loop | undefined {
+  public grabResult(makeLoopIfClosed: boolean = false): ChainTypes {
     const chains = this._chains;
     if (chains.length === 0)
       return undefined;
@@ -321,7 +321,7 @@ export class OffsetHelpers {
   // construct (separately) the offsets of each entry of data (Path, Loop, BagOfCurve, or Array of those)
   // push all offset geometry into the result array
   // return summed length
-  public static appendOffsets(data: AnyCurve | AnyCurve[] | undefined, offset: number, result: GeometryQuery[], skipOffsetOfLoop: boolean): number {
+  public static appendOffsets(data: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number {
     let summedLengths = 0;
     if (data instanceof CurvePrimitive) {
       const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(Path.create(data), offset);
@@ -330,21 +330,17 @@ export class OffsetHelpers {
         result.push(resultA);
       }
     } else if (data instanceof Loop || data instanceof Path) {
-      if (false && skipOffsetOfLoop && data instanceof Loop) {
-        // skip !!
-      } else {
-        const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(data, offset);
-        if (resultA) {
-          summedLengths += this.sumLengths(resultA);
-          result.push(resultA);
-        }
+      const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(data, offset);
+      if (resultA) {
+        summedLengths += this.sumLengths(resultA);
+        result.push(resultA);
       }
     } else if (data instanceof BagOfCurves) {
       for (const q of data.children)
-        summedLengths += this.appendOffsets(q, offset, result, true);
+        summedLengths += this.appendOffsets(q, offset, result);
     } else if (Array.isArray(data)) {
       for (const q of data)
-        summedLengths += this.appendOffsets(q, offset, result, true);
+        summedLengths += this.appendOffsets(q, offset, result);
     }
     return summedLengths;
   }
@@ -356,16 +352,16 @@ export class OffsetHelpers {
    * @param fragments fragments to be chained
    * @param offsetDistance offset distance.
    */
-  public static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): { insideOffsets: GeometryQuery[], outsideOffsets: GeometryQuery[], chains: ChainTypes } {
+  public static collectInsideAndOutsideOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains: ChainTypes } {
     const collector = new MultiChainCollector(gapTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
     }
     const myChains = collector.grabResult(true);
-    const myOffsetA: GeometryQuery[] = [];
-    const myOffsetB: GeometryQuery[] = [];
-    const offsetLengthA = OffsetHelpers.appendOffsets(myChains, offsetDistance, myOffsetA, false);
-    const offsetLengthB = OffsetHelpers.appendOffsets(myChains, -offsetDistance, myOffsetB, true);
+    const myOffsetA: CurveCollection[] = [];
+    const myOffsetB: CurveCollection[] = [];
+    const offsetLengthA = OffsetHelpers.appendOffsets(myChains, offsetDistance, myOffsetA);
+    const offsetLengthB = OffsetHelpers.appendOffsets(myChains, -offsetDistance, myOffsetB);
     if (offsetLengthA > offsetLengthB) {
       return { outsideOffsets: myOffsetA, insideOffsets: myOffsetB, chains: myChains };
     } else {
@@ -378,7 +374,7 @@ export class OffsetHelpers {
    * @param fragments fragments to be chained
    * @param gapTolerance distance to be treated as "effectively zero" when joining head-to-tail.
    */
-  public static collectChains(fragments: GeometryQuery[], gapTolerance: number, planarTolerance: number = Geometry.smallMetricDistance): ChainTypes {
+  public static collectChains(fragments: AnyCurve[], gapTolerance: number, planarTolerance: number = Geometry.smallMetricDistance): ChainTypes {
     const collector = new MultiChainCollector(gapTolerance, planarTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);

@@ -15,8 +15,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console */
-
 function verifyCompletePolarSinglePoint(ck: Checker, partialData: PolarData, data: PolarData | PolarData[] | undefined, expectGeometry: boolean) {
   if (data === undefined) {
     ck.testPointer(data, "Polar data should not be undefined.");
@@ -61,7 +59,7 @@ function verifyPolarConversion(ck: Checker, allGeometry: GeometryQuery[], partia
   }
   const n1 = ck.getNumErrors();
   if (n1 !== n0)
-    console.log("   *** While processing partialData ", prettyPrint(partialData));
+    GeometryCoreTestIO.consoleLog("   *** While processing partialData ", prettyPrint(partialData));
 }
 
 describe("PolarData", () => {

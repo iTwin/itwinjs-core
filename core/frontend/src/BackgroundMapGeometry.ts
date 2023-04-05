@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GeographicCRSProps, GlobeMode } from "@itwin/core-common";
+import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GeographicCRSProps, GlobeMode, LinePixels} from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { WebMercatorTilingScheme } from "./tile/internal";
@@ -374,7 +374,7 @@ export class BackgroundMapGeometry {
         }
 
         const ellipsoidColor = ColorDef.create(ColorByName.yellow);
-        builder.setSymbology(ellipsoidColor, ellipsoidColor, 1, 2);
+        builder.setSymbology(ellipsoidColor, ellipsoidColor, 1, LinePixels.Code2);
         for (const clipPlane of clipPlanes.planes) {
           const plane = clipPlane.getPlane3d();
           const arc = ellipsoid.createPlaneSection(plane);

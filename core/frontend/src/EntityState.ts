@@ -79,7 +79,6 @@ export class EntityState implements EntityProps {
  * @extensions
  */
 export class ElementState extends EntityState implements ElementProps {
-  /** @internal */
   public static override get className() { return "Element"; }
 
   /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */

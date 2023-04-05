@@ -35,17 +35,6 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
-      "name": "build:ci",
-      "commandKind": "bulk",
-      "summary": "Run build:ci script for each package",
-      "description": "Runs the 'build:ci' script for each package in the monorepo. Used in the ci to build both cjs and esm variants of packages, whereas build will only build cjs.",
-      "enableParallelism": true,
-      "ignoreMissingScript": false,
-      "ignoreDependencyOrder": false,
-      "allowWarningsInSuccessfulBuild": true,
-      "incremental": true
-    },
-    {
       "name": "cover",
       "commandKind": "bulk",
       "summary": "Run cover script for each package",

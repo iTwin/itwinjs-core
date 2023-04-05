@@ -21,7 +21,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // import { prettyPrint } from "./testFunctions";
-/* eslint-disable no-console */
 describe("Bezier", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -126,7 +125,7 @@ describe("BezierRoots", () => {
       const baseRoots = [];
       for (let i = 0; i < numRoots; i++)
         baseRoots.push((1 + 2 * i) / (2 * numRoots));
-      // console.log(prettyPrint(baseRoots));
+      // GeometryCoreTestIO.consoleLog(prettyPrint(baseRoots));
       for (const scale of [1, 0.5, 0.1]) {
         const rootsA = [];
         for (const r of baseRoots) rootsA.push(r * scale);
@@ -191,7 +190,7 @@ describe("BezierRoots", () => {
           }
         }
       }
-      // console.log("deflation roots", deflationRoots);
+      // GeometryCoreTestIO.consoleLog("deflation roots", deflationRoots);
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -203,7 +202,7 @@ describe("BezierRoots", () => {
       const baseRoots = [];
       for (let i = 0; i < numRoots; i++)
         baseRoots.push((1 + 2 * i) / (2 * numRoots));
-      // console.log(prettyPrint(baseRoots));
+      // GeometryCoreTestIO.consoleLog(prettyPrint(baseRoots));
       for (const distributionFunction of [
         (x: number) => x,
         (x: number) => Math.cos(x),
@@ -226,7 +225,7 @@ describe("BezierRoots", () => {
             if (Geometry.isIn01(r))
               ck.testArrayContainsCoordinate(roots, r);
           }
-          // console.log("roots", roots);
+          // GeometryCoreTestIO.consoleLog("roots", roots);
         }
       }
     }
@@ -452,7 +451,7 @@ describe("PascalCoefficients", () => {
       new Order3Bezier(0, 1, 2),
       new Order4Bezier(0, 1, 2, 3),
       new Order5Bezier(0, 1, 2, 3, 4)]) {
-      // console.log(prettyPrint (bezierA));
+      // GeometryCoreTestIO.consoleLog(prettyPrint (bezierA));
       const bezierB = UnivariateBezier.create(bezierA)!;
       for (const u of [0, 0.2, 0.8]) {
         const blockA = bezierA.sumBasisFunctions(u, polygonY, 2);

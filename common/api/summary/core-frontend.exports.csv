@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item
-internal;AccuDraw
+public;AccuDraw
 internal;AccuDrawChangeModeTool 
 internal;AccudrawData
 internal;AccuDrawFlags
@@ -90,7 +90,7 @@ public;CheckpointConnection
 public;ClipEventType
 public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
-alpha;CompassMode
+public;CompassMode
 public;ComputeChordToleranceArgs
 beta;ComputeDisplayTransformArgs
 public;connectViewportFrusta(viewports: Iterable
@@ -120,7 +120,7 @@ internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
 internal;CurrentInputState
-internal;CurrentState
+public;CurrentState
 public;CustomFormatPropEditorSpec
 public;CustomGraphicBuilderOptions 
 public;CustomQuantityTypeDefinition 
@@ -144,6 +144,7 @@ internal;disposeTileTreesForGeometricModels(modelIds: Set
 public;DownloadBriefcaseId =
 public;DownloadBriefcaseOptions = DownloadBriefcaseId &
 public;DownloadProgressInfo
+internal;DracoMeshCompression
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -198,13 +199,13 @@ public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
 beta;GenericAbortSignal
-internal;GeoConverter
+public;GeoConverter
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
 beta;GeometryTileTreeReference 
-internal;GeoServices
+public;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
@@ -212,6 +213,7 @@ internal;getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
+internal;getGltfNodeMeshIds(node: GltfNode): GltfId[]
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GetPixelDataWorldPointArgs
@@ -220,22 +222,54 @@ public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
 public;GlobeAnimator 
-internal;Gltf 
 internal;Gltf1Id = string
+internal;Gltf1Material 
+internal;Gltf1Node 
 internal;Gltf2Id = number
+internal;Gltf2Material 
+internal;Gltf2Node 
+internal;GltfAccessor 
+internal;GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND"
+internal;GltfAsset 
+internal;GltfBuffer 
 internal;GltfBufferData
+internal;GltfBufferTarget
+internal;GltfBufferViewProps 
+internal;GltfChildOfRootProperty 
 internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
 internal;GltfDataType
+internal;GltfDictionary
+internal;gltfDictionaryIterator
+internal;GltfDocument 
+internal;GltfExtensions = GltfStringMap
+public;GltfGraphic
 internal;GltfGraphicsReader 
 internal;GltfHeader 
 internal;GltfId = Gltf1Id | Gltf2Id
+internal;GltfImage 
+internal;GltfMagFilter
+internal;GltfMaterial = Gltf1Material | Gltf2Material
+internal;GltfMaterialPbrMetallicRoughness 
+internal;GltfMesh 
 internal;GltfMeshData
+internal;GltfMeshMode
+internal;GltfMeshPrimitive 
+internal;GltfMinFilter
 internal;GltfNode = Gltf1Node | Gltf2Node
+internal;GltfNodeBaseProps
+internal;GltfProperty
 internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
 internal;GltfReaderResult 
 internal;GltfSampler 
+internal;GltfScene 
+internal;GltfStringMap
+internal;GltfStructuralMetadata
+internal;GltfTechnique 
+internal;GltfTechniqueState
+internal;GltfTexture 
+internal;GltfTextureInfo 
 internal;GltfWrapMode
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
@@ -322,9 +356,10 @@ public;IpcApp
 public;IpcAppOptions
 public;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
 public;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+internal;isGltf1Material(material: GltfMaterial): material is Gltf1Material
 public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
-alpha;ItemField
+public;ItemField
 beta;ITwinIdArg
 public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
@@ -402,6 +437,8 @@ public;class MeasureElementTool
 public;MeasureLengthTool 
 public;MeasureLocationTool 
 public;MeasureVolumeTool 
+internal;MeshFeature 
+internal;MeshFeatures
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -492,6 +529,7 @@ public;QueryVisibleFeaturesCallback = (features: Iterable
 public;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
+public;readGltf(args: ReadGltfGraphicsArgs): Promise
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
@@ -539,7 +577,12 @@ internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
 internal;RenderMaterialSource
-internal;RenderMemory
+public;RenderMemory
+internal;Buffers 
+internal;BufferType
+internal;Consumer
+internal;Consumers
+internal;ConsumerType
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
@@ -559,7 +602,7 @@ alpha;ResolveFunc = () => Promise
 alpha;ResolveManifestFunc = () => Promise
 internal;RootIModelTile = Tile &
 public;RotateViewTool 
-alpha;RotationMode
+public;RotationMode
 internal;RoundOff
 internal;SavedState
 public;Scene
@@ -695,12 +738,13 @@ public;ToolSettings
 internal;ToolSettingsState
 internal;ToolState
 public;ToolTipOptions
-internal;ToolTipProvider
+public;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
+internal;traverseGltfNodes(ids: Iterable
 public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
@@ -723,7 +767,7 @@ public;ViewClipByRangeTool
 public;ViewClipByShapeTool 
 public;ViewClipClearTool 
 internal;ViewClipControlArrow
-internal;ViewClipDecoration 
+public;ViewClipDecoration 
 public;ViewClipDecorationProvider 
 public;ViewClipEventHandler
 internal;class ViewClipModifyTool 

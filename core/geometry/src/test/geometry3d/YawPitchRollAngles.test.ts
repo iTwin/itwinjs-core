@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -11,8 +10,8 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { YawPitchRollAngles, YawPitchRollProps } from "../../geometry3d/YawPitchRollAngles";
 import * as bsiChecker from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 describe("YPR", () => {
   it("hello", () => {
     const ck = new bsiChecker.Checker();
@@ -83,7 +82,7 @@ describe("YPR", () => {
           const yprB = YawPitchRollAngles.createFromMatrix3d(matrixA);
           if (ck.testType(yprB, YawPitchRollAngles, "ypr inverted"))
             ck.testTrue(yprA.isAlmostEqual(yprB), "yprRoundTrip");
-          console.log({ yprA, matrixA });
+          GeometryCoreTestIO.consoleLog({ yprA, matrixA });
         }
       }
     }

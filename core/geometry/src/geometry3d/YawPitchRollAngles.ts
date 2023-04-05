@@ -16,7 +16,7 @@ import { Transform } from "./Transform";
 // cspell:word Tait
 
 /**
- * angle properties of a `YawPitchRoll` orientation
+ * Angle properties of a `YawPitchRoll` orientation
  * @public
  */
 export interface YawPitchRollProps {
@@ -58,11 +58,11 @@ export class YawPitchRollAngles {
   /** The roll angle: counterclockwise rotation angle around x */
   public roll: Angle;
   /**
-   * constructor
+   * Constructor
    * @param yaw counterclockwise rotation angle around z
    * @param pitch **clockwise** rotation angle around y
    * @param roll counterclockwise rotation angle around x
-   * */
+   */
   constructor(yaw: Angle = Angle.zero(), pitch: Angle = Angle.zero(), roll: Angle = Angle.zero()) {
     this.yaw = yaw;
     this.pitch = pitch;
@@ -76,11 +76,11 @@ export class YawPitchRollAngles {
     return Object.freeze(this);
   }
   /**
-   * constructor for YawPitchRollAngles with angles in degrees.
+   * Constructor for YawPitchRollAngles with angles in degrees.
    * @param yawDegrees counterclockwise rotation angle (in degrees) around z
    * @param pitchDegrees **clockwise** rotation angle (in degrees) around y
    * @param rollDegrees counterclockwise rotation angle (in degrees) around x
-   * */
+   */
   public static createDegrees(yawDegrees: number, pitchDegrees: number, rollDegrees: number): YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createDegrees(yawDegrees),
@@ -89,11 +89,11 @@ export class YawPitchRollAngles {
     );
   }
   /**
-   * constructor for YawPitchRollAngles with angles in radians.
+   * Constructor for YawPitchRollAngles with angles in radians.
    * @param yawRadians counterclockwise rotation angle (in radians) around z
    * @param pitchRadians **clockwise** rotation angle (in radians) around y
    * @param rollRadians counterclockwise rotation angle (in radians) around x
-   * */
+   */
   public static createRadians(yawRadians: number, pitchRadians: number, rollRadians: number): YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createRadians(yawRadians),
@@ -101,7 +101,7 @@ export class YawPitchRollAngles {
       Angle.createRadians(rollRadians)
     );
   }
-  /** construct a `YawPitchRoll` object from an object with 3 named angles */
+  /** Construct a `YawPitchRoll` object from an object with 3 named angles */
   public static fromJSON(json?: YawPitchRollProps): YawPitchRollAngles {
     json = json ? json : {};
     return new YawPitchRollAngles(
@@ -110,7 +110,7 @@ export class YawPitchRollAngles {
       Angle.fromJSON(json.roll)
     );
   }
-  /** populate yaw, pitch and roll fields using `Angle.fromJSON` */
+  /** Populate yaw, pitch and roll fields using `Angle.fromJSON` */
   public setFromJSON(json?: YawPitchRollProps): void {
     json = json ? json : {};
     this.yaw = Angle.fromJSON(json.yaw);
@@ -120,7 +120,7 @@ export class YawPitchRollAngles {
   /**
    * Convert to a JSON object of form { pitch: 20 , roll: 30 , yaw: 10 }. Angles are in degrees.
    * Any values that are exactly zero (with tolerance `Geometry.smallAngleRadians`) are omitted.
-   **/
+   */
   public toJSON(): YawPitchRollProps {
     const val: YawPitchRollProps = {};
     if (!this.pitch.isAlmostZero)
@@ -150,9 +150,7 @@ export class YawPitchRollAngles {
       && this.pitch.isAlmostEqualAllowPeriodShift(other.pitch)
       && this.roll.isAlmostEqualAllowPeriodShift(other.roll);
   }
-  /**
-   * Make a copy of this YawPitchRollAngles.
-   */
+  /** Make a copy of this YawPitchRollAngles */
   public clone() {
     return new YawPitchRollAngles(
       this.yaw.clone(),
@@ -162,7 +160,6 @@ export class YawPitchRollAngles {
   }
   /**
    * Expand the angles into a (rigid rotation) matrix.
-   *
    * * The returned matrix is "rigid" (i.e., it has unit length rows and columns, and its transpose is its inverse).
    * * The rigid matrix is always a right handed coordinate system.
    * @param result optional pre-allocated `Matrix3d`
@@ -204,7 +201,8 @@ export class YawPitchRollAngles {
       result
     );
   }
-  /** Returns true if this rotation does nothing.
+  /**
+   * Returns true if this rotation does nothing.
    * * If allowPeriodShift is false, any nonzero angle is considered a non-identity
    * * If allowPeriodShift is true, all angles are individually allowed to be any multiple of 360 degrees.
    */
@@ -260,7 +258,8 @@ export class YawPitchRollAngles {
       angles: YawPitchRollAngles.createFromMatrix3d(transform.matrix),
     };
   }
-  /** Attempts to create a YawPitchRollAngles object from a Matrix3d
+  /**
+   * Attempts to create a YawPitchRollAngles object from a Matrix3d
    * * This conversion fails if the matrix is not rigid (unit rows and columns, and transpose is inverse)
    * * In the failure case the method's return value is `undefined`.
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with

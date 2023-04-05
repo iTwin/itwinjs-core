@@ -1046,7 +1046,7 @@ export interface FormatOptions {
 }
 
 // @internal (undocumented)
-export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
+export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined;
 
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
@@ -1167,6 +1167,8 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
     // @beta
     instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
+    // @beta
+    sizeLimit?: number;
 }
 
 // @public
@@ -2233,6 +2235,7 @@ export enum PresentationStatus {
     Error = 65536,
     InvalidArgument = 65539,
     NotInitialized = 65537,
+    ResultSetTooLarge = 65538,
     Success = 0
 }
 
@@ -2417,7 +2420,6 @@ export interface PropertyInfo {
     classInfo: ClassInfo;
     enumerationInfo?: EnumerationInfo;
     extendedType?: string;
-    // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
     // @beta
