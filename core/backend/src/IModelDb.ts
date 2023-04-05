@@ -971,13 +971,6 @@ export abstract class IModelDb extends IModel {
   public get codeSpecs(): CodeSpecs {
     return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this));
   }
-
-  /** @internal */
-  public insertCodeSpec(specName: string, properties: CodeSpecProperties): Id64String {
-    // this.codeService?.internalCodes?.verifySpec(specName, properties); // TODO
-    return this.nativeDb.insertCodeSpec(specName, properties);
-  }
-
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare

@@ -166,10 +166,12 @@ export interface CodesDb {
 }
 
 /**
- * @alpha
+ * @internal
  */
 export interface InternalCodes extends CodesDb {
   reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
+  reserveBisCodeSpecs(specs: [CodeService.BisCodeSpecIndexProps]): Promise<void>;
+  verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
 }
 
 /**
@@ -182,10 +184,12 @@ export interface CodeService {
 
   initialize(iModel: IModelDb): Promise<void>;
 
-  /** the code index for this CodeService */
+  /** the index for external Codes for this CodeService */
   readonly externalCodes?: CodesDb;
 
-  /** the code index for this CodeService */
+  /** the index for internal Codes for this CodeService
+   * @internal
+   */
   readonly internalCodes?: InternalCodes;
 
   /**
@@ -500,15 +504,15 @@ export namespace CodeService {
 
   /** @internal */
   export interface FontIndexProps {
+    id?: number;
     fontType: FontType;
     fontName: string;
-    author: AuthorName;
   }
   /** @internal */
   export interface BisCodeSpecIndexProps {
+    id?: number;
     name: string;
     props: string;
-    author: AuthorName;
   }
 
   /** Exception class thrown by `CodeService` methods. */
