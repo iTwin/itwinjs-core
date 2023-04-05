@@ -55,8 +55,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/hypermodeling-frontend/            @iTwin/itwinjs-core-display @bbastings
 /common/**/core-backend.*                     @iTwin/itwinjs-core-admins
 /common/**/core-backend/                      @iTwin/itwinjs-core-admins
-/common/**/core-transformer.*                 @MichaelBelousov @ColinKerr
-/common/**/core-transformer/                  @MichaelBelousov @ColinKerr
 /common/**/core-common.*                      @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/editor-*.*                         @bbastings @kabentley @pmconne
@@ -110,7 +108,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/mobile                    @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                   @iTwin/itwinjs-core-display
 /core/quantity                  @calebmshafer @ColinKerr
-/core/transformer               @MichaelBelousov @ColinKerr
 /core/webgl-compatibility       @iTwin/itwinjs-core-display @Ellord207
 
 /docs   @iTwin/itwinjs-core
@@ -152,7 +149,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/imodel-from-geojson              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
-/test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
 /test-apps/synchro-schedule-importer        @iTwin/itwinjs-core-display
 
 /tools/backend-webpack @calebmshafer @wgoehrig
