@@ -7,7 +7,7 @@
  */
 import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
+import { DbQueryRequest, QueryReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -282,10 +282,10 @@ export class ECDb implements IDisposable {
   /** Allow to execute query and read results along with meta data. The result are streamed.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
+   * @returns Returns an [QueryReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
-  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): QueryReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
     }
@@ -294,7 +294,7 @@ export class ECDb implements IDisposable {
         return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
-    return new ECSqlReader(executor, ecsql, params, config);
+    return new QueryReader(executor, ecsql, params, config);
   }
 
   /** Execute a query and stream its results

@@ -10,7 +10,7 @@ import {
   assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, QueryReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
@@ -255,16 +255,16 @@ export abstract class IModelConnection extends IModel {
   /** Allow to execute query and read results along with meta data. The result are streamed.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
+   * @returns Returns an [QueryReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
-  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): QueryReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
-    return new ECSqlReader(executor, ecsql, params, config);
+    return new QueryReader(executor, ecsql, params, config);
   }
 
   /**

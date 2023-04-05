@@ -15,7 +15,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
+  DomainOptions, EcefLocation, ECSchemaProps, QueryReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
@@ -490,10 +490,10 @@ export abstract class IModelDb extends IModel {
   /** Allow to execute query and read results along with meta data. The result are streamed.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
+   * @returns Returns an [QueryReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
-  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): QueryReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
     }
@@ -502,7 +502,7 @@ export abstract class IModelDb extends IModel {
         return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
-    return new ECSqlReader(executor, ecsql, params, config);
+    return new QueryReader(executor, ecsql, params, config);
   }
   /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
