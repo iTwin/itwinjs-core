@@ -1997,7 +1997,7 @@ class ViewLookAndMove extends ViewNavigate {
     // NOTE: Chrome appears to be the only browser that doesn't require pointer lock to be requested from an engagement event like click.
     //       Currently pointer lock is requested for "click" and not "mousedown" since we don't want pointer lock for drag operation.
     if (undefined === this._pointerLockChangeListener) {
-      this._pointerLockChangeListener = () => this.pointerLockChangeEvent();
+      this._pointerLockChangeListener = async () => this.pointerLockChangeEvent();
       document.addEventListener("pointerlockchange", this._pointerLockChangeListener, false);
     }
 
