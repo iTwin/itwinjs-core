@@ -692,9 +692,11 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 }, // 0.0001 yields 2 neg area loops!
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
-      // { jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 206 },                     // takes 2 minutes
-      // { jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 338, skipBoolean: true },  // takes 10 seconds
     ];
+    if (GeometryCoreTestIO.enableLongTests) {
+      testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes
+      testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 338, skipBoolean: true }); // 10 seconds
+    }
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
       if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
