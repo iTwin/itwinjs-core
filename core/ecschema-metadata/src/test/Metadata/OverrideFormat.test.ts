@@ -101,8 +101,8 @@ describe("OverrideFormat", () => {
       composite: {
         spacer: "-",
         includeZero: false,
-        units: [{ name: "Formats.YRD", label: "yard(s)" }]
-      }
+        units: [{ name: "Formats.YRD", label: "yard(s)" }],
+      },
     };
     expect(JSON.parse(JSON.stringify(overrideFormat.toJSON()))).to.be.deep.equal(expectedJson);
   });
@@ -125,7 +125,7 @@ describe("OverrideFormat", () => {
     const expectedJson = {
       schemaItemType: "Format",
       type: "Fractional",
-      precision: 8
+      precision: 8,
     };
     expect(JSON.parse(JSON.stringify(overrideFormat.toJSON()))).to.be.deep.equal(expectedJson);
   });
@@ -163,8 +163,8 @@ describe("OverrideFormat", () => {
       type: "Fractional",
       precision: 2,
       composite: {
-        units: [{ name: "Formats.MILE" }]
-      }
+        units: [{ name: "Formats.MILE" }],
+      },
     };
     expect(JSON.parse(JSON.stringify(overrideFormatMile.toJSON()))).to.be.deep.equal(expectedJsonFormatMile);
 
@@ -181,8 +181,8 @@ describe("OverrideFormat", () => {
       type: "Fractional",
       precision: 2,
       composite: {
-        units: [{ name: "Formats.YRD", label: "yd" }]
-      }
+        units: [{ name: "Formats.YRD", label: "yd" }],
+      },
     };
     expect(JSON.parse(JSON.stringify(overrideFormatYrd.toJSON()))).to.be.deep.equal(expectedJsonFormatYard);
   });
@@ -227,8 +227,8 @@ describe("OverrideFormat", () => {
       composite: {
         spacer: "-",
         includeZero: false,
-        units: [{ name: "Formats.MILE", label: "mi" }]
-      }
+        units: [{ name: "Formats.MILE", label: "mi" }],
+      },
     };
     expect(JSON.parse(JSON.stringify(overridePrecisionAndUnit.toJSON()))).to.be.deep.equal(expectedJson);
   });

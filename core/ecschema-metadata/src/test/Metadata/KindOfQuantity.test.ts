@@ -195,7 +195,7 @@ describe("KindOfQuantity", () => {
       const expectedJson = {
         schemaItemType: "Format",
         type: "Decimal",
-        precision: 2
+        precision: 2,
       };
       expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
 
@@ -234,7 +234,7 @@ describe("KindOfQuantity", () => {
       const expectedJson = {
         schemaItemType: "Format",
         type: "Decimal",
-        precision: 2
+        precision: 2,
       };
       expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
 
@@ -292,8 +292,8 @@ describe("KindOfQuantity", () => {
         type: "Decimal",
         precision: 6,
         composite: {
-          units: [{ name: "Formats.IN" }]
-        }
+          units: [{ name: "Formats.IN" }],
+        },
       };
       expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
     });
@@ -319,8 +319,8 @@ describe("KindOfQuantity", () => {
         type: "Decimal",
         precision: 6,
         composite: {
-          units: [{ name: "Formats.IN" }]
-        }
+          units: [{ name: "Formats.IN" }],
+        },
       };
       expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
     });
@@ -355,8 +355,8 @@ describe("KindOfQuantity", () => {
         type: "Decimal",
         precision: 6,
         composite: {
-          units: [{ name: "Formats.IN", label: " in" }]
-        }
+          units: [{ name: "Formats.IN", label: " in" }],
+        },
       };
       expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
     });
@@ -381,8 +381,8 @@ describe("KindOfQuantity", () => {
         type: "Decimal",
         precision: 6,
         composite: {
-          units: [{ name: "Formats.IN", label: " in" }]
-        }
+          units: [{ name: "Formats.IN", label: " in" }],
+        },
       };
       expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
     });
