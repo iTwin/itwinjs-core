@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Rename ECSqlReader to QueryReader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
