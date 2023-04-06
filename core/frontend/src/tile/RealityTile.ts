@@ -292,7 +292,7 @@ export class RealityTile extends Tile {
     }
     return true;
   }
-
+  /** @internal */
   protected forceSelectRealityTile(): boolean { return false; }
   protected minimumVisibleFactor(): number {
     if (this.additiveRefinement)
@@ -393,6 +393,7 @@ export class RealityTile extends Tile {
     }
   }
 
+  /** @internal */
   public purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void {
     const tilesToPurge = new Set<RealityTile>();
 
@@ -508,6 +509,7 @@ export class RealityTile extends Tile {
     return this.maximumSize / args.getPixelSize(this);
   }
 
+  /** @internal */
   protected get _anyChildNotFound(): boolean {
     if (undefined !== this.children)
       for (const child of this.children)

@@ -232,7 +232,7 @@ export class RealityTileTree extends TileTree {
       sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
     }
 
-    if (! (args instanceof GraphicsCollectorDrawArgs))
+    if (!(args instanceof GraphicsCollectorDrawArgs))
       this.collectClassifierGraphics(args, selectedTiles);
 
     assert(selectedTiles.length === displayedTileDescendants.length);
@@ -411,7 +411,7 @@ export class RealityTileTree extends TileTree {
    * if any scale range visibility change is detected for one more map-layer definition.
    * @internal
    */
-  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
+  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) { }
 
   /** @internal */
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
@@ -469,6 +469,7 @@ export class RealityTileTree extends TileTree {
     return selected;
   }
 
+  /** @internal */
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {
     let depthString = "";
     let min = 10000, max = -10000;
@@ -483,7 +484,7 @@ export class RealityTileTree extends TileTree {
       depthMap.set(depth, found === undefined ? 1 : found + 1);
     }
 
-    depthMap.forEach((value, key ) => depthString += `${key}(x${value}), `);
+    depthMap.forEach((value, key) => depthString += `${key}(x${value}), `);
     // eslint-disable-next-line no-console
     console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
   }

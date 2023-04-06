@@ -6578,7 +6578,7 @@ export class MapTile extends RealityTile {
     // @internal (undocumented)
     everLoaded: boolean;
     // @internal
-    forceSelectRealityTile(): boolean;
+    protected forceSelectRealityTile(): boolean;
     // @internal (undocumented)
     freeMemory(): void;
     // @internal (undocumented)
@@ -6639,6 +6639,8 @@ export class MapTile extends RealityTile {
     get mesh(): RealityMeshParams | undefined;
     // @internal (undocumented)
     protected _mesh?: RealityMeshParams;
+    // @internal (undocumented)
+    protected minimumVisibleFactor(): number;
     // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     readonly quadId: QuadId;
@@ -8973,7 +8975,7 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     disposeContents(): void;
     // @internal (undocumented)
-    forceSelectRealityTile(): boolean;
+    protected forceSelectRealityTile(): boolean;
     // @internal (undocumented)
     get geometry(): RealityTileGeometry | undefined;
     // @internal (undocumented)
@@ -9008,16 +9010,18 @@ export class RealityTile extends Tile {
     markUsed(args: TileDrawArgs): void;
     // @internal (undocumented)
     get maxDepth(): number;
+    // (undocumented)
+    protected minimumVisibleFactor(): number;
     // @internal (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
     // @internal (undocumented)
-    preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs): void;
+    preloadProtectedTiles(args: TileDrawArgs, context: TraversalSelectionContext): boolean;
     // @internal (undocumented)
-    preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number): void;
+    preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs): void;
     // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     // @internal (undocumented)
-    purgeContents(olderThan: BeTimePoint): void;
+    purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void;
     // @internal (undocumented)
     readonly rangeCorners?: Point3d[];
     // @internal (undocumented)
@@ -9038,6 +9042,8 @@ export class RealityTile extends Tile {
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
     // @internal (undocumented)
     protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
+    // @internal (undocumented)
+    protected selectRealityChildrenAsFallback(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
     // @internal (undocumented)
     selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
     // @internal
@@ -9215,8 +9221,6 @@ export class RealityTileTree extends TileTree {
     get minDepth(): number;
     // @internal (undocumented)
     get parentsAndChildrenExclusive(): boolean;
-    // @internal (undocumented)
-    preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform): void;
     // @internal (undocumented)
     prune(): void;
     // @internal
@@ -12320,7 +12324,9 @@ export class TileUrlImageryProvider extends MapLayerImageryProvider {
 // @public
 export class TileUsageMarker {
     constructor();
+    getIsTileInUse(): boolean;
     isExpired(expirationTime: BeTimePoint): boolean;
+    isTimestampExpired(expirationTime: BeTimePoint): boolean;
     mark(user: TileUser, time: BeTimePoint): void;
 }
 
@@ -12788,13 +12794,13 @@ export class TraversalChildrenDetails {
 // @internal (undocumented)
 export class TraversalDetails {
     // (undocumented)
-    childrenLoading: boolean;
-    // (undocumented)
     childrenSelected: boolean;
     // (undocumented)
     initialize(): void;
     // (undocumented)
     queuedChildren: Tile[];
+    // (undocumented)
+    shouldSelectParent: boolean;
 }
 
 // @internal (undocumented)
