@@ -76,7 +76,7 @@ export interface QueryStats {
 }
 
 /** @beta */
-export class ECSqlReader {
+export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   private static readonly _maxRetryCount = 10;
   private _localRows: any[] = [];
   private _localOffset: number = 0;
@@ -295,6 +295,22 @@ export class ECSqlReader {
       rows.push(this.formatCurrentRow());
     }
     return rows;
+  }
+  public [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy> {
+    return this;
+  }
+  public async next(): Promise<IteratorResult<QueryRowProxy, any>> {
+    if (await this.step()) {
+      return {
+        done: false,
+        value: this.current,
+      };
+    } else {
+      return {
+        done: false,
+        value: this.current,
+      };
+    }
   }
 }
 
