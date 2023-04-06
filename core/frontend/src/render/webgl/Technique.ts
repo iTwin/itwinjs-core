@@ -724,7 +724,7 @@ class RealityMeshTechnique extends VariedTechnique {
 
 /**
  * More generalized version of VariedTechnique, without assuming usage of clipping, logDepth, eyeSpace, etc.
- * Similar to SingularTechnique, but with support for multiple shader programs per technique.
+ * Similar to SingularTechnique in its simplicity, but with support for multiple shader programs per technique.
  */
 abstract class MultipleTechnique implements Technique {
   private readonly _programs: ShaderProgram[] = [];
