@@ -66,6 +66,14 @@ describe("StubSchemaXmlFileLocater tests:", () => {
     expect(schema!.schemaKey.version.toString()).to.equal("01.01.01");
   });
 
+  it("getLoadingSchema should return undefined", async () => {
+    const schemaKey = new EC.SchemaKey("SchemaA", 1, 1, 1);
+    const schema = await context.getLoadingSchema(schemaKey, EC.SchemaMatchType.Exact);
+
+    // should return undefined since getLoadingSchema is not in StubSchemaXmlFileLocater
+    expect(schema).is.undefined;
+  });
+
   it("getSchema called multiple times for same schema", async () => {
     const schemaKey = new EC.SchemaKey("SchemaD", 4, 4, 4);
 
