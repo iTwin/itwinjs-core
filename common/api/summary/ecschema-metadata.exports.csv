@@ -10,7 +10,7 @@ beta;AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty
 beta;AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty
 beta;AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps
 beta;AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format
-beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps
+beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps
 beta;AnyStructProperty = StructProperty | StructArrayProperty
 beta;class ArrayProperty 
 beta;ArrayPropertyProps 
@@ -44,7 +44,6 @@ beta;EnumerationPropertyProps
 beta;EnumerationProps 
 beta;EnumeratorProps
 beta;Format 
-beta;FormatProps 
 beta;InvertedUnit 
 beta;InvertedUnitProps 
 beta;ISchemaItemLocater
@@ -113,6 +112,7 @@ beta;SchemaContext
 beta;SchemaGraph
 internal;SchemaGraphUtil
 beta;class SchemaItem
+beta;SchemaItemFormatProps 
 beta;SchemaItemKey
 beta;SchemaItemProps
 beta;SchemaItemType
