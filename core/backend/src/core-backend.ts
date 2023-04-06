@@ -49,6 +49,7 @@ export * from "./domains/GenericElements";
 export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelElementCloneContext";
 export * from "./IModelCloneContext";
+export * from "./TileStorage";
 export * from "./IModelHost";
 export * from "./IpcHost";
 export * from "./NativeAppStorage";
