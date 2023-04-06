@@ -58,6 +58,7 @@ import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
+import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
@@ -162,7 +163,6 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
-import { QueryReader } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
@@ -1429,7 +1429,7 @@ export class ECDb implements IDisposable {
     closeDb(): void;
     createDb(pathName: string): void;
     // @beta
-    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): QueryReader;
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
@@ -2729,7 +2729,7 @@ export abstract class IModelDb extends IModel {
     // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
     // @beta
-    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): QueryReader;
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): void;
