@@ -116,7 +116,7 @@ export class RealityTile extends Tile {
   /** @internal */
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
   /** @internal */
-  public get geometry(): RealityTileGeometry | undefined { return this._geometry;  }
+  public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
 
   /** @internal */
   public override get isDisplayable(): boolean {
@@ -219,6 +219,7 @@ export class RealityTile extends Tile {
   // Preload tiles that are protected:
   // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
   // * parents and siblings of other protected tiles.
+  /** @internal */
   public preloadProtectedTiles(args: TileDrawArgs, context: TraversalSelectionContext): boolean {
     const children = this.realityChildren;
     let hasProtectedChildren = false;
@@ -293,11 +294,11 @@ export class RealityTile extends Tile {
   }
 
   protected forceSelectRealityTile(): boolean { return false; }
-  protected minimumVisibleFactor(): number { 
+  protected minimumVisibleFactor(): number {
     if (this.additiveRefinement)
-		return 0.25;
-	else
-		return 0; 
+      return 0.25;
+    else
+      return 0;
   }
 
   /** @internal */
@@ -354,7 +355,8 @@ export class RealityTile extends Tile {
   }
 
   // Attempt to select the children of a tile in case they could be displayed while this tile is loading. This does not take into account visibility.
-  protected selectRealityChildrenAsFallback(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails){
+  /** @internal */
+  protected selectRealityChildrenAsFallback(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     const childrenReady = this.getLoadedRealityChildren(args);
 
     if (childrenReady) {
@@ -366,6 +368,7 @@ export class RealityTile extends Tile {
   }
 
   // Recurse through children to select them normally
+  /** @internal */
   protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
 
     // Load children if not yet requested
@@ -390,7 +393,7 @@ export class RealityTile extends Tile {
     }
   }
 
-  public purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void{
+  public purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void {
     const tilesToPurge = new Set<RealityTile>();
 
     // Get the list of tiles to purge
@@ -421,7 +424,7 @@ export class RealityTile extends Tile {
       }
 
       if (hasProtectedChildren) {
-      // Siblings of protected tiles are protected too. We need to remove them from it
+        // Siblings of protected tiles are protected too. We need to remove them from it
         for (const child of children) {
           // Because the current tile can be invisible, relying on its children to display geometry,
           // we have to recurse in order to remove the first children that has geometry, otherwise,
@@ -588,7 +591,7 @@ export class RealityTile extends Tile {
   public collectTileGeometry(collector: TileGeometryCollector): void {
     const status = collector.collectTile(this);
 
-    switch(status) {
+    switch (status) {
       case "reject":
         return;
 
