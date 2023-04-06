@@ -6,6 +6,8 @@
  * @module Metadata
  */
 
+import { FormatProps } from "@itwin/core-quantity";
+
 /**
  * @beta
  */
@@ -17,7 +19,7 @@ export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClass
 /**
  * @beta
  */
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps;
+export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps;
 
 /**
  * @beta
@@ -254,7 +256,7 @@ export interface ConstantProps extends SchemaItemProps {
 /**
  * @beta
  */
-export interface FormatProps extends SchemaItemProps {
+export interface SchemaItemFormatProps extends SchemaItemProps, FormatProps {
   readonly type: string;
   readonly precision?: number;
   readonly roundFactor?: number;

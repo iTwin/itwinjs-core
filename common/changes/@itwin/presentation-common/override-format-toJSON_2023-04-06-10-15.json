@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Renamed FormatProps to SchemaItemFormatProps in ecschema-metadata.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import {
-  FormatProps, KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemType, schemaItemTypeToString, SchemaProps, UnitProps,
+  KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemFormatProps, SchemaItemType, schemaItemTypeToString, SchemaProps, UnitProps,
   UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { Content } from "../presentation-common/content/Content";
@@ -356,7 +356,7 @@ const phenomenon: PhenomenonProps = {
   name: "TestPhenomenon",
 };
 
-const metricFormat: FormatProps = {
+const metricFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "MetricFormat",
   schema: "TestSchema",
@@ -370,7 +370,7 @@ const metricFormat: FormatProps = {
   },
 };
 
-const imperialFormat: FormatProps = {
+const imperialFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "ImperialFormat",
   schema: "TestSchema",
@@ -384,7 +384,7 @@ const imperialFormat: FormatProps = {
   },
 };
 
-const usSurveyFormat: FormatProps = {
+const usSurveyFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "UsSurveyFormat",
   schema: "TestSchema",
@@ -398,7 +398,7 @@ const usSurveyFormat: FormatProps = {
   },
 };
 
-const usCustomFormat: FormatProps = {
+const usCustomFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "UsCustomFormat",
   schema: "TestSchema",

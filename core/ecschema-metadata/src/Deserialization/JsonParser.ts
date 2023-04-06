@@ -9,9 +9,9 @@ import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ECName } from "../ECName";
 import { AbstractParser, CAProviderTuple } from "./AbstractParser";
 import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps,
-  PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
+  PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaItemFormatProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
   StructPropertyProps, UnitProps, UnitSystemProps,
 } from "./JsonProps";
 
@@ -556,11 +556,11 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   }
 
   /**
-   * Type checks format and returns FormatProps interface
+   * Type checks format and returns SchemaItemFormatProps interface
    * @param jsonObj
-   * @returns FormatProps
+   * @returns SchemaItemFormatProps
    */
-  public parseFormat(jsonObj: UnknownObject): FormatProps {
+  public parseFormat(jsonObj: UnknownObject): SchemaItemFormatProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.type)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} does not have the required 'type' attribute.`);
@@ -630,7 +630,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`);
       }
     }
-    return (jsonObj as unknown) as FormatProps;
+    return (jsonObj as unknown) as SchemaItemFormatProps;
   }
 
   private isValidPropertyType(type: string): boolean {

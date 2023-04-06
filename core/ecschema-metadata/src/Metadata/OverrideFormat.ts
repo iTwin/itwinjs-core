@@ -8,10 +8,11 @@
 
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { DecimalPrecision, FormatProps, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
+import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { Unit } from "./Unit";
 
 /**
@@ -114,7 +115,7 @@ export class OverrideFormat {
   /**
    * Returns a JSON object that contains the specification for OverrideFormat.
    */
-  public toJSON(): FormatProps {
+  public toJSON(): SchemaItemFormatProps {
     const formatJson = this.parent.toJSON() as any;
 
     // Update Precision overriden property

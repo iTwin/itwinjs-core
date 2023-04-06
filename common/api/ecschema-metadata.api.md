@@ -7,7 +7,7 @@
 import { BaseFormat } from '@itwin/core-quantity';
 import { BentleyError } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
-import { FormatProps as FormatProps_2 } from '@itwin/core-quantity';
+import { FormatProps } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
@@ -49,7 +49,7 @@ export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | Pr
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
 
 // @beta (undocumented)
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps;
+export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps;
 
 // @beta (undocumented)
 export type AnyStructProperty = StructProperty | StructArrayProperty;
@@ -630,9 +630,9 @@ export class Format extends SchemaItem {
     // (undocumented)
     get formatTraits(): FormatTraits;
     // (undocumented)
-    fromJSON(formatProps: FormatProps): Promise<void>;
+    fromJSON(formatProps: SchemaItemFormatProps): Promise<void>;
     // (undocumented)
-    fromJSONSync(formatProps: FormatProps): void;
+    fromJSONSync(formatProps: SchemaItemFormatProps): void;
     // (undocumented)
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
@@ -673,7 +673,7 @@ export class Format extends SchemaItem {
     get stationSeparator(): string;
     // (undocumented)
     get thousandSeparator(): string;
-    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): FormatProps;
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): SchemaItemFormatProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
@@ -684,43 +684,6 @@ export class Format extends SchemaItem {
     protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
     // (undocumented)
     get uomSeparator(): string;
-}
-
-// @beta (undocumented)
-export interface FormatProps extends SchemaItemProps {
-    // (undocumented)
-    readonly composite?: {
-        readonly spacer?: string;
-        readonly includeZero?: boolean;
-        readonly units: Array<{
-            readonly name: string;
-            readonly label?: string;
-        }>;
-    };
-    // (undocumented)
-    readonly decimalSeparator?: string;
-    // (undocumented)
-    readonly formatTraits?: string | string[];
-    // (undocumented)
-    readonly minWidth?: number;
-    // (undocumented)
-    readonly precision?: number;
-    // (undocumented)
-    readonly roundFactor?: number;
-    // (undocumented)
-    readonly scientificType?: string;
-    // (undocumented)
-    readonly showSignOption?: string;
-    // (undocumented)
-    readonly stationOffsetSize?: number;
-    // (undocumented)
-    readonly stationSeparator?: string;
-    // (undocumented)
-    readonly thousandSeparator?: string;
-    // (undocumented)
-    readonly type: string;
-    // (undocumented)
-    readonly uomSeparator?: string;
 }
 
 // @beta
@@ -1016,7 +979,7 @@ export class OverrideFormat {
     get stationSeparator(): string;
     // (undocumented)
     get thousandSeparator(): string;
-    toJSON(): FormatProps_2;
+    toJSON(): SchemaItemFormatProps;
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
@@ -1754,6 +1717,43 @@ export abstract class SchemaItem {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @beta (undocumented)
+export interface SchemaItemFormatProps extends SchemaItemProps, FormatProps {
+    // (undocumented)
+    readonly composite?: {
+        readonly spacer?: string;
+        readonly includeZero?: boolean;
+        readonly units: Array<{
+            readonly name: string;
+            readonly label?: string;
+        }>;
+    };
+    // (undocumented)
+    readonly decimalSeparator?: string;
+    // (undocumented)
+    readonly formatTraits?: string | string[];
+    // (undocumented)
+    readonly minWidth?: number;
+    // (undocumented)
+    readonly precision?: number;
+    // (undocumented)
+    readonly roundFactor?: number;
+    // (undocumented)
+    readonly scientificType?: string;
+    // (undocumented)
+    readonly showSignOption?: string;
+    // (undocumented)
+    readonly stationOffsetSize?: number;
+    // (undocumented)
+    readonly stationSeparator?: string;
+    // (undocumented)
+    readonly thousandSeparator?: string;
+    // (undocumented)
+    readonly type: string;
+    // (undocumented)
+    readonly uomSeparator?: string;
+}
+
 // @beta
 export class SchemaItemKey {
     constructor(name: string, schema: SchemaKey);
@@ -2165,7 +2165,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     parseEnumeration(xmlElement: Element): EnumerationProps;
     // (undocumented)
-    parseFormat(xmlElement: Element): FormatProps;
+    parseFormat(xmlElement: Element): SchemaItemFormatProps;
     // (undocumented)
     parseInvertedUnit(xmlElement: Element): InvertedUnitProps;
     // (undocumented)
