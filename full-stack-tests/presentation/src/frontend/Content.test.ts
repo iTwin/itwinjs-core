@@ -949,6 +949,152 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                targetClassInfo: {
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                targetClassInfo: {
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
                   id: "0x52",
                   name: "BisCore:TypeDefinitionElement",
                   label: "Type Definition",

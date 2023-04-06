@@ -368,6 +368,8 @@ export interface ContentJSON {
 
 // @public
 export interface ContentModifier extends RuleBase, ContentModifiersList {
+    // @beta
+    applyOnNestedContent?: boolean;
     class?: SingleSchemaClassSpecification;
     ruleType: "ContentModifier";
 }
