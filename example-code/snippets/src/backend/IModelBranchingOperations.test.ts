@@ -13,7 +13,8 @@ import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { IModelTransformer } from "@itwin/core-transformer";
+process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
+import { IModelTransformer } from "@itwin/imodel-transformer";
 import { KnownTestLocations } from "./IModelTestUtils";
 
 // some json will be required later, but we don't want an eslint-disable line in the example code, so just disable for the file
@@ -62,7 +63,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     code: Code.createEmpty(),
     repository: new ExternalSourceIsInRepository(masterLinkRepoId),
     connectorName: "iModel Transformer",
-    connectorVersion: require("@itwin/core-transformer/package.json").version,
+    connectorVersion: require("@itwin/imodel-transformer/package.json").version,
   }, branchDb).insert();
 
   // initialize the branch provenance
