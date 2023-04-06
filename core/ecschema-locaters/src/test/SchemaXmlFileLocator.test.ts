@@ -315,12 +315,12 @@ describe("SchemaXmlFileLocater tests:", () => {
       if (!await locater.fileExists(currSchemaPath))
         return undefined;
 
-      const schemaText = await locater.readUtf8FileToString(currSchemaPath);
-      if (!schemaText)
+      const schemaTxt = await locater.readUtf8FileToString(currSchemaPath);
+      if (!schemaTxt)
         return undefined;
 
       locater.addSchemaSearchPaths([path.dirname(currSchemaPath)]);
-      return schemaText;
+      return schemaTxt;
     };
 
     // Should not have any schemaText in locater
@@ -360,12 +360,12 @@ describe("SchemaXmlFileLocater tests:", () => {
       if (!await locater.fileExists(currSchemaPath))
         return undefined;
 
-      const schemaText = await locater.readUtf8FileToString(currSchemaPath);
-      if (!schemaText)
+      const schemaTxt = await locater.readUtf8FileToString(currSchemaPath);
+      if (!schemaTxt)
         return undefined;
 
       locater.addSchemaSearchPaths([path.dirname(currSchemaPath)]);
-      return schemaText;
+      return schemaTxt;
     };
 
     const schemaPath = path.join(__dirname, "assets", "DoesNotExist.xml");

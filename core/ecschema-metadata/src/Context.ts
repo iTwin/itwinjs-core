@@ -313,7 +313,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   /**
    * Adds the given SchemaItem to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact
    * @param schemaItem The SchemaItem to add
-   * @deprecated Use the Schema Editor API to modify a schema
+   * @deprecated in 3.8 Use the Schema Editor API to modify a schema
    */
   public async addSchemaItem(schemaItem: SchemaItem) {
     const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);
