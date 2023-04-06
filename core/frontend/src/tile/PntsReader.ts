@@ -261,7 +261,15 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);
-  const voxelSize = batchRange.diagonal().maxAbs() / 256;
+  let params = props.params;
+  if (props.points instanceof Float32Array) {
+    // we don't have a true range for unquantized points, so calc one here for voxelSize
+    const rng = Range3d.createNull();
+    for (let i = 0; i < props.points.length; i += 3)
+      rng.extendXYZ(props.points[i], props.points[i + 1], props.points[i + 2]);
+    params = QParams3d.fromRange(rng);
+  }
+  const voxelSize = params.rangeDiagonal.maxAbs() / 256;
 
   graphic = system.createPointCloud({
     positions: props.points,
