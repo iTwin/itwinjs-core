@@ -66,7 +66,7 @@ export interface CrashReportingConfig {
   enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
-  /** Run this .js file to process .dmp and Node.js crash reporting .json files in the event of a crash.eDir
+  /** Run this .js file to process .dmp and Node.js crash reporting .json files in the event of a crash.
    * This script will be executed with a single command-line parameter: the name of the dump or Node.js report file.
    * In the case of a dump file, there will be a second file with the same basename and the extension ".properties.txt".
    * Since it runs in a separate process, this script will have no access to the Javascript
@@ -91,11 +91,8 @@ export interface IModelHostOptions {
    *   - Windows: $(HOMEDIR)/AppData/Local/iModelJs/
    *   - Mac/iOS: $(HOMEDIR)/Library/Caches/iModelJs/
    *   - Linux:   $(HOMEDIR)/.cache/iModelJs/
-   *   where $(HOMEDIR) is documented [here](http s://nodejs.org/api/os.html#os_os_homedir)
+   *   where $(HOMEDIR) is documented [here](https://nodejs.org/api/os.html#os_os_homedir)
    * - if specified, ensure it is set to a folder with read/write access.
-   * - Sub-folders within this folder organize various caches -
-   *   - appSettings/ -> Offline application settings (only relevant in native applications)
-   *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
   cacheDir?: LocalDirName;
@@ -347,13 +344,13 @@ export class IModelHost {
   }
 
   private static syncNativeLogLevels() {
-    IModelHost.platform.clearLogLevelCache();
+    this.platform.clearLogLevelCache();
   }
   private static loadNative() {
     if (undefined === this._platform) {
       this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
       this._platform.logger = Logger;
-      Logger.logLevelChangedFn = IModelHost.syncNativeLogLevels;
+      Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
     }
   }
 
@@ -402,7 +399,7 @@ export class IModelHost {
     try {
       this.appWorkspace.getCloudCache();
     } catch (e: any) {
-      throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileName}] is already in use by another process`) : e;
+      throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`) : e;
     }
 
     this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
@@ -430,8 +427,6 @@ export class IModelHost {
       this.sessionId = Guid.createValue();
 
     this.authorizationClient = options.authorizationClient;
-
-    this.logStartup();
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend(options.enableOpenTelemetry);
@@ -490,28 +485,6 @@ export class IModelHost {
   }
 
   private static _briefcaseCacheDir: LocalDirName;
-
-  private static logStartup() {
-    if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
-      return;
-
-    // Extract the iModel details from environment - note this is very specific to Bentley hosted backends, but is quite useful for tracing
-    let startupInfo = {};
-    const serviceName = process.env.FABRIC_SERVICE_NAME;
-    if (serviceName) {
-      const serviceNameComponents = serviceName.split("/");
-      if (serviceNameComponents.length === 7) {
-        startupInfo = {
-          ...startupInfo,
-          iTwinId: serviceNameComponents[4],
-          iModelId: serviceNameComponents[5],
-          changesetId: serviceNameComponents[6],
-        };
-      }
-    }
-
-    Logger.logTrace(loggerCategory, "IModelHost.startup", startupInfo);
-  }
 
   private static setupHostDirs(configuration: IModelHostOptions) {
     const setupDir = (dir: LocalDirName) => {
@@ -595,9 +568,13 @@ export class IModelHost {
   }
 
   /** The backend will log when a tile took longer to load than this threshold in seconds. */
-  public static get logTileLoadTimeThreshold(): number { return IModelHost.configuration?.logTileLoadTimeThreshold ?? IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }
+  public static get logTileLoadTimeThreshold(): number {
+    return IModelHost.configuration?.logTileLoadTimeThreshold ?? IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+  }
   /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
-  public static get logTileSizeThreshold(): number { return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold; }
+  public static get logTileSizeThreshold(): number {
+    return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold;
+  }
 
   /** Whether external tile caching is active.
    * @internal
@@ -609,12 +586,16 @@ export class IModelHost {
   /** Whether to restrict tile cache URLs by client IP address.
    * @internal
    */
-  public static get restrictTileUrlsByClientIp(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false); }
+  public static get restrictTileUrlsByClientIp(): boolean {
+    return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false);
+  }
 
   /** Whether to compress cached tiles.
    * @internal
    */
-  public static get compressCachedTiles(): boolean { return false !== IModelHost.configuration?.compressCachedTiles; }
+  public static get compressCachedTiles(): boolean {
+    return false !== IModelHost.configuration?.compressCachedTiles;
+  }
 
   private static setupTileCache() {
     assert(undefined !== IModelHost.configuration);
