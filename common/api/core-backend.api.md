@@ -5104,7 +5104,7 @@ export class TileStorage {
     getCachedTiles(iModelId: string): Promise<{
         treeId: string;
         contentId: string;
-        guid?: string;
+        guid: string;
     }[]>;
     getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
     initialize(iModelId: string): Promise<void>;
