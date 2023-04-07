@@ -218,8 +218,9 @@ export interface Workspace {
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
-  /** The CloudCache for cloud-based WorkspaceContainers */
-  readonly cloudCache?: CloudSqlite.CloudCache;
+
+  /** Get The CloudCache for cloud-based WorkspaceContainers */
+  getCloudCache(): CloudSqlite.CloudCache;
 
   /** search for a previously opened container.
    * @param containerId the id of the container
@@ -302,7 +303,7 @@ export class ITwinWorkspace implements Workspace {
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
   private _cloudCache?: CloudSqlite.CloudCache;
-  public get cloudCache(): CloudSqlite.CloudCache {
+  public getCloudCache(): CloudSqlite.CloudCache {
     return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
 
@@ -460,7 +461,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return;
 
-    cloudContainer.connect(this.workspace.cloudCache);
+    cloudContainer.connect(this.workspace.getCloudCache());
     if (false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();

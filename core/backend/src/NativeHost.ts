@@ -142,9 +142,7 @@ export class NativeHost {
 
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
-    if (this._appSettingsCacheDir === undefined)
-      this._appSettingsCacheDir = join(IModelHost.cacheDir, "appSettings");
-    return this._appSettingsCacheDir;
+    return this._appSettingsCacheDir ??= join(IModelHost.cacheDir, "appSettings");
   }
 
   /** Send a notification to the NativeApp connected to this NativeHost. */

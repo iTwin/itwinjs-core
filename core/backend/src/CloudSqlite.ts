@@ -527,7 +527,7 @@ export namespace CloudSqlite {
     /** create a new CloudCache */
     private static makeCache(args: CreateCloudCacheArg): CloudSqlite.CloudCache {
       const cacheName = args.cacheName;
-      const rootDir = args.cacheDir ?? join(IModelHost.cacheDir, "CloudCaches", cacheName);
+      const rootDir = args.cacheDir ?? join(IModelHost.profileDir, "CloudCaches", cacheName);
       IModelJsFs.recursiveMkDirSync(rootDir);
       const cache = new NativeLibrary.nativeLib.CloudCache({ rootDir, name: cacheName, cacheSize: args.cacheSize ?? "10G" });
       this.cloudCaches.set(cacheName, cache);

@@ -13,7 +13,7 @@ import * as os from "os";
 import * as path from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
@@ -66,7 +66,7 @@ export interface CrashReportingConfig {
   enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
-  /** Run this .js file to process .dmp and Node.js crash reporting .json files in the event of a crash.
+  /** Run this .js file to process .dmp and Node.js crash reporting .json files in the event of a crash.eDir
    * This script will be executed with a single command-line parameter: the name of the dump or Node.js report file.
    * In the case of a dump file, there will be a second file with the same basename and the extension ".properties.txt".
    * Since it runs in a separate process, this script will have no access to the Javascript
@@ -82,16 +82,18 @@ export interface CrashReportingConfig {
  * @public
  */
 export interface IModelHostOptions {
+
+  profileName?: string;
+
   /**
    * Root of the directory holding all the files that iTwin.js caches
    * - If not specified at startup a platform specific default is used -
    *   - Windows: $(HOMEDIR)/AppData/Local/iModelJs/
    *   - Mac/iOS: $(HOMEDIR)/Library/Caches/iModelJs/
    *   - Linux:   $(HOMEDIR)/.cache/iModelJs/
-   *   where $(HOMEDIR) is documented [here](https://nodejs.org/api/os.html#os_os_homedir)
+   *   where $(HOMEDIR) is documented [here](http s://nodejs.org/api/os.html#os_os_homedir)
    * - if specified, ensure it is set to a folder with read/write access.
    * - Sub-folders within this folder organize various caches -
-   *   - bc/ -> Briefcases
    *   - appSettings/ -> Offline application settings (only relevant in native applications)
    *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
@@ -281,6 +283,11 @@ export class IModelHost {
 
   public static configuration?: IModelHostOptions;
 
+  private static _profileName: string;
+  private static _profileDir = "";
+  public static get profileName(): string { return this._profileName; }
+  public static get profileDir(): LocalDirName { return this._profileDir; }
+
   /** Event raised during startup to allow loading settings data */
   public static readonly onWorkspaceStartup = new BeEvent<() => void>();
 
@@ -396,6 +403,12 @@ export class IModelHost {
     const settingAssets = path.join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(path.join(settingAssets, "Schemas"));
     this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    try {
+      this.appWorkspace.getCloudCache();
+    } catch (e: any) {
+      throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileName}] is already in use by another process`) : e;
+    }
+
     this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
 
     GeoCoordConfig.onStartup();
@@ -494,10 +507,9 @@ export class IModelHost {
       return;
 
     // Extract the iModel details from environment - note this is very specific to Bentley hosted backends, but is quite useful for tracing
-    let startupInfo: any = {};
+    let startupInfo = {};
     const serviceName = process.env.FABRIC_SERVICE_NAME;
     if (serviceName) {
-      // e.g., fabric:/iModelWebViewer3.0/iModelJSGuest/1/08daaeb3-b56f-480b-9051-7efc834d18ae/512d971d-b641-4735-bb1c-c07ab3e44ce7/c1315fcce125ca40b2d405bb7809214daf8b4c85
       const serviceNameComponents = serviceName.split("/");
       if (serviceNameComponents.length === 7) {
         startupInfo = {
@@ -509,7 +521,7 @@ export class IModelHost {
       }
     }
 
-    Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
+    Logger.logTrace(loggerCategory, "IModelHost.startup", startupInfo);
   }
 
   private static setupHostDirs(configuration: IModelHostOptions) {
@@ -520,25 +532,30 @@ export class IModelHost {
     };
     this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
+    this._profileName = configuration.profileName ?? "default";
+    this._profileDir = setupDir(path.join(this._cacheDir, "profiles", this._profileName));
   }
 
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
     // NB: This method is set as a node listener where `this` is unbound
-    if (!IModelHost._isValid)
+    return IModelHost.doShutdown();
+  }
+
+  private static async doShutdown() {
+    if (!this._isValid)
       return;
 
-    IModelHost._isValid = false;
-    IModelHost.onBeforeShutdown.raiseEvent();
-    IModelHost.configuration = undefined;
-    IModelHost.tileCacheService = undefined; // eslint-disable-line deprecation/deprecation
-    IModelHost.tileUploader = undefined; // eslint-disable-line deprecation/deprecation
-    IModelHost.tileStorage = undefined;
-    IModelHost._appWorkspace?.close();
-    IModelHost._appWorkspace = undefined;
+    this._isValid = false;
+    this.onBeforeShutdown.raiseEvent();
+    this.configuration = undefined;
+    this.tileCacheService = undefined; // eslint-disable-line deprecation/deprecation
+    this.tileUploader = undefined; // eslint-disable-line deprecation/deprecation
+    this.tileStorage = undefined;
+    this._appWorkspace?.close();
+    this._appWorkspace = undefined;
 
     CloudSqlite.CloudCaches.destroy();
-
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
