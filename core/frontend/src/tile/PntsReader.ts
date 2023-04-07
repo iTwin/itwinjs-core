@@ -202,8 +202,8 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
  * @internal
  */
 export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<{ graphic: RenderGraphic | undefined, rtcCenter: Point3d | undefined }> {
-  let graphic = undefined;
-  let rtcCenter = undefined;
+  let graphic;
+  let rtcCenter;
   const header = new PntsHeader(stream);
   if (!header.isValid)
     return { graphic, rtcCenter };

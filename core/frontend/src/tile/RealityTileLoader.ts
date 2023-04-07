@@ -110,7 +110,9 @@ export abstract class RealityTileLoader {
         break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        let { graphic, rtcCenter } = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        let graphic = res.graphic;
+        const rtcCenter = res.rtcCenter;
         if (graphic && (rtcCenter || tile.transformToRoot && !tile.transformToRoot.isIdentity)) {
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);
@@ -118,10 +120,8 @@ export abstract class RealityTileLoader {
           if (!tile.transformToRoot && rtcCenter)
             xform = Transform.createTranslation(rtcCenter);
           else {
-            if (rtcCenter) {
-              const tileOrg = tile.transformToRoot!.origin;
+            if (rtcCenter)
               xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot!.origin), tile.transformToRoot!.matrix);
-            }
             else
               xform = tile.transformToRoot!;
           }
