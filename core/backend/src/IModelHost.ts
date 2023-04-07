@@ -10,10 +10,9 @@
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import * as os from "os";
-import * as path from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
@@ -39,6 +38,7 @@ import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/S
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
+import { join, normalize as normalizeDir } from "path";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -82,7 +82,11 @@ export interface CrashReportingConfig {
  * @public
  */
 export interface IModelHostOptions {
-
+  /**
+   * The name of the *Profile* subdirectory of [[cacheDir]] for this process. If not present, "default" is used.
+   * @see [[IModelHost.profileName]]
+   * @beta
+   */
   profileName?: string;
 
   /**
@@ -267,6 +271,7 @@ export class IModelHost {
   public static readonly telemetry = new TelemetryManager();
 
   public static backendVersion = "";
+  private static _profileName: string;
   private static _cacheDir = "";
   private static _appWorkspace?: Workspace;
 
@@ -280,10 +285,28 @@ export class IModelHost {
 
   public static configuration?: IModelHostOptions;
 
-  private static _profileName: string;
-  public static get profileName(): string { return this._profileName; }
-  private static _profileDir: string;
-  public static get profileDir(): LocalDirName { return this._profileDir; }
+  /**
+   * The name of the *Profile* subdirectory of [[cacheDir]] for this process.
+   *
+   * The *Profile* directory is used to cache data that is specific to a type-of-usage of the iTwin.js library.
+   * It is important that information in the profile cache be consistent but isolated across sessions (i.e.
+   * data for a profile is maintained between runs of its application, but each profile is completely independent and
+   * unaffected by the presence of others.)
+   * @note **Only one process at a time may be using a given profile**, and an exception will be thrown by [[startup]]
+   * if a second process attempts to use the same profile.
+   * @beta
+   */
+  public static get profileName(): string {
+    return this._profileName;
+  }
+
+  /** The full path of the Profile directory.
+   * @see [[profileName]]
+   * @beta
+   */
+  public static get profileDir(): LocalDirName {
+    return join(this._cacheDir, "profiles", this._profileName);
+  }
 
   /** Event raised during startup to allow loading settings data */
   public static readonly onWorkspaceStartup = new BeEvent<() => void>();
@@ -346,11 +369,34 @@ export class IModelHost {
   private static syncNativeLogLevels() {
     this.platform.clearLogLevelCache();
   }
-  private static loadNative() {
-    if (undefined === this._platform) {
-      this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
-      this._platform.logger = Logger;
-      Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
+  private static loadNative(options: IModelHostOptions) {
+    if (undefined !== this._platform)
+      return;
+
+    this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
+    this._platform.logger = Logger;
+    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
+
+    if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
+      this.platform.setCrashReporting(options.crashReportingConfig);
+
+      Logger.logTrace(loggerCategory, "Configured crash reporting", {
+        enableCrashDumps: options.crashReportingConfig?.enableCrashDumps,
+        wantFullMemoryDumps: options.crashReportingConfig?.wantFullMemoryDumps,
+        enableNodeReport: options.crashReportingConfig?.enableNodeReport,
+        uploadToBentley: options.crashReportingConfig?.uploadToBentley,
+      });
+
+      if (options.crashReportingConfig.enableNodeReport) {
+        if (process.report !== undefined) {
+          process.report.reportOnFatalError = true;
+          process.report.reportOnUncaughtException = true;
+          process.report.directory = options.crashReportingConfig.crashDir;
+          Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
+        } else {
+          Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
+        }
+      }
     }
   }
 
@@ -391,8 +437,8 @@ export class IModelHost {
   }
 
   private static initializeWorkspace(configuration: IModelHostOptions) {
-    const settingAssets = path.join(KnownLocations.packageAssetsDir, "Settings");
-    SettingsSchemas.addDirectory(path.join(settingAssets, "Schemas"));
+    const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
+    SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
     this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for all Workspaces. This will fail if another process is already using the same profile.
@@ -410,8 +456,12 @@ export class IModelHost {
   }
 
   private static _isValid = false;
-  /** Returns true if IModelHost is started.  */
-  public static get isValid() { return IModelHost._isValid; }
+
+  /** true after a successful call to [[startup]] and before [[shutdown]] */
+  public static get isValid() {
+    return IModelHost._isValid;
+  }
+
   /** This method must be called before any iTwin.js services are used.
    * @param options Host configuration data.
    * Raises [[onAfterStartup]].
@@ -431,34 +481,11 @@ export class IModelHost {
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend(options.enableOpenTelemetry);
 
-    this.loadNative();
-
-    if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
-      this.platform.setCrashReporting(options.crashReportingConfig);
-
-      Logger.logTrace(loggerCategory, "Configured crash reporting", {
-        enableCrashDumps: options.crashReportingConfig?.enableCrashDumps,
-        wantFullMemoryDumps: options.crashReportingConfig?.wantFullMemoryDumps,
-        enableNodeReport: options.crashReportingConfig?.enableNodeReport,
-        uploadToBentley: options.crashReportingConfig?.uploadToBentley,
-      });
-
-      if (options.crashReportingConfig.enableNodeReport) {
-        if (process.report !== undefined) {
-          process.report.reportOnFatalError = true;
-          process.report.reportOnUncaughtException = true;
-          process.report.directory = options.crashReportingConfig.crashDir;
-          Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
-        } else {
-          Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
-        }
-      }
-    }
-
-    this.setupHostDirs(options);
+    this.loadNative(options);
+    this.setupCacheDir(options);
     this.initializeWorkspace(options);
 
-    BriefcaseManager.initialize(this._briefcaseCacheDir);
+    BriefcaseManager.initialize(join(this._cacheDir, "imodels"));
 
     [
       IModelReadRpcImpl,
@@ -484,19 +511,11 @@ export class IModelHost {
     this.onAfterStartup.raiseEvent();
   }
 
-  private static _briefcaseCacheDir: LocalDirName;
+  private static setupCacheDir(configuration: IModelHostOptions) {
+    this._cacheDir = normalizeDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
+    IModelJsFs.recursiveMkDirSync(this._cacheDir);
 
-  private static setupHostDirs(configuration: IModelHostOptions) {
-    const setupDir = (dir: LocalDirName) => {
-      dir = path.normalize(dir);
-      IModelJsFs.recursiveMkDirSync(dir);
-      return dir;
-    };
-    this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
-    this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
     this._profileName = configuration.profileName ?? "default";
-    this._profileDir = setupDir(path.join(this._cacheDir, "profiles", this._profileName));
-
     Logger.logInfo(loggerCategory, `cacheDir: [${this.cacheDir}], profileDir: [${this.profileDir}]`);
   }
 
@@ -515,7 +534,7 @@ export class IModelHost {
     this.onBeforeShutdown.raiseEvent();
     this.configuration = undefined;
     this.tileCacheService = undefined; // eslint-disable-line deprecation/deprecation
-    this.tileUploader = undefined; // eslint  w-disable-line deprecation/deprecation
+    this.tileUploader = undefined; // eslint-disable-line deprecation/deprecation
     this.tileStorage = undefined;
     this._appWorkspace?.close();
     this._appWorkspace = undefined;
@@ -526,8 +545,6 @@ export class IModelHost {
 
   /**
    * Add or update a property that should be included in a crash report.
-   * @param name The name of the property
-   * @param value The value of the property
    * @internal
    */
   public static setCrashReportProperty(name: string, value: string): void {
@@ -536,7 +553,6 @@ export class IModelHost {
 
   /**
    * Remove a previously defined property so that will not be included in a crash report.
-   * @param name The name of the property
    * @internal
    */
   public static removeCrashReportProperty(name: string): void {
@@ -552,7 +568,9 @@ export class IModelHost {
   }
 
   /** The directory where application assets may be found */
-  public static get appAssetsDir(): string | undefined { return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined; }
+  public static get appAssetsDir(): string | undefined {
+    return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined;
+  }
 
   /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileTreeProps should wait before returning a "pending" status.
    * @internal
@@ -651,7 +669,7 @@ export class IModelHost {
   }
 }
 
-/** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]].
+/** Information about the platform on which the app is running.
  * @public
  */
 export class Platform {
@@ -661,21 +679,23 @@ export class Platform {
   }
 }
 
-/** Well known directories that may be used by the application. Also see [[Platform]]
+/** Well known directories that may be used by the application.
  * @public
  */
 export class KnownLocations {
 
   /** The directory where the imodeljs-native assets are stored. */
-  public static get nativeAssetsDir(): string { return IModelHost.platform.DgnDb.getAssetsDir(); }
+  public static get nativeAssetsDir(): LocalDirName {
+    return IModelHost.platform.DgnDb.getAssetsDir();
+  }
 
   /** The directory where the core-backend assets are stored. */
-  public static get packageAssetsDir(): string {
-    return path.join(__dirname, "assets");
+  public static get packageAssetsDir(): LocalDirName {
+    return join(__dirname, "assets");
   }
 
   /** The temporary directory. */
-  public static get tmpdir(): string {
+  public static get tmpdir(): LocalDirName {
     return os.tmpdir();
   }
 }
