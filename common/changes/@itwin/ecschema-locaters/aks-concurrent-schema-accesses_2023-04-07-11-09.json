@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-locaters",
+      "comment": "Enable concurrent deserialization of schemas in schema context. Introduced getLoadingSchema in SchemaJsonFileLocater and SchemaXmlFileLocater to obtain partially deserialized schemas. Implemented SchemaTextsCache in SchemaFileLocater to minimize the frequency of reading from schema files.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-locaters"
+}
