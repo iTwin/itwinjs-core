@@ -17,7 +17,7 @@ import { FileSchemaKey, ReadSchemaText, SchemaFileLocater } from "./SchemaFileLo
 /**
  * A SchemaLocator implementation for locating JSON Schema files
  * from the file system using configurable search paths.
- * @beta
+ * @alpha
  */
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
 

@@ -19,38 +19,63 @@ export class FileSchemaKey extends SchemaKey {
     schemaText?: string;
 }
 
-// @beta
+// @alpha
+export class ReadSchemaText {
+    constructor(_readSchemaTextFunc: () => Promise<string | undefined>);
+    // (undocumented)
+    readSchemaText(): Promise<string | undefined>;
+}
+
+// @alpha
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
+    // (undocumented)
+    addSchemaText(schemaPath: string, readSchemaText: ReadSchemaText): Promise<void>;
+    // (undocumented)
+    addSchemaTextSync(schemaPath: string, readSchemaText: ReadSchemaText): void;
     compareSchemaKeyByVersion: (lhs: FileSchemaKey, rhs: FileSchemaKey) => number;
     // (undocumented)
     fileExists(filePath: string): Promise<boolean | undefined>;
     // (undocumented)
     fileExistsSync(filePath: string): boolean | undefined;
-    protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[];
+    protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): Promise<FileSchemaKey[]>;
+    protected findEligibleSchemaKeysSync(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[];
     // (undocumented)
     abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     // (undocumented)
     protected abstract getSchemaKey(data: string): SchemaKey;
     // (undocumented)
+    getSchemaText(schemaPath: string): Promise<string | undefined>;
+    // (undocumented)
+    getSchemaTextSync(schemaPath: string): Promise<string | undefined> | undefined;
+    readSchemaText(schemaPath: string): Promise<string | undefined>;
+    // (undocumented)
     readUtf8FileToString(filePath: string): Promise<string | undefined>;
     // (undocumented)
     readUtf8FileToStringSync(filePath: string): string | undefined;
     // (undocumented)
+    get schemaTextsCount(): number;
+    // (undocumented)
     searchPaths: string[];
 }
 
-// @beta
+// @alpha
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
+    getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     protected getSchemaKey(data: string): SchemaKey;
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
 }
 
-// @beta
+// @alpha (undocumented)
+export class SchemaTextsCache extends Array<SchemaText> {
+}
+
+// @alpha
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
+    getLoadingSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchemaKey(data: string): SchemaKey;
     getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
@@ -63,7 +88,6 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
     loadSchema(schemaPath: string, schemaText?: string): Schema;
 }
-
 
 // (No @packageDocumentation comment for this package)
 
