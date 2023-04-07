@@ -61,7 +61,7 @@ export class TileStorage {
     }
   }
 
-  public async getCachedTiles(iModelId: string, _prefix: string): Promise<{ treeId: string, contentId: string, guid?: string }[]> {
+  public async getCachedTiles(iModelId: string, _prefix: string): Promise<{ treeId: string, contentId: string, guid: string }[]> {
     return (await this.storage.listObjects({ baseDirectory: iModelId }))
       .map((objectReference) => ({
         parts: objectReference.relativeDirectory?.split("/") ?? [""],
