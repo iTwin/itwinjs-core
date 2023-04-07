@@ -61,14 +61,7 @@ export class TileStorage {
     }
   }
 
-<<<<<<< HEAD
-  public async getCachedTiles(iModelId: string, _prefix: string): Promise<{ treeId: string, contentId: string, guid?: string }[]> {
-=======
-  /**
-   * Returns a list of all tiles that are found in the cloud cache.
-   */
-  public async getCachedTiles(iModelId: string): Promise<{ treeId: string, contentId: string, guid: string }[]> {
->>>>>>> 75045e2304 (fix type definition in TileStorage.ts (#5359))
+  public async getCachedTiles(iModelId: string, _prefix: string): Promise<{ treeId: string, contentId: string, guid: string }[]> {
     return (await this.storage.listObjects({ baseDirectory: iModelId }))
       .map((objectReference) => ({
         parts: objectReference.relativeDirectory?.split("/") ?? [""],
