@@ -5140,8 +5140,6 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 // @internal
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
 
-<<<<<<< HEAD
-=======
 // @beta
 export class TileStorage {
     constructor(storage: ServerStorage);
@@ -5158,7 +5156,6 @@ export class TileStorage {
     uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void>;
 }
 
->>>>>>> 75045e2304 (fix type definition in TileStorage.ts (#5359))
 // @public
 export class TitleText extends DetailingSymbol {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
