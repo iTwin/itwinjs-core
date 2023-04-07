@@ -1,0 +1,61 @@
+# This template handles downloading and staging a docs artifact from another repository
+parameters:
+  - name: workingDir
+    type: string
+    default: $(Pipeline.Workspace)/itwinjs-core
+  - name: stagingDir
+    type: string
+    default: $(System.ArtifactsDirectory)/staging/
+
+  - name: projectId
+    type: string
+    default: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+  - name: pipelineId
+    type: string
+  - name: artifactName
+    type: string
+  - name: defaultBranch
+    type: string
+    default: refs/heads/master
+
+  # If useCurrentDocsArtifact is set to true, attempt to pull artifact from the current run
+  # rather than latest succesful run.
+  - name: useCurrentDocsArtifact
+    type: boolean
+    default: false
+
+  # By default we stage an artifact by copying the contents directly into the staging directory, this
+  # parameter can be defined if custom staging logic is required
+  - name: stagingSteps
+    type: stepList
+    default: []
+
+steps:
+  - ${{ if parameters.useCurrentDocsArtifact }}:
+    - download: current
+      artifact: ${{ parameters.artifactName }}
+      displayName: Download ${{ parameters.artifactName }} Artifact
+
+  - ${{ else }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download Presentation Docs Artifact
+      inputs:
+        buildType: specific
+        project: ${{ parameters.projectId }}
+        pipeline: ${{ parameters.pipelineId }}
+        buildVersionToDownload: latestFromBranch
+        branchName: ${{ parameters.defaultBranch }}
+        artifactName: ${{ parameters.artifactName }}
+        targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+
+  - ${{ if eq(length(parameters.stagingSteps), 0) }}:
+    # Run if no staging steps are provided
+    - task: CopyFiles@2
+      displayName: Copy ${{ parameters.artifactName }} to staging
+      inputs:
+        SourceFolder: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+        TargetFolder: ${{ parameters.stagingDir }}
+        OverWrite: true
+
+  - ${{ else }}:
+    - ${{ parameters.stagingSteps }}

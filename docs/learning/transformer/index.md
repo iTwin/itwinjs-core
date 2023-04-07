@@ -1,6 +1,6 @@
 # iModel Transformation and Data Exchange
 
-The `@itwin/core-transformer` package provides some classes that implement [Extract, Transform, and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) (ETL) functionality:
+The `@itwin/imodel-transformer` package provides some classes that implement [Extract, Transform, and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) (ETL) functionality:
 
 - [IModelExporter]($transformer) and [IModelExportHandler]($transformer) are the base classes that implement the *extract* (or *export*) part of ETL functionality.
 - [IModelTransformer]($transformer) is the base class that implements the *transform* part of ETL functionality.
