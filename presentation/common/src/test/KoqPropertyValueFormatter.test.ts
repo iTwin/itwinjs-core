@@ -4,25 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as moq from "typemoq";
 import {
   FormatProps, KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemType, schemaItemTypeToString, SchemaProps, UnitProps,
   UnitSystemProps,
 } from "@itwin/ecschema-metadata";
-import { Content } from "../presentation-common/content/Content";
-import { NestedContentValue } from "../presentation-common/content/Value";
-import { ContentPropertyValueFormatter, PropertyValueFormatter } from "../presentation-common/PropertyFormatter";
-import {
-  createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo,
-} from "./_helpers";
+import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyValueFormatter";
 
-describe("PropertyValueFormatter", () => {
-  let formatter: PropertyValueFormatter;
+describe("KoqPropertyValueFormatter", () => {
+  let formatter: KoqPropertyValueFormatter;
 
   beforeEach(async () => {
     const schemaContext = new SchemaContext();
     await Schema.fromJson(schemaProps, schemaContext);
-    formatter = new PropertyValueFormatter(schemaContext);
+    formatter = new KoqPropertyValueFormatter(schemaContext);
   });
 
   describe("getFormatterSpec", () => {
@@ -142,6 +136,13 @@ describe("PropertyValueFormatter", () => {
       expect(formatted).to.be.eq(`1.5 ${metricUnit.label}`);
     });
 
+    it("formats value using default format if unit system is not provided", async () => {
+      const formatted = await formatter.format(1.5, {
+        koqName: "TestSchema:TestKOQ",
+      });
+      expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
+    });
+
     it("returns `undefined` if format is not found", async () => {
       const formatted = await formatter.format(1.5, {
         koqName: "TestSchema:InvalidKoq",
@@ -149,133 +150,6 @@ describe("PropertyValueFormatter", () => {
       });
       expect(formatted).to.be.undefined;
     });
-  });
-});
-
-describe("ContentPropertyValueFormatter", () => {
-  let formatter: ContentPropertyValueFormatter;
-  const propertyValueFormatterMock = moq.Mock.ofType<PropertyValueFormatter>();
-  const koqField = createTestPropertiesContentField({
-    name: "koqFieldName",
-    properties: [{
-      property: createTestPropertyInfo({ name: "koqProperty", kindOfQuantity: { label: "Koq Props", name: "TestSchema:TestKoq", persistenceUnit: "Units:M" } }),
-    }],
-  });
-  const simplePropField = createTestPropertiesContentField({
-    name: "simpleFieldName",
-    properties: [{
-      property: createTestPropertyInfo({ name: "simpleProperty" }),
-    }],
-  });
-
-  beforeEach(() => {
-    propertyValueFormatterMock
-      .setup(async (x) => x.format(moq.It.isAny(), moq.It.is((options) => options.koqName === "TestSchema:TestKoq")))
-      .returns(async (value) => (value as number).toString().replace(".", ","));
-    formatter = new ContentPropertyValueFormatter(propertyValueFormatterMock.object, "metric");
-  });
-
-  afterEach(() => {
-    propertyValueFormatterMock.reset();
-  });
-
-  it("formats content item value", async () => {
-    const descriptor = createTestContentDescriptor({ fields: [koqField, simplePropField] });
-    const contentItem = createTestContentItem({
-      displayValues: {
-        [koqField.name]: "1.5",
-        [simplePropField.name]: "1.5",
-      },
-      values: {
-        [koqField.name]: 1.5,
-        [simplePropField.name]: "1.5",
-      },
-    });
-    const content = new Content(descriptor, [contentItem]);
-
-    const formattedContent = await formatter.formatContent(content);
-    expect(formattedContent.contentSet[0].displayValues[koqField.name]).to.be.eq("1,5");
-    expect(formattedContent.contentSet[0].displayValues[simplePropField.name]).to.be.eq("1.5");
-  });
-
-  it("does not format content item value if formatter returns `undefined`", async () => {
-    propertyValueFormatterMock.reset();
-    propertyValueFormatterMock.setup(async (x) => x.format(moq.It.isAny(), moq.It.isAny())).returns(async () => undefined);
-    const descriptor = createTestContentDescriptor({ fields: [koqField] });
-    const contentItem = createTestContentItem({
-      displayValues: {
-        [koqField.name]: "1.5",
-      },
-      values: {
-        [koqField.name]: 1.5,
-      },
-    });
-    const content = new Content(descriptor, [contentItem]);
-
-    const formattedContent = await formatter.formatContent(content);
-    expect(formattedContent.contentSet[0].displayValues[koqField.name]).to.be.eq("1.5");
-  });
-
-  it("formats nested content item value", async () => {
-    const nestedContentField = createTestNestedContentField({
-      name: "nestedContentFieldName",
-      nestedFields: [koqField, simplePropField],
-    });
-    const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
-    const contentItem = createTestContentItem({
-      displayValues: {
-        [nestedContentField.name]: {
-          displayValues: {
-            [koqField.name]: "1.5",
-            [simplePropField.name]: "1.5",
-          },
-        },
-      },
-      values: {
-        [nestedContentField.name]: [{
-          displayValues: {
-            [koqField.name]: "1.5",
-            [simplePropField.name]: "1.5",
-          },
-          values: {
-            [koqField.name]: 1.5,
-            [simplePropField.name]: "1.5",
-          },
-          primaryKeys: [],
-          mergedFieldNames: [],
-        }],
-      },
-    });
-    const content = new Content(descriptor, [contentItem]);
-
-    const formattedContent = await formatter.formatContent(content);
-    const nestedContentValue = formattedContent.contentSet[0].values[nestedContentField.name] as NestedContentValue[];
-    expect(nestedContentValue[0].displayValues[koqField.name]).to.be.eq("1,5");
-    expect(nestedContentValue[0].displayValues[simplePropField.name]).to.be.eq("1.5");
-  });
-
-  it("handles merged nested field", async () => {
-    const nestedContentField = createTestNestedContentField({
-      name: "nestedContentFieldName",
-      nestedFields: [simplePropField],
-    });
-    const descriptor = createTestContentDescriptor({ fields: [nestedContentField, koqField] });
-    const contentItem = createTestContentItem({
-      displayValues: {
-        [nestedContentField.name]: "*Merged*",
-        [koqField.name]: "1.5",
-      },
-      values: {
-        [nestedContentField.name]: undefined,
-        [koqField.name]: 1.5,
-      },
-      mergedFieldNames: [nestedContentField.name],
-    });
-    const content = new Content(descriptor, [contentItem]);
-
-    const formattedContent = await formatter.formatContent(content);
-    expect(formattedContent.contentSet[0].displayValues[nestedContentField.name]).to.be.eq("*Merged*");
-    expect(formattedContent.contentSet[0].displayValues[koqField.name]).to.be.eq("1,5");
   });
 });
 

@@ -11,22 +11,24 @@ import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common"
 import { IModelApp, IModelConnection, IpcApp, QuantityFormatter } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions,
   ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey,
-  NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
-  SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
+  NodePathElement, Paged, PresentationIpcEvents, PropertyValueFormat, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable,
+  SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
-  createRandomRuleset, createRandomTransientId, createTestContentDescriptor, createTestECInstanceKey,
+  createRandomRuleset, createRandomTransientId, createTestContentDescriptor, createTestContentItem, createTestECInstanceKey,
+  createTestPropertiesContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
-  buildPagedArrayResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager,
+  buildPagedArrayResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, PresentationManagerProps,
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
@@ -61,15 +63,21 @@ describe("PresentationManager", () => {
     quantityFormatterMock.setup((x) => x.activeUnitSystem).returns(() => quantityFormatterUnitSystem);
     sinon.stub(IModelApp, "quantityFormatter").get(() => quantityFormatterMock.object);
     rpcRequestsHandlerMock.reset();
-    manager = PresentationManager.create({
-      rpcRequestsHandler: rpcRequestsHandlerMock.object,
-    });
+    recreateManager();
   });
 
   afterEach(() => {
     manager.dispose();
     Presentation.terminate();
   });
+
+  function recreateManager(props?: Partial<PresentationManagerProps>) {
+    manager && manager.dispose();
+    manager = PresentationManager.create({
+      rpcRequestsHandler: rpcRequestsHandlerMock.object,
+      ...props,
+    });
+  }
 
   const mockI18N = () => {
     i18nMock.reset();
@@ -824,6 +832,89 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.undefined;
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("requests content without formatting from proxy", async () => {
+      // setup manager to support values formatting
+      recreateManager({ schemaContextProvider: () => new SchemaContext() });
+
+      const keyset = new KeySet();
+      const fieldName = "testField";
+      const descriptor = createTestContentDescriptor({
+        fields: [
+          createTestPropertiesContentField({
+            name: fieldName,
+            properties: [],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+          }),
+        ],
+      });
+      const item = createTestContentItem({
+        displayValues: {},
+        values: {
+          [fieldName]: 1.234,
+        },
+      });
+      const options: Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        descriptor,
+        keys: keyset,
+        omitFormattedValues: true,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
+        .returns(async () => ({ total: 1, items: [item.toJSON()] }))
+        .verifiable();
+      const actualResult = await manager.getContent(options);
+      expect(actualResult).to.be.instanceOf(Content);
+      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(actualResult!.contentSet).to.have.lengthOf(1);
+      expect(actualResult!.contentSet[0].displayValues[fieldName]).to.be.undefined;
+      expect(actualResult!.contentSet[0].values[fieldName]).to.be.eq(1.234);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("requests content without formatting from proxy and formats", async () => {
+      // setup manager to support values formatting
+      recreateManager({ schemaContextProvider: () => new SchemaContext() });
+
+      const keyset = new KeySet();
+      const fieldName = "testField";
+      const descriptor = createTestContentDescriptor({
+        fields: [
+          createTestPropertiesContentField({
+            name: fieldName,
+            properties: [],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+          }),
+        ],
+      });
+      const item = createTestContentItem({
+        displayValues: {},
+        values: {
+          [fieldName]: 1.234,
+        },
+      });
+      const options: Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        descriptor,
+        keys: keyset,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), omitFormattedValues: true })))
+        .returns(async () => ({ total: 1, items: [item.toJSON()] }))
+        .verifiable();
+      const actualResult = await manager.getContent(options);
+      expect(actualResult).to.be.instanceOf(Content);
+      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(actualResult!.contentSet).to.have.lengthOf(1);
+      expect(actualResult!.contentSet[0].displayValues[fieldName]).to.be.eq("1.23");
+      expect(actualResult!.contentSet[0].values[fieldName]).to.be.eq(1.234);
       rpcRequestsHandlerMock.verifyAll();
     });
 
