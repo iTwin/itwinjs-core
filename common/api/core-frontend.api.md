@@ -2514,14 +2514,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     anyMapLayersVisible(overlay: boolean): boolean;
     attachMapLayer(options: {
         settings: MapLayerSettings;
-        isOverlay?: boolean;
-        insertIndex?: number;
+        mapLayerIndex: MapLayerIndex;
     }): void;
     // @internal (undocumented)
     attachMapLayerProps(options: {
         props: MapLayerProps;
-        isOverlay?: boolean;
-        insertIndex?: number;
+        mapLayerIndex: MapLayerIndex;
     }): void;
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
@@ -2536,17 +2534,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     changeBaseMapTransparency(transparency: number): void;
-    // (undocumented)
-    changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
-    changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
-    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
+    changeMapLayerCredentials(mapLayerIndex: MapLayerIndex, userName?: string, password?: string): void;
+    changeMapLayerProps(props: Partial<MapLayerProps>, mapLayerIndex: MapLayerIndex): void;
+    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, mapLayerIndex: MapLayerIndex): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // (undocumented)
     static get className(): string;
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
-    detachMapLayerByIndex(index: number, isOverlay: boolean): void;
+    detachMapLayerByIndex(mapLayerIndex: MapLayerIndex): void;
     // @internal (undocumented)
     detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
     detachRealityModelByNameAndUrl(name: string, url: string): boolean;
@@ -2585,13 +2582,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
-    // (undocumented)
-    mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
+    mapLayerAtIndex(mapLayerIndex: MapLayerIndex): MapLayerSettings | undefined;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
-    moveMapLayerToBottom(index: number, isOverlay: boolean): void;
+    moveMapLayerToBottom(mapLayerIndex: MapLayerIndex): void;
     moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean): void;
-    moveMapLayerToTop(index: number, isOverlay: boolean): void;
+    moveMapLayerToTop(mapLayerIndex: MapLayerIndex): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
@@ -6407,7 +6403,7 @@ export enum MapLayerImageryProviderStatus {
     Valid = 0
 }
 
-// @internal
+// @public
 export interface MapLayerIndex {
     index: number;
     isOverlay: boolean;
@@ -6661,14 +6657,14 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     // (undocumented)
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
     // (undocumented)
-    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
-    resetMapLayer(index: number, isOverlay: boolean): void;
+    resetMapLayer(mapLayerIndex: MapLayerIndex): void;
     // (undocumented)
     setView(newView: ViewState): void;
 }
@@ -13982,12 +13978,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @alpha (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
-    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     // @internal
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
-    getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
+    getMapLayerRange(mapLayerIndex: MapLayerIndex): Promise<MapCartoRectangle | undefined>;
     // @beta
-    getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility;
+    getMapLayerScaleRangeVisibility(mapLayerIndex: MapLayerIndex): MapTileTreeScaleRangeVisibility;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
@@ -14100,7 +14096,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     requestRedraw(): void;
     // @beta
-    resetMapLayer(index: number, isOverlay: boolean): void;
+    resetMapLayer(mapLayerIndex: MapLayerIndex): void;
     get rotation(): Matrix3d;
     // @internal (undocumented)
     get sceneValid(): boolean;
@@ -14165,7 +14161,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     get viewingGlobe(): boolean;
     // (undocumented)
     get viewingSpace(): ViewingSpace;
-    viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean>;
+    viewMapLayerRange(mapLayerIndex: MapLayerIndex, vp: ScreenViewport): Promise<boolean>;
     get viewportId(): number;
     // @internal (undocumented)
     protected readonly _viewRange: ViewRect;
