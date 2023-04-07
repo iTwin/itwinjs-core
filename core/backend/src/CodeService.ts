@@ -215,7 +215,7 @@ export namespace CodeService {
   const codeSequences = new Map<string, CodeSequence>();
 
   /** @internal */
-  export let createForIModel: (db: IModelDb) => Promise<CodeService>;
+  export let createForIModel: ((db: IModelDb) => Promise<CodeService>) | undefined;
 
   /** Register an instance of a`CodeSequence` so it can be looked up by name. */
   export function registerSequence(seq: CodeSequence) {

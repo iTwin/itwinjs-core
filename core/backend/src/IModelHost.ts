@@ -286,12 +286,12 @@ export class IModelHost {
   public static configuration?: IModelHostOptions;
 
   /**
-   * The name of the *Profile* subdirectory of [[cacheDir]] for this process.
+   * The name of the *Profile* directory (a subdirectory of "[[cacheDir]]/profiles/") for this process.
    *
    * The *Profile* directory is used to cache data that is specific to a type-of-usage of the iTwin.js library.
    * It is important that information in the profile cache be consistent but isolated across sessions (i.e.
    * data for a profile is maintained between runs, but each profile is completely independent and
-   * unaffected by the presence of others.)
+   * unaffected by the presence ot use of others.)
    * @note **Only one process at a time may be using a given profile**, and an exception will be thrown by [[startup]]
    * if a second process attempts to use the same profile.
    * @beta
