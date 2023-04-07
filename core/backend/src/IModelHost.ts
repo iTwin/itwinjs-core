@@ -44,14 +44,14 @@ const loggerCategory = BackendLoggerCategory.IModelHost;
 
 // cspell:ignore nodereport fatalerror apicall alicloud rpcs inversify
 
-/** @alpha */
+/** @internal */
 export interface CrashReportingConfigNameValuePair {
   name: string;
   value: string;
 }
 
 /** Configuration of the crash-reporting system.
- * @alpha
+ * @internal
  */
 export interface CrashReportingConfig {
   /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. This directory will be created if it does not already exist. */
@@ -177,7 +177,7 @@ export interface IModelHostOptions {
   logTileSizeThreshold?: number;
 
   /** Crash-reporting configuration
-   * @alpha
+   * @internal
    */
   crashReportingConfig?: CrashReportingConfig;
 
@@ -284,8 +284,8 @@ export class IModelHost {
   public static configuration?: IModelHostOptions;
 
   private static _profileName: string;
-  private static _profileDir = "";
   public static get profileName(): string { return this._profileName; }
+  private static _profileDir: string;
   public static get profileDir(): LocalDirName { return this._profileDir; }
 
   /** Event raised during startup to allow loading settings data */
@@ -335,7 +335,7 @@ export class IModelHost {
    */
   public static async getAccessToken(): Promise<AccessToken> {
     try {
-      return (await this.authorizationClient?.getAccessToken()) ?? "";
+      return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
     } catch (e) {
       return "";
     }
@@ -343,24 +343,18 @@ export class IModelHost {
 
   /** @internal */
   public static flushLog() {
-    return this.platform.flushLog();
+    return IModelHost.platform.flushLog();
   }
-  /** @internal */
-  public static loadNative(): void {
-    const platform = Platform.load();
-    this.registerPlatform(platform);
-  }
+
   private static syncNativeLogLevels() {
-    this.platform.clearLogLevelCache();
+    IModelHost.platform.clearLogLevelCache();
   }
-
-  private static registerPlatform(platform: typeof IModelJsNative): void {
-    this._platform = platform;
-    if (undefined === platform)
-      return;
-
-    platform.logger = Logger;
-    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
+  private static loadNative() {
+    if (undefined === this._platform) {
+      this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
+      this._platform.logger = Logger;
+      Logger.logLevelChangedFn = IModelHost.syncNativeLogLevels;
+    }
   }
 
   /**
@@ -394,15 +388,17 @@ export class IModelHost {
    * To determine whether one is present, use [[getHubAccess]].
    */
   public static get hubAccess(): BackendHubAccess {
-    if (this._hubAccess === undefined)
+    if (IModelHost._hubAccess === undefined)
       throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
-    return this._hubAccess;
+    return IModelHost._hubAccess;
   }
 
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = path.join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(path.join(settingAssets, "Schemas"));
     this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+
+    // Create the CloudCache for all Workspaces. This will fail if another process is already using the same profile.
     try {
       this.appWorkspace.getCloudCache();
     } catch (e: any) {
@@ -418,7 +414,7 @@ export class IModelHost {
 
   private static _isValid = false;
   /** Returns true if IModelHost is started.  */
-  public static get isValid() { return this._isValid; }
+  public static get isValid() { return IModelHost._isValid; }
   /** This method must be called before any iTwin.js services are used.
    * @param options Host configuration data.
    * Raises [[onAfterStartup]].
@@ -430,8 +426,8 @@ export class IModelHost {
     this._isValid = true;
 
     options = options ?? {};
-    if (IModelHost.sessionId === "")
-      IModelHost.sessionId = Guid.createValue();
+    if (this.sessionId === "")
+      this.sessionId = Guid.createValue();
 
     this.authorizationClient = options.authorizationClient;
 
@@ -440,14 +436,7 @@ export class IModelHost {
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend(options.enableOpenTelemetry);
 
-    if (this._platform === undefined) {
-      try {
-        this.loadNative();
-      } catch (error) {
-        Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (options));
-        throw error;
-      }
-    }
+    this.loadNative();
 
     if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
       this.platform.setCrashReporting(options.crashReportingConfig);
@@ -534,11 +523,14 @@ export class IModelHost {
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
     this._profileName = configuration.profileName ?? "default";
     this._profileDir = setupDir(path.join(this._cacheDir, "profiles", this._profileName));
+
+    Logger.logInfo(loggerCategory, `cacheDir: [${this.cacheDir}], profileDir: [${this.profileDir}]`);
   }
 
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
-    // NB: This method is set as a node listener where `this` is unbound
+    // Note: This method is set as a node listener where `this` is unbound. Call private method to
+    // ensure `this` is correct. Don't combine these methods.
     return IModelHost.doShutdown();
   }
 
@@ -550,7 +542,7 @@ export class IModelHost {
     this.onBeforeShutdown.raiseEvent();
     this.configuration = undefined;
     this.tileCacheService = undefined; // eslint-disable-line deprecation/deprecation
-    this.tileUploader = undefined; // eslint-disable-line deprecation/deprecation
+    this.tileUploader = undefined; // eslint  w-disable-line deprecation/deprecation
     this.tileStorage = undefined;
     this._appWorkspace?.close();
     this._appWorkspace = undefined;
@@ -563,30 +555,27 @@ export class IModelHost {
    * Add or update a property that should be included in a crash report.
    * @param name The name of the property
    * @param value The value of the property
-   * @alpha
+   * @internal
    */
   public static setCrashReportProperty(name: string, value: string): void {
-    assert(undefined !== this._platform);
-    this._platform.setCrashReportProperty(name, value);
+    this.platform.setCrashReportProperty(name, value);
   }
 
   /**
    * Remove a previously defined property so that will not be included in a crash report.
    * @param name The name of the property
-   * @alpha
+   * @internal
    */
   public static removeCrashReportProperty(name: string): void {
-    assert(undefined !== this._platform);
-    this._platform.setCrashReportProperty(name, undefined);
+    this.platform.setCrashReportProperty(name, undefined);
   }
 
   /**
    * Get all properties that will be included in a crash report.
-   * @alpha
+   * @internal
    */
   public static getCrashReportProperties(): CrashReportingConfigNameValuePair[] {
-    assert(undefined !== this._platform);
-    return this._platform.getCrashReportProperties();
+    return this.platform.getCrashReportProperties();
   }
 
   /** The directory where application assets may be found */
@@ -688,11 +677,6 @@ export class Platform {
   /** Get the name of the platform. */
   public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
     return process.platform as any;
-  }
-
-  /** @internal */
-  public static load(): typeof IModelJsNative {
-    return ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
   }
 }
 
