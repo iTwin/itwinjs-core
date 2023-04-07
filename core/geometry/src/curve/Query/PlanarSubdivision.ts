@@ -98,16 +98,16 @@ export class PlanarSubdivision {
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
     return graph;
   }
-/**
- * Create a pair of mated half edges referencing an interval of a primitive
- *   * no action if start and end points are identical.
- * @param graph containing graph.
- * @param p the curve
- * @param fraction0 starting fraction
- * @param point0 start point
- * @param fraction1 end fraction
- * @param point1 end point
- */
+  /**
+   * Create a pair of mated half edges referencing an interval of a primitive
+   *   * no action if start and end points are identical.
+   * @param graph containing graph.
+   * @param p the curve
+   * @param fraction0 starting fraction
+   * @param point0 start point
+   * @param fraction1 end fraction
+   * @param point1 end point
+   */
   private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number) {
     if (!point0.isAlmostEqual (point1)){
       const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
@@ -121,21 +121,25 @@ export class PlanarSubdivision {
       mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
       }
     }
-// based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
-  // return the area (forced to zero if within tolerance)
-  public static collectSignedLoop(loop: Loop, signedAreas: SignedLoops, zeroAreaTolerance: number = 1.0e-10): number{
-    let area = RegionOps.computeXYArea(loop);
+  /**
+   * Based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
+   * @param zeroAreaTolerance absolute area tolerance for sliver face detection
+   * @param isSliverFace whether the loop is known a priori (e.g., via topology) to have zero area
+   * @returns the area (forced to zero if within tolerance)
+   */
+  public static collectSignedLoop(loop: Loop, outLoops: SignedLoops, zeroAreaTolerance: number = 1.0e-10, isSliverFace?: boolean): number{
+    let area = isSliverFace ? 0.0 : RegionOps.computeXYArea(loop);
     if (area === undefined)
       area = 0;
     if (Math.abs(area) < zeroAreaTolerance)
       area = 0.0;
     (loop as any).computedAreaInPlanarSubdivision = area;
     if (area > 0)
-      signedAreas.positiveAreaLoops.push(loop);
+      outLoops.positiveAreaLoops.push(loop);
     else if (area < 0)
-      signedAreas.negativeAreaLoops.push(loop);
+      outLoops.negativeAreaLoops.push(loop);
     else
-      signedAreas.slivers.push(loop);
+      outLoops.slivers.push(loop);
     return area;
   }
   public static createLoopInFace(faceSeed: HalfEdge,
@@ -192,26 +196,25 @@ export class PlanarSubdivision {
       const componentAreas: SignedLoops = { positiveAreaLoops: [], negativeAreaLoops: [], slivers: [] };
       const edges: LoopCurveLoopCurve[] = [];
       for (const faceSeed of faceSeeds) {
+        const isNullFace = this.isNullFace(faceSeed);
         const loop = this.createLoopInFace(faceSeed, (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
-          if (this.isNullFace(he)) {
-            // Ignore all edges of null faces.
-          } else {
+          if (!isNullFace) {
             const mate = this.nonNullEdgeMate(graph, he);
-              if (mate !== undefined){
-                const e = edgeMap.get(mate);
-                if (e === undefined) {
-                  // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
-                  const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
-                  edgeMap.set(he, e1);
-                } else if (e instanceof LoopCurveLoopCurve) {
-                  e.setB(loopC, curveC);
-                  edges.push(e);
-                  edgeMap.delete(mate);
-                }
+            if (mate !== undefined) {
+              const e = edgeMap.get(mate);
+              if (e === undefined) {
+                // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
+                const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
+                edgeMap.set(he, e1);
+              } else if (e instanceof LoopCurveLoopCurve) {
+                e.setB(loopC, curveC);
+                edges.push(e);
+                edgeMap.delete(mate);
+              }
             }
           }
         });
-        this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance);
+        this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance, isNullFace);
       }
       componentAreas.edges = edges;
       result.push(componentAreas);
