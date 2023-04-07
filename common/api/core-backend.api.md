@@ -474,7 +474,7 @@ export class BriefcaseDb extends IModelDb {
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
     // @alpha (undocumented)
-    static readonly onCodeServiceCreated: BeEvent<(service: CodeService) => void>;
+    static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_args: OpenBriefcaseArgs) => void>;
     static readonly onOpened: BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>;
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
@@ -1000,17 +1000,13 @@ export interface CodesDb {
 
 // @alpha
 export interface CodeService {
-    // (undocumented)
-    addAllCodes(iModel: IModelDb): Promise<{
-        internal: number;
-        external: number;
-    }>;
-    // @internal (undocumented)
-    addAllCodeSpecs(iModel: IModelDb): Promise<void>;
     readonly appParams: CodeService.AuthorAndOrigin;
     // @internal (undocumented)
     close: () => void;
     readonly externalCodes?: CodesDb;
+    // (undocumented)
+    initialize(iModel: IModelDb): Promise<void>;
+    // @internal
     readonly internalCodes?: InternalCodes;
     verifyCode(props: CodeService.ElementCodeProps): void;
 }
@@ -1018,12 +1014,21 @@ export interface CodeService {
 // @alpha (undocumented)
 export namespace CodeService {
     let // @internal (undocumented)
-    createForIModel: ((db: IModelDb) => CodeService) | undefined;
+    createForIModel: (db: IModelDb) => Promise<CodeService>;
     export interface AuthorAndOrigin {
         readonly author: Mutable<NameAndJson>;
         readonly origin: Mutable<NameAndJson>;
     }
     export type AuthorName = string;
+    // @internal (undocumented)
+    export interface BisCodeSpecIndexProps {
+        // (undocumented)
+        id?: number;
+        // (undocumented)
+        name: string;
+        // (undocumented)
+        props: string;
+    }
     export interface CodeEntry {
         readonly author?: AuthorName;
         readonly guid: CodeGuid;
@@ -1070,7 +1075,16 @@ export namespace CodeService {
         readonly errorId: ErrorId;
         readonly problems?: ReserveProblem[] | UpdateProblem[];
     }
-    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
+    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "InconsistentIModels" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
+    // @internal (undocumented)
+    export interface FontIndexProps {
+        // (undocumented)
+        fontName: string;
+        // (undocumented)
+        fontType: FontType;
+        // (undocumented)
+        id?: number;
+    }
     export function getSequence(name: string): CodeSequence;
     export type IterationReturn = void | "stop";
     export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode;
@@ -1179,7 +1193,7 @@ export type ConcreteEntity = Element_2 | Model | ElementAspect | Relationship;
 // @alpha
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
-// @alpha
+// @internal
 export interface CrashReportingConfig {
     crashDir: string;
     dumpProcessorScriptFileName?: string;
@@ -1191,7 +1205,7 @@ export interface CrashReportingConfig {
     wantFullMemoryDumps?: boolean;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export interface CrashReportingConfigNameValuePair {
     // (undocumented)
     name: string;
@@ -2876,8 +2890,6 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
-    // @internal (undocumented)
-    insertCodeSpec(specName: string, properties: CodeSpecProperties): Id64String;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -3106,15 +3118,13 @@ export class IModelHost {
     // @internal (undocumented)
     static flushLog(): void;
     static getAccessToken(): Promise<AccessToken>;
-    // @alpha
+    // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @beta
     static getHubAccess(): BackendHubAccess | undefined;
     // @beta
     static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
-    // @internal (undocumented)
-    static loadNative(): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -3122,7 +3132,11 @@ export class IModelHost {
     static readonly onWorkspaceStartup: BeEvent<() => void>;
     // @internal (undocumented)
     static get platform(): typeof IModelJsNative;
-    // @alpha
+    // @beta
+    static get profileDir(): LocalDirName;
+    // @beta
+    static get profileName(): string;
+    // @internal
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
@@ -3130,7 +3144,7 @@ export class IModelHost {
     static readonly session: Mutable<SessionProps>;
     static get sessionId(): GuidString;
     static set sessionId(id: GuidString);
-    // @alpha
+    // @internal
     static setCrashReportProperty(name: string, value: string): void;
     // @internal (undocumented)
     static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
@@ -3162,7 +3176,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     cacheDir?: LocalDirName;
     // (undocumented)
     compressCachedTiles?: boolean;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     crashReportingConfig?: CrashReportingConfig;
     // (undocumented)
     static defaultLogTileLoadTimeThreshold: number;
@@ -3198,7 +3212,7 @@ export interface IModelHostOptions {
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
-    // @alpha
+    // @internal
     crashReportingConfig?: CrashReportingConfig;
     // @beta
     enableOpenTelemetry?: boolean;
@@ -3210,6 +3224,8 @@ export interface IModelHostOptions {
     logTileSizeThreshold?: number;
     // @beta
     maxTileCacheDbSize?: number;
+    // @beta
+    profileName?: string;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
@@ -3357,10 +3373,14 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export interface InternalCodes extends CodesDb {
     // (undocumented)
-    verifyFont(): void;
+    reserveBisCodeSpecs(specs: [CodeService.BisCodeSpecIndexProps]): Promise<void>;
+    // (undocumented)
+    reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
+    // (undocumented)
+    verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
 }
 
 // @public
@@ -3415,11 +3435,11 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     close(): void;
     // (undocumented)
-    get cloudCache(): CloudSqlite.CloudCache;
-    // (undocumented)
     readonly containerDir: LocalDirName;
     // (undocumented)
     findContainer(containerId: WorkspaceContainer.Id): ITwinWorkspaceContainer | undefined;
+    // (undocumented)
+    getCloudCache(): CloudSqlite.CloudCache;
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     // (undocumented)
@@ -3514,9 +3534,9 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
 
 // @public
 export class KnownLocations {
-    static get nativeAssetsDir(): string;
-    static get packageAssetsDir(): string;
-    static get tmpdir(): string;
+    static get nativeAssetsDir(): LocalDirName;
+    static get packageAssetsDir(): LocalDirName;
+    static get tmpdir(): LocalDirName;
 }
 
 // @internal
@@ -4235,8 +4255,6 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
-    // @internal (undocumented)
-    static load(): typeof IModelJsNative;
     static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
 }
 
@@ -5499,9 +5517,9 @@ export class WebMercatorModel extends SpatialModel {
 // @beta
 export interface Workspace {
     close(): void;
-    readonly cloudCache?: CloudSqlite.CloudCache;
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
+    getCloudCache(): CloudSqlite.CloudCache;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;

@@ -220,7 +220,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public logTileLoadTimeThreshold = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
   /** @internal */
   public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
-  /** @alpha */
+  /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
 }
 
@@ -290,7 +290,7 @@ export class IModelHost {
    *
    * The *Profile* directory is used to cache data that is specific to a type-of-usage of the iTwin.js library.
    * It is important that information in the profile cache be consistent but isolated across sessions (i.e.
-   * data for a profile is maintained between runs of its application, but each profile is completely independent and
+   * data for a profile is maintained between runs, but each profile is completely independent and
    * unaffected by the presence of others.)
    * @note **Only one process at a time may be using a given profile**, and an exception will be thrown by [[startup]]
    * if a second process attempts to use the same profile.
@@ -441,7 +441,7 @@ export class IModelHost {
     SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
     this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
 
-    // Create the CloudCache for all Workspaces. This will fail if another process is already using the same profile.
+    // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {
       this.appWorkspace.getCloudCache();
     } catch (e: any) {
@@ -457,7 +457,7 @@ export class IModelHost {
 
   private static _isValid = false;
 
-  /** true after a successful call to [[startup]] and before [[shutdown]] */
+  /** true between a successful call to [[startup]] and before [[shutdown]] */
   public static get isValid() {
     return IModelHost._isValid;
   }
