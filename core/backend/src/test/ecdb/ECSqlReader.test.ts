@@ -287,6 +287,141 @@ describe("ECSqlReader", (() => {
       });
     });
 
+    describe("Get specific values", () => {
+
+      it("Get only ECInstanceId with unspecified rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 } });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get only ECInstanceId with UseJsPropertyNames rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().id, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get only ECInstanceId with UseECSqlPropertyNames rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get only ECInstanceId with UseECSqlPropertyIndexes rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get one column with custom name with unspecified rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 } });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.customColumnName, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get one column with custom name with UseJsPropertyNames rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.customColumnName, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);;
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get one column with custom name with UseECSqlPropertyNames rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.customColumnName, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get one column with custom name with UseECSqlPropertyIndexes rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.customColumnName, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+    });
+
     describe("Get count of results", () => {
       const expectedRowCount = 46; // 46 Elements in test.bim
 
