@@ -5,12 +5,12 @@ import { assert } from "chai";
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, using } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { SnapshotDb } from "../../core-backend";
 import { ECDb } from "../../ECDb";
 import { ECSqlStatement } from "../../ECSqlStatement";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ECSqlReader", (() => {
   let iModel: SnapshotDb;
