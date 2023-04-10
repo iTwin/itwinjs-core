@@ -2,67 +2,69 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
+
+export * from "./AliCloudStorageService";
+export * from "./BackendHubAccess";
+export * from "./BackendLoggerCategory";
+export * from "./BisCoreSchema";
 export * from "./BriefcaseManager";
 export * from "./Category";
+export * from "./ChangedElementsDb";
 export * from "./ChangeSummaryManager";
 export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CloudSqlite";
+export * from "./CloudStorageBackend";
 export * from "./CodeService";
 export * from "./CodeSpecs";
-export * from "./EntityReferences";
+export * from "./DevTools";
 export * from "./DisplayStyle";
+export * from "./domains/FunctionalElements";
+export * from "./domains/FunctionalSchema";
+export * from "./domains/GenericElements";
+export * from "./domains/GenericSchema";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
+export * from "./ElementGraphics";
 export * from "./ElementTreeWalker";
 export * from "./Entity";
+export * from "./EntityReferences";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
 export * from "./GeoCoordConfig";
-export * from "./LocalHub";
 export * from "./HubMock";
+export * from "./IModelCloneContext";
+export * from "./IModelDb";
+export * from "./IModelElementCloneContext";
+export * from "./IModelHost";
 export * from "./IModelJsFs";
-export * from "./BackendHubAccess";
-export * from "./Relationship";
-export * from "./Texture";
-export * from "./TxnManager";
+export * from "./IpcHost";
 export * from "./LineStyle";
-export * from "./BackendLoggerCategory";
+export * from "./LocalhostIpcHost";
+export * from "./LocalHub";
 export * from "./Material";
 export * from "./Model";
-export * from "./NavigationRelationship";
-export * from "./rpc/tracing";
-export * from "./Schema";
-export * from "./SqliteStatement";
-export * from "./SQLiteDb";
-export * from "./ViewDefinition";
-export * from "./BisCoreSchema";
-export * from "./ChangedElementsDb";
-export * from "./domains/FunctionalSchema";
-export * from "./domains/FunctionalElements";
-export * from "./domains/GenericSchema";
-export * from "./domains/GenericElements";
-export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
-export * from "./IModelElementCloneContext";
-export * from "./IModelCloneContext";
-export * from "./IModelHost";
-export * from "./IpcHost";
 export * from "./NativeAppStorage";
 export * from "./NativeHost";
+export * from "./NavigationRelationship";
 export * from "./PropertyStore";
-export * from "./CloudStorageBackend";
-export * from "./AliCloudStorageService";
-export * from "./DevTools";
-export * from "./LocalhostIpcHost";
-export * from "./ElementGraphics";
+export * from "./Relationship";
+export * from "./rpc/tracing";
+export * from "./Schema";
+export * from "./SQLiteDb";
+export * from "./SqliteStatement";
+export * from "./Texture";
+export * from "./TxnManager";
+export * from "./ViewDefinition";
 export * from "./workspace/Settings";
 export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
-export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
  * The core-backend package always runs on the computer with a local Briefcase.

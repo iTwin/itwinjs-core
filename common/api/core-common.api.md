@@ -41,6 +41,7 @@ import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
 import { LogFunction } from '@itwin/core-bentley';
+import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
@@ -389,7 +390,7 @@ export type BackendBuffer = Buffer_2;
 
 // @public (undocumented)
 export class BackendError extends IModelError {
-    constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData);
 }
 
 // @public @deprecated (undocumented)
@@ -1074,7 +1075,7 @@ export enum ChangesetType {
 
 // @alpha
 export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: GetMetaDataFunction);
+    constructor(message: string, getMetaData?: LoggingMetaData);
 }
 
 // @public
@@ -1263,6 +1264,8 @@ export class CodeSpec {
     static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
+    // (undocumented)
+    get isExternal(): boolean;
     // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
@@ -4684,7 +4687,7 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData);
 }
 
 // @public
@@ -5317,6 +5320,8 @@ export interface Localization {
 }
 
 export { LogFunction }
+
+export { LoggingMetaData }
 
 // @public
 export interface MapImageryProps {
