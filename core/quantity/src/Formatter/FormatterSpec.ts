@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-import { IUnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
 import { Format } from "./Format";
 import { Formatter } from "./Formatter";
 
@@ -68,7 +68,7 @@ export class FormatterSpec {
     if (format.units) {
       let convertFromUnit = inputUnit;
       for (const unit of format.units) {
-        let unitConversion: IUnitConversion;
+        let unitConversion: UnitConversionProps;
         if (convertFromUnit) {
           unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
         } else {

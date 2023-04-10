@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import {
-  IUnitProps, KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemFormatProps, SchemaItemType, schemaItemTypeToString, SchemaProps,
-  UnitSystemProps,
+  KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemFormatProps, SchemaItemType, schemaItemTypeToString, SchemaItemUnitProps,
+  SchemaProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { Content } from "../presentation-common/content/Content";
 import { NestedContentValue } from "../presentation-common/content/Value";
@@ -279,7 +279,7 @@ describe("ContentPropertyValueFormatter", () => {
   });
 });
 
-const metricUnit: IUnitProps = {
+const metricUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "MetricUnit",
   definition: "MetricUnit",
@@ -289,7 +289,7 @@ const metricUnit: IUnitProps = {
   schema: "TestSchema",
 };
 
-const imperialUnit: IUnitProps = {
+const imperialUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "ImperialUnit",
   definition: "MetricUnit",
@@ -300,7 +300,7 @@ const imperialUnit: IUnitProps = {
   schema: "TestSchema",
 };
 
-const usSurveyUnit: IUnitProps = {
+const usSurveyUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "UsSurveyUnit",
   definition: "MetricUnit",
@@ -311,7 +311,7 @@ const usSurveyUnit: IUnitProps = {
   schema: "TestSchema",
 };
 
-const usCustomUnit: IUnitProps = {
+const usCustomUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "UsCustomUnit",
   definition: "MetricUnit",

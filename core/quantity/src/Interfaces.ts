@@ -50,7 +50,7 @@ export interface UnitConversionSpec {
   /** Unit system name, used to when finding preferred parse unit */
   system: string;
   /** the information necessary to convert the unit to a specific display unit */
-  conversion: IUnitConversion;
+  conversion: UnitConversionProps;
   /** Labels that may be used to represent the unit in a string that is to be parsed. */
   parseLabels?: string[];
 }
@@ -59,7 +59,7 @@ export interface UnitConversionSpec {
  * or from Celsius to Fahrenheit.
  * @beta
  */
-export interface IUnitConversion {
+export interface UnitConversionProps {
   factor: number;
   offset: number;
 }
@@ -89,7 +89,7 @@ export interface UnitsProvider {
   findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
-  getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<IUnitConversion>;
+  getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
 }
 
 /**

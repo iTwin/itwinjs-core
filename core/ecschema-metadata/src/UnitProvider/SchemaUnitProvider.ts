@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { IUnitConversion, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -143,12 +143,12 @@ export class SchemaUnitProvider implements UnitsProvider {
   }
 
   /**
-   * Gets the @itwin/core-quantity UnitConversion for the given fromUnit and toUnit.
+   * Gets the @itwin/core-quantity UnitConversionProps for the given fromUnit and toUnit.
    * @param fromUnit The UnitProps of the 'from' unit.
    * @param toUnit The UnitProps of the 'to' unit.
-   * @returns The UnitConversion interface from the @itwin/core-quantity package.
+   * @returns The UnitConversionProps interface from the @itwin/core-quantity package.
    */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<IUnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     const conversion = await this._unitConverter.calculateConversion(fromUnit.name, toUnit.name);
     return {
       factor: conversion.factor,

@@ -9,9 +9,9 @@ import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ECName } from "../ECName";
 import { AbstractParser, CAProviderTuple } from "./AbstractParser";
 import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, IUnitProps, KindOfQuantityProps, MixinProps,
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps,
-  PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaItemFormatProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
+  PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
   StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
 
@@ -457,7 +457,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns UnitProps
    */
-  public parseUnit(jsonObj: UnknownObject): IUnitProps {
+  public parseUnit(jsonObj: UnknownObject): SchemaItemUnitProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.phenomenon)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} does not have the required 'phenomenon' attribute.`);
@@ -488,7 +488,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       if (typeof (jsonObj.offset) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'offset' attribute. It should be of type 'number'.`);
     }
-    return (jsonObj as unknown) as IUnitProps;
+    return (jsonObj as unknown) as SchemaItemUnitProps;
   }
 
   /**

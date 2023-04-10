@@ -325,14 +325,6 @@ export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingle
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
 
-// @beta
-export interface IUnitConversion {
-    // (undocumented)
-    factor: number;
-    // (undocumented)
-    offset: number;
-}
-
 // @beta (undocumented)
 export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision;
 
@@ -419,7 +411,7 @@ export interface PotentialParseUnit {
 // @beta
 export class Quantity implements QuantityProps {
     constructor(unit?: UnitProps, magnitude?: number);
-    convertTo(toUnit: UnitProps, conversion: IUnitConversion): Quantity | undefined;
+    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
@@ -535,8 +527,16 @@ export enum ShowSignOption {
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta
+export interface UnitConversionProps {
+    // (undocumented)
+    factor: number;
+    // (undocumented)
+    offset: number;
+}
+
+// @beta
 export interface UnitConversionSpec {
-    conversion: IUnitConversion;
+    conversion: UnitConversionProps;
     label: string;
     name: string;
     parseLabels?: string[];
@@ -567,7 +567,7 @@ export interface UnitsProvider {
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
-    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<IUnitConversion>;
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
 }

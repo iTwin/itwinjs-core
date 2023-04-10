@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Changed IUnitConversion interface name to UnitConversionProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

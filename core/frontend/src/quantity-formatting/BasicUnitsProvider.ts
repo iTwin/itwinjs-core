@@ -7,7 +7,7 @@
  */
 
 import {
-  BadUnit, BasicUnit, IUnitConversion, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit, UnitConversionProps, UnitProps, UnitsProvider,
 } from "@itwin/core-quantity";
 import { UnitNameKey } from "./QuantityFormatter";
 import { UNIT_EXTRA_DATA } from "./UnitsData";
@@ -81,7 +81,7 @@ export class BasicUnitsProvider implements UnitsProvider {
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<IUnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     const fromUnitData = this.findUnitDefinition(fromUnit.name);
     const toUnitData = this.findUnitDefinition(toUnit.name);
 
@@ -100,10 +100,10 @@ export class BasicUnitsProvider implements UnitsProvider {
   }
 }
 
-/** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
+/** Class that implements the minimum UnitConversionProps interface to provide information needed to convert unit values.
  * @alpha
  */
-class ConversionData implements IUnitConversion {
+class ConversionData implements UnitConversionProps {
   public factor: number = 1.0;
   public offset: number = 0.0;
   public error: boolean = false;
