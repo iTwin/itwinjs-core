@@ -9,8 +9,19 @@ import { ECDb } from "../../ECDb";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { SnapshotDb } from "../../core-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ECSqlReader", (() => {
+  let iModel: SnapshotDb;
+
+  before(async () => {
+    iModel = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+  });
+
+  after(async () => {
+    iModel.close();
+  });
 
   describe("bind Id64 enumerable", async () => {
     const outDir = KnownTestLocations.outputDir;
@@ -69,6 +80,30 @@ describe("ECSqlReader", (() => {
           assert.equal(row0.Name, "CompositeUnitRefersToUnit");
         }
       });
+    });
+  });
+
+  describe("Works as iterable iterator", () => {
+
+    it("iterable in for loop", async () => {
+      let actualRowCount = 0;
+      const expectedRowCount = 46; // 46 Elements in test.bim
+      for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+        actualRowCount++;
+        assert.isDefined(row[0]);
+      }
+      assert.equal(actualRowCount, expectedRowCount);
+    });
+
+    it("iterable with .next()", async () => {
+      let row: any;
+      let actualRowCount = 0;
+      const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 } });
+      while ((row = await reader.next()).done == false) {
+        actualRowCount++;
+        assert.equal(row.value[0], `0x${actualRowCount}`);
+      }
+      assert.equal(actualRowCount, 5);
     });
   });
 
