@@ -82,7 +82,7 @@ export * from "./ModelProps";
 export * from "./NativeAppProps";
 export * from "./OctEncodedNormal";
 export * from "./ConcurrentQuery";
-export * from "./QueryReader";
+export * from "./ECSqlReader";
 export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";

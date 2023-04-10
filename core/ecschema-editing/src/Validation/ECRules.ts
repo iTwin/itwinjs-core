@@ -58,6 +58,7 @@ export const DiagnosticCodes = {
   // Class Rule Codes (100-199)
   BaseClassIsSealed: getCode(100),
   BaseClassOfDifferentType: getCode(101),
+  // EC-102 has been deprecated. Leaving the code here to prevent re-use.
   AbstractClassWithNonAbstractBase: getCode(102),
 
   // CA Container Rule Codes (500-599)
@@ -111,7 +112,7 @@ export const Diagnostics = {
   BaseClassIsOfDifferentType: createClassDiagnosticClass<[string, string, string]>(DiagnosticCodes.BaseClassOfDifferentType,
     "Class '{0}' cannot derive from base class '{1}' of type '{2}'."),
 
-  /** EC-102: Required message parameters: childClass.FullName, baseClass.FullName */
+  /** **DEPRECATED** EC-102: Required message parameters: childClass.FullName, baseClass.FullName */
   AbstractClassWithNonAbstractBase: createClassDiagnosticClass<[string, string]>(DiagnosticCodes.AbstractClassWithNonAbstractBase,
     "Abstract Class '{0}' cannot derive from base class '{1}' because it is not an abstract class."),
 
@@ -197,7 +198,6 @@ export const ECRuleSet: IRuleSet = {
   classRules: [
     baseClassIsSealed,
     baseClassIsOfDifferentType,
-    abstractClassWithNonAbstractBase,
   ],
   propertyRules: [
     incompatibleValueTypePropertyOverride,
@@ -296,22 +296,6 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
 
   const itemType = schemaItemTypeToString(baseClass.schemaItemType);
   yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
-}
-
-/**
- * EC Rule: Abstract class cannot derive from a non-abstract base class.
- * @internal
- */
-export async function* abstractClassWithNonAbstractBase(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
-  if (ecClass.modifier !== ECClassModifier.Abstract || !ecClass.baseClass)
-    return;
-
-  const baseClass = await ecClass.baseClass;
-  // return if rule passed
-  if (baseClass.modifier === ECClassModifier.Abstract)
-    return;
-
-  yield new Diagnostics.AbstractClassWithNonAbstractBase(ecClass, [ecClass.fullName, baseClass.fullName]);
 }
 
 /**
