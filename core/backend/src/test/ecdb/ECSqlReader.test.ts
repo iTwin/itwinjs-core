@@ -143,5 +143,59 @@ describe("ECSqlReader", (() => {
       });
 
     });
+
+    describe("Get count of results", () => {
+      const expectedRowCount = 46; // 46 Elements in test.bim
+
+      beforeEach(async () => {
+        reader = iModel.createQueryReader("SELECT COUNT(*) numResults FROM (SELECT * FROM bis.Element)");
+      });
+
+      it("Get count of rows using current index", async () => {
+        await reader.step();
+        actualRowCount = reader.current[0] as number;
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get count of rows using current column name", async () => {
+        await reader.step();
+        actualRowCount = reader.current.numResults as number;
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get count of rows using current and toRow", async () => {
+        await reader.step();
+        actualRowCount = reader.current.toRow().numResults as number;
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get count of rows using toArray result itself", async () => {
+        await reader.step();
+        actualRowCount = reader.current.toArray()[0] as number;
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get count of rows using iterable iterator and index", async () => {
+        for await (const row of reader) {
+          actualRowCount = row[0] as number;
+        }
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get count of rows using iterable iterator and column name", async () => {
+        for await (const row of reader) {
+          actualRowCount = row.numResults as number;
+        }
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get count of rows using iterable iterator and toRow", async () => {
+        for await (const row of reader) {
+          actualRowCount = row.toRow().numResults;
+        }
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+    });
   });
 }));
