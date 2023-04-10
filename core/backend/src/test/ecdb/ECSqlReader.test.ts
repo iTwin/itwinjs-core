@@ -144,6 +144,149 @@ describe("ECSqlReader", (() => {
 
     });
 
+    describe("Get id from each row", () => {
+
+      it("Get id using iterable iterator with unspecified rowFormat", async () => {
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 } })) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get id using iterable iterator with UseJsPropertyNames rowFormat", async () => {
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().id, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get id using iterable iterator with UseECSqlPropertyNames rowFormat", async () => {
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get id using iterable iterator with UseECSqlPropertyIndexes rowFormat", async () => {
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get id using step with unspecified rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 } });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get id using step with UseJsPropertyNames rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().id, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get id using step with UseECSqlPropertyNames rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get id using step with UseECSqlPropertyIndexes rowFormat", async () => {
+        let counter = 1;
+        const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes });
+        while (await reader.step()) {
+          const currentExpectedId = `0x${counter}`;
+          assert.equal(reader.current[0], currentExpectedId);
+          assert.equal(reader.current.id, currentExpectedId);
+          assert.equal(reader.current.ecinstanceid, currentExpectedId);
+          assert.equal(reader.current.ECINSTANCEID, currentExpectedId);
+          assert.equal(reader.current.ECInstanceId, currentExpectedId);
+          assert.equal(reader.current.toArray()[0], currentExpectedId);
+          assert.equal(reader.current.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+    });
+
     describe("Get count of results", () => {
       const expectedRowCount = 46; // 46 Elements in test.bim
 
