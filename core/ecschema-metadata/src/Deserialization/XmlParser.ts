@@ -14,10 +14,10 @@ import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Pr
 import { ECName } from "../ECName";
 import { AbstractParser, CAProviderTuple } from "./AbstractParser";
 import {
-  ClassProps, ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, EnumeratorProps, InvertedUnitProps,
+  ClassProps, ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, EnumeratorProps, InvertedUnitProps, IUnitProps,
   KindOfQuantityProps, MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
-  SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps,
+  SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
@@ -397,7 +397,7 @@ export class XmlParser extends AbstractParser<Element> {
     };
   }
 
-  public parseUnit(xmlElement: Element): UnitProps {
+  public parseUnit(xmlElement: Element): IUnitProps {
     const itemProps = this.getSchemaItemProps(xmlElement);
 
     let phenomenon = this.getRequiredAttribute(xmlElement, "phenomenon",

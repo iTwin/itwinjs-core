@@ -7,7 +7,7 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { UnitProps } from "../Deserialization/JsonProps";
+import { IUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -73,7 +73,7 @@ export class Unit extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): UnitProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): IUnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
@@ -114,7 +114,7 @@ export class Unit extends SchemaItem {
     return itemElement;
   }
 
-  public override fromJSONSync(unitProps: UnitProps) {
+  public override fromJSONSync(unitProps: IUnitProps) {
     super.fromJSONSync(unitProps);
 
     const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
@@ -160,7 +160,7 @@ export class Unit extends SchemaItem {
     }
   }
 
-  public override async fromJSON(unitProps: UnitProps) {
+  public override async fromJSON(unitProps: IUnitProps) {
     this.fromJSONSync(unitProps);
   }
 

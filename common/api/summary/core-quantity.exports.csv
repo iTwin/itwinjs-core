@@ -21,6 +21,7 @@ beta;FractionalPrecision
 internal;getItemNamesFromFormatString(formatString: string): Iterable
 beta;getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative"
 beta;isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps
+beta;IUnitConversion
 beta;parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision
 beta;ParsedQuantity
 beta;ParseError
@@ -44,7 +45,6 @@ beta;ScientificType
 beta;scientificTypeToString(scientificType: ScientificType): string
 beta;ShowSignOption
 beta;showSignOptionToString(showSign: ShowSignOption): string
-beta;UnitConversion
 beta;UnitConversionSpec
 alpha;UnitExtraData
 beta;UnitProps

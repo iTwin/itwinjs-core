@@ -26,6 +26,7 @@ import { FormatType } from '@itwin/core-quantity';
 import { InvertedUnit } from '@itwin/ecschema-metadata';
 import { InvertedUnitProps } from '@itwin/ecschema-metadata';
 import { ISchemaPartVisitor } from '@itwin/ecschema-metadata';
+import { IUnitProps } from '@itwin/ecschema-metadata';
 import { KindOfQuantity } from '@itwin/ecschema-metadata';
 import { KindOfQuantityProps } from '@itwin/ecschema-metadata';
 import { Localization } from '@itwin/core-common';
@@ -55,7 +56,6 @@ import { StructClass } from '@itwin/ecschema-metadata';
 import { StructClassProps } from '@itwin/ecschema-metadata';
 import { StructPropertyProps } from '@itwin/ecschema-metadata';
 import { Unit } from '@itwin/ecschema-metadata';
-import { UnitProps } from '@itwin/ecschema-metadata';
 import { UnitSystem } from '@itwin/ecschema-metadata';
 import { UnitSystemProps } from '@itwin/ecschema-metadata';
 

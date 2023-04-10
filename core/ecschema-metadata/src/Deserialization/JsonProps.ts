@@ -19,7 +19,7 @@ export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClass
 /**
  * @beta
  */
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps;
+export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | IUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps;
 
 /**
  * @beta
@@ -302,7 +302,7 @@ export type UnitSystemProps = SchemaItemProps;
 /**
  * @beta
  */
-export interface UnitProps extends SchemaItemProps {
+export interface IUnitProps extends SchemaItemProps {
   readonly phenomenon: string;
   readonly unitSystem: string;
   readonly definition: string;

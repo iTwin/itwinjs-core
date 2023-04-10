@@ -10,7 +10,7 @@ beta;AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty
 beta;AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty
 beta;AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps
 beta;AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format
-beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps
+beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | IUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps
 beta;AnyStructProperty = StructProperty | StructArrayProperty
 beta;class ArrayProperty 
 beta;ArrayPropertyProps 
@@ -49,6 +49,7 @@ beta;InvertedUnitProps
 beta;ISchemaItemLocater
 beta;ISchemaLocater
 beta;ISchemaPartVisitor
+beta;IUnitProps 
 beta;KindOfQuantity 
 beta;KindOfQuantityProps 
 beta;LazyLoadedConstant = LazyLoadedSchemaItem
@@ -144,7 +145,6 @@ beta;StructPropertyProps
 beta;Unit 
 internal;UnitConversion
 internal;UnitConverter
-beta;UnitProps 
 beta;UnitSystem 
 beta;UnitSystemProps = SchemaItemProps
 internal;XmlParser 

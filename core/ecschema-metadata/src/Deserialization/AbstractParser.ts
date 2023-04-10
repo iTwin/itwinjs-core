@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, IUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, RelationshipClassProps,
-  SchemaItemFormatProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps,
+  SchemaItemFormatProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "../Deserialization/JsonProps";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -36,7 +36,7 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract parseEnumeration(data: Readonly<TItem>): EnumerationProps;
   public abstract parseKindOfQuantity(data: Readonly<TItem>): KindOfQuantityProps;
   public abstract parsePropertyCategory(data: Readonly<TItem>): PropertyCategoryProps;
-  public abstract parseUnit(data: Readonly<TItem>): UnitProps;
+  public abstract parseUnit(data: Readonly<TItem>): IUnitProps;
   public abstract parseInvertedUnit(data: Readonly<TItem>): InvertedUnitProps;
   public abstract parseConstant(data: Readonly<TItem>): ConstantProps;
   public abstract parsePhenomenon(data: Readonly<TItem>): PhenomenonProps;

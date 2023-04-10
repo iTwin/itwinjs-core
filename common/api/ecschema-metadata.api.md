@@ -15,7 +15,7 @@ import { IUnitConversion } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
-import { UnitProps as UnitProps_2 } from '@itwin/core-quantity';
+import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 
 // @beta (undocumented)
@@ -49,7 +49,7 @@ export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | Pr
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
 
 // @beta (undocumented)
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps;
+export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | IUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps;
 
 // @beta (undocumented)
 export type AnyStructProperty = StructProperty | StructArrayProperty;
@@ -776,6 +776,22 @@ export interface ISchemaPartVisitor {
     visitUnitSync?: (unit: Unit) => void;
     visitUnitSystem?: (unitSystem: UnitSystem) => Promise<void>;
     visitUnitSystemSync?: (unitSystem: UnitSystem) => void;
+}
+
+// @beta (undocumented)
+export interface IUnitProps extends SchemaItemProps {
+    // (undocumented)
+    readonly definition: string;
+    // (undocumented)
+    readonly denominator?: number;
+    // (undocumented)
+    readonly numerator?: number;
+    // (undocumented)
+    readonly offset?: number;
+    // (undocumented)
+    readonly phenomenon: string;
+    // (undocumented)
+    readonly unitSystem: string;
 }
 
 // @beta
@@ -1954,11 +1970,11 @@ export interface SchemaReferenceProps {
 // @alpha
 export class SchemaUnitProvider implements UnitsProvider {
     constructor(contextOrLocater: ISchemaLocater, _unitExtraData?: UnitExtraData[]);
-    findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps_2>;
-    findUnitByName(unitName: string): Promise<UnitProps_2>;
+    findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+    findUnitByName(unitName: string): Promise<UnitProps>;
     getAlternateDisplayLabels(unitName: string): Array<string>;
-    getConversion(fromUnit: UnitProps_2, toUnit: UnitProps_2): Promise<IUnitConversion>;
-    getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps_2>>;
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<IUnitConversion>;
+    getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps>>;
 }
 
 // @internal
@@ -2048,9 +2064,9 @@ export class Unit extends SchemaItem {
     // (undocumented)
     protected _denominator?: number;
     // (undocumented)
-    fromJSON(unitProps: UnitProps): Promise<void>;
+    fromJSON(unitProps: IUnitProps): Promise<void>;
     // (undocumented)
-    fromJSONSync(unitProps: UnitProps): void;
+    fromJSONSync(unitProps: IUnitProps): void;
     // (undocumented)
     get hasDenominator(): boolean;
     // (undocumented)
@@ -2079,7 +2095,7 @@ export class Unit extends SchemaItem {
     protected setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
     // @alpha
     protected setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
-    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): UnitProps;
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): IUnitProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
@@ -2109,22 +2125,6 @@ export class UnitConversion {
 export class UnitConverter {
     constructor(_context: SchemaContext);
     calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion>;
-}
-
-// @beta (undocumented)
-export interface UnitProps extends SchemaItemProps {
-    // (undocumented)
-    readonly definition: string;
-    // (undocumented)
-    readonly denominator?: number;
-    // (undocumented)
-    readonly numerator?: number;
-    // (undocumented)
-    readonly offset?: number;
-    // (undocumented)
-    readonly phenomenon: string;
-    // (undocumented)
-    readonly unitSystem: string;
 }
 
 // @beta (undocumented)
@@ -2193,7 +2193,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     parseStructProperty(xmlElement: Element): StructPropertyProps;
     // (undocumented)
-    parseUnit(xmlElement: Element): UnitProps;
+    parseUnit(xmlElement: Element): IUnitProps;
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
 }
