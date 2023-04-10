@@ -1014,7 +1014,7 @@ export interface CodeService {
 // @alpha (undocumented)
 export namespace CodeService {
     let // @internal (undocumented)
-    createForIModel: (db: IModelDb) => Promise<CodeService>;
+    createForIModel: ((db: IModelDb) => Promise<CodeService>) | undefined;
     export interface AuthorAndOrigin {
         readonly author: Mutable<NameAndJson>;
         readonly origin: Mutable<NameAndJson>;
@@ -3376,7 +3376,7 @@ export interface InstanceChange {
 // @internal (undocumented)
 export interface InternalCodes extends CodesDb {
     // (undocumented)
-    reserveBisCodeSpecs(specs: [CodeService.BisCodeSpecIndexProps]): Promise<void>;
+    reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
     // (undocumented)
     reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
     // (undocumented)

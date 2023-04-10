@@ -170,7 +170,7 @@ export interface CodesDb {
  */
 export interface InternalCodes extends CodesDb {
   reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
-  reserveBisCodeSpecs(specs: [CodeService.BisCodeSpecIndexProps]): Promise<void>;
+  reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
   verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
 }
 
