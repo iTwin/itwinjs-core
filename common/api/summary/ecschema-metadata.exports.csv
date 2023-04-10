@@ -70,6 +70,9 @@ beta;LazyLoadedSchemaItem
 beta;LazyLoadedStructClass = LazyLoadedSchemaItem
 beta;LazyLoadedUnit = LazyLoadedSchemaItem
 beta;LazyLoadedUnitSystem = LazyLoadedSchemaItem
+alpha;LoadedSchemas 
+alpha;LoadingSchemas 
+alpha;LoadSchema
 beta;Mixin 
 beta;MixinProps 
 beta;NavigationProperty 
@@ -108,7 +111,7 @@ beta;RelationshipEnd
 beta;relationshipEndToString(end: RelationshipEnd): string
 beta;RelationshipMultiplicity
 beta;Schema 
-beta;SchemaCache 
+alpha;SchemaCache 
 beta;SchemaContext 
 beta;SchemaGraph
 internal;SchemaGraphUtil
@@ -122,7 +125,6 @@ alpha;SchemaJsonLocater
 beta;SchemaKey
 beta;SchemaKeyProps
 alpha;SchemaLoader
-beta;SchemaMap 
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
