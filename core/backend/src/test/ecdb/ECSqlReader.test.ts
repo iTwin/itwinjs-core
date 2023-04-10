@@ -4,7 +4,7 @@ import { assert } from "chai";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, using } from "@itwin/core-bentley";
-import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { ECDb } from "../../ECDb";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -14,6 +14,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ECSqlReader", (() => {
   let iModel: SnapshotDb;
+  let reader: ECSqlReader;
 
   before(async () => {
     iModel = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
@@ -107,4 +108,40 @@ describe("ECSqlReader", (() => {
     });
   });
 
+  describe("Common usages", () => {
+    let actualRowCount: number;
+
+    beforeEach(async () => {
+      actualRowCount = 0;
+    });
+
+    describe("Get all rows", () => {
+      const expectedRowCount = 46; // 46 Elements in test.bim
+
+      beforeEach(async () => {
+        reader = iModel.createQueryReader("SELECT * FROM bis.Element");
+      });
+
+      it("Get all rows using iterable iterator", async () => {
+        for await (const _row of reader) {
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get all rows using step", async () => {
+        while (await reader.step()) {
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+      it("Get all rows using toArray", async () => {
+        const rows = await reader.toArray();
+        actualRowCount = rows.length;
+        assert.equal(actualRowCount, expectedRowCount);
+      });
+
+    });
+  });
 }));
