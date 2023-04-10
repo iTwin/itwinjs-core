@@ -11,9 +11,9 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { IUnitConversion } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
-import { UnitConversion as UnitConversion_2 } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps as UnitProps_2 } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -1957,7 +1957,7 @@ export class SchemaUnitProvider implements UnitsProvider {
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps_2>;
     findUnitByName(unitName: string): Promise<UnitProps_2>;
     getAlternateDisplayLabels(unitName: string): Array<string>;
-    getConversion(fromUnit: UnitProps_2, toUnit: UnitProps_2): Promise<UnitConversion_2>;
+    getConversion(fromUnit: UnitProps_2, toUnit: UnitProps_2): Promise<IUnitConversion>;
     getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps_2>>;
 }
 

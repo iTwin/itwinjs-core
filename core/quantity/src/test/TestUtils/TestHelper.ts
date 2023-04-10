@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AlternateUnitLabelsProvider, UnitConversion, UnitProps, UnitsProvider } from "../../Interfaces";
+import { AlternateUnitLabelsProvider, IUnitConversion, UnitProps, UnitsProvider } from "../../Interfaces";
 import { BadUnit, BasicUnit } from "../../Unit";
 
 interface ConversionDef {
@@ -71,7 +71,7 @@ const unitData: UnitDefinition[] = [
   { name: "Units.CUB_M", phenomenon: "Units.VOLUME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
 ];
 
-export class ConversionData implements UnitConversion {
+export class ConversionData implements IUnitConversion {
   public factor: number = 1.0;
   public offset: number = 0.0;
   public error: boolean = false;
@@ -140,7 +140,7 @@ export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProv
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<IUnitConversion> {
     const fromUnitData = this.findUnitDefinition(fromUnit.name);
     const toUnitData = this.findUnitDefinition(toUnit.name);
 

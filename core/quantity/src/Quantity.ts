@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-import { QuantityProps, UnitConversion, UnitProps } from "./Interfaces";
+import { IUnitConversion, QuantityProps, UnitProps } from "./Interfaces";
 
 /** The Quantity class is convenient container to specify both the magnitude and unit of a quantity. This class is commonly
  * returned as the result of parsing a string that represents a quantity.
@@ -42,7 +42,7 @@ export class Quantity implements QuantityProps {
    *  @param conversion  Defines the information needed to convert the Quantity's magnitude from the current unit to another unit. This conversion info is usually
    *                     returned from the UnitsProvider.
    */
-  public convertTo(toUnit: UnitProps, conversion: UnitConversion): Quantity | undefined {
+  public convertTo(toUnit: UnitProps, conversion: IUnitConversion): Quantity | undefined {
     const newMagnitude = (this.magnitude * conversion.factor) + conversion.offset;
     return new Quantity(toUnit, newMagnitude);
   }

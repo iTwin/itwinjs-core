@@ -9,7 +9,7 @@
 import { QuantityConstants } from "./Constants";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
-import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { AlternateUnitLabelsProvider, IUnitConversion, PotentialParseUnit, QuantityProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
 
@@ -440,7 +440,7 @@ export class Parser {
   }
 
   /** method to get the Unit Conversion given a unit label */
-  private static tryFindUnitConversion(unitLabel: string, unitsConversions: UnitConversionSpec[], preferredUnit?: UnitProps): UnitConversion | undefined {
+  private static tryFindUnitConversion(unitLabel: string, unitsConversions: UnitConversionSpec[], preferredUnit?: UnitProps): IUnitConversion | undefined {
     if (unitsConversions.length > 0) {
       const label = unitLabel.toLocaleLowerCase();
 

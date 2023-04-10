@@ -8,7 +8,7 @@
 
 import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
+  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, IUnitConversion, ParseError, ParserSpec, QuantityParseResult,
   UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -880,7 +880,7 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<IUnitConversion> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
   }
 }
