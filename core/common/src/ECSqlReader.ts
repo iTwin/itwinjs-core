@@ -307,7 +307,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
       };
     } else {
       return {
-        done: false,
+        done: true,
         value: this.current,
       };
     }
