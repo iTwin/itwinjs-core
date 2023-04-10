@@ -1,14 +1,13 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "4.0.0-dev.56",
+  "version": "4.0.0-dev.70",
   "description": "iTwin.js hypermodeling package",
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",
   "typings": "lib/cjs/hypermodeling-frontend",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s copy:public && npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -24,7 +23,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/hypermodeling-frontend"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/hypermodeling"
   },
   "keywords": [
     "Bentley",
@@ -37,10 +37,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.56",
-    "@itwin/core-common": "workspace:^4.0.0-dev.56",
-    "@itwin/core-frontend": "workspace:^4.0.0-dev.56",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.56"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.70",
+    "@itwin/core-common": "workspace:^4.0.0-dev.70",
+    "@itwin/core-frontend": "workspace:^4.0.0-dev.70",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.70"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

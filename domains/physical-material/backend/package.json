@@ -1,6 +1,6 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "4.0.0-dev.56",
+  "version": "4.0.0-dev.70",
   "main": "lib/cjs/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",
   "license": "MIT",
@@ -9,7 +9,6 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
@@ -20,7 +19,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/domains/physical-material/backend"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "domains/physical-material/backend"
   },
   "keywords": [
     "Bentley",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.0.0-dev.56",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.56",
-    "@itwin/core-common": "workspace:^4.0.0-dev.56"
+    "@itwin/core-backend": "workspace:^4.0.0-dev.70",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.70",
+    "@itwin/core-common": "workspace:^4.0.0-dev.70"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

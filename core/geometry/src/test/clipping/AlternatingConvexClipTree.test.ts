@@ -9,23 +9,24 @@ import { AlternatingCCTreeNode } from "../../clipping/AlternatingConvexClipTree"
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { Transform } from "../../geometry3d/Transform";
 import { UsageSums } from "../../numerics/UsageSums";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Angle, Matrix3d, Point3dArray, Transform } from "../../core-geometry";
-
-/* eslint-disable no-console */
 
 // Globals
 let clipEvalCount = 0;
@@ -42,7 +43,7 @@ function getEvaluationCount(clear: boolean = false) {
 
 function saveTree(root: AlternatingCCTreeNode, shiftX: number = 0, shiftY: number = 0, scaleAroundCentroidFactor: number = 1.0) {
   if (scaleAroundCentroidFactor === 1.0)
-      Checker.saveTransformedLineString(root.points);
+    Checker.saveTransformedLineString(root.points);
   else {
     const centroid = Point3dArray.centroid(root.points);
     const transform = Transform.createFixedPointAndMatrix(centroid, Matrix3d.createScale(scaleAroundCentroidFactor, scaleAroundCentroidFactor, scaleAroundCentroidFactor));
@@ -119,9 +120,9 @@ function testClipper(points: Point3d[], root: AlternatingCCTreeNode, outputLevel
 
   const numTest = fractions.length * fractions.length;
   if (Checker.noisy.clipTree === true) {
-    console.log(`ClipperTest  (polygonPoints: ${points.length}) (TestPoint: ${numTest})`);
-    console.log(`IN: ${inSum.count} avg: ${inSum.mean} max ${inSum.minMax}`);
-    console.log(`OUT: ${outSum.count} avg: ${outSum.mean}  max: ${outSum.minMax}`);
+    GeometryCoreTestIO.consoleLog(`ClipperTest  (polygonPoints: ${points.length}) (TestPoint: ${numTest})`);
+    GeometryCoreTestIO.consoleLog(`IN: ${inSum.count} avg: ${inSum.mean} max ${inSum.minMax}`);
+    GeometryCoreTestIO.consoleLog(`OUT: ${outSum.count} avg: ${outSum.mean}  max: ${outSum.minMax}`);
   }
 }
 
@@ -490,12 +491,12 @@ function testHullAndInlets(points: Point3d[], x0: number, ay: number) {
   const root0 = AlternatingCCTreeNode.createTreeForPolygon(points);
   Checker.shift(0, ay, 0);
   saveTree(root0, 0, 0, 0.98);
-  for (let i = 1; i < 3; i++){
+  for (let i = 1; i < 3; i++) {
     Checker.moveTo(x0 + i * 20, 0, 0);
     Checker.saveTransformedLineString(points);
     Checker.shift(0, ay, 0);
     const root = AlternatingCCTreeNode.createHullAndInletsForPolygon(points);
     saveTree(root, 0, 0, 0.98);
-    points.reverse ();
+    points.reverse();
   }
 }

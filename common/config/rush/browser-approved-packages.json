@@ -171,10 +171,6 @@
       "allowedCategories": [ "backend", "frontend" ]
     },
     {
-      "name": "@itwin/core-transformer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/core-webpack-tools",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -301,6 +297,10 @@
     {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/imodel-transformer",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -776,7 +776,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "wms-capabilities",

@@ -11,8 +11,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
-
 describe("FacetFaceData", () => {
 
   it("HelloWorld", () => {

@@ -1958,7 +1958,7 @@ class ViewLookAndMove extends ViewNavigate {
     this.releasePointerLock();
   }
 
-  private pointerLockChangeEvent(): void {
+  private async pointerLockChangeEvent(): Promise<void> {
     const vp = this.viewTool.viewport;
     if (undefined !== vp && document.pointerLockElement === vp.canvas) {
       vp.npcToView(NpcCenter, this._anchorPtView); // Display indicator in the middle of the view for pointer lock...
@@ -1966,7 +1966,11 @@ class ViewLookAndMove extends ViewNavigate {
       this._havePointerLock = true;
       vp.invalidateDecorations();
     } else {
-      this._havePointerLock = false;
+      // If ESC is used to disable pointer lock, exit the tool instead of continuing in drag mode...
+      if (this._havePointerLock && this.viewTool.inDynamicUpdate)
+        await this.viewTool.exitTool();
+      else
+        this._havePointerLock = false;
     }
   }
 
@@ -1993,7 +1997,7 @@ class ViewLookAndMove extends ViewNavigate {
     // NOTE: Chrome appears to be the only browser that doesn't require pointer lock to be requested from an engagement event like click.
     //       Currently pointer lock is requested for "click" and not "mousedown" since we don't want pointer lock for drag operation.
     if (undefined === this._pointerLockChangeListener) {
-      this._pointerLockChangeListener = () => this.pointerLockChangeEvent();
+      this._pointerLockChangeListener = async () => this.pointerLockChangeEvent();
       document.addEventListener("pointerlockchange", this._pointerLockChangeListener, false);
     }
 
@@ -2282,28 +2286,6 @@ class ViewLookAndMove extends ViewNavigate {
       vp.viewToNpc(vp.npcToView(NpcCenter), this._lastReadPt);
       this._lastReadPt.z = ViewManip.getFocusPlaneNpc(vp);
       vp.npcToWorld(this._lastReadPt, this._lastReadPt);
-
-      // Rotate view to look straight down...
-      // const frust = vp.getWorldFrustum();
-      // const saveFrustum = frust.clone();
-
-      // const viewUp = vp.view.getYVector();
-      // const viewDir = vp.view.getZVector(); viewDir.scaleInPlace(-1);
-      // const worldUp = Vector3d.unitZ();
-      // const viewAngle = worldUp.angleTo(viewUp).radians;
-
-      // const pitchAngle = Angle.createRadians((-Math.PI / 2) - (viewDir.z < 0 ? -viewAngle : viewAngle));
-      // const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
-      // const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(vp.rotation);
-
-      // const invViewRot = vp.rotation.inverse()!;
-      // const inverseViewTimesPitchTimesView = invViewRot.multiplyMatrixMatrix(pitchTimesView);
-      // const transform = Transform.createFixedPointAndMatrix(view.getEyePoint(), inverseViewTimesPitchTimesView);
-
-      // frust.multiply(transform);
-      // vp.setupViewFromFrustum(frust);
-      // this.computeCollisionData(vp, eyePt);
-      // vp.setupViewFromFrustum(saveFrustum);
 
       this.computeCollisionData(vp, eyePt);
     }
@@ -2729,28 +2711,6 @@ class ViewLookAndMove extends ViewNavigate {
     super.drawHandle(context, hasFocus);
     if (!hasFocus || context.viewport !== this.viewTool.viewport)
       return;
-
-    // if (undefined !== this._currentContour && this._currentContour.numPoints() > 0) {
-    //   const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    //   const color = context.viewport.getContrastToBackgroundColor();
-
-    //   builder.setSymbology(color, color, 8);
-
-    //   if (this._currentContour.numPoints() > 1)
-    //     builder.addLineString(this._currentContour.points);
-    //   else
-    //     builder.addPointString(this._currentContour.points);
-
-    //   builder.setSymbology(ColorDef.blue, color, 15);
-    //   builder.addPointString([this._lastReadPt]);
-
-    //   if (this._lastReference) {
-    //     builder.setSymbology(ColorDef.green, color, 15);
-    //     builder.addPointString([this._lastReference.getOriginRef()]);
-    //   }
-
-    //   context.addDecorationFromBuilder(builder);
-    // }
 
     if (ToolSettings.walkCollisions && this.viewTool.inDynamicUpdate) {
       const position = this._anchorPtView.clone();

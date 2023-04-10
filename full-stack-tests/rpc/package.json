@@ -5,8 +5,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2",
-    "build:ci": "npm run -s build && npm run -s webpack:test",
+    "build": "tsc 1>&2 && npm run -s webpack:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm -s test",
     "docs": "",
@@ -54,7 +53,7 @@
     "stream-browserify": "^3.0.0",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0",
-    "webpack-cli": "^4.10.0"
+    "webpack-cli": "^5.0.1"
   },
   "eslintConfig": {
     "plugins": [

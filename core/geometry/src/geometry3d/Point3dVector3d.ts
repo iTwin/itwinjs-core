@@ -172,6 +172,15 @@ export class XYZ implements XYAndZ {
       && Geometry.isSameCoordinate(this.y, y, tol)
       && Geometry.isSameCoordinate(this.z, z, tol);
   }
+  /**
+   * Return true if this and {other + vector*scale} have equal x,y,z parts within Geometry.smallMetricDistance.
+   * * this method is useful in testing "point on ray" without explicitly constructing the projection point
+  */
+  public isAlmostEqualPointPlusScaledVector(other: XYAndZ, vector: XYAndZ, scale: number, tol?: number): boolean {
+    return Geometry.isSameCoordinate(this.x, other.x + vector.x * scale, tol)
+      && Geometry.isSameCoordinate(this.y, other.y + vector.y * scale, tol)
+      && Geometry.isSameCoordinate(this.z, other.z + vector.z * scale, tol);
+  }
   /** Return true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqualXY(other: XAndY, tol?: number): boolean {
     return Geometry.isSameCoordinate(this.x, other.x, tol)
@@ -773,6 +782,18 @@ export class Vector3d extends XYZ {
       pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
   }
   /**
+   * Return the NORMALIZED cross product of the vectors from origin to pointA and pointB, or undefined
+   *
+   * * the result is a vector
+   * * the result is perpendicular to both vectors, with right hand orientation
+   * * the magnitude of the vector is twice the area of the triangle.
+   */
+  public static createUnitCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d | undefined {
+    const vector = Vector3d.createCrossProduct(pointA.x - origin.x, pointA.y - origin.y, pointA.z - origin.z,
+      pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
+    return vector.normalize();
+  }
+  /**
    * Return a vector defined by polar coordinates distance and angle from x axis
    * @param r distance measured from origin
    * @param theta angle from x axis to the vector (in xy plane)
@@ -903,7 +924,12 @@ export class Vector3d extends XYZ {
   public static unitZ(scale: number = 1): Vector3d {
     return new Vector3d(0, 0, scale);
   }
-  /** Divide by denominator, but return undefined if denominator is zero. */
+  /**
+   * Scale the instance by 1.0/`denominator`.
+   * @param denominator number by which to divide the coordinates of this instance
+   * @param result optional pre-allocated object to return
+   * @return scaled vector, or undefined if `denominator` is exactly zero (in which case instance is untouched).
+  */
   public safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined {
     if (denominator !== 0.0) {
       return this.scale(1.0 / denominator, result);
@@ -911,18 +937,20 @@ export class Vector3d extends XYZ {
     return undefined;
   }
   /**
-   * Return a pair object containing (a) property `v` which is a unit vector in the direction of the input
-   * and (b) property mag which is the magnitude (length) of the input (instance) prior to normalization.
-   * If the instance (input) is a near zero length the `v` property of the output is undefined.
-   * @param result optional result.
+   * Return a normalized instance and instance length.
+   * @param result optional pre-allocated object to return as `v` property
+   * @returns object containing the properties:
+   *  * `v`: unit vector in the direction of the instance, or undefined if `mag` is near zero
+   *  * `mag`: length of the instance prior to normalization
    */
   public normalizeWithLength(result?: Vector3d): {
     v: Vector3d | undefined;
     mag: number;
   } {
-    const magnitude = Geometry.correctSmallMetricDistance(this.magnitude());
+    const originalMagnitude = this.magnitude();
+    const correctedMagnitude = Geometry.correctSmallFraction(originalMagnitude);
     result = result ? result : new Vector3d();
-    return { v: this.safeDivideOrNull(magnitude, result), mag: magnitude };
+    return { v: this.safeDivideOrNull(correctedMagnitude, result), mag: originalMagnitude };
   }
   /**
    * Return a unit vector parallel with this. Return undefined if this.magnitude is near zero.
@@ -933,16 +961,10 @@ export class Vector3d extends XYZ {
   }
   /**
    * If this vector has nonzero length, divide by the length to change to a unit vector.
-   * @returns true if normalization completed.
+   * @returns true if normalization was successful
    */
   public normalizeInPlace(): boolean {
-    const a = Geometry.inverseMetricDistance(this.magnitude());
-    if (a === undefined)
-      return false;
-    this.x *= a;
-    this.y *= a;
-    this.z *= a;
-    return true;
+    return this.normalizeWithLength(this).v !== undefined;
   }
   /**
    * Create a normalized vector from the inputs.
@@ -962,7 +984,7 @@ export class Vector3d extends XYZ {
    * Return fractional projection of this vector on the target vector.
    * * It's returning the signed projection magnitude divided by the target magnitude.
    * * To find the projection vector, scale the target vector by the value that this function is returning.
-   * * math details can be found at docs/learning/geometry/PointVector.md
+   * * Math details can be found at docs/learning/geometry/PointVector.md
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnVector
    * and https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
    * @param target the target vector
@@ -1192,7 +1214,7 @@ export class Vector3d extends XYZ {
    * @param result optional preallocated result
    */
   public scaleToLength(length: number, result?: Vector3d): Vector3d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.magnitude());
+    const mag = Geometry.correctSmallFraction(this.magnitude());
     if (mag === 0)
       return undefined;
     return this.scale(length / mag, result);
@@ -1244,7 +1266,7 @@ export class Vector3d extends XYZ {
    * @param smallestMagnitude smallest magnitude allowed as divisor.
    * @returns false if magnitude is too small.  In this case the vector is unchanged.
    */
-  public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallMetricDistance): boolean {
+  public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallFraction): boolean {
     const a = this.magnitude();
     if (a < smallestMagnitude || a === 0.0)
       return false;

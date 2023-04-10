@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 // import { expect } from "chai";
 // import { Checker } from "../Checker";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
