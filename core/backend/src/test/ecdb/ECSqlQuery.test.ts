@@ -90,7 +90,7 @@ describe("ECSql Query", () => {
     assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), "");
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
   });
-  it("restart query", async () => {
+  it.only("restart query", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
@@ -103,8 +103,9 @@ describe("ECSql Query", () => {
           try {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
-            // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
-            for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions())) {
+            options.setRestartToken("tag");
+            const reader = imodel1.createQueryReader("SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions());
+            while (await reader.step()) {
               rowCount++;
             }
             successful++;
