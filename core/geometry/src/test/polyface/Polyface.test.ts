@@ -419,10 +419,16 @@ describe("Polyface.Box", () => {
         const j = (i + 1) % testCase.data.length;
         let y = 0;
         // lambda to exercise local range clash detector
-        const clashDetect = (index0: number, index1: number): boolean => {
-          // doLocalRangesIntersect converts range0 to a polyface transformed into range1's local coordinates
-          GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index0].localRange, testCase.data[index1].localToWorld.inverse()?.multiplyTransformTransform(testCase.data[index0].localToWorld), x, y, z);
-          GeometryCoreTestIO.captureRangeEdges(allGeometry, testCase.data[index1].localRange, x, y, z);
+        const clashDetect = (index0: number, index1: number, captureLocal: boolean = true, captureWorld: boolean = false): boolean => {
+          if (captureLocal) {
+            // doLocalRangesIntersect converts range0 to a polyface transformed into range1's local coordinates
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index0].localRange, testCase.data[index1].localToWorld.inverse()?.multiplyTransformTransform(testCase.data[index0].localToWorld), x, y, z);
+            GeometryCoreTestIO.captureRangeEdges(allGeometry, testCase.data[index1].localRange, x, y, z);
+          }
+          if (captureWorld) {
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index0].localRange, testCase.data[index0].localToWorld, x, y, z);
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index1].localRange, testCase.data[index1].localToWorld, x, y, z);
+          }
           const isClash = ClipUtilities.doLocalRangesIntersect(testCase.data[index0].localRange, testCase.data[index0].localToWorld, testCase.data[index1].localRange, testCase.data[index1].localToWorld);
           ck.testBoolean(isClash, testCase.expectedClash, `ranges clash as expected: i=${index0} j=${index1}`);
           return isClash;
