@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Updated to import IUnitConversion from core-quantity.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

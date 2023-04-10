@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Updated import from UnitProps to IUnitProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
