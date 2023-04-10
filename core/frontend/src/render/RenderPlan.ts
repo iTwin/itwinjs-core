@@ -127,10 +127,11 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
 
   let ellipsoid;
   if (GlobeMode.Ellipsoid === view.globeMode) {
+    const mapEcefToDb = view.iModel.getMapEcefToDb(0);
     ellipsoid = {
-      ellipsoidCenter: Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin),
-      ellipsoidRotation: view.iModel.getMapEcefToDb(0).matrix,
-      ellipsoidRadii: Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar}),
+      ellipsoidCenter: Point3d.fromJSON(mapEcefToDb.origin),
+      ellipsoidRotation: mapEcefToDb.matrix,
+      ellipsoidRadii: Point3d.fromJSON({ x: Constant.earthRadiusWGS84.equator, y: Constant.earthRadiusWGS84.equator, z: Constant.earthRadiusWGS84.polar }),
     };
   }
 
