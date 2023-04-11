@@ -52,9 +52,13 @@ export async function request(url: string, responseType: "arraybuffer" | "json" 
   if (options?.auth)
     headers.authorization = `Basic ${window.btoa(`${options.auth.user}:${options.auth.password}`)}`;
 
+  let controller = new AbortController();
+  if (options?.timeout)
+    setTimeout(() => controller.abort(), options.timeout);
+
   const fetchOptions: RequestInit = {
     headers,
-    signal: options?.timeout ? AbortSignal.timeout(options.timeout) : undefined,
+    signal: controller.signal,
   };
 
   const fetchFunc = async () => fetch(url, fetchOptions);
