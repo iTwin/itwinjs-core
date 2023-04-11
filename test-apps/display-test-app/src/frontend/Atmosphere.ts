@@ -15,8 +15,6 @@ export class AtmosphereEditor {
 
   private static _expandAtmosphereEditor = false;
 
-  private readonly _outScatteringIntensity: LabeledNumericInput;
-
   private readonly _atmosphereHeightAboveEarth: LabeledNumericInput;
   private readonly _depthBelowEarthForMaxDensity: LabeledNumericInput;
   private readonly _densityFalloff: LabeledNumericInput;
@@ -81,21 +79,6 @@ export class AtmosphereEditor {
     const spanIntensity = document.createElement("span");
     spanIntensity.style.display = "flex";
     atmosphereControlsDiv.appendChild(spanIntensity);
-    this._outScatteringIntensity = createLabeledNumericInput({
-      id: "atmosphere_outScatteringIntensity",
-      parent: spanIntensity,
-      value: 1.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.outScatteringIntensity = value;
-        return props;
-      }),
-      min: 0.0,
-      max: 1000.0,
-      step: 0.1,
-      parseAsFloat: true,
-      name: "Out Scattering Intensity: ",
-    });
     this._exposure = createLabeledNumericInput({
       id: "atmosphere_exposure",
       parent: spanIntensity,
@@ -306,8 +289,6 @@ export class AtmosphereEditor {
 
   private updateAtmosphereUI(view: ViewState) {
     const settings = this.getAtmosphereSettings(view);
-
-    this._outScatteringIntensity.input.value = settings.outScatteringIntensity.toString();
 
     this._atmosphereHeightAboveEarth.input.value = settings.atmosphereHeightAboveEarth.toString();
     this._depthBelowEarthForMaxDensity.input.value = settings.depthBelowEarthForMaxDensity.toString();

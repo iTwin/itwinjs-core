@@ -24,7 +24,7 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private readonly _atmosphereData = new Matrix4();
   /**
    * uniform mat3 u_atmosphereData;
-   *   { { atmosphereRadiusScaleFactor, atmosphereMaxDensityThresholdScaleFactor, densityFalloff, outScatteringIntensity },
+   *   { { atmosphereRadiusScaleFactor, atmosphereMaxDensityThresholdScaleFactor, densityFalloff, 0 },
    *   { numViewRaySamples, numSunRaySamples, 0, 0 },
    *   { earthCenter.x, earthCenter.y, earthCenter.z, 0 },
    *   { scatteringCoefficients.x, scatteringCoefficients.y, scatteringCoefficients.z, 0 } }
@@ -63,7 +63,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._updateAtmosphereMaxDensityThresholdScaleFactor(this._atmosphere.depthBelowEarthForMaxDensity);
     this._updateNumViewRaySamples(this._atmosphere.numViewRaySamples);
     this._updateNumSunRaySamples(this._atmosphere.numSunRaySamples);
-    this._updateOutScatteringIntensity(this._atmosphere.outScatteringIntensity);
     this._updateScatteringCoefficients(this._atmosphere.scatteringStrength, this._atmosphere.wavelengths);
   }
 
@@ -77,10 +76,6 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _updateInverseEllipsoidRotationMatrix(ellipsoidRotation: Matrix3d, viewRotation: Matrix3d) {
     viewRotation.inverse(this._scratchMatrix3d);
     ellipsoidRotation.multiplyMatrixInverseMatrix(this._scratchMatrix3d, this._inverseEllipsoidRotationMatrix);
-  }
-
-  private _updateOutScatteringIntensity(outScatteringIntensity: number) {
-    this._atmosphereData.data[3] = outScatteringIntensity;
   }
 
   private _updateEarthScaleMatrix(earthRadii: Point3d) {

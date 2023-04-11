@@ -93,8 +93,6 @@ export namespace Atmosphere {
     numViewRaySamples?: number;
     /** See [[Settings.numSunRaySamples]] */
     numSunRaySamples?: number;
-    /** @internal See [[Settings.outScatteringIntensity]] */
-    outScatteringIntensity?: number;
     /** @internal See [[Settings.scatteringStrength]] */
     scatteringStrength?: number;
     /** @internal See [[Settings.wavelengths]] */
@@ -107,7 +105,6 @@ export namespace Atmosphere {
     private static _defaultExposure: number = 2.0;
     private static _defaultDensityFalloff: number = 10.0;
     private static _defaultMinDensityHeightBelowEarth: 0.0;
-    private static _defaultOutScatteringIntensity: number = 1.0;
     private static _defaultScatteringStrength: number = 100;
     private static _defaultWavelengths: Wavelengths = new Wavelengths({ r: 700.0, g: 530.0, b: 440.0 });
 
@@ -128,11 +125,9 @@ export namespace Atmosphere {
     public readonly depthBelowEarthForMaxDensity: number;
     /** If defined, corresponds to the number of atmospheric density samples used to compute the amount of light scattered along each view ray. For each sample point, another ray will be cast toward the sun to compute the amount of light reaching the sample point. Higher values increase fidelity, but greatly decrease performance because sun rays must be cast from each additional sample point. The range is 1 to 40. Defaults to 10. */
     public readonly numViewRaySamples: number;
-    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered along each sun ray. Higher values increase fidelity slightly but greatly decreases performance. Minimal improvement is observable with values above 5. The range is 1 to 40. Defaults to 5. */
+    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered along each sun ray. Higher values increase fidelity slightly but greatly decrease performance. Minimal improvement is observable with values above 5. The range is 1 to 40. Defaults to 5. */
     public readonly numSunRaySamples: number;
-    /** @internal If defined, multiplies the amount of light scattered away from the viewing eye by this value. Higher values result in less light being transmitted to the camera. Defaults to 1.0. */
-    public readonly outScatteringIntensity: number;
-    /** @internal If defined, controls how strongly the atmosphere's air diverts light. Defaults to 100.0.  */
+    /** @internal If defined, controls how strongly the atmosphere's air diverts light. Higher values increase scattering intensity. Defaults to 100.0. */
     public readonly scatteringStrength: number;
     /** @internal If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red light component scatter as if it physically were a cyan light ray. The default value is {r:700.0, g:530.0, b:440.0}. */
     public readonly wavelengths: Wavelengths;
@@ -150,8 +145,6 @@ export namespace Atmosphere {
         return false;
       if (this.numSunRaySamples !== other.numSunRaySamples)
         return false;
-      if (this.outScatteringIntensity !== other.outScatteringIntensity)
-        return false;
       if (this.scatteringStrength !== other.scatteringStrength)
         return false;
       if (!this.wavelengths.equals(other.wavelengths))
@@ -166,7 +159,6 @@ export namespace Atmosphere {
       this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(json.depthBelowEarthForMaxDensity, Settings._defaultMinDensityHeightBelowEarth);
       this.numViewRaySamples = JsonUtils.asDouble(json.numViewRaySamples, Settings._defaultNumViewRaySamples);
       this.numSunRaySamples = JsonUtils.asDouble(json.numSunRaySamples, Settings._defaultNumSunRaySamples);
-      this.outScatteringIntensity = JsonUtils.asDouble(json.outScatteringIntensity, Settings._defaultOutScatteringIntensity);
       this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings._defaultScatteringStrength);
       this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths);
     }
@@ -185,7 +177,6 @@ export namespace Atmosphere {
         depthBelowEarthForMaxDensity: this.depthBelowEarthForMaxDensity,
         numViewRaySamples: this.numViewRaySamples,
         numSunRaySamples: this.numSunRaySamples,
-        outScatteringIntensity: this.outScatteringIntensity,
         scatteringStrength: this.scatteringStrength,
         wavelengths: this.wavelengths.toJSON(),
       };

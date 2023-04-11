@@ -267,7 +267,6 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   float atmosphereRadiusScaleFactor = u_atmosphereData[0][0];
   float atmosphereMaxDensityThresholdScaleFactor = u_atmosphereData[0][1];
   float densityFalloff = u_atmosphereData[0][2];
-  float outScatteringIntensity = u_atmosphereData[0][3];
   vec3 scatteringCoefficients = vec3(u_atmosphereData[3]);
 
   float opticalDepthFromRayOriginToSamplePoints[MAX_SAMPLE_POINTS];
@@ -288,7 +287,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 
     float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
     float averageDensityAcrossPartition = opticalDepthForCurrentPartition / stepSize;
-    vec3 outScatteredLight = scatteringCoefficients * totalOpticalDepthFromSunToCamera * outScatteringIntensity;
+    vec3 outScatteredLight = scatteringCoefficients * totalOpticalDepthFromSunToCamera;
 
     // The amount of light scattered towards the camera at a scatter point is related to the inverse exponential of the amount of light scattered away along its path
     //   In more intuitive terms: There's exponentially less light left to scatter towards the camera deeper in the atmosphere because it's all scattered away by the time it gets to the sample point.
@@ -305,7 +304,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   float stepSizeByEarthDiameter = (stepSize / diameterOfEarthAtPole);
   vec3 totalLightScatteredTowardsCamera = scatteringCoefficients * stepSizeByEarthDiameter * lightScatteredTowardsCamera;
 
-  vec3 reflectedLightIntensity = isSkyBox ? vec3(1.0) : calculateReflectedLightIntensity(opticalDepthFromSunToCameraThroughLastSamplePoint, scatteringCoefficients, outScatteringIntensity);
+  vec3 reflectedLightIntensity = isSkyBox ? vec3(1.0) : calculateReflectedLightIntensity(opticalDepthFromSunToCameraThroughLastSamplePoint, scatteringCoefficients);
 
   return mat3(totalLightScatteredTowardsCamera, reflectedLightIntensity, vec3(0.0));
 }
@@ -318,11 +317,10 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
  * Computes the intensity of light (by color) directly reflected toward the camera by a surface.
  * @param opticalDepth - The average atmospheric density between the camera and the ground, multiplied by its length
  * @param scatteringCoefficients - A vector containing the scattering strengths of red, green, and blue light, respectively
- * @param outScatteringIntensity - An additional scattering scalar used to uniformly decrease the amount of light reaching the camera
  * @returns A float in the range [0.0, rayLength] representing optical depth.
  */
 const calculateReflectedLightIntensity = `
-vec3 calculateReflectedLightIntensity(float opticalDepth, vec3 scatteringCoefficients, float outScatteringIntensity) {
+vec3 calculateReflectedLightIntensity(float opticalDepth, vec3 scatteringCoefficients) {
     // Using only the wavelength-specific scattering to calculate surface scattering results in too much red light on the surface in areas experiencing sunset
     //   This effect can be seen from space near the solar terminator line, but it most egregious when near the ground in an area affected by twilight.
     //   To lessen the amount of red light in the surface scattering, I have chosen to adjust the overall scattering intensity of each wavelength toward the average scattering value between them.
@@ -336,7 +334,7 @@ vec3 calculateReflectedLightIntensity(float opticalDepth, vec3 scatteringCoeffic
     float averageScatteringValue = (scatteringCoefficients.x + scatteringCoefficients.y + scatteringCoefficients.z) / 3.0;
     vec3 equalScatteringByWavelength = vec3(averageScatteringValue);
     vec3 scatteringStrength = mix(equalScatteringByWavelength, scatteringCoefficients, 0.5);
-    vec3 outScatteredLight = opticalDepth * outScatteringIntensity * scatteringStrength;
+    vec3 outScatteredLight = opticalDepth * scatteringStrength;
 
     vec3 sunlightColor = vec3(1.0, 0.95, 0.925);
     vec3 reflectedLightIntensity = sunlightColor * exp(-outScatteredLight);
