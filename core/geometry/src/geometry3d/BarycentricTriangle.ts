@@ -12,6 +12,7 @@ import { Geometry, PolygonLocation } from "../Geometry";
 import { Matrix3d } from "./Matrix3d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
+import { Transform } from "./Transform";
 
 /**
  * Carries data about a location in the plane of a triangle.
@@ -205,6 +206,15 @@ export class BarycentricTriangle {
   /** Return a new `BarycentricTriangle` with the same coordinates. */
   public clone(result?: BarycentricTriangle): BarycentricTriangle {
     return BarycentricTriangle.create(this.points[0], this.points[1], this.points[2], result);
+  }
+  /** Return a clone of the transformed instance */
+  public cloneTransformed(transform: Transform, result?: BarycentricTriangle): BarycentricTriangle {
+    return BarycentricTriangle.create(
+      transform.multiplyPoint3d(this.points[0], result?.points[0]),
+      transform.multiplyPoint3d(this.points[1], result?.points[1]),
+      transform.multiplyPoint3d(this.points[2], result?.points[2]),
+      result
+    );
   }
   /** Return the area of the triangle. */
   public get area(): number {
@@ -508,11 +518,13 @@ export class BarycentricTriangle {
   */
   public intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail {
     result = TriangleLocationDetail.create(result);
-    // Let r0 = ray.origin, d = ray.direction. Write intersection point p two ways for unknown scalars s,b0,b1,b2:
-    //    r0 + s*d = p = b0*v0 + b1*v1 + b2*v2
-    // Subtract v0 from both ends, let u=v1-v0, v=v2-v0, c=r0-v0, and enforce b0+b1+b2=1:
-    //    b1*u + b2*v - s*d = c
-    // This is a linear system Mx=c where M has columns u,v,d and solution x=(b1,b2,-s).
+    /**
+     * Let r0 = ray.origin and d = ray.direction. Write intersection point p two ways for unknown scalars s,b0,b1,b2:
+     *         r0 + s*d = p = b0*v0 + b1*v1 + b2*v2
+     * Subtract v0 from both ends, let u=v1-v0, v=v2-v0, c=r0-v0, and enforce b0+b1+b2=1:
+     *              b1*u + b2*v - s*d = c
+     * This is a linear system Mx = c where M has columns u,v,d and solution x=(b1,b2,-s).
+     */
     const r0 = ray.origin;
     const d = ray.direction;
     const u = BarycentricTriangle._workVector0 = Vector3d.createStartEnd(
@@ -526,9 +538,9 @@ export class BarycentricTriangle {
     const solution = BarycentricTriangle._workVector1;  // reuse workVector1
     if (undefined === M.multiplyInverse(c, solution))
       return result;  // invalid
-    result.a = -solution.z;
+    result.a = -solution.z; // = -(-s) = s
     ray.fractionToPoint(result.a, result.world);
-    result.local.set(1.0 - solution.x - solution.y, solution.x, solution.y);
+    result.local.set(1.0 - solution.x - solution.y, solution.x, solution.y); // = (1 - b1 - b2, b1, b2) = (b0 , b1, b2)
     const proj = this.closestPoint(result.local.x, result.local.y, result.local.z);
     result.closestEdgeIndex = proj.closestEdgeIndex;
     result.closestEdgeParam = proj.closestEdgeParam;
@@ -560,7 +572,7 @@ export class BarycentricTriangle {
   public snapLocationToEdge(
     location: TriangleLocationDetail,
     distanceTolerance: number = Geometry.smallMetricDistance,
-    parameterTolerance: number = Geometry.smallFraction
+    parameterTolerance: number = Geometry.smallFloatingPoint
   ): boolean {
     if (!location.isValid)
       return false;
