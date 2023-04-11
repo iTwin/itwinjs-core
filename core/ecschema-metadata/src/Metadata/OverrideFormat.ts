@@ -124,21 +124,19 @@ export class OverrideFormat {
 
     if (this.units !== undefined) {
       // Update Units overriden property
-      const composite: any = {};
-      if (this.spacer !== " ")
-        composite.spacer = this.spacer;
-
-      if (this.includeZero === false)
-        composite.includeZero = this.includeZero;
-
-      composite.units = [];
+      const units = [];
       for (const unit of this.units) {
-        composite.units.push({
+        units.push({
           name: unit[0].fullName,
           label: unit[1],
         });
       }
-      formatJson.composite = composite;
+
+      formatJson.composite = {
+        spacer: (this.spacer !== " ") ? this.spacer : undefined,
+        includeZero: (this.includeZero === false) ? this.includeZero : undefined,
+        units,
+      };
     }
 
     return formatJson;
