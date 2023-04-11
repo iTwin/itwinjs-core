@@ -40,15 +40,14 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
   private _scratchPoint3d = new Point3d();
 
   public update(target: Target): void {
-    const plan = target.plan;
-    const atmosphereHasNotChanged = this._atmosphere && plan.atmosphere && this._atmosphere.equals(plan.atmosphere);
-    const ellipsoidHasNotChanged = this._ellipsoid && plan.ellipsoid && this._ellipsoid.equals(plan.ellipsoid);
+    const atmosphereHasNotChanged = this._atmosphere && target.plan.atmosphere && this._atmosphere.equals(target.plan.atmosphere);
+    const ellipsoidHasNotChanged = this._ellipsoid && target.plan.ellipsoid && this._ellipsoid.equals(target.plan.ellipsoid);
     if (atmosphereHasNotChanged && ellipsoidHasNotChanged) {
       return;
     }
 
-    this._atmosphere = plan.atmosphere;
-    this._ellipsoid = plan.ellipsoid;
+    this._atmosphere = target.plan.atmosphere;
+    this._ellipsoid = target.plan.ellipsoid;
     desync(this);
     if (!this._atmosphere || !this._ellipsoid) {
       return;
