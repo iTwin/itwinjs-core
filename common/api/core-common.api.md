@@ -2360,7 +2360,9 @@ export interface ECSchemaReferenceProps {
 }
 
 // @beta (undocumented)
-export class ECSqlReader {
+export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
+    // (undocumented)
+    [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
     // (undocumented)
@@ -2373,6 +2375,8 @@ export class ECSqlReader {
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
+    // (undocumented)
+    next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
     // (undocumented)
