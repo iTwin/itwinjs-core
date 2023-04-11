@@ -709,9 +709,6 @@ export abstract class ViewManip extends ViewTool {
     if (IModelApp.tentativePoint.isActive)
       return this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
 
-    if (TentativeOrAccuSnap.isHot)
-      return this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), true, false);
-
     if (vp.viewCmdTargetCenter && this.isPointVisible(vp.viewCmdTargetCenter))
       return this.setTargetCenterWorld(vp.viewCmdTargetCenter, true, true);
 
