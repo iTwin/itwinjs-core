@@ -105,8 +105,8 @@ describe("default NativePlatform", () => {
 
     it("throws with diagnostics", async () => {
       const diagnostics: DiagnosticsScopeLogs = {
-        scope: "x"
-      }
+        scope: "x",
+      };
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "" }, diagnostics }), cancel: () => { } }));
