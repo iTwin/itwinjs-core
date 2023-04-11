@@ -348,7 +348,7 @@ export class Ray3d implements BeJSONFunctions {
   /**
    * Find the intersection of the line defined by the ray with a Range3d.
    * * Return the range of parameters (on the ray) which are "inside" the range.
-   * * Note that a range is always returned; if there is no intersection it is indicated by the test `result.Null`.
+   * * Note that a range is always returned; if there is no intersection it is indicated by the test `result.isNull`.
    */
   public intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d {
     if (range.isNull)
@@ -373,10 +373,9 @@ export class Ray3d implements BeJSONFunctions {
     return vectorV.plusScaled(this.direction, -fraction, result);
   }
   /**
-   * Determine if two rays intersect, are fully overlapped, parallel but no coincident, or skew.
+   * Determine if two rays intersect, or are fully overlapped, or parallel but not coincident, or skew.
    * * Return a CurveLocationDetailPair which contains fraction and point on each ray and has
-   * (in the CurveLocationDetailPair structure, as member approachType) annotation indicating one of
-   * these relationships:
+   * annotation (in member `approachType`) indicating one of these relationships:
    *   * CurveCurveApproachType.Intersection -- the rays have a simple intersection, at fractions indicated
    * in detailA and detailB
    *   * CurveCurveApproachType.PerpendicularChord -- there is pair of where the rays have closest approach.

@@ -25,12 +25,13 @@ import { Ray3d } from "./Ray3d";
  * `T` with vertices `v0, v1, v2`:
  * * `1 = b0 + b1 + b2`
  * * `p = b0 * v0 + b1 * v1 + b2 * v2`
- * * If sum is not 1 then the coordinate is not a barycentric and `p` will not be on the triangle plane.
  * * If T is spanned by the vectors `U = v1 - v0` and `V = v2 - v0`, then the vector `P = p - v0` can
  * be written `P = b1 * U + b2 * V`.
  * * The coordinates are all nonnegative if and only if `p` is inside or on `T`.
  * * Exactly one coordinate is zero if and only if `p` lies on an (infinitely extended) edge of `T`.
  * * Exactly two coordinates are zero if and only if `p` coincides with a vertex of `T`.
+ * * Note that if `p` can be written as a linear combination of the vertices of `T` using scales that do
+ * NOT sum to 1, then `p` is not coplanar with `T`
  * @public
  */
 export class TriangleLocationDetail {
@@ -357,7 +358,7 @@ export class BarycentricTriangle {
    * Examine a point's barycentric coordinates to determine if it lies on a bounded edge of the triangle.
    * * No parametric tolerance is used.
    * * It is assumed b0 + b1 + b2 = 1.
-   * @returns edge index i (opposite vertex i) for which b_i = 0 and b_j > 0 and b_k > 0. Otherwise, returns -1.
+   * @returns edge index i (opposite vertex i) for which b_i = 0, b_j > 0, and b_k > 0. Otherwise, returns -1.
    */
   private static isOnBoundedEdge(b0: number, b1: number, b2: number): number {
     if (b0 === 0 && b1 > 0 && b2 > 0)
