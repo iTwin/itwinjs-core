@@ -9,7 +9,7 @@ import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorOverrides, DiagnosticsOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
+  DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
   ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
   PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
@@ -18,7 +18,7 @@ import { PRESENTATION_BACKEND_ASSETS_ROOT } from "./Constants";
 import { buildElementsProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
-  NativePresentationKeySetJSON, NativePresentationUnitSystem,
+  NativePresentationKeySetJSON, NativePresentationUnitSystem, PresentationNativePlatformResponseError,
 } from "./NativePlatform";
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -318,14 +318,32 @@ async function withOptionalDiagnostics(
 ): Promise<NativePlatformResponse<string>> {
   const contexts = diagnosticsOptions.map((d) => d?.requestContextSupplier?.());
   const combinedOptions = combineDiagnosticsOptions(...diagnosticsOptions);
-  const response = await nativePlatformRequestHandler(combinedOptions);
-  if (response.diagnostics) {
-    const diagnostics = { logs: [response.diagnostics] };
-    diagnosticsOptions.forEach((options, i) => {
-      options && reportDiagnostics(diagnostics, options, contexts[i]);
-    });
+  // const response = await nativePlatformRequestHandler(combinedOptions);
+  // if (response.diagnostics) {
+  //   const diagnostics = { logs: [response.diagnostics] };
+  //   diagnosticsOptions.forEach((options, i) => {
+  //     options && reportDiagnostics(diagnostics, options, contexts[i]);
+  //   });
+  // }
+  // return response;
+  let responseDiagnostics: DiagnosticsScopeLogs | undefined;
+  try {
+    const response = await nativePlatformRequestHandler(combinedOptions);
+    responseDiagnostics = response.diagnostics;
+    return response;
+  } catch (e) {
+    if (e instanceof PresentationNativePlatformResponseError) {
+      responseDiagnostics = e.diagnostics;
+    }
+    throw e;
+  } finally {
+    if (responseDiagnostics) {
+      const diagnostics = { logs: [responseDiagnostics] };
+      diagnosticsOptions.forEach((options, i) => {
+        options && reportDiagnostics(diagnostics, options, contexts[i]);
+      });
+    }
   }
-  return response;
 }
 
 interface RequestParams {

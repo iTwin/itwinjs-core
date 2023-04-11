@@ -7,7 +7,7 @@
  */
 
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
-import { BeEvent, IDisposable } from "@itwin/core-bentley";
+import { assert, BeEvent, IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs, NodeKey, PresentationError, PresentationStatus, UpdateInfo, VariableValue, VariableValueJSON, VariableValueTypes,
@@ -99,6 +99,25 @@ export interface DefaultNativePlatformProps {
 }
 
 /** @internal */
+export class PresentationNativePlatformResponseError extends PresentationError {
+  public readonly diagnostics?: DiagnosticsScopeLogs;
+  public constructor(errorResponse: IModelJsNative.ECPresentationManagerResponse<unknown>) {
+    assert(!!errorResponse.error);
+    super(getPresentationStatusFromNativeResponseStatus(errorResponse.error.status), errorResponse.error.message);
+    this.diagnostics = errorResponse.diagnostics;
+  }
+}
+
+function getPresentationStatusFromNativeResponseStatus(nativeResponseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
+  switch (nativeResponseStatus) {
+    case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
+    case IModelJsNative.ECPresentationStatus.ResultSetTooLarge: return PresentationStatus.ResultSetTooLarge;
+    case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
+  }
+  return PresentationStatus.Error;
+}
+
+/** @internal */
 export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): new () => NativePlatformDefinition => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
@@ -108,14 +127,6 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
       this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
-    }
-    private getErrorStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
-      switch (responseStatus) {
-        case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
-        case IModelJsNative.ECPresentationStatus.ResultSetTooLarge: return PresentationStatus.ResultSetTooLarge;
-        case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
-      }
-      return PresentationStatus.Error;
     }
     private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
@@ -139,12 +150,12 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     private handleResult<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
       if (response.error)
-        throw new PresentationError(this.getErrorStatus(response.error.status), response.error.message);
+        throw new PresentationNativePlatformResponseError(response);
       return this.createSuccessResponse(response);
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
       if (response.error)
-        throw new PresentationError(this.getErrorStatus(response.error.status), response.error.message);
+        throw new PresentationNativePlatformResponseError(response);
       return this.createSuccessResponse(response);
     }
     public dispose() {
