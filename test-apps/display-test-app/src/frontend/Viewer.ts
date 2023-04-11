@@ -314,6 +314,12 @@ export class Viewer extends Window {
       tooltip: "Measure distance",
     }));
 
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ueb08",
+      click: async () => IModelApp.tools.run("Measure.Location", IModelApp.viewManager.selectedView!),
+      tooltip: "Measure location",
+    }));
+
     this.toolBar.addDropDown({
       iconUnicode: "\ue90e",
       tooltip: "View settings",
@@ -411,7 +417,7 @@ export class Viewer extends Window {
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue928",
       click: async () => {
-        const tool = new  DefaultMapFeatureInfoTool();
+        const tool = new DefaultMapFeatureInfoTool();
         await tool.run();
       },
       tooltip: "MapFeatureInfo",
