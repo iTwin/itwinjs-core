@@ -80,7 +80,7 @@ export class ViewCreator3d {
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
     const serializedProps: CustomViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getCustomViewState3dData(this._imodel.getRpcProps(),
-      modelIds === undefined ? {} : {modelIds: CompressedId64Set.sortAndCompress(modelIds)});
+      modelIds === undefined ? {} : { modelIds: CompressedId64Set.sortAndCompress(modelIds) });
     const props = await this._createViewStateProps(
       CompressedId64Set.decompressArray(serializedProps.modelIds),
       CompressedId64Set.decompressArray(serializedProps.categoryIds),
@@ -268,10 +268,8 @@ export class ViewCreator3d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    const reader = this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    while (await reader.step()) {
-      rows.push(reader.current.id);
-    }
+    for await (const row of this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      rows.push(row.id);
 
     return rows;
   };

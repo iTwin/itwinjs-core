@@ -134,9 +134,8 @@ describe("#performance DataViz requests", () => {
                   where h.sourceecinstanceid in (select ECClassId from BisCore.GeometricElement)
                 )
             `;
-              const reader = iModel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-              while (await reader.step()) {
-                classes.push(await classHierarchy.getClassInfoById(reader.current.id));
+              for await (const { classId } of iModel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+                classes.push(await classHierarchy.getClassInfoById(classId));
               }
             }
           }
@@ -309,9 +308,7 @@ describe("#performance DataViz requests", () => {
             for (const distinctValuesEntry of distinctValues) {
               const [displayValue, rawValues] = distinctValuesEntry;
               const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
-              const reader = iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-              while (await reader.step()) {
-                const classId = reader.current.id;
+              for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
                 pushValues(displayValueEntries, displayValue, [{ contentClassId: classId, pathFromContentToPropertyClass, filteredProperty, rawValues: [...rawValues] }]);
               }
             }
@@ -594,10 +591,8 @@ async function loadChildElementIds(iModel: IModelConnection, parentIds: Id64Stri
     )
     select * from children
   `;
-  const reader = iModel.createQueryReader(childElementIdsQuery, (new QueryBinder()).bindIdSet(1, OrderedId64Iterable.sortArray(parentIds)));
-  while (await reader.step()) {
-    childIds.push(reader.current.id);
-  }
+  for await (const row of iModel.createQueryReader(childElementIdsQuery, (new QueryBinder()).bindIdSet(1, OrderedId64Iterable.sortArray(parentIds))))
+    childIds.push(row[0]);
   return childIds;
 }
 

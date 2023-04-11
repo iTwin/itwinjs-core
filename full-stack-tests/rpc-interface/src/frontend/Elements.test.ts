@@ -56,10 +56,8 @@ describe("Operational: Execute Query", () => {
     const query = "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";
 
     const rows = [];
-    const reader = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    while (await reader.step()) {
-      rows.push(reader.current.toRow());
-    }
+    for await (const row of iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      rows.push(row);
 
     expect(rows).to.be.not.empty;
   });

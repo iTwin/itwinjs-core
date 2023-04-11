@@ -452,10 +452,9 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
     try {
       const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (${id}))`;
-      const reader = this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader.step()) {
-        ids.add(reader.current.parentId as Id64String);
-        ids.add(reader.current.id as Id64String);
+      for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        ids.add(row.parentId as Id64String);
+        ids.add(row.id as Id64String);
       }
     } catch { }
 

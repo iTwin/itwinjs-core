@@ -21,7 +21,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 async function queryBisModelCount(imodel: IModelDb): Promise<number> {
   const reader = imodel.createQueryReader("SELECT * FROM bis.model");
   if (await reader.step())
-    return reader.current.getArray()[0] as number;
+    return reader.current[0] as number;
   return -1;
 }
 

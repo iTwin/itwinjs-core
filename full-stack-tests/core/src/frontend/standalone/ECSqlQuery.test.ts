@@ -50,8 +50,8 @@ describe("ECSql Query", () => {
     const cb = async () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
-          const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { restartToken: "tag" });
-          while (await reader.step()) {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          for await (const _row of imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { restartToken: "tag" })) {
             rowCount++;
           }
           successful++;
@@ -136,7 +136,7 @@ describe("ECSql Query", () => {
     for (const db of dbs) {
       const reader = db.createQueryReader(`SELECT COUNT(*) FROM (${query})`);
       if (await reader.step())
-        pendingRowCount.push(reader.current.getArray()[0] as number);
+        pendingRowCount.push(reader.current[0] as number);
     }
 
     const rowCounts = await Promise.all(pendingRowCount);
@@ -158,9 +158,8 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      const reader = db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader.step()) {
-        const row = reader.current.toRow();
+      for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow(); // row as a JS object
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
@@ -179,18 +178,19 @@ describe("ECSql Query", () => {
   it("Query with Abbreviated Blobs", async function () {
     const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
     const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
-    const reader1 = imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    await reader1.step();
-    const row1 = reader1.current.toRow();
+    let row1: any;
+    let row2: any;
+    let row3: any;
+    for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      row1 = row.toRow();
+    }
     assert.isNotEmpty(row1.geometryStream);
-    const reader2 = imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false });
-    await reader2.step();
-    const row2 = reader2.current.toRow();
+    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
+      row2 = row.toRow();
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    const reader3 = imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true });
-    await reader3.step();
-    const row3 = reader3.current.toRow();
+    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
+      row3 = row.toRow();
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);
   });

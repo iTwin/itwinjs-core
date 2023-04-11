@@ -45,10 +45,8 @@ describe("Basic Scenarios", async () => {
     const iModel = await testContext.iModelWithChangesets!.getConnection();
 
     const rows = [];
-    const reader = iModel.createQueryReader("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 10 } });
-    while (await reader.step()) {
-      rows.push(reader.current.toRow());
-    }
+    for await (const row of iModel.createQueryReader("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 10 } }))
+      rows.push(row);
 
     expect(rows).not.to.be.empty;
   });

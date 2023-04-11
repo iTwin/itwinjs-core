@@ -315,9 +315,9 @@ export abstract class IModelConnection extends IModel {
    */
 
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    const reader = this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params);
-    if (await reader.step())
-      return reader.current.getArray()[0] as number;
+    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) {
+      return row[0] as number;
+    }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
   /** Cancel any previous query with same token and run execute the current specified query.
@@ -339,9 +339,8 @@ export abstract class IModelConnection extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    const reader = this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions());
-    while (await reader.step()) {
-      yield reader.current.toRow();
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+      yield row;
     }
   }
   /** Query for a set of element ids that satisfy the supplied query params
@@ -978,9 +977,8 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      const reader = this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader.step()) {
-        const row = reader.current.toRow();
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },

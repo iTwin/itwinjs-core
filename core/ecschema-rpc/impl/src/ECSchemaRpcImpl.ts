@@ -54,10 +54,8 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
-    const reader = iModelDb.createQueryReader(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    while (await reader.step()) {
-      const row = reader.current.toRow();
-      const schemaDefinitionRow = row as SchemaNameRow;
+    for await (const row of iModelDb.createQueryReader(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      const schemaDefinitionRow = row.toRow() as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;
       const read = Number(schemaDefinitionRow.read);
       const write = Number(schemaDefinitionRow.write);

@@ -239,10 +239,10 @@ export class ViewCreator2d {
   private async _addSheetViewProps(modelId: Id64String, props: ViewStateProps) {
     let width = 0;
     let height = 0;
-    const reader = this._imodel.createQueryReader(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } });
-    if (await reader.step()) {
-      width = reader.current.width as number;
-      height = reader.current.height as number;
+    for await (const row of this._imodel.createQueryReader(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      width = row.width as number;
+      height = row.height as number;
+      break;
     }
     const sheetProps: SheetProps = {
       model: modelId,
@@ -327,10 +327,8 @@ export class ViewCreator2d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    const reader = this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    while (await reader.step()) {
-      rows.push(reader.current.id);
-    }
+    for await (const row of this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      rows.push(row.id);
 
     return rows;
   };
