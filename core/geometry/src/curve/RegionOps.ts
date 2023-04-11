@@ -592,8 +592,8 @@ export class RegionOps {
   /**
    * Find all areas bounded by the unstructured, possibly intersecting curves.
    * * This method performs no merging of nearly coincident edges and vertices, which can lead to unexpected results
-   * given sufficiently imprecise input. Input geometry consisting of regions can be merged for better results: call
-   * [[regionBooleanXY]](regions, undefined, RegionBinaryOpType.Union) and pass the merged region into [[constructAllXYRegionLoops]].
+   * given sufficiently imprecise input. Input geometry consisting of regions can be merged for better results by pre-processing with
+   * [[regionBooleanXY]].
    * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve primitives.
    * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have positive area and counterclockwise orientation.

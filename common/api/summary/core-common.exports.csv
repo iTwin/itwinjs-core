@@ -198,7 +198,7 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-beta;ECSqlReader
+beta;ECSqlReader 
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs

@@ -13,7 +13,7 @@ import {
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { getJson, RequestBasicCredentials } from "../../request/Request";
+import { request, RequestBasicCredentials } from "../../request/Request";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
 /** Values for return codes from [[MapLayerSource.validateSource]]
@@ -206,7 +206,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const sourcesJson = await getJson(`${IModelApp.publicPath}assets/MapLayerSources.json`);
+      const sourcesJson = await request(`${IModelApp.publicPath}assets/MapLayerSources.json`, "json");
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);

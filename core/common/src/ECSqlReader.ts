@@ -76,7 +76,7 @@ export interface QueryStats {
 }
 
 /** @beta */
-export class ECSqlReader {
+export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   private static readonly _maxRetryCount = 10;
   private _localRows: any[] = [];
   private _localOffset: number = 0;
@@ -105,7 +105,7 @@ export class ECSqlReader {
         if (key === "toRow") {
           return () => target.formatCurrentRow(true);
         }
-        if (key === "getArray" || key === "toJSON") {
+        if (key === "toArray") {
           return () => this.getRowInternal();
         }
       }
@@ -195,7 +195,7 @@ export class ECSqlReader {
     if (this._globalCount === 0) {
       return [];
     }
-    const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames? DbValueFormat.JsNames :DbValueFormat.ECSqlNames;
+    const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
     const request: DbQueryRequest = {
       ... this._options,
       kind: DbRequestKind.ECSql,
@@ -295,6 +295,22 @@ export class ECSqlReader {
       rows.push(this.formatCurrentRow());
     }
     return rows;
+  }
+  public [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy> {
+    return this;
+  }
+  public async next(): Promise<IteratorResult<QueryRowProxy, any>> {
+    if (await this.step()) {
+      return {
+        done: false,
+        value: this.current,
+      };
+    } else {
+      return {
+        done: true,
+        value: this.current,
+      };
+    }
   }
 }
 
