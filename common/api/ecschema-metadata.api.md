@@ -11,6 +11,7 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { Mutable } from "@itwin/core-bentley";
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';

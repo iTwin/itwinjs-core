@@ -14,6 +14,7 @@ import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { Unit } from "./Unit";
+import { Mutable } from "@itwin/core-bentley";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
@@ -116,7 +117,7 @@ export class OverrideFormat {
    * Returns a JSON object that contains the specification for OverrideFormat.
    */
   public toJSON(): SchemaItemFormatProps {
-    const formatJson = this.parent.toJSON() as any;
+    const formatJson = this.parent.toJSON() as Mutable<SchemaItemFormatProps>;
 
     // Update Precision overriden property
     formatJson.precision = this.precision;

@@ -166,3 +166,15 @@ The source code for following packages was moved to the new [AppUi repository](h
 - @itwin/components-react
 - @itwin/core-react
 - @itwin/imodel-components-react
+
+## Interfaces renamed
+
+**@itwin/core-quantity**
+
+- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+
+**@itwin/ecschema-metadata**
+
+- The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
+
+- The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
