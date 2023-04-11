@@ -19,6 +19,31 @@ const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
 const scratchPoint3c = new Point3d();
 
+/**
+ * @internal
+ */
+export class RenderPlanEllipsoid {
+  public readonly ellipsoidCenter: Point3d;
+  public readonly ellipsoidRotation: Matrix3d;
+  public readonly ellipsoidRadii: Point3d;
+
+  constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d) {
+    this.ellipsoidCenter = ellipsoidCenter;
+    this.ellipsoidRotation = ellipsoidRotation;
+    this.ellipsoidRadii = ellipsoidRadii;
+  }
+
+  public equals(other: RenderPlanEllipsoid): boolean {
+    if (this.ellipsoidCenter !== other.ellipsoidCenter)
+      return false;
+    if (this.ellipsoidRotation !== other.ellipsoidRotation)
+      return false;
+    if (this.ellipsoidRadii !== other.ellipsoidRadii)
+      return false;
+    return true;
+  }
+}
+
 /** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  * @internal
  */
@@ -48,11 +73,7 @@ export interface RenderPlan {
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
   readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
-  readonly ellipsoid?: {
-    readonly ellipsoidCenter: Point3d;
-    readonly ellipsoidRotation: Matrix3d;
-    readonly ellipsoidRadii: Point3d;
-  };
+  readonly ellipsoid?: RenderPlanEllipsoid;
 }
 
 /** @internal */
@@ -125,14 +146,14 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   if (analysisStyle?.thematic)
     analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
 
-  let ellipsoid;
+  let ellipsoid: RenderPlanEllipsoid | undefined;
   if (GlobeMode.Ellipsoid === view.globeMode) {
     const mapEcefToDb = view.iModel.getMapEcefToDb(0);
-    ellipsoid = {
-      ellipsoidCenter: Point3d.fromJSON(mapEcefToDb.origin),
-      ellipsoidRotation: mapEcefToDb.matrix,
-      ellipsoidRadii: Point3d.fromJSON({ x: Constant.earthRadiusWGS84.equator, y: Constant.earthRadiusWGS84.equator, z: Constant.earthRadiusWGS84.polar }),
-    };
+    ellipsoid = new RenderPlanEllipsoid(
+      Point3d.fromJSON(mapEcefToDb.origin),
+      mapEcefToDb.matrix,
+      Point3d.fromJSON({ x: Constant.earthRadiusWGS84.equator, y: Constant.earthRadiusWGS84.equator, z: Constant.earthRadiusWGS84.polar }),
+    );
   }
 
   return {

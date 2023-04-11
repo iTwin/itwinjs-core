@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
+import { Matrix4 } from "../Matrix";
 import {
   FragmentShaderBuilder,
   FragmentShaderComponent,
@@ -232,7 +233,7 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
     return emptyResult;
   }
 
-  int numPartitions = u_numViewRaySamples - 1;
+  int numPartitions = int(u_atmosphereData[1][0]) - 1;
   if (numPartitions <= 0) {
     return emptyResult;
   }
@@ -267,7 +268,8 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
     opticalDepthFromRayOriginToSamplePoints[i] = opticalDepthForCurrentPartition + opticalDepthFromRayOriginToSamplePoints[i-1];
 
     vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
-    float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], u_numSunRaySamples);
+    int numSunRaySamples = int(u_atmosphereData[1][1]);
+    float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], numSunRaySamples);
 
     float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
     float averageDensityAcrossPartition = opticalDepthForCurrentPartition / stepSize;
@@ -375,13 +377,22 @@ const applyAtmosphericScattering = `
 
 const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuilder) => {
   shader.addUniform(
+    "u_atmosphereData",
+    VariableType.Mat4,
+    (prog) => {
+      prog.addProgramUniform("u_atmosphereData", (uniform, params) => {
+        const foo = params.target.uniforms.atmosphere.atmosphereData;
+        uniform.setMatrix4(foo);
+        console.log("foo");
+      })
+    }
+  );
+  shader.addUniform(
     "u_densityFalloff",
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_densityFalloff", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindDensityFalloff(
-          uniform
-        );
+        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[2]);
       });
     }
   );
@@ -390,34 +401,11 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariableType.Vec3,
     (prog) => {
       prog.addProgramUniform("u_scatteringCoefficients", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindScatteringCoefficients(
-          uniform
-        );
+        const foo = new Float32Array([params.target.uniforms.atmosphere.atmosphereData.data[12], params.target.uniforms.atmosphere.atmosphereData.data[13], params.target.uniforms.atmosphere.atmosphereData.data[14]]);
+        uniform.setUniform3fv(foo);
       });
     },
     VariablePrecision.High
-  );
-  shader.addUniform(
-    "u_numViewRaySamples",
-    VariableType.Int,
-    (prog) => {
-      prog.addProgramUniform("u_numViewRaySamples", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindNumViewRaySamples(
-          uniform
-        );
-      });
-    }
-  );
-  shader.addUniform(
-    "u_numSunRaySamples",
-    VariableType.Int,
-    (prog) => {
-      prog.addProgramUniform("u_numSunRaySamples", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindNumSunRaySamples(
-          uniform
-        );
-      });
-    }
   );
   shader.addUniform(
     "u_sunDir",
@@ -434,7 +422,8 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariableType.Vec3,
     (prog) => {
       prog.addProgramUniform("u_earthCenter", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindEarthCenter(uniform);
+        const foo = new Float32Array([params.target.uniforms.atmosphere.atmosphereData.data[8], params.target.uniforms.atmosphere.atmosphereData.data[9], params.target.uniforms.atmosphere.atmosphereData.data[10]]);
+        uniform.setUniform3fv(foo);
       });
     },
     VariablePrecision.High
@@ -454,7 +443,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_atmosphereRadiusScaleFactor", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindAtmosphereRadiusScaleFactor(uniform);
+        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[0]);
       });
     },
     VariablePrecision.High
@@ -464,7 +453,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_atmosphereMaxDensityThresholdScaleFactor", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindAtmosphereMaxDensityThresholdScaleFactor(uniform);
+        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[1]);
       });
     },
     VariablePrecision.High
@@ -494,7 +483,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
+        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[3]);
       });
     }
   );
