@@ -47,11 +47,7 @@ export class ArcGISTileMap {
     } catch {
     }
 
-    const data = await request(urlObj.toString() , {
-      method: "GET",
-      responseType: "json",
-    });
-    return data.body;
+    return request(urlObj.toString(), "json");
   }
 
   protected getAvailableTilesFromCache(tiles: QuadId[]): {allTilesFound: boolean, available: boolean[]} {
