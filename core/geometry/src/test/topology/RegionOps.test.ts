@@ -1117,23 +1117,33 @@ describe("RegionOps2", () => {
   it("TriangulateSortedLoops", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    let x = 0;
+    let y = 0;
     const testCases = [
       "./src/test/testInputs/curve/arcGisLoops.imjs",
       "./src/test/testInputs/curve/loopWithHole.imjs", // aka, split washer polygon
       "./src/test/testInputs/curve/michelLoops.imjs",  // has a small island in a hole
+      "./src/test/testInputs/curve/michelLoops2.imjs", // 339 loops
     ];
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
       if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x, y);
+        // generate a region from loops
         const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
         if (ck.testTrue(region.isClosedPath || region.children.length > 0, "region created")) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, region);
+          const range = region.range();
+          const xDelta = 1.5 * range.xLength();
+          const yDelta = 1.5 * range.yLength();
+          x += xDelta;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x, y);
+          // facet the region
           const builder = PolyfaceBuilder.create();
           builder.addGeometryQuery(region);
           const mesh = builder.claimPolyface();
           if (ck.testFalse(mesh.isEmpty, "triangulation not empty")) {
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+            x += xDelta;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x, y);
             // verify no degenerate triangles
             const visitor = mesh.createVisitor() as IndexedPolyfaceVisitor;
             for (; visitor.moveToNextFacet();) {
@@ -1143,6 +1153,8 @@ describe("RegionOps2", () => {
               ck.testFalse(visitor.pointIndex[1] === visitor.pointIndex[2], "last two point indices are different");
             }
           }
+          x = 0;
+          y += yDelta;
         }
       }
     }
