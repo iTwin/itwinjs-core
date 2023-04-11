@@ -44,20 +44,30 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   private _status = MapLayerImageryProviderStatus.Valid;
 
+  /** @internal */
   public get status() { return this._status; }
 
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
 
+  /** @internal */
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
 
+  /** @internal */
   public get maximumScreenSize() { return 2 * this.tileSize; }
+
   public get minimumZoomLevel(): number { return this.defaultMinimumZoomLevel; }
+
   public get maximumZoomLevel(): number { return this.defaultMaximumZoomLevel; }
+
+  /** @internal */
   public get usesCachedTiles() { return this._usesCachedTiles; }
+
   public get mutualExclusiveSubLayer(): boolean { return false; }
+
+  /** @internal */
   public get useGeographicTilingScheme() { return false; }
+
   public cartoRange?: MapCartoRectangle;
-  public get hasSuccessfullyFetchedTile() { return this._hasSuccessfullyFetchedTile; }
 
   // Those values are used internally for various computation, this should not get overriden.
   /** @internal */
@@ -74,6 +84,7 @@ export abstract class MapLayerImageryProvider {
     this._geographicTilingScheme = new GeographicTilingScheme(2, 1, true);
   }
 
+  /** @internal */
   public async initialize(): Promise<void> {
     this.loadTile(0, 0, this.defaultMaximumZoomLevel).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       if (tileData !== undefined)
@@ -91,6 +102,7 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   protected _missingTileData?: Uint8Array;
 
+  /** @internal */
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
   /** @internal */
