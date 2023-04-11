@@ -137,25 +137,29 @@ vec2 rayEllipsoidIntersection(
  * the ellipsoid rotation into account.
  *
  * @param point - Point we want to sample density for.
+ * @param earthCenter - The location of the earth center in eye space
+ * @param atmosphereRadiusScaleFactor - A scalar that, when multiplied by the earth's radius, produces the atmosphere's radius from the earth center
+ * @param atmosphereMaxDensityThresholdScaleFactor - A scalar that, when multiplied by the earth's radius, produces the atmosphere max density threshold's
+ * @param densityFalloff - Adjusts how fast the density drops off relative to altitude. A value of 0 produces linear dropoff (1/10 of the way up means you have 9/10 density), and higher values increase the rate of dropoff exponentially.
  * @returns A density value between [0.0 - 1.0].
  */
 const densityAtPoint = `
-float densityAtPoint(vec3 point) {
+float densityAtPoint(vec3 point, vec3 earthCenter, float atmosphereRadiusScaleFactor, float atmosphereMaxDensityThresholdScaleFactor, float densityFalloff) {
   // Scaling by the inverse earth scale matrix produces a vector with length 1 when the sample point lies on the earth's surface.
   //   This allows us to directly compare the vector's length to the atmosphere scale factors to determine its relative altitude.
-  vec3 pointFromEarthCenter = u_inverseEarthScaleInverseRotationMatrix * (point - u_earthCenter);
+  vec3 pointFromEarthCenter = u_inverseEarthScaleInverseRotationMatrix * (point - earthCenter);
 
-  if (length(pointFromEarthCenter) <= u_atmosphereMaxDensityThresholdScaleFactor) { // point is below the max density threshold
+  if (length(pointFromEarthCenter) <= atmosphereMaxDensityThresholdScaleFactor) { // point is below the max density threshold
     return 1.0;
   }
-  else if (length(pointFromEarthCenter) >= u_atmosphereRadiusScaleFactor) { // point is above the min density threshold
+  else if (length(pointFromEarthCenter) >= atmosphereRadiusScaleFactor) { // point is above the min density threshold
     return 0.0;
   }
 
-  float atmosphereDistanceFromMaxDensityThreshold = u_atmosphereRadiusScaleFactor - u_atmosphereMaxDensityThresholdScaleFactor;
-  float samplePointDistanceFromMaxDensityThreshold = length(pointFromEarthCenter) - u_atmosphereMaxDensityThresholdScaleFactor;
+  float atmosphereDistanceFromMaxDensityThreshold = atmosphereRadiusScaleFactor - atmosphereMaxDensityThresholdScaleFactor;
+  float samplePointDistanceFromMaxDensityThreshold = length(pointFromEarthCenter) - atmosphereMaxDensityThresholdScaleFactor;
   float heightFrom0to1 = samplePointDistanceFromMaxDensityThreshold / atmosphereDistanceFromMaxDensityThreshold;
-  float result = exp(-heightFrom0to1 * u_densityFalloff) * (1.0 - heightFrom0to1);
+  float result = exp(-heightFrom0to1 * densityFalloff) * (1.0 - heightFrom0to1);
 
   return result;
 }
@@ -168,25 +172,29 @@ float densityAtPoint(vec3 point) {
  * @param rayDir - The direction of the ray.
  * @param rayLength - The length of the ray.
  * @param numSamplePoints - The number of points at which density is sampled to determine optical depth.
+ * @param earthCenter - The location of the earth center in eye space
+ * @param atmosphereRadiusScaleFactor - A scalar that, when multiplied by the earth's radius, produces the atmosphere's radius from the earth center
+ * @param atmosphereMaxDensityThresholdScaleFactor - A scalar that, when multiplied by the earth's radius, produces the atmosphere max density threshold's radius from the earth center
+ * @param densityFalloff - Adjusts how fast the density drops off relative to altitude. A value of 0 produces linear dropoff (1/10 of the way up means you have 9/10 density), and higher values increase the rate of dropoff exponentially.
  * @returns A float in the range [0.0, rayLength] representing optical depth.
  */
 const opticalDepth = `
-float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, int numSamplePoints) {
+float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, int numSamplePoints, vec3 earthCenter, float atmosphereRadiusScaleFactor, float atmosphereMaxDensityThresholdScaleFactor, float densityFalloff) {
   if (numSamplePoints <= 1) {
-    return densityAtPoint(rayOrigin) * rayLength;
+    return densityAtPoint(rayOrigin, earthCenter, atmosphereRadiusScaleFactor, atmosphereMaxDensityThresholdScaleFactor, densityFalloff) * rayLength;
   }
 
   int numPartitions = numSamplePoints - 1;
   float stepSize = rayLength / float(numPartitions);
   vec3 samplePointA = rayOrigin;
   vec3 samplePointB = rayOrigin + (rayDir * stepSize);
-  float samplePointADensity = densityAtPoint(samplePointA);
+  float samplePointADensity = densityAtPoint(samplePointA, earthCenter, atmosphereRadiusScaleFactor, atmosphereMaxDensityThresholdScaleFactor, densityFalloff);
   float trapezoidRuleSum = 0.0;
 
   // To approximate the atmospheric density over the ray, we utilize the trapezoid rule, taking 2 density samples at each step, and averaging them before multiplying by the step size.
   // For performance benefit, we divide by 2 and multiply by stepSize after all steps are summed instead of every loop.
   for (int i = 1; i <= numPartitions; i++) {
-    float samplePointBDensity = densityAtPoint(samplePointB);
+    float samplePointBDensity = densityAtPoint(samplePointB, earthCenter, atmosphereRadiusScaleFactor, atmosphereMaxDensityThresholdScaleFactor, densityFalloff);
 
     trapezoidRuleSum += samplePointADensity + samplePointBDensity;
     samplePointADensity = samplePointBDensity;
@@ -213,9 +221,10 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   vec3 rayOrigin = computeRayOrigin(v_eyeSpace);
   float sceneDepth = computeSceneDepth(v_eyeSpace);
   float diameterOfEarthAtPole = u_earthScaleMatrix[2][2];
+  vec3 earthCenter = vec3(u_atmosphereData[2]);
 
-  vec2 earthHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
-  vec2 atmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, rayOrigin, rayDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
+  vec2 earthHitInfo = rayEllipsoidIntersection(earthCenter, rayOrigin, rayDir, u_inverseEarthScaleInverseRotationMatrix, u_earthScaleMatrix);
+  vec2 atmosphereHitInfo = rayEllipsoidIntersection(earthCenter, rayOrigin, rayDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
 
   float distanceThroughAtmosphere = min(
     atmosphereHitInfo[1],
@@ -255,6 +264,12 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   vec3 firstPointInAtmosphere = rayDir * atmosphereHitInfo[0] + rayOrigin;
   vec3 scatterPoint = firstPointInAtmosphere;
 
+  float atmosphereRadiusScaleFactor = u_atmosphereData[0][0];
+  float atmosphereMaxDensityThresholdScaleFactor = u_atmosphereData[0][1];
+  float densityFalloff = u_atmosphereData[0][2];
+  float outScatteringIntensity = u_atmosphereData[0][3];
+  vec3 scatteringCoefficients = vec3(u_atmosphereData[3]);
+
   float opticalDepthFromRayOriginToSamplePoints[MAX_SAMPLE_POINTS];
   // The first sample point either lies at the edge of the atmosphere (camera is in space) or exactly at the ray origin (camera is in the atmosphere).
   // In both cases, the distance traveled through the atmosphere to this point is 0.
@@ -264,16 +279,16 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
   float opticalDepthFromSunToCameraThroughLastSamplePoint = 0.0;
 
   for (int i = 1; i <= numPartitions; i++) {
-    float opticalDepthForCurrentPartition = opticalDepth(scatterPoint, rayDir, stepSize, 2);
+    float opticalDepthForCurrentPartition = opticalDepth(scatterPoint, rayDir, stepSize, 2, earthCenter, atmosphereRadiusScaleFactor, atmosphereMaxDensityThresholdScaleFactor, densityFalloff);
     opticalDepthFromRayOriginToSamplePoints[i] = opticalDepthForCurrentPartition + opticalDepthFromRayOriginToSamplePoints[i-1];
 
-    vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(u_earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
+    vec2 sunRayAtmosphereHitInfo = rayEllipsoidIntersection(earthCenter, scatterPoint, u_sunDir, u_inverseAtmosphereScaleInverseRotationMatrix, u_atmosphereScaleMatrix);
     int numSunRaySamples = int(u_atmosphereData[1][1]);
-    float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], numSunRaySamples);
+    float sunRayOpticalDepthToScatterPoint = opticalDepth(scatterPoint, u_sunDir, sunRayAtmosphereHitInfo[1], numSunRaySamples, earthCenter, atmosphereRadiusScaleFactor, atmosphereMaxDensityThresholdScaleFactor, densityFalloff);
 
     float totalOpticalDepthFromSunToCamera = (sunRayOpticalDepthToScatterPoint + opticalDepthFromRayOriginToSamplePoints[i]) / diameterOfEarthAtPole; // We scale by earth diameter purely to obtain values that are easier to work with
     float averageDensityAcrossPartition = opticalDepthForCurrentPartition / stepSize;
-    vec3 outScatteredLight = u_scatteringCoefficients * totalOpticalDepthFromSunToCamera * u_outScatteringIntensity;
+    vec3 outScatteredLight = scatteringCoefficients * totalOpticalDepthFromSunToCamera * outScatteringIntensity;
 
     // The amount of light scattered towards the camera at a scatter point is related to the inverse exponential of the amount of light scattered away along its path
     //   In more intuitive terms: There's exponentially less light left to scatter towards the camera deeper in the atmosphere because it's all scattered away by the time it gets to the sample point.
@@ -288,9 +303,9 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 
   // Scattering coefficients adjust the amount of light scattered by color. (e.g. earth's atmosphere scatters shorter wavelengths more than longer ones)
   float stepSizeByEarthDiameter = (stepSize / diameterOfEarthAtPole);
-  vec3 totalLightScatteredTowardsCamera = u_scatteringCoefficients * stepSizeByEarthDiameter * lightScatteredTowardsCamera;
+  vec3 totalLightScatteredTowardsCamera = scatteringCoefficients * stepSizeByEarthDiameter * lightScatteredTowardsCamera;
 
-  vec3 reflectedLightIntensity = isSkyBox ? vec3(1.0) : calculateReflectedLightIntensity(opticalDepthFromSunToCameraThroughLastSamplePoint);
+  vec3 reflectedLightIntensity = isSkyBox ? vec3(1.0) : calculateReflectedLightIntensity(opticalDepthFromSunToCameraThroughLastSamplePoint, scatteringCoefficients, outScatteringIntensity);
 
   return mat3(totalLightScatteredTowardsCamera, reflectedLightIntensity, vec3(0.0));
 }
@@ -299,8 +314,15 @@ mat3 computeAtmosphericScattering(bool isSkyBox) {
 /**
  * Computes the intensity of light (by color) directly reflected toward the camera by a surface.
  */
+/**
+ * Computes the intensity of light (by color) directly reflected toward the camera by a surface.
+ * @param opticalDepth - The average atmospheric density between the camera and the ground, multiplied by its length
+ * @param scatteringCoefficients - A vector containing the scattering strengths of red, green, and blue light, respectively
+ * @param outScatteringIntensity - An additional scattering scalar used to uniformly decrease the amount of light reaching the camera
+ * @returns A float in the range [0.0, rayLength] representing optical depth.
+ */
 const calculateReflectedLightIntensity = `
-vec3 calculateReflectedLightIntensity(float opticalDepth) {
+vec3 calculateReflectedLightIntensity(float opticalDepth, vec3 scatteringCoefficients, float outScatteringIntensity) {
     // Using only the wavelength-specific scattering to calculate surface scattering results in too much red light on the surface in areas experiencing sunset
     //   This effect can be seen from space near the solar terminator line, but it most egregious when near the ground in an area affected by twilight.
     //   To lessen the amount of red light in the surface scattering, I have chosen to adjust the overall scattering intensity of each wavelength toward the average scattering value between them.
@@ -311,10 +333,10 @@ vec3 calculateReflectedLightIntensity(float opticalDepth) {
     //   This would affect the angle at which sun rays hit the atmosphere, which is most extreme at sunset.
     //   The efficacy of this technique should be reevaluated if a feature is added which affects the surface scattering behavior.
 
-    float averageScatteringValue = (u_scatteringCoefficients.x + u_scatteringCoefficients.y + u_scatteringCoefficients.z) / 3.0;
+    float averageScatteringValue = (scatteringCoefficients.x + scatteringCoefficients.y + scatteringCoefficients.z) / 3.0;
     vec3 equalScatteringByWavelength = vec3(averageScatteringValue);
-    vec3 scatteringStrength = mix(equalScatteringByWavelength, u_scatteringCoefficients, 0.5);
-    vec3 outScatteredLight = opticalDepth * u_outScatteringIntensity * scatteringStrength;
+    vec3 scatteringStrength = mix(equalScatteringByWavelength, scatteringCoefficients, 0.5);
+    vec3 outScatteredLight = opticalDepth * outScatteringIntensity * scatteringStrength;
 
     vec3 sunlightColor = vec3(1.0, 0.95, 0.925);
     vec3 reflectedLightIntensity = sunlightColor * exp(-outScatteredLight);
@@ -381,31 +403,9 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariableType.Mat4,
     (prog) => {
       prog.addProgramUniform("u_atmosphereData", (uniform, params) => {
-        const foo = params.target.uniforms.atmosphere.atmosphereData;
-        uniform.setMatrix4(foo);
-        console.log("foo");
+        uniform.setMatrix4(params.target.uniforms.atmosphere.atmosphereData);
       })
     }
-  );
-  shader.addUniform(
-    "u_densityFalloff",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_densityFalloff", (uniform, params) => {
-        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[2]);
-      });
-    }
-  );
-  shader.addUniform(
-    "u_scatteringCoefficients",
-    VariableType.Vec3,
-    (prog) => {
-      prog.addProgramUniform("u_scatteringCoefficients", (uniform, params) => {
-        const foo = new Float32Array([params.target.uniforms.atmosphere.atmosphereData.data[12], params.target.uniforms.atmosphere.atmosphereData.data[13], params.target.uniforms.atmosphere.atmosphereData.data[14]]);
-        uniform.setUniform3fv(foo);
-      });
-    },
-    VariablePrecision.High
   );
   shader.addUniform(
     "u_sunDir",
@@ -418,42 +418,11 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     VariablePrecision.High
   );
   shader.addUniform(
-    "u_earthCenter",
-    VariableType.Vec3,
-    (prog) => {
-      prog.addProgramUniform("u_earthCenter", (uniform, params) => {
-        const foo = new Float32Array([params.target.uniforms.atmosphere.atmosphereData.data[8], params.target.uniforms.atmosphere.atmosphereData.data[9], params.target.uniforms.atmosphere.atmosphereData.data[10]]);
-        uniform.setUniform3fv(foo);
-      });
-    },
-    VariablePrecision.High
-  );
-  shader.addUniform(
     "u_atmosphereScaleMatrix",
     VariableType.Mat3,
     (prog) => {
       prog.addProgramUniform("u_atmosphereScaleMatrix", (uniform, params) => {
         params.target.uniforms.atmosphere.bindAtmosphereScaleMatrix(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  shader.addUniform(
-    "u_atmosphereRadiusScaleFactor",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_atmosphereRadiusScaleFactor", (uniform, params) => {
-        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[0]);
-      });
-    },
-    VariablePrecision.High
-  );
-  shader.addUniform(
-    "u_atmosphereMaxDensityThresholdScaleFactor",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_atmosphereMaxDensityThresholdScaleFactor", (uniform, params) => {
-        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[1]);
       });
     },
     VariablePrecision.High
@@ -477,15 +446,6 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
       });
     },
     VariablePrecision.High
-  );
-  shader.addUniform(
-    "u_outScatteringIntensity",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-        uniform.setUniform1f(params.target.uniforms.atmosphere.atmosphereData.data[3]);
-      });
-    }
   );
   shader.addUniform(
     "u_earthScaleMatrix",
