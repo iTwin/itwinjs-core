@@ -75,60 +75,59 @@ export class CoincidentGeometryQuery {
    * @param pointB1 end point of segment B
    */
   public coincidentSegmentRangeXY(pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d, restrictToBounds: boolean = true): CurveLocationDetailPair | undefined {
-    const detailAOnB = this.projectPointToSegmentXY(pointA0, pointB0, pointB1);
-    if (pointA0.distanceXY(detailAOnB.point) > this._tolerance)
+    const detailA0OnB = this.projectPointToSegmentXY(pointA0, pointB0, pointB1);
+    if (pointA0.distanceXY(detailA0OnB.point) > this._tolerance)
       return undefined;
     const detailA1OnB = this.projectPointToSegmentXY(pointA1, pointB0, pointB1);
     if (pointA1.distanceXY(detailA1OnB.point) > this._tolerance)
       return undefined;
 
-    const detailBOnA = this.projectPointToSegmentXY(pointB0, pointA0, pointA1);
-    if (pointB0.distanceXY(detailBOnA.point) > this._tolerance)
+    const detailB0OnA = this.projectPointToSegmentXY(pointB0, pointA0, pointA1);
+    if (pointB0.distanceXY(detailB0OnA.point) > this._tolerance)
       return undefined;
     const detailB1OnA = this.projectPointToSegmentXY(pointB1, pointA0, pointA1);
     if (pointB1.distanceXY(detailB1OnA.point) > this._tolerance)
       return undefined;
 
-    detailAOnB.fraction1 = detailA1OnB.fraction;
-    detailAOnB.point1 = detailA1OnB.point;  // capture -- detailA1OnB is not reused.
-    detailBOnA.fraction1 = detailB1OnA.fraction;
-    detailBOnA.point1 = detailB1OnA.point;
+    detailA0OnB.fraction1 = detailA1OnB.fraction;
+    detailA0OnB.point1 = detailA1OnB.point;  // capture -- detailA1OnB is not reused.
+    detailB0OnA.fraction1 = detailB1OnA.fraction;
+    detailB0OnA.point1 = detailB1OnA.point;
     if (!restrictToBounds)
-      return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+      return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
 
-    const segment = Segment1d.create(detailBOnA.fraction, detailBOnA.fraction1);
+    const segment = Segment1d.create(detailB0OnA.fraction, detailB0OnA.fraction1);
     if (segment.clampDirectedTo01()) {
-      segment.reverseIfNeededForDeltaSign(1.0);
       const f0 = segment.x0;
       const f1 = segment.x1;
-      const h0 = detailBOnA.inverseInterpolateFraction(f0);
-      const h1 = detailBOnA.inverseInterpolateFraction(f1);
+      const h0 = detailB0OnA.inverseInterpolateFraction(f0);
+      const h1 = detailB0OnA.inverseInterpolateFraction(f1);
       // recompute fractions and points..
-      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailBOnA, f0, f1, pointA0, pointA1);
-      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailAOnB, h0, h1, pointB0, pointB1);
-      return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailB0OnA, f0, f1, pointA0, pointA1, f0 > f1);
+      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailA0OnB, h0, h1, pointB0, pointB1, h0 > h1);
+      return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
     } else {
       if (segment.signedDelta() < 0.0) {
-        if (detailBOnA.point.isAlmostEqual(pointA0, this.tolerance)) {
-          detailBOnA.collapseToStart();
-          detailAOnB.collapseToStart();
-          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        if (detailB0OnA.point.isAlmostEqual(pointA0, this.tolerance)) {
+          detailB0OnA.collapseToStart();
+          detailA0OnB.collapseToStart();
+          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
         }
-        if (detailBOnA.point1.isAlmostEqual(pointA1, this.tolerance)) {
-          detailBOnA.collapseToEnd();
-          detailAOnB.collapseToEnd();
-          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        if (detailB0OnA.point1.isAlmostEqual(pointA1, this.tolerance)) {
+          detailB0OnA.collapseToEnd();
+          detailA0OnB.collapseToEnd();
+          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
         }
       } else {
-        if (detailBOnA.point.isAlmostEqual(pointA1, this.tolerance)) {
-          detailBOnA.collapseToStart();
-          detailAOnB.collapseToEnd();
-          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        if (detailB0OnA.point.isAlmostEqual(pointA1, this.tolerance)) {
+          detailB0OnA.collapseToStart();
+          detailA0OnB.collapseToEnd();
+          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
         }
-        if (detailBOnA.point1.isAlmostEqual(pointA0, this.tolerance)) {
-          detailBOnA.collapseToEnd();
-          detailAOnB.collapseToStart();
-          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        if (detailB0OnA.point1.isAlmostEqual(pointA0, this.tolerance)) {
+          detailB0OnA.collapseToEnd();
+          detailA0OnB.collapseToStart();
+          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
         }
       }
     }
@@ -193,7 +192,7 @@ export class CoincidentGeometryQuery {
           const sweepB = AngleSweep.createStartEndRadians(betaStartRadians, betaEndRadians);
           const sweepA = arcA.sweep;
           const fractionPeriodA = sweepA.fractionPeriod();
-          const fractionB0 = sweepA.radiansToPositivePeriodicFraction(sweepB.startRadians);   // arcB start in arcA fraction space (fractionB0 >= 0)
+          const fractionB0 = sweepA.radiansToPositivePeriodicFraction(sweepB.startRadians);   // arcB start in arcA fraction space
           assert(fractionB0 >= 0.0);
           const fractionSweep = sweepB.sweepRadians / sweepA.sweepRadians;                    // arcB sweep in arcA fraction space
           const fractionB1 = fractionB0 + fractionSweep;                                      // arcB end in arcA fraction space

@@ -91,6 +91,7 @@ export class PlanarSubdivision {
       // Returns updated last point for next call.
       const addGraphEdgeAndUpdateLast = (lastPoint: Point3d, lastFraction: number, detail: CurveLocationDetail): {point: Point3d, fraction: number} => {
         assert(Geometry.isIn01(detail.fraction));
+        assert(lastFraction <= detail.fraction);
         this.addHalfEdge(graph, p, lastPoint, lastFraction, detail.point, detail.fraction);
         if (detail.hasFraction1) {  // add the coincident segment too
           assert(Geometry.isIn01(detail.fraction1!));
