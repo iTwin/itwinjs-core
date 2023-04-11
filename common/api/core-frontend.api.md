@@ -9563,11 +9563,7 @@ export interface RenderPlan {
     // (undocumented)
     readonly clipStyle: ClipStyle;
     // (undocumented)
-    readonly ellipsoid?: {
-        readonly ellipsoidCenter: Point3d;
-        readonly ellipsoidRotation: Matrix3d;
-        readonly ellipsoidRadii: Point3d;
-    };
+    readonly ellipsoid?: RenderPlanEllipsoid;
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
@@ -9612,6 +9608,19 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract dispose(): void;
     // (undocumented)
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
+}
+
+// @internal (undocumented)
+export class RenderPlanEllipsoid {
+    constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d);
+    // (undocumented)
+    readonly ellipsoidCenter: Point3d;
+    // (undocumented)
+    readonly ellipsoidRadii: Point3d;
+    // (undocumented)
+    readonly ellipsoidRotation: Matrix3d;
+    // (undocumented)
+    equals(other: RenderPlanEllipsoid): boolean;
 }
 
 // @internal (undocumented)

@@ -344,8 +344,6 @@ export namespace Atmosphere {
         numSunRaySamples?: number;
         numViewRaySamples?: number;
         // @internal
-        outScatteringIntensity?: number;
-        // @internal
         scatteringStrength?: number;
         // @internal
         wavelengths?: WavelengthsProps;
@@ -368,8 +366,6 @@ export namespace Atmosphere {
         static readonly highQuality: Settings;
         readonly numSunRaySamples: number;
         readonly numViewRaySamples: number;
-        // @internal
-        readonly outScatteringIntensity: number;
         // @internal
         readonly scatteringStrength: number;
         // (undocumented)
