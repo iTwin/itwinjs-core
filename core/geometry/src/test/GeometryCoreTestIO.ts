@@ -29,6 +29,9 @@ export class GeometryCoreTestIO {
   public static enableConsole: boolean = false;
   /** For debugging: set to true to enable saveGeometry output. */
   public static enableSave: boolean = false;
+  /** For debugging: set to true to also run longer tests */
+  public static enableLongTests: boolean = false;
+
   /** For debugging: the location of json files output by saveGeometry. */
   public static outputRootDirectory = "./src/test/output";
 

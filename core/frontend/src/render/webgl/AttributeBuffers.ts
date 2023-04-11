@@ -337,7 +337,7 @@ export class QBufferHandle3d extends BufferHandle {
     this.scale = qscale3dToArray(qParams.scale);
   }
 
-  public static create(qParams: QParams3d, data: Uint16Array | Uint8Array): QBufferHandle3d | undefined {
+  public static create(qParams: QParams3d, data: Uint16Array | Uint8Array | Float32Array): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(qParams);
     if (handle.isDisposed) {
       return undefined;
