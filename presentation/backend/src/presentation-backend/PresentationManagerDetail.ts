@@ -318,14 +318,6 @@ async function withOptionalDiagnostics(
 ): Promise<NativePlatformResponse<string>> {
   const contexts = diagnosticsOptions.map((d) => d?.requestContextSupplier?.());
   const combinedOptions = combineDiagnosticsOptions(...diagnosticsOptions);
-  // const response = await nativePlatformRequestHandler(combinedOptions);
-  // if (response.diagnostics) {
-  //   const diagnostics = { logs: [response.diagnostics] };
-  //   diagnosticsOptions.forEach((options, i) => {
-  //     options && reportDiagnostics(diagnostics, options, contexts[i]);
-  //   });
-  // }
-  // return response;
   let responseDiagnostics: DiagnosticsScopeLogs | undefined;
   try {
     const response = await nativePlatformRequestHandler(combinedOptions);
