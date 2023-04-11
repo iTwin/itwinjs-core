@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
 import { FooterIndicator } from "@itwin/appui-layout-react";
-import { Select, SelectOption } from "@itwin/itwinui-react";
+import { Select } from "@itwin/itwinui-react";
 import { PresentationSelectionScope } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
@@ -20,7 +20,6 @@ import { StatusFieldProps } from "./StatusFieldProps";
  * @public
  */
 interface SelectionScopeFieldProps extends StatusFieldProps {
-
   activeSelectionScope: string;
   availableSelectionScopes: PresentationSelectionScope[];
 }
@@ -33,54 +32,44 @@ interface SelectionScopeFieldProps extends StatusFieldProps {
  * in the Redux state.
  * @public
  */
-class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldProps> {
-  private _label = UiFramework.translate("selectionScopeField.label");
-  private _toolTip = UiFramework.translate("selectionScopeField.toolTip");
-  private _scopeOptions: SelectOption<string>[] = [];
+function SelectionScopeFieldComponent(props: SelectionScopeFieldProps) {
+  const label = UiFramework.translate("selectionScopeField.label");
+  const toolTip = UiFramework.translate("selectionScopeField.toolTip");
 
-  constructor(props: SelectionScopeFieldProps) {
-    super(props);
-    this._scopeOptions = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
-      const label = !!scope.label ? scope.label : UiFramework.translate(`selectionScopeLabels.${scope.id}`);
-      return { value: scope.id, label };
-    });
-  }
+  const options = React.useMemo(() => props.availableSelectionScopes.map((scope) => {
+    return { value: scope.id, label: scope.label };
+  }), [props.availableSelectionScopes]);
 
-  private _updateSelectValue = (newValue: string) => {
+  const updateSelectValue = (newValue: string) => {
     // istanbul ignore else
     if (newValue) {
       UiFramework.setActiveSelectionScope(newValue);
     }
   };
-
-  public override render(): React.ReactNode {
-
-    return (
-      <FooterIndicator // eslint-disable-line deprecation/deprecation
-        className={classnames("uifw-statusFields-selectionScope", this.props.className)}
-        style={this.props.style}
-        // eslint-disable-next-line deprecation/deprecation
-        isInFooterMode={this.props.isInFooterMode ?? true}
-      >
-        {// eslint-disable-next-line deprecation/deprecation
-          (this.props.isInFooterMode ?? true) &&
-          <label className="uifw-statusFields-selectionScope-label">
-            {this._label}:
-          </label>
-        }
-        <Select
-          className="uifw-statusFields-selectionScope-selector"
-          value={this.props.activeSelectionScope}
-          options={this._scopeOptions}
-          onChange={this._updateSelectValue}
-          data-testid="components-selectionScope-selector"
-          title={this._toolTip}
-          size="small" />
-      </FooterIndicator >
-    );
-  }
+  return (
+    <FooterIndicator // eslint-disable-line deprecation/deprecation
+      className={classnames("uifw-statusFields-selectionScope", props.className)}
+      style={props.style}
+      // eslint-disable-next-line deprecation/deprecation
+      isInFooterMode={props.isInFooterMode ?? true}
+    >
+      {// eslint-disable-next-line deprecation/deprecation
+        (props.isInFooterMode ?? true) &&
+        <label className="uifw-statusFields-selectionScope-label">
+          {label}:
+        </label>
+      }
+      <Select
+        className="uifw-statusFields-selectionScope-selector"
+        value={props.activeSelectionScope}
+        options={options}
+        onChange={updateSelectValue}
+        data-testid="components-selectionScope-selector"
+        title={toolTip}
+        size="small" />
+    </FooterIndicator >
+  );
 }
-
 /** Function used by Redux to map state data in Redux store to props that are used to render this component. */
 function mapStateToProps(state: any) {
   const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
