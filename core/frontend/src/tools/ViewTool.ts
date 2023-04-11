@@ -16,7 +16,6 @@ import {
   DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
 } from "@itwin/appui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
-import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BingLocationProvider } from "../BingLocation";
 import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
