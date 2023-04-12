@@ -8,7 +8,7 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
@@ -29,7 +29,7 @@ import {
   createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
-import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
+import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
 import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
@@ -579,7 +579,7 @@ describe("PresentationManager", () => {
       expect(diagnosticsListener).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
     });
 
-    it("invokes manager's diagnostics callback with diagnostic results", async () => {
+    it("invokes manager's diagnostics callback with diagnostic results when request succeeds", async () => {
       addonMock.reset();
 
       const diagnosticsCallback = sinon.spy();
@@ -607,6 +607,38 @@ describe("PresentationManager", () => {
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" });
+      addonMock.verifyAll();
+      expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
+    });
+
+    it("invokes manager's diagnostics callback with diagnostic results when request fails", async () => {
+      addonMock.reset();
+
+      const diagnosticsCallback = sinon.spy();
+      const diagnosticsContext = {};
+      manager = new PresentationManager({
+        addon: addonMock.object,
+        diagnostics: {
+          perf: true,
+          handler: diagnosticsCallback,
+          requestContextSupplier: () => diagnosticsContext,
+        },
+      });
+      const diagnosticsResult = {
+        logs: [{
+          scope: "test",
+          scopeCreateTimestamp: 1000,
+          duration: 123,
+        }],
+      };
+      addonMock
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
+          undefined))
+        .returns(async () => { throw new PresentationNativePlatformResponseError({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "" }, diagnostics: diagnosticsResult.logs[0] }); })
+        .verifiable(moq.Times.once());
+      await expect(manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" })).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError);
       addonMock.verifyAll();
       expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
     });
