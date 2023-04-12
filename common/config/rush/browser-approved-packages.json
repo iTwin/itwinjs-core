@@ -1007,6 +1007,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "sanitize-filename",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "semver",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
