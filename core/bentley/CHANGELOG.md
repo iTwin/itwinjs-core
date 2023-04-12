@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Mon, 03 Apr 2023 15:15:36 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Apr 2023 13:12:42 GMT and should not be manually modified.
+
+## 3.7.2
+Wed, 12 Apr 2023 13:12:42 GMT
+
+_Version update only_
 
 ## 3.7.1
 Mon, 03 Apr 2023 15:15:36 GMT

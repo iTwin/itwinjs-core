@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Mon, 03 Apr 2023 15:15:37 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Apr 2023 13:12:42 GMT and should not be manually modified.
+
+## 3.7.2
+Wed, 12 Apr 2023 13:12:42 GMT
+
+### Updates
+
+- Fix `BisCore` supplemental rules for related `bis.ExternalSource` properties
 
 ## 3.7.1
 Mon, 03 Apr 2023 15:15:37 GMT
