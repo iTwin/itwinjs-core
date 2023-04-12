@@ -15,12 +15,13 @@ const schema = require(schemaPath);
 
 function handleObject(obj) {
   for (const key in obj) {
-    if (Array.isArray(obj[key]))
+    if (Array.isArray(obj[key])) {
       obj[key] = handleArray(obj[key]);
-    else if (typeof obj[key] === "object")
+    } else if (typeof obj[key] === "object") {
       obj[key] = handleObject(obj[key]);
-    else if (typeof obj[key] === "string" && key === "description")
+    } else if (typeof obj[key] === "string" && (key === "description" || key === "deprecated")) {
       obj[key] = handleDescription(obj[key]);
+    }
   }
   return obj;
 }
@@ -32,6 +33,7 @@ function handleArray(arr) {
   return arr;
 }
 function handleDescription(descr) {
+  descr = descr.replace(/\r\n/g, "\n"); // fix line endings
   descr = descr.replace(/\[\[([\w\d\.]+)\]\]/ig, "`$1`"); // replace [[something]] to: `something`
   descr = descr.replace(/\*\*([\w\d\.\:]+)\*\*/ig, "$1"); // replace **something** to: something
   descr = descr.replace(/\[([\w\d\s\.\:`]+)\]\(\$docs[\\\/\w\d-#\.]+\)/ig, "$1"); // replace [something]($docs/link) to: something

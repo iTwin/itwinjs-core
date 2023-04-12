@@ -43,7 +43,7 @@ Over a year ago, support for WebGL 2 finally became [available in all major brow
 
 ### Electron
 
-Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports only Electron 23.
+Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports Electron 23 and Electron 24.
 
 ## Geometry
 

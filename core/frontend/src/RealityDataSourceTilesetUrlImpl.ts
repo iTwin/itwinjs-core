@@ -5,10 +5,10 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request, RequestOptions } from "./request/Request";
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 
+import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
 
@@ -77,15 +77,6 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     else
       this._baseUrl = `${urlParts.join("/")}/`;
   }
-  private async _doRequest(url: string, responseType: string): Promise<any> {
-    const options: RequestOptions = {
-      method: "GET",
-      responseType,
-    };
-
-    const data = await request(url, options);
-    return data.body;
-  }
 
   /**
    * This method returns the URL to access the actual 3d tiles from the service provider.
@@ -102,16 +93,16 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
 
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
-    return this._doRequest(url, "json");
+    return request(url, "json");
   }
 
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
-  public async getTileContent(name: string): Promise<any> {
+  public async getTileContent(name: string): Promise<ArrayBuffer> {
     const tileUrl = this._baseUrl + name;
 
-    return this._doRequest(tileUrl, "arraybuffer");
+    return request(tileUrl, "arraybuffer");
   }
 
   /**
@@ -120,7 +111,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   public async getTileJson(name: string): Promise<any> {
     const tileUrl = this._baseUrl + name;
 
-    return this._doRequest(tileUrl, "json");
+    return request(tileUrl, "json");
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {
@@ -132,7 +123,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>  {
+  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     let spatialLocation: SpatialLocationAndExtents | undefined;
     if (this.key.format === RealityDataFormat.ThreeDTile) {
       const rootDocument = await this.getRootDocument(undefined);

@@ -452,7 +452,7 @@ export class BarycentricTriangle {
     incenter(result?: Point3d): Point3d;
     intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
-    isAlmostEqual(other: BarycentricTriangle): boolean;
+    isAlmostEqual(other: BarycentricTriangle, tol?: number): boolean;
     static isInsideOrOnTriangle(b0: number, b1: number, b2: number): boolean;
     static isInsideTriangle(b0: number, b1: number, b2: number): boolean;
     normal(result?: Vector3d): Vector3d | undefined;
