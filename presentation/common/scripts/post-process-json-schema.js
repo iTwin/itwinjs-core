@@ -33,7 +33,7 @@ function handleArray(arr) {
   return arr;
 }
 function handleDescription(descr) {
-  descr = descr.replace("\r\n", "\n"); // fix line endings
+  descr = descr.replace(/\r\n/g, "\n"); // fix line endings
   descr = descr.replace(/\[\[([\w\d\.]+)\]\]/ig, "`$1`"); // replace [[something]] to: `something`
   descr = descr.replace(/\*\*([\w\d\.\:]+)\*\*/ig, "$1"); // replace **something** to: something
   descr = descr.replace(/\[([\w\d\s\.\:`]+)\]\(\$docs[\\\/\w\d-#\.]+\)/ig, "$1"); // replace [something]($docs/link) to: something
