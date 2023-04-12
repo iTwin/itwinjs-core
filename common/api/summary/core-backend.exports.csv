@@ -26,8 +26,6 @@ public;ChangesetArg
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 
 beta;ChangeSummary
-beta;ChangeSummaryExtractOptions
-deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 internal;ChannelAdmin 
 beta;ChannelControl

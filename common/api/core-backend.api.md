@@ -593,12 +593,6 @@ export interface ChangeSummary {
     id: Id64String;
 }
 
-// @beta @deprecated
-export interface ChangeSummaryExtractOptions {
-    currentVersionOnly?: boolean;
-    startVersion?: IModelVersion;
-}
-
 // @beta
 export class ChangeSummaryManager {
     static attachChangeCache(iModel: IModelDb): void;
@@ -613,8 +607,6 @@ export class ChangeSummaryManager {
     static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
     static createChangeSummary(accessToken: AccessToken, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
-    // @deprecated
-    static extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
