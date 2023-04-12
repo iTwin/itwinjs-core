@@ -14,7 +14,7 @@ iModelHub uses 4 permissions:
 
 Permissions automatically included: _Read iModel_, _Modify iModel_
 
-Create iModel permission allows creating iModels. See [BackendIModelsAccess.createNewIModel](https://github.com/iTwin/imodels-clients/blob/main/itwin-platform-access/imodels-access-backend/src/BackendIModelsAccess.ts#L391).
+Create iModel permission allows creating iModels. See [CreateiModel](./iModels/CreateiModel.md)
 
 ## Delete iModel
 
