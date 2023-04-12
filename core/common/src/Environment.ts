@@ -49,7 +49,7 @@ export class Environment {
   public readonly displayGround: boolean;
   /**
    * @beta
-   * If true, the atmosphere will be displayed.
+   * If true, the atmosphere will be displayed. Enabling this will override any color information provided to the sky box.
    * Default: false.
    * @see [[withDisplay]] or [[DisplayStyle3dSettings.toggleAtmosphere]] to change this.
    */
@@ -71,7 +71,7 @@ export class Environment {
     this.atmosphere = props?.atmosphere ?? Atmosphere.Settings.defaults;
   }
 
-  /** Default settings with neither ground plane nor sky box displayed. */
+  /** Default settings without a ground plane, sky box, or atmosphere displayed. */
   public static readonly defaults = new Environment();
 
   /** Create a new Environment. Any properties not specified by `props` will be initialized to their default values. */
@@ -79,7 +79,7 @@ export class Environment {
     return props ? new this(props) : this.defaults;
   }
 
-  /** Create a copy of this environment, changing the `displayGround` , `displaySky` and/or `displayAtmosphere` flags. */
+  /** Create a copy of this environment, changing the `displayGround`, `displaySky` and/or `displayAtmosphere` flags. */
   public withDisplay(display: { sky?: boolean, ground?: boolean, atmosphere?: boolean }): Environment {
     const displaySky = display.sky ?? this.displaySky;
     const displayGround = display.ground ?? this.displayGround;

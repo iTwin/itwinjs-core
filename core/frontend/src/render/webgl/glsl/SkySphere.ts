@@ -47,6 +47,10 @@ const computeSkySphereColorGradient = `
   return vec4(mix(u_groundColor, u_skyColor, v_gradientValue.w), 1.0);
 `;
 
+const computeSkySphereColorAtmosphere = `
+  return vec4(0.0, 0.0, 0.0, 1.0);
+`
+
 const computeEyeToVert = "v_eyeToVert = a_worldPos - u_worldEye;";
 
 const computeSkySphereColorTexture = `
@@ -96,17 +100,143 @@ function modulateColor(colorIn: Float32Array, t: number, colorOut: Float32Array)
 }
 
 /** @internal */
+function addGradientUniforms(builder: ProgramBuilder): void {
+  builder.vert.addUniform("u_skyParams", VariableType.Vec3, (shader) => {
+    shader.addGraphicUniform("u_skyParams", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      uniform.setUniform3fv(geom.typeAndExponents);
+    });
+  });
+  builder.vert.addUniform("u_zOffset", VariableType.Float, (shader) => {
+    shader.addGraphicUniform("u_zOffset", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      uniform.setUniform1f(geom.zOffset);
+    });
+  });
+
+  builder.frag.addUniform("u_skyParams", VariableType.Vec3, (shader) => {
+    shader.addGraphicUniform("u_skyParams", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      uniform.setUniform3fv(geom.typeAndExponents);
+    });
+  });
+  builder.frag.addUniform("u_zenithColor", VariableType.Vec3, (shader) => {
+    shader.addGraphicUniform("u_zenithColor", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      const plan = params.target.plan;
+      if (plan.backgroundMapOn && plan.isGlobeMode3D) {
+        modulateColor(geom.zenithColor, plan.globalViewTransition, scratch3Floats);
+        uniform.setUniform3fv(scratch3Floats);
+      } else
+        uniform.setUniform3fv(geom.zenithColor);
+    });
+  });
+  builder.frag.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
+    shader.addGraphicUniform("u_skyColor", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      const plan = params.target.plan;
+      if (plan.backgroundMapOn && plan.isGlobeMode3D) {
+        modulateColor(geom.skyColor, plan.globalViewTransition, scratch3Floats);
+        uniform.setUniform3fv(scratch3Floats);
+      } else
+        uniform.setUniform3fv(geom.skyColor);
+    });
+  });
+  builder.frag.addUniform("u_groundColor", VariableType.Vec3, (shader) => {
+    shader.addGraphicUniform("u_groundColor", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      const plan = params.target.plan;
+      if (plan.backgroundMapOn) {
+        let clr = geom.skyColor;
+        if (-1 === geom.typeAndExponents[0]) // 2-color gradient
+          clr = geom.zenithColor;
+        if (plan.isGlobeMode3D) {
+          modulateColor(clr, plan.globalViewTransition, scratch3Floats);
+          uniform.setUniform3fv(scratch3Floats);
+        } else
+          uniform.setUniform3fv(clr);
+      } else {
+        uniform.setUniform3fv(geom.groundColor);
+      }
+    });
+  });
+  builder.frag.addUniform("u_nadirColor", VariableType.Vec3, (shader) => {
+    shader.addGraphicUniform("u_nadirColor", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      const plan = params.target.plan;
+      if (plan.backgroundMapOn) {
+        let clr = geom.skyColor;
+        if (-1 === geom.typeAndExponents[0]) // 2-color gradient
+          clr = geom.nadirColor;
+        if (plan.isGlobeMode3D) {
+          modulateColor(clr, plan.globalViewTransition, scratch3Floats);
+          uniform.setUniform3fv(scratch3Floats);
+        } else
+          uniform.setUniform3fv(clr);
+      } else {
+        uniform.setUniform3fv(geom.nadirColor);
+      }
+    });
+  });
+}
+
+/** @internal */
+function addTextureUniforms(builder: ProgramBuilder): void {
+  builder.frag.addUniform("s_skyTxtr", VariableType.Sampler2D, (shader) => {
+    shader.addGraphicUniform("s_skyTxtr", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      if (undefined !== geom.skyTexture)
+        (geom.skyTexture as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
+      else
+        System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
+    });
+  });
+  builder.frag.addUniform("u_zOffset", VariableType.Float, (shader) => {
+    shader.addGraphicUniform("u_zOffset", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      uniform.setUniform1f(geom.zOffset);
+    });
+  });
+  builder.frag.addUniform("u_rotation", VariableType.Float, (shader) => {
+    shader.addGraphicUniform("u_rotation", (uniform, params) => {
+      const geom = params.geometry as SkySphereViewportQuadGeometry;
+      uniform.setUniform1f(geom.rotation);
+    });
+  });
+}
+
+/** @internal */
 export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlags): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture, false);
   const builder = createViewportQuadBuilder(false, attrMap);
-  if (isGradient) {
-    builder.addFunctionComputedVarying("v_gradientValue", VariableType.Vec4, "computeGradientValue", computeGradientValue);
-    builder.addGlobal("horizonSize", VariableType.Float, ShaderType.Both, "0.0015", true);
-  } else
-    builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
-
   const vert = builder.vert;
-  vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {
+  const frag = builder.frag;
+
+  vert.addFunction(computeEyeSpace);
+  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
+
+  vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
+    prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
+      uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
+    });
+  });
+  vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
+    prg.addGraphicUniform("u_frustum", (uniform, params) => {
+      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
+    });
+  });
+
+  builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
+  builder.frag.headerComment = `//!F! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  if (flags.enableAtmosphere) {
+    frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorAtmosphere);
+    addAtmosphericScatteringEffect(builder, true, true);
+    return builder;
+  }
+
+  builder.vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {
     shader.addGraphicUniform("u_worldEye", (uniform, params) => {
       const frustum = params.target.planFrustum;
       if (FrustumUniformType.Perspective === params.target.uniforms.frustum.type) {
@@ -136,134 +266,17 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
       }
     });
   });
-  if (isGradient) {
-    vert.addUniform("u_skyParams", VariableType.Vec3, (shader) => {
-      shader.addGraphicUniform("u_skyParams", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform3fv(geom.typeAndExponents);
-      });
-    });
-    vert.addUniform("u_zOffset", VariableType.Float, (shader) => {
-      shader.addGraphicUniform("u_zOffset", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform1f(geom.zOffset);
-      });
-    });
-  }
 
-  const frag = builder.frag;
   if (isGradient) {
-    frag.addUniform("u_skyParams", VariableType.Vec3, (shader) => {
-      shader.addGraphicUniform("u_skyParams", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform3fv(geom.typeAndExponents);
-      });
-    });
-    frag.addUniform("u_zenithColor", VariableType.Vec3, (shader) => {
-      shader.addGraphicUniform("u_zenithColor", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        const plan = params.target.plan;
-        if (plan.backgroundMapOn && plan.isGlobeMode3D) {
-          modulateColor(geom.zenithColor, plan.globalViewTransition, scratch3Floats);
-          uniform.setUniform3fv(scratch3Floats);
-        } else
-          uniform.setUniform3fv(geom.zenithColor);
-      });
-    });
-    frag.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
-      shader.addGraphicUniform("u_skyColor", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        const plan = params.target.plan;
-        if (plan.backgroundMapOn && plan.isGlobeMode3D) {
-          modulateColor(geom.skyColor, plan.globalViewTransition, scratch3Floats);
-          uniform.setUniform3fv(scratch3Floats);
-        } else
-          uniform.setUniform3fv(geom.skyColor);
-      });
-    });
-    frag.addUniform("u_groundColor", VariableType.Vec3, (shader) => {
-      shader.addGraphicUniform("u_groundColor", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        const plan = params.target.plan;
-        if (plan.backgroundMapOn) {
-          let clr = geom.skyColor;
-          if (-1 === geom.typeAndExponents[0]) // 2-color gradient
-            clr = geom.zenithColor;
-          if (plan.isGlobeMode3D) {
-            modulateColor(clr, plan.globalViewTransition, scratch3Floats);
-            uniform.setUniform3fv(scratch3Floats);
-          } else
-            uniform.setUniform3fv(clr);
-        } else {
-          uniform.setUniform3fv(geom.groundColor);
-        }
-      });
-    });
-    frag.addUniform("u_nadirColor", VariableType.Vec3, (shader) => {
-      shader.addGraphicUniform("u_nadirColor", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        const plan = params.target.plan;
-        if (plan.backgroundMapOn) {
-          let clr = geom.skyColor;
-          if (-1 === geom.typeAndExponents[0]) // 2-color gradient
-            clr =  geom.nadirColor;
-          if (plan.isGlobeMode3D) {
-            modulateColor(clr, plan.globalViewTransition, scratch3Floats);
-            uniform.setUniform3fv(scratch3Floats);
-          } else
-            uniform.setUniform3fv(clr);
-        } else {
-          uniform.setUniform3fv(geom.nadirColor);
-        }
-      });
-    });
+    addGradientUniforms(builder);
+    builder.addGlobal("horizonSize", VariableType.Float, ShaderType.Both, "0.0015", true);
+    builder.addFunctionComputedVarying("v_gradientValue", VariableType.Vec4, "computeGradientValue", computeGradientValue);
     frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorGradient);
   } else {
-    frag.addUniform("s_skyTxtr", VariableType.Sampler2D, (shader) => {
-      shader.addGraphicUniform("s_skyTxtr", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        if (undefined !== geom.skyTexture)
-          (geom.skyTexture as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
-        else
-          System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
-      });
-    });
-    frag.addUniform("u_zOffset", VariableType.Float, (shader) => {
-      shader.addGraphicUniform("u_zOffset", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform1f(geom.zOffset);
-      });
-    });
-    frag.addUniform("u_rotation", VariableType.Float, (shader) => {
-      shader.addGraphicUniform("u_rotation", (uniform, params) => {
-        const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform1f(geom.rotation);
-      });
-    });
+    addTextureUniforms(builder);
+    builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
     frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorTexture);
   }
-  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
-
-  vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
-    prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
-      uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
-    });
-  });
-  vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
-    prg.addGraphicUniform("u_frustum", (uniform, params) => {
-      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
-    });
-  });
-
-  vert.addFunction(computeEyeSpace);
-  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
-
-  if (flags.enableAtmosphere) {
-    addAtmosphericScatteringEffect(builder, true, true);
-  }
-
-  builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
-  builder.frag.headerComment = `//!F! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
 
   return builder;
 }

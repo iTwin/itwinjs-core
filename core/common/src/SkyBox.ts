@@ -91,6 +91,8 @@ export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?
  *
  * The color and exponent properties are unused if one or more texture images are supplied.
  *
+ * The color, exponent and texture properties are unused if an atmosphere is defined on the Environment.
+ *
  * @see [[DisplayStyle3dSettings.environment]] to define the skybox for a display style.
  * @public
  * @extensions
