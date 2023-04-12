@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { AlternateUnitLabelsProvider } from '@itwin/core-quantity';
 import { AmbientOcclusion } from '@itwin/core-common';
@@ -79,6 +77,7 @@ import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { EasingFunction } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
+import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
 import { EdgeOptions } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -242,7 +241,6 @@ import { QPoint3dList } from '@itwin/core-common';
 import { QuantityParseResult } from '@itwin/core-quantity';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
-import { QueryReader } from '@itwin/core-common';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
@@ -5370,7 +5368,7 @@ export abstract class IModelConnection extends IModel {
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
     // @beta
-    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): QueryReader;
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
     // @deprecated
@@ -8708,7 +8706,10 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 }
 
 // @internal
-export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined>;
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<{
+    graphic: RenderGraphic | undefined;
+    rtcCenter: Point3d | undefined;
+}>;
 
 // @alpha
 export class RealityDataError extends BentleyError {

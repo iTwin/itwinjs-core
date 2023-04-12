@@ -7,18 +7,16 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
-  TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions,
-  ElementMeshRequestProps, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryReader, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
+  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
+  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
+  RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
+  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -257,16 +255,16 @@ export abstract class IModelConnection extends IModel {
   /** Allow to execute query and read results along with meta data. The result are streamed.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns an [QueryReader]($common) which helps iterate over the result set and also give access to metadata.
+   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
-  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): QueryReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
-    return new QueryReader(executor, ecsql, params, config);
+    return new ECSqlReader(executor, ecsql, params, config);
   }
 
   /**

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Rename ECSqlReader to QueryReader",
+      "comment": "ECSqlReader is now an AsyncIterableIterator",
       "type": "none"
     }
   ],
