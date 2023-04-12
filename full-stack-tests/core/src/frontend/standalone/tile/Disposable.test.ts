@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@itwin/core-bentley";
-import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
@@ -179,7 +179,7 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    await TestUtility.startFrontend({ renderSys: { doIdleWork: false }, rpcInterfaces: [SnapshotIModelRpcInterface] });
+    await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
 
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
