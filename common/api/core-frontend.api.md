@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { AlternateUnitLabelsProvider } from '@itwin/core-quantity';
 import { AmbientOcclusion } from '@itwin/core-common';
