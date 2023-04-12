@@ -10,7 +10,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 describe("iMdl format version", () => {
   before(async () => {
     if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
+      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [IModelTileRpcInterface] }});
   });
 
   after(async () => {

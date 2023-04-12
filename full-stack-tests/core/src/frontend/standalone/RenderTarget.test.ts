@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
+import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RgbColor, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
   IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
@@ -23,7 +23,10 @@ describe("Vertex buffer objects", () => {
     const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
-    await TestUtility.startFrontend({ renderSys: renderSysOpts });
+    await TestUtility.startFrontend({
+      renderSys: renderSysOpts,
+      rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+    });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 

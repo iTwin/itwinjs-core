@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import {
   BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
+  SnapshotIModelRpcInterface,
   TileMetadata, TileProps, TileTreeMetadata,
 } from "@itwin/core-common";
 import {
@@ -23,7 +24,7 @@ describe("Tile tolerance", () => {
   const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, { ...defaultTileOptions, useLargerTiles: false });
 
   before(async () => {
-    await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance, useLargerTiles: false } });
+    await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance, useLargerTiles: false }, rpcInterfaces: [SnapshotIModelRpcInterface] });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 

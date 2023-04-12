@@ -10,6 +10,7 @@ import {
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
+import { IModelReadRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;
@@ -26,7 +27,7 @@ describe("Tile unloading", async () => {
   };
 
   before(async () => {
-    await TestUtility.startFrontend({ tileAdmin: tileOpts });
+    await TestUtility.startFrontend({ tileAdmin: tileOpts, rpcInterfaces: [SnapshotIModelRpcInterface, IModelReadRpcInterface] });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
