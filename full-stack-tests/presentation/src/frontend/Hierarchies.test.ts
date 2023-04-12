@@ -28,7 +28,6 @@ describe("Hierarchies", () => {
 
   describe("Filtering hierarchy levels", () => {
 
-
     function insertDocumentPartition(db: IModelDb, code: string, label?: string) {
       const id = db.elements.insertElement({
         classFullName: "BisCore:DocumentPartition",
