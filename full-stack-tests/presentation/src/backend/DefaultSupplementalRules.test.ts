@@ -12,7 +12,7 @@ import { DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset } from "@itwin
 import { initialize, terminate } from "../IntegrationTests";
 import { buildTestIModelDb, getFieldByLabel } from "../Utils";
 
-describe.only("Default supplemental rules", async () => {
+describe("Default supplemental rules", async () => {
   before(async () => {
     await initialize();
   });
