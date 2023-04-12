@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { assert } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, ElementAspectProps, ElementProps, IModel } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 import { DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { buildTestIModelDb, getFieldByLabel } from "../Utils";
 
-describe("Default supplemental rules", async () => {
+describe.only("Default supplemental rules", async () => {
   before(async () => {
     await initialize();
   });
@@ -27,51 +28,16 @@ describe("Default supplemental rules", async () => {
         const { db: imodel } = buildTestIModelDb(
           this.test!.fullTitle(),
           (db) => {
-            const partitionId = db.elements.insertElement({
-              classFullName: "BisCore:PhysicalPartition",
-              model: IModel.repositoryModelId,
-              parent: {
-                relClassName: "BisCore:SubjectOwnsPartitionElements",
-                id: IModel.rootSubjectId,
-              },
-              code: new Code({
-                spec: db.codeSpecs.getByName(
-                  BisCodeSpec.informationPartitionElement
-                ).id,
-                scope: IModel.rootSubjectId,
-                value: "physical model",
-              }),
-            });
-            const modelId = db.models.insertModel({
-              classFullName: "BisCore:PhysicalModel",
-              modeledElement: { id: partitionId },
-            });
-            const categoryId = db.elements.insertElement({
-              classFullName: "BisCore:SpatialCategory",
-              model: IModel.dictionaryId,
-              code: new Code({
-                spec: db.codeSpecs.getByName(BisCodeSpec.spatialCategory).id,
-                scope: IModel.dictionaryId,
-                value: "spatial category",
-              }),
-            });
-            const elementClassName = "Generic:PhysicalObject";
-            const elementId = db.elements.insertElement({
-              classFullName: elementClassName,
-              model: modelId,
-              category: categoryId,
-              code: Code.createEmpty(),
-            } as ElementProps);
+            elementKey = insertPhysicalElement(db);
             db.elements.insertAspect({
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementId,
+                id: elementKey.id,
               },
               kind: "",
               identifier: "test identifier",
             } as ElementAspectProps);
-            elementKey = { className: elementClassName, id: elementId };
           }
         );
         const rules: Ruleset = {
@@ -164,23 +130,7 @@ describe("Default supplemental rules", async () => {
               classFullName: "BisCore:PhysicalModel",
               modeledElement: { id: partitionId },
             });
-            const categoryId = db.elements.insertElement({
-              classFullName: "BisCore:SpatialCategory",
-              model: IModel.dictionaryId,
-              code: new Code({
-                spec: db.codeSpecs.getByName(BisCodeSpec.spatialCategory).id,
-                scope: IModel.dictionaryId,
-                value: "spatial category",
-              }),
-            });
-            const elementClassName = "Generic:PhysicalObject";
-            const elementId = db.elements.insertElement({
-              classFullName: elementClassName,
-              model: modelId,
-              category: categoryId,
-              code: Code.createEmpty(),
-            } as ElementProps);
-            elementKey = { className: elementClassName, id: elementId };
+            elementKey = insertPhysicalElement(db, modelId);
           }
         );
         const rules: Ruleset = {
@@ -260,41 +210,7 @@ describe("Default supplemental rules", async () => {
         const { db: imodel } = buildTestIModelDb(
           this.test!.fullTitle(),
           (db) => {
-            const partitionId = db.elements.insertElement({
-              classFullName: "BisCore:PhysicalPartition",
-              model: IModel.repositoryModelId,
-              parent: {
-                relClassName: "BisCore:SubjectOwnsPartitionElements",
-                id: IModel.rootSubjectId,
-              },
-              code: new Code({
-                spec: db.codeSpecs.getByName(
-                  BisCodeSpec.informationPartitionElement
-                ).id,
-                scope: IModel.rootSubjectId,
-                value: "physical model",
-              }),
-            });
-            const modelId = db.models.insertModel({
-              classFullName: "BisCore:PhysicalModel",
-              modeledElement: { id: partitionId },
-            });
-            const categoryId = db.elements.insertElement({
-              classFullName: "BisCore:SpatialCategory",
-              model: IModel.dictionaryId,
-              code: new Code({
-                spec: db.codeSpecs.getByName(BisCodeSpec.spatialCategory).id,
-                scope: IModel.dictionaryId,
-                value: "spatial category",
-              }),
-            });
-            const elementClassName = "Generic:PhysicalObject";
-            const elementId = db.elements.insertElement({
-              classFullName: elementClassName,
-              model: modelId,
-              category: categoryId,
-              code: Code.createEmpty(),
-            } as ElementProps);
+            elementKey = insertPhysicalElement(db);
             const repositoryLinkId = db.elements.insertElement({
               classFullName: "BisCore:RepositoryLink",
               model: IModel.repositoryModelId,
@@ -315,7 +231,7 @@ describe("Default supplemental rules", async () => {
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementId,
+                id: elementKey.id,
               },
               source: {
                 relClassName: "BisCore:ElementIsFromSource",
@@ -324,7 +240,6 @@ describe("Default supplemental rules", async () => {
               kind: "",
               identifier: "test identifier",
             } as ElementAspectProps);
-            elementKey = { className: elementClassName, id: elementId };
           }
         );
         const rules: Ruleset = {
@@ -406,41 +321,7 @@ describe("Default supplemental rules", async () => {
         const { db: imodel } = buildTestIModelDb(
           this.test!.fullTitle(),
           (db) => {
-            const partitionId = db.elements.insertElement({
-              classFullName: "BisCore:PhysicalPartition",
-              model: IModel.repositoryModelId,
-              parent: {
-                relClassName: "BisCore:SubjectOwnsPartitionElements",
-                id: IModel.rootSubjectId,
-              },
-              code: new Code({
-                spec: db.codeSpecs.getByName(
-                  BisCodeSpec.informationPartitionElement
-                ).id,
-                scope: IModel.rootSubjectId,
-                value: "physical model",
-              }),
-            });
-            const modelId = db.models.insertModel({
-              classFullName: "BisCore:PhysicalModel",
-              modeledElement: { id: partitionId },
-            });
-            const categoryId = db.elements.insertElement({
-              classFullName: "BisCore:SpatialCategory",
-              model: IModel.dictionaryId,
-              code: new Code({
-                spec: db.codeSpecs.getByName(BisCodeSpec.spatialCategory).id,
-                scope: IModel.dictionaryId,
-                value: "spatial category",
-              }),
-            });
-            const elementClassName = "Generic:PhysicalObject";
-            const elementId = db.elements.insertElement({
-              classFullName: elementClassName,
-              model: modelId,
-              category: categoryId,
-              code: Code.createEmpty(),
-            } as ElementProps);
+            elementKey = insertPhysicalElement(db);
             const repositoryLinkId = db.elements.insertElement({
               classFullName: "BisCore:RepositoryLink",
               model: IModel.repositoryModelId,
@@ -471,7 +352,7 @@ describe("Default supplemental rules", async () => {
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementId,
+                id: elementKey.id,
               },
               source: {
                 relClassName: "BisCore:ElementIsFromSource",
@@ -480,7 +361,6 @@ describe("Default supplemental rules", async () => {
               kind: "",
               identifier: "test identifier",
             } as ElementAspectProps);
-            elementKey = { className: elementClassName, id: elementId };
           }
         );
         const rules: Ruleset = {
@@ -575,3 +455,46 @@ describe("Default supplemental rules", async () => {
     });
   });
 });
+
+function insertPhysicalElement(db: IModelDb, modelId?: Id64String, categoryId?: Id64String): InstanceKey {
+  if (!modelId) {
+    const partitionId = db.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: db.codeSpecs.getByName(
+          BisCodeSpec.informationPartitionElement
+        ).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+    modelId = db.models.insertModel({
+      classFullName: "BisCore:PhysicalModel",
+      modeledElement: { id: partitionId },
+    });
+  }
+  if (!categoryId) {
+    categoryId = db.elements.insertElement({
+      classFullName: "BisCore:SpatialCategory",
+      model: IModel.dictionaryId,
+      code: new Code({
+        spec: db.codeSpecs.getByName(BisCodeSpec.spatialCategory).id,
+        scope: IModel.dictionaryId,
+        value: "spatial category",
+      }),
+    });
+  }
+  const elementClassName = "Generic:PhysicalObject";
+  const elementId = db.elements.insertElement({
+    classFullName: elementClassName,
+    model: modelId,
+    category: categoryId,
+    code: Code.createEmpty(),
+  } as ElementProps);
+  return { className: elementClassName, id: elementId };
+}
