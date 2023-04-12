@@ -57,7 +57,7 @@ export class CustomViewState3dCreator {
     const range = await this._imodel.models.queryRange(modelIds);
 
     timer.stop();
-    Logger.logInfo(loggerCategory, "Finished getModelExtents query.", {timeElapsedMs: timer.elapsed});
+    Logger.logInfo(loggerCategory, "Finished getModelExtents query.", { timeElapsedMs: timer.elapsed });
 
     return range;
   }
@@ -84,11 +84,8 @@ export class CustomViewState3dCreator {
 
   private _executeQuery = async (query: string) => {
     const rows = [];
-
-    const reader = this._imodel.createQueryReader(query);
-    while (await reader.step()) {
-      rows.push(reader.current.id);
-    }
+    for await (const row of this._imodel.createQueryReader(query))
+      rows.push(row.id);
 
     return rows;
   };

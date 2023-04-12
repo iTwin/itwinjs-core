@@ -542,9 +542,9 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    const reader = this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params);
-    if (await reader.step())
-      return reader.current.getArray()[0] as number;
+    for await (const row of this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params)) {
+      return row[0] as number;
+    }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
@@ -567,9 +567,8 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    const reader = this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions());
-    while (await reader.step()) {
-      yield reader.current.toRow();
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+      yield row;
     }
   }
 
@@ -653,9 +652,8 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
-      const reader = this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader.step()) {
-        result.push(reader.current.toRow());
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
       // We can ignore the error here, and just return whatever we were able to query.

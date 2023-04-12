@@ -50,7 +50,6 @@ describe("ECSql Query", () => {
     const cb = async () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           for await (const _row of imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { restartToken: "tag" })) {
             rowCount++;
           }

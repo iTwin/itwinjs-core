@@ -43,9 +43,8 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
-      const reader = imodel.createQueryReader(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } });
-      if (await reader.step())
-        resultId = reader.current.resultId as string;
+      for await (const row of imodel.createQueryReader(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }))
+        resultId = row.resultId;
     } catch (ex) {
       resultId = BentleyError.getErrorMessage(ex);
     }

@@ -18,11 +18,10 @@ const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -
 async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions, callback?: (row: any) => void) {
   ecdb.saveChanges();
   let rowCount: number = 0;
-  const reader = ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames });
-  while (await reader.step()) {
+  for await (const queryRow of ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rowCount++;
     if (callback)
-      callback(reader.current.toRow());
+      callback(queryRow.toRow());
   }
   return rowCount;
 }
@@ -33,9 +32,9 @@ async function queryRows(ecdb: ECDb, ecsql: string, params?: QueryBinder, config
 }
 async function queryCount(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions): Promise<number> {
   ecdb.saveChanges();
-  const reader = ecdb.createQueryReader(`SELECT COUNT(*) FROM (${ecsql})`, params, { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes });
-  if (await reader.step())
-    return reader.current.getArray()[0] as number;
+  for await (const row of ecdb.createQueryReader(`SELECT COUNT(*) FROM (${ecsql})`, params, { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+    return row[0] as number;
+  }
   return -1;
 }
 function blobEqual(lhs: any, rhs: any) {
@@ -181,9 +180,8 @@ describe("ECSqlStatement", () => {
       const rc = await queryCount(ecdb, "SELECT * FROM ts.Foo");
       assert.equal(rc, 100); // expe
       let rowNo = 0;
-      const reader = ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader.step()) {
-        assert.equal(reader.current.n, rowNo + 1);
+      for await (const row of ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        assert.equal(row.n, rowNo + 1);
         rowNo = rowNo + 1;
       }
       assert.equal(rowNo, 100); // expect all rows
@@ -219,8 +217,7 @@ describe("ECSqlStatement", () => {
             options.setDelay(delay);
             options.setRowFormat(QueryRowFormat.UseJsPropertyNames);
             options.setRestartToken("tag");
-            const reader = ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, options.getOptions());
-            while (await reader.step()) {
+            for await (const _row of ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, options.getOptions())) {
               rowCount++;
             }
             successful++;
@@ -269,9 +266,8 @@ describe("ECSqlStatement", () => {
       ecdb.clearStatementCache();
       for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) { // eslint-disable-line @typescript-eslint/no-unused-vars
         let rowNo = 1;
-        const reader = ecdb.createQueryReader("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", new QueryBinder().bindInt(1, 123).bindInt(2, 30), { rowFormat: QueryRowFormat.UseJsPropertyNames });
-        while (await reader.step()) {
-          assert.equal(reader.current.n, rowNo);
+        for await (const row of ecdb.createQueryReader("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", new QueryBinder().bindInt(1, 123).bindInt(2, 30), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          assert.equal(row.n, rowNo);
           rowNo = rowNo + 1;
         }
         assert.equal(rowNo, 28); // expect all rows
@@ -294,18 +290,18 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
-      const reader1 = ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader1.step())
-        assert.equal(reader1.current.cnt, 3);
-      const reader2 = ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (?, ?, ?)", new QueryBinder().bindInt(1, 1).bindInt(2, 2).bindInt(3, 3), { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader2.step())
-        assert.equal(reader2.current.cnt, 3);
+      for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        assert.equal(row.cnt, 3);
+      }
+      for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (?, ?, ?)", new QueryBinder().bindInt(1, 1).bindInt(2, 2).bindInt(3, 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        assert.equal(row.cnt, 3);
+      }
       const slm = new SequentialLogMatcher();
       slm.append().error().category("ECDb").message("No parameter index found for parameter name: d.");
       try {
-        const reader3 = ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3).bindInt("d", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames });
-        while (await reader3.step())
-          assert.equal(reader3.current.cnt, 3);
+        for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3).bindInt("d", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          assert.equal(row.cnt, 3);
+        }
         assert.isFalse(true);
       } catch (e) { assert.isNotNull(e); }
       assert.isTrue(slm.finishAndDispose());
@@ -326,10 +322,9 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
-      const reader = ecdb.createQueryReader("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", new QueryBinder().bindInt(1, 1), { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader.step()) {
-        assert.equal(reader.current.hexId, reader.current.id);
-        assert.equal(reader.current.hexId, reader.current.idhex);
+      for await (const row of ecdb.createQueryReader("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", new QueryBinder().bindInt(1, 1), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        assert.equal(row.hexId, row.id);
+        assert.equal(row.hexId, row.idhex);
       }
     });
   });

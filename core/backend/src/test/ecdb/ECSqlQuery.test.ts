@@ -13,8 +13,11 @@ import { ConcurrentQuery } from "../../ConcurrentQuery";
 // cspell:ignore mirukuru ibim
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
-  const reader = iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs });
-  return reader.toArray();
+  const rows: any[] = [];
+  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+    rows.push(queryRow.toRow());
+  }
+  return rows;
 }
 
 describe("ECSql Query", () => {
@@ -150,9 +153,8 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
-    const idReader = imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23");
-    while (await idReader.step()) {
-      ids.push(idReader.current.ECInstanceId);
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+      ids.push(row[0]);
     }
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
@@ -214,9 +216,9 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      const reader = db.createQueryReader(`SELECT count(*) FROM (${query})`);
-      if (await reader.step())
-        pendingRowCount.push(reader.current.getArray()[0]);
+      for await (const row of db.createQueryReader(`SELECT count(*) FROM (${query})`)) {
+        pendingRowCount.push(row[0] as number);
+      }
     }
 
     const rowCounts = await Promise.all(pendingRowCount);
@@ -238,9 +240,8 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      const reader = db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      while (await reader.step()) {
-        const row = reader.current.toRow();
+      for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {

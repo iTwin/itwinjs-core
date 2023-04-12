@@ -11,8 +11,11 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 // cspell:ignore mirukuru ibim
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
-  const reader = iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs });
-  return reader.toArray();
+  const rows: any[] = [];
+  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+    rows.push(queryRow.toRow());
+  }
+  return rows;
 }
 
 describe("Common table expression support in ECSQL", () => {
