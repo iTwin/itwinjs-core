@@ -61,7 +61,9 @@ export class EnvironmentEditor {
 
     const atmosphereDiv = document.createElement("div");
     const atmosphereEditor = new AtmosphereEditor(vp, atmosphereDiv);
-    this._updates.push((view: ViewState) => { atmosphereEditor.update(view); });
+    this._updates.push((view: ViewState) => {
+      atmosphereEditor.update(view);
+    });
     nestedMenu.appendChild(atmosphereDiv);
 
     this._eeBackgroundColor = createColorInput({
