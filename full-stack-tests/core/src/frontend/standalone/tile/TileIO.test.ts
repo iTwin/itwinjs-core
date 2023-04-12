@@ -761,10 +761,11 @@ describe("TileAdmin", () => {
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
+        rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ]
       });
 
       if (ProcessDetector.isElectronAppFrontend)
-        await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
+        await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ]  }});
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
