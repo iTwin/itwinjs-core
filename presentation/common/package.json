@@ -37,7 +37,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-common",
     "ruleset-json-schema": "npm run -s ruleset-json-schema:generate && npm run -s ruleset-json-schema:post-process",
-    "ruleset-json-schema:generate": "typescript-json-schema ./tsconfig.json Ruleset --noExtraProps --required --strictNullChecks --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts > ./Ruleset.schema.json",
+    "ruleset-json-schema:generate": "typescript-json-schema ./tsconfig.json Ruleset --noExtraProps --required --strictNullChecks --validationKeywords deprecated --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/cjs/assets/locales/en-PSEUDO",
