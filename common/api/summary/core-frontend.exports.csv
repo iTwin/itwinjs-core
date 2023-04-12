@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item
-internal;AccuDraw
+public;AccuDraw
 internal;AccuDrawChangeModeTool 
 internal;AccudrawData
 internal;AccuDrawFlags
@@ -90,7 +90,7 @@ public;CheckpointConnection
 public;ClipEventType
 public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
-alpha;CompassMode
+public;CompassMode
 public;ComputeChordToleranceArgs
 beta;ComputeDisplayTransformArgs
 public;connectViewportFrusta(viewports: Iterable
@@ -120,7 +120,7 @@ internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
 internal;CurrentInputState
-internal;CurrentState
+public;CurrentState
 public;CustomFormatPropEditorSpec
 public;CustomGraphicBuilderOptions 
 public;CustomQuantityTypeDefinition 
@@ -359,7 +359,7 @@ public;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is Cus
 internal;isGltf1Material(material: GltfMaterial): material is Gltf1Material
 public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
-alpha;ItemField
+public;ItemField
 beta;ITwinIdArg
 public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
@@ -535,7 +535,6 @@ public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 public;ReadMeshArgs
 internal;ReadonlyTileUserSet 
-internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
 alpha;RealityDataError 
 beta;RealityDataSource
 beta;RealityDataSource
@@ -602,7 +601,7 @@ alpha;ResolveFunc = () => Promise
 alpha;ResolveManifestFunc = () => Promise
 internal;RootIModelTile = Tile &
 public;RotateViewTool 
-alpha;RotationMode
+public;RotationMode
 internal;RoundOff
 internal;SavedState
 public;Scene

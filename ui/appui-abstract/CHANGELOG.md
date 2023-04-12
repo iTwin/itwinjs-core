@@ -1,6 +1,38 @@
 # Change Log - @itwin/appui-abstract
 
-This log was last generated on Wed, 08 Feb 2023 14:58:39 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Apr 2023 13:12:42 GMT and should not be manually modified.
+
+## 3.7.2
+Wed, 12 Apr 2023 13:12:42 GMT
+
+_Version update only_
+
+## 3.7.1
+Mon, 03 Apr 2023 15:15:36 GMT
+
+_Version update only_
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+### Updates
+
+- Update @deprecated comments.
+
+## 3.6.3
+Mon, 27 Mar 2023 16:26:47 GMT
+
+_Version update only_
+
+## 3.6.2
+Fri, 17 Mar 2023 17:52:32 GMT
+
+_Version update only_
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:39 GMT
@@ -243,7 +275,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally.
 - Remove old aribiter related functions that are not used.
 - Add BaseUiItemsProvider class
-- Replaced ui-core Slider with one from iTwinUi-react.
+- Replaced ui-core Slider with one from iTwinUi-react. 
 - Add support for widget tab icons in UI-2
 
 ## 2.19.28
@@ -906,7 +938,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation
+- Update doc tags for automatic UI creation 
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.

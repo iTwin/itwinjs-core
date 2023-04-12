@@ -9,7 +9,6 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc --project ./src 1>&2",
-    "build:ci": "npm run -s build",
     "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --external:os --minify",
     "clean": "rimraf lib dist",
     "lint": "",

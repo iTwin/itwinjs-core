@@ -5,7 +5,6 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
@@ -24,7 +23,7 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "electron": "^23.0.0"
+    "electron": "^24.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

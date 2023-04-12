@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-opentelemetry",
-  "version": "4.0.0-dev.60",
+  "version": "4.0.0-dev.71",
   "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
   "license": "MIT",
   "engines": {
@@ -8,7 +8,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/opentelemetry"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "presentation/opentelemetry"
   },
   "keywords": [
     "Bentley",
@@ -26,7 +27,6 @@
   "typings": "lib/cjs/presentation-opentelemetry",
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",

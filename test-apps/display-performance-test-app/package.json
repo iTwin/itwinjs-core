@@ -12,8 +12,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run -s build:backend && npm run -s build:frontend",
-    "build:ci": "npm run -s build:backend && npm run -s build:frontend-webpack",
+    "build": "npm run -s build:backend && npm run -s build:frontend && npm run -s build:frontend-webpack",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "tsc",
     "build:frontend-webpack": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
@@ -71,7 +70,7 @@
     "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^23.0.0",
+    "electron": "^24.0.0",
     "eslint": "^7.11.0",
     "express": "^4.16.3",
     "internal-tools": "workspace:*",

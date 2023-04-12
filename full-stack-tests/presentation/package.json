@@ -10,7 +10,6 @@
   "private": true,
   "scripts": {
     "build": "npm run -s copy:locale && tsc 1>&2",
-    "build:ci": "npm run -s build",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
@@ -73,6 +72,7 @@
     "internal-tools": "workspace:*",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
+    "sanitize-filename": "^1.6.3",
     "typescript": "~5.0.2",
     "i18next-http-backend": "^1.4.4"
   },

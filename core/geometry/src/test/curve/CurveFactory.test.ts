@@ -26,8 +26,6 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
-
 describe("CurveFactory", () => {
   it("CreateFilletsOnLineString", () => {
     const allGeometry: GeometryQuery[] = [];
@@ -279,8 +277,8 @@ describe("PipeConnections", () => {
 
       for (const angleTol of [Angle.createDegrees(22), Angle.createDegrees(15), Angle.createDegrees(5)]) {
         for (const sectionData of [radius,
-                                  {x: radius, y: radius * minorFraction},
-                                  Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]) {
+          { x: radius, y: radius * minorFraction },
+          Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]) {
           y0 += 10.0;
           const builder = PolyfaceBuilder.create();
           builder.options.angleTol = angleTol;

@@ -20,7 +20,9 @@ Table of contents:
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
+- [Transformation](#transformation)
 - [Deprecated API removals](#deprecated-api-removals)
+- [AppUI packages moved](#appui-packages-moved)
 
 ## Updated minimum requirements
 
@@ -40,7 +42,7 @@ Over a year ago, support for WebGL 2 finally became [available in all major brow
 
 ### Electron
 
-Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports only Electron 23.
+Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports Electron 23 and Electron 24.
 
 ## Geometry
 
@@ -109,7 +111,7 @@ The [PresentationManager]($presentation-frontend) used to "eat" errors and retur
 - [PresentationManager.getPagedDistinctValues]($presentation-frontend)
 - [PresentationManager.getDisplayLabelDefinitions]($presentation-frontend)
 
-Consumers of these APIs should make sure they're wrapped with try/catch blocks and the errors are handled appropriately.
+Consumers of these APIs should make sure they're wrapped with try/catch blocks and the errors are handled appropriately. See our [error handling page](../presentation/advanced/ErrorHandling.md) for more details.
 
 ### Handling of long-running requests
 
@@ -126,11 +128,16 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
 
-### Deprecated API removals
+## Transformation
+
+The transformer package `@itwin/core-transformer` was renamed to [`@itwin/imodel-transformer`](https://github.com/iTwin/imodel-transformer) and has its own repository now with supporting packages.
+
+## Deprecated API removals
 
 The following previously-deprecated APIs have been removed:
 
 **@itwin/core-backend**:
+
 - `AliCloudStorageService`
 - `AliCloudStorageServiceCredentials`
 - `AzureBlobStorage`
@@ -141,6 +148,7 @@ The following previously-deprecated APIs have been removed:
 - `IModelHost.tileUploader`
 
 **@itwin/core-common**:
+
 - `CloudStorageCache`
 - `CloudStorageContainerDescriptor`
 - `CloudStorageContainerUrl`
@@ -149,3 +157,12 @@ The following previously-deprecated APIs have been removed:
 - `IModelTileRpcInterface.getTileCacheContainerUrl`
 - `IModelTileRpcInterface.isUsingExternalTileCache`
 
+## AppUI packages moved
+
+The source code for following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui). The package names and published location have not changed, but the release schedule will be independent from that of the itwinjs-core packages.
+
+- @itwin/appui-react
+- @itwin/appui-layout-react
+- @itwin/components-react
+- @itwin/core-react
+- @itwin/imodel-components-react

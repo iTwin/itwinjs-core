@@ -12,8 +12,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run -s build:backend && npm run -s build:frontend",
-    "build:ci": "npm run -s build:backend && npm run -s build:frontend-webpack",
+    "build": "npm run -s build:backend && npm run -s build:frontend && npm run -s build:frontend-webpack",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",
@@ -88,7 +87,7 @@
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^23.0.0",
+    "electron": "^24.0.0",
     "eslint": "^7.11.0",
     "express": "^4.16.3",
     "express-ws": "^5.0.2",

@@ -1,17 +1,17 @@
 {
   "name": "@itwin/ecschema-rpcinterface-common",
-  "version": "4.0.0-dev.60",
+  "version": "4.0.0-dev.71",
   "description": "Schema RPC Interface common interface",
   "main": "lib/cjs/ecschema-rpc-interface.js",
   "typings": "lib/cjs/ecschema-rpc-interface",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-rpc/common"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/ecschema-rpc/common"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",

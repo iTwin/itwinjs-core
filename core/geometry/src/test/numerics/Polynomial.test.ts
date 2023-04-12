@@ -21,10 +21,10 @@ import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
-/* eslint-disable no-console */
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import {
-  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SmallSystem, SphereImplicit, TorusImplicit, TrigPolynomial,
+  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SmallSystem, SphereImplicit, TorusImplicit,
+  TrigPolynomial,
 } from "../../numerics/Polynomials";
 import { Quadrature } from "../../numerics/Quadrature";
 import { Sphere } from "../../solid/Sphere";
@@ -135,7 +135,7 @@ describe("Cubic.Solutions", () => {
 
 function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, ww: Float64Array, n: number, maxDegree: number) {
   if (Checker.noisy.gaussQuadrature)
-    console.log(`(nGauss ${n}) (interval ${xA} ${xB}`);
+    GeometryCoreTestIO.consoleLog(`(nGauss ${n}) (interval ${xA} ${xB}`);
   for (let p = 0; p < maxDegree + 3; p++) {
     {
       const trueIntegral = (Math.pow(xB, p + 1) - Math.pow(xA, p + 1)) / (p + 1.0);
@@ -143,8 +143,8 @@ function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, w
         (x: number): number => Math.pow(x, p));
       const isSame = Geometry.isSameCoordinate(trueIntegral, approximateIntegral);
       if (Checker.noisy.gaussQuadrature) {
-        if (p === maxDegree + 1) console.log("    ---------------  end of expected precise integrals");
-        console.log(`     (p ${p}) (absErr ${approximateIntegral - trueIntegral}) (relErr ${(approximateIntegral - trueIntegral) / trueIntegral}`);
+        if (p === maxDegree + 1) GeometryCoreTestIO.consoleLog("    ---------------  end of expected precise integrals");
+        GeometryCoreTestIO.consoleLog(`     (p ${p}) (absErr ${approximateIntegral - trueIntegral}) (relErr ${(approximateIntegral - trueIntegral) / trueIntegral}`);
       }
       ck.testBoolean(p <= maxDegree, isSame, "Quadrature Exactness", p, maxDegree, trueIntegral, approximateIntegral);
     }
@@ -482,7 +482,7 @@ describe("Ellipse.Perpendiculars", () => {
 
       for (const eccentricity of [1.0, 1.01, 1.01, 2.0, 0.5]) {
         for (const skew of [0, 0.0]) {
-          // console.log("eccentricity ", eccentricity, "skew", skew);
+          // GeometryCoreTestIO.consoleLog("eccentricity ", eccentricity, "skew", skew);
           const arc = Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(r0, 0, 0), Vector3d.create(skew, eccentricity * r0, 0), AngleSweep.create360());
           let angles = arc.allPerpendicularAngles(spacePoint);
           for (const theta of angles) {
@@ -547,7 +547,7 @@ describe("LinearSystems", () => {
     const b1 = Point3d.create(5.2, -4, 4.2);
     const fractions = Vector2d.create();
     if (ck.testTrue(SmallSystem.lineSegment3dClosestApproachUnbounded(a0, a1, b0, b1, fractions))) {
-      // console.log("fractions", fractions);
+      // GeometryCoreTestIO.consoleLog("fractions", fractions);
       const a = a0.interpolate(fractions.x, a1);
       const b = b0.interpolate(fractions.y, b1);
       const vectorAB = a.vectorTo(b);

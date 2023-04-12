@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "4.0.0-dev.60",
+  "version": "4.0.0-dev.71",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -8,11 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/full-stack-tests/ecschema-rpc-interface"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "full-stack-tests/ecschema-rpc-interface"
   },
   "scripts": {
-    "build": "tsc 1>&2",
-    "build:ci": "npm run -s build && npm run -s webpack:test",
+    "build": "tsc 1>&2 && npm run -s webpack:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",
@@ -73,7 +73,7 @@
     "stream-browserify": "^3.0.0",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0",
-    "webpack-cli": "^4.10.0"
+    "webpack-cli": "^5.0.1"
   },
   "eslintConfig": {
     "plugins": [

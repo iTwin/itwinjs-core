@@ -5,7 +5,6 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
@@ -22,7 +21,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-transformer": "workspace:*",
+    "@itwin/imodel-transformer": "^0.1.1",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-editing": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
