@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Fix `BisCore` supplemental rules for related `bis.ExternalSource` properties",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}
