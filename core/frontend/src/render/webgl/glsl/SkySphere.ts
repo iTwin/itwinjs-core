@@ -226,8 +226,6 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
     });
   });
 
-  builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
-  builder.frag.headerComment = `//!F! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   if (flags.enableAtmosphere) {

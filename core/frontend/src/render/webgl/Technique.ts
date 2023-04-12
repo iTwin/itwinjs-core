@@ -812,9 +812,11 @@ abstract class MultipleTechnique implements Technique {
 
 class SkySphereTechnique extends MultipleTechnique {
   private static readonly _numVariants = 2; // one binary flag (2 ** 1)
+  private readonly isGradient: boolean;
 
   public constructor(gl: WebGL2RenderingContext, isGradient: boolean) {
     super(SkySphereTechnique._numVariants)
+    this.isGradient = isGradient;
 
     for (let enableAtmosphere = EnableAtmosphere.No; enableAtmosphere <= EnableAtmosphere.Yes; enableAtmosphere++) {
       const tempFlags = scratchTechniqueFlags;
@@ -829,7 +831,7 @@ class SkySphereTechnique extends MultipleTechnique {
     this.finishConstruction();
   }
 
-  protected get _debugDescription() { return "SkySphere"; }
+  protected get _debugDescription() { return `SkySphere-${this.isGradient ? "Gradient" : "Texture"}`; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = 0;
