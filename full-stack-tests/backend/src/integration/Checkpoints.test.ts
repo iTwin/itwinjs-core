@@ -25,7 +25,7 @@ async function queryBisModelCount(imodel: IModelDb): Promise<number> {
   return -1;
 }
 
-describe.only("Checkpoints", () => {
+describe("Checkpoints", () => {
   let daemon: ChildProcess;
   let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
