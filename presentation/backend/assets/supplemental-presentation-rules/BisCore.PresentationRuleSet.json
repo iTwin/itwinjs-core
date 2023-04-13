@@ -496,7 +496,8 @@
                   "categoryId": "source_information",
                   "labelOverride": "Path"
                 }
-              ]
+              ],
+              "skipIfDuplicate": true
             },
             {
               "relationshipMeaning": "SameInstance",
@@ -540,7 +541,8 @@
                   "categoryId": "secondary_sources",
                   "labelOverride": "Path"
                 }
-              ]
+              ],
+              "skipIfDuplicate": true
             }
           ],
           "skipIfDuplicate": true

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-extension",
-  "version": "4.0.0-dev.71",
+  "version": "4.0.0-dev.72",
   "description": "iTwin.js Extension API",
   "typings": "index.d.ts",
   "license": "MIT",
@@ -37,8 +37,8 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
-    "eslint": "^7.11.0",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
+    "eslint": "^8.36.0",
     "rimraf": "^3.0.2"
   },
   "eslintConfig": {
