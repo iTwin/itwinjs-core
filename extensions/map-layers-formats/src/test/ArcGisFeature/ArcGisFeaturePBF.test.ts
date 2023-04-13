@@ -15,9 +15,9 @@ import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
 import { esriFeatureSampleSource, fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
-const createFeaturePBF =  () => {
+const createFeaturePBF = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-  const featurePbf = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+  const featurePbf = new ArcGisFeaturePBF(settings, { name: "SampleLayer" });
 
   // Locale configuration depends on the testing machine (i.e. linux vs windows),
   // so we need to force date display to Iso to get a consistent value.
@@ -36,27 +36,27 @@ describe("ArcGisFeaturePBF", () => {
 
   it("should convert pbf geometry type to Esri types", async () => {
 
-    expect (
+    expect(
       ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch))
       .to.equals("esriGeometryMultiPatch");
 
-    expect (
+    expect(
       ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipoint))
       .to.equals("esriGeometryMultipoint");
 
-    expect (
+    expect(
       ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint))
       .to.equals("esriGeometryPoint");
 
-    expect (
+    expect(
       ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon))
       .to.equals("esriGeometryPolygon");
 
-    expect (
+    expect(
       ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline))
       .to.equals("esriGeometryPolyline");
 
-    expect (
+    expect(
       ArcGisFeaturePBF.getArcGisFeatureGeometryType("" as unknown as esriPBuffer.FeatureCollectionPBuffer.GeometryType))
       .to.equals("esriGeometryNull");
 
@@ -67,13 +67,13 @@ describe("ArcGisFeaturePBF", () => {
     const featureCollection = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
 
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featurePbf = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = new ArcGisFeaturePBF(settings, { name: "SampleLayer" });
 
     // In some cases, PBF gives more floating-point precision than JSON.
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featurePbf.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
-    featurePbf.readFeatureInfo({data:featureCollection, exceedTransferLimit: false}, results);
+    await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
 
     // Make deep comparison by using JSON.stringify
     expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef));
@@ -90,7 +90,7 @@ describe("ArcGisFeaturePBF", () => {
     // Since I want to use the same output reference for both formats, I force a max precision.
     featurePbf.floatPrecision = 2;
     const results: MapLayerFeatureInfo[] = [];
-    featurePbf.readFeatureInfo({data:featureCollection, exceedTransferLimit: false}, results);
+    await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
 
     // Make deep comparison by using JSON.stringify
     expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef));
@@ -106,7 +106,7 @@ describe("ArcGisFeaturePBF", () => {
     const featurePbf = createFeaturePBF();
 
     const results: MapLayerFeatureInfo[] = [];
-    featurePbf.readFeatureInfo({data:featureCollection, exceedTransferLimit: false}, results);
+    await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
 
     // Make deep comparison by using JSON.stringify
     expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.fieldsCoverageGetFeatureInfoResultRef));
@@ -121,7 +121,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -141,7 +141,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -160,7 +160,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -178,7 +178,7 @@ describe("ArcGisFeaturePBF", () => {
     const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -196,7 +196,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
-    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(spy.calledOnce);
 
     // Pbf contains already the right output format expect, lets rely on that.
@@ -215,11 +215,11 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const logErrorSpy = sandbox.spy(Logger, "logError");
-    featurePbf.readAndRender({data: {test:"test"}, exceedTransferLimit: false}, featureRenderer);
+    await featurePbf.readAndRender({ data: { test: "test" }, exceedTransferLimit: false }, featureRenderer);
     expect(logErrorSpy.calledOnce);
 
     logErrorSpy.resetHistory();
-    featurePbf.readFeatureInfo({data: {test:"test"}, exceedTransferLimit: false}, []);
+    await featurePbf.readFeatureInfo({ data: { test: "test" }, exceedTransferLimit: false }, []);
     expect(logErrorSpy.calledOnce);
 
   });

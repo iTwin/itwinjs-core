@@ -16,11 +16,11 @@ import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRend
 import { fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
-const esriFeatureSampleSource = {name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId};
+const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 
-const createFeatureJSON =  () => {
+const createFeatureJSON = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-  const featurePbf = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+  const featurePbf = new ArcGisFeatureJSON(settings, { name: "SampleLayer" });
 
   // Locale configuration depends on the testing machine (i.e. linux vs windows),
   // so we need to force date display to Iso to get a consistent value.
@@ -43,49 +43,49 @@ describe("ArcGisFeatureJSON", () => {
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featureJson.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
-    featureJson.readFeatureInfo({data: PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryJson, exceedTransferLimit: false}, results);
+    await featureJson.readFeatureInfo({ data: PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryJson, exceedTransferLimit: false }, results);
     expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef));
   });
 
   it("should read FeatureInfo in JSON (phillyAirport)", async () => {
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = new ArcGisFeatureJSON(settings, { name: "SampleLayer" });
     // In some cases, PBF gives more floating-point precision than JSON.
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featureJson.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
     const data = JSON.parse(PhillyLandmarksDataset.phillyAirportGetFeatureInfoQueryJson);
-    featureJson.readFeatureInfo({data, exceedTransferLimit: false}, results);
+    await featureJson.readFeatureInfo({ data, exceedTransferLimit: false }, results);
     const _test = JSON.stringify(results);
     expect(_test).equals(JSON.stringify(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef));
   });
 
   it("should deflate coordinates array", async () => {
     // Simple deflate stride = 2
-    let doubleArray = [[1,2], [3,4]];
+    let doubleArray = [[1, 2], [3, 4]];
     let deflated: number[] = [];
     let offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 2, 0);
     expect(offset).to.equals(4);
-    expect(deflated).to.eql([1,2,3,4]);
+    expect(deflated).to.eql([1, 2, 3, 4]);
 
     /// Check offset with stride = 2
-    doubleArray = [[5,6]];
+    doubleArray = [[5, 6]];
     offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 2, offset);
     expect(offset).to.equals(6);
-    expect(deflated).to.eql([1,2,3,4,5,6]);
+    expect(deflated).to.eql([1, 2, 3, 4, 5, 6]);
 
     // Simple deflate stride = 3
-    doubleArray = [[1,2,3], [4,5,6]];
+    doubleArray = [[1, 2, 3], [4, 5, 6]];
     deflated = [];
     offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 3, 0);
     expect(offset).to.equals(6);
-    expect(deflated).to.eql([1,2,3,4,5,6]);
+    expect(deflated).to.eql([1, 2, 3, 4, 5, 6]);
 
     /// Check offset with stride = 3
-    doubleArray = [[7,8,9]];
+    doubleArray = [[7, 8, 9]];
     offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 3, offset);
     expect(offset).to.equals(9);
-    expect(deflated).to.eql([1,2,3,4,5,6,7,8,9]);
+    expect(deflated).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
   it("should readAndRender single ring polygon feature", async () => {
@@ -97,7 +97,7 @@ describe("ArcGisFeatureJSON", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -116,7 +116,7 @@ describe("ArcGisFeatureJSON", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -134,10 +134,10 @@ describe("ArcGisFeatureJSON", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
-    const geometryCoords = [360,491,-2,-1,-1,0,-1,0,-1,0,-1,1,-4,1,-10,2,-15,3,-1,0,-1,0,-2,0,-1,0,-1,0,-1,-1,-1,0,-2,-1,0,-1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0];
+    const geometryCoords = [360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2, -15, 3, -1, 0, -1, 0, -2, 0, -1, 0, -1, 0, -1, -1, -1, 0, -2, -1, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0];
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql([24]);          // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
@@ -152,7 +152,7 @@ describe("ArcGisFeatureJSON", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     // Pbf contains already the right output format expect, lets rely on that.
@@ -172,7 +172,7 @@ describe("ArcGisFeatureJSON", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
-    await featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(spy.calledOnce);
 
     // Pbf contains already the right output format expect, lets rely on that.
@@ -191,11 +191,11 @@ describe("ArcGisFeatureJSON", () => {
 
     const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
     const logErrorSpy = sandbox.spy(Logger, "logError");
-    featureJson.readAndRender({data: {test:"test"}, exceedTransferLimit: false}, featureRenderer);
+    await featureJson.readAndRender({ data: { test: "test" }, exceedTransferLimit: false }, featureRenderer);
     expect(logErrorSpy.calledOnce);
 
     logErrorSpy.resetHistory();
-    featureJson.readFeatureInfo({data: {test:"test"}, exceedTransferLimit: false}, []);
+    await featureJson.readFeatureInfo({ data: { test: "test" }, exceedTransferLimit: false }, []);
     expect(logErrorSpy.calledOnce);
 
   });
