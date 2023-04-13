@@ -158,7 +158,7 @@ describe("ECSql Query", () => {
     for (const db of dbs) {
       const resultSet = [];
       for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-        const row = queryRow.toRow(); // row as a JS object
+        const row = queryRow.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
@@ -180,9 +180,8 @@ describe("ECSql Query", () => {
     let row1: any;
     let row2: any;
     let row3: any;
-    for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       row1 = row.toRow();
-    }
     assert.isNotEmpty(row1.geometryStream);
     for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
       row2 = row.toRow();
