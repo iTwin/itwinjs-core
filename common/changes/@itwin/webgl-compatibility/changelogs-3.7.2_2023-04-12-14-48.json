@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/webgl-compatibility"
+    }
+  ],
+  "packageName": "@itwin/webgl-compatibility",
+  "email": "aruniverse@users.noreply.github.com"
+}
