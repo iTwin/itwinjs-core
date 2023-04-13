@@ -41,8 +41,9 @@ describe("ExcludedElements", () => {
       expect(styleId).not.to.equal(Id64.invalid);
       imodel.saveChanges();
 
-      const reader = imodel.createQueryReader("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
-      const rows: any[] = await reader.toArray();
+      const rows: any[] = [];
+      for await (const queryRow of imodel.createQueryReader("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+        rows.push(queryRow.toRow());
 
       expect(rows.length).to.equal(1);
       const json = JSON.parse(rows[0].jsonProperties);
