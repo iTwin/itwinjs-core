@@ -31,7 +31,7 @@ export class TileUsageMarker {
     return this.isTimestampExpired(expirationTime) && !this.getIsTileInUse();
   }
 
-  /** Returns true if this tile is currently in use by a [[TileUser]]s. */
+  /** Returns true if this tile is currently in use by any [[TileUser]]. */
   public getIsTileInUse(): boolean {
     return IModelApp.tileAdmin.isTileInUse(this);
   }

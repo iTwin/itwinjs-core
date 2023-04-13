@@ -294,6 +294,7 @@ export class RealityTile extends Tile {
   }
   /** @internal */
   protected forceSelectRealityTile(): boolean { return false; }
+  /** @internal */
   protected minimumVisibleFactor(): number {
     if (this.additiveRefinement)
       return 0.25;

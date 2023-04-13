@@ -9011,7 +9011,7 @@ export class RealityTile extends Tile {
     markUsed(args: TileDrawArgs): void;
     // @internal (undocumented)
     get maxDepth(): number;
-    // (undocumented)
+    // @internal (undocumented)
     protected minimumVisibleFactor(): number;
     // @internal (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
