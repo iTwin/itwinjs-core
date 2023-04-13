@@ -15,9 +15,10 @@ import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse";
-import { Point3d, Transform } from "@itwin/core-geometry";
+import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
+import { ArcGisFeatureGraphicsRenderer } from "../../ArcGisFeature/ArcGisFeatureGraphicsRenderer";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -25,11 +26,14 @@ chai.use(chaiAsPromised);
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 const pngTransparent1x1 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
-function makeHitDetail() {
+function makeHitDetail(noGcsDefined: boolean) {
   const imodelConn = {
-    noGcsDefined: true,
+    noGcsDefined,
     cartographicToSpatialFromEcef: (cartographic: Cartographic, _result?: Point3d) => {
       return Point3d.create(cartographic.longitude, cartographic.latitude, cartographic.height);
+    },
+    toSpatialFromGcs: async (geoPoints: XYZProps[], _datumOrGCRS?: any) => {
+      return geoPoints;
     },
   } as unknown;
 
@@ -38,6 +42,72 @@ function makeHitDetail() {
   } as unknown;
 
   return hit as HitDetail;
+}
+
+function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
+  sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
+    const test = {
+      headers: { "content-type": "application/json" },
+      json: async () => {
+        return JSON.parse(json);
+      },
+      status: 200,
+    } as unknown;   // By using unknown type, I can define parts of Response I really need
+    return (test as Response);
+  });
+}
+
+function stubGetLayerMetadata(sandbox: sinon.SinonSandbox) {
+  sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+    return {
+      defaultVisibility: true,
+      supportedQueryFormats: "PBF, JSON",
+      supportsCoordinatesQuantization: true,
+      minScale: 600000,
+      maxScale: 5000,
+    };
+  });
+}
+
+function stubGetServiceJson(sandbox: sinon.SinonSandbox) {
+  sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+    return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } };
+  });
+}
+
+async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimitiveType: string, noGcsDefined: boolean, dataset: any, nbGraphics: number = 1) {
+
+  const settings = ImageMapLayerSettings.fromJSON({
+    ...esriFeatureSampleSource,
+    subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
+  });
+
+  stubGetLayerMetadata(sandbox);
+  stubGetServiceJson(sandbox);
+  stubJsonFetch(sandbox, JSON.stringify(dataset));
+  const provider = new ArcGisFeatureProvider(settings);
+  await provider.initialize();
+  const featureInfos: MapLayerFeatureInfo[] = [];
+  const logErrorSpy = sandbox.spy(Logger, "logError");
+  const toSpatialFromEcfSpy = sandbox.stub((ArcGisFeatureGraphicsRenderer.prototype as any), "toSpatialFromEcf").callsFake(function _(geoPoints: unknown) {
+    return geoPoints;
+  });
+  const toSpatialFromGcs = sandbox.spy(ArcGisFeatureGraphicsRenderer.prototype as any, "toSpatialFromGcs");
+  await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0),
+    Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
+    (undefined as unknown) as ImageryMapTileTree, makeHitDetail(noGcsDefined));
+  expect(featureInfos.length).to.equals(1);
+  const info = featureInfos[0].info;
+  if (info && !(info instanceof HTMLElement)) {
+    expect(info.length).to.equals(1);
+    const graphics = info[0].graphics;
+    expect(graphics).to.not.undefined;
+    expect(graphics!.length).to.equals(nbGraphics);
+    expect(graphics![0].type).to.equals(expectedPrimitiveType);
+  }
+  expect(logErrorSpy.calledOnce).to.be.false;
+  expect(toSpatialFromEcfSpy.called).to.equals(noGcsDefined);
+  expect(toSpatialFromGcs.called).to.equals(!noGcsDefined);
 }
 
 describe("ArcGisFeatureProvider", () => {
@@ -415,7 +485,7 @@ describe("ArcGisFeatureProvider", () => {
     const featureInfos: MapLayerFeatureInfo[] = [];
     const logErrorSpy = sandbox.spy(Logger, "logError");
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail());
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(true));
     expect(featureInfos.length).to.equals(0);
     expect(logErrorSpy.called).to.be.true;
 
@@ -458,10 +528,45 @@ describe("ArcGisFeatureProvider", () => {
     await provider.initialize();
     const featureInfos: MapLayerFeatureInfo[] = [];
     const logErrorSpy = sandbox.spy(Logger, "logError");
-    await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }), (undefined as unknown) as ImageryMapTileTree, makeHitDetail());
+    await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(true));
     expect(featureInfos.length).to.equals(1);
     expect(logErrorSpy.calledOnce).to.be.false;
 
+  });
+
+  it("should process polygon data in getFeatureInfo (ECF)", async () => {
+
+    await testGetFeatureInfoGeom(sandbox, "loop", false, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+  });
+
+  it("should process polygon data in getFeatureInfo (GCS)", async () => {
+    await testGetFeatureInfoGeom(sandbox, "loop", true, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+  });
+
+  it("should process multi path data in getFeatureInfo (ECF)", async () => {
+    await testGetFeatureInfoGeom(sandbox, "linestring", false, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+  });
+
+  it("should process multi path data in getFeatureInfo (GCS)", async () => {
+    await testGetFeatureInfoGeom(sandbox, "linestring", true, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+  });
+
+
+  it("should process linestring data in getFeatureInfo (ECF)", async () => {
+    await testGetFeatureInfoGeom(sandbox, "linestring", false, PhillyLandmarksDataset.phillySimplePathQueryJson);
+  });
+
+  it("should process linestring data in getFeatureInfo (GCS)", async () => {
+    await testGetFeatureInfoGeom(sandbox, "linestring", true, PhillyLandmarksDataset.phillySimplePathQueryJson);
+  });
+
+  it("should process pointstring data in getFeatureInfo (ECF)", async () => {
+    await testGetFeatureInfoGeom(sandbox, "pointstring", false, PhillyLandmarksDataset.phillySimplePointQueryJson);
+  });
+
+  it("should process pointstring data in getFeatureInfo (GCS)", async () => {
+    await testGetFeatureInfoGeom(sandbox, "pointstring", true, PhillyLandmarksDataset.phillySimplePointQueryJson);
   });
 
   it("should log error when exceed transfer limit", async () => {
@@ -493,7 +598,7 @@ describe("ArcGisFeatureProvider", () => {
     const logErrorSpy = sandbox.spy(Logger, "logError");
 
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail());
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(true));
     expect(featureInfos.length).to.equals(0);
     expect(logErrorSpy.calledOnce).to.be.true;
 
@@ -528,7 +633,7 @@ describe("ArcGisFeatureProvider", () => {
     const logErrorSpy = sandbox.spy(Logger, "logError");
 
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail());
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(true));
     expect(featureInfos.length).to.equals(0);
     expect(logErrorSpy.calledOnce).to.be.true;
   });
@@ -567,7 +672,7 @@ describe("ArcGisFeatureProvider", () => {
     const logInfoSpy = sandbox.spy(Logger, "logInfo");
 
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail());
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(true));
     expect(featureInfos.length).to.equals(0);
     expect(logInfoSpy.callCount).to.equals(2);
   });
