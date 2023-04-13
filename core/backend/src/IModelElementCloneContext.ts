@@ -5,14 +5,17 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
+import { Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, ElementProps, PropertyMetaData, RelatedElement } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+
+const loggerCategory = BackendLoggerCategory.IModelElementCloneContext;
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -153,8 +156,9 @@ export class IModelElementCloneContext {
     if (this.isBetweenIModels) {
       // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
       targetElementProps.federationGuid = sourceElement.federationGuid;
-      if (CodeScopeSpec.Type.Repository === this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType) {
-        targetElementProps.code.scope = IModel.rootSubjectId;
+      const targetElementCodeScopeType = this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType;
+      if (CodeScopeSpec.Type.Repository === targetElementCodeScopeType) {
+        Logger.logWarning(loggerCategory, `Incorrect CodeScope '${targetElementCodeScopeType}' is set for target element ${targetElementProps.id}`);
       }
     }
     // unlike other references, code cannot be null. If it is null, use an empty code instead

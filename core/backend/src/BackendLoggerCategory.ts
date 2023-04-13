@@ -109,4 +109,10 @@ export enum BackendLoggerCategory {
    * @internal
    */
   ViewStateHydrator = "core-backend.ViewStateHydrator",
+
+  /** The logger category used by the following classes:
+ * - [[IModelElementCloneContext]]
+ * @internal
+ */
+  IModelElementCloneContext = "core-backend.IModelElementCloneContext",
 }
