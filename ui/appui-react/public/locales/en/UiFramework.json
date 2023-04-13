@@ -62,11 +62,6 @@
     "label": "Scope",
     "toolTip": "Selection Scope"
   },
-  "selectionScopeLabels": {
-    "element": "Element",
-    "assembly": "Assembly",
-    "top-assembly": "Top Assembly"
-  },
   "tests": {
     "singleContent": "Single Content",
     "label": "Test Label",

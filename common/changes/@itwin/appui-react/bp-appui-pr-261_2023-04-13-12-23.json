@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix stale options of SelectionScopeField.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
