@@ -5,10 +5,11 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { LoadSchema, SchemaCache, SchemaContext } from "../../Context";
+import { SchemaCache, SchemaContext } from "../../Context";
 import { ECObjectsError } from "../../Exception";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
+import { DelayedPromise } from "../../DelayedPromise";
 
 const assert = chai.assert;
 const expect = chai.expect;
@@ -61,7 +62,7 @@ describe("Schema Cache", () => {
     expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;
   });
 
-  it("should successfully addSchema (passing LoadSchema)", async () => {
+  it("should successfully addSchema (passing DelayedPromise)", async () => {
     const cache = new SchemaCache();
     const context = new SchemaContext();
 
@@ -71,14 +72,14 @@ describe("Schema Cache", () => {
       return schema;
     };
 
-    await cache.addSchema(schema1, new LoadSchema(async () => mockFunc(schema1)));
+    await cache.addSchema(schema1, new DelayedPromise(async () => mockFunc(schema1)));
     assert.strictEqual(cache.loadingSchemasCount, 1);
 
     await cache.getSchema(new SchemaKey("TestSchema"));
     assert.strictEqual(cache.loadingSchemasCount, 0);
     assert.strictEqual(cache.loadedSchemasCount, 1);
 
-    await cache.addSchema(schema2, new LoadSchema(async () => mockFunc(schema2)));
+    await cache.addSchema(schema2, new DelayedPromise(async () => mockFunc(schema2)));
     assert.strictEqual(cache.loadingSchemasCount, 1);
     assert.strictEqual(cache.loadedSchemasCount, 1);
 
@@ -93,7 +94,7 @@ describe("Schema Cache", () => {
     assert.strictEqual(cache.count, 2);
   });
 
-  it("should not be able to add multiple schemas that match using SchemaMatchType Latest (passing LoadSchema)", async () => {
+  it("should not be able to add multiple schemas that match using SchemaMatchType Latest (passing DelayedPromise)", async () => {
     const cache = new SchemaCache();
     const context = new SchemaContext();
 
@@ -102,26 +103,26 @@ describe("Schema Cache", () => {
     };
 
     const schema1 = new Schema(context, new SchemaKey("TestSchema"), "ts");
-    await cache.addSchema(schema1, new LoadSchema(async () => mockFunc(schema1)));
+    await cache.addSchema(schema1, new DelayedPromise(async () => mockFunc(schema1)));
 
     const schema2 = new Schema(context, new SchemaKey("TestSchema"), "ts");
-    await expect(cache.addSchema(schema2, new LoadSchema(async () => mockFunc(schema2)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.00.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema2, new DelayedPromise(async () => mockFunc(schema2)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.00.00.00, already exists within this cache.");
 
     const schema3 = new Schema(context, new SchemaKey("TestSchema", 1), "ts");
-    await expect(cache.addSchema(schema3, new LoadSchema(async () => mockFunc(schema3)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema3, new DelayedPromise(async () => mockFunc(schema3)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.01.00.00, already exists within this cache.");
 
     const schema4 = new Schema(context, new SchemaKey("TestSchema", 1, 0), "ts");
-    await expect(cache.addSchema(schema4, new LoadSchema(async () => mockFunc(schema4)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema4, new DelayedPromise(async () => mockFunc(schema4)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.01.00.00, already exists within this cache.");
 
     const schema5 = new Schema(context, "TestSchema", "ts", 1, 0, 0);
-    await expect(cache.addSchema(schema5, new LoadSchema(async () => mockFunc(schema5)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema5, new DelayedPromise(async () => mockFunc(schema5)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.01.00.00, already exists within this cache.");
 
     await cache.getSchema(new SchemaKey("TestSchema"));
     assert.strictEqual(cache.loadingSchemasCount, 0);
     assert.strictEqual(cache.loadedSchemasCount, 1);
 
     // Should still be unable to add schema even after loading first schema
-    await expect(cache.addSchema(schema2, new LoadSchema(async () => mockFunc(schema2)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.00.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema2, new DelayedPromise(async () => mockFunc(schema2)))).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.00.00.00, already exists within this cache.");
   });
 
   it("getLoadingSchema returns the loading schema in cache and getLoadedSchema returns the loaded schema in cache", async () => {
@@ -135,7 +136,7 @@ describe("Schema Cache", () => {
     };
 
     const schema = new Schema(context, new SchemaKey("TestSchema"), "ts");
-    await cache.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
+    await cache.addSchema(schema, new DelayedPromise(async () => mockFunc(schema)));
 
     // Should not find loaded schema since it is loading
     expect(await cache.getLoadedSchema(schema.schemaKey)).to.be.undefined;
@@ -160,7 +161,7 @@ describe("Schema Cache", () => {
     expect(await cache.getLoadingSchema(schema.schemaKey)).to.be.undefined;
   });
 
-  it("should run LoadSchema promises only once", async () => {
+  it("should run DelayedPromise promises only once", async () => {
     const cache = new SchemaCache();
     const context = new SchemaContext();
 
@@ -172,7 +173,7 @@ describe("Schema Cache", () => {
       return schema;
     };
 
-    await cache.addSchema(schema1, new LoadSchema(async () => mockFunc(schema1)));
+    await cache.addSchema(schema1, new DelayedPromise(async () => mockFunc(schema1)));
 
     const getSchemaPromises = [];
     for (let i = 0; i < 5; i++) {

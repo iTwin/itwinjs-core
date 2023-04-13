@@ -917,13 +917,6 @@ export class LoadedSchemas extends Array<Schema> {
 export class LoadingSchemas extends Array<LoadingSchema> {
 }
 
-// @alpha
-export class LoadSchema {
-    constructor(_loadSchemaFunc: () => Promise<Schema>);
-    // (undocumented)
-    loadSchema(): Promise<Schema>;
-}
-
 // @beta
 export class Mixin extends ECClass {
     constructor(schema: Schema, name: string);
@@ -1684,8 +1677,8 @@ export class Schema implements CustomAttributeContainerProps {
 // @alpha (undocumented)
 export class SchemaCache implements ISchemaLocater {
     constructor();
-    addSchema<T extends Schema>(schema: T, loadSchema?: LoadSchema): Promise<void>;
-    addSchemaSync<T extends Schema>(schema: T, loadSchema?: LoadSchema): void;
+    addSchema<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>): Promise<void>;
+    addSchemaSync<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>): void;
     // (undocumented)
     get count(): number;
     getAllSchemas(): Schema[];
@@ -1707,11 +1700,11 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     constructor();
     addLocater(locater: ISchemaLocater): void;
     // @alpha
-    addSchema(schema: Schema, loadSchema?: LoadSchema): Promise<void>;
+    addSchema(schema: Schema, loadSchema?: DelayedPromise<Schema>): Promise<void>;
     // @deprecated
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     // @alpha
-    addSchemaSync(schema: Schema, loadSchema?: LoadSchema): void;
+    addSchemaSync(schema: Schema, loadSchema?: DelayedPromise<Schema>): void;
     // @internal
     getCachedLoadedOrLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // @internal

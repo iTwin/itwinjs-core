@@ -4,6 +4,7 @@
 
 ```ts
 
+import { DelayedPromise } from '@itwin/ecschema-metadata';
 import { ISchemaLocater } from '@itwin/ecschema-metadata';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaContext } from '@itwin/ecschema-metadata';
@@ -20,21 +21,14 @@ export class FileSchemaKey extends SchemaKey {
 }
 
 // @alpha
-export class ReadSchemaText {
-    constructor(_readSchemaTextFunc: () => Promise<string | undefined>);
-    // (undocumented)
-    readSchemaText(): Promise<string | undefined>;
-}
-
-// @alpha
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
     // (undocumented)
-    addSchemaText(schemaPath: string, readSchemaText: ReadSchemaText): Promise<void>;
+    addSchemaText(schemaPath: string, readSchemaText: DelayedPromise<string | undefined>): Promise<void>;
     // (undocumented)
-    addSchemaTextSync(schemaPath: string, readSchemaText: ReadSchemaText): void;
+    addSchemaTextSync(schemaPath: string, readSchemaText: DelayedPromise<string | undefined>): void;
     compareSchemaKeyByVersion: (lhs: FileSchemaKey, rhs: FileSchemaKey) => number;
     // (undocumented)
     fileExists(filePath: string): Promise<boolean | undefined>;

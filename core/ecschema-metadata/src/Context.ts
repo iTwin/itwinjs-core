@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromise } from "./DelayedPromise";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { MutableSchema, Schema } from "./Metadata/Schema";
@@ -10,12 +11,12 @@ import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /**
- * Holds partially-loaded schema and corresponding LoadSchema that has the promise to fully load the schema
+ * Holds partially-loaded schema and corresponding promise to fully load the schema
  * @alpha
  */
 interface LoadingSchema {
   schema: Schema;
-  loadSchema: LoadSchema;
+  loadSchema: DelayedPromise<Schema>;
 }
 /**
  * @alpha
@@ -25,27 +26,6 @@ export class LoadedSchemas extends Array<Schema> { }
  * @alpha
  */
 export class LoadingSchemas extends Array<LoadingSchema> { }
-
-/**
- * Construct through a function that returns a promise to read the schema.
- * When loadSchema() is called the first time, it will execute the function to actually begin the promise.
- * When loadSchema() is called after the first time, it will just return the promise.
- * This ensures the promise doesn't run until loadSchema() is called, and there's only one loadSchema promise per schema path.
- * @alpha
- */
-export class LoadSchema {
-  private _loadSchemaPromise: Promise<Schema> | undefined;
-
-  constructor(private _loadSchemaFunc: () => Promise<Schema>) {}
-
-  public async loadSchema(): Promise<Schema> {
-    if (this._loadSchemaPromise)
-      return this._loadSchemaPromise;
-
-    this._loadSchemaPromise = this._loadSchemaFunc();
-    return this._loadSchemaPromise;
-  }
-}
 
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
@@ -110,7 +90,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
    * @param loadSchema LoadSchema wrapper that takes a function returning a fully loaded schema
    */
-  public async addSchema<T extends Schema>(schema: T, loadSchema?: LoadSchema) {
+  public async addSchema<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>) {
     this.addSchemaSync(schema, loadSchema);
   }
 
@@ -120,7 +100,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
    * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
    */
-  public addSchemaSync<T extends Schema>(schema: T, loadSchema?: LoadSchema) {
+  public addSchemaSync<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>) {
     if (this.getLoadedSchemaSync<T>(schema.schemaKey) || this.getLoadingSchemaSync<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
@@ -153,7 +133,7 @@ export class SchemaCache implements ISchemaLocater {
 
     const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
     if (loadingSchema) {
-      const schema = await loadingSchema.loadSchema.loadSchema();
+      const schema = await loadingSchema.loadSchema;
       // Have to check that schema is not already in _loadedSchemas here bc of await above
       if (undefined === this._loadedSchemas.find(findLoadedSchema)) {
         // Add the schema to _loadedSchemas and remove it from _loadingSchemas
@@ -296,7 +276,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
    * @alpha
    */
-  public async addSchema(schema: Schema, loadSchema?: LoadSchema) {
+  public async addSchema(schema: Schema, loadSchema?: DelayedPromise<Schema>) {
     await this._knownSchemas.addSchema(schema, loadSchema);
   }
 
@@ -306,7 +286,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
    * @alpha
    */
-  public addSchemaSync(schema: Schema, loadSchema?: LoadSchema) {
+  public addSchemaSync(schema: Schema, loadSchema?: DelayedPromise<Schema>) {
     this._knownSchemas.addSchemaSync(schema, loadSchema);
   }
 

@@ -6,8 +6,9 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as EC from "@itwin/ecschema-metadata";
-import { FileSchemaKey, ReadSchemaText } from "../SchemaFileLocater";
+import { FileSchemaKey } from "../SchemaFileLocater";
 import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
+import { DelayedPromise } from "@itwin/ecschema-metadata";
 
 describe("SchemaJsonFileLocater tests: ", () => {
   let locater: SchemaJsonFileLocater;
@@ -213,15 +214,15 @@ describe("SchemaJsonFileLocater tests: ", () => {
       resolve("");
     });
 
-    await locater.addSchemaText(schemaPath, new ReadSchemaText(async () => mockPromise));
+    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
     assert.strictEqual(locater.schemaTextsCount, 1);
 
     // Re-adding exact schema path does nothing
-    await locater.addSchemaText(schemaPath, new ReadSchemaText(async () => mockPromise));
+    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
     assert.strictEqual(locater.schemaTextsCount, 1);
 
     schemaPath = path.join(__dirname, "assets", "SchemaD.ecschema.json");
-    await locater.addSchemaText(schemaPath, new ReadSchemaText(async () => mockPromise));
+    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
     assert.strictEqual(locater.schemaTextsCount, 2);
   });
 
@@ -246,7 +247,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
     let schemaText = await locater.getSchemaText(schemaPath);
     assert.isUndefined(schemaText);
 
-    await locater.addSchemaText(schemaPath, new ReadSchemaText(async () => readSchemaText(schemaPath)));
+    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
     schemaText = await locater.getSchemaText(schemaPath);
     let schemaTextCompareTo = await locater.readUtf8FileToString(schemaPath);
     assert.strictEqual(schemaText, schemaTextCompareTo);
@@ -261,7 +262,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
     schemaText = await locater.getSchemaText(schemaPath);
     assert.isUndefined(schemaText);
 
-    await locater.addSchemaText(schemaPath, new ReadSchemaText(async () => readSchemaText(schemaPath)));
+    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
     schemaText = await locater.getSchemaText(schemaPath);
     schemaTextCompareTo = await locater.readUtf8FileToString(schemaPath);
     assert.strictEqual(schemaText, schemaTextCompareTo);
@@ -291,7 +292,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
     // schemaText is not added in locater so it is not found
     assert.isUndefined(schemaText);
 
-    await locater.addSchemaText(schemaPath, new ReadSchemaText(async () => readSchemaText(schemaPath)));
+    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
     schemaText = await locater.getSchemaText(schemaPath);
     // Promise to readSchemaText returns undefined bc path does not exist
     assert.isUndefined(schemaText);

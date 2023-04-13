@@ -6,9 +6,10 @@
 import * as path from "path";
 import { DOMParser } from "@xmldom/xmldom";
 import {
+  DelayedPromise,
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, ReadSchemaText, SchemaFileLocater } from "./SchemaFileLocater";
+import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
 /** @packageDocumentation
  * @module Locaters
@@ -41,7 +42,8 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     if (undefined === await this.fileExists(schemaPath))
       return undefined;
 
-    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
+    const asyncOp = async () => this.readSchemaText(schemaPath);
+    await this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
 
     const schemaText = await this.getSchemaText(schemaPath);
     if (undefined === schemaText)
@@ -111,7 +113,8 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
+    const asyncOp = async () => this.readSchemaText(schemaPath);
+    await this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
 
     const schemaText = await this.getSchemaText(schemaPath);
     if (undefined === schemaText)

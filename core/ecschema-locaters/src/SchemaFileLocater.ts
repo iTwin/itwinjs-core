@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { DelayedPromise, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
 /** @packageDocumentation
  * @module Locaters
@@ -62,33 +62,12 @@ export class FileSchemaKey extends SchemaKey {
 }
 
 /**
- * Holds schemaPath and corresponding ReadSchemaText that has the promise to read schema text found there
+ * Holds schemaPath and corresponding promise to read schema text found there
  * @alpha
  */
 interface SchemaText {
   schemaPath: string;
-  readSchemaText: ReadSchemaText;
-}
-
-/**
- * Construct through a function that returns a promise to read the schema.
- * When readSchemaText() is called the first time, it will execute the function to actually begin the promise.
- * When readSchemaText() is called after the first time, it will just return the promise.
- * This ensures the promise doesn't run until readSchemaText() is called, and there's only one readSchemaText promise per schema path.
- * @alpha
- */
-export class ReadSchemaText {
-  private _readSchemaTextPromise: Promise<string | undefined> | undefined;
-
-  constructor(private _readSchemaTextFunc: () => Promise<string | undefined>) { }
-
-  public async readSchemaText(): Promise<string | undefined> {
-    if (this._readSchemaTextPromise)
-      return this._readSchemaTextPromise;
-
-    this._readSchemaTextPromise = this._readSchemaTextFunc();
-    return this._readSchemaTextPromise;
-  }
+  readSchemaText: DelayedPromise<string | undefined>;
 }
 
 /**
@@ -111,11 +90,11 @@ export abstract class SchemaFileLocater {
 
   public get schemaTextsCount() { return this._schemaTexts.length; }
 
-  public async addSchemaText(schemaPath: string, readSchemaText: ReadSchemaText) {
+  public async addSchemaText(schemaPath: string, readSchemaText: DelayedPromise<string | undefined>) {
     this.addSchemaTextSync(schemaPath, readSchemaText);
   }
 
-  public addSchemaTextSync(schemaPath: string, readSchemaText: ReadSchemaText) {
+  public addSchemaTextSync(schemaPath: string, readSchemaText: DelayedPromise<string | undefined>) {
     if (undefined === this.findCachedSchemaText(schemaPath))
       this._schemaTexts.push({ schemaPath, readSchemaText });
   }
@@ -127,7 +106,7 @@ export abstract class SchemaFileLocater {
   public getSchemaTextSync(schemaPath: string): Promise<string | undefined> | undefined {
     const foundSchemaText = this.findCachedSchemaText(schemaPath);
     if (foundSchemaText)
-      return foundSchemaText.readSchemaText.readSchemaText();
+      return foundSchemaText.readSchemaText;
 
     return undefined;
   }
@@ -220,7 +199,7 @@ export abstract class SchemaFileLocater {
   private async addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
     const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
-    await this.addSchemaText(fullPath, new ReadSchemaText(async () => this.readSchemaText(fullPath)));
+    await this.addSchemaText(fullPath, new DelayedPromise(async () => this.readSchemaText(fullPath)));
     const schemaText = await this.getSchemaText(fullPath);
     if (!schemaText)
       return;
@@ -286,7 +265,7 @@ export abstract class SchemaFileLocater {
         fileName = parts.join(".");
       }
 
-      await this.addSchemaText(match, new ReadSchemaText(async () => this.readSchemaText(match)));
+      await this.addSchemaText(match, new DelayedPromise(async () => this.readSchemaText(match)));
       const schemaText = await this.getSchemaText(match);
       if (!schemaText)
         continue;

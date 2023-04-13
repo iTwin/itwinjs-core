@@ -1,7 +1,6 @@
 sep=;
 Release Tag;API Item
 beta;FileSchemaKey 
-alpha;ReadSchemaText
 alpha;class SchemaFileLocater
 alpha;SchemaJsonFileLocater 
 alpha;SchemaTextsCache 

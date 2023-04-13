@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { LoadSchema, SchemaContext } from "../Context";
+import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem } from "../Interfaces";
@@ -26,6 +26,7 @@ import { getItemNamesFromFormatString } from "@itwin/core-quantity";
 import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
 import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps";
 import { SchemaGraph } from "../utils/SchemaGraph";
+import { DelayedPromise } from "../DelayedPromise";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
@@ -74,7 +75,7 @@ export class SchemaReadHelper<T = unknown> {
 
     // Need to check if schema is already in cache synchronously
     if (undefined === this._context.getCachedLoadedOrLoadingSchemaSync(schema.schemaKey))
-      await this._context.addSchema(schema, new LoadSchema(async () => this.loadSchema(schema)));
+      await this._context.addSchema(schema, new DelayedPromise(async () => this.loadSchema(schema)));
 
     // Await loading the rest of the schema
     const loadedSchema = await this._context.getSchema<U>(schema.schemaKey);
@@ -183,7 +184,7 @@ export class SchemaReadHelper<T = unknown> {
 
     // Need to check if schema is already in cache synchronously
     if (undefined === this._context.getCachedLoadedOrLoadingSchemaSync(schema.schemaKey))
-      await this._context.addSchema(schema, new LoadSchema(async () => this.loadSchema(schema)));
+      await this._context.addSchema(schema, new DelayedPromise(async () => this.loadSchema(schema)));
 
     // Will have schema here since it's checked to be in cache or added above
     const foundSchema = await this._context.getCachedLoadedOrLoadingSchema<U>(schema.schemaKey);
