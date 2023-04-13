@@ -6359,7 +6359,7 @@ export abstract class MapLayerImageryProvider {
     get minimumZoomLevel(): number;
     // @internal (undocumented)
     protected _missingTileData?: Uint8Array;
-    // (undocumented)
+    // @beta (undocumented)
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;

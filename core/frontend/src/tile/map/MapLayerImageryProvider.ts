@@ -62,6 +62,7 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   public get usesCachedTiles() { return this._usesCachedTiles; }
 
+  /** @beta */
   public get mutualExclusiveSubLayer(): boolean { return false; }
 
   /** @internal */
