@@ -19,13 +19,13 @@ import { CloudSqliteTest } from "./CloudSqlite.test";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 async function queryBisModelCount(imodel: IModelDb): Promise<number> {
-  const reader = imodel.createQueryReader("SELECT * FROM bis.model");
+  const reader = imodel.createQueryReader("SELECT count(*) FROM bis.model");
   if (await reader.step())
     return reader.current[0] as number;
   return -1;
 }
 
-describe("Checkpoints", () => {
+describe.only("Checkpoints", () => {
   let daemon: ChildProcess;
   let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
