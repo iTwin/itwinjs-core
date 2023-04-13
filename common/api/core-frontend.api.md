@@ -6343,17 +6343,15 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
-    get hasSuccessfullyFetchedTile(): boolean;
-    // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
     makeTileRequest(url: string): Promise<Response>;
     // @internal (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     get maximumScreenSize(): number;
     // (undocumented)
     get maximumZoomLevel(): number;
@@ -6375,19 +6373,19 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // (undocumented)
+    // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
-    // (undocumented)
+    // @internal (undocumented)
     get tileSize(): number;
     // (undocumented)
     get tilingScheme(): MapTilingScheme;
     // @internal (undocumented)
     protected toolTipFromUrl(strings: string[], url: string): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     get transparentBackgroundString(): string;
-    // (undocumented)
+    // @internal (undocumented)
     get useGeographicTilingScheme(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     get usesCachedTiles(): boolean;
     // (undocumented)
     protected _usesCachedTiles: boolean;
