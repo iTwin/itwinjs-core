@@ -6287,7 +6287,7 @@ export class MapLayerFormatRegistry {
 // @public
 export type MapLayerFormatType = typeof MapLayerFormat;
 
-// @public
+// @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
     // @internal (undocumented)
@@ -6359,7 +6359,7 @@ export abstract class MapLayerImageryProvider {
     get minimumZoomLevel(): number;
     // @internal (undocumented)
     protected _missingTileData?: Uint8Array;
-    // @beta (undocumented)
+    // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
@@ -6453,7 +6453,7 @@ export class MapLayerSource {
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @public
+// @beta
 export class MapLayerSources {
     // (undocumented)
     static addSourceToMapLayerSources(mapLayerSource?: MapLayerSource): Promise<MapLayerSources | undefined>;
@@ -13983,6 +13983,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @alpha (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
+    // @beta
     getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     // @internal
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];

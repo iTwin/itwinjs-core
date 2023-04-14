@@ -118,7 +118,7 @@ export class MapLayerSource {
 }
 
 /** A collection of [[MapLayerSource]] objects.
- * @public
+ * @beta
  */
 export class MapLayerSources {
   private static _instance?: MapLayerSources;

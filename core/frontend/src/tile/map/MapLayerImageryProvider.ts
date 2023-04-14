@@ -29,7 +29,7 @@ export enum MapLayerImageryProviderStatus {
 
 /** Abstract class for map layer imagery providers.
  * Map layer imagery providers request and provide tile images and other data. Each map layer from a separate source needs its own imagery provider object.
- * @public
+ * @beta
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
@@ -62,7 +62,6 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   public get usesCachedTiles() { return this._usesCachedTiles; }
 
-  /** @beta */
   public get mutualExclusiveSubLayer(): boolean { return false; }
 
   /** @internal */

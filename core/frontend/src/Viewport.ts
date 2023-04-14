@@ -803,6 +803,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** Return the imagery provider for the provided map-layer index.
    * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
+   * @beta
    */
   public getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(mapLayerIndex); }
 
