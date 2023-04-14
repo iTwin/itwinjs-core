@@ -17,15 +17,15 @@ function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel:
   it("should preserve order", async () => {
     const socket = socketSource();
 
-    let responses: string[] = [];
+    const responses: string[] = [];
 
     const a = socket.invoke("a", "a");
     const b = socket.invoke("b", "b");
     const c = socket.invoke("c", "c");
 
-    onResponse(a, responses);
-    onResponse(b, responses);
-    onResponse(c, responses);
+    onResponse(a, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(b, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(c, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     await Promise.all([a, b, c]);
     assert.deepEqual(responses, ["a", "c", "b"]);
@@ -34,7 +34,7 @@ function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel:
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe.only("ElectronIpc", () => {
-    orderTest(it, () => require("electron").ipcRenderer);
+    orderTest(it, () => require("electron").ipcRenderer); // eslint-disable-line @typescript-eslint/no-var-requires
   });
 } else {
   describe.only("IpcWebSocket", () => {

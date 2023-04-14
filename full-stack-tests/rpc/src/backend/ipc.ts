@@ -14,7 +14,7 @@ function orderTest(socket: { handle(channel: string, listener: (event: any, ...a
   socket.handle("b", async (_event: Event, methodName: string, ..._args: any[]) => {
     return new Promise((resolve) => {
       setTimeout(() => resolve([methodName, "b"]), 1000);
-    })
+    });
   });
 
   socket.handle("c", async (_event: Event, methodName: string, ..._args: any[]) => {
@@ -23,7 +23,7 @@ function orderTest(socket: { handle(channel: string, listener: (event: any, ...a
 }
 
 export function setupIpcTestElectron() {
-  orderTest(require("electron").ipcMain);
+  orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-var-requires
 }
 
 export async function setupIpcTest(before = async () => { }, socketOverride?: IpcWebSocketBackend) {

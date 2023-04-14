@@ -30,7 +30,7 @@ async function init() {
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
-  setupIpcTest(() => Promise.resolve(), LocalhostIpcHost.socket);
+  setupIpcTest(async () => Promise.resolve(), LocalhostIpcHost.socket); // eslint-disable-line @typescript-eslint/no-floating-promises
 
   return () => {
     httpServer.close();
