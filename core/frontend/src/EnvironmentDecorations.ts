@@ -17,6 +17,7 @@ import { DecorateContext } from "./ViewContext";
 import { tryImageElementFromUrl } from "./ImageUtil";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderSkyBoxParams } from "./render/RenderSystem";
+import { RenderGraphic } from "./core-frontend";
 
 /** @internal */
 export interface GroundPlaneDecorations {
@@ -85,11 +86,17 @@ export class EnvironmentDecorations {
 
   public decorate(context: DecorateContext): void {
     const env = this._environment;
+
+    let sky: RenderGraphic | undefined = undefined;
     if (env.displaySky && this._sky.params) {
-      const sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
-      if (sky)
-        context.setSkyBox(sky);
+      sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
     }
+    if (env.displayAtmosphere && env.atmosphere) { // Atmosphere can only be drawn if sky is also drawn
+      sky = IModelApp.renderSystem.createSkyBox(this.createSkyGradientParams());
+    }
+    if (sky)
+      context.setSkyBox(sky);
+
 
     if (!env.displayGround || !this._ground)
       return;
