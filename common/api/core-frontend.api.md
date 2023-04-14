@@ -2512,14 +2512,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     anyMapLayersVisible(overlay: boolean): boolean;
     attachMapLayer(options: {
         settings: MapLayerSettings;
-        isOverlay?: boolean;
-        insertIndex?: number;
+        mapLayerIndex: MapLayerIndex;
     }): void;
     // @internal (undocumented)
     attachMapLayerProps(options: {
         props: MapLayerProps;
-        isOverlay?: boolean;
-        insertIndex?: number;
+        mapLayerIndex: MapLayerIndex;
     }): void;
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
@@ -2528,25 +2526,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     set backgroundMapBase(base: BaseLayerSettings);
     // @internal (undocumented)
     get backgroundMapElevationBias(): number | undefined;
-    // @internal (undocumented)
-    get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
     get baseMapTransparency(): number;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     changeBaseMapTransparency(transparency: number): void;
-    // (undocumented)
-    changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
-    changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
-    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
+    changeMapLayerCredentials(mapLayerIndex: MapLayerIndex, userName?: string, password?: string): void;
+    changeMapLayerProps(props: Partial<MapLayerProps>, mapLayerIndex: MapLayerIndex): void;
+    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, mapLayerIndex: MapLayerIndex): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // (undocumented)
     static get className(): string;
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
-    detachMapLayerByIndex(index: number, isOverlay: boolean): void;
+    detachMapLayerByIndex(mapLayerIndex: MapLayerIndex): void;
     // @internal (undocumented)
     detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
     detachRealityModelByNameAndUrl(name: string, url: string): boolean;
@@ -2571,8 +2566,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
-    // @internal
-    getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
     getOSMBuildingRealityModel(): ContextRealityModelState | undefined;
@@ -2587,20 +2580,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
-    // (undocumented)
-    mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
+    mapLayerAtIndex(mapLayerIndex: MapLayerIndex): MapLayerSettings | undefined;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
-    moveMapLayerToBottom(index: number, isOverlay: boolean): void;
+    moveMapLayerToBottom(mapLayerIndex: MapLayerIndex): void;
     moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean): void;
-    moveMapLayerToTop(index: number, isOverlay: boolean): void;
+    moveMapLayerToTop(mapLayerIndex: MapLayerIndex): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
     // @deprecated
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
-    // @internal (undocumented)
-    get overlayMapLayers(): MapLayerSettings[];
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
@@ -2620,8 +2610,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
-    // @internal
-    viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean>;
     get wantShadows(): boolean;
 }
 
@@ -5274,7 +5262,6 @@ export class IModelApp {
     }): HTMLTableRowElement;
     // @internal
     static makeModalDiv(options: ModalOptions): ModalReturn;
-    // @internal
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     // @internal
@@ -6256,7 +6243,7 @@ export interface MapLayerFeatureInfo {
     layerName: string;
 }
 
-// @beta
+// @public
 export class MapLayerFormat {
     // @internal
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -6276,136 +6263,135 @@ export interface MapLayerFormatEntry {
     type: MapLayerFormatType;
 }
 
-// @beta (undocumented)
+// @public
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // @internal (undocumented)
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
-    // @internal (undocumented)
+    // @internal
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
-    // (undocumented)
+    // @beta (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
     // (undocumented)
     isRegistered(formatId: string): boolean;
     // (undocumented)
-    register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient): void;
-    // (undocumented)
+    register(formatClass: MapLayerFormatType): void;
+    // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
     // (undocumented)
     validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @beta (undocumented)
+// @public
 export type MapLayerFormatType = typeof MapLayerFormat;
 
-// @internal
+// @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
-    // (undocumented)
+    // @internal (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
     cartoRange?: MapCartoRectangle;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly defaultMaximumZoomLevel = 22;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly defaultMinimumZoomLevel = 0;
-    // (undocumented)
+    // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
         top: number;
         bottom: number;
     };
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857ExtentString(row: number, column: number, zoomLevel: number): string;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857X(longitude: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857Y(latitude: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326Extent(row: number, column: number, zoomLevel: number): {
         longitudeLeft: number;
         longitudeRight: number;
         latitudeTop: number;
         latitudeBottom: number;
     };
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326Lat(y3857: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326Lon(x3857: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): Promise<ImageSource | undefined>;
-    // (undocumented)
+    // @internal (undocumented)
     getPotentialChildIds(tile: ImageryMapTile): QuadId[];
-    // (undocumented)
+    // @internal (undocumented)
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
-    get hasSuccessfullyFetchedTile(): boolean;
-    // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     initialize(): Promise<void>;
-    // (undocumented)
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
-    // (undocumented)
+    // @internal (undocumented)
     makeTileRequest(url: string): Promise<Response>;
-    // (undocumented)
+    // @internal (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     get maximumScreenSize(): number;
     // (undocumented)
     get maximumZoomLevel(): number;
     // (undocumented)
     get minimumZoomLevel(): number;
-    // (undocumented)
+    // @internal (undocumented)
     protected _missingTileData?: Uint8Array;
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
+    // @internal
     protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
     // (undocumented)
     resetStatus(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
+    // @internal
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // (undocumented)
+    // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
-    // (undocumented)
+    // @internal (undocumented)
     get tileSize(): number;
     // (undocumented)
     get tilingScheme(): MapTilingScheme;
-    // (undocumented)
+    // @internal (undocumented)
     protected toolTipFromUrl(strings: string[], url: string): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     get transparentBackgroundString(): string;
-    // (undocumented)
+    // @internal (undocumented)
     get useGeographicTilingScheme(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     get usesCachedTiles(): boolean;
     // (undocumented)
     protected _usesCachedTiles: boolean;
 }
 
-// @beta (undocumented)
+// @public
 export enum MapLayerImageryProviderStatus {
     // (undocumented)
     RequireAuth = 1,
@@ -6413,13 +6399,13 @@ export enum MapLayerImageryProviderStatus {
     Valid = 0
 }
 
-// @internal
+// @public
 export interface MapLayerIndex {
     index: number;
     isOverlay: boolean;
 }
 
-// @beta
+// @public
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
@@ -6467,7 +6453,7 @@ export class MapLayerSource {
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @internal
+// @beta
 export class MapLayerSources {
     // (undocumented)
     static addSourceToMapLayerSources(mapLayerSource?: MapLayerSource): Promise<MapLayerSources | undefined>;
@@ -6669,14 +6655,14 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     // (undocumented)
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
     // (undocumented)
-    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
-    resetMapLayer(index: number, isOverlay: boolean): void;
+    resetMapLayer(mapLayerIndex: MapLayerIndex): void;
     // (undocumented)
     setView(newView: ViewState): void;
 }
@@ -13997,12 +13983,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @alpha (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
-    // @internal (undocumented)
-    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    // @beta
+    getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     // @internal
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
+    getMapLayerRange(mapLayerIndex: MapLayerIndex): Promise<MapCartoRectangle | undefined>;
     // @beta
-    getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility;
+    getMapLayerScaleRangeVisibility(mapLayerIndex: MapLayerIndex): MapTileTreeScaleRangeVisibility;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
@@ -14115,7 +14102,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     requestRedraw(): void;
     // @beta
-    resetMapLayer(index: number, isOverlay: boolean): void;
+    resetMapLayer(mapLayerIndex: MapLayerIndex): void;
     get rotation(): Matrix3d;
     // @internal (undocumented)
     get sceneValid(): boolean;
@@ -14180,6 +14167,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     get viewingGlobe(): boolean;
     // (undocumented)
     get viewingSpace(): ViewingSpace;
+    viewMapLayerRange(mapLayerIndex: MapLayerIndex, vp: ScreenViewport): Promise<boolean>;
     get viewportId(): number;
     // @internal (undocumented)
     protected readonly _viewRange: ViewRect;
