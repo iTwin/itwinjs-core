@@ -513,7 +513,6 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
-      '@types/semver': 7.3.10
       '@types/sinon': ^9.0.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -527,7 +526,6 @@ importers:
       nyc: ^15.1.0
       reflect-metadata: 0.1.13
       rimraf: ^3.0.2
-      semver: ^7.3.5
       sinon: ^9.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
@@ -544,7 +542,6 @@ importers:
       '@loaders.gl/draco': 3.3.3
       fuse.js: 3.6.1
       reflect-metadata: 0.1.13
-      semver: 7.4.0
       wms-capabilities: 0.4.0
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -560,7 +557,6 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 18.15.11
-      '@types/semver': 7.3.10
       '@types/sinon': 9.0.11
       babel-loader: 8.2.5_webpack@5.79.0
       babel-plugin-istanbul: 6.1.1
@@ -624,7 +620,6 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      semver: ^7.3.5
       typescript: ~5.0.2
     dependencies:
       '@itwin/core-bentley': link:../bentley
@@ -642,7 +637,6 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      semver: 7.4.0
       typescript: 5.0.4
 
   ../../core/hypermodeling:
@@ -866,7 +860,6 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      semver: ^7.3.5
       typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -882,7 +875,6 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      semver: 7.4.0
       typescript: 5.0.4
 
   ../../core/quantity:
@@ -1017,8 +1009,6 @@ importers:
       rimraf: ^3.0.2
       semver: ^7.3.5
       typescript: ~5.0.2
-    dependencies:
-      semver: 7.4.0
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
@@ -1036,6 +1026,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
+      semver: 7.4.0
       typescript: 5.0.4
 
   ../../domains/linear-referencing/backend:
@@ -1175,7 +1166,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
-      '@types/semver': 7.3.10
       chai: ^4.1.2
       eslint: ^8.36.0
       mocha: ^10.0.0
@@ -1190,7 +1180,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 18.15.11
-      '@types/semver': 7.3.10
       chai: 4.3.7
       eslint: 8.38.0
       mocha: 10.2.0
@@ -2498,7 +2487,6 @@ importers:
       null-loader: ^4.0.1
       react: ^18.0.0
       rimraf: ^3.0.2
-      semver: ^7.3.5
       ts-node: ^10.8.2
       typescript: ~5.0.2
       vhacd-js: ^0.0.1
@@ -2560,7 +2548,6 @@ importers:
       null-loader: 4.0.1_webpack@5.79.0
       react: 18.2.0
       rimraf: 3.0.2
-      semver: 7.4.0
       ts-node: 10.9.1_typescript@5.0.4
       typescript: 5.0.4
       webpack: 5.79.0

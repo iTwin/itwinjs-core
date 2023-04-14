@@ -57,10 +57,8 @@
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
+    "semver": "^7.3.5",
     "typescript": "~5.0.2"
-  },
-  "dependencies": {
-    "semver": "^7.3.5"
   },
   "TODO-dependencies": {
     "@bentley/analytical-schema": "~1.0.0"
