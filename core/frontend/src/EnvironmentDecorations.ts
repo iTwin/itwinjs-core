@@ -88,11 +88,10 @@ export class EnvironmentDecorations {
     const env = this._environment;
 
     let sky: RenderGraphic | undefined = undefined;
-    if (env.displaySky && this._sky.params) {
-      sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
-    }
-    if (env.displayAtmosphere && env.atmosphere) { // Atmosphere can only be drawn if sky is also drawn
+    if (env.displayAtmosphere) {
       sky = IModelApp.renderSystem.createSkyBox(this.createSkyGradientParams());
+    } else if (env.displaySky && this._sky.params) {
+      sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
     }
     if (sky)
       context.setSkyBox(sky);
