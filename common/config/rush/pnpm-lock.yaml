@@ -38,7 +38,6 @@ importers:
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       inversify: ~5.0.1
-      js-base64: ^3.6.1
       json5: ^2.2.3
       mocha: ^10.0.0
       multiparty: ^4.2.1
@@ -59,7 +58,6 @@ importers:
       form-data: 2.5.1
       fs-extra: 8.1.0
       inversify: 5.0.5
-      js-base64: 3.7.5
       json5: 2.2.3
       multiparty: 4.2.3
       semver: 7.4.0
