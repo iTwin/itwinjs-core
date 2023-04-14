@@ -118,6 +118,7 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { IpcWebSocketBackend } from '@itwin/core-common';
 import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
@@ -3589,6 +3590,8 @@ export class LinkPartition extends InformationPartitionElement {
 export class LocalhostIpcHost {
     // (undocumented)
     static connect(connection: ws): void;
+    // (undocumented)
+    static socket: IpcWebSocketBackend;
     // (undocumented)
     static startup(opts?: {
         localhostIpcHost?: LocalhostIpcHostOpts;
