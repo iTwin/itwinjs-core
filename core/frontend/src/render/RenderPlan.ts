@@ -34,11 +34,11 @@ export class RenderPlanEllipsoid {
   }
 
   public equals(other: RenderPlanEllipsoid): boolean {
-    if (this.ellipsoidCenter !== other.ellipsoidCenter)
+    if (this.ellipsoidCenter.isAlmostEqual(other.ellipsoidCenter))
       return false;
-    if (this.ellipsoidRotation !== other.ellipsoidRotation)
+    if (this.ellipsoidRotation.isAlmostEqual(other.ellipsoidRotation))
       return false;
-    if (this.ellipsoidRadii !== other.ellipsoidRadii)
+    if (this.ellipsoidRadii.isAlmostEqual(other.ellipsoidRadii))
       return false;
     return true;
   }
