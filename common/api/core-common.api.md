@@ -5303,7 +5303,6 @@ export interface Localization {
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
-    // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
 

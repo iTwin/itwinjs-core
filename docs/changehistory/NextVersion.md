@@ -23,6 +23,8 @@ Table of contents:
   - [Dependency updates](#dependency-updates)
 - [Transformation](#transformation)
 - [Deprecated API removals](#deprecated-api-removals)
+- [Deprecated API replacements](#deprecated-api-replacements)
+  - [Querying ECSql](#querying-ecsql)
 - [AppUI packages moved](#appui-packages-moved)
 
 ## Updated minimum requirements
@@ -172,6 +174,29 @@ The following previously-deprecated APIs have been removed:
 - `CloudStorageTileCache`
 - `IModelTileRpcInterface.getTileCacheContainerUrl`
 - `IModelTileRpcInterface.isUsingExternalTileCache`
+
+## Deprecated API replacements
+
+### Querying ECSql
+
+[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+
+`createQueryReader` can now be used like below:
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const rowId = row[0]; // or 'row.id'
+}
+```
+
+It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const jsRow = row.toRow();
+}
+```
 
 ## AppUI packages moved
 

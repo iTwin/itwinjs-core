@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote and document some map layers functions.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
