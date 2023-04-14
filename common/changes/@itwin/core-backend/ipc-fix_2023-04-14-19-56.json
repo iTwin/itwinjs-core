@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "IPC fix.",
+      "comment": "Prevent IPC requests from blocking the backend.",
       "type": "none"
     }
   ],
