@@ -3,18 +3,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
-      "name": "@azure/core-htp",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@azure/core-http",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@azure/logger",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "internal" ]
     },
