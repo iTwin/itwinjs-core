@@ -62,8 +62,7 @@ async function* getElementsPropertiesECSQL(db: IModelDb) {
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = el.ECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id`;
 
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const row of db.query(query, undefined, { abbreviateBlobs: true, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+  for await (const row of db.createQueryReader(query, undefined, { abbreviateBlobs: true, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     const properties = loadElementProperties(db, row.className, row.id);
     expect(properties.id).to.be.eq(row.id);
     yield properties;

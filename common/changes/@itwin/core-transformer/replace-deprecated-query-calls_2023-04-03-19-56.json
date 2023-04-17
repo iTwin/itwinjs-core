@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

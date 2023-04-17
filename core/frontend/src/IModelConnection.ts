@@ -315,8 +315,7 @@ export abstract class IModelConnection extends IModel {
    */
 
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
+    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
@@ -340,8 +339,7 @@ export abstract class IModelConnection extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -979,8 +977,8 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of this._iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },

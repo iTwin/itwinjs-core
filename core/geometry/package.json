@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "4.0.0-dev.72",
+  "version": "4.0.0-dev.77",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
@@ -48,7 +48,6 @@
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "semver": "^7.3.5",
     "typescript": "~5.0.2"
   },
   "dependencies": {
