@@ -344,7 +344,7 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
-public;SQLiteDb 
+public;SQLiteDb
 public;SQLiteDb
 internal;BlobIO
 public;SqliteStatement 
@@ -383,6 +383,7 @@ internal;V1CheckpointManager
 internal;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
+beta;class VersionedSqliteDb 
 public;ViewAttachment 
 public;ViewAttachmentLabel 
 public;class ViewDefinition 

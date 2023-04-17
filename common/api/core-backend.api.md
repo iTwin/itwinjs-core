@@ -4592,7 +4592,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 }
 
 // @public
-export class SQLiteDb implements IDisposable {
+export class SQLiteDb {
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
     // @internal (undocumented)
@@ -4600,6 +4600,13 @@ export class SQLiteDb implements IDisposable {
     createDb(dbName: string): void;
     // @beta (undocumented)
     createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
+    protected createTable(args: {
+        tableName: string;
+        columns: string;
+        constraints?: string;
+        addTimestamp?: boolean;
+    }): void;
+    // @deprecated
     dispose(): void;
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
@@ -4611,6 +4618,7 @@ export class SQLiteDb implements IDisposable {
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    readLastModTime(tableName: string, rowId: number): Date;
     saveChanges(): void;
     vacuum(args?: SQLiteDb.VacuumDbArgs): void;
     // @internal
@@ -4668,9 +4676,14 @@ export namespace SQLiteDb {
     export interface PageSize {
         pageSize?: number;
     }
+    export interface RequiredVersionRanges {
+        readonly readVersion: VersionRange;
+        readonly writeVersion: VersionRange;
+    }
     export interface VacuumDbArgs extends PageSize {
         into?: LocalFileName;
     }
+    export type VersionRange = string;
     export interface WithOpenDbArgs {
         // @internal (undocumented)
         container?: CloudSqlite.CloudContainer;
@@ -5144,6 +5157,22 @@ export interface ValidationError {
     errorType: string;
     fatal: boolean;
     message?: string;
+}
+
+// @beta
+export abstract class VersionedSqliteDb extends SQLiteDb {
+    protected abstract createDDL(): void;
+    static createNewDb(fileName: LocalFileName): void;
+    getRequiredVersions(): SQLiteDb.RequiredVersionRanges;
+    abstract myVersion: string;
+    openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
+    setRequiredVersions(versions: SQLiteDb.RequiredVersionRanges): void;
+    protected verifyVersions(): void;
+    // (undocumented)
+    protected static _versionProps: {
+        namespace: string;
+        name: string;
+    };
 }
 
 // @public
