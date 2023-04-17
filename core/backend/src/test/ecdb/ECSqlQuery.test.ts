@@ -142,9 +142,10 @@ describe("ECSql Query", () => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
         assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
       });
+
       let hasRow = false;
-      for await (const row of imodel1.query(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row, testQuery.expected, `${testQuery.query} does not match expected result`);
+      for await (const row of imodel1.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
+        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
@@ -156,8 +157,8 @@ describe("ECSql Query", () => {
         assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
       });
       let hasRow = false;
-      for await (const row of imodel6.query(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row, testQuery.expected, `${testQuery.query} does not match expected result`);
+      for await (const row of imodel6.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
+        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
