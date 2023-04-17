@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Removed the change of CodeScopes for elements that have CodeSpec with Repository type",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

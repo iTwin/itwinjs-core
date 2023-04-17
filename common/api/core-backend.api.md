@@ -345,6 +345,8 @@ export enum BackendLoggerCategory {
     EventSink = "core-backend.EventSink",
     Functional = "core-backend.Functional",
     IModelDb = "core-backend.IModelDb",
+    // @internal
+    IModelElementCloneContext = "core-backend.IModelElementCloneContext",
     IModelHost = "core-backend.IModelHost",
     IModelTileRequestRpc = "core-backend.IModelTileRequestRpc",
     IModelTileStorage = "core-backend.IModelTileStorage",
