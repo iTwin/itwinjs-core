@@ -39,6 +39,7 @@ internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
 public;CloudContainerArgs
+beta;CloudPropertyStore
 beta;CloudSqlite
 internal;LockAndOpenArgs
 internal;ObtainLockParams
@@ -288,8 +289,7 @@ public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
-alpha;PropertyStore
-alpha;PropertyStore
+beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 

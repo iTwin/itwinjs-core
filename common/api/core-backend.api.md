@@ -732,6 +732,20 @@ export interface CloudContainerArgs {
 }
 
 // @beta
+export interface CloudPropertyStore {
+    deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
+    deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
+    readonly lockParams: CloudSqlite.ObtainLockParams;
+    sasToken: AccessToken;
+    saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
+    saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
+    // @internal
+    startPrefetch(): CloudSqlite.CloudPrefetch;
+    synchronizeWithCloud(): void;
+    readonly values: PropertyStore.ReadValues;
+}
+
+// @beta
 export namespace CloudSqlite {
     export interface AccountAccessProps {
         accessName: string;
@@ -4006,39 +4020,59 @@ export enum ProgressStatus {
     Continue = 0
 }
 
-// @alpha
-export interface PropertyStore {
-    deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
-    deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
-    readonly lockParams: CloudSqlite.ObtainLockParams;
-    sasToken: AccessToken;
-    saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
-    saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
-    // @internal
-    startPrefetch(): CloudSqlite.CloudPrefetch;
-    synchronizeWithCloud(): void;
-    readonly values: PropertyStore.Values;
-}
-
-// @alpha (undocumented)
+// @beta (undocumented)
 export namespace PropertyStore {
     let // @internal (undocumented)
-    openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
+    openCloudPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => CloudPropertyStore) | undefined;
     export type IterationReturn = void | "stop";
     export type PropertyArray = {
         name: PropertyName;
         value: PropertyType;
     }[];
+    export class PropertyDb extends VersionedSqliteDb implements PropertyStore.ReadValues {
+        // (undocumented)
+        protected createDDL(): void;
+        deleteProperties(propNames: PropertyStore.PropertyName[]): void;
+        deleteProperty(propName: PropertyStore.PropertyName): void;
+        // (undocumented)
+        forAllProperties(iter: PropertyStore.PropertyIteration, filter?: PropertyStore.PropertyFilter): void;
+        // (undocumented)
+        getBlob(name: PropertyStore.PropertyName, defaultValue: Uint8Array): Uint8Array;
+        // (undocumented)
+        getBlob(name: PropertyStore.PropertyName): Uint8Array | undefined;
+        // (undocumented)
+        getBoolean(name: PropertyStore.PropertyName, defaultValue: boolean): boolean;
+        // (undocumented)
+        getBoolean(name: PropertyStore.PropertyName): boolean | undefined;
+        // (undocumented)
+        getNumber(name: PropertyStore.PropertyName, defaultValue: number): number;
+        // (undocumented)
+        getNumber(name: PropertyStore.PropertyName): number | undefined;
+        // (undocumented)
+        getObject<T extends SettingObject>(name: PropertyStore.PropertyName, defaultValue: T): T;
+        // (undocumented)
+        getObject<T extends SettingObject>(name: PropertyStore.PropertyName): T | undefined;
+        // (undocumented)
+        getProperty(name: PropertyStore.PropertyName): PropertyStore.PropertyType | undefined;
+        // (undocumented)
+        getString(name: PropertyStore.PropertyName, defaultValue: string): string;
+        // (undocumented)
+        getString(name: PropertyStore.PropertyName): string | undefined;
+        // (undocumented)
+        readonly myVersion = "3.0.0";
+        saveProperties(props: PropertyStore.PropertyArray): void;
+        saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): void;
+    }
     export interface PropertyFilter {
         readonly orderBy?: "ASC" | "DESC";
         readonly sqlExpression?: string;
         readonly value?: string;
-        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "!=" | "<" | ">";
     }
     export type PropertyIteration = (name: string) => IterationReturn;
     export type PropertyName = string;
     export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
-    export interface Values {
+    export interface ReadValues {
         forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
         getBlob(name: PropertyName): Uint8Array | undefined;
         getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
