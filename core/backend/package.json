@@ -90,17 +90,15 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.7.0",
     "@bentley/imodeljs-native": "4.0.2",
-    "@itwin/object-storage-azure": "^1.5.0",
     "@itwin/cloud-agnostic-core": "^1.5.0",
-    "@itwin/object-storage-core": "^1.5.0",
     "@itwin/core-telemetry": "workspace:*",
+    "@itwin/object-storage-azure": "^1.5.0",
+    "@itwin/object-storage-core": "^1.5.0",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
     "inversify": "~5.0.1",
     "json5": "^2.2.3",
-    "js-base64": "^3.6.1",
     "multiparty": "^4.2.1",
     "semver": "^7.3.5",
     "ws": "^7.5.3"

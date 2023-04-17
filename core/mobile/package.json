@@ -40,7 +40,6 @@
   },
   "dependencies": {
     "lodash": "^4.17.10",
-    "js-base64": "^3.6.1",
     "superagent": "^7.1.5",
     "ws": "^7.5.3"
   },
@@ -64,7 +63,6 @@
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^8.36.0",
-    "js-base64": "^3.6.1",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"

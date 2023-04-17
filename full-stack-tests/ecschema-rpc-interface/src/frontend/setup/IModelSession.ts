@@ -53,7 +53,7 @@ export class IModelSession {
       const iModels = imodelClient.iModels.getRepresentationList({
         authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
         urlParams: {
-          projectId: iTwinId,
+          iTwinId,
           name: iModelData.name,
         },
       });
