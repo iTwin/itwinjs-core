@@ -203,13 +203,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/presentation-opentelemetry",
-      "projectFolder": "presentation/opentelemetry",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/appui-abstract",
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
