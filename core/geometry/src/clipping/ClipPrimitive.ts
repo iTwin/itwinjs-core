@@ -108,7 +108,6 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
  *     * In normal usage, callers get "outside" clip behavior using ONLY the ClipShape isMask property.
  *     * The ClipShape happens to pass the _invisible bit down to ClipPlanes that it creates.
  *         * At that level, the flag controls whether the cut edges are produced on the plane
- *         * This seems like an confused overloading of the meaning.
  * @public
  */
 export class ClipPrimitive implements Clipper{

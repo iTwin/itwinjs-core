@@ -260,10 +260,7 @@ export interface PropertyInfo {
   type: string;
   /** Enumeration info if the property is enumerable */
   enumerationInfo?: EnumerationInfo;
-  /**
-   * Kind of quantity information, if any.
-   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
-   */
+  /** Kind of quantity information, if any. */
   kindOfQuantity?: KindOfQuantityInfo;
   /** Extended type name of the ECProperty if it has one */
   extendedType?: string;

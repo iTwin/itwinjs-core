@@ -50,8 +50,7 @@ describe("ECSql Query", () => {
     const cb = async () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          for await (const _row of imodel1.restartQuery("tag", "SELECT * FROM BisCore.element")) {
+          for await (const _row of imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { restartToken: "tag" })) {
             rowCount++;
           }
           successful++;
@@ -134,7 +133,9 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      pendingRowCount.push(db.queryRowCount(query));
+      const reader = db.createQueryReader(`SELECT COUNT(*) FROM (${query})`);
+      if (await reader.step())
+        pendingRowCount.push(reader.current[0] as number);
     }
 
     const rowCounts = await Promise.all(pendingRowCount);
@@ -156,7 +157,8 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
@@ -178,15 +180,15 @@ describe("ECSql Query", () => {
     let row1: any;
     let row2: any;
     let row3: any;
-    for await (const row of imodel2.query(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-      row1 = row;
+    for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      row1 = row.toRow();
     assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
-      row2 = row;
+    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
+      row2 = row.toRow();
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
-      row3 = row;
+    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
+      row3 = row.toRow();
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);
   });

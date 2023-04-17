@@ -1,17 +1,17 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "4.0.0-dev.39",
+  "version": "4.0.0-dev.76",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
   "main": "lib/cjs/ecschema-editing.js",
   "typings": "lib/cjs/ecschema-editing",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-editing"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/ecschema-editing"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s createLocalization && npm run -s copy:test-assets",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
@@ -40,7 +40,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@itwin/ecschema-metadata": "workspace:*",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
@@ -54,17 +54,17 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.39",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.39",
-    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.39"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.76",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.76",
+    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.76"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

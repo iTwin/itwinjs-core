@@ -544,7 +544,7 @@ describe("ChangeSummary", () => {
           assert.equal(row.summary.id, changeSummaryId);
         });
 
-        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        for await (const row of iModel.createQueryReader("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           assert.isDefined(row.wsgId);
           assert.equal(row.wsgId, changeset.id);
           assert.isDefined(row.summary);
@@ -567,7 +567,7 @@ describe("ChangeSummary", () => {
           assert.equal(row.summary.id, changeSummaryId);
         });
 
-        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        for await (const row of iModel.createQueryReader("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           assert.isDefined(row.wsgId);
           assert.equal(row.wsgId, changeset.id);
           assert.isDefined(row.summary);

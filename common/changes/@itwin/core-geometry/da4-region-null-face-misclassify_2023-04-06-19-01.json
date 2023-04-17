@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "avoid misclassify null face as negative area face",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

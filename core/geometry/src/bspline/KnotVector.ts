@@ -6,8 +6,6 @@
  * @module Bspline
  */
 
-// import { Point2d } from "../Geometry2d";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 

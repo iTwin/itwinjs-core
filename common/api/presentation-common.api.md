@@ -1046,7 +1046,7 @@ export interface FormatOptions {
 }
 
 // @internal (undocumented)
-export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
+export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined;
 
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
@@ -1167,6 +1167,8 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
     // @beta
     instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
+    // @beta
+    sizeLimit?: number;
 }
 
 // @public
@@ -2233,6 +2235,7 @@ export enum PresentationStatus {
     Error = 65536,
     InvalidArgument = 65539,
     NotInitialized = 65537,
+    ResultSetTooLarge = 65538,
     Success = 0
 }
 
@@ -2417,7 +2420,6 @@ export interface PropertyInfo {
     classInfo: ClassInfo;
     enumerationInfo?: EnumerationInfo;
     extendedType?: string;
-    // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
     // @beta
@@ -2722,13 +2724,11 @@ export interface RootNodeRule extends NavigationRuleBase {
 export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
 
 // @internal
-export class RpcRequestsHandler implements IDisposable {
+export class RpcRequestsHandler {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
     computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON>;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
@@ -2767,14 +2767,15 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
-    // (undocumented)
-    readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
+    readonly timeout: number;
 }
 
 // @internal
 export interface RpcRequestsHandlerProps {
     clientId?: string;
+    // (undocumented)
+    timeout?: number;
 }
 
 // @public

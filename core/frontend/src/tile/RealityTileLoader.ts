@@ -13,8 +13,9 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../Viewport";
+import { GltfWrapMode } from "../gltf/GltfSchema";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, GltfWrapMode, I3dmReader, readPointCloudTileContent,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
   RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
 
@@ -76,7 +77,7 @@ export abstract class RealityTileLoader {
 
   }
 
-  public async loadGeometryFromStream(tile: RealityTile,  streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
+  public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
     const format = this._getFormat(streamBuffer);
     if (format !== TileFormat.B3dm)
       return {};
@@ -95,19 +96,39 @@ export abstract class RealityTileLoader {
       isCanceled = () => !tile.isLoading;
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
-    let reader: GltfReader | undefined;
+    let reader: GltfReader | ImdlReader | undefined;
     switch (format) {
+      case TileFormat.IModel:
+        reader = ImdlReader.create({
+          stream: streamBuffer,
+          iModel,
+          modelId,
+          is3d,
+          system,
+          isCanceled,
+        });
+        break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        let graphic = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
-        if (graphic && tile.transformToRoot && !tile.transformToRoot.isIdentity) {
+        const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        let graphic = res.graphic;
+        const rtcCenter = res.rtcCenter;
+        if (graphic && (rtcCenter || tile.transformToRoot && !tile.transformToRoot.isIdentity)) {
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);
-          graphic = system.createBranch(transformBranch, tile.transformToRoot);
+          let xform: Transform;
+          if (!tile.transformToRoot && rtcCenter)
+            xform = Transform.createTranslation(rtcCenter);
+          else {
+            if (rtcCenter)
+              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot!.origin), tile.transformToRoot!.matrix);
+            else
+              xform = tile.transformToRoot!;
+          }
+          graphic = system.createBranch(transformBranch, xform);
         }
 
         return { graphic };
-
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
         break;
@@ -154,7 +175,8 @@ export abstract class RealityTileLoader {
     if (undefined !== reader) {
       // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
       // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
-      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+      if (reader instanceof GltfReader)
+        reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
       try {
         content = await reader.read();
       } catch (_err) {
@@ -188,7 +210,7 @@ export abstract class RealityTileLoader {
 
       if (currentInputState.viewport === viewport && viewport instanceof ScreenViewport) {
         // Try to get a better target point from the last zoom target
-        const {lastWheelEvent} = currentInputState;
+        const { lastWheelEvent } = currentInputState;
 
         if (lastWheelEvent !== undefined && now - lastWheelEvent.time < wheelEventRelevanceTimeout) {
           const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(lastWheelEvent.point));

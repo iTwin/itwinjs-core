@@ -63,6 +63,7 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
+import { RequireAtLeastOne } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -549,26 +550,30 @@ export enum BatchType {
     VolumeClassifier = 1
 }
 
-// @internal
+// @beta
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
     static readonly accessControl: {
         allowOrigin: string;
         allowMethods: string;
         allowHeaders: string;
     };
+    // @internal
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
-// @internal
+// @beta
 export class BentleyCloudRpcManager extends RpcManager {
     static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfiguration;
     static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration;
 }
 
-// @internal
+// @beta
 export interface BentleyCloudRpcParams {
     info: OpenAPIInfo;
+    pathPrefix?: string;
+    // @internal
     pendingRequestListener?: RpcRequestEventHandler;
+    // @internal
     protocol?: typeof BentleyCloudRpcProtocol;
     uriPrefix?: string;
 }
@@ -1119,98 +1124,6 @@ export interface CloudContainerUri {
     readonly uriParams: string;
 }
 
-// @beta @deprecated (undocumented)
-export abstract class CloudStorageCache<TContentId, TContentType> {
-    constructor();
-    // (undocumented)
-    protected formContainerKey(id: TContentId): string;
-    // (undocumented)
-    abstract formContainerName(id: TContentId): string;
-    // (undocumented)
-    abstract formResourceName(id: TContentId): string;
-    // (undocumented)
-    protected getContainer(id: TContentId): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    protected abstract instantiateResource(response: Response): Promise<TContentType | undefined>;
-    // (undocumented)
-    protected abstract obtainContainerUrl(id: TContentId, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    provider: CloudStorageProvider;
-    // (undocumented)
-    protected requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response>;
-    // (undocumented)
-    retrieve(id: TContentId): Promise<TContentType | undefined>;
-    // (undocumented)
-    protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageContainerDescriptor {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    provider?: CloudStorageProvider;
-    // (undocumented)
-    resource?: string;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageContainerUrl {
-    // (undocumented)
-    bound?: boolean;
-    // (undocumented)
-    descriptor: CloudStorageContainerDescriptor;
-    // (undocumented)
-    expires: number;
-    // (undocumented)
-    headers?: Record<string, string>;
-    // (undocumented)
-    method?: string;
-    // (undocumented)
-    url: string;
-    // (undocumented)
-    valid: number;
-}
-
-// @beta @deprecated (undocumented)
-export namespace CloudStorageContainerUrl {
-    // (undocumented)
-    export function empty(): CloudStorageContainerUrl;
-}
-
-// @beta @deprecated (undocumented)
-export enum CloudStorageProvider {
-    // (undocumented)
-    AliCloud = 2,
-    // (undocumented)
-    Amazon = 1,
-    // (undocumented)
-    Azure = 0,
-    // (undocumented)
-    External = 3,
-    // (undocumented)
-    Unknown = 4
-}
-
-// @beta @deprecated (undocumented)
-export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
-    protected constructor();
-    // (undocumented)
-    protected formContainerKey(id: TileContentIdentifier): string;
-    // (undocumented)
-    formContainerName(id: TileContentIdentifier): string;
-    // (undocumented)
-    formResourceName(id: TileContentIdentifier): string;
-    // (undocumented)
-    static getCache(): CloudStorageTileCache;
-    // (undocumented)
-    protected instantiateResource(response: Response): Promise<Uint8Array | undefined>;
-    // (undocumented)
-    protected obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
-    supplyExpiryForContainerUrl(_id: CloudStorageContainerDescriptor): Date;
-}
-
 // @public
 export class Code implements CodeProps {
     constructor(codeProps: CodeProps);
@@ -1456,7 +1369,6 @@ export class ColorDef {
         b: number;
         t: number;
     };
-    // @internal (undocumented)
     static computeTbgr(val?: string | ColorDefProps): ColorDefProps;
     static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): ColorDefProps;
     static computeTbgrFromHSL(h: number, s: number, l: number, transparency?: number): ColorDefProps;
@@ -2079,9 +1991,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     toggleGroundPlane(display?: boolean): void;
     toggleSkyBox(display?: boolean): void;
-    // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
-    // @internal (undocumented)
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
@@ -2227,7 +2137,6 @@ export class DisplayStyleSettings {
     synchMapImagery(): void;
     get timePoint(): number | undefined;
     set timePoint(timePoint: number | undefined);
-    // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
@@ -2451,7 +2360,9 @@ export interface ECSchemaReferenceProps {
 }
 
 // @beta (undocumented)
-export class ECSqlReader {
+export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
+    // (undocumented)
+    [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
     // (undocumented)
@@ -2464,6 +2375,8 @@ export class ECSqlReader {
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
+    // (undocumented)
+    next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
     // (undocumented)
@@ -2999,7 +2912,7 @@ export class Feature {
     constructor(elementId?: Id64String, subCategoryId?: Id64String, geometryClass?: GeometryClass);
     compare(rhs: Feature): number;
     // (undocumented)
-    readonly elementId: string;
+    readonly elementId: Id64String;
     equals(other: Feature): boolean;
     // (undocumented)
     readonly geometryClass: GeometryClass;
@@ -3008,7 +2921,7 @@ export class Feature {
     // (undocumented)
     get isUndefined(): boolean;
     // (undocumented)
-    readonly subCategoryId: string;
+    readonly subCategoryId: Id64String;
 }
 
 // @public
@@ -3111,7 +3024,6 @@ export enum FeatureIndexType {
 // @public
 export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
-    // @internal (undocumented)
     get alwaysDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _alwaysDrawn: Id64.Uint32Set;
@@ -3166,7 +3078,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _modelOverrides: Id64.Uint32Map<FeatureAppearance>;
     // @internal
     protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
-    // @internal (undocumented)
     get neverDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _neverDrawn: Id64.Uint32Set;
@@ -3232,7 +3143,7 @@ export class FeatureTableHeader {
     // (undocumented)
     readonly length: number;
     // (undocumented)
-    readonly maxFeatures: number;
+    readonly numSubCategories: number;
     // (undocumented)
     static readFrom(stream: ByteStream): FeatureTableHeader | undefined;
     // (undocumented)
@@ -4577,6 +4488,7 @@ export enum ImdlFlags {
     ContainsCurves = 1,
     DisallowMagnification = 8,
     Incomplete = 4,
+    MultiModelFeatureTable = 16,
     None = 0
 }
 
@@ -4802,14 +4714,10 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
-    // @beta (undocumented)
+    // @beta
     getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined>;
-    // @beta @deprecated
-    getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
-    // @internal @deprecated
-    isUsingExternalTileCache(): Promise<boolean>;
     // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
@@ -5316,7 +5224,6 @@ export interface Localization {
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
-    // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
 
@@ -5576,6 +5483,28 @@ export interface ModelExtentsProps {
     status: IModelStatus;
 }
 
+// @internal
+export interface ModelFeature {
+    // (undocumented)
+    elementId: Id64String;
+    // (undocumented)
+    geometryClass: GeometryClass;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    subCategoryId: Id64String;
+}
+
+// @internal (undocumented)
+export namespace ModelFeature {
+    // (undocumented)
+    export function create(): ModelFeature;
+    // (undocumented)
+    export function isDefined(feature: ModelFeature): boolean;
+    // (undocumented)
+    export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature;
+}
+
 // @public
 export interface ModelGeometryChanges {
     readonly elements: Iterable<ElementGeometryChange>;
@@ -5695,6 +5624,37 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
+// @internal
+export class MultiModelPackedFeatureTable implements RenderFeatureTable {
+    constructor(features: PackedFeatureTable, models: PackedFeatureModelTable);
+    // (undocumented)
+    get batchModelId(): string;
+    // (undocumented)
+    get batchModelIdPair(): Id64.Uint32Pair;
+    // (undocumented)
+    get byteLength(): number;
+    // (undocumented)
+    static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType, numSubCategories: number): MultiModelPackedFeatureTable;
+    // (undocumented)
+    findElementId(featureIndex: number): Id64String | undefined;
+    // (undocumented)
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    // (undocumented)
+    getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    // (undocumented)
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    // (undocumented)
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+    // (undocumented)
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+    // (undocumented)
+    iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
+    // (undocumented)
+    get numFeatures(): number;
+    // (undocumented)
+    get type(): BatchType;
+}
+
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
@@ -5775,6 +5735,7 @@ export interface NormalMapParams {
     greenUp?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
+    useConstantLod?: boolean;
 }
 
 // @public
@@ -6082,29 +6043,55 @@ export interface PackedFeature {
     // (undocumented)
     geometryClass: GeometryClass;
     // (undocumented)
+    modelId: Id64.Uint32Pair;
+    // (undocumented)
     subCategoryId: Id64.Uint32Pair;
 }
 
+// @internal (undocumented)
+export namespace PackedFeature {
+    // (undocumented)
+    export function create(): PackedFeature;
+    // (undocumented)
+    export function createWithIndex(): PackedFeatureWithIndex;
+}
+
 // @internal
-export class PackedFeatureTable {
-    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
+export class PackedFeatureModelTable {
+    constructor(data: Uint32Array);
+    // (undocumented)
+    get byteLength(): number;
+    // (undocumented)
+    getEntry(modelIndex: number, result: PackedFeatureModelEntry): PackedFeatureModelEntry;
+    getModelIdPair(featureIndex: number, result?: Id64.Uint32Pair): Id64.Uint32Pair;
+    get length(): number;
+}
+
+// @internal
+export class PackedFeatureTable implements RenderFeatureTable {
+    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
     // (undocumented)
     get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined;
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
+    readonly batchModelId: Id64String;
+    // (undocumented)
+    readonly batchModelIdPair: Id64.Uint32Pair;
+    // (undocumented)
     get byteLength(): number;
     findElementId(featureIndex: number): Id64String | undefined;
-    findFeature(featureIndex: number): Feature | undefined;
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
     getAnimationNodeId(featureIndex: number): number;
     // (undocumented)
     getElementIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
-    getFeature(featureIndex: number): Feature;
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     // (undocumented)
-    getPackedFeature(featureIndex: number): PackedFeature;
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     // (undocumented)
     getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
+    getUniform(result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
     get isClassifier(): boolean;
     // (undocumented)
@@ -6113,9 +6100,9 @@ export class PackedFeatureTable {
     // (undocumented)
     get isVolumeClassifier(): boolean;
     // (undocumented)
-    readonly maxFeatures: number;
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     // (undocumented)
-    readonly modelId: Id64String;
+    iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
     // (undocumented)
     readonly numFeatures: number;
     static pack(featureTable: FeatureTable): PackedFeatureTable;
@@ -6123,8 +6110,13 @@ export class PackedFeatureTable {
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
-    get uniform(): Feature | undefined;
     unpack(): FeatureTable;
+}
+
+// @internal (undocumented)
+export interface PackedFeatureWithIndex extends PackedFeature {
+    // (undocumented)
+    index: number;
 }
 
 // @internal
@@ -6376,11 +6368,9 @@ export type PointCloudShape = "square" | "round";
 // @beta
 export type PointCloudSizeMode = "voxel" | "pixel";
 
-// @beta
+// @public
 export interface PointWithStatus {
-    // (undocumented)
     p: XYZProps;
-    // (undocumented)
     s: GeoCoordStatus;
 }
 
@@ -7126,6 +7116,22 @@ export interface RelTypeInfo {
 // @public
 export type RemoveFunction = () => void;
 
+// @internal
+export interface RenderFeatureTable {
+    readonly batchModelId: Id64String;
+    readonly batchModelIdPair: Id64.Uint32Pair;
+    readonly byteLength: number;
+    findElementId(featureIndex: number): Id64String | undefined;
+    findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
+    iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+    readonly numFeatures: number;
+    // (undocumented)
+    readonly type: BatchType;
+}
+
 // @public
 export abstract class RenderMaterial {
     protected constructor(params: RenderMaterial.Params);
@@ -7681,39 +7687,43 @@ export interface RpcActivity extends SessionProps {
 // @internal (undocumented)
 export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
-// @internal
+// @beta
 export abstract class RpcConfiguration {
-    // (undocumented)
+    // @internal (undocumented)
     allowAttachedInterfaces: boolean;
+    // @internal
     static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
     static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: new () => RpcConfiguration): void;
-    // (undocumented)
+    // @internal (undocumented)
     attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
-    // (undocumented)
+    // @internal (undocumented)
     attached: RpcInterfaceDefinition[];
-    // (undocumented)
+    // @internal (undocumented)
     get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition>;
+    // @internal
     readonly controlChannel: RpcControlChannel;
     static developmentMode: boolean;
     static disableRoutingValidation: boolean;
     static initializeInterfaces(configuration: RpcConfiguration): void;
     abstract readonly interfaces: () => RpcInterfaceDefinition[];
     static obtain<T extends RpcConfiguration>(configurationConstructor: new () => T): T;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
     pendingOperationRetryInterval: number;
+    // @internal
     abstract readonly protocol: RpcProtocol;
+    // @internal
     static requestContext: RpcRequestContext;
-    // (undocumented)
+    // @internal (undocumented)
     readonly routing: RpcRoutingToken;
     static strictMode: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
     static throwOnTokenMismatch: boolean;
     transientFaultLimit: number;
@@ -7810,7 +7820,7 @@ export abstract class RpcInterface {
     readonly routing: RpcRoutingToken;
 }
 
-// @internal (undocumented)
+// @beta
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     // (undocumented)
     interfaceName: string;
@@ -7820,7 +7830,7 @@ export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     prototype: T;
 }
 
-// @internal
+// @beta
 export interface RpcInterfaceEndpoints {
     // (undocumented)
     compatible: boolean;
@@ -7832,7 +7842,7 @@ export interface RpcInterfaceEndpoints {
     operationNames: string[];
 }
 
-// @internal (undocumented)
+// @beta
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 // @internal
@@ -7870,7 +7880,7 @@ export interface RpcManagedStatus {
     } | RpcNotFoundResponse;
 }
 
-// @internal
+// @beta
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
@@ -8336,7 +8346,7 @@ export namespace RpcRoutingMap {
     export function create(): RpcRoutingMap;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class RpcRoutingToken {
     // (undocumented)
     readonly debugLabel: string;
@@ -9122,6 +9132,18 @@ export class TextureMapping {
 
 // @public (undocumented)
 export namespace TextureMapping {
+    export interface ConstantLodParamProps {
+        maxDistClamp?: number;
+        minDistClamp?: number;
+        offset?: XAndY;
+        repetitions?: number;
+    }
+    export interface ConstantLodParams {
+        maxDistClamp: number;
+        minDistClamp: number;
+        offset: XAndY;
+        repetitions: number;
+    }
     export enum Mode {
         // @internal (undocumented)
         Cubic = 4,
@@ -9145,9 +9167,11 @@ export namespace TextureMapping {
         Spherical = 5
     }
     export interface ParamProps {
+        constantLodParams?: ConstantLodParamProps;
         mapMode?: TextureMapping.Mode;
         textureMat2x3?: TextureMapping.Trans2x3;
         textureWeight?: number;
+        useConstantLod?: boolean;
         // @internal (undocumented)
         worldMapping?: boolean;
     }
@@ -9155,8 +9179,10 @@ export namespace TextureMapping {
         constructor(props?: TextureMapping.ParamProps);
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+        constantLodParams: ConstantLodParams;
         mode: TextureMapping.Mode;
         textureMatrix: TextureMapping.Trans2x3;
+        useConstantLod: boolean;
         weight: number;
         // @internal (undocumented)
         worldMapping: boolean;
@@ -9357,8 +9383,6 @@ export interface TileContentIdentifier {
     // (undocumented)
     guid: string | undefined;
     // (undocumented)
-    tokenProps: IModelRpcProps;
-    // (undocumented)
     treeId: string;
 }
 
@@ -9498,6 +9522,126 @@ export enum TileReadStatus {
     NewerMajorVersion = 6,
     // (undocumented)
     Success = 0
+}
+
+// @alpha
+export namespace Tileset3dSchema {
+    // (undocumented)
+    export interface Asset extends TilesetProperty {
+        // (undocumented)
+        tilesetVersion?: string;
+        // (undocumented)
+        version: string;
+    }
+    // (undocumented)
+    export type BoundingBox = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    uX: number,
+    uY: number,
+    uZ: number,
+    vX: number,
+    vY: number,
+    vZ: number,
+    wX: number,
+    wY: number,
+    wZ: number
+    ];
+    // (undocumented)
+    export type BoundingRegion = [
+    west: number,
+    south: number,
+    east: number,
+    north: number,
+    minHeight: number,
+    maxHeight: number
+    ];
+    // (undocumented)
+    export type BoundingSphere = [
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    radius: number
+    ];
+    // (undocumented)
+    export type BoundingVolume = RequireAtLeastOne<{
+        box?: BoundingBox;
+        sphere?: BoundingSphere;
+        region?: BoundingRegion;
+    }>;
+    // (undocumented)
+    export interface Content extends TilesetProperty {
+        // (undocumented)
+        boundingVolume?: BoundingVolume;
+        // (undocumented)
+        uri: string;
+    }
+    export interface Extensions {
+        // (undocumented)
+        [key: string]: any;
+    }
+    // (undocumented)
+    export type GeometricError = number;
+    // (undocumented)
+    export type Refinement = "ADD" | "REPLACE" | string;
+    // (undocumented)
+    export interface Tile extends TilesetProperty {
+        // (undocumented)
+        boundingVolume: BoundingVolume;
+        // (undocumented)
+        children?: Tile[];
+        // (undocumented)
+        content?: Content;
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        refine?: Refinement;
+        // (undocumented)
+        transform?: Transform;
+        // (undocumented)
+        viewerRequestVolume?: BoundingVolume;
+    }
+    // (undocumented)
+    export interface Tileset extends TilesetProperty {
+        // (undocumented)
+        asset: Asset;
+        // (undocumented)
+        extensionsRequired?: string[];
+        // (undocumented)
+        extensionsUsed?: string[];
+        // (undocumented)
+        geometricError: GeometricError;
+        // (undocumented)
+        properties: unknown;
+        // (undocumented)
+        root: Tile;
+    }
+    export interface TilesetProperty {
+        // (undocumented)
+        extensions?: Extensions;
+        // (undocumented)
+        extras?: any;
+    }
+    // (undocumented)
+    export type Transform = [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+    ];
 }
 
 // @internal

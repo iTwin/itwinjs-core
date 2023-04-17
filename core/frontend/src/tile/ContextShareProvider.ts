@@ -59,11 +59,11 @@ export class ContextShareProvider {
       // We don't want to make a call to RDS to resolve format since this method must not be async (it is used in workflow that are not async)
       const format = RealityDataFormat.ThreeDTile;
       const indexId = lcTilesetUrl.indexOf("realitydata/") + 12; // lenght of "realitydata/" = 12;
-      const id = lcTilesetUrl.substr(indexId, Guid.empty.length);
+      const id = lcTilesetUrl.substring(indexId, Guid.empty.length + indexId);
       const indexProjectId = lcTilesetUrl.indexOf("projectid=") + 10; // lenght of "projectid=" = 10;
       let projectId: string | undefined;
       if (indexProjectId && indexProjectId > 0)
-        projectId = lcTilesetUrl.substr(indexProjectId, Guid.empty.length);
+        projectId = lcTilesetUrl.substring(indexProjectId, Guid.empty.length + indexProjectId);
       const apimContextShareKey = { provider: RealityDataProvider.ContextShare, format, id, iTwinId: projectId };
       return apimContextShareKey;
     }
@@ -117,7 +117,7 @@ export class ContextShareProvider {
     }
 
     // const blobFileName  = `/${pathSplit[2]}`;
-    // const sasToken      = url.search.substr(1);
+    // const sasToken      = url.search.substring(1);
     const isOPC = url.pathname.match(".opc*") !== null;
     provider = RealityDataProvider.ContextShare;
     format = isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;

@@ -10,19 +10,6 @@
       "@testing-library/dom",
       "@types/node",
       "@typescript-eslint/parser"
-    ],
-    "allowedVersions": {
-      "react": "17",
-      "react-dom": "17"
-    }
-  },
-  "globalPackageExtensions": {
-    "@bentley/react-scripts": {
-      "peerDependenciesMeta": {
-        "react": {
-          "optional": true
-        }
-      }
-    }
+    ]
   }
 }

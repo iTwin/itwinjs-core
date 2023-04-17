@@ -78,9 +78,7 @@ export abstract class IModelConnection extends IModel {
   public get subcategories(): SubCategoriesCache { return this.categories.cache; }
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The Geographic location services available for this iModelConnection
-   * @internal
-   */
+  /** The Geographic location services available for this iModelConnection. */
   public readonly geoServices: GeoServices;
   /** @internal Whether GCS has been disabled for this iModelConnection. */
   protected _gcsDisabled = false;
@@ -257,7 +255,7 @@ export abstract class IModelConnection extends IModel {
   /** Allow to execute query and read results along with meta data. The result are streamed.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
+   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -293,6 +291,7 @@ export abstract class IModelConnection extends IModel {
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
    */
   public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
@@ -312,10 +311,11 @@ export abstract class IModelConnection extends IModel {
    * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
+   * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
 
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
+    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
@@ -336,9 +336,10 @@ export abstract class IModelConnection extends IModel {
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -795,7 +796,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param modelIds the Id or Ids of the [GeometricModel]($backend)s for which to query the ranges.
      * @returns An array containing the range of each model of each unique model Id, omitting the range for any Id which did no identify a GeometricModel.
      * @note The contents of the returned array do not follow a deterministic order.
-     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeoemtricModel.
+     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeometricModel.
      * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
      */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
@@ -976,7 +977,8 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const row of this._iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },

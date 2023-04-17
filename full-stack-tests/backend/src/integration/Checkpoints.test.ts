@@ -8,7 +8,7 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { CloudSqlite, IModelHost, IModelJsFs, NativeCloudSqlite, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -17,6 +17,13 @@ import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
+async function queryBisModelCount(imodel: IModelDb): Promise<number> {
+  const reader = imodel.createQueryReader("SELECT count(*) FROM bis.model");
+  if (await reader.step())
+    return reader.current[0] as number;
+  return -1;
+}
 
 describe("Checkpoints", () => {
   let daemon: ChildProcess;
@@ -154,11 +161,11 @@ describe("Checkpoints", () => {
     assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-    let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+    let numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
     await iModel.refreshContainerSas(accessToken);
-    numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
     iModel.close();
@@ -173,7 +180,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-    numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
     // Open multiple imodels from same container
@@ -187,7 +194,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
     assert.equal(iModel2.iTwinId, testITwinId);
     assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
-    numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel2);
     assert.equal(numModels, 3);
 
     // Open imodels across multiple containers
@@ -202,7 +209,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel3.changeset.id, testChangeSet2.id);
     assert.equal(iModel3.iTwinId, testITwinId2);
     assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
-    numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel3);
     assert.equal(numModels, 4);
 
     iModel.close();
@@ -230,11 +237,11 @@ describe("Checkpoints", () => {
       assert.equal(iModel.changeset.id, testChangeSet.id);
       assert.equal(iModel.iTwinId, testITwinId);
       assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-      let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      let numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
       await iModel.refreshContainerSas(accessToken);
-      numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
       iModel.close();
@@ -249,7 +256,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel.changeset.id, testChangeSet.id);
       assert.equal(iModel.iTwinId, testITwinId);
       assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-      numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
       // Open multiple imodels from same container
@@ -263,7 +270,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
       assert.equal(iModel2.iTwinId, testITwinId);
       assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
-      numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel2);
       assert.equal(numModels, 3);
 
       // Open imodels across multiple containers
@@ -278,7 +285,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel3.changeset.id, testChangeSet2.id);
       assert.equal(iModel3.iTwinId, testITwinId2);
       assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
-      numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel3);
       assert.equal(numModels, 4);
 
       iModel.close();

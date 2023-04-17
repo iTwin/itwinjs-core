@@ -203,7 +203,7 @@ class ViewAttachmentsInfo {
     const views = await Promise.all(promises);
 
     const attachmentProps = options.sheetViewAttachmentProps as ViewAttachmentInfo[];
-    assert (views.length === attachmentProps.length);
+    assert(views.length === attachmentProps.length);
     const attachments = [];
     for (let i = 0; i < views.length; i++) {
       const view = views[i];
@@ -329,7 +329,6 @@ export class SheetViewState extends ViewState2d {
     return this._attachmentsInfo.toJSON();
   }
 
-  /** @internal */
   public static override get className() { return "SheetViewDefinition"; }
 
   public static override createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
@@ -478,7 +477,7 @@ export class SheetViewState extends ViewState2d {
   private async queryAttachmentIds(): Promise<Id64Array> {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
-    for await (const row of this.iModel.query(ecsql))
+    for await (const row of this.iModel.createQueryReader(ecsql))
       ids.push(row[0]);
 
     return ids;

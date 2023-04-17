@@ -16,33 +16,82 @@ import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { MomentData } from "../geometry4d/MomentData";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 
-/* eslint-disable no-console */
-
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
+  /** For debugging: set to true to enable output to console via wrapped methods. */
+  public static enableConsole: boolean = false;
+  /** For debugging: set to true to enable saveGeometry output. */
+  public static enableSave: boolean = false;
+  /** For debugging: set to true to also run longer tests */
+  public static enableLongTests: boolean = false;
+
+  /** For debugging: the location of json files output by saveGeometry. */
   public static outputRootDirectory = "./src/test/output";
-  public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
+
+  /** wrapper for console.log */
+  public static consoleLog(message?: any, ...optionalParams: any[]): void {
+    if (!this.enableConsole)
+      return;
+    console.log(message, ...optionalParams); // eslint-disable-line no-console
+  }
+  /** wrapper for console.time */
+  public static consoleTime(label?: string): void {
+    if (!this.enableConsole)
+      return;
+    console.time(label);  // eslint-disable-line no-console
+  }
+  /** wrapper for console.timeEnd */
+  public static consoleTimeEnd(label?: string): void {
+    if (!this.enableConsole)
+      return;
+    console.timeEnd(label); // eslint-disable-line no-console
+  }
+  private static makeOutputDir(subDirectoryName?: string): string {
     let path = GeometryCoreTestIO.outputRootDirectory;
-    if (directoryName !== undefined) {
-      path = `${path}/${directoryName}`;
+    if (!fs.existsSync(path))
+      fs.mkdirSync(path);
+    if (subDirectoryName !== undefined) {
+      path = `${path}/${subDirectoryName}`;
       if (!fs.existsSync(path))
         fs.mkdirSync(path);
     }
+    return path;
+  }
+  /** Output geometry as json for debugging */
+  public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
+    if (!this.enableSave)
+      return;
+
+    const path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
     if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
         fullPath = `${fullPath}.imjs`;
 
-    console.log(`saveGeometry:: ${fullPath}`);
+    this.consoleLog(`saveGeometry:: ${fullPath}`);
 
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
+  /** For each property of data: save the value in a file name `${propertyName}.json` */
+  public static savePropertiesAsSeparateFiles(directoryName: string | undefined, data: { [key: string]: any }) {
+    if (!GeometryCoreTestIO.enableSave)
+      return;
+    const path = this.makeOutputDir(directoryName);
+    for (const property in data) {
+      if (data.hasOwnProperty(property)) {
+        const filename = `${path}/${property}.imjs`;
+        fs.writeFileSync(filename, JSON.stringify(data[property])); // prettyPrint(data[property]));
+      }
+    }
+  }
+  /** Append the geometry to the collection, e.g., for output by saveGeometry. */
   public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
@@ -57,7 +106,7 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
-  /** Create and capture a loop object for a (single) sequence of points . */
+  /** Create and capture a loop object from a (single) sequence of points . */
   public static createAndCaptureLoop(collection: GeometryQuery[], points: IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!points || points.length === 0)
       return;
@@ -68,7 +117,7 @@ export class GeometryCoreTestIO {
     }
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
-  /** Create and capture a loop object for an array of point sequences. */
+  /** Create and capture loop object(s) from an array of point sequences. */
   public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection | IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (points instanceof IndexedXYZCollection) {
       this.createAndCaptureLoop(collection, points, dx, dy, dz);
@@ -79,7 +128,7 @@ export class GeometryCoreTestIO {
     for (const loop of points)
       this.createAndCaptureLoop(collection, loop, dx, dy, dz);
   }
-
+  /** Clone the geometry and append to collection, e.g., for output by saveGeometry. */
   public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
@@ -214,6 +263,38 @@ export class GeometryCoreTestIO {
   }
 
   /**
+   * Create transformed edges of a range.
+   * * For 3d range, capture all the edges with various linestrings.
+   * * For 2d range, capture single linestring loop.
+   * @param collection growing array of geometry
+   * @param range Range
+   * @param placement range-to-world transform, applied to range points before shift
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static captureTransformedRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, placement?: Transform, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (range !== undefined && !range.isNull) {
+      if (range instanceof Range3d) {
+        const corners = range.corners();
+        if (placement)
+          placement.multiplyPoint3dArrayInPlace(corners);
+        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+        }
+      } else if (range instanceof Range2d) {
+        const corners = range.corners3d(true, 0);
+        if (placement)
+          placement.multiplyPoint3dArrayInPlace(corners);
+        this.captureGeometry(collection, LineString3d.create(corners), dx, dy, dz);
+      }
+    }
+  }
+
+  /**
    * Create edges of a range.
    * * For 3d range, capture all the edges with various linestrings.
    * * For 2d range, capture single linestring loop.
@@ -223,22 +304,10 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureRangeEdges(collection: GeometryQuery[],
-    range: Range2d | Range3d | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (range !== undefined && !range.isNull) {
-      if (range instanceof Range3d) {
-        const corners = range.corners();
-        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
-        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
-        }
-      } else if (range instanceof Range2d) {
-        this.captureGeometry(collection, LineString3d.create(range.corners3d(true, 0)), dx, dy, dz);
-      }
-    }
+  public static captureRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
+    this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
   }
+
   public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (momentData) {
       const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);

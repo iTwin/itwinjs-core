@@ -3,9 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
+import path from "path";
+import sanitize from "sanitize-filename";
+import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
+import { LocalFileName } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
-import { IModelJsFs } from "@itwin/core-backend";
 
 /**
  * Simplified type for `sinon.SinonSpy`.
@@ -62,6 +65,45 @@ export function getFieldsByLabel(rootFields: Field[], label: string): Field[] {
   };
   handleFields(rootFields);
   return foundFields;
+}
+
+function createValidIModelFileName(imodelName: string) {
+  return sanitize(imodelName.replace(" ", "-")).toLocaleLowerCase();
+}
+
+/**
+ * Create an imodel with given name and invoke a callback to fill it with data required for a test.
+ */
+export function buildTestIModelDb(name: string, cb: (db: IModelDb) => void) {
+  const outputFile = setupOutputFileLocation(createValidIModelFileName(name));
+  const db = SnapshotDb.createEmpty(outputFile, { rootSubject: { name } });
+  try {
+    cb(db);
+  } catch (e) {
+    db.close();
+    throw e;
+  }
+  db.saveChanges("Created test IModel");
+  return { db, fileName: outputFile };
+}
+
+/**
+ * Create an imodel with given name and invoke a callback to fill it with data required for a test. Return a
+ * frontend connection to the imodel.
+ */
+export async function buildTestIModelConnection(name: string, cb: (db: IModelDb) => void): Promise<IModelConnection> {
+  const { db, fileName } = buildTestIModelDb(name, cb);
+  db.close();
+  return SnapshotConnection.openFile(fileName);
+}
+
+function setupOutputFileLocation(fileName: string): LocalFileName {
+  const testOutputDir = path.join(__dirname, ".imodels");
+  !IModelJsFs.existsSync(testOutputDir) && IModelJsFs.mkdirSync(testOutputDir);
+
+  const outputFile = path.join(testOutputDir, `${fileName}.bim`);
+  IModelJsFs.existsSync(outputFile) && IModelJsFs.unlinkSync(outputFile);
+  return outputFile;
 }
 
 /** Get path to a directory that is safe to use for read-write scenarios when running the tests */

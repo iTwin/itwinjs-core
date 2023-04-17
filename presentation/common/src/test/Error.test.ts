@@ -15,7 +15,7 @@ describe("PresentationError", () => {
     });
 
     it("returns error number when it's not in PresentationStatus enum", () => {
-      const error = new PresentationError(999);
+      const error = new PresentationError(999 as PresentationStatus);
       expect(error.name).to.eq("Unknown Error (999)");
     });
 

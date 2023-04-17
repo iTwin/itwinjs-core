@@ -152,7 +152,7 @@ public;FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestO
 public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;FormatOptions
-internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
+internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined
 public;getInstancesCount: (keys: Readonly
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
@@ -380,7 +380,7 @@ public;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
 beta;RpcDiagnosticsOptions = Omit_2
-internal;RpcRequestsHandler 
+internal;RpcRequestsHandler
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
 public;RuleBase

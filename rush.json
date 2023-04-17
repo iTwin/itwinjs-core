@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.83.1",
+  "rushVersion": "5.95.0",
   "pnpmVersion": "6.35.1",
   "nodeSupportedVersionRange": "^18.0.0",
   "projectFolderMinDepth": 2,
@@ -49,12 +49,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/eslint-plugin",
-      "projectFolder": "tools/eslint-plugin",
-      "reviewCategory": "tools",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@itwin/core-telemetry",
       "projectFolder": "core/telemetry",
       "reviewCategory": "common",
@@ -97,13 +91,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/core-transformer",
-      "projectFolder": "core/transformer",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/editor-common",
       "projectFolder": "editor/common",
       "reviewCategory": "edit",
@@ -141,6 +128,13 @@
     {
       "packageName": "@itwin/frontend-devtools",
       "projectFolder": "core/frontend-devtools",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/frontend-tiles",
+      "projectFolder": "extensions/frontend-tiles",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -209,60 +203,11 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/presentation-components",
-      "projectFolder": "presentation/components",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/presentation-opentelemetry",
-      "projectFolder": "presentation/opentelemetry",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/presentation-testing",
-      "projectFolder": "presentation/testing",
-      "reviewCategory": "tools",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@itwin/appui-abstract",
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/core-react",
-      "projectFolder": "ui/core-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/components-react",
-      "projectFolder": "ui/components-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/imodel-components-react",
-      "projectFolder": "ui/imodel-components-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-layout-react",
-      "projectFolder": "ui/appui-layout-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@itwin/appui-react",
-      "projectFolder": "ui/appui-react",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
     },
     {
       "packageName": "@itwin/ecschema-metadata",
@@ -384,13 +329,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/map-layers",
-      "projectFolder": "extensions/map-layers",
-      "reviewCategory": "extensions",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/map-layers-auth",
       "projectFolder": "extensions/map-layers-auth",
       "reviewCategory": "extensions",
@@ -441,12 +379,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "imodel-transformer",
-      "projectFolder": "test-apps/imodel-transformer",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "display-test-app",
       "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",
@@ -467,12 +399,6 @@
     {
       "packageName": "imodel-from-orbitgt-pointcloud",
       "projectFolder": "test-apps/imodel-from-orbitgt",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "presentation-test-app",
-      "projectFolder": "test-apps/presentation-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

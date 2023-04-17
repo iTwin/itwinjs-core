@@ -17,7 +17,6 @@ import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 function testIntersectionsXYZ(
   ck: Checker,
   intersections: CurveLocationDetailArrayPair, minExpected: number, maxExpected: number,
@@ -87,17 +86,17 @@ describe("CurveCurveIntersectionXYZ", () => {
   it("LineArcNotCoplanar", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const origPt = Point3d.create(0,5);
+    const origPt = Point3d.create(0, 5);
     const origSeg = LineSegment3d.create(Point3d.create(origPt.x, origPt.y, 1), Point3d.create(origPt.x, origPt.y, -1));
-    const origArc = Arc3d.create(Point3d.createZero(), Vector3d.create(3,4), Vector3d.create(-4,3), AngleSweep.createStartSweepDegrees(0, 90));
+    const origArc = Arc3d.create(Point3d.createZero(), Vector3d.create(3, 4), Vector3d.create(-4, 3), AngleSweep.createStartSweepDegrees(0, 90));
     let x0 = 0;
     const delta = 10;
     for (const trans of
-          [Transform.identity,
-           Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(0)),
-           Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(1)),
-           Transform.createRefs(Point3d.create(3,-2,-4), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,2), Angle.createDegrees(-27))!),
-          ]) {
+      [Transform.identity,
+      Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(0)),
+      Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(1)),
+      Transform.createRefs(Point3d.create(3, -2, -4), Matrix3d.createRotationAroundVector(Vector3d.create(-1, 1, 2), Angle.createDegrees(-27))!),
+      ]) {
       const arc = origArc.clone();
       const pt = trans.multiplyPoint3d(origPt);
       arc.tryTransformInPlace(trans);

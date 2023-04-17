@@ -353,7 +353,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
       const dataA = cpA.toTransformedVectors(this._worldToLocalAffine);
       matrixA = Matrix3d.createColumnsXYW(dataA.vector0, 0, dataA.vector90, 0, dataA.center, 1);
     }
-    // The worldToLocal has moved the arc vectors into screen space.
+    // The worldToLocal has moved the arc vectors into local space.
     // matrixA captures the xyw parts (ignoring z)
     // for any point in world space,
     // THIS CODE ONLY WORKS FOR

@@ -14,8 +14,8 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
-    rows.push(row);
+  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+    rows.push(queryRow.toRow());
   }
   return rows;
 }
@@ -223,8 +223,9 @@ describe("ECSql Query", () => {
           try {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions())) {
+            options.setRestartToken("tag");
+            const reader = imodel1.createQueryReader("SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions());
+            while (await reader.step()) {
               rowCount++;
             }
             successful++;
@@ -273,7 +274,7 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
-    for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
       ids.push(row[0]);
     }
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
@@ -336,7 +337,9 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      pendingRowCount.push(db.queryRowCount(query));
+      for await (const row of db.createQueryReader(`SELECT count(*) FROM (${query})`)) {
+        pendingRowCount.push(row[0] as number);
+      }
     }
 
     const rowCounts = await Promise.all(pendingRowCount);
@@ -358,7 +361,8 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
