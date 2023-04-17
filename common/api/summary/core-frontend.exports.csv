@@ -569,7 +569,6 @@ internal;RealityTreeReference
 alpha;RemoteExtensionProvider 
 alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
-internal;RenderAtmosphericSkyParams
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
@@ -585,6 +584,7 @@ internal;Consumers
 internal;ConsumerType
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
+internal;RenderPlanEllipsoid
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams
