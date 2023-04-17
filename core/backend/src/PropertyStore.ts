@@ -3,22 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, DbResult } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { SettingObject } from "./workspace/Settings";
+import { VersionedSqliteDb } from "./SQLiteDb";
 
 /**
- * A persistent storage for a set of values of type `PropertyType`, each with a unique `PropertyName`.
- * `PropertyStore`s are stored in cloud containers, and require an access token that grants permission to read and/or write them.
+ * A cloud-based storage for a set of values of type `PropertyType`, each with a unique `PropertyName`.
+ * `CloudPropertyStore`s are stored in cloud containers, and require an access token that grants permission to read and/or write them.
  * All write operations will fail without an access token that grants write permission.
- * A `PropertyStore` is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
+ * A `CloudPropertyStore` is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
  * However, that means that callers are responsible for synchronizing the local cache to ensure it includes changes
  * made by others, as appropriate (see [[synchronizeWithCloud]]).
- * @alpha */
-export interface PropertyStore {
+ * @alpha
+ */
+export interface CloudPropertyStore {
 
   /** The collection of property values in the PropertyStore as of the last time it was synchronized. */
-  readonly values: PropertyStore.Values;
+  readonly values: PropertyStore.ReadValues;
 
   /** Parameters for obtaining the write lock on the container for a PropertyStore.*/
   readonly lockParams: CloudSqlite.ObtainLockParams;
@@ -65,7 +67,7 @@ export interface PropertyStore {
 /** @alpha */
 export namespace PropertyStore {
   /** @internal */
-  export let openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
+  export let openCloudPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => CloudPropertyStore) | undefined;
 
   /** The set of valid types for properties in a PropertyStore. */
   export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
@@ -91,10 +93,10 @@ export namespace PropertyStore {
   }
 
   /**
-   * A readonly set of Property values in a PropertyStore.
+   * Read the values of Properties in a PropertyStore.
    * @alpha
    */
-  export interface Values {
+  export interface ReadValues {
     /** get the value of a Property by name.
      * @returns the property's value if it exists, `undefined` otherwise.
      */
@@ -139,7 +141,147 @@ export namespace PropertyStore {
     * @returns the property's value if it exists and is an object, otherwise the supplied default value.
     */
     getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
+
     /** call an iteration function for each property, optionally applying a filter */
     forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
+  }
+
+  export class PropertyDb extends VersionedSqliteDb implements PropertyStore.ReadValues {
+    public readonly myVersion = "3.0.0";
+
+    protected createDDL() {
+      this.createTable({ tableName: "properties", columns: "name TEXT NOT NULL PRIMARY KEY,type,value", addTimestamp: true });
+    }
+
+    public getProperty(name: PropertyStore.PropertyName): PropertyStore.PropertyType | undefined {
+      return this.withSqliteStatement("SELECT type,value from properties WHERE name=?", (stmt) => {
+        stmt.bindString(1, name);
+        if (!stmt.nextRow())
+          return undefined;
+        switch (stmt.getValueString(0)) {
+          case "string":
+            return stmt.getValueString(1);
+          case "boolean":
+            return stmt.getValueInteger(1) !== 0;
+          case "blob":
+            return stmt.getValueBlob(1);
+          case "number":
+            return stmt.getValueDouble(1);
+          case "object":
+            return JSON.parse(stmt.getValueString(1)) as SettingObject;
+        }
+        return undefined;
+      });
+    }
+
+    public getString(name: PropertyStore.PropertyName, defaultValue: string): string;
+    public getString(name: PropertyStore.PropertyName): string | undefined;
+    public getString(name: PropertyStore.PropertyName, defaultValue?: string): string | undefined {
+      const out = this.getProperty(name);
+      return typeof out === "string" ? out : defaultValue;
+    }
+    public getBoolean(name: PropertyStore.PropertyName, defaultValue: boolean): boolean;
+    public getBoolean(name: PropertyStore.PropertyName): boolean | undefined;
+    public getBoolean(name: PropertyStore.PropertyName, defaultValue?: boolean): boolean | undefined {
+      const out = this.getProperty(name);
+      return typeof out === "boolean" ? out : defaultValue;
+    }
+    public getNumber(name: PropertyStore.PropertyName, defaultValue: number): number;
+    public getNumber(name: PropertyStore.PropertyName): number | undefined;
+    public getNumber(name: PropertyStore.PropertyName, defaultValue?: number): number | undefined {
+      const out = this.getProperty(name);
+      return typeof out === "number" ? out : defaultValue;
+    }
+    public getBlob(name: PropertyStore.PropertyName, defaultValue: Uint8Array): Uint8Array;
+    public getBlob(name: PropertyStore.PropertyName): Uint8Array | undefined;
+    public getBlob(name: PropertyStore.PropertyName, defaultValue?: Uint8Array): Uint8Array | undefined {
+      const out = this.getProperty(name);
+      return out instanceof Uint8Array ? out : defaultValue;
+    }
+    public getObject<T extends SettingObject>(name: PropertyStore.PropertyName, defaultValue: T): T;
+    public getObject<T extends SettingObject>(name: PropertyStore.PropertyName): T | undefined;
+    public getObject<T extends SettingObject>(name: PropertyStore.PropertyName, defaultValue?: T): T | undefined {
+      const out = this.getProperty(name);
+      return typeof out === "object" ? out as T : defaultValue;
+    }
+
+    /** Delete a single property from this PropertyDb. If the value does not exist, this method does nothing. */
+    public deleteProperty(propName: PropertyStore.PropertyName) {
+      this.withSqliteStatement("DELETE from properties WHERE name=?", (stmt) => {
+        stmt.bindString(1, propName);
+        stmt.step();
+      });
+    }
+    /** Delete an array of properties from this PropertyDb. Any value that does not exist is ignored. */
+    public deleteProperties(propNames: PropertyStore.PropertyName[]) {
+      propNames.forEach((name) => this.deleteProperty(name));
+    }
+
+    private validateName(name: PropertyStore.PropertyName) {
+      if (typeof name !== "string" || name.trim() !== name || name.length > 2 * 1024 || name.length < 2)
+        throw new Error(`illegal property name[${name}]`);
+    }
+
+    /** Save a single property in this PropertyDb. If the property already exists, its value is overwritten. */
+    public saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType) {
+      this.validateName(name);
+      this.withSqliteStatement("INSERT OR REPLACE INTO properties(name,type,value) VALUES (?,?,?)", (stmt) => {
+        stmt.bindString(1, name);
+        switch (typeof value) {
+          case "string":
+            stmt.bindString(2, "string");
+            stmt.bindString(3, value);
+            break;
+          case "boolean":
+            stmt.bindString(2, "boolean");
+            stmt.bindInteger(3, value ? 1 : 0);
+            break;
+          case "number":
+            stmt.bindString(2, "number");
+            stmt.bindDouble(3, value);
+            break;
+          case "object":
+            if (value instanceof Uint8Array) {
+              stmt.bindString(2, "blob");
+              stmt.bindBlob(3, value);
+            } else {
+              stmt.bindString(2, "object");
+              stmt.bindString(3, JSON.stringify(value));
+            }
+            break;
+          default:
+            throw new Error("illegal property value type");
+        }
+
+        const rc = stmt.step();
+        if (rc !== DbResult.BE_SQLITE_DONE)
+          throw new BentleyError(rc, "error saving property");
+      });
+    }
+
+    /** Save an array of properties in this PropertyDb. If a property already exists, its value is overwritten. */
+    public saveProperties(props: PropertyStore.PropertyArray) {
+      props.forEach((prop) => this.saveProperty(prop.name, prop.value));
+    }
+
+    public forAllProperties(iter: PropertyStore.PropertyIteration, filter?: PropertyStore.PropertyFilter) {
+      let sql = "SELECT name FROM properties WHERE name IS NOT NULL";
+      if (filter?.sqlExpression)
+        sql += ` AND ${filter.sqlExpression} `;
+      if (filter?.value)
+        sql += ` AND name ${filter.valueCompare ?? "="} @val`;
+      if (filter?.orderBy)
+        sql += ` ORDER BY name ${filter.orderBy} `;
+
+      this.withSqliteStatement(sql, (stmt) => {
+        if (filter?.value)
+          stmt.bindString("@val", filter.value);
+
+        while (stmt.nextRow()) {
+          if (iter(stmt.getValueString(0)) === "stop")
+            return;
+        }
+      });
+    }
   }
 }
