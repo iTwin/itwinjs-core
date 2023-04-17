@@ -276,7 +276,7 @@ describe("DisplayStyleSettings", () => {
         map.set("0x1", makeSettings(1));
         map.set("0x3", makeSettings(3));
       }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-        [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
 
       expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
         [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
@@ -285,7 +285,7 @@ describe("DisplayStyleSettings", () => {
         map.delete("0x2");
         map.delete("0x4");
       }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-        [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
 
@@ -356,7 +356,7 @@ describe("DisplayStyleSettings overrides", () => {
       atmosphere: {
         ...Atmosphere.Settings.defaults.toJSON(),
         display: false,
-      }
+      },
     },
     hline: {
       transThreshold: 0x7f,
