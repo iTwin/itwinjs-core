@@ -32,6 +32,7 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
@@ -520,6 +521,17 @@ export class Schema implements CustomAttributeContainerProps {
       });
     }
     return schemaJson as SchemaProps;
+  }
+
+  /**
+   * Serializes the schema to a string of XML
+   * @alpha
+   */
+  public async toXmlString(): Promise<string> {
+    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+    const filledDoc = await this.toXml(xmlDoc);
+    const schemaText = new XMLSerializer().serializeToString(filledDoc);
+    return schemaText;
   }
 
   /**
