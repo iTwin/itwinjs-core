@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
-import { Matrix4 } from "../Matrix";
 import {
   FragmentShaderBuilder,
   FragmentShaderComponent,
@@ -402,7 +401,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
     (prog) => {
       prog.addProgramUniform("u_atmosphereData", (uniform, params) => {
         uniform.setMatrix4(params.target.uniforms.atmosphere.atmosphereData);
-      })
+      });
     }
   );
   shader.addUniform(

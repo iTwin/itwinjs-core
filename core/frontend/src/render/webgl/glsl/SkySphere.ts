@@ -49,7 +49,7 @@ const computeSkySphereColorGradient = `
 
 const computeSkySphereColorAtmosphere = `
   return vec4(0.0, 0.0, 0.0, 1.0);
-`
+`;
 
 const computeEyeToVert = "v_eyeToVert = a_worldPos - u_worldEye;";
 

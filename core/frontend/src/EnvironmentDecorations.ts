@@ -7,17 +7,17 @@
  */
 
 import { assert, Id64 } from "@itwin/core-bentley";
-import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import {
   ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
-import { IModelApp } from "./IModelApp";
-import { ViewState3d } from "./ViewState";
-import { DecorateContext } from "./ViewContext";
+import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import { tryImageElementFromUrl } from "./ImageUtil";
+import { IModelApp } from "./IModelApp";
 import { GraphicType } from "./render/GraphicBuilder";
+import { RenderGraphic } from "./render/RenderGraphic";
 import { RenderSkyBoxParams } from "./render/RenderSystem";
-import { RenderGraphic } from "./core-frontend";
+import { DecorateContext } from "./ViewContext";
+import { ViewState3d } from "./ViewState";
 
 /** @internal */
 export interface GroundPlaneDecorations {
@@ -87,7 +87,7 @@ export class EnvironmentDecorations {
   public decorate(context: DecorateContext): void {
     const env = this._environment;
 
-    let sky: RenderGraphic | undefined = undefined;
+    let sky: RenderGraphic | undefined;
     if (env.displayAtmosphere) {
       sky = IModelApp.renderSystem.createSkyBox(this.createSkyGradientParams());
     } else if (env.displaySky && this._sky.params) {
@@ -95,7 +95,6 @@ export class EnvironmentDecorations {
     }
     if (sky)
       context.setSkyBox(sky);
-
 
     if (!env.displayGround || !this._ground)
       return;
