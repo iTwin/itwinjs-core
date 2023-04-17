@@ -18,6 +18,8 @@ Table of contents:
     - [eslint-plugin](#eslint-plugin)
     - [map-layers](#map-layers)
   - [Deprecated API removals](#deprecated-api-removals)
+  - [Deprecated API replacements](#deprecated-api-replacements)
+    - [Querying ECSql](#querying-ecsql)
 - [Geometry](#geometry)
   - [Mesh offset](#mesh-offset)
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
@@ -62,7 +64,7 @@ Previously, `@itwin/core-electron` and `@itwin/core-mobile` automatically regist
 - SnapshotIModelRpcInterface
 - PresentationRpcInterface
 
-To be more aligned with other our approach on Web and to prevent unnecessary registrations and coupling of dependencies, we are now requiring the consumer to register all RPCs they need on their end. Please refer to the documentation for [ElectronApp.startup]($core-electron) and [MobileHost.startup]($core-mobile).
+To be more aligned with other our approach on Web and to prevent unnecessary registrations and coupling of dependencies, we are now requiring the consumer to register all RPCs they need on their end. Please refer to the documentation for `ElectronApp.startup` and `MobileHost.startup`.
 
 ### Breaking out of lockstep
 
@@ -83,6 +85,7 @@ The source code for the following packages was moved to the new [AppUi repositor
 The source code for the following packages was moved to the new [Presentation repository](https://github.com/iTwin/presentation).
 
 - @itwin/presentation-components
+- @itwin/presentation-opentelemetry
 - @itwin/presentation-testing
 
 #### Transformation
@@ -121,6 +124,29 @@ The following previously-deprecated APIs have been removed:
 - `CloudStorageTileCache`
 - `IModelTileRpcInterface.getTileCacheContainerUrl`
 - `IModelTileRpcInterface.isUsingExternalTileCache`
+
+### Deprecated API replacements
+
+#### Querying ECSql
+
+[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+
+`createQueryReader` can now be used like below:
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const rowId = row[0]; // or 'row.id'
+}
+```
+
+It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const jsRow = row.toRow();
+}
+```
 
 ## Geometry
 

@@ -15,10 +15,10 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
-  isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
-  SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
+  Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
+  Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -49,13 +49,14 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, MarginOptions, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GlobalLocation } from "./ViewGlobalLocation";
+import { GlobalLocation, viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
@@ -63,6 +64,7 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
+import { GeometricModelState } from "./ModelState";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -799,19 +801,21 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public get backgroundDrapeMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
 
-  /** @internal */
-  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+  /** Return the imagery provider for the provided map-layer index.
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
+   * @beta
+   */
+  public getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(mapLayerIndex); }
 
   /** Return the map-layer scale range visibility for the provided map-layer index.
-   * @param index of the owning map layer.
-   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    * @see [[DisplayStyleState.mapLayerAtIndex]].
    * @beta
-  */
-  public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
-    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+   */
+  public getMapLayerScaleRangeVisibility(mapLayerIndex: MapLayerIndex): MapTileTreeScaleRangeVisibility {
+    const treeRef = (mapLayerIndex.isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
     if (treeRef) {
-      return treeRef.getMapLayerScaleRangeVisibility(index);
+      return treeRef.getMapLayerScaleRangeVisibility(mapLayerIndex.index);
 
     }
     return MapTileTreeScaleRangeVisibility.Unknown;
@@ -820,19 +824,71 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Return a list of map-layers indexes matching a given  MapTile tree Id and a layer imagery tree id.
    * Note: A imagery tree can be shared for multiple map-layers.
    * @internal
-   * */
+   */
   public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
     if (this._mapTiledGraphicsProvider)
       return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
 
     return [];
-
   }
 
-  /** @beta
-   * Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
+  /** Returns the cartographic range of a map layer.
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    */
-  public resetMapLayer(index: number, isOverlay: boolean) { this._mapTiledGraphicsProvider?.resetMapLayer(index, isOverlay); }
+  public async getMapLayerRange(mapLayerIndex: MapLayerIndex): Promise<MapCartoRectangle | undefined> {
+    const mapLayerSettings = this.view.displayStyle.mapLayerAtIndex(mapLayerIndex);
+    if (undefined === mapLayerSettings)
+      return undefined;
+
+    if (mapLayerSettings instanceof ModelMapLayerSettings) {
+      const ecefTransform = this.iModel.ecefLocation?.getTransform();
+      if (!ecefTransform)
+        return undefined;
+      const model = this.iModel.models.getLoaded(mapLayerSettings.modelId);
+      if (!model || !(model instanceof GeometricModelState))
+        return undefined;
+
+      const modelRange = await model.queryModelRange();
+      const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
+
+      return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+    }
+
+    const imageryProvider = this.getMapLayerImageryProvider(mapLayerIndex);
+    if (undefined === imageryProvider)
+      return undefined;
+
+    const tileTreeRef = mapLayerIndex.isOverlay ? this.overlayMap : this.backgroundMap;
+    const imageryTreeRef = tileTreeRef?.getLayerImageryTreeRef(mapLayerIndex.index);
+
+    if (imageryTreeRef?.treeOwner.loadStatus === TileTreeLoadStatus.Loaded) {
+      return imageryProvider.cartoRange;
+    } else {
+      return undefined;
+    }
+  }
+
+  /** Changes viewport to include range of a map layer.
+   * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
+   * @param vp the viewport.
+   */
+  public async viewMapLayerRange(mapLayerIndex: MapLayerIndex, vp: ScreenViewport): Promise<boolean> {
+    const range = await this.getMapLayerRange(mapLayerIndex);
+    if (!range)
+      return false;
+
+    if (range.xLength() > 1.5 * Angle.piRadians)
+      viewGlobalLocation(vp, true, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters, undefined, undefined);
+    else
+      viewGlobalLocation(vp, true, undefined, undefined, range.globalLocation);
+
+    return true;
+  }
+
+  /** Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
+   * @beta
+   */
+  public resetMapLayer(mapLayerIndex: MapLayerIndex) { this._mapTiledGraphicsProvider?.resetMapLayer(mapLayerIndex); }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
