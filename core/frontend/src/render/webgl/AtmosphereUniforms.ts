@@ -7,7 +7,7 @@ import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { RenderPlanEllipsoid } from "../RenderPlan";
 import { WebGLDisposable } from "./Disposable";
 import { Matrix3, Matrix4 } from "./Matrix";
-import { desync, SyncTarget, sync } from "./Sync";
+import { desync, sync, SyncTarget } from "./Sync";
 import { Target } from "./Target";
 import { UniformHandle } from "./UniformHandle";
 
