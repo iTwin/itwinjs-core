@@ -15,7 +15,7 @@ import { VersionedSqliteDb } from "./SQLiteDb";
  * A `CloudPropertyStore` is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
  * However, that means that callers are responsible for synchronizing the local cache to ensure it includes changes
  * made by others, as appropriate (see [[synchronizeWithCloud]]).
- * @alpha
+ * @beta
  */
 export interface CloudPropertyStore {
 
@@ -64,7 +64,7 @@ export interface CloudPropertyStore {
   deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
 }
 
-/** @alpha */
+/** @beta */
 export namespace PropertyStore {
   /** @internal */
   export let openCloudPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => CloudPropertyStore) | undefined;
@@ -85,7 +85,7 @@ export namespace PropertyStore {
     /** A value filter. May include wild cards when used with `GLOB` or `LIKE` */
     readonly value?: string;
     /** The comparison operator for `value`. Default is `=` */
-    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "!=" | "<" | ">";
     /** Order results ascending or descending. If not supplied, the results are unordered (random). */
     readonly orderBy?: "ASC" | "DESC";
     /** An SQL expression to further filter results. This string is appended to the `WHERE` clause with an `AND` (that should not be part of the sqlExpression) */
@@ -94,7 +94,7 @@ export namespace PropertyStore {
 
   /**
    * Read the values of Properties in a PropertyStore.
-   * @alpha
+   * @beta
    */
   export interface ReadValues {
     /** get the value of a Property by name.
@@ -146,6 +146,11 @@ export namespace PropertyStore {
     forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
   }
 
+  /**
+   * A `VersionedSqliteDb` database for storing name/value pairs. The names are case-sensitive strings, and the values can be of type
+   * string, boolean, number, blob (Uint8Array), or Object.
+   * @beta
+   */
   export class PropertyDb extends VersionedSqliteDb implements PropertyStore.ReadValues {
     public readonly myVersion = "3.0.0";
 
@@ -203,6 +208,25 @@ export namespace PropertyStore {
     public getObject<T extends SettingObject>(name: PropertyStore.PropertyName, defaultValue?: T): T | undefined {
       const out = this.getProperty(name);
       return typeof out === "object" ? out as T : defaultValue;
+    }
+    public forAllProperties(iter: PropertyStore.PropertyIteration, filter?: PropertyStore.PropertyFilter) {
+      let sql = "SELECT name FROM properties WHERE name IS NOT NULL";
+      if (filter?.sqlExpression)
+        sql += ` AND ${filter.sqlExpression} `;
+      if (filter?.value)
+        sql += ` AND name ${filter.valueCompare ?? "="} @val`;
+      if (filter?.orderBy)
+        sql += ` ORDER BY name ${filter.orderBy} `;
+
+      this.withSqliteStatement(sql, (stmt) => {
+        if (filter?.value)
+          stmt.bindString("@val", filter.value);
+
+        while (stmt.nextRow()) {
+          if (iter(stmt.getValueString(0)) === "stop")
+            return;
+        }
+      });
     }
 
     /** Delete a single property from this PropertyDb. If the value does not exist, this method does nothing. */
@@ -262,26 +286,6 @@ export namespace PropertyStore {
     /** Save an array of properties in this PropertyDb. If a property already exists, its value is overwritten. */
     public saveProperties(props: PropertyStore.PropertyArray) {
       props.forEach((prop) => this.saveProperty(prop.name, prop.value));
-    }
-
-    public forAllProperties(iter: PropertyStore.PropertyIteration, filter?: PropertyStore.PropertyFilter) {
-      let sql = "SELECT name FROM properties WHERE name IS NOT NULL";
-      if (filter?.sqlExpression)
-        sql += ` AND ${filter.sqlExpression} `;
-      if (filter?.value)
-        sql += ` AND name ${filter.valueCompare ?? "="} @val`;
-      if (filter?.orderBy)
-        sql += ` ORDER BY name ${filter.orderBy} `;
-
-      this.withSqliteStatement(sql, (stmt) => {
-        if (filter?.value)
-          stmt.bindString("@val", filter.value);
-
-        while (stmt.nextRow()) {
-          if (iter(stmt.getValueString(0)) === "stop")
-            return;
-        }
-      });
     }
   }
 }
