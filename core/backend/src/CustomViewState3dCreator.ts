@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CompressedId64Set, Id64Array, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
-import { CustomViewState3dCreatorOptions, CustomViewState3dProps, QueryRowFormat } from "@itwin/core-common";
+import { CustomViewState3dCreatorOptions, CustomViewState3dProps } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
@@ -57,7 +57,7 @@ export class CustomViewState3dCreator {
     const range = await this._imodel.models.queryRange(modelIds);
 
     timer.stop();
-    Logger.logInfo(loggerCategory, "Finished getModelExtents query.", {timeElapsedMs: timer.elapsed});
+    Logger.logInfo(loggerCategory, "Finished getModelExtents query.", { timeElapsedMs: timer.elapsed });
 
     return range;
   }
@@ -84,8 +84,7 @@ export class CustomViewState3dCreator {
 
   private _executeQuery = async (query: string) => {
     const rows = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+    for await (const row of this._imodel.createQueryReader(query))
       rows.push(row.id);
 
     return rows;
