@@ -195,7 +195,7 @@ export class SQLiteDb {
   }
 
   /**
-   * Prepared and execute a callback on a SQL statement. After the callback completes the statement is disposed.
+   * Prepare and execute a callback on a SQL statement. After the callback completes the statement is disposed.
    * Use this method for SQL statements are either not expected to be reused, or are not expensive to prepare.
    * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
    * @param sql The SQLite SQL statement to execute

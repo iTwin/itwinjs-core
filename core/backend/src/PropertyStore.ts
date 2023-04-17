@@ -159,7 +159,7 @@ export namespace PropertyStore {
     }
 
     public getProperty(name: PropertyStore.PropertyName): PropertyStore.PropertyType | undefined {
-      return this.withSqliteStatement("SELECT type,value from properties WHERE name=?", (stmt) => {
+      return this.withPreparedSqliteStatement("SELECT type,value from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, name);
         if (!stmt.nextRow())
           return undefined;
