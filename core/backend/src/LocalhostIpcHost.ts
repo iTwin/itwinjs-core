@@ -73,7 +73,7 @@ class RpcHandler extends IpcHandler {
 /** @internal */
 export class LocalhostIpcHost {
   private static _initialized = false;
-  private static _socket: IpcWebSocketBackend;
+  public static socket: IpcWebSocketBackend;
 
   public static connect(connection: ws) {
     (IpcWebSocket.transport as LocalTransport).connect(connection);
@@ -85,11 +85,11 @@ export class LocalhostIpcHost {
     if (!this._initialized) {
       registerHandler = true;
       IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost ?? {});
-      this._socket = new IpcWebSocketBackend();
+      this.socket = new IpcWebSocketBackend();
       this._initialized = true;
     }
 
-    await IpcHost.startup({ ipcHost: { socket: this._socket }, iModelHost: opts?.iModelHost });
+    await IpcHost.startup({ ipcHost: { socket: this.socket }, iModelHost: opts?.iModelHost });
 
     if (registerHandler) {
       RpcHandler.register();
