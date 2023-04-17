@@ -9,6 +9,7 @@ import { WebEditServer } from "@itwin/express-server";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
+import { setupIpcTest } from "./ipc";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
 
 async function init() {
@@ -29,6 +30,7 @@ async function init() {
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
+  setupIpcTest(async () => Promise.resolve(), LocalhostIpcHost.socket); // eslint-disable-line @typescript-eslint/no-floating-promises
 
   return () => {
     httpServer.close();
