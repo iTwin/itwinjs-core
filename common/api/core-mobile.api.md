@@ -12,7 +12,7 @@ import { AuthorizationClient } from '@itwin/core-common';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
-import * as https from 'https';
+import * as https from 'node:https';
 import { Listener } from '@itwin/core-bentley';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
