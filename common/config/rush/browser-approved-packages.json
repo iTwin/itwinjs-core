@@ -8,7 +8,19 @@
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "@bentley/architectural-physical-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/bis-core-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/bis-custom-attributes-schema",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -55,6 +67,26 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/construction-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/core-custom-attributes-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/ecdb-map-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/ecdb-schema-policies-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/formats-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "internal" ]
     },
@@ -67,8 +99,16 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@bentley/linear-referencing-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/physical-material-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/plant-custom-attributes-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/process-functional-schema",
@@ -80,7 +120,7 @@
     },
     {
       "name": "@bentley/quantity-takeoffs-aspects-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/react-scripts",
@@ -89,6 +129,14 @@
     {
       "name": "@bentley/road-rail-units-schema",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/spatial-composition-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/structural-physical-schema",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/units-schema",

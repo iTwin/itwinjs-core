@@ -11,16 +11,25 @@ import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
 
 describe("Concurrent XML schema deserialization", () => {
+  const assetDir: string = path.join(__dirname, "assets");
+  const schemaFolder = path.join(__dirname, "assets", "xml");
+
   const schemaKeys: SchemaKey[] = [];
   let context: SchemaContext;
   let contextSync: SchemaContext;
   let syncSchemas: Array<Schema | undefined> = [];
 
-  const schemaFolder = path.join(__dirname, "assets", "XML");
   const locater = new SchemaXmlFileLocater();
   const helperLocater = new StubSchemaXmlFileLocater();
 
   before(() => {
+    if (!fs.existsSync(assetDir))
+      fs.mkdirSync(assetDir);
+    if (!fs.existsSync(schemaFolder))
+      fs.mkdirSync(schemaFolder);
+
+    copySchemasToAssetsDir();
+
     // Deserialize schemas synchronously/serially as standard to compare to
     contextSync = new SchemaContext();
     locater.addSchemaSearchPath(schemaFolder);
@@ -47,6 +56,21 @@ describe("Concurrent XML schema deserialization", () => {
     context = new SchemaContext();
     context.addLocater(locater);
   });
+
+  function getSchemaPathFromPackage(packageName: string, schemaFileName: string): string {
+    const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", packageName, schemaFileName);
+    return schemaFile;
+  }
+
+  function copySchemasToAssetsDir() {
+    // Copy Schemas that we need for testing
+    fs.copyFileSync(getSchemaPathFromPackage("aec-units-schema", "AecUnits.ecschema.xml"), path.join(schemaFolder, "AecUnits.ecschema.xml"));
+    fs.copyFileSync(getSchemaPathFromPackage("bis-custom-attributes-schema", "BisCustomAttributes.ecschema.xml"), path.join(schemaFolder, "BisCustomAttributes.ecschema.xml"));
+    fs.copyFileSync(getSchemaPathFromPackage("ecdb-map-schema", "ECDbMap.ecschema.xml"), path.join(schemaFolder, "ECDbMap.ecschema.xml"));
+    fs.copyFileSync(getSchemaPathFromPackage("ecdb-schema-policies-schema", "ECDbSchemaPolicies.ecschema.xml"), path.join(schemaFolder, "ECDbSchemaPolicies.ecschema.xml"));
+    fs.copyFileSync(getSchemaPathFromPackage("formats-schema", "Formats.ecschema.xml"), path.join(schemaFolder, "Formats.ecschema.xml"));
+    fs.copyFileSync(getSchemaPathFromPackage("units-schema", "Units.ecschema.xml"), path.join(schemaFolder, "Units.ecschema.xml"));
+  }
 
   it("should match schemas deserialized concurrently with schemas deserialized serially", async () => {
     const schemaPromises = schemaKeys.map(async (key): Promise<Schema | undefined> => {

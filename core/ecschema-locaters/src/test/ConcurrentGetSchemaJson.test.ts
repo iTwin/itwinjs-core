@@ -10,15 +10,24 @@ import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@i
 import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
 
 describe("Concurrent schema JSON deserialization", () => {
+  const assetDir: string = path.join(__dirname, "assets");
+  const schemaFolder = path.join(__dirname, "assets", "json");
+
   const schemaKeys: SchemaKey[] = [];
   let context: SchemaContext;
   let contextSync: SchemaContext;
   let syncSchemas: Array<Schema | undefined> = [];
 
-  const schemaFolder = path.join(__dirname, "assets", "JSON");
   const locater = new SchemaJsonFileLocater();
 
   before(() => {
+    if (!fs.existsSync(assetDir))
+      fs.mkdirSync(assetDir);
+    if (!fs.existsSync(schemaFolder))
+      fs.mkdirSync(schemaFolder);
+
+    copySchemasToAssetsDir();
+
     // Deserialize schemas synchronously/serially as standard to compare to
     contextSync = new SchemaContext();
     locater.addSchemaSearchPath(schemaFolder);
@@ -48,6 +57,31 @@ describe("Concurrent schema JSON deserialization", () => {
     context = new SchemaContext();
     context.addLocater(locater);
   });
+
+  function getSchemaPathFromPackage(packageName: string, schemaFileName: string): string {
+    const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", packageName, schemaFileName);
+    return schemaFile;
+  }
+
+  function copySchemasToAssetsDir() {
+    // Copy Schemas that we need for testing
+    fs.copyFileSync(getSchemaPathFromPackage("aec-units-schema", "AecUnits.ecschema.json"), path.join(schemaFolder, "AecUnits.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("architectural-physical-schema", "ArchitecturalPhysical.ecschema.json"), path.join(schemaFolder, "ArchitecturalPhysical.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("bis-core-schema", "BisCore.ecschema.json"), path.join(schemaFolder, "BisCore.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("bis-custom-attributes-schema", "BisCustomAttributes.ecschema.json"), path.join(schemaFolder, "BisCustomAttributes.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("construction-schema", "Construction.ecschema.json"), path.join(schemaFolder, "Construction.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("core-custom-attributes-schema", "CoreCustomAttributes.ecschema.json"), path.join(schemaFolder, "CoreCustomAttributes.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("ecdb-map-schema", "ECDbMap.ecschema.json"), path.join(schemaFolder, "ECDbMap.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("ecdb-schema-policies-schema", "ECDbSchemaPolicies.ecschema.json"), path.join(schemaFolder, "ECDbSchemaPolicies.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("formats-schema", "Formats.ecschema.json"), path.join(schemaFolder, "Formats.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("linear-referencing-schema", "LinearReferencing.ecschema.json"), path.join(schemaFolder, "LinearReferencing.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("physical-material-schema", "PhysicalMaterial.ecschema.json"), path.join(schemaFolder, "PhysicalMaterial.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("plant-custom-attributes-schema", "PlantCustomAttributes.ecschema.json"), path.join(schemaFolder, "PlantCustomAttributes.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("quantity-takeoffs-aspects-schema", "QuantityTakeoffsAspects.ecschema.json"), path.join(schemaFolder, "QuantityTakeoffsAspects.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("spatial-composition-schema", "SpatialComposition.ecschema.json"), path.join(schemaFolder, "SpatialComposition.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("structural-physical-schema", "StructuralPhysical.ecschema.json"), path.join(schemaFolder, "StructuralPhysical.ecschema.json"));
+    fs.copyFileSync(getSchemaPathFromPackage("units-schema", "Units.ecschema.json"), path.join(schemaFolder, "Units.ecschema.json"));
+  }
 
   it("should match schemas deserialized concurrently with schemas deserialized serially", async () => {
     const schemaPromises = schemaKeys.map(async (key): Promise<Schema | undefined> => {
