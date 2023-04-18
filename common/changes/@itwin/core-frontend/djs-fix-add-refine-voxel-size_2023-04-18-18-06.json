@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "chgd param on readPointCloudTileContent",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
