@@ -330,6 +330,76 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export namespace Atmosphere {
+    export interface Props {
+        // @internal
+        atmosphereHeightAboveEarth?: number;
+        // @internal
+        densityFalloff?: number;
+        // @internal
+        depthBelowEarthForMaxDensity?: number;
+        display?: boolean;
+        exposure?: number;
+        numSunRaySamples?: number;
+        numViewRaySamples?: number;
+        // @internal
+        scatteringStrength?: number;
+        // @internal
+        wavelengths?: WavelengthsProps;
+    }
+    export class Settings {
+        // @internal
+        readonly atmosphereHeightAboveEarth: number;
+        // (undocumented)
+        static readonly defaults: Settings;
+        // @internal
+        readonly densityFalloff: number;
+        // @internal
+        readonly depthBelowEarthForMaxDensity: number;
+        // (undocumented)
+        equals(other: Settings): boolean;
+        readonly exposure: number;
+        // (undocumented)
+        static fromJSON(json?: Props): Settings;
+        // (undocumented)
+        static readonly highQuality: Settings;
+        readonly numSunRaySamples: number;
+        readonly numViewRaySamples: number;
+        // @internal
+        readonly scatteringStrength: number;
+        // (undocumented)
+        toJSON(display?: boolean): Props;
+        // @internal
+        readonly wavelengths: Wavelengths;
+    }
+    // @internal
+    export class Wavelengths {
+        constructor(props: WavelengthsProps);
+        // (undocumented)
+        readonly b: number;
+        // (undocumented)
+        equals(other: Wavelengths): boolean;
+        // (undocumented)
+        static fromJSON(json: WavelengthsProps | undefined): Wavelengths;
+        // (undocumented)
+        readonly g: number;
+        // (undocumented)
+        readonly r: number;
+        // (undocumented)
+        toJSON(): WavelengthsProps;
+    }
+    // @internal
+    export interface WavelengthsProps {
+        // (undocumented)
+        b: number;
+        // (undocumented)
+        g: number;
+        // (undocumented)
+        r: number;
+    }
+}
+
 // @public
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
@@ -1989,6 +2059,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get sunTime(): number | undefined;
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
+    // @beta
+    toggleAtmosphere(display?: boolean): void;
     toggleGroundPlane(display?: boolean): void;
     toggleSkyBox(display?: boolean): void;
     toJSON(): DisplayStyle3dSettingsProps;
@@ -2831,9 +2903,13 @@ export class EntityReferenceSet extends Set<EntityReference> {
 // @public
 export class Environment {
     protected constructor(props?: Partial<EnvironmentProperties>);
+    // @beta
+    readonly atmosphere: Atmosphere.Settings;
     clone(changedProps?: Partial<EnvironmentProperties>): Environment;
     static create(props?: Partial<EnvironmentProperties>): Environment;
     static readonly defaults: Environment;
+    // @beta
+    readonly displayAtmosphere: boolean;
     readonly displayGround: boolean;
     readonly displaySky: boolean;
     static fromJSON(props?: EnvironmentProps): Environment;
@@ -2843,6 +2919,7 @@ export class Environment {
     withDisplay(display: {
         sky?: boolean;
         ground?: boolean;
+        atmosphere?: boolean;
     }): Environment;
 }
 
@@ -2851,6 +2928,8 @@ export type EnvironmentProperties = NonFunctionPropertiesOf<Environment>;
 
 // @public
 export interface EnvironmentProps {
+    // @beta
+    atmosphere?: Atmosphere.Props;
     ground?: GroundPlaneProps;
     sky?: SkyBoxProps;
 }
