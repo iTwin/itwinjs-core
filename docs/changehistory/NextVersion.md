@@ -26,6 +26,7 @@ Table of contents:
   - [Abstract base class Plane3d](#abstract-base-class-plane3d)
 - [Display](#display)
   - [glTF bounding boxes](#gltf-bounding-boxes)
+  - [Atmospheric Scattering](#atmospheric-scattering)
 - [Presentation](#presentation-1)
   - [Active unit system](#active-unit-system)
   - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
@@ -193,6 +194,21 @@ With these changes the [PlaneAltitudeEvaluator]($core-geometry) can be deprecate
 ### glTF bounding boxes
 
 The existing [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
+
+### Atmospheric Scattering
+
+A physics-based Atmospheric Scattering effect is now available for the rendering system.
+
+![Globe View of Atmospheric Scattering](.\assets\atmosphere_globe.jpg)
+
+This effect can be toggled via [Environment.displayAtmosphere]($common) and adjusted through [Environment.atmosphere]($common).
+It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
+
+The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettings.backgroundMap]($common) set to a backgroundMap with [BackgroundMapSettings.globeMode]($common) equal to [GlobeMode.Ellipsoid]($common).
+
+![Sky View of Atmospheric Scattering](.\assets\atmosphere_distance.jpg)
+![Atmospheric Scattering from Space](.\assets\atmosphere_space.jpg)
+![Atmospheric Scattering at Sunset](.\assets\atmosphere_sunset.jpg)
 
 ## Presentation
 
