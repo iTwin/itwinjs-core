@@ -62,35 +62,34 @@ export function addSamplePosition(vert: VertexShaderBuilder): void {
   vert.addFunction(getSamplePosition(vert.positionType));
 }
 
+const getSamplePositionPrelude = `
+vec4 samplePosition(float index) {
+  vec2 tc = compute_vert_coords(index);`;
+
+const getSamplePositionQuantizedPostlude = `
+  vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += g_vert_stepX;
+  vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
+  return unquantizePosition(qpos, u_qOrigin, u_qScale);
+}
+`;
+
+const getSamplePositionUnquantizedPostlude = `
+  uvec3 vux = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+  tc.x += g_vert_stepX;
+  uvec3 vuy = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+  tc.x += g_vert_stepX;
+  uvec3 vuz = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+  tc.x += g_vert_stepX;
+  uvec3 vuw = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+  uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
+  return vec4(uintBitsToFloat(u), 1.0);
+}
+`;
+
 function getSamplePosition(type: PositionType): string {
-  const prelude = `
-    vec4 samplePosition(float index) {
-      vec2 tc = compute_vert_coords(index);`;
-
-  if ("quantized" === type) {
-    return `
-    ${prelude}
-      vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-      tc.x += g_vert_stepX;
-      vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-      vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-      return unquantizePosition(qpos, u_qOrigin, u_qScale);
-    }
-    `;
-  }
-
-  return `
-  ${prelude}
-    uvec3 vux = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    tc.x += g_vert_stepX;
-    uvec3 vuy = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    tc.x += g_vert_stepX;
-    uvec3 vuz = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    tc.x += g_vert_stepX;
-    uvec3 vuw = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
-    return vec4(uintBitsToFloat(u), 1.0);
-  }`;
+  return `${getSamplePositionPrelude}${"quantized" === type ? getSamplePositionQuantizedPostlude : getSamplePositionUnquantizedPostlude}`;
 }
 
 /** @internal */
