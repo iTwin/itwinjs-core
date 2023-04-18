@@ -8722,7 +8722,14 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 }
 
 // @internal
+<<<<<<< HEAD
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined>;
+=======
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{
+    graphic: RenderGraphic | undefined;
+    rtcCenter: Point3d | undefined;
+}>;
+>>>>>>> 6c35932a31 (Fix point cloud voxel size issues for additive refinement pnts (#5407))
 
 // @alpha
 export class RealityDataError extends BentleyError {

@@ -110,8 +110,15 @@ export abstract class RealityTileLoader {
         break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
+<<<<<<< HEAD
         let graphic = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
         if (graphic && tile.transformToRoot && !tile.transformToRoot.isIdentity) {
+=======
+        const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile, system);
+        let graphic = res.graphic;
+        const rtcCenter = res.rtcCenter;
+        if (graphic && (rtcCenter || tile.transformToRoot && !tile.transformToRoot.isIdentity)) {
+>>>>>>> 6c35932a31 (Fix point cloud voxel size issues for additive refinement pnts (#5407))
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);
           graphic = system.createBranch(transformBranch, tile.transformToRoot);

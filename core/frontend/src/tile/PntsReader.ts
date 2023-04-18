@@ -7,13 +7,19 @@
  */
 
 import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
+<<<<<<< HEAD
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+=======
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { BatchType, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+>>>>>>> 6c35932a31 (Fix point cloud voxel size issues for additive refinement pnts (#5407))
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { RealityTile } from "./internal";
 
 /** Schema for the [3DTILES_draco_point_compression](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_draco_point_compression) extension. */
 interface DracoPointCloud {
@@ -214,11 +220,18 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
+<<<<<<< HEAD
 export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined> {
+=======
+export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{ graphic: RenderGraphic | undefined, rtcCenter: Point3d | undefined }> {
+  let graphic;
+  let rtcCenter;
+>>>>>>> 6c35932a31 (Fix point cloud voxel size issues for additive refinement pnts (#5407))
   const header = new PntsHeader(stream);
   if (!header.isValid)
     return undefined;
 
+  const range = tile.contentRange;
   const featureTableJsonOffset = stream.curPos;
   const featureStrData = stream.nextBytes(header.featureTableJsonLength);
   const featureStr = utf8ToString(featureStrData);
@@ -267,7 +280,26 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);
+<<<<<<< HEAD
   const voxelSize = props.params.rangeDiagonal.maxAbs() / 256;
+=======
+  let params = props.params;
+  if (props.points instanceof Float32Array) {
+    // we don't have a true range for unquantized points, so calc one here for voxelSize
+    const rng = Range3d.createNull();
+    for (let i = 0; i < props.points.length; i += 3)
+      rng.extendXYZ(props.points[i], props.points[i + 1], props.points[i + 2]);
+    params = QParams3d.fromRange(rng);
+  }
+  // 256 here is tile.maximumSize (on non-additive refinement tiles)
+  // If additiveRefinement, set voxelSize to 0 which will cause it draw to with minPixelsPerVoxel, which defaults to 2
+  // That way, it will draw as if in pixel mode, and voxelScale will still function
+  // Checking across a variety of 10 point clouds, 2 to 4 seems to work well for pixel settings (depending on the
+  // cloud), so 2 is a decent default
+  // (If voxelSize is used normally in this case, it draws different size pixels for different tiles, and since
+  // they can overlap ranges, no good way found to calculate a voxelSize)
+  const voxelSize = tile.additiveRefinement ? 0 : params.rangeDiagonal.maxAbs() / 256;
+>>>>>>> 6c35932a31 (Fix point cloud voxel size issues for additive refinement pnts (#5407))
 
   let renderGraphic = system.createPointCloud({
     positions: props.points,
