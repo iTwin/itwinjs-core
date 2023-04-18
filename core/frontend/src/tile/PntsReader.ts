@@ -8,13 +8,13 @@
 
 import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+import { BatchType, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { RealityTile } from "./RealityTile";
+import { RealityTile } from "./internal";
 
 /** Schema for the [3DTILES_draco_point_compression](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_draco_point_compression) extension. */
 interface DracoPointCloud {
@@ -272,11 +272,12 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     params = QParams3d.fromRange(rng);
   }
   // 256 here is tile.maximumSize (on non-additive refinement tiles)
-  // If additiveRefinement, set voxelSize to 0 which will force it draw with minPixelsPerVoxel, which defaults to 2
+  // If additiveRefinement, set voxelSize to 0 which will cause it draw to with minPixelsPerVoxel, which defaults to 2
   // That way, it will draw as if in pixel mode, and voxelScale will still function
-  // Checking across a variety of 10 point clouds, 2 to 4 seems to be good pixel settings, so 2 is a decent default
+  // Checking across a variety of 10 point clouds, 2 to 4 seems to work well for pixel settings (depending on the
+  // cloud), so 2 is a decent default
   // (If voxelSize is used normally in this case, it draws different size pixels for different tiles, and since
-  //  they can overlap ranges, no good way found to calculate a voxelSize)
+  // they can overlap ranges, no good way found to calculate a voxelSize)
   const voxelSize = tile.additiveRefinement ? 0 : params.rangeDiagonal.maxAbs() / 256;
 
   graphic = system.createPointCloud({
