@@ -540,7 +540,7 @@ export class IModelApp {
    */
   public static async getAccessToken(): Promise<AccessToken> {
     try {
-      return (await this.authorizationClient?.getAccessToken()) ?? "";
+      return (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
     } catch (e) {
       return "";
     }
