@@ -14,6 +14,7 @@ import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { RealityTile } from "./RealityTile";
 
 /** Schema for the [3DTILES_draco_point_compression](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_draco_point_compression) extension. */
 interface DracoPointCloud {
@@ -201,13 +202,14 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
-export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<{ graphic: RenderGraphic | undefined, rtcCenter: Point3d | undefined }> {
+export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{ graphic: RenderGraphic | undefined, rtcCenter: Point3d | undefined }> {
   let graphic;
   let rtcCenter;
   const header = new PntsHeader(stream);
   if (!header.isValid)
     return { graphic, rtcCenter };
 
+  const range = tile.contentRange;
   const featureTableJsonOffset = stream.curPos;
   const featureStrData = stream.nextBytes(header.featureTableJsonLength);
   const featureStr = utf8ToString(featureStrData);
@@ -269,7 +271,13 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
       rng.extendXYZ(props.points[i], props.points[i + 1], props.points[i + 2]);
     params = QParams3d.fromRange(rng);
   }
-  const voxelSize = params.rangeDiagonal.maxAbs() / 256;
+  // 256 here is tile.maximumSize (on non-additive refinement tiles)
+  // If additiveRefinement, set voxelSize to 0 which will force it draw with minPixelsPerVoxel, which defaults to 2
+  // That way, it will draw as if in pixel mode, and voxelScale will still function
+  // Checking across a variety of 10 point clouds, 2 to 4 seems to be good pixel settings, so 2 is a decent default
+  // (If voxelSize is used normally in this case, it draws different size pixels for different tiles, and since
+  //  they can overlap ranges, no good way found to calculate a voxelSize)
+  const voxelSize = tile.additiveRefinement ? 0 : params.rangeDiagonal.maxAbs() / 256;
 
   graphic = system.createPointCloud({
     positions: props.points,
