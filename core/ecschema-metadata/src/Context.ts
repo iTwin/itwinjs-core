@@ -16,7 +16,7 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
  */
 interface LoadingSchema {
   schema: Schema;
-  loadSchema: DelayedPromise<Schema>;
+  loadSchemaPromise: DelayedPromise<Schema>;
 }
 /**
  * @alpha
@@ -87,27 +87,30 @@ export class SchemaCache implements ISchemaLocater {
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
+   * Schema should be fully loaded if loadSchema argument is not passed in.
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
-   * @param loadSchema LoadSchema wrapper that takes a function returning a fully loaded schema
+   * @param loadSchemaPromise Promise to fully load the schema
    */
-  public async addSchema<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>) {
-    this.addSchemaSync(schema, loadSchema);
+  public async addSchema<T extends Schema>(schema: T, loadSchemaPromise?: DelayedPromise<T>) {
+    if (await this.getLoadedSchema<T>(schema.schemaKey) || await this.getLoadingSchema<T>(schema.schemaKey))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
+
+    if (loadSchemaPromise)
+      this._loadingSchemas.push({ schema, loadSchemaPromise });
+    else
+      this._loadedSchemas.push(schema);
   }
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
-   * Schema should be fully loaded if loadSchema argument is not passed in.
+   * Schema should be fully loaded.
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
-   * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
    */
-  public addSchemaSync<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>) {
+  public addSchemaSync<T extends Schema>(schema: T) {
     if (this.getLoadedSchemaSync<T>(schema.schemaKey) || this.getLoadingSchemaSync<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
-    if (loadSchema)
-      this._loadingSchemas.push({ schema, loadSchema });
-    else
-      this._loadedSchemas.push(schema);
+    this._loadedSchemas.push(schema);
   }
 
   /**
@@ -133,7 +136,7 @@ export class SchemaCache implements ISchemaLocater {
 
     const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
     if (loadingSchema) {
-      const schema = await loadingSchema.loadSchema;
+      const schema = await loadingSchema.loadSchemaPromise;
       // Have to check that schema is not already in _loadedSchemas here bc of await above
       if (undefined === this._loadedSchemas.find(findLoadedSchema)) {
         // Add the schema to _loadedSchemas and remove it from _loadingSchemas
@@ -273,21 +276,20 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   /**
    * Adds the schema to this context
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
-   * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
+   * @param loadSchemaPromise Promise to fully load the schema
    * @alpha
    */
-  public async addSchema(schema: Schema, loadSchema?: DelayedPromise<Schema>) {
-    await this._knownSchemas.addSchema(schema, loadSchema);
+  public async addSchema(schema: Schema, loadSchemaPromise?: DelayedPromise<Schema>) {
+    await this._knownSchemas.addSchema(schema, loadSchemaPromise);
   }
 
   /**
    * Adds the schema to this context
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
-   * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
    * @alpha
    */
-  public addSchemaSync(schema: Schema, loadSchema?: DelayedPromise<Schema>) {
-    this._knownSchemas.addSchemaSync(schema, loadSchema);
+  public addSchemaSync(schema: Schema) {
+    this._knownSchemas.addSchemaSync(schema);
   }
 
   /**

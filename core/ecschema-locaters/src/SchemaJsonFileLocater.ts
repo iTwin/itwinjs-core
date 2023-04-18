@@ -63,7 +63,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const schemaPath = maxCandidate.fileName;
 
     const asyncOp = async () => this.readSchemaText(schemaPath);
-    await this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
+    this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
 
     const schemaText = await this.getSchemaText(schemaPath);
     if (!schemaText)
@@ -124,7 +124,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const schemaPath = maxCandidate.fileName;
 
     const asyncOp = async () => this.readSchemaText(schemaPath);
-    await this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
+    this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
 
     const schemaText = await this.getSchemaText(schemaPath);
     if (!schemaText)

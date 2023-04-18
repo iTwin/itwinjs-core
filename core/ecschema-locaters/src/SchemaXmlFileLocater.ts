@@ -43,7 +43,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
       return undefined;
 
     const asyncOp = async () => this.readSchemaText(schemaPath);
-    await this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
+    this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
 
     const schemaText = await this.getSchemaText(schemaPath);
     if (undefined === schemaText)
@@ -114,7 +114,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const schemaPath = maxCandidate.fileName;
 
     const asyncOp = async () => this.readSchemaText(schemaPath);
-    await this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
+    this.addSchemaText(schemaPath, new DelayedPromise(asyncOp));
 
     const schemaText = await this.getSchemaText(schemaPath);
     if (undefined === schemaText)

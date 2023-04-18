@@ -295,15 +295,15 @@ describe("SchemaXmlFileLocater tests:", () => {
       resolve("");
     });
 
-    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
+    locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
     assert.strictEqual(locater.schemaTextsCount, 1);
 
     // Re-adding exact schema path does nothing
-    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
+    locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
     assert.strictEqual(locater.schemaTextsCount, 1);
 
     schemaPath = path.join(__dirname, "assets", "SchemaD.ecschema.xml");
-    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
+    locater.addSchemaText(schemaPath, new DelayedPromise(async () => mockPromise));
     assert.strictEqual(locater.schemaTextsCount, 2);
   });
 
@@ -328,7 +328,7 @@ describe("SchemaXmlFileLocater tests:", () => {
     let schemaText = await locater.getSchemaText(schemaPath);
     assert.isUndefined(schemaText);
 
-    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
+    locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
     schemaText = await locater.getSchemaText(schemaPath);
     let schemaTextCompareTo = await locater.readUtf8FileToString(schemaPath);
     assert.strictEqual(schemaText, schemaTextCompareTo);
@@ -343,7 +343,7 @@ describe("SchemaXmlFileLocater tests:", () => {
     schemaText = await locater.getSchemaText(schemaPath);
     assert.isUndefined(schemaText);
 
-    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
+    locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
     schemaText = await locater.getSchemaText(schemaPath);
     schemaTextCompareTo = await locater.readUtf8FileToString(schemaPath);
     assert.strictEqual(schemaText, schemaTextCompareTo);
@@ -373,7 +373,7 @@ describe("SchemaXmlFileLocater tests:", () => {
     // schemaText is not added in locater so it is not found
     assert.isUndefined(schemaText);
 
-    await locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
+    locater.addSchemaText(schemaPath, new DelayedPromise(async () => readSchemaText(schemaPath)));
     schemaText = await locater.getSchemaText(schemaPath);
     // Promise to readSchemaText returns undefined bc path does not exist
     assert.isUndefined(schemaText);

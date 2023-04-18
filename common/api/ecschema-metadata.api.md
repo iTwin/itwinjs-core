@@ -1679,8 +1679,8 @@ export class Schema implements CustomAttributeContainerProps {
 // @alpha (undocumented)
 export class SchemaCache implements ISchemaLocater {
     constructor();
-    addSchema<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>): Promise<void>;
-    addSchemaSync<T extends Schema>(schema: T, loadSchema?: DelayedPromise<T>): void;
+    addSchema<T extends Schema>(schema: T, loadSchemaPromise?: DelayedPromise<T>): Promise<void>;
+    addSchemaSync<T extends Schema>(schema: T): void;
     // (undocumented)
     get count(): number;
     getAllSchemas(): Schema[];
@@ -1702,11 +1702,11 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     constructor();
     addLocater(locater: ISchemaLocater): void;
     // @alpha
-    addSchema(schema: Schema, loadSchema?: DelayedPromise<Schema>): Promise<void>;
+    addSchema(schema: Schema, loadSchemaPromise?: DelayedPromise<Schema>): Promise<void>;
     // @deprecated
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     // @alpha
-    addSchemaSync(schema: Schema, loadSchema?: DelayedPromise<Schema>): void;
+    addSchemaSync(schema: Schema): void;
     // @internal
     getCachedLoadedOrLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // @internal

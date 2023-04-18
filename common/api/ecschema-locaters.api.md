@@ -26,9 +26,7 @@ export abstract class SchemaFileLocater {
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
     // (undocumented)
-    addSchemaText(schemaPath: string, readSchemaText: DelayedPromise<string | undefined>): Promise<void>;
-    // (undocumented)
-    addSchemaTextSync(schemaPath: string, readSchemaText: DelayedPromise<string | undefined>): void;
+    addSchemaText(schemaPath: string, readSchemaTextPromise: DelayedPromise<string | undefined>): void;
     compareSchemaKeyByVersion: (lhs: FileSchemaKey, rhs: FileSchemaKey) => number;
     // (undocumented)
     fileExists(filePath: string): Promise<boolean | undefined>;
@@ -42,9 +40,8 @@ export abstract class SchemaFileLocater {
     protected abstract getSchemaKey(data: string): SchemaKey;
     // (undocumented)
     getSchemaText(schemaPath: string): Promise<string | undefined>;
-    // (undocumented)
-    getSchemaTextSync(schemaPath: string): Promise<string | undefined> | undefined;
     readSchemaText(schemaPath: string): Promise<string | undefined>;
+    readSchemaTextSync(schemaPath: string): string | undefined;
     // (undocumented)
     readUtf8FileToString(filePath: string): Promise<string | undefined>;
     // (undocumented)
