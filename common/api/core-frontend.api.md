@@ -14,6 +14,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
+import { Atmosphere } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
@@ -9543,6 +9544,8 @@ export interface RenderPlan {
     // (undocumented)
     readonly ao?: AmbientOcclusion.Settings;
     // (undocumented)
+    readonly atmosphere?: Atmosphere.Settings;
+    // (undocumented)
     readonly backgroundMapOn: boolean;
     // (undocumented)
     readonly bgColor: ColorDef;
@@ -9550,6 +9553,8 @@ export interface RenderPlan {
     readonly clip?: ClipVector;
     // (undocumented)
     readonly clipStyle: ClipStyle;
+    // (undocumented)
+    readonly ellipsoid?: RenderPlanEllipsoid;
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
@@ -9594,6 +9599,19 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract dispose(): void;
     // (undocumented)
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
+}
+
+// @internal (undocumented)
+export class RenderPlanEllipsoid {
+    constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d);
+    // (undocumented)
+    readonly ellipsoidCenter: Point3d;
+    // (undocumented)
+    readonly ellipsoidRadii: Point3d;
+    // (undocumented)
+    readonly ellipsoidRotation: Matrix3d;
+    // (undocumented)
+    equals(other: RenderPlanEllipsoid): boolean;
 }
 
 // @internal (undocumented)
@@ -11231,6 +11249,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get viewRect(): ViewRect;
     // (undocumented)
     get wantAmbientOcclusion(): boolean;
+    // (undocumented)
+    get wantAtmosphere(): boolean;
     // (undocumented)
     get wantInvertBlackBackground(): boolean;
     // (undocumented)

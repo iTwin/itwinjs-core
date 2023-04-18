@@ -5,36 +5,46 @@ publish: false
 
 Table of contents:
 
-- [Updated minimum requirements](#updated-minimum-requirements)
-  - [Node.js](#nodejs)
-  - [WebGL](#webgl)
-  - [Electron](#electron)
+- [Breaking Changes](#breaking-changes)
+  - [Updated minimum requirements](#updated-minimum-requirements)
+    - [Node.js](#nodejs)
+    - [WebGL](#webgl)
+    - [Electron](#electron)
+  - [Default RPC Registration](#default-rpc-registration)
+  - [Breaking out of lockstep](#breaking-out-of-lockstep)
+    - [AppUI](#appui)
+    - [Presentation](#presentation)
+    - [Transformation](#transformation)
+    - [eslint-plugin](#eslint-plugin)
+    - [map-layers](#map-layers)
+  - [Deprecated API removals](#deprecated-api-removals)
+  - [Deprecated API replacements](#deprecated-api-replacements)
+    - [Querying ECSql](#querying-ecsql)
 - [Geometry](#geometry)
   - [Mesh offset](#mesh-offset)
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
+  - [Abstract base class Plane3d](#abstract-base-class-plane3d)
 - [Display](#display)
   - [glTF bounding boxes](#gltf-bounding-boxes)
-- [Presentation](#presentation)
+  - [Atmospheric Scattering](#atmospheric-scattering)
+- [Presentation](#presentation-1)
   - [Active unit system](#active-unit-system)
   - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
-- [Transformation](#transformation)
-- [Deprecated API removals](#deprecated-api-removals)
-- [Deprecated API replacements](#deprecated-api-replacements)
-  - [Querying ECSql](#querying-ecsql)
-- [AppUI packages moved](#appui-packages-moved)
 
-## Updated minimum requirements
+## Breaking Changes
 
-A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and featureful libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
+### Updated minimum requirements
 
-### Node.js
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
+
+#### Node.js
 
 Node 12 reached [end-of-life](https://github.com/nodejs/release#end-of-life-releases) in 2020, and Node 14 as well as Node 16 will do so shortly. iTwin.js 4.0 requires a minimum of Node 18.12.0, though we recommend using the latest long-term-support version.
 
-### WebGL
+#### WebGL
 
 Web browsers display 3d graphics using an API called [WebGL](https://en.wikipedia.org/wiki/WebGL), which comes in 2 versions: WebGL 1, released 11 years ago; and WebGL 2, released 6 years ago. WebGL 2 provides many more capabilities than WebGL 1. Because some browsers (chiefly Safari) did not provide support for WebGL 2, iTwin.js has maintained support for both versions, which imposed some limitations on the features and efficiency of its rendering system.
 
@@ -42,9 +52,102 @@ Over a year ago, support for WebGL 2 finally became [available in all major brow
 
 [IModelApp.queryRenderCompatibility]($frontend) will now produce [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility) for a client that does not support WebGL 2.
 
-### Electron
+#### Electron
 
-Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports Electron 23 and Electron 24.
+Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions were dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports Electron 23 and Electron 24.
+
+### Default RPC Registration
+
+Previously, `@itwin/core-electron` and `@itwin/core-mobile` automatically registered the following RPCs on your behalf:
+
+- IModelReadRpcInterface
+- IModelTileRpcInterface
+- SnapshotIModelRpcInterface
+- PresentationRpcInterface
+
+To be more aligned with other our approach on Web and to prevent unnecessary registrations and coupling of dependencies, we are now requiring the consumer to register all RPCs they need on their end. Please refer to the documentation for `ElectronApp.startup` and `MobileHost.startup`.
+
+### Breaking out of lockstep
+
+To move more quickly and release independently, the following packages have broken out of lockstep with iTwin.js Core and outside of the itwinjs-core repository.
+
+#### AppUI
+
+The source code for the following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui).
+
+- @itwin/appui-react
+- @itwin/appui-layout-react
+- @itwin/components-react
+- @itwin/core-react
+- @itwin/imodel-components-react
+
+#### Presentation
+
+The source code for the following packages was moved to the new [Presentation repository](https://github.com/iTwin/presentation).
+
+- @itwin/presentation-components
+- @itwin/presentation-opentelemetry
+- @itwin/presentation-testing
+
+#### Transformation
+
+The transformer package `@itwin/core-transformer` was renamed to [`@itwin/imodel-transformer`](https://github.com/iTwin/imodel-transformer) and has its own repository now with supporting packages.
+
+#### eslint-plugin
+
+`@itwin/eslint-plugin` has moved to the [eslint-plugin repository](https://github.com/iTwin/eslint-plugin).
+
+#### map-layers
+
+`@itwin/map-layers` has moved into the [viewer-components-react repository](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/map-layers).
+
+### Deprecated API removals
+
+The following previously-deprecated APIs have been removed:
+
+**@itwin/core-backend**:
+
+- `AliCloudStorageService`
+- `AliCloudStorageServiceCredentials`
+- `AzureBlobStorage`
+- `CloudStorageService`
+- `CloudStorageTileUploader`
+- `CloudStorageUploadOptions`
+- `tileCacheService` property of [IModelHost]($backend), [IModelHostOptions]($backend), and [IModelHostConfiguration]($backend)
+- `IModelHost.tileUploader`
+
+**@itwin/core-common**:
+
+- `CloudStorageCache`
+- `CloudStorageContainerDescriptor`
+- `CloudStorageContainerUrl`
+- `CloudStorageProvider`
+- `CloudStorageTileCache`
+- `IModelTileRpcInterface.getTileCacheContainerUrl`
+- `IModelTileRpcInterface.isUsingExternalTileCache`
+
+### Deprecated API replacements
+
+#### Querying ECSql
+
+[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+
+`createQueryReader` can now be used like below:
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const rowId = row[0]; // or 'row.id'
+}
+```
+
+It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const jsRow = row.toRow();
+}
+```
 
 ## Geometry
 
@@ -92,6 +195,21 @@ With these changes the [PlaneAltitudeEvaluator]($core-geometry) can be deprecate
 
 The existing [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
 
+### Atmospheric Scattering
+
+A physics-based Atmospheric Scattering effect is now available for the rendering system.
+
+![Globe View of Atmospheric Scattering](.\assets\atmosphere_globe.jpg)
+
+This effect can be toggled via [Environment.displayAtmosphere]($common) and adjusted through [Environment.atmosphere]($common).
+It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
+
+The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettings.backgroundMap]($common) set to a backgroundMap with [BackgroundMapSettings.globeMode]($common) equal to [GlobeMode.Ellipsoid]($common).
+
+![Sky View of Atmospheric Scattering](.\assets\atmosphere_distance.jpg)
+![Atmospheric Scattering from Space](.\assets\atmosphere_space.jpg)
+![Atmospheric Scattering at Sunset](.\assets\atmosphere_sunset.jpg)
+
 ## Presentation
 
 ### Active unit system
@@ -129,65 +247,3 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
-
-## Transformation
-
-The transformer package `@itwin/core-transformer` was renamed to [`@itwin/imodel-transformer`](https://github.com/iTwin/imodel-transformer) and has its own repository now with supporting packages.
-
-## Deprecated API removals
-
-The following previously-deprecated APIs have been removed:
-
-**@itwin/core-backend**:
-
-- `AliCloudStorageService`
-- `AliCloudStorageServiceCredentials`
-- `AzureBlobStorage`
-- `CloudStorageService`
-- `CloudStorageTileUploader`
-- `CloudStorageUploadOptions`
-- `tileCacheService` property of [IModelHost]($backend), [IModelHostOptions]($backend), and [IModelHostConfiguration]($backend)
-- `IModelHost.tileUploader`
-
-**@itwin/core-common**:
-
-- `CloudStorageCache`
-- `CloudStorageContainerDescriptor`
-- `CloudStorageContainerUrl`
-- `CloudStorageProvider`
-- `CloudStorageTileCache`
-- `IModelTileRpcInterface.getTileCacheContainerUrl`
-- `IModelTileRpcInterface.isUsingExternalTileCache`
-
-## Deprecated API replacements
-
-### Querying ECSql
-
-[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
-Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
-
-`createQueryReader` can now be used like below:
-
-```ts
-for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
-  const rowId = row[0]; // or 'row.id'
-}
-```
-
-It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
-
-```ts
-for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
-  const jsRow = row.toRow();
-}
-```
-
-## AppUI packages moved
-
-The source code for following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui). The package names and published location have not changed, but the release schedule will be independent from that of the itwinjs-core packages.
-
-- @itwin/appui-react
-- @itwin/appui-layout-react
-- @itwin/components-react
-- @itwin/core-react
-- @itwin/imodel-components-react
