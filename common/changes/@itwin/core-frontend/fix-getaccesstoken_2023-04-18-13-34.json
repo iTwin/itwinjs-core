@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "replace IModelApp.getAccessToken's implementation usage of 'this' with 'IModelApp'",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
