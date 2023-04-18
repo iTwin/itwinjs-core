@@ -25,6 +25,7 @@ export type FacetIntersectCallback = (detail: FacetLocationDetail, visitor: Poly
 
 /** Options for computing and processing facet intersection methods.
  * @see PolyfaceQuery.intersectRay3d
+ * @public
  */
 export class FacetIntersectOptions {
   /** distance tolerance for testing coincidence with facet boundary */
