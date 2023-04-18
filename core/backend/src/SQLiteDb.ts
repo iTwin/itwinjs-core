@@ -17,7 +17,8 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
-// cspell:ignore savepoint
+// cspell:ignore savepoint julianday rowid
+
 /* eslint-disable @typescript-eslint/unified-signatures */
 
 /**
@@ -161,12 +162,12 @@ export class SQLiteDb {
     this.nativeDb.vacuum(args);
   }
 
-  /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction. */
+  /** Commit the outermost transaction, writing changes to the file. Then, restart the default transaction. */
   public saveChanges(): void {
     this.nativeDb.saveChanges();
   }
 
-  /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the transaction. */
+  /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the default transaction. */
   public abandonChanges(): void {
     this.nativeDb.abandonChanges();
   }
@@ -257,30 +258,32 @@ export class SQLiteDb {
 }
 
 /**
- * Abstract base class for a SQlite database that has a version range associated with it.
- * This class provides version checking when the database is opened to guarantee that a valid version of software is
- * always used to access the database. This class may be used either to access a local file, or one stored in a cloud container.
+ * Abstract base class for a SQLite database that has [[SQLiteDb.RequiredVersionRanges]] stored in it.
+ * This class provides version checking when the database is opened, to guarantee that a valid version of software is
+ * always used for access.
  *
- * Subclasses must provide a `myVersion` member indicating the version of its software, and implement the `createDDL` member to create its
+ * Notes:
+ *  - This class may be used either to access a local file, or one stored in a cloud container.
+ *  - Subclasses must provide a `myVersion` member indicating the version of its software, and implement the `createDDL` member to create its
  * tables.
  * @beta
  */
 export abstract class VersionedSqliteDb extends SQLiteDb {
-  protected static _versionProps = { namespace: "SQLiteDb", name: "versions" };
+  protected static _versionProps = { namespace: "SQLiteDb", name: "versions" } as const;
 
-  /** The current semver "persistence version" of a package that uses VersionedSqliteDbs.
-   * @note This value should only be changed when logic in its code is modified in a way that affects the operation of extant VersionedSqliteDbs.
+  /** The current semver "persistence version" of this class.
+   * @note This value should only be changed when logic in its code is modified in a way that affects the operation of extant copies.
    * If this value is outside of the range of accepted versions of a to-be-opened VersionedSqliteDb, the operation will fail. In this manner, if
-   * changes are made to the format of a VersionedSqliteDb, or if bug fixes are necessary, the `requiredVersions` range in a VersionedSqliteDb may be updated
+   * changes are made to the format of a VersionedSqliteDb, or if bug fixes are necessary, the `requiredVersions` property in a VersionedSqliteDb may be updated
    * and immediately old versions of the package will refuse to open the VersionedSqliteDb, with a message to the user that they need to upgrade their
    * software. Likewise, if a new version of the package is asked to open an older VersionedSqliteDb that has not been upgraded to the lowest version
    * supported by it, the user will be informed that they need to upgrade their software.
-   * @note this identifier is independent of the version the package in its `package.json`.
+   * @note this identifier is independent of versions in `package.json` files.
   */
   public abstract myVersion: string;
 
   /**
-   * Change the "versions required to open this database" property stored in this database. After this call
+   * Change the "versions required to open this database" property stored in this database. After this call,
    * versions of software that don't meet the supplied ranges will fail.
    * @param versions the new versions required for reading and writing this database.
    * @note the database must be opened for write access.
@@ -330,8 +333,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
   /**
    * Verify that this version of the software meets the required version range (as appropriate, read or write) stored in the database.
    * Throws otherwise.
-   *
-  */
+   */
   protected verifyVersions() {
     const versions = this.getRequiredVersions();
     const isReadonly = this.isReadonly; // so we can tell read/write after the file is closed.
@@ -364,8 +366,8 @@ export namespace SQLiteDb {
   export type VersionRange = string;
 
   /**
-   * The semver "persistence version" ranges required to read and write a VersionedSqliteDb.
-   * If the version of the program attempting to read or write the database does not satisfy the range, access is denied.
+   * A pair of semver [[VersionRange]]s, one for read and one for write, required to access a [[VersionedSqliteDb]].
+   * If the version of the software attempting to read or write the database does not satisfy the range, access is denied.
    */
   export interface RequiredVersionRanges {
     /** a range of acceptable persistence versions for reading from a VersionedSqliteDb. */

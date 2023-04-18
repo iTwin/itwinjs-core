@@ -124,7 +124,7 @@ describe("TileUpload", () => {
     const blobProperties = await IModelHost.tileStorage!.storage.getObjectProperties(objectReference);
 
     const tileSize = IModelHost.compressCachedTiles
-      ? (await promisify(gunzip)(blobBuffer)).byteLength
+      ? (await promisify(gunzip)(blobBuffer) as Buffer).byteLength      // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
       : blobBuffer.byteLength;
 
     // Verify metadata in blob properties

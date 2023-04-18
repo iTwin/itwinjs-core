@@ -3,71 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BentleyError, DbResult } from "@itwin/core-bentley";
+import { BentleyError, DbResult } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
-import { SettingObject } from "./workspace/Settings";
 import { VersionedSqliteDb } from "./SQLiteDb";
-
-/**
- * A cloud-based storage for a set of values of type `PropertyType`, each with a unique `PropertyName`.
- * `CloudPropertyStore`s are stored in cloud containers, and require an access token that grants permission to read and/or write them.
- * All write operations will fail without an access token that grants write permission.
- * A `CloudPropertyStore` is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
- * However, that means that callers are responsible for synchronizing the local cache to ensure it includes changes
- * made by others, as appropriate (see [[synchronizeWithCloud]]).
- * @beta
- */
-export interface CloudPropertyStore {
-
-  /** The collection of property values in the PropertyStore as of the last time it was synchronized. */
-  readonly values: PropertyStore.ReadValues;
-
-  /** Parameters for obtaining the write lock on the container for a PropertyStore.*/
-  readonly lockParams: CloudSqlite.ObtainLockParams;
-
-  /**
-   * The token that grants access to the cloud container for this PropertyStore. If it does not grant write permissions, all
-   * write operations will fail. It should be refreshed (via a timer) before it expires.
-   */
-  sasToken: AccessToken;
-
-  /**
-   * Synchronize the local values in this PropertyStore with any changes by made by others.
-   * @note This is called automatically whenever any write operation is performed on the PropertyStore. It is only necessary to
-   * call this directly if you have not changed the PropertyStore recently, but wish to perform a readonly operation and want to
-   * ensure it is up-to-date as of now.
-   * @note There is no guarantee that the Values are up-to-date even immediately after calling this method, since others
-   * may be modifying them at any time.
-   */
-  synchronizeWithCloud(): void;
-
-  /** initiate a prefetch operation on this PropertyStore
-   * @internal
-   */
-  startPrefetch(): CloudSqlite.CloudPrefetch;
-
-  /** Save a single property in this PropertyStore. If the property already exists, its value is overwritten.
-   * @note This will obtain the write lock, save the value, and then release the write lock.
-   */
-  saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
-  /** Save an array of properties in this PropertyStore. If a property already exists, its value is overwritten.
-   * @note This will obtain the write lock, save the values, and then release the write lock.
-   */
-  saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
-  /** Delete a single property from this PropertyStore. If the value does not exist, this method does nothing.
-   * @note This will obtain the write lock, delete the value, and then release the write lock.
-   */
-  deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
-  /** Delete an array of properties from this PropertyStore. Any value that does not exist is ignored.
-   * @note This will obtain the write lock, delete the values, and then release the write lock.
-   */
-  deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
-}
+import { SettingObject } from "./workspace/Settings";
 
 /** @beta */
 export namespace PropertyStore {
-  /** @internal */
-  export let openCloudPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => CloudPropertyStore) | undefined;
 
   /** The set of valid types for properties in a PropertyStore. */
   export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
@@ -94,7 +36,6 @@ export namespace PropertyStore {
 
   /**
    * Read the values of Properties in a PropertyStore.
-   * @beta
    */
   export interface ReadValues {
     /** get the value of a Property by name.
@@ -149,16 +90,15 @@ export namespace PropertyStore {
   /**
    * A `VersionedSqliteDb` database for storing name/value pairs. The names are case-sensitive strings, and the values can be of type
    * string, boolean, number, blob (Uint8Array), or Object.
-   * @beta
    */
-  export class PropertyDb extends VersionedSqliteDb implements PropertyStore.ReadValues {
+  export class PropertyDb extends VersionedSqliteDb implements ReadValues {
     public readonly myVersion = "3.0.0";
 
     protected createDDL() {
       this.createTable({ tableName: "properties", columns: "name TEXT NOT NULL PRIMARY KEY,type,value", addTimestamp: true });
     }
 
-    public getProperty(name: PropertyStore.PropertyName): PropertyStore.PropertyType | undefined {
+    public getProperty(name: PropertyName): PropertyType | undefined {
       return this.withPreparedSqliteStatement("SELECT type,value from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, name);
         if (!stmt.nextRow())
@@ -179,37 +119,37 @@ export namespace PropertyStore {
       });
     }
 
-    public getString(name: PropertyStore.PropertyName, defaultValue: string): string;
-    public getString(name: PropertyStore.PropertyName): string | undefined;
-    public getString(name: PropertyStore.PropertyName, defaultValue?: string): string | undefined {
+    public getString(name: PropertyName, defaultValue: string): string;
+    public getString(name: PropertyName): string | undefined;
+    public getString(name: PropertyName, defaultValue?: string): string | undefined {
       const out = this.getProperty(name);
       return typeof out === "string" ? out : defaultValue;
     }
-    public getBoolean(name: PropertyStore.PropertyName, defaultValue: boolean): boolean;
-    public getBoolean(name: PropertyStore.PropertyName): boolean | undefined;
-    public getBoolean(name: PropertyStore.PropertyName, defaultValue?: boolean): boolean | undefined {
+    public getBoolean(name: PropertyName, defaultValue: boolean): boolean;
+    public getBoolean(name: PropertyName): boolean | undefined;
+    public getBoolean(name: PropertyName, defaultValue?: boolean): boolean | undefined {
       const out = this.getProperty(name);
       return typeof out === "boolean" ? out : defaultValue;
     }
-    public getNumber(name: PropertyStore.PropertyName, defaultValue: number): number;
-    public getNumber(name: PropertyStore.PropertyName): number | undefined;
-    public getNumber(name: PropertyStore.PropertyName, defaultValue?: number): number | undefined {
+    public getNumber(name: PropertyName, defaultValue: number): number;
+    public getNumber(name: PropertyName): number | undefined;
+    public getNumber(name: PropertyName, defaultValue?: number): number | undefined {
       const out = this.getProperty(name);
       return typeof out === "number" ? out : defaultValue;
     }
-    public getBlob(name: PropertyStore.PropertyName, defaultValue: Uint8Array): Uint8Array;
-    public getBlob(name: PropertyStore.PropertyName): Uint8Array | undefined;
-    public getBlob(name: PropertyStore.PropertyName, defaultValue?: Uint8Array): Uint8Array | undefined {
+    public getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
+    public getBlob(name: PropertyName): Uint8Array | undefined;
+    public getBlob(name: PropertyName, defaultValue?: Uint8Array): Uint8Array | undefined {
       const out = this.getProperty(name);
       return out instanceof Uint8Array ? out : defaultValue;
     }
-    public getObject<T extends SettingObject>(name: PropertyStore.PropertyName, defaultValue: T): T;
-    public getObject<T extends SettingObject>(name: PropertyStore.PropertyName): T | undefined;
-    public getObject<T extends SettingObject>(name: PropertyStore.PropertyName, defaultValue?: T): T | undefined {
+    public getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
+    public getObject<T extends SettingObject>(name: PropertyName): T | undefined;
+    public getObject<T extends SettingObject>(name: PropertyName, defaultValue?: T): T | undefined {
       const out = this.getProperty(name);
       return typeof out === "object" ? out as T : defaultValue;
     }
-    public forAllProperties(iter: PropertyStore.PropertyIteration, filter?: PropertyStore.PropertyFilter) {
+    public forAllProperties(iter: PropertyIteration, filter?: PropertyFilter) {
       let sql = "SELECT name FROM properties WHERE name IS NOT NULL";
       if (filter?.sqlExpression)
         sql += ` AND ${filter.sqlExpression} `;
@@ -230,24 +170,24 @@ export namespace PropertyStore {
     }
 
     /** Delete a single property from this PropertyDb. If the value does not exist, this method does nothing. */
-    public deleteProperty(propName: PropertyStore.PropertyName) {
+    public deleteProperty(propName: PropertyName) {
       this.withSqliteStatement("DELETE from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, propName);
         stmt.step();
       });
     }
     /** Delete an array of properties from this PropertyDb. Any value that does not exist is ignored. */
-    public deleteProperties(propNames: PropertyStore.PropertyName[]) {
+    public deleteProperties(propNames: PropertyName[]) {
       propNames.forEach((name) => this.deleteProperty(name));
     }
 
-    private validateName(name: PropertyStore.PropertyName) {
+    private validateName(name: PropertyName) {
       if (typeof name !== "string" || name.trim() !== name || name.length > 2 * 1024 || name.length < 2)
         throw new Error(`illegal property name[${name}]`);
     }
 
     /** Save a single property in this PropertyDb. If the property already exists, its value is overwritten. */
-    public saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType) {
+    public saveProperty(name: PropertyName, value: PropertyType) {
       this.validateName(name);
       this.withSqliteStatement("INSERT OR REPLACE INTO properties(name,type,value) VALUES (?,?,?)", (stmt) => {
         stmt.bindString(1, name);
@@ -284,8 +224,64 @@ export namespace PropertyStore {
     }
 
     /** Save an array of properties in this PropertyDb. If a property already exists, its value is overwritten. */
-    public saveProperties(props: PropertyStore.PropertyArray) {
+    public saveProperties(props: PropertyArray) {
       props.forEach((prop) => this.saveProperty(prop.name, prop.value));
     }
+  }
+
+  const defaultDbName = "PropertyDb" as const;
+  type MethodsOfPropertyDb = { [P in keyof PropertyDb]: PropertyDb[P] extends (...args: any) => void ? P : never }[keyof PropertyDb];
+
+  /**
+   * A cloud-based storage for a set of values of type `PropertyType`, each with a unique `PropertyName`.
+   * `PropertyStore.CloudDb`s are stored in cloud containers, and require an access token that grants permission to read and/or write them.
+   * All write operations will fail without an access token that grants write permission.
+   * A `CloudDb` is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
+   * However, that means that callers are responsible for synchronizing the local cache to ensure it includes changes
+   * made by others, as appropriate (see [[synchronizeWithCloud]]).
+   */
+  export class CloudDb extends CloudSqlite.DbAccess<PropertyDb> {
+    /** The property values in the PropertyDb as of the last time it was synchronized. */
+    public get values(): PropertyDb {
+      return this.openReadonly();
+    }
+
+    public constructor(props: CloudSqlite.ContainerAccessProps) {
+      super({ ctor: PropertyDb, props, dbName: defaultDbName });
+    }
+
+    /**
+     * Initialize a cloud container for use as a PropertyStore. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
+     * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty PropertyDb into the container.
+     * @note this deletes any existing content in the container.
+     */
+    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps, dbName?: string, initContainer?: { blockSize?: number } }) {
+      return super._initializeDb({ ...args, ctor: PropertyDb, dbName: args.dbName ?? defaultDbName });
+    }
+
+    private async withWriteLock<T extends MethodsOfPropertyDb>(op: T, ...args: Parameters<PropertyDb[T]>) {
+      const fn = this._cloudDb[op] as ((...arg: any[]) => ReturnType<PropertyDb[T]>);
+      return this.withLockedDb(op, () => fn.apply(this._cloudDb, args));
+    }
+
+    /** Save a single property in this PropertyStore. If the property already exists, its value is overwritten.
+     * @note This will obtain the write lock, save the value, and then release the write lock.
+     */
+    public async saveProperty(name: PropertyName, value: PropertyType) { return this.withWriteLock("saveProperty", name, value); }
+
+    /** Save an array of properties in this PropertyStore. If a property already exists, its value is overwritten.
+     * @note This will obtain the write lock, save the values, and then release the write lock.
+     */
+    public async saveProperties(props: PropertyArray) { return this.withWriteLock("saveProperties", props); }
+
+    /** Delete a single property from this PropertyStore. If the value does not exist, this method does nothing.
+     * @note This will obtain the write lock, delete the value, and then release the write lock.
+     */
+    public async deleteProperty(propName: PropertyName) { return this.withWriteLock("deleteProperty", propName); }
+
+    /** Delete an array of properties from this PropertyStore. Any value that does not exist is ignored.
+     * @note This will obtain the write lock, delete the values, and then release the write lock.
+     */
+    public async deleteProperties(propNames: PropertyName[]) { return this.withWriteLock("deleteProperties", propNames); }
   }
 }
