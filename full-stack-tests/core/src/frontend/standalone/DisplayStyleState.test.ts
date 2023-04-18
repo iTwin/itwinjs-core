@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import { Vector3d } from "@itwin/core-geometry";
 import {
+  Atmosphere,
   BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode, PlanarClipMaskSettings,
   SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@itwin/core-common";
@@ -165,6 +166,7 @@ describe("DisplayStyle", () => {
       environment: {
         sky: { ...SkyGradient.defaults.toJSON(), display: false, twoColor: true },
         ground: { ...GroundPlane.defaults.toJSON(), display: true },
+        atmosphere: { ...Atmosphere.Settings.defaults.toJSON(), display: false },
       },
     });
 
@@ -245,6 +247,7 @@ describe("DisplayStyle", () => {
       environment: {
         sky: { ...SkyGradient.defaults.toJSON(), display: true, twoColor: true },
         ground: { ...GroundPlane.defaults.toJSON(), display: false },
+        atmosphere: { ...Atmosphere.Settings.defaults.toJSON(), display: false },
       },
     });
 
