@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "chgd param on readPointCloudTileContent",
+      "comment": "Fixed inconsistent point sizes for additive point cloud tiles.",
       "type": "none"
     }
   ],
