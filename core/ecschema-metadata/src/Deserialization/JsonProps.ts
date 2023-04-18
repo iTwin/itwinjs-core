@@ -19,7 +19,7 @@ export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClass
 /**
  * @beta
  */
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps;
+export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps;
 
 /**
  * @beta
@@ -257,6 +257,13 @@ export interface ConstantProps extends SchemaItemProps {
  * @beta
  */
 export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
+
+/**
+ * @beta
+ */
+export interface SchemaItemOverrideFormatProps extends SchemaItemFormatProps {
+  readonly parent: string;
+}
 
 /**
  * @beta

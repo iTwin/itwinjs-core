@@ -953,6 +953,7 @@ export class OverrideFormat {
     get fullName(): string;
     // @alpha
     fullNameXml(koqSchema: Schema): string;
+    getFormatProps(): SchemaItemOverrideFormatProps;
     // (undocumented)
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
@@ -979,7 +980,6 @@ export class OverrideFormat {
     get stationSeparator(): string;
     // (undocumented)
     get thousandSeparator(): string;
-    toJSON(): SchemaItemFormatProps;
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
@@ -1735,6 +1735,12 @@ export class SchemaItemKey {
     protected _schemaKey: SchemaKey;
     // (undocumented)
     get schemaName(): string;
+}
+
+// @beta (undocumented)
+export interface SchemaItemOverrideFormatProps extends SchemaItemFormatProps {
+    // (undocumented)
+    readonly parent: string;
 }
 
 // @beta (undocumented)

@@ -193,22 +193,23 @@ describe("KindOfQuantity", () => {
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
       const expectedJson = {
+        parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 2,
       };
-      expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[0].precision).eq(DecimalPrecision.Two);
-      expect(JSON.parse(JSON.stringify(testKoq!.presentationFormats[0].toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[0] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[1].precision).eq(DecimalPrecision.Three);
       expectedJson.precision = 3;
-      expect(JSON.parse(JSON.stringify(testKoq!.presentationFormats[1].toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[1] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(3)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[2].precision).eq(DecimalPrecision.Four);
       expectedJson.precision = 4;
-      expect(JSON.parse(JSON.stringify(testKoq!.presentationFormats[2].toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[2] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(4)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal(2)");
       expect(testKoq!.presentationFormats[0].fullName).eq("Formats.DefaultReal(2)");
@@ -232,22 +233,23 @@ describe("KindOfQuantity", () => {
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
       const expectedJson = {
+        parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 2,
       };
-      expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[0].precision).eq(DecimalPrecision.Two);
-      expect(JSON.parse(JSON.stringify(testKoq!.presentationFormats[0].toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[0] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[1].precision).eq(DecimalPrecision.Three);
       expectedJson.precision = 3;
-      expect(JSON.parse(JSON.stringify(testKoq!.presentationFormats[1].toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[1] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(3)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[2].precision).eq(DecimalPrecision.Four);
       expectedJson.precision = 4;
-      expect(JSON.parse(JSON.stringify(testKoq!.presentationFormats[2].toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[2] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(4)", ...expectedJson});
 
       expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal(2)");
       expect(testKoq!.presentationFormats[0].fullName).eq("Formats.DefaultReal(2)");
@@ -288,6 +290,8 @@ describe("KindOfQuantity", () => {
       expect(defaultOverrideFormat.precision).to.be.equal(defaultOverrideFormat.parent.precision);
 
       const expectedJson = {
+        name: "Formats.DefaultReal[Formats.IN]",
+        parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 6,
@@ -295,7 +299,7 @@ describe("KindOfQuantity", () => {
           units: [{ name: "Formats.IN" }],
         },
       };
-      expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
     });
     it("sync - single unit override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitOverride), context);
@@ -315,6 +319,8 @@ describe("KindOfQuantity", () => {
       assert.strictEqual(unitOverride[0], unitFromSchema);
 
       const expectedJson = {
+        name: "Formats.DefaultReal[Formats.IN]",
+        parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 6,
@@ -322,7 +328,7 @@ describe("KindOfQuantity", () => {
           units: [{ name: "Formats.IN" }],
         },
       };
-      expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
     });
 
     // single unit label override
@@ -351,6 +357,8 @@ describe("KindOfQuantity", () => {
       expect(unitOverride[1]).to.be.eq(" in");
 
       const expectedJson = {
+        name: "Formats.DefaultReal[Formats.IN| in]",
+        parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 6,
@@ -358,7 +366,7 @@ describe("KindOfQuantity", () => {
           units: [{ name: "Formats.IN", label: " in" }],
         },
       };
-      expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
     });
     it("sync - single unit label override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitLabelOverride), context);
@@ -377,6 +385,8 @@ describe("KindOfQuantity", () => {
       expect(unitOverride[1]).to.be.eq(" in");
 
       const expectedJson = {
+        name: "Formats.DefaultReal[Formats.IN| in]",
+        parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 6,
@@ -384,7 +394,8 @@ describe("KindOfQuantity", () => {
           units: [{ name: "Formats.IN", label: " in" }],
         },
       };
-      expect(JSON.parse(JSON.stringify(defaultFormat?.toJSON()))).to.be.deep.equal(expectedJson);
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
+
     });
 
     // failure cases

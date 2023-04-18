@@ -12,7 +12,7 @@ import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, Scient
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
-import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
+import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
 import { Unit } from "./Unit";
 import { Mutable } from "@itwin/core-bentley";
 
@@ -114,10 +114,19 @@ export class OverrideFormat {
   }
 
   /**
-   * Returns a JSON object that contains the specification for OverrideFormat.
+   * Returns a JSON object that contains the specification for the OverrideFormat where the precision and units properties have been overriden.
+   * If the precision and/or units properties have been overriden, the returned object will contain a "name" and a "parent" property.
+   * The "name" property identifies the OverrideFormat object itself and the "parent" property identifies the Format that has been overriden.
+   * This method is not intended for complete serialization as it does not serialize any of the schema item properties.
    */
-  public toJSON(): SchemaItemFormatProps {
-    const formatJson = this.parent.toJSON() as Mutable<SchemaItemFormatProps>;
+  public getFormatProps(): SchemaItemOverrideFormatProps {
+    const formatJson = this.parent.toJSON() as Mutable<SchemaItemOverrideFormatProps>;
+
+    if (this.parent.fullName !== this.fullName) {
+      // Update name and parent properties to distinguish it from parent Format
+      formatJson.name = this.fullName;
+      formatJson.parent = this.parent.fullName;
+    }
 
     // Update Precision overriden property
     formatJson.precision = this.precision;

@@ -114,6 +114,7 @@ internal;SchemaGraphUtil
 beta;class SchemaItem
 beta;SchemaItemFormatProps = SchemaItemProps & FormatProps
 beta;SchemaItemKey
+beta;SchemaItemOverrideFormatProps 
 beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
