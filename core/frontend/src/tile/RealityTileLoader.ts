@@ -110,7 +110,7 @@ export abstract class RealityTileLoader {
         break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile, system);
         let graphic = res.graphic;
         const rtcCenter = res.rtcCenter;
         if (graphic && (rtcCenter || tile.transformToRoot && !tile.transformToRoot.isIdentity)) {
