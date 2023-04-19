@@ -1,8 +1,5 @@
 function readPackage(pkg) {
-  if (
-    (pkg.name == "typedoc") &&
-    pkg.dependencies
-  ) {
+  if (pkg.name == "typedoc" && pkg.dependencies) {
     pkg.dependencies["typescript"] = "~4.7.0";
   }
 
@@ -41,6 +38,16 @@ function readPackage(pkg) {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
     pkg.dependencies["@itwin/core-common"] = "workspace:*";
     pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
+  }
+
+  // https://github.com/iTwin/imodel-transformer/blob/main/packages/transformer/package.json
+  else if (pkg.name == "@itwin/imodel-transformer") {
+    pkg.dependencies["@itwin/core-backend"] = "workspace:*";
+    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
+    pkg.dependencies["@itwin/core-common"] = "workspace:*";
+    pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
+    pkg.dependencies["@itwin/core-quantity"] = "workspace:*";
+    pkg.dependencies["@itwin/ecschema-metadata"] = "workspace:*";
   }
 
   return pkg;
