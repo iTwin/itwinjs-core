@@ -116,7 +116,16 @@ export abstract class RealityTileLoader {
         if (graphic && (rtcCenter || tile.transformToRoot && !tile.transformToRoot.isIdentity)) {
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);
-          graphic = system.createBranch(transformBranch, tile.transformToRoot);
+          let xform: Transform;
+          if (!tile.transformToRoot && rtcCenter)
+            xform = Transform.createTranslation(rtcCenter);
+          else {
+            if (rtcCenter)
+              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot!.origin), tile.transformToRoot!.matrix);
+            else
+              xform = tile.transformToRoot!;
+          }
+          graphic = system.createBranch(transformBranch, xform);
         }
 
         return { graphic };

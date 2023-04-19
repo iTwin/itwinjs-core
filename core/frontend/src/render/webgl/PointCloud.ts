@@ -48,7 +48,7 @@ export class PointCloudGeometry extends CachedGeometry {
     this._vertices = QBufferHandle3d.create(pointCloud.qparams, pointCloud.positions) as QBufferHandle3d;
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointCloud, false);
     assert(undefined !== attrPos);
-    const vertexDataType = (pointCloud.positions instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort;
+    const vertexDataType = (pointCloud.positions instanceof Float32Array) ? GL.DataType.Float : ((pointCloud.positions instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort);
     this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos.location, 3, vertexDataType, false, 0, 0, false)]);
     this._vertexCount = pointCloud.positions.length / 3;
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;

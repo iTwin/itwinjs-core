@@ -34,7 +34,7 @@ interface DracoPointCloud {
 
 interface PointCloudProps {
   params: QParams3d;
-  points: Uint16Array;
+  points: Uint16Array | Float32Array;
   colors?: Uint8Array;
 }
 
@@ -119,7 +119,7 @@ function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps)
 function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
   const nPts = pnts.POINTS_LENGTH;
   let params: QParams3d;
-  let points: Uint16Array;
+  let points: Uint16Array | Float32Array;
 
   if (pnts.POSITION_QUANTIZED) {
     const qpos = pnts.POSITION_QUANTIZED;
@@ -132,23 +132,10 @@ function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): Poin
     params = QParams3d.fromOriginAndScale(qOrigin, qScale);
     points = new Uint16Array(stream.arrayBuffer, dataOffset + qpos.byteOffset, 3 * nPts);
   } else {
-    const nCoords = nPts * 3;
-    const fpts = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
-    const range = Range3d.createNull();
-    for (let i = 0; i < nCoords; i += 3)
-      range.extendXYZ(fpts[i], fpts[i + 1], fpts[i + 2]);
-
-    params = QParams3d.fromRange(range);
-    const qpt = new QPoint3d();
-    const fpt = new Point3d();
-    points = new Uint16Array(3 * nPts);
-    for (let i = 0; i < nCoords; i += 3) {
-      fpt.set(fpts[i], fpts[i + 1], fpts[i + 2]);
-      qpt.init(fpt, params);
-      points[i] = qpt.x;
-      points[i + 1] = qpt.y;
-      points[i + 2] = qpt.z;
-    }
+    const qOrigin = new Point3d(0, 0, 0);
+    const qScale = new Point3d(1, 1, 1);
+    params = QParams3d.fromOriginAndScale(qOrigin, qScale);
+    points = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
   }
 
   const colors = readPntsColors(stream, dataOffset, pnts);
@@ -220,7 +207,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   let rtcCenter;
   const header = new PntsHeader(stream);
   if (!header.isValid)
-    return undefined;
+    return { graphic, rtcCenter };
 
   const range = tile.contentRange;
   const featureTableJsonOffset = stream.curPos;
@@ -229,7 +216,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const featureValue = JSON.parse(featureStr as string) as PntsProps;
 
   if (undefined === featureValue)
-    return undefined;
+    return { graphic, rtcCenter };
 
   let props: PointCloudProps | undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
@@ -246,10 +233,15 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   }
 
   if (!props)
-    return undefined;
+    return { graphic, rtcCenter };
 
-  if (featureValue.RTC_CENTER)
-    props.params = QParams3d.fromOriginAndScale(props.params.origin.plus(Vector3d.fromJSON(featureValue.RTC_CENTER)), props.params.scale);
+  let batchRange = range;
+  if (featureValue.RTC_CENTER) {
+    rtcCenter = Point3d.fromJSON(featureValue.RTC_CENTER);
+    batchRange = range.clone();
+    batchRange.low.minus(rtcCenter, batchRange.low);
+    batchRange.high.minus(rtcCenter, batchRange.high);
+  }
 
   if (!props.colors) {
     // ###TODO we really should support uniform color instead of allocating an RGB value per point...
@@ -288,7 +280,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   // they can overlap ranges, no good way found to calculate a voxelSize)
   const voxelSize = tile.additiveRefinement ? 0 : params.rangeDiagonal.maxAbs() / 256;
 
-  let renderGraphic = system.createPointCloud({
+  graphic = system.createPointCloud({
     positions: props.points,
     qparams: props.params,
     colors: props.colors,
@@ -297,6 +289,6 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     colorFormat: "rgb",
   }, iModel);
 
-  renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
-  return renderGraphic;
+  graphic = system.createBatch(graphic!, PackedFeatureTable.pack(featureTable), batchRange);
+  return { graphic, rtcCenter };
 }
