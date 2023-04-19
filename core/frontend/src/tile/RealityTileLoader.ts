@@ -77,7 +77,7 @@ export abstract class RealityTileLoader {
 
   }
 
-  public async loadGeometryFromStream(tile: RealityTile,  streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
+  public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
     const format = this._getFormat(streamBuffer);
     if (format !== TileFormat.B3dm)
       return {};
@@ -110,15 +110,10 @@ export abstract class RealityTileLoader {
         break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-<<<<<<< HEAD
-        let graphic = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
-        if (graphic && tile.transformToRoot && !tile.transformToRoot.isIdentity) {
-=======
         const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile, system);
         let graphic = res.graphic;
         const rtcCenter = res.rtcCenter;
         if (graphic && (rtcCenter || tile.transformToRoot && !tile.transformToRoot.isIdentity)) {
->>>>>>> 6c35932a31 (Fix point cloud voxel size issues for additive refinement pnts (#5407))
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);
           graphic = system.createBranch(transformBranch, tile.transformToRoot);
@@ -206,7 +201,7 @@ export abstract class RealityTileLoader {
 
       if (currentInputState.viewport === viewport && viewport instanceof ScreenViewport) {
         // Try to get a better target point from the last zoom target
-        const {lastWheelEvent} = currentInputState;
+        const { lastWheelEvent } = currentInputState;
 
         if (lastWheelEvent !== undefined && now - lastWheelEvent.time < wheelEventRelevanceTimeout) {
           const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(lastWheelEvent.point));
