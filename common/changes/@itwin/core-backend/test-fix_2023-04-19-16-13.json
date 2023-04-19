@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix for timing issue in core tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
