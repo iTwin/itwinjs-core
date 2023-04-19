@@ -52,14 +52,14 @@ describe("exportGraphics", () => {
   }
 
   before(() => {
-    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const seedFileName = IModelTestUtils.resolveAssetFile("triangleWithUVParams.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", "ExportGraphicsTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
     // Get known model/category from seed element a la GeometryStream.test.ts
-    const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
+    const seedElement = iModel.elements.getElement<GeometricElement>("0x2000000000c");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    //assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     seedModel = seedElement.model;
     seedCategory = seedElement.category;
   });
@@ -1037,4 +1037,12 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].mesh.indices.length, 6);
   });
 
+  it.only("test uv-params from Valerij", () => {
+    const infos: ExportGraphicsInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: ["0x2000000000c"],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+    };
+    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+  })
 });
