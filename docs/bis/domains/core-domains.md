@@ -14,4 +14,6 @@ The following domains lay out the [Core layer](../guide/intro/bis-organization.m
 
 ## Helpful articles - Core
 
+### [Drawings & Sheets](./drawings-sheets.md)
+
 ### [Provenance in BIS](./Provenance-in-BIS.md)
