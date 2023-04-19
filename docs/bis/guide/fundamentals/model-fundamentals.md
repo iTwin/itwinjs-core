@@ -24,6 +24,7 @@ The Model contents are driven by:
 | `InformationRecordModel`  | InformationRecordElements                         |
 | `GroupInformationModel`   | GroupInformationElements                          |
 | `DocumentListModel`       | Document elements                                 |
+| `PhysicalSystemModel`     | PhysicalSystem elements                           |
 | `RoleModel`               | RoleElements and InformationContentElements       |
 
 ### Model Identity
