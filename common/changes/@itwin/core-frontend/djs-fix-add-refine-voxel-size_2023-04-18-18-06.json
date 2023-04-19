@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed inconsistent point sizes for additive point cloud tiles.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
