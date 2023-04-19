@@ -11,5 +11,20 @@
       "@types/node",
       "@typescript-eslint/parser"
     ]
+  },
+  // A list of temporary advisories excluded from the High and Critical list.
+  // Warning this should only be used as a temporary measure to avoid build failures
+  // for development dependencies only.
+  // All security issues should be addressed asap.
+  // every entry should look like:
+  // "CVE-202x-xxxxxx", // https://github.com/advisories/GHSA-xxxx-xxxx-xxxx pkgName>subDepA>subDepB
+  "unsupportedPackageJsonSettings": {
+    "pnpm": {
+      "auditConfig": {
+        "ignoreCves": [
+          "CVE-2023-0842" // https://github.com/advisories/GHSA-776f-qx25-q3cc full-stack-tests__backend>azurite>xml2js
+        ]
+      }
+    }
   }
 }
