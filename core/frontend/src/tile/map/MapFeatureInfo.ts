@@ -8,6 +8,7 @@
 
 import { PropertyDescription, PropertyRecord, PropertyValue } from "@itwin/appui-abstract";
 import { Cartographic } from "@itwin/core-common";
+
 /** @alpha */
 export class MapFeatureInfoRecord extends PropertyRecord {
   public constructor(value: PropertyValue, property: PropertyDescription) {

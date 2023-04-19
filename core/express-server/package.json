@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "4.0.0-dev.55",
+  "version": "4.0.0-dev.79",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
@@ -10,7 +10,6 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
@@ -21,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/express-server"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/express-server"
   },
   "keywords": [
     "Bentley",
@@ -38,7 +38,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "4.3.1",
     "@types/express": "^4.16.1",
@@ -48,7 +48,7 @@
     "@types/supertest": "^2.0.4",
     "@types/express-ws": "^3.0.1",
     "chai": "^4.1.2",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

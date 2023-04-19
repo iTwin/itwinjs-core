@@ -25,8 +25,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { BuildingCodeOffsetOps } from "./BuildingCodeOffsetOps";
 
-/* eslint-disable no-console */
-
 function sampleSweeps(): AngleSweep[] {
   return [AngleSweep.create360(), AngleSweep.createStartEndDegrees(0, 40), AngleSweep.createStartEndDegrees(0, 2), AngleSweep.createStartEndDegrees(-1, 3), AngleSweep.createStartEndDegrees(88, 91),
     /* */ AngleSweep.createStartEndDegrees(0, 18), AngleSweep.createStartEndDegrees(-10, 10), AngleSweep.createStartEndDegrees(80, 100), AngleSweep.createStartEndDegrees(90, 108), AngleSweep.createStartEndDegrees(30, 45),
@@ -152,13 +150,13 @@ describe("Arc3d", () => {
           factorRange1.extendX(factor);
           //        const scale = arc.getFractionToDistanceScale();
           if (!ck.testLE(arcLength, 1.1 * quickLength, "arc length .LE.  1.1 * quickLength")) {
-            console.log(prettyPrint(arc));
+            GeometryCoreTestIO.consoleLog(prettyPrint(arc));
           }
         }
       }
-      // console.log(prettyPrint(sweep) + prettyPrint(factorRange1));
+      // GeometryCoreTestIO.consoleLog(prettyPrint(sweep) + prettyPrint(factorRange1));
     }
-    // console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
+    // GeometryCoreTestIO.consoleLog("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
     ck.testLT(0.95, factorRange.low, "QuickLength FactorRange Low");
     ck.testLT(factorRange.high, 1.06, "QuickLength FactorRange Low");
 
@@ -175,7 +173,7 @@ describe("Arc3d", () => {
     for (const numGauss of [1, 2, 3, 4, 5]) {
       let maxFactor = 0;
       if (noisy)
-        console.log(`\n\n  ******************* numGauss ${numGauss}`);
+        GeometryCoreTestIO.consoleLog(`\n\n  ******************* numGauss ${numGauss}`);
       for (let e2 = 1.0; e2 < 1000.0; e2 *= 2.0) {
         const e = Math.sqrt(e2);
         const arc = Arc3d.create(Point3d.createZero(),
@@ -203,14 +201,14 @@ describe("Arc3d", () => {
         }
         const factor = lastNumInterval / e;
         if (noisy) {
-          console.log("---");
-          console.log(` eccentricity ${e} ${lengths.toString()}(n ${lastNumInterval})(n / (fe) ${factor}`);
-          console.log(` deltas                             ${deltas.toString()}`);
+          GeometryCoreTestIO.consoleLog("---");
+          GeometryCoreTestIO.consoleLog(` eccentricity ${e} ${lengths.toString()}(n ${lastNumInterval})(n / (fe) ${factor}`);
+          GeometryCoreTestIO.consoleLog(` deltas                             ${deltas.toString()}`);
         }
         maxFactor = Math.max(factor, maxFactor);
       }
       if (noisy)
-        console.log(`Eccentric ellipse integration  (numGauss ${numGauss})   (maxFactor  {maxFactor})`);
+        GeometryCoreTestIO.consoleLog(`Eccentric ellipse integration  (numGauss ${numGauss})   (maxFactor  {maxFactor})`);
       if (numGauss === 5)
         ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integration factor");
     }
@@ -329,7 +327,7 @@ describe("Arc3d", () => {
       x0 = 0;
       y0 += dx;
     }
-    console.log(`chord error range ${rangeE.toJSON()}`);
+    GeometryCoreTestIO.consoleLog(`chord error range ${rangeE.toJSON()}`);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "PreciseRange");
     expect(ck.getNumErrors()).equals(0);
   });

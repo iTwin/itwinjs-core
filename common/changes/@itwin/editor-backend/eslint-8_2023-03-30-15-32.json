@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to eslint@8",
+      "type": "none",
+      "packageName": "@itwin/editor-backend"
+    }
+  ],
+  "packageName": "@itwin/editor-backend",
+  "email": "aruniverse@users.noreply.github.com"
+}

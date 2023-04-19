@@ -54,7 +54,7 @@
         "archivedPath": "/v2"
       },
       {
-        "version": "v3.6.1",
+        "version": "v3.7.0",
         "archivedPath": "/v3"
       }
     ],
@@ -89,7 +89,7 @@
       "presentation-frontend": "presentation-frontend",
       "quantity": "core-quantity",
       "reality-data-client": "reality-data-client",
-      "transformer": "core-transformer",
+      "transformer": "imodel-transformer",
       "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"itwinjs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
@@ -105,6 +105,15 @@
         "\\columnXYZ": "{\\begin{bmatrix}#1\\\\#2\\\\#3\\end{bmatrix}}",
         "\\rowXYZ": "{\\begin{bmatrix} #1 & #2 & #3\\end{bmatrix}}"
       }
+    },
+    "repoVersioningInLockstep": {
+      "appui": true,
+      "auth-clients": false,
+      "connector-framework": true,
+      "itwinjs-core": true,
+      "object-storage": true,
+      "presentation": true,
+      "transformer": true
     }
   }
 }

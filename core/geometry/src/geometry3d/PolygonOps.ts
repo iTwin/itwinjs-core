@@ -378,7 +378,7 @@ export class PolygonOps {
       }
     }
     s *= 0.5;
-    // console.log ("polygon area ", s, points);
+    // GeometryCoreTestIO.consoleLog("polygon area ", s, points);
     return s;
   }
   /** These values are the integrated area moment products [xx,xy,xz, x]

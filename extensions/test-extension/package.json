@@ -9,7 +9,6 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc --project ./src 1>&2",
-    "build:ci": "npm run -s build",
     "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --external:os --minify",
     "clean": "rimraf lib dist",
     "lint": "",
@@ -31,9 +30,9 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "esbuild": "^0.13.8",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
   },

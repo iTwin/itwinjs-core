@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { AbstractHalfEdgeGraphMarkSet, MarkedEdgeSet, MarkedFaceSet, MarkedHalfEdgeSt, MarkedVertexSet } from "../../topology/HalfEdgeMarkSet";

@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint } from "@itwin/core-bentley";
+import { assert, BeTimePoint, ProcessDetector } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
-import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ColorDef, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
@@ -18,22 +18,23 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import {
-  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
   TileGraphicType, TileParams, TileTree, TileTreeParams,
 } from "./internal";
 
 /** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
-  public childrenLoading = false;
   public childrenSelected = false;
+  public shouldSelectParent = false;
 
   public initialize() {
     this.queuedChildren.length = 0;
-    this.childrenLoading = false;
     this.childrenSelected = false;
+    this.shouldSelectParent = false;
   }
 }
+
 /** @internal */
 export class TraversalChildrenDetails {
   private _childDetails: TraversalDetails[] = [];
@@ -42,6 +43,7 @@ export class TraversalChildrenDetails {
     for (const child of this._childDetails)
       child.initialize();
   }
+
   public getChildDetail(index: number) {
     while (this._childDetails.length <= index)
       this._childDetails.push(new TraversalDetails());
@@ -51,11 +53,13 @@ export class TraversalChildrenDetails {
 
   public combine(parentDetails: TraversalDetails) {
     parentDetails.queuedChildren.length = 0;
-    parentDetails.childrenLoading = false;
     parentDetails.childrenSelected = false;
+    parentDetails.shouldSelectParent = false;
+
     for (const child of this._childDetails) {
-      parentDetails.childrenLoading = parentDetails.childrenLoading || child.childrenLoading;
       parentDetails.childrenSelected = parentDetails.childrenSelected || child.childrenSelected;
+      parentDetails.shouldSelectParent = parentDetails.shouldSelectParent || child.shouldSelectParent;
+
       for (const queuedChild of child.queuedChildren)
         parentDetails.queuedChildren.push(queuedChild);
     }
@@ -72,14 +76,16 @@ export class TraversalSelectionContext {
   public selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     tile.selectSecondaryTiles(args, this);
     tile.markUsed(args);
+    traversalDetails.shouldSelectParent = true;
+
     if (tile.isReady) {
       args.markReady(tile);
       this.selected.push(tile);
       tile.markDisplayed();
       this.displayedDescendants.push((traversalDetails.childrenSelected) ? traversalDetails.queuedChildren.slice() : []);
       traversalDetails.queuedChildren.length = 0;
-      traversalDetails.childrenLoading = false;
       traversalDetails.childrenSelected = true;
+      traversalDetails.shouldSelectParent = false;
     } else if (!tile.isNotFound) {
       traversalDetails.queuedChildren.push(tile);
       if (!tile.isLoaded)
@@ -109,7 +115,6 @@ export class TraversalSelectionContext {
   }
 }
 
-const scratchFrustum = new Frustum();
 const scratchCarto = Cartographic.createZero();
 const scratchPoint = Point3d.createZero(), scratchOrigin = Point3d.createZero();
 const scratchRange = Range3d.createNull();
@@ -207,7 +212,7 @@ export class RealityTileTree extends TileTree {
   /** @internal */
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
-    this.rootTile.purgeContents(olderThan);
+    this.rootTile.purgeContents(olderThan, !ProcessDetector.isMobileBrowser);
   }
 
   /** @internal */
@@ -227,7 +232,7 @@ export class RealityTileTree extends TileTree {
       sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
     }
 
-    if (! (args instanceof GraphicsCollectorDrawArgs))
+    if (!(args instanceof GraphicsCollectorDrawArgs))
       this.collectClassifierGraphics(args, selectedTiles);
 
     assert(selectedTiles.length === displayedTileDescendants.length);
@@ -406,7 +411,7 @@ export class RealityTileTree extends TileTree {
    * if any scale range visibility change is detected for one more map-layer definition.
    * @internal
    */
-  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
+  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) { }
 
   /** @internal */
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
@@ -426,7 +431,7 @@ export class RealityTileTree extends TileTree {
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 
       if (!freezeTiles)
-        this.preloadTilesForScene(args, context, undefined);
+        rootTile.preloadProtectedTiles(args, context);
     }
 
     if (!freezeTiles)
@@ -465,22 +470,6 @@ export class RealityTileTree extends TileTree {
   }
 
   /** @internal */
-  public preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform) {
-    const preloadFrustum = args.viewingSpace.getPreloadFrustum(frustumTransform, scratchFrustum);
-    const preloadFrustumPlanes = FrustumPlanes.fromFrustum(preloadFrustum);
-    const worldToNpc = preloadFrustum.toMap4d();
-    const preloadWorldToViewMap = args.viewingSpace.calcNpcToView().multiplyMapMap(worldToNpc!);
-    const preloadArgs = new RealityTileDrawArgs(args, preloadWorldToViewMap, preloadFrustumPlanes);
-
-    if (context.preloadDebugBuilder) {
-      context.preloadDebugBuilder.setSymbology(ColorDef.blue, ColorDef.blue, 2, 0);
-      context.preloadDebugBuilder.addFrustum(preloadFrustum);
-    }
-
-    this.rootTile.preloadTilesInFrustum(preloadArgs, context, 2);
-  }
-
-  /** @internal */
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {
     let depthString = "";
     let min = 10000, max = -10000;
@@ -495,7 +484,7 @@ export class RealityTileTree extends TileTree {
       depthMap.set(depth, found === undefined ? 1 : found + 1);
     }
 
-    depthMap.forEach((value, key ) => depthString += `${key}(x${value}), `);
+    depthMap.forEach((value, key) => depthString += `${key}(x${value}), `);
     // eslint-disable-next-line no-console
     console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
   }
