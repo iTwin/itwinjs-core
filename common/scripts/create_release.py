@@ -27,14 +27,6 @@ def createRelease(tag):
   currentVer = tag.split("/")[1]
   parsedVer = [int(i) for i in currentVer.split(".")]
 
-  # Write release to file to preview
-  fileName = currentVer + ".md"
-  if os.path.exists(fileName):
-    os.remove(fileName)
-
-  f = open(fileName, "w")
-  f.write("# Release notes\n\n")
-
   # Determine release type
   if parsedVer[2] > 0:
     releaseType = "Patch"
@@ -45,6 +37,15 @@ def createRelease(tag):
   print("Generating {0} release notes".format(releaseType.lower()))
 
   if releaseType == "Patch":
+
+    # Write release to file to preview
+    fileName = currentVer + ".md"
+    if os.path.exists(fileName):
+      os.remove(fileName)
+
+    f = open(fileName, "w")
+    f.write("# Release notes\n\n")
+
     # Determine previous tag and version
     cmd = ['git', 'describe', '--abbrev=0', '--tags', tag + '~1']
     proc = subprocess.Popen(" ".join(cmd), stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
@@ -70,13 +71,16 @@ def createRelease(tag):
       f.write("- {0}\n".format(getCommitMessage(commit)))
     f.write("\n")
     f.write("**Full changelog:** [{0}...{1}](https://github.com/iTwin/itwinjs-core/compare/{2}...{3})\n".format(previousVer, currentVer, previousTag, tag))
+    f.close()
 
   else:
-    # If major/minor release, link to the changelog in ./docs/changehistory
-    f.write("For the full list of changes see the [detailed release notes.](./docs/changehistory/{0}.md)\n".format(currentVer))
+    # If major/minor release, grab corresponding markdown from ./docs/changehistory
+    fileName = "docs/changehistory/{0}.md".format(currentVer)
+    if not os.path.exists(fileName):
+      print("changehistory {0} could not be found.. exiting".format(currentVer))
+      return
 
-  f.close()
-
+  # Create GitHub release using the markdown file
   print("Publishing GitHub release...")
   cmd = ['gh', 'release', 'create', tag, '-F', './' + fileName, '-t', '"v{0}"'.format(currentVer)]
   proc = subprocess.Popen(" ".join(cmd), stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)

@@ -452,7 +452,7 @@ export class BarycentricTriangle {
     incenter(result?: Point3d): Point3d;
     intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
-    isAlmostEqual(other: BarycentricTriangle): boolean;
+    isAlmostEqual(other: BarycentricTriangle, tol?: number): boolean;
     static isInsideOrOnTriangle(b0: number, b1: number, b2: number): boolean;
     static isInsideTriangle(b0: number, b1: number, b2: number): boolean;
     normal(result?: Vector3d): Vector3d | undefined;
@@ -1439,6 +1439,19 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
 // @public
 export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 
+// @public
+export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
+    clone(): ConvexFacetLocationDetail;
+    copyContentsFrom(other: ConvexFacetLocationDetail): void;
+    static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail;
+    getBarycentricCoordinates(facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number[] | undefined;
+    getColor(facetColors?: number[], facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number | undefined;
+    getNormal(facetNormals?: IndexedXYZCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Vector3d | undefined;
+    getParam(facetParams?: IndexedXYCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Point2d | undefined;
+    invalidate(deep?: boolean): void;
+    get isConvex(): boolean;
+}
+
 // @internal
 export class ConvexPolygon2d {
     constructor(points: Point2d[] | undefined);
@@ -2004,6 +2017,43 @@ export class FacetFaceData {
 }
 
 // @public
+export type FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean;
+
+// @public
+export class FacetIntersectOptions {
+    constructor();
+    acceptIntersection?: FacetIntersectCallback;
+    distanceTolerance: number;
+    needBarycentricCoordinates?: boolean;
+    needColor?: boolean;
+    needNormal?: boolean;
+    needParam?: boolean;
+    parameterTolerance: number;
+}
+
+// @public
+export interface FacetLocationDetail {
+    get a(): number;
+    get classify(): PolygonLocation;
+    clone(): FacetLocationDetail;
+    get closestEdge(): {
+        startVertexIndex: number;
+        edgeParam: number;
+    };
+    copyContentsFrom(other: FacetLocationDetail): void;
+    get edgeCount(): number;
+    get facetIndex(): number;
+    getBarycentricCoordinates(facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number[] | undefined;
+    getColor(facetColors?: number[], facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number | undefined;
+    getNormal(facetNormals?: IndexedXYZCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Vector3d | undefined;
+    getParam(facetParams?: IndexedXYCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Point2d | undefined;
+    get isConvex(): boolean;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
+    get point(): Point3d;
+}
+
+// @public
 export interface FacetProjectedVolumeSums {
     negativeProjectedFacetAreaMoments?: MomentData;
     positiveProjectedFacetAreaMoments?: MomentData;
@@ -2079,10 +2129,11 @@ export class Geometry {
     static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder;
     static axisOrderToAxis(order: AxisOrder, index: number): number;
     static clamp(value: number, min: number, max: number): number;
-    static clampToStartEnd(x: number, a: number, b: number): number;
-    static cloneMembers<T extends Cloneable<T>>(a: T[] | undefined): T[] | undefined;
+    static clampToStartEnd(value: number, a: number, b: number): number;
+    static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined;
     static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
+    static correctSmallFraction(fraction: number | undefined, replacement?: number): number;
     static correctSmallMetricDistance(distance: number | undefined, replacement?: number): number;
     static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number;
@@ -2098,6 +2149,7 @@ export class Geometry {
     static equalStringNoCase(string1: string, string2: string): boolean;
     static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean;
     static readonly fullCircleRadiansMinusSmallAngle: number;
+    // @deprecated
     static readonly hugeCoordinate = 1000000000000;
     static hypotenuseSquaredXY(x: number, y: number): number;
     static hypotenuseSquaredXYZ(x: number, y: number, z: number): number;
@@ -2106,30 +2158,32 @@ export class Geometry {
     static hypotenuseXYZ(x: number, y: number, z: number): number;
     static hypotenuseXYZW(x: number, y: number, z: number, w: number): number;
     static interpolate(a: number, f: number, b: number): number;
-    static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF?: number, defaultResult?: number): number | undefined;
-    static inverseInterpolate01(f0: number, f1: number, targetF?: number): number | undefined;
-    static inverseMetricDistance(a: number): number | undefined;
-    static inverseMetricDistanceSquared(a: number): number | undefined;
-    static isAlmostEqualNumber(a: number, b: number): boolean;
+    static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, fTarget?: number, defaultResult?: number): number | undefined;
+    static inverseInterpolate01(f0: number, f1: number, fTarget?: number): number | undefined;
+    static inverseMetricDistance(distance: number): number | undefined;
+    static inverseMetricDistanceSquared(distanceSquared: number): number | undefined;
+    static isAlmostEqualNumber(a: number, b: number, tolerance?: number): boolean;
     static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
-    static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean;
-    static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
-    static isDistanceWithinTol(distance: number, tol?: number): boolean;
+    static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance?: number): boolean;
+    static isArrayOfNumberArray(json: any, minArrays: number, minEntries?: number): boolean;
+    static isDistanceWithinTol(distance: number, tolerance?: number): boolean;
+    // @deprecated
     static isHugeCoordinate(x: number): boolean;
     static isIn01(x: number, apply01?: boolean): boolean;
     static isIn01WithTolerance(x: number, tolerance: number): boolean;
+    static isLargeCoordinateResult(x: number): boolean;
     static isNumberArray(json: any, minEntries?: number): boolean;
     static isOdd(x: number): boolean;
-    static isSameCoordinate(x: number, y: number, tol?: number): boolean;
-    static isSameCoordinateSquared(x: number, y: number): boolean;
+    static isSameCoordinate(x: number, y: number, tolerance?: number): boolean;
+    static isSameCoordinateSquared(x: number, y: number, tolerance?: number): boolean;
     static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean;
-    static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tol?: number): boolean;
-    static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean;
-    static isSamePoint3d(dataA: Point3d, dataB: Point3d): boolean;
-    static isSamePoint3dXY(dataA: Point3d, dataB: Point3d): boolean;
-    static isSameVector2d(dataA: Vector2d, dataB: Vector2d): boolean;
-    static isSameVector3d(dataA: Vector3d, dataB: Vector3d): boolean;
-    static isSameXYZ(dataA: XYZ, dataB: XYZ): boolean;
+    static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tolerance?: number): boolean;
+    static isSamePoint2d(dataA: Point2d, dataB: Point2d, tolerance?: number): boolean;
+    static isSamePoint3d(dataA: Point3d, dataB: Point3d, tolerance?: number): boolean;
+    static isSamePoint3dXY(dataA: Point3d, dataB: Point3d, tolerance?: number): boolean;
+    static isSameVector2d(dataA: Vector2d, dataB: Vector2d, tolerance?: number): boolean;
+    static isSameVector3d(dataA: Vector3d, dataB: Vector3d, tolerance?: number): boolean;
+    static isSameXYZ(dataA: XYZ, dataB: XYZ, tolerance?: number): boolean;
     static isSmallAngleRadians(value: number): boolean;
     static isSmallMetricDistance(distance: number): boolean;
     static isSmallMetricDistanceSquared(distanceSquared: number): boolean;
@@ -2146,6 +2200,7 @@ export class Geometry {
     static maxXYZ(a: number, b: number, c: number): number;
     static meanCurvatureOfRadii(r0: number, r1: number): number;
     static minXY(a: number, b: number): number;
+    static minXYZ(a: number, b: number, c: number): number;
     static modulo(a: number, period: number): number;
     static resolveNumber(value: number | undefined, defaultValue?: number): number;
     static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined;
@@ -3798,6 +3853,33 @@ export type NodeFunction = (node: HalfEdge) => any;
 
 // @internal
 export type NodeToNumberFunction = (node: HalfEdge) => number;
+
+// @public
+export class NonConvexFacetLocationDetail implements FacetLocationDetail {
+    protected constructor(facetIndex?: number, edgeCount?: number, detail?: PolygonLocationDetail);
+    get a(): number;
+    get classify(): PolygonLocation;
+    clone(): NonConvexFacetLocationDetail;
+    get closestEdge(): {
+        startVertexIndex: number;
+        edgeParam: number;
+    };
+    copyContentsFrom(other: NonConvexFacetLocationDetail): void;
+    static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail;
+    // (undocumented)
+    protected _detail: PolygonLocationDetail;
+    get edgeCount(): number;
+    get facetIndex(): number;
+    getBarycentricCoordinates(): number[] | undefined;
+    getColor(): number | undefined;
+    getNormal(): Vector3d | undefined;
+    getParam(): Point2d | undefined;
+    invalidate(deep?: boolean): void;
+    get isConvex(): boolean;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
+    get point(): Point3d;
+}
 
 // @public
 export class NullGeometryHandler extends GeometryHandler {
@@ -5948,6 +6030,30 @@ export class TriangleLocationDetail {
     get isValid(): boolean;
     local: Point3d;
     world: Point3d;
+}
+
+// @public
+export class TriangularFacetLocationDetail implements FacetLocationDetail {
+    get a(): number;
+    get classify(): PolygonLocation;
+    clone(): TriangularFacetLocationDetail;
+    get closestEdge(): {
+        startVertexIndex: number;
+        edgeParam: number;
+    };
+    copyContentsFrom(other: TriangularFacetLocationDetail): void;
+    static create(facetIndex: number, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail;
+    get edgeCount(): number;
+    get facetIndex(): number;
+    getBarycentricCoordinates(): number[];
+    getColor(facetColors?: number[]): number | undefined;
+    getNormal(facetNormals?: IndexedXYZCollection): Vector3d | undefined;
+    getParam(facetParams?: IndexedXYCollection): Point2d | undefined;
+    invalidate(deep?: boolean): void;
+    get isConvex(): boolean;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
+    get point(): Point3d;
 }
 
 // @internal

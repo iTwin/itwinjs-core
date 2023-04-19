@@ -118,6 +118,7 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { IpcWebSocketBackend } from '@itwin/core-common';
 import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
@@ -3082,7 +3083,6 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
-    // @beta
     enableOpenTelemetry?: boolean;
     // @beta
     hubAccess?: BackendHubAccess;
@@ -3590,6 +3590,8 @@ export class LinkPartition extends InformationPartitionElement {
 export class LocalhostIpcHost {
     // (undocumented)
     static connect(connection: ws): void;
+    // (undocumented)
+    static socket: IpcWebSocketBackend;
     // (undocumented)
     static startup(opts?: {
         localhostIpcHost?: LocalhostIpcHostOpts;
@@ -5097,6 +5099,22 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 
 // @internal
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
+
+// @beta
+export class TileStorage {
+    constructor(storage: ServerStorage);
+    downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
+    getCachedTiles(iModelId: string): Promise<{
+        treeId: string;
+        contentId: string;
+        guid: string;
+    }[]>;
+    getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
+    initialize(iModelId: string): Promise<void>;
+    isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean>;
+    readonly storage: ServerStorage;
+    uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void>;
+}
 
 // @public
 export class TitleText extends DetailingSymbol {

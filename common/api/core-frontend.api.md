@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { AlternateUnitLabelsProvider } from '@itwin/core-quantity';
 import { AmbientOcclusion } from '@itwin/core-common';
@@ -16,6 +14,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
+import { Atmosphere } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
@@ -347,112 +346,109 @@ import { XYProps } from '@itwin/core-geometry';
 import { XYZ } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @internal
+// @public
 export class AccuDraw {
-    // (undocumented)
+    // @internal (undocumented)
     accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _acsPickId?: string;
-    // (undocumented)
+    // @internal (undocumented)
     activate(): void;
-    // (undocumented)
+    // @internal (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean;
     // (undocumented)
     alwaysShowCompass: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     angleLock(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _animationFrames: number;
     // (undocumented)
     autoFocusFields: boolean;
     // (undocumented)
     autoPointPlacement: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly axes: ThreeAxes;
     // (undocumented)
     axisIndexing: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly baseAxes: ThreeAxes;
-    // (undocumented)
+    // @internal (undocumented)
     changeBaseRotationMode(mode: RotationMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     changeCompassMode(animate?: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     clearTentative(): boolean;
     // (undocumented)
     compassMode: CompassMode;
-    // (undocumented)
+    // @internal (undocumented)
     protected _compassSizeInches: number;
     // (undocumented)
     contextSensitive: boolean;
     // (undocumented)
     currentState: CurrentState;
-    // (undocumented)
+    // @internal (undocumented)
     currentView?: ScreenViewport;
-    // (undocumented)
+    // @internal (undocumented)
     deactivate(): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly delta: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     disableForSession(): void;
     // (undocumented)
     distanceIndexing: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     doAutoPoint(index: ItemField, mode: CompassMode): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     doLockAngle(isSnapped: boolean): void;
     // (undocumented)
     dontMoveFocus: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     downgradeInactiveState(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     enableForSession(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _fillColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _fillColorNoFocus: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     fixPointPolar(vp: Viewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     fixPointRectangular(vp: Viewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly flags: Flags;
     // (undocumented)
     floatingOrigin: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _frameColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _frameColorNoFocus: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
-    // (undocumented)
     getFieldLock(index: ItemField): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
-    // (undocumented)
+    // @internal (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
-    // (undocumented)
+    // @internal (undocumented)
     static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d;
-    // (undocumented)
     getValueByIndex(index: ItemField): number;
     grabInputFocus(): void;
-    // (undocumented)
+    // @internal (undocumented)
     hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
-    // (undocumented)
     get hasInputFocus(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _indexColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     indexed: LockedStates;
-    // (undocumented)
+    // @internal (undocumented)
     protected _indexToleranceInches: number;
     // (undocumented)
     get isActive(): boolean;
@@ -462,120 +458,110 @@ export class AccuDraw {
     get isEnabled(): boolean;
     // (undocumented)
     get isInactive(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isZLocked(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly lastAxes: ThreeAxes;
-    // (undocumented)
+    // @internal (undocumented)
     locked: LockedStates;
-    // (undocumented)
+    // @internal (undocumented)
     newFocus: ItemField;
-    // (undocumented)
+    // @internal (undocumented)
     onBeginDynamics(): boolean;
-    // (undocumented)
     onCompassModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onEndDynamics(): boolean;
-    // (undocumented)
     onFieldLockChange(_index: ItemField): void;
-    // (undocumented)
     onFieldValueChange(_index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInitialized(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInputCollectorExit(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onInputCollectorInstall(): boolean;
     onMotion(_ev: BeButtonEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onPostButtonEvent(ev: BeButtonEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPreButtonEvent(ev: BeButtonEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPrimitiveToolInstall(): boolean;
-    // (undocumented)
     onRotationModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSnap(snap: SnapDetail): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onTentative(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onViewToolExit(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onViewToolInstall(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly origin: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     readonly planePt: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     readonly point: Point3d;
-    // (undocumented)
     processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     processHints(): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly published: AccudrawData;
-    // (undocumented)
+    // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
-    // (undocumented)
+    // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
     // (undocumented)
     rotationMode: RotationMode;
-    // (undocumented)
+    // @internal (undocumented)
     saveCoordinate(index: ItemField, value: number): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly savedStateInputCollector: SavedState;
-    // (undocumented)
+    // @internal (undocumented)
     readonly savedStateViewTool: SavedState;
-    // (undocumented)
+    // @internal (undocumented)
     saveState(stateBuffer: SavedState): void;
-    // (undocumented)
+    // @internal (undocumented)
     sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void>;
-    // (undocumented)
     setCompassMode(mode: CompassMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus;
-    // (undocumented)
+    // @internal (undocumented)
     setContextRotation(rMatrix: Matrix3d, locked: boolean, animate: boolean): void;
-    // (undocumented)
     setFieldLock(index: ItemField, locked: boolean): void;
-    // (undocumented)
     setFocusItem(_index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     setKeyinStatus(index: ItemField, status: KeyinStatus): void;
-    // (undocumented)
+    // @internal (undocumented)
     setLastPoint(pt: Point3d): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected setNewFocus(index: ItemField): void;
-    // (undocumented)
     setRotationMode(mode: RotationMode): void;
-    // (undocumented)
     setValueByIndex(index: ItemField, value: number): void;
     // (undocumented)
     smartKeyin: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
     // (undocumented)
     stickyZLock: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     testDecorationHit(id: string): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     unlockAllFields(): void;
-    // (undocumented)
+    // @internal (undocumented)
     static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews?: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     updateFieldLock(index: ItemField, locked: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     updateRotation(animate?: boolean, newRotationIn?: Matrix3d): void;
-    // (undocumented)
+    // @internal (undocumented)
     upgradeToActiveState(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly vector: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _xColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _yColor: ColorDef;
 }
 
@@ -1958,11 +1944,9 @@ export class Cluster<T extends Marker> {
 // @beta
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
-// @alpha (undocumented)
+// @public
 export enum CompassMode {
-    // (undocumented)
     Polar = 0,
-    // (undocumented)
     Rectangular = 1
 }
 
@@ -2278,15 +2262,11 @@ export class CurrentInputState {
     viewport?: ScreenViewport;
 }
 
-// @internal (undocumented)
+// @public
 export enum CurrentState {
-    // (undocumented)
     Active = 3,
-    // (undocumented)
     Deactivated = 1,
-    // (undocumented)
     Inactive = 2,
-    // (undocumented)
     NotEnabled = 0
 }
 
@@ -2533,14 +2513,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     anyMapLayersVisible(overlay: boolean): boolean;
     attachMapLayer(options: {
         settings: MapLayerSettings;
-        isOverlay?: boolean;
-        insertIndex?: number;
+        mapLayerIndex: MapLayerIndex;
     }): void;
     // @internal (undocumented)
     attachMapLayerProps(options: {
         props: MapLayerProps;
-        isOverlay?: boolean;
-        insertIndex?: number;
+        mapLayerIndex: MapLayerIndex;
     }): void;
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
@@ -2549,25 +2527,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     set backgroundMapBase(base: BaseLayerSettings);
     // @internal (undocumented)
     get backgroundMapElevationBias(): number | undefined;
-    // @internal (undocumented)
-    get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
     get baseMapTransparency(): number;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     changeBaseMapTransparency(transparency: number): void;
-    // (undocumented)
-    changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
-    changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
-    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
+    changeMapLayerCredentials(mapLayerIndex: MapLayerIndex, userName?: string, password?: string): void;
+    changeMapLayerProps(props: Partial<MapLayerProps>, mapLayerIndex: MapLayerIndex): void;
+    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, mapLayerIndex: MapLayerIndex): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // (undocumented)
     static get className(): string;
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
-    detachMapLayerByIndex(index: number, isOverlay: boolean): void;
+    detachMapLayerByIndex(mapLayerIndex: MapLayerIndex): void;
     // @internal (undocumented)
     detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
     detachRealityModelByNameAndUrl(name: string, url: string): boolean;
@@ -2592,8 +2567,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
-    // @internal
-    getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
     getOSMBuildingRealityModel(): ContextRealityModelState | undefined;
@@ -2608,20 +2581,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
-    // (undocumented)
-    mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
+    mapLayerAtIndex(mapLayerIndex: MapLayerIndex): MapLayerSettings | undefined;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
-    moveMapLayerToBottom(index: number, isOverlay: boolean): void;
+    moveMapLayerToBottom(mapLayerIndex: MapLayerIndex): void;
     moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean): void;
-    moveMapLayerToTop(index: number, isOverlay: boolean): void;
+    moveMapLayerToTop(mapLayerIndex: MapLayerIndex): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
     // @deprecated
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
-    // @internal (undocumented)
-    get overlayMapLayers(): MapLayerSettings[];
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
@@ -2641,8 +2611,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
-    // @internal
-    viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean>;
     get wantShadows(): boolean;
 }
 
@@ -5249,7 +5217,6 @@ export interface ImdlReaderResult extends IModelTileContent {
 // @public
 export class IModelApp {
     protected constructor();
-    // @internal
     static get accuDraw(): AccuDraw;
     static get accuSnap(): AccuSnap;
     // @beta
@@ -5296,7 +5263,6 @@ export class IModelApp {
     }): HTMLTableRowElement;
     // @internal
     static makeModalDiv(options: ModalOptions): ModalReturn;
-    // @internal
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     // @internal
@@ -5342,7 +5308,6 @@ export class IModelApp {
 
 // @public
 export interface IModelAppOptions {
-    // @internal
     accuDraw?: AccuDraw;
     accuSnap?: AccuSnap;
     applicationId?: string;
@@ -5894,17 +5859,12 @@ export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec)
 // @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
-// @alpha (undocumented)
+// @public
 export enum ItemField {
-    // (undocumented)
     ANGLE_Item = 1,
-    // (undocumented)
     DIST_Item = 0,
-    // (undocumented)
     X_Item = 2,
-    // (undocumented)
     Y_Item = 3,
-    // (undocumented)
     Z_Item = 4
 }
 
@@ -6284,7 +6244,7 @@ export interface MapLayerFeatureInfo {
     layerName: string;
 }
 
-// @beta
+// @public
 export class MapLayerFormat {
     // @internal
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -6304,136 +6264,135 @@ export interface MapLayerFormatEntry {
     type: MapLayerFormatType;
 }
 
-// @beta (undocumented)
+// @public
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // @internal (undocumented)
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
-    // @internal (undocumented)
+    // @internal
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
-    // (undocumented)
+    // @beta (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
     // (undocumented)
     isRegistered(formatId: string): boolean;
     // (undocumented)
-    register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient): void;
-    // (undocumented)
+    register(formatClass: MapLayerFormatType): void;
+    // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
     // (undocumented)
     validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @beta (undocumented)
+// @public
 export type MapLayerFormatType = typeof MapLayerFormat;
 
-// @internal
+// @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
-    // (undocumented)
+    // @internal (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
     cartoRange?: MapCartoRectangle;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly defaultMaximumZoomLevel = 22;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly defaultMinimumZoomLevel = 0;
-    // (undocumented)
+    // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
         top: number;
         bottom: number;
     };
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857ExtentString(row: number, column: number, zoomLevel: number): string;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857X(longitude: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG3857Y(latitude: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326Extent(row: number, column: number, zoomLevel: number): {
         longitudeLeft: number;
         longitudeRight: number;
         latitudeTop: number;
         latitudeBottom: number;
     };
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326Lat(y3857: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getEPSG4326Lon(x3857: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): Promise<ImageSource | undefined>;
-    // (undocumented)
+    // @internal (undocumented)
     getPotentialChildIds(tile: ImageryMapTile): QuadId[];
-    // (undocumented)
+    // @internal (undocumented)
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
-    get hasSuccessfullyFetchedTile(): boolean;
-    // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     initialize(): Promise<void>;
-    // (undocumented)
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
-    // (undocumented)
+    // @internal (undocumented)
     makeTileRequest(url: string): Promise<Response>;
-    // (undocumented)
+    // @internal (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     get maximumScreenSize(): number;
     // (undocumented)
     get maximumZoomLevel(): number;
     // (undocumented)
     get minimumZoomLevel(): number;
-    // (undocumented)
+    // @internal (undocumented)
     protected _missingTileData?: Uint8Array;
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
+    // @internal
     protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
     // (undocumented)
     resetStatus(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
+    // @internal
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // (undocumented)
+    // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
-    // (undocumented)
+    // @internal (undocumented)
     get tileSize(): number;
     // (undocumented)
     get tilingScheme(): MapTilingScheme;
-    // (undocumented)
+    // @internal (undocumented)
     protected toolTipFromUrl(strings: string[], url: string): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     get transparentBackgroundString(): string;
-    // (undocumented)
+    // @internal (undocumented)
     get useGeographicTilingScheme(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     get usesCachedTiles(): boolean;
     // (undocumented)
     protected _usesCachedTiles: boolean;
 }
 
-// @beta (undocumented)
+// @public
 export enum MapLayerImageryProviderStatus {
     // (undocumented)
     RequireAuth = 1,
@@ -6441,13 +6400,13 @@ export enum MapLayerImageryProviderStatus {
     Valid = 0
 }
 
-// @internal
+// @public
 export interface MapLayerIndex {
     index: number;
     isOverlay: boolean;
 }
 
-// @beta
+// @public
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
@@ -6495,7 +6454,7 @@ export class MapLayerSource {
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @internal
+// @beta
 export class MapLayerSources {
     // (undocumented)
     static addSourceToMapLayerSources(mapLayerSource?: MapLayerSource): Promise<MapLayerSources | undefined>;
@@ -6604,7 +6563,7 @@ export class MapTile extends RealityTile {
     // @internal (undocumented)
     everLoaded: boolean;
     // @internal
-    forceSelectRealityTile(): boolean;
+    protected forceSelectRealityTile(): boolean;
     // @internal (undocumented)
     freeMemory(): void;
     // @internal (undocumented)
@@ -6666,6 +6625,8 @@ export class MapTile extends RealityTile {
     // @internal (undocumented)
     protected _mesh?: RealityMeshParams;
     // @internal (undocumented)
+    protected minimumVisibleFactor(): number;
+    // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     readonly quadId: QuadId;
     readonly rectangle: MapCartoRectangle;
@@ -6695,14 +6656,14 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     // (undocumented)
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
     // (undocumented)
-    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
-    resetMapLayer(index: number, isOverlay: boolean): void;
+    resetMapLayer(mapLayerIndex: MapLayerIndex): void;
     // (undocumented)
     setView(newView: ViewState): void;
 }
@@ -8732,7 +8693,10 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 }
 
 // @internal
-export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined>;
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{
+    graphic: RenderGraphic | undefined;
+    rtcCenter: Point3d | undefined;
+}>;
 
 // @alpha
 export class RealityDataError extends BentleyError {
@@ -8999,7 +8963,7 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     disposeContents(): void;
     // @internal (undocumented)
-    forceSelectRealityTile(): boolean;
+    protected forceSelectRealityTile(): boolean;
     // @internal (undocumented)
     get geometry(): RealityTileGeometry | undefined;
     // @internal (undocumented)
@@ -9035,15 +8999,17 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     get maxDepth(): number;
     // @internal (undocumented)
+    protected minimumVisibleFactor(): number;
+    // @internal (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
+    // @internal (undocumented)
+    preloadProtectedTiles(args: TileDrawArgs, context: TraversalSelectionContext): boolean;
     // @internal (undocumented)
     preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs): void;
     // @internal (undocumented)
-    preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number): void;
-    // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     // @internal (undocumented)
-    purgeContents(olderThan: BeTimePoint): void;
+    purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void;
     // @internal (undocumented)
     readonly rangeCorners?: Point3d[];
     // @internal (undocumented)
@@ -9064,6 +9030,8 @@ export class RealityTile extends Tile {
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
     // @internal (undocumented)
     protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
+    // @internal (undocumented)
+    protected selectRealityChildrenAsFallback(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
     // @internal (undocumented)
     selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
     // @internal
@@ -9241,8 +9209,6 @@ export class RealityTileTree extends TileTree {
     get minDepth(): number;
     // @internal (undocumented)
     get parentsAndChildrenExclusive(): boolean;
-    // @internal (undocumented)
-    preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform): void;
     // @internal (undocumented)
     prune(): void;
     // @internal
@@ -9578,6 +9544,8 @@ export interface RenderPlan {
     // (undocumented)
     readonly ao?: AmbientOcclusion.Settings;
     // (undocumented)
+    readonly atmosphere?: Atmosphere.Settings;
+    // (undocumented)
     readonly backgroundMapOn: boolean;
     // (undocumented)
     readonly bgColor: ColorDef;
@@ -9585,6 +9553,8 @@ export interface RenderPlan {
     readonly clip?: ClipVector;
     // (undocumented)
     readonly clipStyle: ClipStyle;
+    // (undocumented)
+    readonly ellipsoid?: RenderPlanEllipsoid;
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
@@ -9629,6 +9599,19 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract dispose(): void;
     // (undocumented)
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
+}
+
+// @internal (undocumented)
+export class RenderPlanEllipsoid {
+    constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d);
+    // (undocumented)
+    readonly ellipsoidCenter: Point3d;
+    // (undocumented)
+    readonly ellipsoidRadii: Point3d;
+    // (undocumented)
+    readonly ellipsoidRotation: Matrix3d;
+    // (undocumented)
+    equals(other: RenderPlanEllipsoid): boolean;
 }
 
 // @internal (undocumented)
@@ -9981,19 +9964,13 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @public
 export enum RotationMode {
-    // (undocumented)
     ACS = 5,
-    // (undocumented)
     Context = 6,
-    // (undocumented)
     Front = 2,
-    // (undocumented)
     Side = 3,
-    // (undocumented)
     Top = 1,
-    // (undocumented)
     View = 4
 }
 
@@ -11273,6 +11250,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get wantAmbientOcclusion(): boolean;
     // (undocumented)
+    get wantAtmosphere(): boolean;
+    // (undocumented)
     get wantInvertBlackBackground(): boolean;
     // (undocumented)
     get wantThematicDisplay(): boolean;
@@ -12352,7 +12331,9 @@ export class TileUrlImageryProvider extends MapLayerImageryProvider {
 // @public
 export class TileUsageMarker {
     constructor();
+    getIsTileInUse(): boolean;
     isExpired(expirationTime: BeTimePoint): boolean;
+    isTimestampExpired(expirationTime: BeTimePoint): boolean;
     mark(user: TileUser, time: BeTimePoint): void;
 }
 
@@ -12820,13 +12801,13 @@ export class TraversalChildrenDetails {
 // @internal (undocumented)
 export class TraversalDetails {
     // (undocumented)
-    childrenLoading: boolean;
-    // (undocumented)
     childrenSelected: boolean;
     // (undocumented)
     initialize(): void;
     // (undocumented)
     queuedChildren: Tile[];
+    // (undocumented)
+    shouldSelectParent: boolean;
 }
 
 // @internal (undocumented)
@@ -14022,12 +14003,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @alpha (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
-    // @internal (undocumented)
-    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    // @beta
+    getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     // @internal
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
+    getMapLayerRange(mapLayerIndex: MapLayerIndex): Promise<MapCartoRectangle | undefined>;
     // @beta
-    getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility;
+    getMapLayerScaleRangeVisibility(mapLayerIndex: MapLayerIndex): MapTileTreeScaleRangeVisibility;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
@@ -14140,7 +14122,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     requestRedraw(): void;
     // @beta
-    resetMapLayer(index: number, isOverlay: boolean): void;
+    resetMapLayer(mapLayerIndex: MapLayerIndex): void;
     get rotation(): Matrix3d;
     // @internal (undocumented)
     get sceneValid(): boolean;
@@ -14205,6 +14187,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     get viewingGlobe(): boolean;
     // (undocumented)
     get viewingSpace(): ViewingSpace;
+    viewMapLayerRange(mapLayerIndex: MapLayerIndex, vp: ScreenViewport): Promise<boolean>;
     get viewportId(): number;
     // @internal (undocumented)
     protected readonly _viewRange: ViewRect;

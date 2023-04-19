@@ -445,7 +445,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /** Return a unit vector in direction of this instance (undefined if this instance has near zero length) */
   public normalize(result?: Vector2d): Vector2d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.magnitude());
+    const mag = Geometry.correctSmallFraction(this.magnitude());
     result = result ? result : new Vector2d();
     return this.safeDivideOrNull(mag, result);
   }
@@ -589,7 +589,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /** Return a vector parallel to this but with specified length */
   public scaleToLength(length: number, result?: Vector2d): Vector2d | undefined {
-    const mag = Geometry.correctSmallMetricDistance(this.magnitude());
+    const mag = Geometry.correctSmallFraction(this.magnitude());
     if (mag === 0)
       return undefined;
     return this.scale(length / mag, result);

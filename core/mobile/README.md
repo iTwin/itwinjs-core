@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/core-electron__ package contains the electron utilities to write an iTwin.js application based on Electron.
+The __@itwin/core-mobile__ package contains the mobile utilities to write an iTwin.js application for mobile devices.
 
 ## Documentation
 

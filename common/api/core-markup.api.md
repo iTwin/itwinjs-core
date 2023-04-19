@@ -188,14 +188,15 @@ export class LineTool extends RedlineTool {
 export class Markup {
     constructor(vp: ScreenViewport, markupData?: MarkupSvgData);
     bringToFront(): void;
+    createArrowMarker(color: string, length: number, width: number): Marker;
     deleteSelected(): void;
     destroy(): void;
     disablePick(): void;
     enablePick(): void;
     groupSelected(): void;
+    isBoxedText(el: Element_2): boolean;
     // @internal (undocumented)
     readonly markupDiv: HTMLDivElement;
-    // @internal (undocumented)
     readonly selected: MarkupSelected;
     sendToBack(): void;
     setCursor(cursor: string): void;
@@ -207,7 +208,6 @@ export class Markup {
     readonly svgDynamics?: G;
     // @internal (undocumented)
     readonly svgMarkup?: G;
-    // @internal (undocumented)
     readonly undo: UndoManager;
     ungroupSelected(): void;
     // (undocumented)
