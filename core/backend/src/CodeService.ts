@@ -3,176 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
+import { BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { CodeProps, FontId, FontType } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
-
-/**
- * A readonly index of all known Codes for an iTwin. The CodeIndex may be slightly out-of-date
- * with the master copy in the cloud, but it should be periodically synchronized. Whenever codes are reserved/updated/deleted
- * locally, this copy is always up-to-date as of those changes.
- * @alpha
- */
-export interface CodeIndex {
-  /**
-   * Find the next available value for the supplied `SequenceScope`.
-   * If the sequence is full (there are no available values), this will throw an exception with `errorId="SequenceFull"`
-   * @param from the sequence and scope to search
-   * @returns the next available CodeValue in the sequence.
-   */
-  findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
-
-  /**
-   * Find the highest currently used value for the supplied `SequenceScope`
-   * @param from the sequence and scope to search
-   * @returns the highest used value, or undefined if no values have been used.
-   */
-  findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
-
-  /** Determine whether a code is present in this CodeIndex by its Guid. */
-  isCodePresent(guid: CodeService.CodeGuid): boolean;
-
-  /** Get the data for a code in this CodeIndex by its Guid.
-   * @returns the data for the code or undefined if no code is present for the supplied Guid.
-   */
-  getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
-
-  /** Look up a code by its Scope, Spec, and Value.
-   * @returns the Guid of the code, or undefined if not present.
-   */
-  findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
-
-  /** Look up a code spec by its name
-   * @throws if the spec is not present.
-   */
-  getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
-
-  /** Call a `CodeIteration` function for all codes in this index, optionally filtered by a `CodeFilter ` */
-  forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
-
-  /** Call an iteration function for all code specs in this index, optionally filtered by a `ValueFilter ` */
-  forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
-}
-
-/**
- * @alpha
- */
-export interface CodesDb {
-  /**
-   * Application-supplied parameters for obtaining the write lock on the container.
-   * Applications should set these parameters by adding a listener for `BriefcaseDb.onCodeServiceCreated`
-   * that is called every time a BriefcaseDb that uses code services is opened for write access.
-   */
-  readonly lockParams: CloudSqlite.ObtainLockParams;
-
-  /** the code index for this CodeService */
-  readonly codeIndex: CodeIndex;
-
-  /**
-   * The token that grants access to the cloud container for this CodeService.
-   * It should be established in a listener for `BriefcaseDb.onCodeServiceCreated`, and should be refreshed (via a
-   * timer) before it expires.
-   */
-  sasToken: AccessToken;
-
-  /**
-   * Synchronize the local index with any changes by made by others.
-   * @note This is called automatically whenever any write operation is performed on the code index. It is only necessary to
-   * call this directly if you have not changed the code index recently, but wish to perform a readonly operation and want to
-   * ensure it is up-to-date as of now.
-   * @note There is no guarantee that a readonly index is up-to-date even immediately after calling this method, since others
-   * may be modifying it at any time.
-   */
-  synchronizeWithCloud(): void;
-
-  /**
-   * Verify that the Code of a to-be-inserted or to-be-updated Element:
-   * 1. has already been reserved,
-   * 2. if the element has a `federationGuid`, it must match the reserved value. If the federationGuid is undefined,
-   * the value from the code index is returned.
-   *
-   * If not, throw an exception. Elements with no CodeValue are ignored.
-   * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
-   */
-  verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
-
-  /** Add a new code spec to this code service.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   */
-  addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
-
-  /**
-   * Add all of the codes and code specs from this CodeService's BriefcaseDb into the code index.
-   * @returns the number of codes actually added.
-   * @note It is not necessary to call this method unless the BriefcaseDb somehow becomes out of sync with its CodeService,
-   * for example when migrating iModels to a new code service. It is safe (but relatively expensive) to call this method multiple times, since
-   * any codes or code specs that are already in the index are ignored.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   */
-  addAllCodes(iModel: IModelDb): Promise<number>;
-
-  /**
-   * Attempt to reserve a single proposed code.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   * @throws `CodeService.Error` if the proposed code cannot be reserved.
-   */
-  reserveCode(code: CodeService.ProposedCode): Promise<void>;
-
-  /**
-   * Attempt to reserve an array of proposed codes.
-   * @returns number of codes actually reserved.
-   * @see the `problems` member of the `CodeService.Error` exception
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   * @note If you have a set of codes to reserve, it is considerably more efficient to do them as an array rather than one at a time.
-   * @throws `CodeService.Error` if any of the proposed code cannot be reserved. The details for each failed code are in the `problems` member.
-   */
-  reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
-
-  /**
-   * Attempt to reserve the next available code for a code sequence and scope.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   */
-  reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
-
-  /**
-   * Attempt to reserve an array of the next available codes for a code sequence and scope.
-   * The length of the array determines the number of codes requested. The values for the new codes are returned
-   * in the array, so they can be associated with the supplied GUIDs.
-   * @returns number of codes actually reserved.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   */
-  reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
-
-  /**
-   * Update the properties of a single code.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   */
-  updateCode(props: CodeService.UpdatedCode): Promise<void>;
-
-  /**
-   * Update the properties of an array codes.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   * @note If you have a set of codes to update, it is considerably more efficient to do them as an array rather than one at a time.
-   * @returns number of codes actually updated.
-   */
-  updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
-
-  /** Delete an array of codes by their guids.
-   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
-   */
-  deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
-}
-
-/**
- * @internal
- */
-export interface InternalCodes extends CodesDb {
-  reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
-  reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
-  verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
-}
+import { VersionedSqliteDb } from "./SQLiteDb";
 
 /**
  * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.
@@ -185,12 +21,12 @@ export interface CodeService {
   initialize(iModel: IModelDb): Promise<void>;
 
   /** the index for external Codes for this CodeService */
-  readonly externalCodes?: CodesDb;
+  readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb>;
 
   /** the index for internal Codes for this CodeService
    * @internal
    */
-  readonly internalCodes?: InternalCodes;
+  readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes>;
 
   /**
    * Application-supplied parameters for reserving new codes.
@@ -211,6 +47,136 @@ export interface CodeService {
 
 /** @alpha */
 export namespace CodeService {
+  /**
+   * @alpha
+   */
+  export interface CodesDb extends VersionedSqliteDb {
+    /**
+     * Find the next available value for the supplied `SequenceScope`.
+     * If the sequence is full (there are no available values), this will throw an exception with `errorId="SequenceFull"`
+     * @param from the sequence and scope to search
+     * @returns the next available CodeValue in the sequence.
+     */
+    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
+
+    /**
+   * Find the highest currently used value for the supplied `SequenceScope`
+   * @param from the sequence and scope to search
+   * @returns the highest used value, or undefined if no values have been used.
+   */
+    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
+
+    /** Determine whether a code is present in this CodeIndex by its Guid. */
+    isCodePresent(guid: CodeService.CodeGuid): boolean;
+
+    /** Get the data for a code in this CodeIndex by its Guid.
+   * @returns the data for the code or undefined if no code is present for the supplied Guid.
+   */
+    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
+
+    /** Look up a code by its Scope, Spec, and Value.
+   * @returns the Guid of the code, or undefined if not present.
+   */
+    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
+
+    /** Look up a code spec by its name
+   * @throws if the spec is not present.
+   */
+    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
+
+    /** Call a `CodeIteration` function for all codes in this index, optionally filtered by a `CodeFilter ` */
+    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
+
+    /** Call an iteration function for all code specs in this index, optionally filtered by a `ValueFilter ` */
+    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
+
+    /**
+   * Verify that the Code of a to-be-inserted or to-be-updated Element:
+   * 1. has already been reserved,
+   * 2. if the element has a `federationGuid`, it must match the reserved value. If the federationGuid is undefined,
+   * the value from the code index is returned.
+   *
+   * If not, throw an exception. Elements with no CodeValue are ignored.
+   * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
+   */
+    verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
+
+    /** Add a new code spec to this code service.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   */
+    addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
+
+    /**
+   * Add all of the codes and code specs from this CodeService's BriefcaseDb into the code index.
+   * @returns the number of codes actually added.
+   * @note It is not necessary to call this method unless the BriefcaseDb somehow becomes out of sync with its CodeService,
+   * for example when migrating iModels to a new code service. It is safe (but relatively expensive) to call this method multiple times, since
+   * any codes or code specs that are already in the index are ignored.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   */
+    addAllCodes(iModel: IModelDb): Promise<number>;
+
+    /**
+   * Attempt to reserve a single proposed code.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   * @throws `CodeService.Error` if the proposed code cannot be reserved.
+   */
+    reserveCode(code: CodeService.ProposedCode): Promise<void>;
+
+    /**
+   * Attempt to reserve an array of proposed codes.
+   * @returns number of codes actually reserved.
+   * @see the `problems` member of the `CodeService.Error` exception
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   * @note If you have a set of codes to reserve, it is considerably more efficient to do them as an array rather than one at a time.
+   * @throws `CodeService.Error` if any of the proposed code cannot be reserved. The details for each failed code are in the `problems` member.
+   */
+    reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
+
+    /**
+   * Attempt to reserve the next available code for a code sequence and scope.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   */
+    reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
+
+    /**
+   * Attempt to reserve an array of the next available codes for a code sequence and scope.
+   * The length of the array determines the number of codes requested. The values for the new codes are returned
+   * in the array, so they can be associated with the supplied GUIDs.
+   * @returns number of codes actually reserved.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   */
+    reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
+
+    /**
+   * Update the properties of a single code.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   */
+    updateCode(props: CodeService.UpdatedCode): Promise<void>;
+
+    /**
+   * Update the properties of an array codes.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   * @note If you have a set of codes to update, it is considerably more efficient to do them as an array rather than one at a time.
+   * @returns number of codes actually updated.
+   */
+    updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
+
+    /** Delete an array of codes by their guids.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   */
+    deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
+  }
+
+  /**
+   * @internal
+   */
+  export interface InternalCodes extends CodesDb {
+    reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
+    reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
+    verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
+  }
+
   /** @internal */
   const codeSequences = new Map<string, CodeSequence>();
 

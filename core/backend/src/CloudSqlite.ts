@@ -665,6 +665,48 @@ export namespace CloudSqlite {
       return this.openReadonly();
     }
 
+    /** Perform an operation on this database with the lock held and the database opened for write
+     * @param operationName the name of the operation. Only used for logging.
+     * @param operation a function called with the lock held.
+     * @returns A promise that resolves to the the return value of `operation`.
+     * @see [SQLiteDb.withLockedContainer]($backend)
+     * @note Most uses of `CloudSqliteDbAccess` require that the lock not be held by any operation for long. Make sure you don't
+     * do any avoidable or time consuming work in your operation function.
+     */
+    public async withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T> {
+      let nRetries = this.lockParams.nRetries;
+      const cacheGuid = this.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const user = this.lockParams.user ?? cacheGuid;
+      const timer = new StopWatch(undefined, true);
+      const showMs = () => `(${timer.elapsed.milliseconds}ms)`;
+
+      const busyHandler = async (lockedBy: string, expires: string): Promise<void | "stop"> => {
+        if (--nRetries <= 0) {
+          if ("stop" === await this.lockParams.onFailure?.(lockedBy, expires))
+            return "stop";
+          nRetries = this.lockParams.nRetries;
+        }
+        const delay = this.lockParams.retryDelayMs;
+        logInfo(`lock retry for ${cacheGuid} after ${showMs()}, waiting ${delay}`);
+        await BeDuration.fromMilliseconds(delay).wait();
+      };
+
+      this.closeDb(); // in case it is currently open for read.
+      let lockObtained = false;
+      try {
+        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+          lockObtained = true;
+          logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
+          return operation();
+        });
+      } finally {
+        if (lockObtained)
+          logInfo(`lock released by ${cacheGuid} after ${operationName} ${showMs()} `);
+        else
+          logError(`could not obtain lock for ${cacheGuid} to perform ${operationName} ${showMs()} `);
+      }
+    }
+
     /**
      * Perform an operation on this database with the lock held and the database opened for write
      * @param operationName the name of the operation. Only used for logging.
@@ -675,43 +717,12 @@ export namespace CloudSqlite {
      * do any avoidable or time consuming work in your operation function.
      */
     public get forWrite() {
-      return this._writeLockProxy ??= ((access) => new Proxy({} as PickAsyncMethods<DbType>, {
-        get(_target, methodName: string) {
-          return async (...args: any[]) => {
-            let nRetries = access.lockParams.nRetries;
-            const cacheGuid = access.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-            const user = access.lockParams.user ?? cacheGuid;
-            const timer = new StopWatch(undefined, true);
-            const showMs = () => `(${timer.elapsed.milliseconds}ms)`;
-
-            const busyHandler = async (lockedBy: string, expires: string): Promise<void | "stop"> => {
-              if (--nRetries <= 0) {
-                if ("stop" === await access.lockParams.onFailure?.(lockedBy, expires))
-                  return "stop";
-                nRetries = access.lockParams.nRetries;
-              }
-              const delay = access.lockParams.retryDelayMs;
-              logInfo(`lock retry for ${cacheGuid} after ${showMs()}, waiting ${delay}`);
-              await BeDuration.fromMilliseconds(delay).wait();
-            };
-
-            access.closeDb(); // in case it is currently open for read.
-            let lockObtained = false;
-            try {
-              return await access._cloudDb.withLockedContainer({ user, dbName: access.dbName, container: access.container, busyHandler }, async () => {
-                lockObtained = true;
-                logInfo(`lock acquired by ${cacheGuid} for ${methodName} ${showMs()}`);
-                return (access._cloudDb as any)[methodName](...args);
-              });
-            } finally {
-              if (lockObtained)
-                logInfo(`lock released by ${cacheGuid} after ${methodName} ${showMs()} `);
-              else
-                logError(`could not obtain lock for ${cacheGuid} to perform ${methodName} ${showMs()} `);
-            }
-          };
-        },
-      }))(this);
+      return this._writeLockProxy ??=
+        ((access) => new Proxy({} as PickAsyncMethods<DbType>, {
+          get(_target, methodName: string) {
+            return async (...args: any[]) => access.withLockedDb(methodName, async () => (access._cloudDb as any)[methodName](...args));
+          },
+        }))(this);
     }
   }
 }
