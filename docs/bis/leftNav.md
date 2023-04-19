@@ -78,6 +78,8 @@
 ### Domain Schemas
 - [Overview](./domains/index.md)
 - [Core domains](./domains/core-domains.md)
+  - [Provenance in BIS](./domains/Provenance-in-BIS.md)
+  - [Drawings & Sheets](./domains/drawings-sheets.md)
 - [Common domains](./domains/common-domains.md)
 - [Discipline-Physical domains](./domains/discipline-physical-domains.md)
 - [Discipline-Other domains](./domains/discipline-other-domains.md)
