@@ -77,31 +77,31 @@ describe("PropertyStore", function (this: Suite) {
   });
 
   it("access PropertyStore", async () => {
-    expect(countProperties(ps1.values)).equal(0);
-    expect(countProperties(ps2.values)).equal(0);
+    expect(countProperties(ps1.forRead)).equal(0);
+    expect(countProperties(ps2.forRead)).equal(0);
 
     const prop1 = "test/prop-1";
     const value1 = "this is value 1";
     const value2 = "this is value 2";
-    await ps1.saveProperty(prop1, value1);
-    expect(ps1.values.getString(prop1)).equal(value1);
-    expect(ps2.values.getString(prop1)).undefined;
+    await ps1.forWrite.saveProperty(prop1, value1);
+    expect(ps1.forRead.getString(prop1)).equal(value1);
+    expect(ps2.forRead.getString(prop1)).undefined;
     ps2.synchronizeWithCloud();
-    expect(ps2.values.getString(prop1)).equal(value1);
-    await ps2.saveProperty(prop1, value2);
-    expect(ps2.values.getString(prop1)).equal(value2);
-    expect(ps1.values.getString(prop1)).equal(value1);
+    expect(ps2.forRead.getString(prop1)).equal(value1);
+    await ps2.forWrite.saveProperty(prop1, value2);
+    expect(ps2.forRead.getString(prop1)).equal(value2);
+    expect(ps1.forRead.getString(prop1)).equal(value1);
     ps1.synchronizeWithCloud();
-    expect(ps1.values.getString(prop1)).equal(value2);
-    expect(countProperties(ps1.values)).equal(1);
+    expect(ps1.forRead.getString(prop1)).equal(value2);
+    expect(countProperties(ps1.forRead)).equal(1);
 
-    await ps1.deleteProperty(prop1);
-    expect(ps1.values.getString(prop1)).undefined;
-    expect(ps2.values.getString(prop1)).equal(value2);
-    expect(countProperties(ps2.values)).equal(1);
+    await ps1.forWrite.deleteProperty(prop1);
+    expect(ps1.forRead.getString(prop1)).undefined;
+    expect(ps2.forRead.getString(prop1)).equal(value2);
+    expect(countProperties(ps2.forRead)).equal(1);
     ps2.synchronizeWithCloud();
-    expect(ps2.values.getString(prop1)).undefined;
-    expect(countProperties(ps2.values)).equal(0);
+    expect(ps2.forRead.getString(prop1)).undefined;
+    expect(countProperties(ps2.forRead)).equal(0);
 
     const prop3 = "test/property/3";
     const prop4 = "test/property/4";
@@ -116,7 +116,7 @@ describe("PropertyStore", function (this: Suite) {
     const val6 = " value of property 6    ";
     const val7 = 40234;
 
-    await ps1.saveProperties([
+    await ps1.forWrite.saveProperties([
       { name: prop3, value: val3 },
       { name: prop4, value: val4 },
       { name: prop5, value: val5 },
@@ -124,19 +124,19 @@ describe("PropertyStore", function (this: Suite) {
       { name: prop7, value: val7 },
     ]);
 
-    expect(countProperties(ps2.values)).equal(0);
+    expect(countProperties(ps2.forRead)).equal(0);
     ps2.synchronizeWithCloud();
-    expect(ps2.values.getObject(prop3)).deep.equal(val3);
-    expect(ps2.values.getBlob(prop4)).deep.equal(val4);
-    expect(ps2.values.getBoolean(prop5)).equal(val5);
-    expect(ps2.values.getString(prop6)).equal(val6);
-    expect(ps2.values.getNumber(prop7)).equal(val7);
-    expect(countProperties(ps2.values)).equal(5);
-    await ps2.deleteProperties([prop3, prop4, prop5]);
-    expect(ps2.values.getObject(prop3)).undefined;
-    expect(ps2.values.getBlob(prop4)).undefined;
-    expect(ps2.values.getBoolean(prop5)).undefined;
-    expect(countProperties(ps2.values)).equal(2);
+    expect(ps2.forRead.getObject(prop3)).deep.equal(val3);
+    expect(ps2.forRead.getBlob(prop4)).deep.equal(val4);
+    expect(ps2.forRead.getBoolean(prop5)).equal(val5);
+    expect(ps2.forRead.getString(prop6)).equal(val6);
+    expect(ps2.forRead.getNumber(prop7)).equal(val7);
+    expect(countProperties(ps2.forRead)).equal(5);
+    await ps2.forWrite.deleteProperties([prop3, prop4, prop5]);
+    expect(ps2.forRead.getObject(prop3)).undefined;
+    expect(ps2.forRead.getBlob(prop4)).undefined;
+    expect(ps2.forRead.getBoolean(prop5)).undefined;
+    expect(countProperties(ps2.forRead)).equal(2);
     ps1.closeDb();
     ps2.closeDb();
   });

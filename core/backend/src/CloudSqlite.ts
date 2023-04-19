@@ -9,7 +9,7 @@
 import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, PickAsyncMethods, StopWatch } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -17,7 +17,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import type { VersionedSqliteDb } from "./SQLiteDb";
 
 /**
- * Types for using SQLite files stored in cloud containers.
+ * Types for accessing SQLite databases stored in cloud containers.
  * @beta
  */
 export namespace CloudSqlite {
@@ -493,7 +493,7 @@ export namespace CloudSqlite {
     * @param busyHandler if present, function called when the write lock is currently held by another user.
     * @returns a Promise with the result of `operation`
     */
-  export async function withWriteLock<T>(user: string, container: CloudContainer, operation: () => T, busyHandler?: WriteLockBusyHandler) {
+  export async function withWriteLock<T>(user: string, container: CloudContainer, operation: () => Promise<T>, busyHandler?: WriteLockBusyHandler): Promise<T> {
     if (container.hasWriteLock)
       return operation();
 
@@ -522,7 +522,7 @@ export namespace CloudSqlite {
     cacheDir?: string;
   }
 
-  /** The collection of currently extant CloudCaches, by name. */
+  /** The collection of currently extant `CLoudCache`s, by name. */
   export class CloudCaches {
     private static readonly cloudCaches = new Map<string, CloudCache>();
 
@@ -536,8 +536,8 @@ export namespace CloudSqlite {
       return cache;
     }
 
-    /** find a CloudCache by name if it exists */
-    public static findCache(cacheName: string) {
+    /** find a CloudCache by name, if it exists */
+    public static findCache(cacheName: string): CloudCache | undefined {
       return this.cloudCaches.get(cacheName);
     }
     /** @internal */
@@ -555,7 +555,7 @@ export namespace CloudSqlite {
     }
 
     /** Get a CloudCache by name. If the CloudCache doesn't yet exist, it is created. */
-    public static getCache(args: CreateCloudCacheArg) {
+    public static getCache(args: CreateCloudCacheArg): CloudCache {
       return this.cloudCaches.get(args.cacheName) ?? this.makeCache(args);
     }
   }
@@ -563,6 +563,7 @@ export namespace CloudSqlite {
   const logInfo = (msg: string) => Logger.logInfo("CloudSQLiteDb", msg);
   const logError = (msg: string) => Logger.logError("CloudSQLiteDb", msg);
 
+  /** Abstract class that provides access to a SQLite database in a CloudContainer. Subclasses   */
   export abstract class DbAccess<DbType extends VersionedSqliteDb> {
     public readonly dbName: string;
     public readonly lockParams: ObtainLockParams = {
@@ -573,6 +574,7 @@ export namespace CloudSqlite {
     protected static _cacheName = "default-64k";
     protected _container: CloudContainer;
     protected _cloudDb: DbType;
+    private _writeLockProxy?: PickAsyncMethods<DbType>;
     private get _ctor() { return this.constructor as typeof DbAccess; }
 
     public static getCacheForClass() {
@@ -583,7 +585,7 @@ export namespace CloudSqlite {
     public setCache(cache: CloudCache) {
       this._cache = cache;
     }
-    public getCache() {
+    public getCache(): CloudCache {
       return this._cache ??= this._ctor.getCacheForClass();
     }
 
@@ -606,7 +608,7 @@ export namespace CloudSqlite {
       return startCloudPrefetch(this.container, this.dbName);
     }
 
-    public constructor(args: { ctor: Constructor<DbType>, props: ContainerAccessProps, dbName: string }) {
+    protected constructor(args: { ctor: Constructor<DbType>, props: ContainerAccessProps, dbName: string }) {
       this._container = createCloudContainer({ ...args.props, writeable: true });
       this._cloudDb = new args.ctor(args.props);
       this.dbName = args.dbName;
@@ -651,15 +653,20 @@ export namespace CloudSqlite {
      * @note This is called automatically whenever any write operation is performed on this DbAccess. It is only necessary to
      * call this directly if you have not changed the database recently, but wish to perform a readonly operation and want to
      * ensure it is up-to-date as of now.
-     * @note There is no guarantee that the Values are up-to-date even immediately after calling this method, since others
-     * may be modifying them at any time.
+     * @note There is no guarantee that the database is up-to-date even immediately after calling this method, since others
+     * may be modifying it at any time.
      */
     public synchronizeWithCloud() {
       this.closeDb();
       this.container.checkForChanges();
     }
 
-    /** Perform an operation on this database with the lock held and the database opened for write
+    public get forRead() {
+      return this.openReadonly();
+    }
+
+    /**
+     * Perform an operation on this database with the lock held and the database opened for write
      * @param operationName the name of the operation. Only used for logging.
      * @param operation a function called with the lock held.
      * @returns A promise that resolves to the the return value of `operation`.
@@ -667,38 +674,44 @@ export namespace CloudSqlite {
      * @note Most uses of `DbAccess` require that the lock not be held by any operation for long. Make sure you don't
      * do any avoidable or time consuming work in your operation function.
      */
-    public async withLockedDb<T>(operationName: string, operation: () => T): Promise<T> {
-      let nRetries = this.lockParams.nRetries;
-      const cacheGuid = this.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-      const user = this.lockParams.user ?? cacheGuid;
-      const timer = new StopWatch(undefined, true);
-      const showMs = () => `(${timer.elapsed.milliseconds}ms)`;
+    public get forWrite() {
+      return this._writeLockProxy ??= ((access) => new Proxy({} as PickAsyncMethods<DbType>, {
+        get(_target, methodName: string) {
+          return async (...args: any[]) => {
+            let nRetries = access.lockParams.nRetries;
+            const cacheGuid = access.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+            const user = access.lockParams.user ?? cacheGuid;
+            const timer = new StopWatch(undefined, true);
+            const showMs = () => `(${timer.elapsed.milliseconds}ms)`;
 
-      const busyHandler = async (lockedBy: string, expires: string): Promise<void | "stop"> => {
-        if (--nRetries <= 0) {
-          if ("stop" === await this.lockParams.onFailure?.(lockedBy, expires))
-            return "stop";
-          nRetries = this.lockParams.nRetries;
-        }
-        const delay = this.lockParams.retryDelayMs;
-        logInfo(`lock retry for ${cacheGuid} after ${showMs()}, waiting ${delay}`);
-        await BeDuration.fromMilliseconds(delay).wait();
-      };
+            const busyHandler = async (lockedBy: string, expires: string): Promise<void | "stop"> => {
+              if (--nRetries <= 0) {
+                if ("stop" === await access.lockParams.onFailure?.(lockedBy, expires))
+                  return "stop";
+                nRetries = access.lockParams.nRetries;
+              }
+              const delay = access.lockParams.retryDelayMs;
+              logInfo(`lock retry for ${cacheGuid} after ${showMs()}, waiting ${delay}`);
+              await BeDuration.fromMilliseconds(delay).wait();
+            };
 
-      this.closeDb();
-      let lockObtained = false;
-      try {
-        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, () => {
-          lockObtained = true;
-          logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
-          return operation();
-        });
-      } finally {
-        if (lockObtained)
-          logInfo(`lock released by ${cacheGuid} after ${operationName} ${showMs()} `);
-        else
-          logError(`could not obtain lock for ${cacheGuid} to perform ${operationName} ${showMs()} `);
-      }
+            access.closeDb(); // in case it is currently open for read.
+            let lockObtained = false;
+            try {
+              return await access._cloudDb.withLockedContainer({ user, dbName: access.dbName, container: access.container, busyHandler }, async () => {
+                lockObtained = true;
+                logInfo(`lock acquired by ${cacheGuid} for ${methodName} ${showMs()}`);
+                return (access._cloudDb as any)[methodName](...args);
+              });
+            } finally {
+              if (lockObtained)
+                logInfo(`lock released by ${cacheGuid} after ${methodName} ${showMs()} `);
+              else
+                logError(`could not obtain lock for ${cacheGuid} to perform ${methodName} ${showMs()} `);
+            }
+          };
+        },
+      }))(this);
     }
   }
 }

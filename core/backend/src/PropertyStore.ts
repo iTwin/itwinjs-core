@@ -13,7 +13,7 @@ export namespace PropertyStore {
 
   /** The set of valid types for properties in a PropertyStore. */
   export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
-  /** The name of a Property. May not have leading or trailing spaces, and must be between 3 and 2048 characters long. */
+  /** The case-sensitive name of a Property. May not have leading or trailing spaces, and must be between 3 and 2048 characters long. */
   export type PropertyName = string;
   /** An array of PropertyName/PropertyType pairs to be stored in a PropertyStore. */
   export type PropertyArray = { name: PropertyName, value: PropertyType }[];
@@ -35,7 +35,7 @@ export namespace PropertyStore {
   }
 
   /**
-   * Read the values of Properties in a PropertyStore.
+   * Read the values of Properties from a PropertyDb.
    */
   export interface ReadValues {
     /** get the value of a Property by name.
@@ -88,8 +88,7 @@ export namespace PropertyStore {
   }
 
   /**
-   * A `VersionedSqliteDb` database for storing name/value pairs. The names are case-sensitive strings, and the values can be of type
-   * string, boolean, number, blob (Uint8Array), or Object.
+   * A SQLite database for storing [[PropertyName]]/[[PropertyValue]] pairs.
    */
   export class PropertyDb extends VersionedSqliteDb implements ReadValues {
     public readonly myVersion = "3.0.0";
@@ -118,7 +117,6 @@ export namespace PropertyStore {
         return undefined;
       });
     }
-
     public getString(name: PropertyName, defaultValue: string): string;
     public getString(name: PropertyName): string | undefined;
     public getString(name: PropertyName, defaultValue?: string): string | undefined {
@@ -170,15 +168,15 @@ export namespace PropertyStore {
     }
 
     /** Delete a single property from this PropertyDb. If the value does not exist, this method does nothing. */
-    public deleteProperty(propName: PropertyName) {
+    public async deleteProperty(propName: PropertyName) {
       this.withSqliteStatement("DELETE from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, propName);
         stmt.step();
       });
     }
     /** Delete an array of properties from this PropertyDb. Any value that does not exist is ignored. */
-    public deleteProperties(propNames: PropertyName[]) {
-      propNames.forEach((name) => this.deleteProperty(name));
+    public async deleteProperties(propNames: PropertyName[]) {
+      propNames.forEach(async (name) => this.deleteProperty(name));
     }
 
     private validateName(name: PropertyName) {
@@ -187,7 +185,7 @@ export namespace PropertyStore {
     }
 
     /** Save a single property in this PropertyDb. If the property already exists, its value is overwritten. */
-    public saveProperty(name: PropertyName, value: PropertyType) {
+    public async saveProperty(name: PropertyName, value: PropertyType) {
       this.validateName(name);
       this.withSqliteStatement("INSERT OR REPLACE INTO properties(name,type,value) VALUES (?,?,?)", (stmt) => {
         stmt.bindString(1, name);
@@ -224,28 +222,24 @@ export namespace PropertyStore {
     }
 
     /** Save an array of properties in this PropertyDb. If a property already exists, its value is overwritten. */
-    public saveProperties(props: PropertyArray) {
-      props.forEach((prop) => this.saveProperty(prop.name, prop.value));
+    public async saveProperties(props: PropertyArray) {
+      for (const prop of props)
+        await this.saveProperty(prop.name, prop.value);
     }
   }
 
   const defaultDbName = "PropertyDb" as const;
-  type MethodsOfPropertyDb = { [P in keyof PropertyDb]: PropertyDb[P] extends (...args: any) => void ? P : never }[keyof PropertyDb];
 
   /**
-   * A cloud-based storage for a set of values of type `PropertyType`, each with a unique `PropertyName`.
-   * `PropertyStore.CloudDb`s are stored in cloud containers, and require an access token that grants permission to read and/or write them.
+   * A cloud-based [[PropertyDb]] to hold a set of values of type [[PropertyType]], each with a unique [[PropertyName]].
+   * `PropertyStore.CloudDb`s are stored in cloud containers and require an access token that grants permission to read and/or write them.
    * All write operations will fail without an access token that grants write permission.
+   *
    * A `CloudDb` is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
    * However, that means that callers are responsible for synchronizing the local cache to ensure it includes changes
    * made by others, as appropriate (see [[synchronizeWithCloud]]).
    */
   export class CloudDb extends CloudSqlite.DbAccess<PropertyDb> {
-    /** The property values in the PropertyDb as of the last time it was synchronized. */
-    public get values(): PropertyDb {
-      return this.openReadonly();
-    }
-
     public constructor(props: CloudSqlite.ContainerAccessProps) {
       super({ ctor: PropertyDb, props, dbName: defaultDbName });
     }
@@ -255,33 +249,8 @@ export namespace PropertyStore {
      * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty PropertyDb into the container.
      * @note this deletes any existing content in the container.
      */
-    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps, dbName?: string, initContainer?: { blockSize?: number } }) {
-      return super._initializeDb({ ...args, ctor: PropertyDb, dbName: args.dbName ?? defaultDbName });
+    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps, initContainer?: { blockSize?: number } }) {
+      return super._initializeDb({ ...args, ctor: PropertyDb, dbName: defaultDbName });
     }
-
-    private async withWriteLock<T extends MethodsOfPropertyDb>(op: T, ...args: Parameters<PropertyDb[T]>) {
-      const fn = this._cloudDb[op] as ((...arg: any[]) => ReturnType<PropertyDb[T]>);
-      return this.withLockedDb(op, () => fn.apply(this._cloudDb, args));
-    }
-
-    /** Save a single property in this PropertyStore. If the property already exists, its value is overwritten.
-     * @note This will obtain the write lock, save the value, and then release the write lock.
-     */
-    public async saveProperty(name: PropertyName, value: PropertyType) { return this.withWriteLock("saveProperty", name, value); }
-
-    /** Save an array of properties in this PropertyStore. If a property already exists, its value is overwritten.
-     * @note This will obtain the write lock, save the values, and then release the write lock.
-     */
-    public async saveProperties(props: PropertyArray) { return this.withWriteLock("saveProperties", props); }
-
-    /** Delete a single property from this PropertyStore. If the value does not exist, this method does nothing.
-     * @note This will obtain the write lock, delete the value, and then release the write lock.
-     */
-    public async deleteProperty(propName: PropertyName) { return this.withWriteLock("deleteProperty", propName); }
-
-    /** Delete an array of properties from this PropertyStore. Any value that does not exist is ignored.
-     * @note This will obtain the write lock, delete the values, and then release the write lock.
-     */
-    public async deleteProperties(propNames: PropertyName[]) { return this.withWriteLock("deleteProperties", propNames); }
   }
 }
