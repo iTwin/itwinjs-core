@@ -202,6 +202,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       modelIds = undefined;
 
     const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    if (!db.isOpen) {
+      return;
+    }
+
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
