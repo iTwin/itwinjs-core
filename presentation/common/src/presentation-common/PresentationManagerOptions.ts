@@ -154,6 +154,12 @@ export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVa
   descriptor: TDescriptor;
   /** Input keys for getting the content */
   keys: TKeySet;
+  /**
+   * Flag that specifies whether value formatting should be emitted or not.
+   * Content is returned without `displayValues` when this is set to `true`.
+   * @alpha
+   */
+  omitFormattedValues?: boolean;
 }
 
 /**

@@ -4,8 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECInstanceKey, createTestSimpleContentField } from "./_helpers";
-import { Content, Item, LabelDefinition, LocalizationHelper } from "../presentation-common";
+import { Content } from "../presentation-common/content/Content";
+import { Item } from "../presentation-common/content/Item";
+import { NavigationPropertyValue } from "../presentation-common/content/Value";
+import { LabelDefinition } from "../presentation-common/LabelDefinition";
+import { LocalizationHelper } from "../presentation-common/LocalizationHelper";
+import {
+  createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestCategoryDescription,
+  createTestContentDescriptor, createTestContentItem, createTestECInstanceKey, createTestSimpleContentField,
+} from "./_helpers";
 
 function getTestLocalizedString(key: string) {
   if (key.includes(":"))
@@ -145,6 +152,25 @@ describe("LocalizationHelper", () => {
       const content = new Content(createTestContentDescriptor({ fields: [field], categories: [testCategory] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
       expect(content.descriptor.categories[0].description).to.be.eq("LocalizedDescription");
+    });
+
+    it("translates navigation property value label", () => {
+      const navigationPropertyValue: NavigationPropertyValue = {
+        id: "0x1",
+        className: "Schema:Class",
+        label: createRandomLabelDefinition(),
+      };
+      navigationPropertyValue.label.rawValue = "@namespace:LocalizedValue@";
+      const contentItem = createTestContentItem({
+        values: {
+          navigationProperty: navigationPropertyValue,
+        },
+        displayValues: {},
+      });
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+      localizationHelper.getLocalizedContent(content);
+      const localizedValue = content.contentSet[0]!.values.navigationProperty as NavigationPropertyValue;
+      expect(localizedValue.label.rawValue).to.be.eq("LocalizedValue");
     });
 
     it("translates element properties label", () => {
