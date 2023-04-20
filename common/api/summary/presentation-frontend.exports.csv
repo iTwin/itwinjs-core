@@ -28,8 +28,6 @@ alpha;IModelContentChangeEventArgs
 alpha;IModelHierarchyChangeEventArgs
 internal;IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation"
 public;ISelectionProvider
-internal;NodeIdentifier
-internal;NodeState
 internal;NoopFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorageProps
@@ -54,6 +52,5 @@ public;SelectionManager
 public;SelectionManagerProps
 public;SelectionScopesManager
 public;SelectionScopesManagerProps
-internal;StateTracker
 internal;ToolSelectionSyncHandler 
 internal;TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT"

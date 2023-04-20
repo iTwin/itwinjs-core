@@ -40,20 +40,22 @@ public;CheckpointProps
 public;ClassRegistry
 public;CloudContainerArgs
 beta;CloudSqlite
-internal;CloudPrefetch
 internal;LockAndOpenArgs
 internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 alpha;CodeIndex
+alpha;CodesDb
 alpha;CodeService
 alpha;CodeService
+internal;BisCodeSpecIndexProps
+internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
-alpha;CrashReportingConfig
-alpha;CrashReportingConfigNameValuePair
+internal;CrashReportingConfig
+internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
 public;CreateNewIModelProps 
 public;DefinitionContainer 
@@ -227,6 +229,7 @@ public;InformationRecordPartition
 public;class InformationReferenceElement 
 internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
+internal;InternalCodes 
 public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
