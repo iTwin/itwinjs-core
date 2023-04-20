@@ -35,68 +35,18 @@ export namespace PropertyStore {
   }
 
   /**
-   * Read the values of Properties from a PropertyDb.
-   */
-  export interface ReadValues {
-    /** get the value of a Property by name.
-     * @returns the property's value if it exists, `undefined` otherwise.
-     */
-    getProperty(name: PropertyName): PropertyType | undefined;
-    /** Get the value of a string property by name.
-    * @returns the property's value if it exists and is a string, `undefined` otherwise.
-    */
-    getString(name: PropertyName): string | undefined;
-    /** Get the value of a string property by name.
-    * @returns the property's value if it exists and is a string, otherwise the supplied default value.
-    */
-    getString(name: PropertyName, defaultValue: string): string;
-    /** Get the value of a boolean property by name.
-    * @returns the property's value if it exists and is a boolean, `undefined` otherwise.
-    */
-    getBoolean(name: PropertyName): boolean | undefined;
-    /** Get the value of a boolean property by name.
-    * @returns the property's value if it exists and is a boolean, otherwise the supplied default value.
-    */
-    getBoolean(name: PropertyName, defaultValue: boolean): boolean;
-    /** Get the value of a number property by name.
-    * @returns the property's value if it exists and is a number, `undefined` otherwise.
-    */
-    getNumber(name: PropertyName): number | undefined;
-    /** Get the value of a number property by name.
-    * @returns the property's value if it exists and is a number, otherwise the supplied default value.
-    */
-    getNumber(name: PropertyName, defaultValue: number): number;
-    /** Get the value of a blob property by name.
-    * @returns the property's value if it exists and is a blob, `undefined` otherwise.
-    */
-    getBlob(name: PropertyName): Uint8Array | undefined;
-    /** Get the value of a blob property by name.
-    * @returns the property's value if it exists and is a blob, otherwise the supplied default value.
-    */
-    getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
-    /** Get the value of an object property by name.
-    * @returns the property's value if it exists and is an object, `undefined` otherwise.
-    */
-    getObject<T extends SettingObject>(name: PropertyName): T | undefined;
-    /** Get the value of an object property by name.
-    * @returns the property's value if it exists and is an object, otherwise the supplied default value.
-    */
-    getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
-
-    /** call an iteration function for each property, optionally applying a filter */
-    forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
-  }
-
-  /**
    * A SQLite database for storing [[PropertyName]]/[[PropertyValue]] pairs.
    */
-  export class PropertyDb extends VersionedSqliteDb implements ReadValues {
+  export class PropertyDb extends VersionedSqliteDb {
     public readonly myVersion = "3.0.0";
 
     protected createDDL() {
       this.createTable({ tableName: "properties", columns: "name TEXT NOT NULL PRIMARY KEY,type,value", addTimestamp: true });
     }
 
+    /** get the value of a Property by name.
+     * @returns the property's value if it exists, `undefined` otherwise.
+     */
     public getProperty(name: PropertyName): PropertyType | undefined {
       return this.withPreparedSqliteStatement("SELECT type,value from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, name);
@@ -117,36 +67,68 @@ export namespace PropertyStore {
         return undefined;
       });
     }
+    /** Get the value of a string property by name.
+    * @returns the property's value if it exists and is a string, `undefined` otherwise.
+    */
     public getString(name: PropertyName, defaultValue: string): string;
+    /** Get the value of a string property by name.
+    * @returns the property's value if it exists and is a string, otherwise the supplied default value.
+    */
     public getString(name: PropertyName): string | undefined;
     public getString(name: PropertyName, defaultValue?: string): string | undefined {
       const out = this.getProperty(name);
       return typeof out === "string" ? out : defaultValue;
     }
-    public getBoolean(name: PropertyName, defaultValue: boolean): boolean;
+    /** Get the value of a boolean property by name.
+    * @returns the property's value if it exists and is a boolean, `undefined` otherwise.
+    */
     public getBoolean(name: PropertyName): boolean | undefined;
+    /** Get the value of a boolean property by name.
+    * @returns the property's value if it exists and is a boolean, otherwise the supplied default value.
+    */
+    public getBoolean(name: PropertyName, defaultValue: boolean): boolean;
     public getBoolean(name: PropertyName, defaultValue?: boolean): boolean | undefined {
       const out = this.getProperty(name);
       return typeof out === "boolean" ? out : defaultValue;
     }
-    public getNumber(name: PropertyName, defaultValue: number): number;
+    /** Get the value of a number property by name.
+    * @returns the property's value if it exists and is a number, `undefined` otherwise.
+    */
     public getNumber(name: PropertyName): number | undefined;
+    /** Get the value of a number property by name.
+    * @returns the property's value if it exists and is a number, otherwise the supplied default value.
+    */
+    public getNumber(name: PropertyName, defaultValue: number): number;
     public getNumber(name: PropertyName, defaultValue?: number): number | undefined {
       const out = this.getProperty(name);
       return typeof out === "number" ? out : defaultValue;
     }
-    public getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
+    /** Get the value of a blob property by name.
+    * @returns the property's value if it exists and is a blob, `undefined` otherwise.
+    */
     public getBlob(name: PropertyName): Uint8Array | undefined;
+    /** Get the value of a blob property by name.
+    * @returns the property's value if it exists and is a blob, otherwise the supplied default value.
+    */
+    public getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
     public getBlob(name: PropertyName, defaultValue?: Uint8Array): Uint8Array | undefined {
       const out = this.getProperty(name);
       return out instanceof Uint8Array ? out : defaultValue;
     }
-    public getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
-    public getObject<T extends SettingObject>(name: PropertyName): T | undefined;
-    public getObject<T extends SettingObject>(name: PropertyName, defaultValue?: T): T | undefined {
+    /** Get the value of an object property by name.
+    * @returns the property's value if it exists and is an object, `undefined` otherwise.
+    */
+    public getObject(name: PropertyName): SettingObject | undefined;
+    /** Get the value of an object property by name.
+    * @returns the property's value if it exists and is an object, otherwise the supplied default value.
+    */
+    public getObject(name: PropertyName, defaultValue: SettingObject): SettingObject;
+    public getObject(name: PropertyName, defaultValue?: SettingObject): SettingObject | undefined {
       const out = this.getProperty(name);
-      return typeof out === "object" ? out as T : defaultValue;
+      return typeof out === "object" ? out as SettingObject : defaultValue;
     }
+
+    /** call an iteration function for each property, optionally applying a filter */
     public forAllProperties(iter: PropertyIteration, filter?: PropertyFilter) {
       let sql = "SELECT name FROM properties WHERE name IS NOT NULL";
       if (filter?.sqlExpression)
@@ -167,14 +149,18 @@ export namespace PropertyStore {
       });
     }
 
-    /** Delete a single property from this PropertyDb. If the value does not exist, this method does nothing. */
+    /** Delete a single property from this PropertyDb. If the value does not exist, this method does nothing.
+     * @note the database must be opened for write
+     */
     public async deleteProperty(propName: PropertyName) {
       this.withSqliteStatement("DELETE from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, propName);
         stmt.step();
       });
     }
-    /** Delete an array of properties from this PropertyDb. Any value that does not exist is ignored. */
+    /** Delete an array of properties from this PropertyDb. Any value that does not exist is ignored.
+     * @note the database must be opened for write
+     */
     public async deleteProperties(propNames: PropertyName[]) {
       propNames.forEach(async (name) => this.deleteProperty(name));
     }
@@ -184,7 +170,9 @@ export namespace PropertyStore {
         throw new Error(`illegal property name[${name}]`);
     }
 
-    /** Save a single property in this PropertyDb. If the property already exists, its value is overwritten. */
+    /** Save a single property in this PropertyDb. If the property already exists, its value is overwritten.
+     * @note the database must be opened for write
+     */
     public async saveProperty(name: PropertyName, value: PropertyType) {
       this.validateName(name);
       this.withSqliteStatement("INSERT OR REPLACE INTO properties(name,type,value) VALUES (?,?,?)", (stmt) => {
@@ -221,7 +209,9 @@ export namespace PropertyStore {
       });
     }
 
-    /** Save an array of properties in this PropertyDb. If a property already exists, its value is overwritten. */
+    /** Save an array of properties in this PropertyDb. If a property already exists, its value is overwritten.
+     * @note the database must be opened for write
+     */
     public async saveProperties(props: PropertyArray) {
       for (const prop of props)
         await this.saveProperty(prop.name, prop.value);

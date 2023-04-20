@@ -9,7 +9,7 @@
 import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, PickAsyncMethods, StopWatch } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, PickAsyncMethods, PickSyncMethods, StopWatch } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -564,7 +564,7 @@ export namespace CloudSqlite {
   const logError = (msg: string) => Logger.logError("CloudSQLiteDb", msg);
 
   /** Abstract class that provides access to a SQLite database in a CloudContainer. Subclasses   */
-  export abstract class DbAccess<DbType extends VersionedSqliteDb> {
+  export class DbAccess<DbType extends VersionedSqliteDb> {
     public readonly dbName: string;
     public readonly lockParams: ObtainLockParams = {
       user: "unknown",
@@ -575,6 +575,7 @@ export namespace CloudSqlite {
     protected _container: CloudContainer;
     protected _cloudDb: DbType;
     private _writeLockProxy?: PickAsyncMethods<DbType>;
+    private _readerProxy?: PickSyncMethods<DbType>;
     private get _ctor() { return this.constructor as typeof DbAccess; }
 
     public static getCacheForClass() {
@@ -612,12 +613,6 @@ export namespace CloudSqlite {
       this._container = createCloudContainer({ ...args.props, writeable: true });
       this._cloudDb = new args.ctor(args.props);
       this.dbName = args.dbName;
-    }
-
-    protected openReadonly() {
-      if (!this._cloudDb.isOpen)
-        this._cloudDb.openDb(this.dbName, OpenMode.Readonly, this.container);
-      return this._cloudDb;
     }
 
     public destroy() {
@@ -661,8 +656,10 @@ export namespace CloudSqlite {
       this.container.checkForChanges();
     }
 
-    public get forRead() {
-      return this.openReadonly();
+    public openForRead() {
+      if (!this._cloudDb.isOpen)
+        this._cloudDb.openDb(this.dbName, OpenMode.Readonly, this.container);
+      return this._cloudDb;
     }
 
     /** Perform an operation on this database with the lock held and the database opened for write
@@ -709,20 +706,31 @@ export namespace CloudSqlite {
 
     /**
      * Perform an operation on this database with the lock held and the database opened for write
-     * @param operationName the name of the operation. Only used for logging.
-     * @param operation a function called with the lock held.
-     * @returns A promise that resolves to the the return value of `operation`.
-     * @see [SQLiteDb.withLockedContainer]($backend)
-     * @note Most uses of `DbAccess` require that the lock not be held by any operation for long. Make sure you don't
-     * do any avoidable or time consuming work in your operation function.
+     * @see [[withLockedDb]]
      */
-    public get forWrite() {
-      return this._writeLockProxy ??=
-        ((access) => new Proxy({} as PickAsyncMethods<DbType>, {
-          get(_target, methodName: string) {
-            return async (...args: any[]) => access.withLockedDb(methodName, async () => (access._cloudDb as any)[methodName](...args));
-          },
-        }))(this);
+    public get writeLocker() {
+      return this._writeLockProxy ??= new Proxy(this, {
+        get(access, methodName: string) {
+          const db = access._cloudDb;
+          const fn = (db as any)[methodName] as Function;
+          if (typeof fn !== "function")
+            throw new Error(`illegal method name ${methodName}`);
+
+          return async (...args: any[]) => access.withLockedDb(methodName, fn.bind(db, ...args));
+        },
+      }) as PickAsyncMethods<DbType>;
+    }
+
+    public get reader() {
+      return this._readerProxy ??= new Proxy(this, {
+        get(access, methodName: string) {
+          const fn = (access._cloudDb as any)[methodName] as Function;
+          if (typeof fn !== "function")
+            throw new Error(`illegal method name ${methodName}`);
+
+          return (...args: any[]) => fn.call(access.openForRead(), ...args);
+        },
+      }) as PickSyncMethods<DbType>;
     }
   }
 }
