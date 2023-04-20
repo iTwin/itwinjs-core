@@ -1051,5 +1051,5 @@ describe("exportGraphics", () => {
     };
     const exportStatus = myIModel.exportGraphics(exportGraphicsOptions);
     myIModel.close();
-  })
+  });
 });
