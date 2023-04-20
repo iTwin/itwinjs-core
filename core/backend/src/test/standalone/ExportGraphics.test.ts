@@ -202,7 +202,7 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[1].color, materialColor0.tbgr);
   });
 
-  it("handles materials with textures", () => {
+  it.only("handles materials with textures", () => {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
     const pngData = new Uint8Array([
@@ -230,13 +230,34 @@ describe("exportGraphics", () => {
       onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
     };
 
-    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    let exportStatus = iModel.exportGraphics(exportGraphicsOptions);
     assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
     assert.strictEqual(infos.length, 1);
     assert.strictEqual(infos[0].elementId, geometricElementId);
     assert.strictEqual(infos[0].materialId, materialId);
     assert.strictEqual(infos[0].textureId, textureId);
     assert.strictEqual(infos[0].color, elementColor.tbgr);
+
+    // test uv-param mutation for patternMap
+    const triangleWithParams: GeometryStreamProps = JSON.parse(`[{
+      "indexedMesh": {
+        "point": [[1, 0, 1], [0, 0, -1], [-1, 0, 1]],
+        "pointIndex": [1, 2, 3, 0],
+        "normal": [[0, 1, 0]],
+        "normalIndex": [1, 1, 1, 0],
+        "param": [[1, 1], [0, 0], [0, 1]],
+        "paramIndex": [1, 2, 3, 0]
+      }
+    }]`);
+    builder.geometryStream.length = infos.length = 0;
+    builder.appendGeometryParamsChange(geometryParams);
+    builder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), 1));
+    exportGraphicsOptions.elementIdArray[0] = insertPhysicalElement(builder.geometryStream);
+    exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 1);
+    assert.strictEqual(infos[0].mesh.params.length, 6);
+    assert.deepStrictEqual(Array.from(infos[0].mesh.params), [2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)], "exported uv-params are scaled as expected");
   });
 
   it("creates meshes with vertices shared as expected", () => {
@@ -1037,19 +1058,4 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].mesh.indices.length, 6);
   });
 
-  it.only("test uv-params from Valerij", () => {
-    const seedFileName = IModelTestUtils.resolveAssetFile("triangleWithUVParams.bim");
-    const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", "myExportGraphicsTest.bim");
-    const myIModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    const seedElement = myIModel.elements.getElement<GeometricElement>("0x2000000000c");
-    assert.exists(seedElement);
-
-    const infos: ExportGraphicsInfo[] = [];
-    const exportGraphicsOptions: ExportGraphicsOptions = {
-      elementIdArray: ["0x2000000000c"],
-      onGraphics: (info: ExportGraphicsInfo) => infos.push(info), // bp here to examine
-    };
-    const exportStatus = myIModel.exportGraphics(exportGraphicsOptions);
-    myIModel.close();
-  });
 });
