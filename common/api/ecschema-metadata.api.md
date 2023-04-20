@@ -1676,7 +1676,7 @@ export class Schema implements CustomAttributeContainerProps {
     get writeVersion(): number;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class SchemaCache implements ISchemaLocater {
     constructor();
     addSchema<T extends Schema>(schema: T, loadSchemaPromise?: DelayedPromise<T>): Promise<void>;

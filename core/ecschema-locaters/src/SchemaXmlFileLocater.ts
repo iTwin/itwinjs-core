@@ -18,7 +18,7 @@ import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 /**
  * A SchemaLocater implementation for locating XML Schema files
  * from the file system using configurable search paths.
- * @alpha This is a workaround the current lack of a full xml parser.
+ * @beta This is a workaround the current lack of a full xml parser.
  */
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**

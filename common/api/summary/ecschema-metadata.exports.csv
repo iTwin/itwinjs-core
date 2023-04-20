@@ -110,7 +110,7 @@ beta;RelationshipEnd
 beta;relationshipEndToString(end: RelationshipEnd): string
 beta;RelationshipMultiplicity
 beta;Schema 
-alpha;SchemaCache 
+beta;SchemaCache 
 beta;SchemaContext 
 beta;SchemaGraph
 internal;SchemaGraphUtil

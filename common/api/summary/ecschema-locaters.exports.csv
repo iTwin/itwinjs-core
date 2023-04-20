@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
 beta;FileSchemaKey 
-alpha;class SchemaFileLocater
-alpha;SchemaJsonFileLocater 
+beta;class SchemaFileLocater
+beta;SchemaJsonFileLocater 
 alpha;SchemaTextsCache 
-alpha;SchemaXmlFileLocater 
+beta;SchemaXmlFileLocater 
 internal;StubSchemaXmlFileLocater 

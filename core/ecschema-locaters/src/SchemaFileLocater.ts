@@ -77,7 +77,7 @@ export class SchemaTextsCache extends Array<SchemaText> { }
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
- * @alpha - Needs further testing and possibly moved to a separate package.
+ * @beta - Needs further testing and possibly moved to a separate package.
  */
 export abstract class SchemaFileLocater {
   public searchPaths: string[];

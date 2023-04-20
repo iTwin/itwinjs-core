@@ -70,7 +70,7 @@ export interface ISchemaItemLocater {
 }
 
 /**
- * @alpha
+ * @beta
  */
 export class SchemaCache implements ISchemaLocater {
   private _loadedSchemas: LoadedSchemas;

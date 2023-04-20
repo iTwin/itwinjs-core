@@ -20,7 +20,7 @@ export class FileSchemaKey extends SchemaKey {
     schemaText?: string;
 }
 
-// @alpha
+// @beta
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
@@ -52,7 +52,7 @@ export abstract class SchemaFileLocater {
     searchPaths: string[];
 }
 
-// @alpha
+// @beta
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
@@ -64,7 +64,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
 export class SchemaTextsCache extends Array<SchemaText> {
 }
 
-// @alpha
+// @beta
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getLoadingSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
