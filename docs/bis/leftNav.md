@@ -76,13 +76,51 @@
 &nbsp;
 
 ### Domain Schemas
-- [Overview](./domains/index.md)
-- [Core domains](./domains/core-domains.md)
-  - [Provenance in BIS](./domains/Provenance-in-BIS.md)
-  - [Drawings & Sheets](./domains/drawings-sheets.md)
-- [Common domains](./domains/common-domains.md)
-- [Discipline-Physical domains](./domains/discipline-physical-domains.md)
-- [Discipline-Other domains](./domains/discipline-other-domains.md)
+
+<div id="domains-list">
+
+#### Core domains
+- [Overview](./domains/core-domains.md)
+- [Analytical](./domains/Analytical.ecschema.md)
+- [BisCore](./domains/BisCore.ecschema.md)
+- [Provenance in BIS](./domains/Provenance-in-BIS.md)
+- [Drawings & Sheets](./domains/drawings-sheets.md)
+- [Functional](./domains/Functional.ecschema.md)
+- [Generic](./domains/Generic.ecschema.md)
+- [PhysicalMaterial](./domains/PhysicalMaterial.ecschema.md)
+
+#### Common domains
+- [Overview](./domains/common-domains.md)
+- [AECUnits](./domains/AecUnits.ecschema.md)
+- [ClassificationSystems](./domains/ClassificationSystems.ecschema.md)
+- [DistributionSystems](./domains/DistributionSystems.ecschema.md)
+- [DocumentMetadata](./domains/DocumentMetadata.ecschema.md)
+- [Linear Referencing](./domains/LinearReferencing.ecschema.md)
+- [Profiles](./domains/Profiles.ecschema.md)
+- [SpatialComposition](./domains/SpatialComposition.ecschema.md)
+
+#### Discipline-Physical domains
+- [Overview](./domains/discipline-physical-domains.md)
+- [Building domains](./domains/discipline-physical-domains/building-domains.md)
+- [Civil domains](./domains/discipline-physical-domains/civil-domains.md)
+- [Construction](./domains/Construction.ecschema.md)
+- [Earthwork](./domains/Earthwork.ecschema.md)
+- [Structural domains](./domains/discipline-physical-domains/structural-domains.md)
+- [Terrain](./domains/Terrain.ecschema.md)
+
+#### Discipline-Other domains
+- [Overview](./domains/discipline-other-domains.md)
+- [Structural domains](./domains/discipline-other-domains/structural-domains.md)
+
+#### Standard schemas
+- [Overview](./domains/standard-schemas.md)
+- [BisCustomAttributes](./domains/BisCustomAttributes.ecschema.md)
+- [CoreCustomAttributes](./domains/CoreCustomAttributes.ecschema.md)
+- [ECDbMap](./domains/ECDbMap.ecschema.md)
+- [Formats](./domains/Formats.ecschema.md)
+- [Units](./domains/Units.ecschema.md)
+
+</div>
 
 &nbsp;
 
@@ -118,6 +156,16 @@ return "<i class='icon icon-chevron-up collapse-arrow is-expanded' id='guide-car
 var target = $(event.target);
 if (target.is("i")) {
 $('#guide-list').slideToggle()
+}
+});
+</script>
+<script>
+$("#domain-schemas").append(function () {
+return "<i class='icon icon-chevron-up collapse-arrow is-expanded' id='guide-carat'></i>"
+}).on('click', '.collapse-arrow', function (event) {
+var target = $(event.target);
+if (target.is("i")) {
+$('#domains-list').slideToggle()
 }
 });
 </script>
