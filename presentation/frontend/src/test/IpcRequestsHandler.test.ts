@@ -7,7 +7,6 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { IpcApp } from "@itwin/core-frontend";
 import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
-import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 
 describe("IpcRequestsHandler", () => {
@@ -41,42 +40,6 @@ describe("IpcRequestsHandler", () => {
         clientId,
         rulesetId,
         variableId: "test-id",
-      });
-    });
-  });
-
-  describe("updateHierarchyState", () => {
-    it("calls IpcApp.callIpcChannel with injected client id for specific node", async () => {
-      const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
-      const imodelKey = "imodel-key";
-      const rulesetId = "ruleset-id";
-      const nodeKey = createRandomECInstancesNodeKey();
-      await handler.updateHierarchyState({ imodelKey, rulesetId, stateChanges: [{ nodeKey, isExpanded: true, instanceFilters: ["xxx"] }] });
-      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "updateHierarchyState", {
-        clientId,
-        imodelKey,
-        rulesetId,
-        stateChanges: [{
-          nodeKey,
-          isExpanded: true,
-          instanceFilters: ["xxx"],
-        }],
-      });
-    });
-
-    it("calls IpcApp.callIpcChannel with injected client id for root level", async () => {
-      const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
-      const imodelKey = "imodel-key";
-      const rulesetId = "ruleset-id";
-      await handler.updateHierarchyState({ imodelKey, rulesetId, stateChanges: [{ nodeKey: undefined, instanceFilters: ["yyy"] }] });
-      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "updateHierarchyState", {
-        clientId,
-        imodelKey,
-        rulesetId,
-        stateChanges: [{
-          nodeKey: undefined,
-          instanceFilters: ["yyy"],
-        }],
       });
     });
   });

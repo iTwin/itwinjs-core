@@ -27,15 +27,15 @@ describe("Cloud workspace containers", () => {
       "cloudSqlite/containerId": containerId,
     };
 
-    const makeCloudCache = (name: string) => {
+    const makeCloudCache = (cacheName: string) => {
       const cacheProps = {
-        rootDir: join(IModelHost.cacheDir, "cloud", name),
+        cacheDir: join(IModelHost.cacheDir, "cloud", cacheName),
         cacheSize: "20G",
-        name,
+        cacheName,
       };
-      IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
-      fs.emptyDirSync(cacheProps.rootDir);
-      return CloudSqlite.createCloudCache(cacheProps);
+      IModelJsFs.recursiveMkDirSync(cacheProps.cacheDir);
+      fs.emptyDirSync(cacheProps.cacheDir);
+      return CloudSqlite.CloudCaches.getCache(cacheProps);
     };
 
     const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });

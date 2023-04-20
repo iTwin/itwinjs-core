@@ -6,26 +6,20 @@
  * @module Core
  */
 
-import { assert } from "@itwin/core-bentley";
 import { Format, FormatProps, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Format as ECFormat, InvertedUnit, ISchemaLocater, KindOfQuantity, OverrideFormat, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider,
   Unit,
 } from "@itwin/ecschema-metadata";
-import { Content } from "./content/Content";
-import { Field, PropertiesField } from "./content/Fields";
-import { DisplayValue, NestedContentValue, Value } from "./content/Value";
-import { KindOfQuantityInfo, PropertyInfo } from "./EC";
-import { ValuesDictionary } from "./Utils";
 
 /** @alpha */
 export interface FormatOptions {
   koqName: string;
-  unitSystem: UnitSystemKey;
+  unitSystem?: UnitSystemKey;
 }
 
 /** @alpha */
-export class PropertyValueFormatter {
+export class KoqPropertyValueFormatter {
   private _unitsProvider: UnitsProvider;
 
   constructor(private _schemaContext: SchemaContext) {
@@ -60,60 +54,6 @@ export class PropertyValueFormatter {
   }
 }
 
-/** @alpha */
-export class ContentPropertyValueFormatter {
-  constructor(private _propertyValueFormatter: PropertyValueFormatter, private _unitSystem: UnitSystemKey) { }
-
-  public async formatContent(content: Content) {
-    const descriptor = content.descriptor;
-    for (const item of content.contentSet) {
-      await this.formatValues(item.values, item.displayValues, descriptor.fields, item.mergedFieldNames);
-    }
-    return content;
-  }
-
-  private async formatValues(values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, fields: Field[], mergedFields: string[]) {
-    for (const field of fields) {
-      const value = values[field.name];
-      if (field.isNestedContentField() && !mergedFields.includes(field.name)) {
-        assert(Value.isNestedContent(value));
-        await this.formatNestedContentDisplayValues(value, field.nestedFields);
-        continue;
-      }
-
-      if (!this.isFormattable(field) || typeof value !== "number")
-        continue;
-
-      const koq = field.properties[0].property.kindOfQuantity;
-      const formattedValue = await this._propertyValueFormatter.format(value, { koqName: koq.name, unitSystem: this._unitSystem });
-      if (!formattedValue)
-        continue;
-
-      displayValues[field.name] = formattedValue;
-    }
-  }
-
-  private async formatNestedContentDisplayValues(nestedValues: NestedContentValue[], fields: Field[]) {
-    for (const nestedValue of nestedValues) {
-      await this.formatValues(nestedValue.values, nestedValue.displayValues, fields, nestedValue.mergedFieldNames);
-    }
-  }
-
-  private isFormattable(field: Field): field is FormattableField {
-    return field.isPropertiesField()
-      && field.properties.length > 0
-      && field.properties[0].property.kindOfQuantity !== undefined;
-  }
-}
-
-type FormattableField = PropertiesField & {
-  properties: [{
-    property: PropertyInfo & {
-      kindOfQuantity: KindOfQuantityInfo;
-    };
-  }];
-};
-
 interface FormattingProps {
   formatProps: FormatProps;
   persistenceUnitName: string;
@@ -147,7 +87,7 @@ async function getKoq(schemaLocater: ISchemaLocater, fullName: string) {
   return schema.getItem<KindOfQuantity>(propKoqName);
 }
 
-async function getKoqFormatProps(koq: KindOfQuantity, persistenceUnit: Unit | InvertedUnit, unitSystem: UnitSystemKey) {
+async function getKoqFormatProps(koq: KindOfQuantity, persistenceUnit: Unit | InvertedUnit, unitSystem?: UnitSystemKey) {
   const unitSystems = getUnitSystemGroupNames(unitSystem);
   // use one of KOQ presentation format that matches requested unit system
   const presentationFormat = await getKoqPresentationFormat(koq, unitSystems);
@@ -233,7 +173,7 @@ function getPersistenceUnitFormatProps(persistenceUnit: Unit | InvertedUnit): Fo
   };
 }
 
-function getUnitSystemGroupNames(unitSystem: UnitSystemKey) {
+function getUnitSystemGroupNames(unitSystem?: UnitSystemKey) {
   switch (unitSystem) {
     case "imperial":
       return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
@@ -244,4 +184,5 @@ function getUnitSystemGroupNames(unitSystem: UnitSystemKey) {
     case "usSurvey":
       return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
   }
+  return [];
 }
