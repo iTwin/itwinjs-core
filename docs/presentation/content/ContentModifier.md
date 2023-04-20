@@ -77,7 +77,7 @@ Specifies whether [calculatedProperties](./CalculatedPropertiesSpecification.md)
 | **Default Value** | `false`   |
 
 ```ts
-[[include:Presenation.ContentModifier.ApplyOnNestedContent.Ruleset]]
+[[include:Presentation.ContentModifier.ApplyOnNestedContent.Ruleset]]
 ```
 
 | `applyOnNestedContent: false`                                                                                      | `applyOnNestedContent: true`                                                                                   |
