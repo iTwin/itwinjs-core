@@ -68,7 +68,7 @@ Defines the order in which rules are handled, higher number means the rule is ha
 ### Attribute: `applyOnNestedContent`
 
 Specifies whether [calculatedProperties](./CalculatedPropertiesSpecification.md) and [relatedProperties](./RelatedPropertiesSpecification.md) specifications should also be applied on
-[nested content]($docs/presentation/content/Terminology.md#nested-content).
+[nested content](./Terminology.md#nested-content).
 
 |                   |           |
 | ----------------- | --------- |
