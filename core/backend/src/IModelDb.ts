@@ -1034,7 +1034,18 @@ export abstract class IModelDb extends IModel {
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
-    const meta = iModel.getMetaData(classFullName); // will load if necessary
+    iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
+  }
+
+  /** Invoke a callback on each property of the specified class, optionally including superclass properties.
+   * @param classFullName The full class name to load the metadata, if necessary
+   * @param wantSuper If true, superclass properties will also be processed
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   */
+  public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+    const meta = this.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
       if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
@@ -1042,7 +1053,7 @@ export abstract class IModelDb extends IModel {
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
-      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(baseClass, true, func, includeCustom));
   }
 
   /** @internal */
