@@ -144,6 +144,27 @@ describe("RenderMaterialElement", () => {
       test({ patternMap }, { Map: { Pattern: patternMap } });
     });
 
+    it("pattern map with constant lod parameters", () => {
+      const patternMap: TextureMapProps = {
+        TextureId: insertTexture(),
+        pattern_angle: 1,
+        pattern_u_flip: true,
+        pattern_flip: true,
+        pattern_scale: [-1, 2],
+        pattern_offset: [-2, 1],
+        pattern_scalemode: 3,
+        pattern_mapping: 4,
+        pattern_weight: 0.5,
+        pattern_useConstantLod: true,
+        pattern_constantlod_repetitions: 0.333,
+        pattern_constantlod_offset: [1000, 2000],
+        pattern_constantlod_mindistanceclamp: 4,
+        pattern_constantlod_maxdistanceclamp: 256,
+      };
+
+      test({ patternMap }, { Map: { Pattern: patternMap } });
+    });
+
     it("normal and pattern maps with default values", () => {
       const normalId = insertTexture();
       const patternId = insertTexture();

@@ -62,6 +62,16 @@ export interface TextureMapProps {
   pattern_mapping?: TextureMapping.Mode;
   /** Weight at which to combine diffuse image and color; if undefined, defaults to 1.0 */
   pattern_weight?: number;
+  /** If true, override the mapping mode with constant LOD mapping for the normal map. */
+  pattern_useConstantLod?: boolean;
+  /** The number of times the texture is repeated if pattern_useConstantLod is true.  Increasing this will make the texture pattern appear smaller, decreasing it will make it larger. */
+  pattern_constantlod_repetitions?: number;
+  /** An offset in world units used to shift the texture when pattern_useConstantLod is true. */
+  pattern_constantlod_offset?: Point2dProps;
+  /** The minimum distance (from the eye to the surface) at which to clamp the texture size when pattern_useConstantLod is true. */
+  pattern_constantlod_mindistanceclamp?: number;
+  /** The maximum distance (from the eye to the surface) at which to clamp the texture size when pattern_useConstantLod is true. */
+  pattern_constantlod_maxdistanceclamp?: number;
   /** The Id of the persistent [Texture]($backend) element defining the texture image. */
   TextureId: Id64String;
 }
@@ -76,6 +86,8 @@ export enum NormalMapFlags {
    * be negated. By default it points downward.
    */
   GreenUp = 1 << 0,
+  /** If true, override the mapping mode with constant LOD mapping for the normal map. */
+  UseConstantLod = 1 << 1,
 }
 
 /** Describes how to apply [normal mapping](https://en.wikipedia.org/wiki/Normal_mapping) to a surface material.
