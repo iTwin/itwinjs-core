@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 12 Apr 2023 13:12:42 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Apr 2023 13:19:29 GMT and should not be manually modified.
+
+## 3.7.3
+Thu, 20 Apr 2023 13:19:29 GMT
+
+### Updates
+
+- Fixed inconsistent point sizes for additive point cloud tiles.
+- added return of rtcCenter to readPointCloudTileContent
 
 ## 3.7.2
 Wed, 12 Apr 2023 13:12:42 GMT

@@ -2,6 +2,18 @@
   "name": "@itwin/appui-react",
   "entries": [
     {
+      "version": "3.7.3",
+      "tag": "@itwin/appui-react_v3.7.3",
+      "date": "Thu, 20 Apr 2023 13:19:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix stale options of SelectionScopeField."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.7.2",
       "tag": "@itwin/appui-react_v3.7.2",
       "date": "Wed, 12 Apr 2023 13:12:42 GMT",
