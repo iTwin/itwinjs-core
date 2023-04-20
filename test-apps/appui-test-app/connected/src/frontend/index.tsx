@@ -460,14 +460,17 @@ export class SampleAppIModelApp {
         return;
 
       let iModel;
-      for await (const imodel of SampleAppIModelApp.hubClient.iModels.getRepresentationList({
-        urlParams: {
-          name: iModelName,
-          projectId: iTwin.id,
-          $top: 1,
-        },
-        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
-      }))
+      for await (const imodel of SampleAppIModelApp.hubClient.iModels.getRepresentationList(
+        {
+          urlParams: {
+            name: iModelName,
+            iTwinId: iTwin.id,
+            $top: 1,
+          },
+          authorization:
+            AccessTokenAdapter.toAuthorizationCallback(accessToken),
+        }
+      ))
         iModel = imodel;
 
       if (!iModel)
