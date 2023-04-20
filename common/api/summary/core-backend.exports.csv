@@ -43,12 +43,6 @@ beta;CloudSqlite
 internal;LockAndOpenArgs
 internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
-alpha;CodeIndex
-alpha;CodesDb
-alpha;CodeService
-alpha;CodeService
-internal;BisCodeSpecIndexProps
-internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
@@ -229,7 +223,6 @@ public;InformationRecordPartition
 public;class InformationReferenceElement 
 internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
-internal;InternalCodes 
 public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
