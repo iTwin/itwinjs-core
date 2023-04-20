@@ -2723,8 +2723,8 @@ importers:
       mocha-junit-reporter: ^2.0.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
-      typedoc: ^0.22.11
-      typedoc-plugin-merge-modules: ^3.0.2
+      typedoc: ^0.23.28
+      typedoc-plugin-merge-modules: ^4.0.1
       typescript: ~5.0.2
       wtfnode: ^0.9.1
       yargs: ^17.4.0
@@ -2739,8 +2739,8 @@ importers:
       mocha-junit-reporter: 2.2.0_mocha@10.2.0
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      typedoc: 0.22.18
-      typedoc-plugin-merge-modules: 3.1.0_typedoc@0.22.18
+      typedoc: 0.23.28
+      typedoc-plugin-merge-modules: 4.0.1_typedoc@0.23.28
       typescript: 5.0.2
       wtfnode: 0.9.1
       yargs: 17.7.1
@@ -7830,6 +7830,10 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
+  /ansi-sequence-parser/1.1.0:
+    resolution: {integrity: sha512-lEm8mt52to2fT8GhciPCGeCXACSz2UwIN4X2e2LJSnZ5uAbn2/dsYdOmUXq0AtWS5cpAupysIneExOgH0Vd2TQ==}
+    dev: false
+
   /ansi-styles/2.2.1:
     resolution: {integrity: sha512-kmCevFghRiWM7HB5zTPULl4r9bVFSWjz62MhqizDGUrq2NWuNMQyuv4tHHoKJHs69M/MF64lEcHdYIocrdWQYA==}
     engines: {node: '>=0.10.0'}
@@ -11541,17 +11545,6 @@ packages:
       once: 1.4.0
       path-is-absolute: 1.0.1
 
-  /glob/8.1.0:
-    resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
-    engines: {node: '>=12'}
-    dependencies:
-      fs.realpath: 1.0.0
-      inflight: 1.0.6
-      inherits: 2.0.4
-      minimatch: 5.1.6
-      once: 1.4.0
-    dev: false
-
   /glob/9.3.0:
     resolution: {integrity: sha512-EAZejC7JvnQINayvB/7BJbpZpNOJ8Lrw2OZNEvQxe0vaLn1SuwMcfV7/MNaX8L/T0wmptBFI4YMtDvSBxYDc7w==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -14114,13 +14107,13 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
+    dev: true
 
   /minimatch/7.4.2:
     resolution: {integrity: sha512-xy4q7wou3vUoC9k1xGTXc+awNdGaGVHtFUaey8tiX4H1QRc04DZ/rmDFwNm2EBsuYEhAZ6SgMmYf3InGY6OauA==}
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
-    dev: true
 
   /minimist/1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
@@ -16967,12 +16960,13 @@ packages:
   /shell-quote/1.8.0:
     resolution: {integrity: sha512-QHsz8GgQIGKlRi24yFc6a6lN69Idnx634w49ay6+jA5yFh7a1UY+4Rp6HPx/L/1zcEDPEij8cIsiqR6bQsE5VQ==}
 
-  /shiki/0.10.1:
-    resolution: {integrity: sha512-VsY7QJVzU51j5o1+DguUd+6vmCmZ5v/6gYu4vyYAhzjuNQU6P/vmSy4uQaOhvje031qQMiW0d2BwgMH52vqMng==}
+  /shiki/0.14.1:
+    resolution: {integrity: sha512-+Jz4nBkCBe0mEDqo1eKRcCdjRtrCjozmcbTUjbPTX7OOJfEbTZzlUWlZtGe3Gb5oV1/jnojhG//YZc3rs9zSEw==}
     dependencies:
+      ansi-sequence-parser: 1.1.0
       jsonc-parser: 3.2.0
       vscode-oniguruma: 1.7.0
-      vscode-textmate: 5.2.0
+      vscode-textmate: 8.0.0
     dev: false
 
   /side-channel/1.0.4:
@@ -18194,24 +18188,23 @@ packages:
     dependencies:
       is-typedarray: 1.0.0
 
-  /typedoc-plugin-merge-modules/3.1.0_typedoc@0.22.18:
-    resolution: {integrity: sha512-DAHDZD+KG3mRm+hJFAMh/pO98CQ3W/BFA81FzWpc1kos66mLRIa7QVO30yBREkZNZMsTA7fgGEjEN2GO2cgi3A==}
+  /typedoc-plugin-merge-modules/4.0.1_typedoc@0.23.28:
+    resolution: {integrity: sha512-peuoWT/xcpEO71kNuaTBAS2IVwc8qm5tiIXnJc0vW/Cy9HHoVGkYecarkwtLBl5VmrhZjZN6LQNriqYfgHA1+A==}
     peerDependencies:
-      typedoc: 0.21.x || 0.22.x
+      typedoc: 0.23.x
     dependencies:
-      typedoc: 0.22.18
+      typedoc: 0.23.28
     dev: false
 
-  /typedoc/0.22.18:
-    resolution: {integrity: sha512-NK9RlLhRUGMvc6Rw5USEYgT4DVAUFk7IF7Q6MYfpJ88KnTZP7EneEa4RcP+tX1auAcz7QT1Iy0bUSZBYYHdoyA==}
-    engines: {node: '>= 12.10.0'}
+  /typedoc/0.23.28:
+    resolution: {integrity: sha512-9x1+hZWTHEQcGoP7qFmlo4unUoVJLB0H/8vfO/7wqTnZxg4kPuji9y3uRzEu0ZKez63OJAUmiGhUrtukC6Uj3w==}
+    engines: {node: '>= 14.14'}
     hasBin: true
     dependencies:
-      glob: 8.1.0
       lunr: 2.3.9
       marked: 4.2.12
-      minimatch: 5.1.6
-      shiki: 0.10.1
+      minimatch: 7.4.2
+      shiki: 0.14.1
       typescript: 4.7.4
     dev: false
 
@@ -18492,8 +18485,8 @@ packages:
     resolution: {integrity: sha512-L9WMGRfrjOhgHSdOYgCt/yRMsXzLDJSL7BPrOZt73gU0iWO4mpqzqQzOz5srxqTvMBaR0XZTSrVWo4j55Rc6cA==}
     dev: false
 
-  /vscode-textmate/5.2.0:
-    resolution: {integrity: sha512-Uw5ooOQxRASHgu6C7GVvUxisKXfSgW4oFlO+aa+PAkgmH89O3CXxEEzNRNtHSqtXFTl0nAC1uYj0GMSH27uwtQ==}
+  /vscode-textmate/8.0.0:
+    resolution: {integrity: sha512-AFbieoL7a5LMqcnOF04ji+rpXadgOXnZsxQr//r83kLPr7biP7am3g9zbaZIaBGwBRWeSvoMD4mgPdX3e4NWBg==}
     dev: false
 
   /w3c-hr-time/1.0.2:
