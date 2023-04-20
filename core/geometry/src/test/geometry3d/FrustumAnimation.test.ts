@@ -17,7 +17,6 @@ import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 /**
  * create a linestring that walks around all the edges (and some decoration) for a frustum defined by corners.
  * @param corners

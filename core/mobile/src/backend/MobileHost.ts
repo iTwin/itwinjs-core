@@ -5,13 +5,9 @@
 
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import {
-  IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
+import { IpcWebSocketBackend, RpcInterfaceDefinition } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { ProgressCallback } from "./Request";
-import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
@@ -204,12 +200,7 @@ export class MobileHost {
     if (IpcHost.isValid)
       MobileAppHandler.register();
 
-    const rpcInterfaces = opt?.mobileHost?.rpcInterfaces ?? [
-      IModelReadRpcInterface,
-      IModelTileRpcInterface,
-      SnapshotIModelRpcInterface,
-      PresentationRpcInterface,
-    ];
+    const rpcInterfaces = opt?.mobileHost?.rpcInterfaces ?? [];
 
     MobileRpcManager.initializeImpl(rpcInterfaces);
   }

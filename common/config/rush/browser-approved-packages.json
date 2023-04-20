@@ -171,10 +171,6 @@
       "allowedCategories": [ "backend", "frontend" ]
     },
     {
-      "name": "@itwin/core-transformer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/core-webpack-tools",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -232,6 +228,10 @@
     },
     {
       "name": "@itwin/hypermodeling-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/imodel-transformer",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -691,6 +691,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "sanitize-filename",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "semver",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
@@ -776,7 +780,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "wms-capabilities",

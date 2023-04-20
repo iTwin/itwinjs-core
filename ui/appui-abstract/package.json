@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "4.0.0-dev.56",
+  "version": "4.0.0-dev.81",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -8,11 +8,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/ui/appui-abstract"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "ui/appui-abstract"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
@@ -36,7 +36,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.56"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.81"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -59,7 +59,7 @@
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "cpx2": "^3.0.0",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",

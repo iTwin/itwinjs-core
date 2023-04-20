@@ -1,17 +1,11 @@
 sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
-beta;AliCloudStorageService 
-deprecated;AliCloudStorageService 
-beta;AliCloudStorageServiceCredentials
-deprecated;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
-beta;AzureBlobStorage 
-deprecated;AzureBlobStorage 
 beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
@@ -49,18 +43,6 @@ beta;CloudSqlite
 internal;LockAndOpenArgs
 internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
-beta;class CloudStorageService
-deprecated;class CloudStorageService
-beta;CloudStorageTileUploader
-deprecated;CloudStorageTileUploader
-beta;CloudStorageUploadOptions
-deprecated;CloudStorageUploadOptions
-alpha;CodeIndex
-alpha;CodesDb
-alpha;CodeService
-alpha;CodeService
-internal;BisCodeSpecIndexProps
-internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
@@ -241,7 +223,6 @@ public;InformationRecordPartition
 public;class InformationReferenceElement 
 internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
-internal;InternalCodes 
 public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
@@ -388,6 +369,7 @@ public;TextAnnotation3d
 public;Texture 
 internal;TextureCreateProps 
 internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
+beta;TileStorage
 public;TitleText 
 public;ToChangesetArgs 
 public;TokenArg

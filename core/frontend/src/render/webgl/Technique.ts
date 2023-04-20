@@ -39,7 +39,7 @@ import {
   addColorOverrideMix, createClassifierRealityMeshHiliter, createRealityMeshBuilder, createRealityMeshHiliter,
 } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
-import { createSkySphereProgram } from "./glsl/SkySphere";
+import { createSkySphereBuilder } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
@@ -49,6 +49,7 @@ import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderPro
 import { System } from "./System";
 import { Target } from "./Target";
 import {
+  EnableAtmosphere,
   FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, IsWiremesh, PositionType, TechniqueFlags,
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
@@ -652,7 +653,7 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class RealityMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 98;
+  private static readonly _numVariants = 194;
 
   public constructor(gl: WebGL2RenderingContext) {
     super(RealityMeshTechnique._numVariants);
@@ -668,21 +669,24 @@ class RealityMeshTechnique extends VariedTechnique {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
-              const flags = scratchTechniqueFlags;
-              for (const featureMode of featureModes) {
-                flags.reset(featureMode, IsInstanced.No, shadowable, thematic, "quantized");
-                flags.isClassified = iClassified;
-                flags.isWiremesh = wiremesh;
-                flags.isTranslucent = 1 === iTranslucent;
-                const builder = createRealityMeshBuilder(flags);
+              for (let enableAtmosphere = EnableAtmosphere.No; enableAtmosphere <= EnableAtmosphere.Yes; enableAtmosphere++) {
+                const flags = scratchTechniqueFlags;
+                for (const featureMode of featureModes) {
+                  flags.reset(featureMode, IsInstanced.No, shadowable, thematic, "quantized");
+                  flags.isClassified = iClassified;
+                  flags.isWiremesh = wiremesh;
+                  flags.isTranslucent = 1 === iTranslucent;
+                  flags.enableAtmosphere = enableAtmosphere;
+                  const builder = createRealityMeshBuilder(flags);
 
-                if (flags.isTranslucent) {
-                  addShaderFlags(builder);
-                  addTranslucency(builder);
-                } else
-                  this.addFeatureId(builder, featureMode);
+                  if (flags.isTranslucent) {
+                    addShaderFlags(builder);
+                    addTranslucency(builder);
+                  } else
+                    this.addFeatureId(builder, featureMode);
 
-                this.addShader(builder, flags, gl);
+                  this.addShader(builder, flags, gl);
+                }
               }
             }
           }
@@ -712,7 +716,129 @@ class RealityMeshTechnique extends VariedTechnique {
       ndx += 24;
     if (flags.isWiremesh)
       ndx += 48;
+    if (flags.enableAtmosphere)
+      ndx += 96;
     return ndx;
+  }
+}
+
+/**
+ * More generalized version of VariedTechnique, without assuming usage of clipping, logDepth, eyeSpace, etc.
+ * Similar to SingularTechnique in its simplicity, but with support for multiple shader programs per technique.
+ */
+abstract class MultipleTechnique implements Technique {
+  private readonly _programs: ShaderProgram[] = [];
+
+  private _isDisposed = false;
+  public get isDisposed(): boolean { return this._isDisposed; }
+
+  public constructor(numPrograms: number) {
+    this._programs.length = numPrograms;
+  }
+
+  protected abstract computeShaderIndex(flags: TechniqueFlags): number;
+
+  private getShaderIndex(flags: TechniqueFlags) {
+    assert(!flags.isHilite || (!flags.isTranslucent && (flags.isClassified === IsClassified.Yes || flags.hasFeatures)), "invalid technique flags");
+    const index = this.computeShaderIndex(flags);
+    assert(index < this._programs.length, "shader index out of bounds");
+    return index;
+  }
+
+  public getShader(flags: TechniqueFlags): ShaderProgram {
+    const index = this.getShaderIndex(flags);
+    let program: ShaderProgram | undefined;
+
+    if (program === undefined)
+      program = this._programs[index];
+
+    return program;
+  }
+
+  public getShaderByIndex(index: number): ShaderProgram {
+    return this._programs[index];
+  }
+
+  public getShaderCount() {
+    return this._programs.length;
+  }
+
+  public compileShaders(): boolean {
+    let allCompiled = true;
+    for (const program of this._programs) {
+      if (program.compile() !== CompileStatus.Success)
+        allCompiled = false;
+    }
+
+    return allCompiled;
+  }
+
+  public dispose(): void {
+    if (this._isDisposed)
+      return;
+
+    for (const program of this._programs) {
+      assert(undefined !== program);
+      dispose(program);
+    }
+    this._programs.length = 0;
+    this._isDisposed = true;
+  }
+
+  protected abstract get _debugDescription(): string;
+
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGL2RenderingContext): void {
+    const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
+    builder.setDebugDescription(descr);
+
+    const index = this.getShaderIndex(flags);
+    this.addProgram(builder, index, gl);
+
+    assert(!builder.frag.requiresEarlyZWorkaround);
+  }
+
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGL2RenderingContext): void {
+    assert(this._programs[index] === undefined);
+    this._programs[index] = builder.buildProgram(gl);
+    assert(this._programs[index] !== undefined);
+  }
+
+  protected finishConstruction(): void {
+    // Confirm no empty entries in our array.
+    let emptyShaderIndex = -1;
+    assert(-1 === (emptyShaderIndex = this._programs.findIndex((prog) => undefined === prog)), `Shader index ${emptyShaderIndex} is undefined in ${this.constructor.name}`);
+  }
+}
+
+class SkySphereTechnique extends MultipleTechnique {
+  private static readonly _numVariants = 2; // one binary flag (2 ** 1)
+  private readonly _isGradient: boolean;
+
+  public constructor(gl: WebGL2RenderingContext, isGradient: boolean) {
+    super(SkySphereTechnique._numVariants);
+    this._isGradient = isGradient;
+
+    for (let enableAtmosphere = EnableAtmosphere.No; enableAtmosphere <= EnableAtmosphere.Yes; enableAtmosphere++) {
+      const tempFlags = scratchTechniqueFlags;
+
+      tempFlags.reset(FeatureMode.None, IsInstanced.No, IsShadowable.No, IsThematic.No, "quantized");
+      tempFlags.enableAtmosphere = enableAtmosphere;
+      const builder = createSkySphereBuilder(isGradient, tempFlags);
+
+      this.addShader(builder, tempFlags, gl);
+    }
+
+    this.finishConstruction();
+  }
+
+  protected get _debugDescription() { return `SkySphere-${this._isGradient ? "Gradient" : "Texture"}`; }
+
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    let index = 0;
+    if (flags.enableAtmosphere)
+      index += 1 << 0;
+
+    return index;
   }
 }
 
@@ -935,8 +1061,8 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
     this._list[TechniqueId.EVSMFromDepth] = new SingularTechnique(createEVSMProgram(gl));
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
-    this._list[TechniqueId.SkySphereGradient] = new SingularTechnique(createSkySphereProgram(gl, true));
-    this._list[TechniqueId.SkySphereTexture] = new SingularTechnique(createSkySphereProgram(gl, false));
+    this._list[TechniqueId.SkySphereGradient] = new SkySphereTechnique(gl, true);
+    this._list[TechniqueId.SkySphereTexture] = new SkySphereTechnique(gl, false);
     this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
     this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl, BlurType.NoTest));
     this._list[TechniqueId.BlurTestOrder] = new SingularTechnique(createBlurProgram(gl, BlurType.TestOrder));

@@ -3,23 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-duplicate-imports */
 import * as geometry from "../../core-geometry";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-// import { LineSegment3d } from "../curve/LineSegment3d";
-// import { GeometryQuery } from "../curve/CurvePrimitive";
-// import { LineString3d } from "../curve/LineString3d";
-// import { Arc3d } from "../curve/Arc3d";
-// import { BSplineCurve3d } from "../bspline/BSplineCurve";
-// import { AngleSweep } from "../Geometry";
-// import { Loop, Path, ParityRegion } from "../curve/CurveChain";
-
-/* eslint-disable no-console */
 const emitToConsole = false;
 // In geometry source tests, convert to string and emit to console.
 // In browser or other playpen, implement this function appropriately.
@@ -42,7 +33,7 @@ function emit(...data: any[]) {
         }
       }
     }
-    console.log(stringData);
+    GeometryCoreTestIO.consoleLog(stringData);
   }
 }
 // Typical snippets for sandbox windows . . . . These assume that

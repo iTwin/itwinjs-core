@@ -542,8 +542,7 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
+    for await (const row of this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params)) {
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
@@ -568,8 +567,7 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -654,9 +652,8 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-        result.push(row);
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
       // We can ignore the error here, and just return whatever we were able to query.
@@ -1037,7 +1034,18 @@ export abstract class IModelDb extends IModel {
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
-    const meta = iModel.getMetaData(classFullName); // will load if necessary
+    iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
+  }
+
+  /** Invoke a callback on each property of the specified class, optionally including superclass properties.
+   * @param classFullName The full class name to load the metadata, if necessary
+   * @param wantSuper If true, superclass properties will also be processed
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   */
+  public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+    const meta = this.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
       if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
@@ -1045,7 +1053,7 @@ export abstract class IModelDb extends IModel {
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
-      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(baseClass, true, func, includeCustom));
   }
 
   /** @internal */

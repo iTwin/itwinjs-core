@@ -36,7 +36,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RFunctions } from "../polyface/DrapeLinestring.test";
 
-/* eslint-disable no-console */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
     const ck = new Checker();
@@ -361,7 +360,7 @@ describe("PolyfaceClip", () => {
     let y0 = 0;
 
     // create 2 disconnected boxes, separated in z direction
-    const boxRange = new Range3d(-targetSize/2, -targetSize/2, 0, targetSize/2, targetSize/2, targetSize);
+    const boxRange = new Range3d(-targetSize / 2, -targetSize / 2, 0, targetSize / 2, targetSize / 2, targetSize);
     let box = Box.createRange(boxRange, true);
     if (ck.testDefined(box))
       builder.addBox(box!);
@@ -373,7 +372,7 @@ describe("PolyfaceClip", () => {
     targetMeshes.push(builder.claimPolyface(true));
 
     // create a star-shaped linear sweep
-    const xyStar = Sample.createStar(0, -1.4, 0, targetSize/1.5, 1, 6, true);
+    const xyStar = Sample.createStar(0, -1.4, 0, targetSize / 1.5, 1, 6, true);
     const sweep = LinearSweep.createZSweep(xyStar, 0, targetSize, true)!;
     options = StrokeOptions.createForFacets();
     options.maxEdgeLength = 2.0;
@@ -384,7 +383,7 @@ describe("PolyfaceClip", () => {
     // create two xz-planes for clipping
     const clipPlanes: ClipPlane[] = [];
     clipPlanes.push(ClipPlane.createPlane(Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.unitY())!));
-    clipPlanes.push(ClipPlane.createPlane(Plane3dByOriginAndUnitNormal.create(Point3d.create(0,1,0), Vector3d.create(0,-1,0))!));
+    clipPlanes.push(ClipPlane.createPlane(Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 1, 0), Vector3d.create(0, -1, 0))!));
 
     for (const targetMesh of targetMeshes) {
       if (ck.testDefined(targetMesh) && ck.testFalse(targetMesh.isEmpty)) {
@@ -402,8 +401,8 @@ describe("PolyfaceClip", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedTarget, x0, y0);
           x0 += 2 * targetSize;
         }
-      x0 = 0;
-      y0 += 3 * targetSize;
+        x0 = 0;
+        y0 += 3 * targetSize;
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DisconnectedClips");
@@ -831,7 +830,7 @@ describe("PolyfaceClip", () => {
       const boundaries = PolyfaceQuery.boundaryEdges(meshA, true, true, true);
       const range = meshA.range();
       const rv = raggedVolume(meshA);
-      console.log("Volume estimate", rv);
+      GeometryCoreTestIO.consoleLog("Volume estimate", rv);
 
       const dz = range.zLength() * 2.0;
       const dzFront = 4 * dz;

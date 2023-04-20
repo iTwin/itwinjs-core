@@ -38,9 +38,6 @@ import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
 import { ClipVector } from '@itwin/core-geometry';
-import { CloudStorageContainerDescriptor } from '@itwin/core-common';
-import { CloudStorageContainerUrl } from '@itwin/core-common';
-import { CloudStorageProvider } from '@itwin/core-common';
 import { Code } from '@itwin/core-common';
 import { CodeProps } from '@itwin/core-common';
 import { CodeScopeProps } from '@itwin/core-common';
@@ -113,7 +110,6 @@ import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelError } from '@itwin/core-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
-import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
@@ -123,6 +119,7 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { IpcWebSocketBackend } from '@itwin/core-common';
 import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
@@ -171,7 +168,6 @@ import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
-import { Readable } from 'stream';
 import { RelatedElement } from '@itwin/core-common';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
@@ -240,29 +236,6 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
 }
 
-// @beta @deprecated (undocumented)
-export class AliCloudStorageService extends CloudStorageService {
-    constructor(credentials: AliCloudStorageServiceCredentials);
-    // (undocumented)
-    id: CloudStorageProvider;
-    // (undocumented)
-    listContainer(name: string, marker: string, count: number): Promise<string[]>;
-    // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl;
-    // (undocumented)
-    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
-}
-
-// @beta @deprecated (undocumented)
-export interface AliCloudStorageServiceCredentials {
-    // (undocumented)
-    accessKeyId: string;
-    // (undocumented)
-    accessKeySecret: string;
-    // (undocumented)
-    region: string;
-}
-
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
@@ -315,19 +288,6 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-}
-
-// @beta @deprecated (undocumented)
-export class AzureBlobStorage extends CloudStorageService {
-    constructor(credentials: AzureBlobStorageCredentials);
-    // (undocumented)
-    ensureContainer(name: string): Promise<void>;
-    // (undocumented)
-    readonly id = CloudStorageProvider.Azure;
-    // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
-    // (undocumented)
-    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
 // @beta (undocumented)
@@ -927,237 +887,6 @@ export namespace CloudSqlite {
     export function uploadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
     export function withWriteLock<T>(user: string, container: CloudContainer, operation: () => T, busyHandler?: WriteLockBusyHandler): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
-}
-
-// @beta @deprecated (undocumented)
-export abstract class CloudStorageService {
-    // (undocumented)
-    download(_name: string): Promise<Readable | undefined>;
-    // (undocumented)
-    abstract id: CloudStorageProvider;
-    // (undocumented)
-    initialize(): void;
-    // (undocumented)
-    protected makeDescriptor(id: CloudStorageContainerDescriptor): {
-        name: string;
-        provider: CloudStorageProvider;
-    };
-    // (undocumented)
-    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
-    // (undocumented)
-    terminate(): void;
-    // (undocumented)
-    abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
-}
-
-// @beta @deprecated (undocumented)
-export class CloudStorageTileUploader {
-    // (undocumented)
-    get activeUploads(): Iterable<Promise<void>>;
-    // (undocumented)
-    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageUploadOptions {
-    // (undocumented)
-    cacheControl?: string;
-    // (undocumented)
-    contentEncoding?: "gzip";
-    // (undocumented)
-    type?: string;
-}
-
-// @alpha
-export interface CodeIndex {
-    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
-    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
-    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
-    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
-    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
-    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
-    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
-    isCodePresent(guid: CodeService.CodeGuid): boolean;
-}
-
-// @alpha (undocumented)
-export interface CodesDb {
-    addAllCodes(iModel: IModelDb): Promise<number>;
-    addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
-    readonly codeIndex: CodeIndex;
-    deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
-    readonly lockParams: CloudSqlite.ObtainLockParams;
-    reserveCode(code: CodeService.ProposedCode): Promise<void>;
-    reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
-    reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
-    reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
-    sasToken: AccessToken;
-    synchronizeWithCloud(): void;
-    updateCode(props: CodeService.UpdatedCode): Promise<void>;
-    updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
-    verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
-}
-
-// @alpha
-export interface CodeService {
-    readonly appParams: CodeService.AuthorAndOrigin;
-    // @internal (undocumented)
-    close: () => void;
-    readonly externalCodes?: CodesDb;
-    // (undocumented)
-    initialize(iModel: IModelDb): Promise<void>;
-    // @internal
-    readonly internalCodes?: InternalCodes;
-    verifyCode(props: CodeService.ElementCodeProps): void;
-}
-
-// @alpha (undocumented)
-export namespace CodeService {
-    let // @internal (undocumented)
-    createForIModel: ((db: IModelDb) => Promise<CodeService>) | undefined;
-    export interface AuthorAndOrigin {
-        readonly author: Mutable<NameAndJson>;
-        readonly origin: Mutable<NameAndJson>;
-    }
-    export type AuthorName = string;
-    // @internal (undocumented)
-    export interface BisCodeSpecIndexProps {
-        // (undocumented)
-        id?: number;
-        // (undocumented)
-        name: string;
-        // (undocumented)
-        props: string;
-    }
-    export interface CodeEntry {
-        readonly author?: AuthorName;
-        readonly guid: CodeGuid;
-        readonly json?: SettingObject;
-        readonly origin: CodeOriginName;
-        readonly scopeGuid: ScopeGuid;
-        readonly specName: CodeSpecName;
-        readonly state?: CodeState;
-        readonly value: CodeValue;
-    }
-    export interface CodeFilter extends ValueFilter {
-        readonly origin?: CodeOriginName;
-        readonly scopeGuid?: ScopeGuid;
-        readonly specName?: CodeSpecName;
-    }
-    export type CodeGuid = GuidString;
-    export interface CodeGuidStateJson {
-        readonly guid: CodeGuid;
-        readonly json?: SettingObject;
-        readonly state?: CodeState;
-    }
-    export type CodeIteration = (guid: GuidString) => IterationReturn;
-    export type CodeOriginName = string;
-    export interface CodeSequence {
-        getFirstValue(): CodeValue;
-        getLastValue(): CodeValue;
-        getNextValue(code: CodeValue): CodeValue;
-        isValidCode(code: CodeValue): boolean;
-        get sequenceName(): string;
-    }
-    export type CodeSpecName = string;
-    export type CodeState = number;
-    export type CodeValue = string;
-    export interface ElementCodeProps {
-        readonly iModel: IModelDb;
-        readonly props: {
-            readonly code: CodeProps;
-            federationGuid?: GuidString;
-        };
-    }
-    export class Error extends BentleyError {
-        // @internal
-        constructor(errorId: ErrorId, errNum: number, message: string, problems?: ReserveProblem[] | UpdateProblem[]);
-        readonly errorId: ErrorId;
-        readonly problems?: ReserveProblem[] | UpdateProblem[];
-    }
-    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "InconsistentIModels" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
-    // @internal (undocumented)
-    export interface FontIndexProps {
-        // (undocumented)
-        fontName: string;
-        // (undocumented)
-        fontType: FontType;
-        // (undocumented)
-        id?: number;
-    }
-    export function getSequence(name: string): CodeSequence;
-    export type IterationReturn = void | "stop";
-    export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode;
-    export interface MakeProposedCodeArgs {
-        // (undocumented)
-        readonly code: Required<CodeProps>;
-        // (undocumented)
-        readonly iModel: IModelDb;
-        // (undocumented)
-        readonly props: CodeService.CodeGuidStateJson;
-    }
-    export function makeScopeAndSpec(iModel: IModelDb, code: CodeProps): CodeService.ScopeAndSpec;
-    export interface NameAndJson {
-        // (undocumented)
-        readonly json?: SettingObject;
-        // (undocumented)
-        readonly name: string;
-    }
-    export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
-    export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
-    export interface ProposedCodeProps extends CodeGuidStateJson {
-        value?: CodeValue;
-    }
-    export function registerSequence(seq: CodeSequence): void;
-    export interface ReserveCodesArgs {
-        readonly allOrNothing?: true;
-        readonly codes: CodeService.ProposedCode[];
-    }
-    export interface ReserveNextArgs {
-        readonly code: CodeService.ProposedCodeProps;
-        readonly from: SequenceScope;
-    }
-    export interface ReserveNextArrayArgs {
-        readonly asManyAsPossible?: true;
-        readonly codes: CodeService.ProposedCodeProps[];
-        readonly from: CodeService.SequenceScope;
-    }
-    export interface ReserveProblem {
-        readonly code: ProposedCode;
-        readonly errorId: ErrorId;
-        readonly message: string;
-    }
-    export interface ScopeAndSpec {
-        // (undocumented)
-        readonly scopeGuid: ScopeGuid;
-        // (undocumented)
-        readonly specName: CodeSpecName;
-    }
-    export type ScopeGuid = GuidString;
-    export interface ScopeSpecAndValue extends ScopeAndSpec {
-        // (undocumented)
-        readonly value: CodeValue;
-    }
-    export interface SequenceScope extends ScopeAndSpec {
-        readonly seq: CodeSequence;
-        readonly start?: CodeValue;
-    }
-    export interface UpdateCodesArgs {
-        readonly allOrNothing?: true;
-        readonly props: CodeService.UpdatedCode[];
-    }
-    export type UpdatedCode = MarkRequired<Partial<ProposedCode>, "guid">;
-    export interface UpdateProblem {
-        readonly errorId: ErrorId;
-        readonly message: string;
-        readonly prop: UpdatedCode;
-    }
-    export interface ValueFilter {
-        readonly orderBy?: "ASC" | "DESC";
-        readonly sqlExpression?: string;
-        readonly value?: string;
-        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-    }
 }
 
 // @public
@@ -2874,6 +2603,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
@@ -3153,16 +2883,12 @@ export class IModelHost {
     static startup(options?: IModelHostOptions): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @internal @deprecated (undocumented)
-    static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal (undocumented)
     static tileStorage?: TileStorage;
     // @internal
     static get tileTreeRequestTimeout(): number;
-    // @internal @deprecated (undocumented)
-    static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
 }
@@ -3196,8 +2922,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta @deprecated (undocumented)
-    tileCacheService?: CloudStorageService;
     // @internal (undocumented)
     tileContentRequestTimeout: number;
     // @internal (undocumented)
@@ -3214,7 +2938,6 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
-    // @beta
     enableOpenTelemetry?: boolean;
     // @beta
     hubAccess?: BackendHubAccess;
@@ -3230,8 +2953,6 @@ export interface IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta @deprecated (undocumented)
-    tileCacheService?: CloudStorageService;
     // @beta
     tileCacheStorage?: ServerStorage;
     // @internal
@@ -3371,16 +3092,6 @@ export interface InstanceChange {
     opCode: ChangeOpCode;
     // (undocumented)
     summaryId: Id64String;
-}
-
-// @internal (undocumented)
-export interface InternalCodes extends CodesDb {
-    // (undocumented)
-    reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
-    // (undocumented)
-    reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
-    // (undocumented)
-    verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
 }
 
 // @public
@@ -3734,6 +3445,8 @@ export class LinkPartition extends InformationPartitionElement {
 export class LocalhostIpcHost {
     // (undocumented)
     static connect(connection: ws): void;
+    // (undocumented)
+    static socket: IpcWebSocketBackend;
     // (undocumented)
     static startup(opts?: {
         localhostIpcHost?: LocalhostIpcHostOpts;
@@ -5239,6 +4952,22 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 
 // @internal
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
+
+// @beta
+export class TileStorage {
+    constructor(storage: ServerStorage);
+    downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
+    getCachedTiles(iModelId: string): Promise<{
+        treeId: string;
+        contentId: string;
+        guid: string;
+    }[]>;
+    getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
+    initialize(iModelId: string): Promise<void>;
+    isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean>;
+    readonly storage: ServerStorage;
+    uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void>;
+}
 
 // @public
 export class TitleText extends DetailingSymbol {
