@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { JsonParser } from "../../Deserialization/JsonParser";
-import { FormatProps } from "../../Deserialization/JsonProps";
+import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
 import { ECObjectsError } from "../../Exception";
 import { Format } from "../../Metadata/Format";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
@@ -215,7 +215,7 @@ describe("Format", () => {
       testFormat = (schema as MutableSchema).createFormatSync("TestFormat");
     });
 
-    const validPropsWithoutUnits: FormatProps = {
+    const validPropsWithoutUnits: SchemaItemFormatProps = {
       schemaItemType: "Format",
       label: "myfi4",
       description: "Some tests description",
@@ -259,7 +259,7 @@ describe("Format", () => {
       expect(testFormat.uomSeparator).eq("$");
     });
 
-    const invalidTypeAttributeValue: FormatProps = {
+    const invalidTypeAttributeValue: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "BadType",
     };
@@ -270,18 +270,18 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidTypeAttributeValue)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'type' attribute.`);
     });
 
-    const invalidPrecisionDecimal: FormatProps = {
+    const invalidPrecisionDecimal: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "decimal",
       precision: 13,
     };
-    const invalidPrecisionScientific: FormatProps = {
+    const invalidPrecisionScientific: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "scientific",
       scientificType: "normalized",
       precision: 30,
     };
-    const invalidPrecisionStation: FormatProps = {
+    const invalidPrecisionStation: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "station",
       stationOffsetSize: 3,
@@ -298,18 +298,18 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidPrecisionStation)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'precision' attribute.`);
     });
 
-    const validPrecisionDecimal: FormatProps = {
+    const validPrecisionDecimal: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "decimal",
       precision: 3,
     };
-    const validPrecisionScientific: FormatProps = {
+    const validPrecisionScientific: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "scientific",
       scientificType: "normalized",
       precision: 0,
     };
-    const validPrecisionStation: FormatProps = {
+    const validPrecisionStation: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "station",
       stationOffsetSize: 3,
@@ -341,7 +341,7 @@ describe("Format", () => {
       assert.strictEqual(testFormat.precision, 12);
     });
 
-    const invalidMinWidth: Mutable<FormatProps> = {
+    const invalidMinWidth: Mutable<SchemaItemFormatProps> = {
       schemaItemType: "Format",
       type: "Decimal",
       minWidth: 5.5,
@@ -360,7 +360,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidMinWidth)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'minWidth' attribute. It should be a positive integer.`);
     });
 
-    const missingScientificType: FormatProps = {
+    const missingScientificType: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "Scientific",
     };
@@ -371,7 +371,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(missingScientificType)).to.be.rejectedWith(QuantityError, `The Format TestFormat is 'Scientific' type therefore the attribute 'scientificType' is required.`);
     });
 
-    const invalidScientificType: FormatProps = {
+    const invalidScientificType: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "Scientific",
       scientificType: "badType",
@@ -383,7 +383,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidScientificType)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'scientificType' attribute.`);
     });
 
-    const missingStationOffsetSize: FormatProps = {
+    const missingStationOffsetSize: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "station",
     };
@@ -394,7 +394,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(missingStationOffsetSize)).to.be.rejectedWith(QuantityError, `The Format TestFormat is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
     });
 
-    const invalidStationOffsetSize: FormatProps = {
+    const invalidStationOffsetSize: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "station",
       stationOffsetSize: -1,
@@ -406,7 +406,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidStationOffsetSize)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'stationOffsetSize' attribute.`);
     });
 
-    const invalidShowSignOption: FormatProps = {
+    const invalidShowSignOption: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "decimal",
       showSignOption: "noSigned",
@@ -418,7 +418,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidShowSignOption)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'showSignOption' attribute.`);
     });
 
-    const invalidDecimalSeparator: FormatProps = {
+    const invalidDecimalSeparator: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "decimal",
       decimalSeparator: "badSeparator",
@@ -430,7 +430,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidDecimalSeparator)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
     });
 
-    const invalidThousandSeparator: FormatProps = {
+    const invalidThousandSeparator: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "decimal",
       thousandSeparator: "badSeparator",
@@ -442,7 +442,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidThousandSeparator)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`);
     });
 
-    const invalidUOMSeparator: FormatProps = {
+    const invalidUOMSeparator: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "decimal",
       uomSeparator: "badSeparator",
@@ -454,7 +454,7 @@ describe("Format", () => {
       await expect(testFormat.fromJSON(invalidUOMSeparator)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`);
     });
 
-    const invalidStationSeparator: FormatProps = {
+    const invalidStationSeparator: SchemaItemFormatProps = {
       schemaItemType: "Format",
       type: "decimal",
       stationSeparator: "badSeparator",
@@ -467,7 +467,7 @@ describe("Format", () => {
     });
 
     describe("format traits", () => {
-      const validEmptyFormatTraitSring: FormatProps = {
+      const validEmptyFormatTraitSring: SchemaItemFormatProps = {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: "",
@@ -481,7 +481,7 @@ describe("Format", () => {
         assert.isTrue(testFormat.hasFormatTrait(0x0));
       });
 
-      const validFormatTraitString: FormatProps = {
+      const validFormatTraitString: SchemaItemFormatProps = {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: "trailZeroes|keepSingleZero|zeroEmpty|keepDecimalPoint|applyRounding|fractionDash|showUnitLabel|prependUnitLabel|use1000Separator|exponentOnlyNegative",
@@ -514,7 +514,7 @@ describe("Format", () => {
       });
 
       // TODO: Consolidate this and above test to reduce code...
-      const validFormatTraitArray: FormatProps = {
+      const validFormatTraitArray: SchemaItemFormatProps = {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: [
@@ -557,7 +557,7 @@ describe("Format", () => {
         expect(testFormat.hasFormatTrait(FormatTraits.ExponentOnlyNegative)).true;
       });
 
-      const validFormatTraitSeparator: FormatProps = {
+      const validFormatTraitSeparator: SchemaItemFormatProps = {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: "trailZeroes;keepSingleZero|zeroEmpty,applyRounding",
@@ -577,7 +577,7 @@ describe("Format", () => {
         expect(testFormat.hasFormatTrait(FormatTraits.ApplyRounding)).true;
       });
 
-      const invalidSeparator: FormatProps = {
+      const invalidSeparator: SchemaItemFormatProps = {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: "applyRounding\fractionDash;showUnitLabel",
@@ -589,7 +589,7 @@ describe("Format", () => {
         await expect(testFormat.fromJSON(invalidSeparator)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'formatTraits' attribute.`);
       });
 
-      const invalidFormatTraitInString: FormatProps = {
+      const invalidFormatTraitInString: SchemaItemFormatProps = {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: "badTraits",
@@ -601,7 +601,7 @@ describe("Format", () => {
         await expect(testFormat.fromJSON(invalidFormatTraitInString)).to.be.rejectedWith(QuantityError, `The Format TestFormat has an invalid 'formatTraits' attribute.`);
       });
 
-      const invalidFormatTraitInArray: FormatProps = {
+      const invalidFormatTraitInArray: SchemaItemFormatProps = {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: [

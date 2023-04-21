@@ -1439,6 +1439,19 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
 // @public
 export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 
+// @public
+export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
+    clone(): ConvexFacetLocationDetail;
+    copyContentsFrom(other: ConvexFacetLocationDetail): void;
+    static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail;
+    getBarycentricCoordinates(facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number[] | undefined;
+    getColor(facetColors?: number[], facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number | undefined;
+    getNormal(facetNormals?: IndexedXYZCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Vector3d | undefined;
+    getParam(facetParams?: IndexedXYCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Point2d | undefined;
+    invalidate(deep?: boolean): void;
+    get isConvex(): boolean;
+}
+
 // @internal
 export class ConvexPolygon2d {
     constructor(points: Point2d[] | undefined);
@@ -2001,6 +2014,43 @@ export class FacetFaceData {
     scaleDistances(distanceScale: number): void;
     setNull(): void;
     setParamDistanceRangeFromNewFaceData(polyface: IndexedPolyface, facetStart: number, facetEnd: number): boolean;
+}
+
+// @public
+export type FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean;
+
+// @public
+export class FacetIntersectOptions {
+    constructor();
+    acceptIntersection?: FacetIntersectCallback;
+    distanceTolerance: number;
+    needBarycentricCoordinates?: boolean;
+    needColor?: boolean;
+    needNormal?: boolean;
+    needParam?: boolean;
+    parameterTolerance: number;
+}
+
+// @public
+export interface FacetLocationDetail {
+    get a(): number;
+    get classify(): PolygonLocation;
+    clone(): FacetLocationDetail;
+    get closestEdge(): {
+        startVertexIndex: number;
+        edgeParam: number;
+    };
+    copyContentsFrom(other: FacetLocationDetail): void;
+    get edgeCount(): number;
+    get facetIndex(): number;
+    getBarycentricCoordinates(facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number[] | undefined;
+    getColor(facetColors?: number[], facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number | undefined;
+    getNormal(facetNormals?: IndexedXYZCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Vector3d | undefined;
+    getParam(facetParams?: IndexedXYCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Point2d | undefined;
+    get isConvex(): boolean;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
+    get point(): Point3d;
 }
 
 // @public
@@ -3803,6 +3853,33 @@ export type NodeFunction = (node: HalfEdge) => any;
 
 // @internal
 export type NodeToNumberFunction = (node: HalfEdge) => number;
+
+// @public
+export class NonConvexFacetLocationDetail implements FacetLocationDetail {
+    protected constructor(facetIndex?: number, edgeCount?: number, detail?: PolygonLocationDetail);
+    get a(): number;
+    get classify(): PolygonLocation;
+    clone(): NonConvexFacetLocationDetail;
+    get closestEdge(): {
+        startVertexIndex: number;
+        edgeParam: number;
+    };
+    copyContentsFrom(other: NonConvexFacetLocationDetail): void;
+    static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail;
+    // (undocumented)
+    protected _detail: PolygonLocationDetail;
+    get edgeCount(): number;
+    get facetIndex(): number;
+    getBarycentricCoordinates(): number[] | undefined;
+    getColor(): number | undefined;
+    getNormal(): Vector3d | undefined;
+    getParam(): Point2d | undefined;
+    invalidate(deep?: boolean): void;
+    get isConvex(): boolean;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
+    get point(): Point3d;
+}
 
 // @public
 export class NullGeometryHandler extends GeometryHandler {
@@ -5953,6 +6030,30 @@ export class TriangleLocationDetail {
     get isValid(): boolean;
     local: Point3d;
     world: Point3d;
+}
+
+// @public
+export class TriangularFacetLocationDetail implements FacetLocationDetail {
+    get a(): number;
+    get classify(): PolygonLocation;
+    clone(): TriangularFacetLocationDetail;
+    get closestEdge(): {
+        startVertexIndex: number;
+        edgeParam: number;
+    };
+    copyContentsFrom(other: TriangularFacetLocationDetail): void;
+    static create(facetIndex: number, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail;
+    get edgeCount(): number;
+    get facetIndex(): number;
+    getBarycentricCoordinates(): number[];
+    getColor(facetColors?: number[]): number | undefined;
+    getNormal(facetNormals?: IndexedXYZCollection): Vector3d | undefined;
+    getParam(facetParams?: IndexedXYCollection): Point2d | undefined;
+    invalidate(deep?: boolean): void;
+    get isConvex(): boolean;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
+    get point(): Point3d;
 }
 
 // @internal

@@ -303,6 +303,9 @@ export class CodeSpec {
 
   /** Will be true if the id of this CodeSpec is valid. */
   public get isValid(): boolean { return Id64.isValid(this.id); }
+  public get isExternal(): boolean {
+    return true === this.properties.scopeSpec.fGuidRequired;
+  }
 
   /** The scope type of this CodeSpec. */
   public get scopeType(): CodeScopeSpec.Type { return this.properties.scopeSpec.type; }

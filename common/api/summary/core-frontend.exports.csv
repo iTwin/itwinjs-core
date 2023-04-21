@@ -584,6 +584,7 @@ internal;Consumers
 internal;ConsumerType
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
+internal;RenderPlanEllipsoid
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams

@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey, UnitProps, UnitSystem } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaItemUnitProps, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableUnit } from "./Mutable/MutableUnit";
 
@@ -53,7 +53,7 @@ export class Units {
     return { itemKey: newUnit.key };
   }
 
-  public async createFromProps(schemaKey: SchemaKey, unitProps: UnitProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };

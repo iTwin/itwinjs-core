@@ -40,20 +40,16 @@ public;CheckpointProps
 public;ClassRegistry
 public;CloudContainerArgs
 beta;CloudSqlite
-internal;CloudPrefetch
 internal;LockAndOpenArgs
 internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
-alpha;CodeIndex
-alpha;CodeService
-alpha;CodeService
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
-alpha;CrashReportingConfig
-alpha;CrashReportingConfigNameValuePair
+internal;CrashReportingConfig
+internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
 public;CreateNewIModelProps 
 public;DefinitionContainer 
