@@ -152,6 +152,9 @@ export class OverrideFormat {
   }
 }
 
+/**
+ * @internal
+ */
 export function getFormatProps(format: Format | OverrideFormat): FormatProps {
   return OverrideFormat.isOverrideFormat(format) ? format.getFormatProps() : format.toJSON();
 }
