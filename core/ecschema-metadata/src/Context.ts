@@ -18,14 +18,16 @@ interface LoadingSchema {
   schema: Schema;
   loadSchemaPromise: DelayedPromise<Schema>;
 }
+
 /**
  * @alpha
  */
-export class LoadedSchemas extends Array<Schema> { }
+class LoadedSchemas extends Array<Schema> { }
+
 /**
  * @alpha
  */
-export class LoadingSchemas extends Array<LoadingSchema> { }
+class LoadingSchemas extends Array<LoadingSchema> { }
 
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.

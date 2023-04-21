@@ -68,7 +68,7 @@ export class SchemaReadHelper<T = unknown> {
 
     this._parser = new this._parserType(rawSchema);
 
-    // Load the schemas attributes but not the items or references of the schema
+    // Loads all of the properties on the Schema object
     await schema.fromJSON(this._parser.parseSchema());
 
     this._schema = schema;
@@ -81,38 +81,6 @@ export class SchemaReadHelper<T = unknown> {
     const loadedSchema = await this._context.getSchema<U>(schema.schemaKey);
 
     return loadedSchema!;
-  }
-
-  /* Finish loading the rest of the schema */
-  private async loadSchema<U extends Schema>(schema: U): Promise<U> {
-    // Load schema references first
-    // Need to figure out if other schemas are present.
-    for (const reference of this._parser.getReferences()) {
-      await this.loadSchemaReference(reference);
-    }
-
-    if (this._visitorHelper)
-      await this._visitorHelper.visitSchema(schema, false);
-
-    // Load all schema items
-    for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
-      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
-      // which would be found when adding to the context.
-      if (await schema.getItem(itemName) !== undefined)
-        continue;
-
-      const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-      if (loadedItem && this._visitorHelper) {
-        await this._visitorHelper.visitSchemaPart(loadedItem);
-      }
-    }
-
-    await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributeProviders());
-
-    if (this._visitorHelper)
-      await this._visitorHelper.visitSchema(schema);
-
-    return schema;
   }
 
   /**
@@ -189,6 +157,38 @@ export class SchemaReadHelper<T = unknown> {
     // Will have schema here since it's checked to be in cache or added above
     const foundSchema = await this._context.getCachedLoadedOrLoadingSchema<U>(schema.schemaKey);
     return foundSchema!;
+  }
+
+  /* Finish loading the rest of the schema */
+  private async loadSchema<U extends Schema>(schema: U): Promise<U> {
+    // Load schema references first
+    // Need to figure out if other schemas are present.
+    for (const reference of this._parser.getReferences()) {
+      await this.loadSchemaReference(reference);
+    }
+
+    if (this._visitorHelper)
+      await this._visitorHelper.visitSchema(schema, false);
+
+    // Load all schema items
+    for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
+      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
+      // which would be found when adding to the context.
+      if (await schema.getItem(itemName) !== undefined)
+        continue;
+
+      const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
+      if (loadedItem && this._visitorHelper) {
+        await this._visitorHelper.visitSchemaPart(loadedItem);
+      }
+    }
+
+    await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributeProviders());
+
+    if (this._visitorHelper)
+      await this._visitorHelper.visitSchema(schema);
+
+    return schema;
   }
 
   /**

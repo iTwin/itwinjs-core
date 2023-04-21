@@ -909,14 +909,6 @@ export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 // @beta (undocumented)
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
 
-// @alpha (undocumented)
-export class LoadedSchemas extends Array<Schema> {
-}
-
-// @alpha (undocumented)
-export class LoadingSchemas extends Array<LoadingSchema> {
-}
-
 // @beta
 export class Mixin extends ECClass {
     constructor(schema: Schema, name: string);

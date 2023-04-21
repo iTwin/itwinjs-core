@@ -70,8 +70,6 @@ beta;LazyLoadedSchemaItem
 beta;LazyLoadedStructClass = LazyLoadedSchemaItem
 beta;LazyLoadedUnit = LazyLoadedSchemaItem
 beta;LazyLoadedUnitSystem = LazyLoadedSchemaItem
-alpha;LoadedSchemas 
-alpha;LoadingSchemas 
 beta;Mixin 
 beta;MixinProps 
 beta;NavigationProperty 
