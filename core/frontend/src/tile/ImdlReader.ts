@@ -150,8 +150,7 @@ interface ImdlTextureMapping {
       offset?: number[];
       minDistClamp?: number;
       maxDistClamp?: number;
-
-    }
+    };
   };
   /** @see [NormalMapParams]($common). */
   normalMapParams?: {
@@ -594,9 +593,9 @@ export class ImdlReader {
     this._bufferViews = imdl.bufferViews;
     this._meshes = imdl.meshes;
     this._nodes = imdl.nodes;
-    this._materialValues = imdl.materials ?? { };
-    this._renderMaterials = imdl.renderMaterials ?? { };
-    this._namedTextures = imdl.namedTextures ?? { };
+    this._materialValues = imdl.materials ?? {};
+    this._renderMaterials = imdl.renderMaterials ?? {};
+    this._namedTextures = imdl.namedTextures ?? {};
     this._patternSymbols = imdl.patternSymbols ?? {};
     this._rtcCenter = imdl.rtcCenter ? Point3d.fromJSON(imdl.rtcCenter) : undefined;
 
@@ -724,7 +723,7 @@ export class ImdlReader {
     return this._system.createMaterial(materialParams, this._iModel);
   }
 
-  private constantLodParamPropsFromJson(propsJson: { repetitions?: number; offset?: number[]; minDistClamp?: number; maxDistClamp?: number; } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+  private constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
     if (undefined === propsJson)
       return undefined;
 
@@ -1332,7 +1331,7 @@ export class ImdlReader {
       if (!branch) {
         branchesByNodeId.set(nodeId, branch = new GraphicBranch(true));
         branch.animationNodeId = nodeId;
-        branch.animationId =  `${this._modelId}_Node_${nodeId}`;
+        branch.animationId = `${this._modelId}_Node_${nodeId}`;
       }
 
       return branch;
