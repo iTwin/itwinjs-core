@@ -218,8 +218,9 @@ export interface Workspace {
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
-  /** The CloudCache for cloud-based WorkspaceContainers */
-  readonly cloudCache?: CloudSqlite.CloudCache;
+
+  /** Get The CloudCache for cloud-based WorkspaceContainers */
+  getCloudCache(): CloudSqlite.CloudCache;
 
   /** search for a previously opened container.
    * @param containerId the id of the container
@@ -301,26 +302,9 @@ export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-  private static _sharedCloudCache?: CloudSqlite.CloudCache;
   private _cloudCache?: CloudSqlite.CloudCache;
-  public get cloudCache(): CloudSqlite.CloudCache {
-    if (undefined === this._cloudCache)
-      this._cloudCache = ITwinWorkspace.getSharedCloudCache();
-    return this._cloudCache;
-  }
-  private static getSharedCloudCache(): CloudSqlite.CloudCache {
-    if (undefined === this._sharedCloudCache) {
-      const rootDir = join(IModelHost.cacheDir, "Workspace", "cloud");
-      IModelJsFs.recursiveMkDirSync(rootDir);
-      this._sharedCloudCache = CloudSqlite.createCloudCache({ rootDir, cacheSize: "20G", name: "workspace" });
-    }
-    return this._sharedCloudCache;
-  }
-  public static finalize() {
-    if (this._sharedCloudCache) {
-      this._sharedCloudCache.destroy();
-      this._sharedCloudCache = undefined;
-    }
+  public getCloudCache(): CloudSqlite.CloudCache {
+    return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
@@ -477,7 +461,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return;
 
-    cloudContainer.connect(this.workspace.cloudCache);
+    cloudContainer.connect(this.workspace.getCloudCache());
     if (false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();

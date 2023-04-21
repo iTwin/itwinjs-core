@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./AmbientOcclusion";
 export * from "./AnalysisStyle";
+export * from "./Atmosphere";
 export * from "./AuthorizationClient";
 export * from "./BackgroundMapProvider";
 export * from "./BackgroundMapSettings";

@@ -194,7 +194,7 @@ class SchemaDeserializer {
     if (!fs.existsSync(schemaFilePath))
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaFilePath}`);
 
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
 
     // add reference paths to the native context
     if (undefined === referencePaths)

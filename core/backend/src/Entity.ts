@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
 /** Represents an entity in an [[IModelDb]] such as an [[Element]], [[Model]], or [[Relationship]].
@@ -76,7 +76,9 @@ export class Entity {
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
+    this.iModel.forEachMetaData(this.classFullName, true, func, includeCustom);
+  }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */
   public static get classFullName(): string { return `${this.schema.schemaName}:${this.className}`; }

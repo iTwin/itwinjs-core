@@ -117,7 +117,7 @@ export class RobotWorldEngine {
   }
 
   public static async initialize(): Promise<void> {
-    await IModelHost.startup({ appAssetsDir: path.join(__dirname, "assets") });
+    await IModelHost.startup({ appAssetsDir: path.join(__dirname, "assets"), cacheDir: path.join(__dirname, ".cache") });
 
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();

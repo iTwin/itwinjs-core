@@ -44,12 +44,13 @@ import { Prioritized } from '@itwin/presentation-common';
 import { RegisteredRuleset } from '@itwin/presentation-common';
 import { Ruleset } from '@itwin/presentation-common';
 import { RulesetVariable } from '@itwin/presentation-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeRequestOptions } from '@itwin/presentation-common';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
-import { UpdateInfoJSON } from '@itwin/presentation-common';
+import { UpdateInfo } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
 import { WithCancelEvent } from '@itwin/presentation-common';
@@ -279,6 +280,8 @@ export interface PresentationManagerProps {
     mode?: PresentationManagerMode;
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
+    // @alpha
+    schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
     supplementalRulesetDirectories?: string[];
     // @beta
     updatesPollInterval?: number;
