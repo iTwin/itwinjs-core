@@ -14,6 +14,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
+import { Atmosphere } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
@@ -317,7 +318,7 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
 import { UintArrayBuilder } from '@itwin/core-bentley';
-import { UnitConversion } from '@itwin/core-quantity';
+import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { UnitSystemKey } from '@itwin/core-quantity';
@@ -8553,7 +8554,7 @@ export class QuantityFormatter implements UnitsProvider {
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
-    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
@@ -8692,7 +8693,7 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 }
 
 // @internal
-export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<{
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{
     graphic: RenderGraphic | undefined;
     rtcCenter: Point3d | undefined;
 }>;
@@ -9543,6 +9544,8 @@ export interface RenderPlan {
     // (undocumented)
     readonly ao?: AmbientOcclusion.Settings;
     // (undocumented)
+    readonly atmosphere?: Atmosphere.Settings;
+    // (undocumented)
     readonly backgroundMapOn: boolean;
     // (undocumented)
     readonly bgColor: ColorDef;
@@ -9550,6 +9553,8 @@ export interface RenderPlan {
     readonly clip?: ClipVector;
     // (undocumented)
     readonly clipStyle: ClipStyle;
+    // (undocumented)
+    readonly ellipsoid?: RenderPlanEllipsoid;
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
@@ -9594,6 +9599,19 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract dispose(): void;
     // (undocumented)
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
+}
+
+// @internal (undocumented)
+export class RenderPlanEllipsoid {
+    constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d);
+    // (undocumented)
+    readonly ellipsoidCenter: Point3d;
+    // (undocumented)
+    readonly ellipsoidRadii: Point3d;
+    // (undocumented)
+    readonly ellipsoidRotation: Matrix3d;
+    // (undocumented)
+    equals(other: RenderPlanEllipsoid): boolean;
 }
 
 // @internal (undocumented)
@@ -11231,6 +11249,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get viewRect(): ViewRect;
     // (undocumented)
     get wantAmbientOcclusion(): boolean;
+    // (undocumented)
+    get wantAtmosphere(): boolean;
     // (undocumented)
     get wantInvertBlackBackground(): boolean;
     // (undocumented)

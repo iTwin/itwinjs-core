@@ -12,6 +12,7 @@ Content modifiers are used to modify how instances of specified ECClasses are di
 | [`class`](#attribute-class)                               | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md)        | Any class |
 | [`requiredSchemas`](#attribute-requiredschemas)           | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)            | `[]`      |
 | [`priority`](#attribute-priority)                         | No        | `number`                                                                        | `1000`    |
+| [`applyOnNestedContent`](#attribute-applyonnestedcontent) | No        | `boolean`                                                                       | `false`   |
 | *Content Modifiers*                                       |
 | [`relatedProperties`](#attribute-relatedproperties)       | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)       | `[]`      |
 | [`calculatedProperties`](#attribute-calculatedproperties) | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) | `[]`      |
@@ -63,6 +64,25 @@ Defines the order in which rules are handled, higher number means the rule is ha
 ```
 
 ![Example of using priority attribute](./media/modifier-with-priority-attribute.png)
+
+### Attribute: `applyOnNestedContent`
+
+Specifies whether [calculatedProperties](./CalculatedPropertiesSpecification.md) and [relatedProperties](./RelatedPropertiesSpecification.md) specifications should also be applied on
+[nested content](./Terminology.md#nested-content).
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
+
+```ts
+[[include:Presentation.ContentModifier.ApplyOnNestedContent.Ruleset]]
+```
+
+| `applyOnNestedContent: false`                                                                                      | `applyOnNestedContent: true`                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| ![Example of not using modifiers on nested content](./media/modifier-with-applyonnestedcontent-attribute-false.png) | ![Example of using modifiers on nested content](./media/modifier-with-applyonnestedcontent-attribute-true.png) |
 
 ### Attribute: `relatedProperties`
 
