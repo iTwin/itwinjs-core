@@ -140,8 +140,8 @@ describe.only("PropertyStore", function (this: Suite) {
     expect(ps2.reader.getBlob(prop4)).undefined;
     expect(ps2.reader.getBoolean(prop5)).undefined;
     expect(countProperties(ps2.reader)).equal(2);
-    ps1.destroy();
-    ps2.destroy();
+    ps1.close();
+    ps2.close();
   });
 });
 

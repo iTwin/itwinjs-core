@@ -231,7 +231,7 @@ export namespace PropertyStore {
    */
   export class CloudDb extends CloudSqlite.DbAccess<PropertyDb> {
     public constructor(props: CloudSqlite.ContainerAccessProps) {
-      super({ ctor: PropertyDb, props, dbName: defaultDbName });
+      super({ dbType: PropertyDb, props, dbName: defaultDbName });
     }
 
     /**
@@ -240,7 +240,7 @@ export namespace PropertyStore {
      * @note this deletes any existing content in the container.
      */
     public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps, initContainer?: { blockSize?: number } }) {
-      return super._initializeDb({ ...args, ctor: PropertyDb, dbName: defaultDbName });
+      return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });
     }
   }
 }

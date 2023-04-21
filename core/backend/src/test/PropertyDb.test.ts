@@ -41,14 +41,14 @@ describe("PropertyDb", function (this: Suite) {
     const string1 = "this is a test";
     const string2 = "this is another test";
     const blob1 = new Uint8Array([2, 33, 23, 0, 202]);
-    propertyDb.saveProperty("test-string", string1);
-    propertyDb.saveProperty("test-string2", string2);
-    propertyDb.saveProperty("test-obj", testJson);
-    propertyDb.saveProperty("is-false", false);
-    propertyDb.saveProperty("is-true", true);
-    propertyDb.saveProperty("is-100", 100);
-    propertyDb.saveProperty("is-2.3", 2.3);
-    propertyDb.saveProperty("is-blob", blob1);
+    await propertyDb.saveProperty("test-string", string1);
+    await propertyDb.saveProperty("test-string2", string2);
+    await propertyDb.saveProperty("test-obj", testJson);
+    await propertyDb.saveProperty("is-false", false);
+    await propertyDb.saveProperty("is-true", true);
+    await propertyDb.saveProperty("is-100", 100);
+    await propertyDb.saveProperty("is-2.3", 2.3);
+    await propertyDb.saveProperty("is-blob", blob1);
     propertyDb.saveChanges();
     expect(countProperties()).equal(8);
 
@@ -62,7 +62,7 @@ describe("PropertyDb", function (this: Suite) {
     expect(propertyDb.getBlob("is-blob")).deep.equal(blob1);
 
     const updated = "this is a different string";
-    propertyDb.saveProperty("test-string", updated);
+    await propertyDb.saveProperty("test-string", updated);
     expect(propertyDb.getString("test-string")).equals(updated);
 
     expect(propertyDb.getNumber("test-string")).undefined;
@@ -73,7 +73,7 @@ describe("PropertyDb", function (this: Suite) {
     expect(propertyDb.getNumber("not there", 50)).equal(50);
 
     expect(countProperties({ value: "test%", valueCompare: "LIKE" })).equal(3);
-    propertyDb.deleteProperty("test-string");
+    await propertyDb.deleteProperty("test-string");
     expect(countProperties()).equal(7);
     expect(countProperties({ value: "test%", valueCompare: "LIKE" })).equal(2);
 

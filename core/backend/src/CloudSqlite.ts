@@ -563,9 +563,11 @@ export namespace CloudSqlite {
   const logInfo = (msg: string) => Logger.logInfo("CloudSQLiteDb", msg);
   const logError = (msg: string) => Logger.logError("CloudSQLiteDb", msg);
 
-  /** Abstract class that provides access to a SQLite database in a CloudContainer. Subclasses   */
+  /** Class that provides access to a SQLite database in a CloudContainer.  */
   export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
+    /** The name of the database within the cloud container. */
     public readonly dbName: string;
+    /** Parameters for obtaining the write lock for this container. */
     public readonly lockParams: ObtainLockParams = {
       user: "unknown",
       nRetries: 20,
@@ -578,14 +580,18 @@ export namespace CloudSqlite {
     private _readerProxy?: PickMethods<ReadMethods>;
     private get _ctor() { return this.constructor as typeof DbAccess; }
 
+    /** @internal */
     public static getCacheForClass() {
       return CloudCaches.getCache({ cacheName: this._cacheName });
     }
     private _cache?: CloudCache;
-    /** only for tests */
+    /** only for tests
+     * @internal
+     */
     public setCache(cache: CloudCache) {
       this._cache = cache;
     }
+    /** @internal */
     public getCache(): CloudCache {
       return this._cache ??= this._ctor.getCacheForClass();
     }
@@ -609,13 +615,28 @@ export namespace CloudSqlite {
       return startCloudPrefetch(this.container, this.dbName);
     }
 
-    protected constructor(args: { ctor: Constructor<DbType>, props: ContainerAccessProps, dbName: string }) {
+    /** Create a new DbAccess for a VersionedSqliteDb database stored in a cloud container. */
+    public constructor(args: {
+      /** The Constructor for DbType. */
+      dbType: Constructor<DbType>;
+      /** The properties of the cloud container holding the database. */
+      props: ContainerAccessProps;
+      /** The name of the database within the container. */
+      dbName: string;
+    }) {
       this._container = createCloudContainer({ ...args.props, writeable: true });
-      this._cloudDb = new args.ctor(args.props);
+      this._cloudDb = new args.dbType(args.props);
       this.dbName = args.dbName;
     }
 
-    public destroy() {
+    /** Close the database for this DbAccess, if it is open */
+    public closeDb() {
+      if (this._cloudDb.isOpen)
+        this._cloudDb.closeDb();
+    }
+
+    /** Close the database if it is opened, and disconnect this `DbAccess from its CloudContainer. */
+    public close() {
       this.closeDb();
       this._container.disconnect();
     }
@@ -625,22 +646,17 @@ export namespace CloudSqlite {
      * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty database into the container.
      * @note this deletes any existing content in the container.
      */
-    protected static async _initializeDb(args: { ctor: typeof VersionedSqliteDb, props: ContainerAccessProps, dbName: string, blockSize?: number }) {
+    protected static async _initializeDb(args: { dbType: typeof VersionedSqliteDb, props: ContainerAccessProps, dbName: string, blockSize?: number }) {
       const container = createCloudContainer({ ...args.props, writeable: true });
       container.initializeContainer({ blockSize: args.blockSize ?? 64 * 1024 });
       container.connect(CloudCaches.getCache({ cacheName: this._cacheName }));
       await withWriteLock("initialize", container, async () => {
         const localFileName = join(KnownLocations.tmpdir, "blank.db");
-        args.ctor.createNewDb(localFileName);
+        args.dbType.createNewDb(localFileName);
         await transferDb("upload", container, { dbName: args.dbName, localFileName });
         unlinkSync(localFileName);
       });
       container.disconnect({ detach: true });
-    }
-
-    public closeDb() {
-      if (this._cloudDb.isOpen)
-        this._cloudDb.closeDb();
     }
 
     /**
@@ -656,15 +672,20 @@ export namespace CloudSqlite {
       this.container.checkForChanges();
     }
 
-    public openForRead() {
+    /**
+     * Ensure that the database controlled by this `DbAccess` is open for read access and return the database object.
+     * @note if the database is already open (either for read or write), this method merely returns the database object.
+     */
+    public openForRead(): DbType {
       if (!this._cloudDb.isOpen)
         this._cloudDb.openDb(this.dbName, OpenMode.Readonly, this.container);
       return this._cloudDb;
     }
 
-    /** Perform an operation on this database with the lock held and the database opened for write
+    /**
+     * Perform an operation on this database with the lock held and the database opened for write
      * @param operationName the name of the operation. Only used for logging.
-     * @param operation a function called with the lock held.
+     * @param operation a function called with the lock held and the database open for write.
      * @returns A promise that resolves to the the return value of `operation`.
      * @see [SQLiteDb.withLockedContainer]($backend)
      * @note Most uses of `CloudSqliteDbAccess` require that the lock not be held by any operation for long. Make sure you don't
@@ -704,30 +725,43 @@ export namespace CloudSqlite {
       }
     }
 
+    private getDbMethod(methodName: string): Function {
+      const fn = (this._cloudDb as any)[methodName] as Function;
+      if (typeof fn !== "function")
+        throw new Error(`illegal method name ${methodName}`);
+      return fn;
+    }
+
     /**
-     * Perform an operation on this database with the lock held and the database opened for write
+     * A Proxy Object to call a writeable async method on the cloud database controlled by this `DbAccess`.
+     *
+     * Whenever a method is called through this Proxy, it will:
+     * - attempt to acquire the write lock on the container
+     * - open the database for write
+     * - call the method
+     * - close the database
+     * - upload changes
+     * - release the write lock.
+     *
      * @see [[withLockedDb]]
      */
     public get writeLocker() {
       return this._writeLockProxy ??= new Proxy(this, {
         get(access, methodName: string) {
-          const db = access._cloudDb;
-          const fn = (db as any)[methodName] as Function;
-          if (typeof fn !== "function")
-            throw new Error(`illegal method name ${methodName}`);
-
-          return async (...args: any[]) => access.withLockedDb(methodName, fn.bind(db, ...args));
+          const fn = access.getDbMethod(methodName);
+          return async (...args: any[]) => access.withLockedDb(methodName, fn.bind(access._cloudDb, ...args));
         },
       }) as PickAsyncMethods<WriteMethods>;
     }
 
+    /**
+     * A Proxy Object to call a synchronous readonly method on the database controlled by this `DbAccess`.
+     * Whenever a method is called through this Proxy, it will first ensure that the database is opened for read access.
+     */
     public get reader() {
       return this._readerProxy ??= new Proxy(this, {
         get(access, methodName: string) {
-          const fn = (access._cloudDb as any)[methodName] as Function;
-          if (typeof fn !== "function")
-            throw new Error(`illegal method name ${methodName}`);
-
+          const fn = access.getDbMethod(methodName);
           return (...args: any[]) => fn.call(access.openForRead(), ...args);
         },
       }) as PickMethods<ReadMethods>;

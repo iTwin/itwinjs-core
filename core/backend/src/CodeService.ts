@@ -21,12 +21,12 @@ export interface CodeService {
   initialize(iModel: IModelDb): Promise<void>;
 
   /** the index for external Codes for this CodeService */
-  readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb, CodeService.CodesReadMethods, CodeService.CodesWriteMethods>;
+  readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb, CodeService.ReadMethods, CodeService.WriteMethods>;
 
   /** the index for internal Codes for this CodeService
    * @internal
    */
-  readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes, CodeService.InternalCodesReadMethods, CodeService.InternalCodesWriteMethods>;
+  readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes, CodeService.InternalReadMethods, CodeService.InternalWriteMethods>;
 
   /**
    * Application-supplied parameters for reserving new codes.
@@ -48,7 +48,7 @@ export interface CodeService {
 /** @alpha */
 export namespace CodeService {
 
-  export interface CodesWriteMethods {
+  export interface WriteMethods {
     /** Add a new code spec to this code service.
      */
     addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
@@ -106,7 +106,7 @@ export namespace CodeService {
     deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
   }
 
-  export interface CodesReadMethods {
+  export interface ReadMethods {
     /**
      * Find the next available value for the supplied `SequenceScope`.
      * If the sequence is full (there are no available values), this will throw an exception with `errorId="SequenceFull"`
@@ -158,19 +158,19 @@ export namespace CodeService {
     verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
   }
 
-  export type CodesDb = VersionedSqliteDb & CodesWriteMethods & CodesReadMethods;
+  export type CodesDb = VersionedSqliteDb & WriteMethods & ReadMethods;
 
   /**  @internal */
-  export interface InternalCodesWriteMethods extends CodesWriteMethods {
+  export interface InternalWriteMethods extends WriteMethods {
     reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
     reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
   }
-  export interface InternalCodesReadMethods extends CodesReadMethods {
+  export interface InternalReadMethods extends ReadMethods {
     verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
   }
 
   /**  @internal */
-  export type InternalCodes = CodesDb & InternalCodesWriteMethods & InternalCodesReadMethods;
+  export type InternalCodes = CodesDb & InternalWriteMethods & InternalReadMethods;
 
   /** @internal */
   const codeSequences = new Map<string, CodeSequence>();
