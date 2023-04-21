@@ -7,9 +7,9 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { CAProviderTuple } from "../../Deserialization/AbstractParser";
 import {
-  ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, FormatProps, InvertedUnitProps, MixinProps,
-  NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, SchemaProps,
-  SchemaReferenceProps, StructArrayPropertyProps,
+  ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, InvertedUnitProps, MixinProps,
+  NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, SchemaItemFormatProps,
+  SchemaProps, SchemaReferenceProps, StructArrayPropertyProps,
 } from "../../Deserialization/JsonProps";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaContext } from "../../Context";
@@ -489,7 +489,7 @@ describe("XmlParser", () => {
         scientificType: undefined,
         stationOffsetSize: undefined,
         stationSeparator: undefined,
-      } as FormatProps;
+      } as SchemaItemFormatProps;
 
       const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
       const actualProps = parser.parseFormat(itemElement);

@@ -252,3 +252,15 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
 - `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
+
+## Interfaces renamed
+
+**@itwin/core-quantity**
+
+- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+
+**@itwin/ecschema-metadata**
+
+- The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
+
+- The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).

@@ -8,11 +8,13 @@
 
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { DecimalPrecision, FormatProps, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
+import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
 import { Unit } from "./Unit";
+import { Mutable } from "@itwin/core-bentley";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
@@ -108,7 +110,51 @@ export class OverrideFormat {
   public static isOverrideFormat(object: any): object is OverrideFormat {
     const overrideFormat = object as OverrideFormat;
 
-    return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined &&
-             overrideFormat.parent.schemaItemType === SchemaItemType.Format;
+    return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined && overrideFormat.parent.schemaItemType === SchemaItemType.Format;
   }
+
+  /**
+   * Returns a JSON object that contains the specification for the OverrideFormat where the precision and units properties have been overriden.
+   * If the precision and/or units properties have been overriden, the returned object will contain a "name" and a "parent" property.
+   * The "name" property identifies the OverrideFormat object itself and the "parent" property identifies the Format that has been overriden.
+   * This method is not intended for complete serialization as it does not serialize any of the schema item properties.
+   */
+  public getFormatProps(): SchemaItemOverrideFormatProps {
+    const formatJson = this.parent.toJSON() as Mutable<SchemaItemOverrideFormatProps>;
+
+    if (this.parent.fullName !== this.fullName) {
+      // Update name and parent properties to distinguish it from parent Format
+      formatJson.name = this.fullName;
+      formatJson.parent = this.parent.fullName;
+    }
+
+    // Update Precision overriden property
+    formatJson.precision = this.precision;
+
+    if (this.units !== undefined) {
+      // Update Units overriden property
+      const units = [];
+      for (const unit of this.units) {
+        units.push({
+          name: unit[0].fullName,
+          label: unit[1],
+        });
+      }
+
+      formatJson.composite = {
+        spacer: (this.spacer !== " ") ? this.spacer : undefined,
+        includeZero: (this.includeZero === false) ? this.includeZero : undefined,
+        units,
+      };
+    }
+
+    return formatJson;
+  }
+}
+
+/**
+ * @internal
+ */
+export function getFormatProps(format: Format | OverrideFormat): FormatProps {
+  return OverrideFormat.isOverrideFormat(format) ? format.getFormatProps() : format.toJSON();
 }
