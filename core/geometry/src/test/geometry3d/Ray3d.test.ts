@@ -309,7 +309,7 @@ describe("Ray3d.isAlmostEqualPointSet", () => {
     direction2 = Vector3d.create(1, 2, 3);
     ray2 = Ray3d.create(origin2, direction2);
     ck.testTrue(ray1.isAlmostEqualPointSet(ray2), "ray1 is parallel to ray2");
-  })
+  });
 });
 
 /** Return a random number between -100 and 100 */
