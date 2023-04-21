@@ -87,6 +87,8 @@ export class LocalizationHelper {
   private translateContentItemValue(value: Value): Value {
     if (typeof value === "string") {
       value = this.getLocalizedString(value);
+    } else if (Value.isNavigationValue(value)) {
+      this.translateLabelDefinition(value.label);
     } else if (Value.isNestedContent(value)) {
       for (const nestedValue of value) {
         for (const key in nestedValue.values) {
@@ -132,5 +134,4 @@ export class LocalizationHelper {
       labelDefinition.displayValue = this.getLocalizedString(labelDefinition.displayValue);
     }
   }
-
 }

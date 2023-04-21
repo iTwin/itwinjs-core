@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { using } from "@itwin/core-bentley";
 import { Presentation, PresentationManager } from "@itwin/presentation-backend";
-import { ChildNodeSpecificationTypes, Diagnostics, DiagnosticsLogEntry, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, Diagnostics, DiagnosticsLogEntry, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Diagnostics", async () => {
@@ -63,6 +63,22 @@ describe("Diagnostics", async () => {
       });
     });
     expect(requestDiagnosticsSpy).to.not.be.called;
+  });
+
+  it("includes diagnostics if request fails", async () => {
+    const requestDiagnosticsSpy = sinon.spy();
+    await expect(using(new PresentationManager(), async (manager) => {
+      await manager.getNodes({
+        imodel,
+        rulesetOrId: ruleset,
+        instanceFilter: {} as any,
+        diagnostics: {
+          dev: "error",
+          handler: requestDiagnosticsSpy,
+        },
+      });
+    })).to.eventually.be.rejectedWith(PresentationError);
+    expect(requestDiagnosticsSpy).to.be.calledOnceWith(sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0));
   });
 
   it("doesn't report request diagnostics if not requested when manager diagnostics requested", async () => {

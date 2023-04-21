@@ -458,7 +458,7 @@ async function purgeWorkspace(args: EditorOpts) {
 /** detach a WorkspaceContainer from the local cache. */
 async function detachWorkspace(args: EditorOpts) {
   const container = getCloudContainer(args);
-  container.detach();
+  container.disconnect({ detach: true });
   showMessage(`detached ${sayContainer(args)}.`);
 }
 
@@ -557,7 +557,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       if (true === args.logging) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
-        IModelHost.appWorkspace.cloudCache?.setLogMask(CloudSqlite.LoggingMask.All);
+        IModelHost.appWorkspace.getCloudCache().setLogMask(CloudSqlite.LoggingMask.All);
         logTimer = setInterval(() => flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 
