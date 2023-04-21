@@ -38,9 +38,9 @@ export namespace PropertyStore {
    * A SQLite database for storing [[PropertyName]]/[[PropertyValue]] pairs.
    */
   export class PropertyDb extends VersionedSqliteDb {
-    public readonly myVersion = "3.0.0";
+    public override readonly myVersion = "3.0.0";
 
-    protected createDDL() {
+    protected override createDDL() {
       this.createTable({ tableName: "properties", columns: "name TEXT NOT NULL PRIMARY KEY,type,value", addTimestamp: true });
     }
 

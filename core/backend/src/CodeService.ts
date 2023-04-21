@@ -21,12 +21,12 @@ export interface CodeService {
   initialize(iModel: IModelDb): Promise<void>;
 
   /** the index for external Codes for this CodeService */
-  readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb>;
+  readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb, CodeService.CodesReadMethods, CodeService.CodesWriteMethods>;
 
   /** the index for internal Codes for this CodeService
    * @internal
    */
-  readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes>;
+  readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes, CodeService.InternalCodesReadMethods, CodeService.InternalCodesWriteMethods>;
 
   /**
    * Application-supplied parameters for reserving new codes.
@@ -47,62 +47,9 @@ export interface CodeService {
 
 /** @alpha */
 export namespace CodeService {
-  /**
-   * @alpha
-   */
-  export interface CodesDb extends VersionedSqliteDb {
-    /**
-     * Find the next available value for the supplied `SequenceScope`.
-     * If the sequence is full (there are no available values), this will throw an exception with `errorId="SequenceFull"`
-     * @param from the sequence and scope to search
-     * @returns the next available CodeValue in the sequence.
-     */
-    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
 
-    /**
-     * Find the highest currently used value for the supplied `SequenceScope`
-     * @param from the sequence and scope to search
-     * @returns the highest used value, or undefined if no values have been used.
-     */
-    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
-
-    /** Determine whether a code is present in this CodeIndex by its Guid. */
-    isCodePresent(guid: CodeService.CodeGuid): boolean;
-
-    /** Get the data for a code in this CodeIndex by its Guid.
-     * @returns the data for the code or undefined if no code is present for the supplied Guid.
-     */
-    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
-
-    /** Look up a code by its Scope, Spec, and Value.
-     * @returns the Guid of the code, or undefined if not present.
-     */
-    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
-
-    /** Look up a code spec by its name
-     * @throws if the spec is not present.
-     */
-    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
-
-    /** Call a `CodeIteration` function for all codes in this index, optionally filtered by a `CodeFilter ` */
-    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
-
-    /** Call an iteration function for all code specs in this index, optionally filtered by a `ValueFilter ` */
-    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
-
-    /**
-     * Verify that the Code of a to-be-inserted or to-be-updated Element:
-     * 1. has already been reserved,
-     * 2. if the element has a `federationGuid`, it must match the reserved value. If the federationGuid is undefined,
-     * the value from the code index is returned.
-     *
-     * If not, throw an exception. Elements with no CodeValue are ignored.
-     * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
-     */
-    verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
-
+  export interface CodesWriteMethods {
     /** Add a new code spec to this code service.
-     * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
      */
     addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
 
@@ -159,14 +106,71 @@ export namespace CodeService {
     deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
   }
 
-  /**
-   * @internal
-   */
-  export interface InternalCodes extends CodesDb {
+  export interface CodesReadMethods {
+    /**
+     * Find the next available value for the supplied `SequenceScope`.
+     * If the sequence is full (there are no available values), this will throw an exception with `errorId="SequenceFull"`
+     * @param from the sequence and scope to search
+     * @returns the next available CodeValue in the sequence.
+     */
+    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
+
+    /**
+     * Find the highest currently used value for the supplied `SequenceScope`
+     * @param from the sequence and scope to search
+     * @returns the highest used value, or undefined if no values have been used.
+     */
+    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
+
+    /** Determine whether a code is present in this CodeIndex by its Guid. */
+    isCodePresent(guid: CodeService.CodeGuid): boolean;
+
+    /** Get the data for a code in this CodeIndex by its Guid.
+     * @returns the data for the code or undefined if no code is present for the supplied Guid.
+     */
+    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
+
+    /** Look up a code by its Scope, Spec, and Value.
+     * @returns the Guid of the code, or undefined if not present.
+     */
+    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
+
+    /** Look up a code spec by its name
+     * @throws if the spec is not present.
+     */
+    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
+
+    /** Call a `CodeIteration` function for all codes in this index, optionally filtered by a `CodeFilter ` */
+    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
+
+    /** Call an iteration function for all code specs in this index, optionally filtered by a `ValueFilter ` */
+    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
+
+    /**
+     * Verify that the Code of a to-be-inserted or to-be-updated Element:
+     * 1. has already been reserved,
+     * 2. if the element has a `federationGuid`, it must match the reserved value. If the federationGuid is undefined,
+     * the value from the code index is returned.
+     *
+     * If not, throw an exception. Elements with no CodeValue are ignored.
+     * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
+     */
+    verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
+  }
+
+  export type CodesDb = VersionedSqliteDb & CodesWriteMethods & CodesReadMethods;
+
+  /**  @internal */
+  export interface InternalCodesWriteMethods extends CodesWriteMethods {
     reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
     reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
+  }
+  export interface InternalCodesReadMethods extends CodesReadMethods {
     verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
   }
+
+  /**  @internal */
+  export type InternalCodes = CodesDb & InternalCodesWriteMethods & InternalCodesReadMethods;
 
   /** @internal */
   const codeSequences = new Map<string, CodeSequence>();

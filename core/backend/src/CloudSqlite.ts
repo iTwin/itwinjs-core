@@ -9,7 +9,7 @@
 import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, PickAsyncMethods, PickSyncMethods, StopWatch } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, PickAsyncMethods, PickMethods, StopWatch } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -564,7 +564,7 @@ export namespace CloudSqlite {
   const logError = (msg: string) => Logger.logError("CloudSQLiteDb", msg);
 
   /** Abstract class that provides access to a SQLite database in a CloudContainer. Subclasses   */
-  export class DbAccess<DbType extends VersionedSqliteDb> {
+  export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
     public readonly dbName: string;
     public readonly lockParams: ObtainLockParams = {
       user: "unknown",
@@ -574,8 +574,8 @@ export namespace CloudSqlite {
     protected static _cacheName = "default-64k";
     protected _container: CloudContainer;
     protected _cloudDb: DbType;
-    private _writeLockProxy?: PickAsyncMethods<DbType>;
-    private _readerProxy?: PickSyncMethods<DbType>;
+    private _writeLockProxy?: PickAsyncMethods<WriteMethods>;
+    private _readerProxy?: PickMethods<ReadMethods>;
     private get _ctor() { return this.constructor as typeof DbAccess; }
 
     public static getCacheForClass() {
@@ -718,7 +718,7 @@ export namespace CloudSqlite {
 
           return async (...args: any[]) => access.withLockedDb(methodName, fn.bind(db, ...args));
         },
-      }) as PickAsyncMethods<DbType>;
+      }) as PickAsyncMethods<WriteMethods>;
     }
 
     public get reader() {
@@ -730,7 +730,7 @@ export namespace CloudSqlite {
 
           return (...args: any[]) => fn.call(access.openForRead(), ...args);
         },
-      }) as PickSyncMethods<DbType>;
+      }) as PickMethods<ReadMethods>;
     }
   }
 }

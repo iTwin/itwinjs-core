@@ -16,6 +16,7 @@ export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CloudSqlite";
+export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./DevTools";
 export * from "./DisplayStyle";

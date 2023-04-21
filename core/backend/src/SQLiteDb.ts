@@ -356,6 +356,13 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
     super.openDb(dbName, openMode, container);
     this.verifyVersions();
   }
+
+  public async upgradeSchema(arg: { dbName: string, lockContainer?: { container: CloudSqlite.CloudContainer, user: string }, upgradeFn: () => void }) {
+    // can't use "this" because it checks for version, which we don't want here
+    return (arg.lockContainer) ?
+      super.withLockedContainer({ dbName: arg.dbName, ...arg.lockContainer }, async () => arg.upgradeFn) :
+      super.withOpenDb({ ...arg, openMode: OpenMode.ReadWrite }, arg.upgradeFn);
+  }
 }
 
 /** @public */
