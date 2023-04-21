@@ -8,10 +8,10 @@ import * as fs from "fs";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, DbResult, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps,
+  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
-  Angle, Box, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+  Angle, Box, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
 } from "@itwin/core-geometry";
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
@@ -37,9 +37,14 @@ describe("exportGraphics", () => {
     return iModel.elements.insertElement(elementProps);
   }
 
-  function insertRenderMaterialWithTexture(name: string, textureId: Id64String): Id64String {
+  function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
+    const props: TextureMapProps = { TextureId: textureId };
+    if (patternScale)
+      props.pattern_scale = patternScale;
+    if (patternScaleMode)
+      props.pattern_scalemode = patternScaleMode;
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: { TextureId: textureId } });
+    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props });
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
@@ -202,18 +207,23 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[1].color, materialColor0.tbgr);
   });
 
-  it.only("handles materials with textures", () => {
+  let textureId: undefined | string;
+  function getTextureId(): string {
+    if (textureId !== undefined)
+      return textureId;
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
-    const pngData = new Uint8Array([
-      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
+    const pngData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
       74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
       97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
       84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
       0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]);
-    const textureId = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
-    const materialId = insertRenderMaterialWithTexture("test-material-two", textureId);
+    return textureId = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
+  }
+
+  it("handles materials with textures", () => {
+    const materialId = insertRenderMaterialWithTexture("test-material-2", getTextureId());
     const elementColor = ColorDef.fromString("aquamarine");
 
     const builder = new GeometryStreamBuilder();
@@ -237,27 +247,45 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].materialId, materialId);
     assert.strictEqual(infos[0].textureId, textureId);
     assert.strictEqual(infos[0].color, elementColor.tbgr);
+  });
 
-    // test uv-param mutation for patternMap
-    const triangleWithParams: GeometryStreamProps = JSON.parse(`[{
-      "indexedMesh": {
-        "point": [[1, 0, 1], [0, 0, -1], [-1, 0, 1]],
-        "pointIndex": [1, 2, 3, 0],
-        "normal": [[0, 1, 0]],
-        "normalIndex": [1, 1, 1, 0],
-        "param": [[1, 1], [0, 0], [0, 1]],
-        "paramIndex": [1, 2, 3, 0]
-      }
-    }]`);
-    builder.geometryStream.length = infos.length = 0;
-    builder.appendGeometryParamsChange(geometryParams);
-    builder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), 1));
-    exportGraphicsOptions.elementIdArray[0] = insertPhysicalElement(builder.geometryStream);
-    exportStatus = iModel.exportGraphics(exportGraphicsOptions);
-    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
-    assert.strictEqual(infos.length, 1);
-    assert.strictEqual(infos[0].mesh.params.length, 6);
-    assert.deepStrictEqual(Array.from(infos[0].mesh.params), [2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)], "exported uv-params are scaled as expected");
+  it.only("test uv-param mutation for patternMaps", () => {
+    const polyfaceBuilder = PolyfaceBuilder.create();
+    polyfaceBuilder.options.needParams = polyfaceBuilder.options.needNormals = true;
+    polyfaceBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1, 0, 1], [0, 0, -1], [-1, 0, 1]]),
+      GrowableXYZArray.create([[0, 1, 0], [0, 1, 0], [0, 1, 0]]),
+      GrowableXYArray.create([{ x: 1, y: 1 }, { x: 0, y: 0 }, { x: 0, y: 1 }],),
+      undefined
+    );
+
+    const streamBuilder = new GeometryStreamBuilder();
+    const geometryParams = new GeometryParams(seedCategory);
+    geometryParams.materialId = insertRenderMaterialWithTexture("test-material-3", getTextureId(), [1, -1], TextureMapUnits.Meters);
+    streamBuilder.appendGeometryParamsChange(geometryParams);
+    streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
+    const geometryId = insertPhysicalElement(streamBuilder.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [geometryId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+    };
+
+    const testUVParamMutation = (expectedParams: Float32Array, assertMessage: string, _disableScaling: boolean, _disableVInversion: boolean) => {
+      // exportGraphicsOptions.disableUVScaling = disableScaling ? true : undefined;
+      // exportGraphicsOptions.disableVInversion = disableVInversion ? true : undefined;
+      const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+      assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+      assert.strictEqual(infos.length, 1);
+      assert.strictEqual(infos[0].mesh.params.length, 6);
+      assert.deepStrictEqual(infos[0].mesh.params, expectedParams, assertMessage);
+    };
+
+    testUVParamMutation(new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]), "exported uv-params are scaled and inverted", false, false);
+    // testUVParamMutation(new Float32Array([2, Math.sqrt(5), 0, 0, 0, Math.sqrt(5)]), "exported uv-params are scaled and NOT inverted", false, true);
+    // testUVParamMutation(new Float32Array([1, 1, 0, 0, 0, 1]), "exported uv-params are NOT scaled and NOT inverted", true, true);
+    // testUVParamMutation(new Float32Array([1, 0, 0, 1, 0, 0]), "exported uv-params are NOT scaled and inverted", true, false);
   });
 
   it("creates meshes with vertices shared as expected", () => {
