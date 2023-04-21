@@ -20,7 +20,6 @@ import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { AzureBlobStorage, AzureBlobStorageCredentials, CloudStorageService, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { GeoCoordConfig } from "./GeoCoordConfig";
@@ -73,6 +72,13 @@ export interface CrashReportingConfig {
   uploadToBentley?: boolean;
 }
 
+/** @beta */
+export interface AzureBlobStorageCredentials {
+  account: string;
+  accessKey: string;
+  baseUrl?: string;
+}
+
 /**
  * Options for [[IModelHost.startup]]
  * @public
@@ -116,19 +122,13 @@ export interface IModelHostOptions {
 
   /**
    * @beta
-   * @deprecated in 3.x. Use [[tileCacheStorage]] instead.
-   */
-  tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
-
-  /**
-   * @beta
    * @note A reference implementation is set for AzureServerStorage from @itwin/object-storage-azure if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
    *       set this property with a custom ServerStorage.
    */
   tileCacheStorage?: ServerStorage;
 
   /** The maximum size in bytes to which a local sqlite database used for caching tiles can grow before it is purged of least-recently-used tiles.
-   * The local cache is used only if an external cache has not been configured via [[tileCacheService]], [[tileCacheStorage]], and [[tileCacheAzureCredentials]].
+   * The local cache is used only if an external cache has not been configured via [[tileCacheStorage]], and [[tileCacheAzureCredentials]].
    * Defaults to 1 GB. Must be an unsigned integer. A value of zero disables the local cache entirely.
    * @beta
    */
@@ -139,9 +139,8 @@ export interface IModelHostOptions {
    */
   restrictTileUrlsByClientIp?: boolean;
 
-  /**
-   * Whether to enable OpenTelemetry tracing
-   * @beta
+  /** Whether to enable OpenTelemetry tracing.
+   * Defaults to `false`.
    */
   enableOpenTelemetry?: boolean;
 
@@ -198,8 +197,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
-  /** @beta @deprecated in 3.x. Use [[tileCacheStorage]] instead. */
-  public tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
   /** @beta */
   public restrictTileUrlsByClientIp?: boolean;
   public compressCachedTiles?: boolean;
@@ -352,21 +349,8 @@ export class IModelHost {
     Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
   }
 
-  /**
-   * @internal
-   * @deprecated in 3.x. Use [[IModelHost.tileStorage]] instead.
-   * @note Use [[IModelHostOptions.tileCacheService]] to set the service provider.
-   */
-  public static tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
-
   /** @internal */
   public static tileStorage?: TileStorage;
-
-  /**
-   * @internal
-   * @deprecated in 3.x. Use [[IModelHost.tileStorage]] instead.
-   */
-  public static tileUploader?: CloudStorageTileUploader; // eslint-disable-line deprecation/deprecation
 
   private static _hubAccess?: BackendHubAccess;
   /** @internal */
@@ -527,10 +511,6 @@ export class IModelHost {
     IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileCacheService = undefined;
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileUploader = undefined;
     IModelHost.tileStorage = undefined;
     IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
@@ -609,28 +589,19 @@ export class IModelHost {
   private static setupTileCache() {
     assert(undefined !== IModelHost.configuration);
     const config = IModelHost.configuration;
-    // eslint-disable-next-line deprecation/deprecation
-    const service = config.tileCacheService;
     const storage = config.tileCacheStorage;
     const credentials = config.tileCacheAzureCredentials;
 
-    if (!service && !storage && !credentials) {
+    if (!storage && !credentials) {
       this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
       return;
     }
 
     this.platform.setMaxTileCacheSize(0);
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileUploader = new CloudStorageTileUploader();
     if (credentials) {
-      if (storage || service)
+      if (storage)
         throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
       this.setupAzureTileCache(credentials);
-    }
-    if (service) {
-      if (!storage)
-        Logger.logWarning(loggerCategory, "Using tileCacheService without tileCacheStorage is unsupported");
-      IModelHost.tileCacheService = service; // eslint-disable-line deprecation/deprecation
     }
     if (storage)
       IModelHost.tileStorage = new TileStorage(storage);
@@ -650,8 +621,6 @@ export class IModelHost {
     ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
     new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
     IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileCacheService = new AzureBlobStorage(credentials); // needed for backwards compatibility with old frontends
   }
 
   /** @internal */

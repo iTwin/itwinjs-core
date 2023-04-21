@@ -1,17 +1,11 @@
 sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
-beta;AliCloudStorageService 
-deprecated;AliCloudStorageService 
-beta;AliCloudStorageServiceCredentials
-deprecated;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
-beta;AzureBlobStorage 
-deprecated;AzureBlobStorage 
 beta;AzureBlobStorageCredentials
 internal;BackendHubAccess
 public;BackendLoggerCategory
@@ -50,12 +44,6 @@ internal;CloudPrefetch
 internal;LockAndOpenArgs
 internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
-beta;class CloudStorageService
-deprecated;class CloudStorageService
-beta;CloudStorageTileUploader
-deprecated;CloudStorageTileUploader
-beta;CloudStorageUploadOptions
-deprecated;CloudStorageUploadOptions
 alpha;CodeIndex
 alpha;CodeService
 alpha;CodeService
@@ -385,6 +373,7 @@ public;TextAnnotation3d
 public;Texture 
 internal;TextureCreateProps 
 internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
+beta;TileStorage
 public;TitleText 
 public;ToChangesetArgs 
 public;TokenArg

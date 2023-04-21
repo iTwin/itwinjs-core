@@ -12,9 +12,8 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
-    rows.push(row);
+  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+    rows.push(queryRow.toRow());
   }
   return rows;
 }

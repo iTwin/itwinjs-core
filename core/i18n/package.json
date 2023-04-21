@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "4.0.0-dev.59",
+  "version": "4.0.0-dev.78",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -8,11 +8,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/i18n"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/i18n"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm && npm run -s webpack:test",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s webpack:test",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.59"
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.78"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -46,7 +46,7 @@
     "@itwin/certa": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@types/chai": "4.3.1",
     "@types/node": "^18.11.5",
     "@types/i18next": "^8.4.2",
@@ -55,11 +55,12 @@
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.0.2",
-    "webpack": "^5.76.0"
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to core-i18n",

@@ -32,7 +32,9 @@ class AttachMapLayerBaseTool extends Tool {
         } else {
           const settings = source.toLayerSettings(validation.subLayers);
           if (settings) {
-            vp.displayStyle.attachMapLayer({settings, isOverlay: !this._isBackground});
+            // Need to specify index in mapLayerIndex, so just use -1 to attach layer at the bottom
+            // Previously, this was done within attachMapLayer if index was undefined.
+            vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: !this._isBackground, index: -1 } });
           }
         }
 
@@ -82,7 +84,7 @@ export class AttachModelMapLayerTool extends Tool {
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
       const settings = ModelMapLayerSettings.fromJSON({ name, modelId });
-      vp.displayStyle.attachMapLayer({settings, isOverlay:false});
+      vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } });
     }
     return true;
   }
@@ -101,7 +103,7 @@ class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
 
   public override async run(url: string, name?: string, userName?: string, password?: string): Promise<boolean> {
     const source = MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId });
-    if (source){
+    if (source) {
       source.userName = userName;
       source.password = password;
     }
@@ -238,8 +240,8 @@ export class DetachMapLayersTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
-    vp.displayStyle.detachMapLayerByIndex(-1, true);
-    vp.displayStyle.detachMapLayerByIndex(-1, false);
+    vp.displayStyle.detachMapLayerByIndex({ index: -1, isOverlay: true });
+    vp.displayStyle.detachMapLayerByIndex({ index: -1, isOverlay: false });
     vp.invalidateRenderPlan();
     return true;
   }
@@ -267,13 +269,13 @@ export class MapLayerVisibilityTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    const mapLayer = vp.displayStyle.mapLayerAtIndex(layerIndex, false);
+    const mapLayer = vp.displayStyle.mapLayerAtIndex({ index: layerIndex, isOverlay: false });
     if (undefined === mapLayer)
       return false;
 
     const visible = (enable === undefined) ? !mapLayer.visible : enable;
 
-    vp.displayStyle.changeMapLayerProps({ visible }, layerIndex, false);
+    vp.displayStyle.changeMapLayerProps({ visible }, { index: layerIndex, isOverlay: false });
     vp.invalidateRenderPlan();
 
     return true;
@@ -307,7 +309,7 @@ export class ReorderMapLayers extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.moveMapLayerToIndex(isNaN(from) ? 0 : from, isNaN(to) ? vp.displayStyle.backgroundMapLayers.length : to, false);
+    vp.displayStyle.moveMapLayerToIndex(isNaN(from) ? 0 : from, isNaN(to) ? vp.displayStyle.settings.mapImagery.backgroundLayers.length : to, false);
     vp.invalidateRenderPlan();
     return true;
   }
@@ -339,7 +341,7 @@ export class MapLayerTransparencyTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.changeMapLayerProps({ transparency }, layerIndex, false);
+    vp.displayStyle.changeMapLayerProps({ transparency }, { index: layerIndex, isOverlay: false });
     vp.invalidateRenderPlan();
 
     return true;
@@ -373,7 +375,7 @@ export class MapLayerSubLayerVisibilityTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.changeMapSubLayerProps({ visible }, -1, layerIndex, false);
+    vp.displayStyle.changeMapSubLayerProps({ visible }, -1, { index: layerIndex, isOverlay: false });
     vp.invalidateRenderPlan();
 
     return true;
@@ -407,7 +409,7 @@ export class MapLayerZoomTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.viewMapLayerRange(layerIndex, false, vp).then(() => { }).catch(() => { });
+    vp.viewMapLayerRange({ index: layerIndex, isOverlay: false }, vp).then(() => { }).catch(() => { });
 
     return true;
   }

@@ -48,9 +48,9 @@ public;BaseMapLayerSettings
 public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
-internal;class BentleyCloudRpcConfiguration 
-internal;BentleyCloudRpcManager 
-internal;BentleyCloudRpcParams
+beta;class BentleyCloudRpcConfiguration 
+beta;BentleyCloudRpcManager 
+beta;BentleyCloudRpcParams
 internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
@@ -109,18 +109,6 @@ internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
-beta;class CloudStorageCache
-deprecated;class CloudStorageCache
-beta;CloudStorageContainerDescriptor
-deprecated;CloudStorageContainerDescriptor
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageProvider
-deprecated;CloudStorageProvider
-beta;CloudStorageTileCache 
-deprecated;CloudStorageTileCache 
 public;Code 
 public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
@@ -210,7 +198,7 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-beta;ECSqlReader
+beta;ECSqlReader 
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
@@ -647,7 +635,7 @@ public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
 internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
-internal;class RpcConfiguration
+beta;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
 deprecated;RpcContentType
@@ -659,12 +647,12 @@ internal;RpcDirectRequest
 public;RpcEndpoint
 deprecated;RpcEndpoint
 public;class RpcInterface
-internal;RpcInterfaceDefinition
-internal;RpcInterfaceEndpoints
-internal;RpcInterfaceImplementation
+beta;RpcInterfaceDefinition
+beta;RpcInterfaceEndpoints
+beta;RpcInterfaceImplementation
 internal;RpcInvocation
 internal;RpcManagedStatus
-internal;RpcManager
+beta;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
@@ -707,7 +695,7 @@ public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
-internal;RpcRoutingToken
+beta;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
 internal;RpcSessionInvocation 

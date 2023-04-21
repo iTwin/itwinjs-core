@@ -38,9 +38,6 @@ import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
 import { ClipVector } from '@itwin/core-geometry';
-import { CloudStorageContainerDescriptor } from '@itwin/core-common';
-import { CloudStorageContainerUrl } from '@itwin/core-common';
-import { CloudStorageProvider } from '@itwin/core-common';
 import { Code } from '@itwin/core-common';
 import { CodeProps } from '@itwin/core-common';
 import { CodeScopeProps } from '@itwin/core-common';
@@ -112,7 +109,6 @@ import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelError } from '@itwin/core-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
-import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
@@ -122,6 +118,7 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { IpcWebSocketBackend } from '@itwin/core-common';
 import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
@@ -170,7 +167,6 @@ import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
-import { Readable } from 'stream';
 import { RelatedElement } from '@itwin/core-common';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
@@ -239,29 +235,6 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
 }
 
-// @beta @deprecated (undocumented)
-export class AliCloudStorageService extends CloudStorageService {
-    constructor(credentials: AliCloudStorageServiceCredentials);
-    // (undocumented)
-    id: CloudStorageProvider;
-    // (undocumented)
-    listContainer(name: string, marker: string, count: number): Promise<string[]>;
-    // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl;
-    // (undocumented)
-    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
-}
-
-// @beta @deprecated (undocumented)
-export interface AliCloudStorageServiceCredentials {
-    // (undocumented)
-    accessKeyId: string;
-    // (undocumented)
-    accessKeySecret: string;
-    // (undocumented)
-    region: string;
-}
-
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
@@ -314,19 +287,6 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-}
-
-// @beta @deprecated (undocumented)
-export class AzureBlobStorage extends CloudStorageService {
-    constructor(credentials: AzureBlobStorageCredentials);
-    // (undocumented)
-    ensureContainer(name: string): Promise<void>;
-    // (undocumented)
-    readonly id = CloudStorageProvider.Azure;
-    // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
-    // (undocumented)
-    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
 // @beta (undocumented)
@@ -903,45 +863,6 @@ export namespace CloudSqlite {
     export function uploadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
     export function withWriteLock<T>(user: string, container: CloudContainer, operation: () => T, busyHandler?: WriteLockBusyHandler): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
-}
-
-// @beta @deprecated (undocumented)
-export abstract class CloudStorageService {
-    // (undocumented)
-    download(_name: string): Promise<Readable | undefined>;
-    // (undocumented)
-    abstract id: CloudStorageProvider;
-    // (undocumented)
-    initialize(): void;
-    // (undocumented)
-    protected makeDescriptor(id: CloudStorageContainerDescriptor): {
-        name: string;
-        provider: CloudStorageProvider;
-    };
-    // (undocumented)
-    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
-    // (undocumented)
-    terminate(): void;
-    // (undocumented)
-    abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
-}
-
-// @beta @deprecated (undocumented)
-export class CloudStorageTileUploader {
-    // (undocumented)
-    get activeUploads(): Iterable<Promise<void>>;
-    // (undocumented)
-    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
-}
-
-// @beta @deprecated (undocumented)
-export interface CloudStorageUploadOptions {
-    // (undocumented)
-    cacheControl?: string;
-    // (undocumented)
-    contentEncoding?: "gzip";
-    // (undocumented)
-    type?: string;
 }
 
 // @alpha
@@ -3103,16 +3024,12 @@ export class IModelHost {
     static startup(options?: IModelHostOptions): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @internal @deprecated (undocumented)
-    static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal (undocumented)
     static tileStorage?: TileStorage;
     // @internal
     static get tileTreeRequestTimeout(): number;
-    // @internal @deprecated (undocumented)
-    static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
 }
@@ -3146,8 +3063,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta @deprecated (undocumented)
-    tileCacheService?: CloudStorageService;
     // @internal (undocumented)
     tileContentRequestTimeout: number;
     // @internal (undocumented)
@@ -3164,7 +3079,6 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
-    // @beta
     enableOpenTelemetry?: boolean;
     // @internal
     hubAccess?: BackendHubAccess;
@@ -3178,8 +3092,6 @@ export interface IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta @deprecated (undocumented)
-    tileCacheService?: CloudStorageService;
     // @beta
     tileCacheStorage?: ServerStorage;
     // @internal
@@ -3674,6 +3586,8 @@ export class LinkPartition extends InformationPartitionElement {
 export class LocalhostIpcHost {
     // (undocumented)
     static connect(connection: ws): void;
+    // (undocumented)
+    static socket: IpcWebSocketBackend;
     // (undocumented)
     static startup(opts?: {
         localhostIpcHost?: LocalhostIpcHostOpts;
@@ -5181,6 +5095,22 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 
 // @internal
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
+
+// @beta
+export class TileStorage {
+    constructor(storage: ServerStorage);
+    downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
+    getCachedTiles(iModelId: string): Promise<{
+        treeId: string;
+        contentId: string;
+        guid: string;
+    }[]>;
+    getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
+    initialize(iModelId: string): Promise<void>;
+    isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean>;
+    readonly storage: ServerStorage;
+    uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void>;
+}
 
 // @public
 export class TitleText extends DetailingSymbol {
