@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
-import { CodeProps } from "@itwin/core-common";
+import { CodeProps, FontId, FontType } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
@@ -57,19 +57,9 @@ export interface CodeIndex {
 }
 
 /**
- * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.
  * @alpha
  */
-export interface CodeService {
-  /** @internal */
-  close: () => void;
-
-  /** @internal */
-  addAllCodeSpecs(iModel: IModelDb): Promise<void>;
-
-  /** the code index for this CodeService */
-  readonly codeIndex: CodeIndex;
-
+export interface CodesDb {
   /**
    * Application-supplied parameters for obtaining the write lock on the container.
    * Applications should set these parameters by adding a listener for `BriefcaseDb.onCodeServiceCreated`
@@ -77,11 +67,8 @@ export interface CodeService {
    */
   readonly lockParams: CloudSqlite.ObtainLockParams;
 
-  /**
-   * Application-supplied parameters for reserving new codes.
-   * @see lockParams
-   */
-  readonly appParams: CodeService.AuthorAndOrigin;
+  /** the code index for this CodeService */
+  readonly codeIndex: CodeIndex;
 
   /**
    * The token that grants access to the cloud container for this CodeService.
@@ -109,7 +96,7 @@ export interface CodeService {
    * If not, throw an exception. Elements with no CodeValue are ignored.
    * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
    */
-  verifyCode(props: CodeService.ElementCodeProps): void;
+  verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
 
   /** Add a new code spec to this code service.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
@@ -178,13 +165,57 @@ export interface CodeService {
   deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
 }
 
+/**
+ * @internal
+ */
+export interface InternalCodes extends CodesDb {
+  reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
+  reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
+  verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
+}
+
+/**
+ * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.
+ * @alpha
+ */
+export interface CodeService {
+  /** @internal */
+  close: () => void;
+
+  initialize(iModel: IModelDb): Promise<void>;
+
+  /** the index for external Codes for this CodeService */
+  readonly externalCodes?: CodesDb;
+
+  /** the index for internal Codes for this CodeService
+   * @internal
+   */
+  readonly internalCodes?: InternalCodes;
+
+  /**
+   * Application-supplied parameters for reserving new codes.
+   */
+  readonly appParams: CodeService.AuthorAndOrigin;
+
+  /**
+   * Verify that the Code of a to-be-inserted or to-be-updated Element:
+   * 1. has already been reserved,
+   * 2. if the element has a `federationGuid`, it must match the reserved value. If the federationGuid is undefined,
+   * the value from the code index is returned.
+   *
+   * If not, throw an exception. Elements with no CodeValue are ignored.
+   * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
+   */
+  verifyCode(props: CodeService.ElementCodeProps): void;
+}
+
 /** @alpha */
 export namespace CodeService {
   /** @internal */
   const codeSequences = new Map<string, CodeSequence>();
 
   /** @internal */
-  export let createForIModel: ((db: IModelDb) => CodeService) | undefined;
+  export let createForIModel: ((db: IModelDb) => Promise<CodeService>) | undefined;
 
   /** Register an instance of a`CodeSequence` so it can be looked up by name. */
   export function registerSequence(seq: CodeSequence) {
@@ -193,7 +224,7 @@ export namespace CodeService {
 
   /** Get a previously registered `CodeSequence` by its name.
    * @throws if no sequence by that name was registered.
-  */
+   */
   export function getSequence(name: string): CodeSequence {
     const seq = codeSequences.get(name);
     if (!seq)
@@ -229,8 +260,10 @@ export namespace CodeService {
   /** The name of a code spec */
   export type CodeSpecName = string;
 
-  /** The name that identifies the "originator" of a code. Usually this is the Guid of the iModel from which a code was added,
-   * but can also be used to identify a system or type from an external code service. */
+  /**
+   * The name that identifies the "originator" of a code. Usually this is the Guid of the iModel from which a code was added,
+   * but can also be used to identify a system or type from an external code service.
+   */
   export type CodeOriginName = string;
 
   /** The name that identifies the "author" of a code. Generally, this is intended to be the name of a person or group that helps identify the purpose of the code. */
@@ -469,6 +502,19 @@ export namespace CodeService {
     isValidCode(code: CodeValue): boolean;
   }
 
+  /** @internal */
+  export interface FontIndexProps {
+    id?: number;
+    fontType: FontType;
+    fontName: string;
+  }
+  /** @internal */
+  export interface BisCodeSpecIndexProps {
+    id?: number;
+    name: string;
+    props: string;
+  }
+
   /** Exception class thrown by `CodeService` methods. */
   export class Error extends BentleyError {
     /** A string that indicates the type of problem that caused the exception. */
@@ -495,6 +541,7 @@ export namespace CodeService {
     "GuidIsInUse" |
     "GuidMismatch" |
     "IllegalValue" |
+    "InconsistentIModels" |
     "IndexReadonly" |
     "InvalidCodeScope" |
     "InvalidGuid" |

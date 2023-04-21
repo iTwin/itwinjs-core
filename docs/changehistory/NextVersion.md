@@ -241,9 +241,26 @@ Previously, the backend would return a "timeout" status if creating the response
 
 Now, the two timeout configs on the backend and the frontend have been separated. The timeout on the frontend is set through [PresentationManagerProps.requestTimeout]($presentation-frontend) and defaults to 10 minutes. Presentation manager will repeat the RPC request as many times as needed to wait at least 10 minutes until returning the "timeout" response to the requestor. With this change the timeout configuration on the backend becomes less important as it merely affects how often the frontend will have to repeat the request. It can still be changed through [PresentationPropsBase.requestTimeout]($presentation-backend), but the default value has been reduced to 5 seconds.
 
+### Use content modifiers on nested content
+
+Previously, the [calculated](../presentation/content/ContentModifier.md#attribute-calculatedproperties) and [related properties](../presentation/content/ContentModifier.md#attribute-relatedproperties) defined in [content modifiers](../presentation/content/ContentModifier.md) were only applied on directly loaded instances' content. Occasionally, there is a need to request calculated and/or related properties to be loaded for specific instances in all situations, no matter if their content is loaded directly or indirectly. Previously that was only possible by chaining [related properties](../presentation/content/ContentModifier.md#attribute-relatedproperties) and [nested related properties](../presentation/content/RelatedPropertiesSpecification.md#attribute-nestedrelatedproperties) attributes. Now the content modifier rule has an attribute [`applyOnNestedContent`](../presentation/content/ContentModifier.md#attribute-applyonnestedcontent) which indicates if the modifier should be used on nested content. This removes the need to have duplicate [related properties specifications](../presentation/content/RelatedPropertiesSpecification.md) in those situations.
+
 ### Dependency updates
 
 In addition to upgrading iTwin.js core dependencies to `4.0`, there are some other notable upgrades:
 
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
+- `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
+
+## Interfaces renamed
+
+**@itwin/core-quantity**
+
+- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+
+**@itwin/ecschema-metadata**
+
+- The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
+
+- The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).

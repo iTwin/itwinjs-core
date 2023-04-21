@@ -44,7 +44,7 @@ beta;ScientificType
 beta;scientificTypeToString(scientificType: ScientificType): string
 beta;ShowSignOption
 beta;showSignOptionToString(showSign: ShowSignOption): string
-beta;UnitConversion
+beta;UnitConversionProps
 beta;UnitConversionSpec
 alpha;UnitExtraData
 beta;UnitProps
