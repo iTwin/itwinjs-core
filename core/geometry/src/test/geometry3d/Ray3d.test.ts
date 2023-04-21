@@ -289,6 +289,29 @@ describe("Ray3d", () => {
   });
 });
 
+describe("Ray3d.isAlmostEqualPointSet", () => {
+  it("Ray3d.isAlmostEqualPointSet", () => {
+    const ck = new Checker();
+    const origin1 = Point3d.create(0, 0, 0);
+    const direction1 = Vector3d.create(1, 2, 3);
+    const ray1 = Ray3d.create(origin1, direction1);
+    let origin2 = Point3d.create(1, 2, 3);
+    let direction2 = Vector3d.create(0, 0, 0);
+    let ray2 = Ray3d.create(origin2, direction2);
+    ck.testFalse(ray1.isAlmostEqualPointSet(ray2), "ray1 is not equal to ray2");
+
+    origin2 = Point3d.create(0, 0, 0);
+    direction2 = Vector3d.create(1, 2, 3);
+    ray2 = Ray3d.create(origin2, direction2);
+    ck.testTrue(ray1.isAlmostEqualPointSet(ray2), "ray1 is equal to ray2");
+
+    origin2 = Point3d.create(0, 0, 1);
+    direction2 = Vector3d.create(1, 2, 3);
+    ray2 = Ray3d.create(origin2, direction2);
+    ck.testTrue(ray1.isAlmostEqualPointSet(ray2), "ray1 is parallel to ray2");
+  });
+});
+
 /** Return a random number between -100 and 100 */
 function getRandomNumber() {
   return 200 * Math.random() - 100;
@@ -342,10 +365,34 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     }
     const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), rotationMatrix);
 
-    origin = Point3d.create(2, 0, -2);
+    origin = Point3d.create(3, 3, -5);
     direction = Vector3d.create(0, 0, 1);
     ray = Ray3d.create(origin, direction);
     triangle = BarycentricTriangle.createXYZXYZXYZ(2, 0, 0, 10, 0, 0, 2, 10, 0);
+    intersectionPoint = ray.intersectionWithTriangle(triangle.points[0], triangle.points[1], triangle.points[2])!;
+    expectedIntersectionPoint = Point3d.create(3, 3, 0);
+    if (ck.testDefined(intersectionPoint)) {
+      ck.testPoint3d(intersectionPoint, expectedIntersectionPoint, "ray intersects triangle at a point");
+    }
+    ray.cloneTransformed(rotationTransform, rotatedRay);
+    triangle.cloneTransformed(rotationTransform, rotatedTriangle);
+    rotatedIntersectionPoint = rotatedRay.intersectionWithTriangle(
+      rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2]
+    );
+    rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoint);
+    if (ck.testDefined(rotatedIntersectionPoint)) {
+      ck.testPoint3d(
+        rotatedOriginalIntersectionPoint,
+        rotatedIntersectionPoint!,
+        "rotating original intersection points gives rotated intersection points"
+      );
+    }
+    captureRay(allGeometry, ray, rotatedRay);
+    captureTriangle(allGeometry, triangle, rotatedTriangle);
+
+    origin = Point3d.create(2, 0, -2);
+    direction = Vector3d.create(0, 0, 1);
+    ray = Ray3d.create(origin, direction);
     intersectionPoint = ray.intersectionWithTriangle(triangle.points[0], triangle.points[1], triangle.points[2])!;
     expectedIntersectionPoint = Point3d.create(2, 0, 0);
     if (ck.testDefined(intersectionPoint)) {
@@ -415,6 +462,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     origin = Point3d.create(0, 0, 0);
     direction = Vector3d.create(1, 1, 0);
     ray = Ray3d.create(origin, direction);
+    triangle = BarycentricTriangle.createXYZXYZXYZ(2, 0, 0, 10, 0, 0, 2, 10, 0);
     intersectionPoint = ray.intersectionWithTriangle(triangle.points[0], triangle.points[1], triangle.points[2]);
     ck.testUndefined(intersectionPoint, "expect no intersection when ray and triangle are co-planer");
     captureRay(allGeometry, ray, rotatedRay);
@@ -451,134 +499,135 @@ describe("Ray3d.IntersectionWithTriangle", () => {
   });
 
   it("Ray3d.IntersectionWithTriangleAccuracyAndPerformanceTests", () => {
-    if (GeometryCoreTestIO.enableLongTests) {
-      const ck = new Checker();
+    if (!GeometryCoreTestIO.enableLongTests) {
+      return;
+    }
+    const ck = new Checker();
 
-      const N = 50; // N*N is the number of rays and the number of triangles
-      const origins: Point3d[] = [];
-      const directions: Vector3d[] = [];
-      for (let i = 0; i < N; i++) {
-        origins.push(Point3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber()));
-        directions.push(Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber()));
+    const N = 50; // N*N is the number of rays and the number of triangles
+    const origins: Point3d[] = [];
+    const directions: Vector3d[] = [];
+    for (let i = 0; i < N; i++) {
+      origins.push(Point3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber()));
+      directions.push(Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber()));
+    }
+    // create N*N rays
+    const rays: Ray3d[] = [];
+    for (const origin of origins) {
+      for (const direction of directions) {
+        rays.push(Ray3d.create(origin, direction));
       }
-      // create N*N rays
-      const rays: Ray3d[] = [];
-      for (const origin of origins) {
-        for (const direction of directions) {
-          rays.push(Ray3d.create(origin, direction));
-        }
-      }
-      // create N*N triangles
-      const triangles: BarycentricTriangle[] = [];
-      for (let i = 0; i < N * N; i++) {
-        triangles.push(
-          BarycentricTriangle.createXYZXYZXYZ(
-            getRandomNumber(), getRandomNumber(), getRandomNumber(),
-            getRandomNumber(), getRandomNumber(), getRandomNumber(),
-            getRandomNumber(), getRandomNumber(), getRandomNumber()
-          )
-        );
-      }
-      const intersectionPoints1: Point3d[] = [];
-      const intersectionPoints2: Point3d[] = [];
-      let intersectionPoint1: Point3d | undefined;
-      let intersectionPoint2: TriangleLocationDetail | undefined;
-      let timeByRay3d: number = 0;
-      let timeByBarycentricTriangle: number = 0;
-      let startTime: number;
-      let endTime: number;
-
-      for (const ray of rays) {
-        for (const triangle of triangles) {
-          // shoot ray at triangle using Ray3d class
-          startTime = performance.now();
-          intersectionPoint1 = ray.intersectionWithTriangle(
-            triangle.points[0], triangle.points[1], triangle.points[2]
-          );
-          endTime = performance.now();
-          timeByRay3d = timeByRay3d + endTime - startTime;
-          if (intersectionPoint1 !== undefined) {
-            intersectionPoints1.push(intersectionPoint1);
-          }
-          // shoot ray at triangle using BarycentricTriangle class
-          startTime = performance.now();
-          intersectionPoint2 = triangle.intersectRay3d(ray);
-          endTime = performance.now();
-          timeByBarycentricTriangle = timeByBarycentricTriangle + endTime - startTime;
-          if (intersectionPoint2.isInsideOrOn && intersectionPoint2.a >= 0) { // ray intersection not just line intersection
-            intersectionPoints2.push(intersectionPoint2.world);
-          }
-        }
-      }
-      if (!ck.testExactNumber(
-        intersectionPoints1.length,
-        intersectionPoints2.length,
-        "Ray3d and BarycentricTriangle classes return same number of intersection points"
-      )) {
-        expect(ck.getNumErrors()).equals(0);
-      }
-      GeometryCoreTestIO.consoleLog(
-        `${intersectionPoints1.length} intersection happened out of ${rays.length * triangles.length} shoots`
+    }
+    // create N*N triangles
+    const triangles: BarycentricTriangle[] = [];
+    for (let i = 0; i < N * N; i++) {
+      triangles.push(
+        BarycentricTriangle.createXYZXYZXYZ(
+          getRandomNumber(), getRandomNumber(), getRandomNumber(),
+          getRandomNumber(), getRandomNumber(), getRandomNumber(),
+          getRandomNumber(), getRandomNumber(), getRandomNumber()
+        )
       );
-      for (let i = 0; i < intersectionPoints1.length; i++) {
-        if (!ck.testPoint3d(
-          intersectionPoints1[i],
-          intersectionPoints2[i],
-          "intersection points calculated by Ray3d and BarycentricTriangle classes are equal"
-        )) {
-          expect(ck.getNumErrors()).equals(0);
-        }
-      }
-      GeometryCoreTestIO.consoleLog(`Calls to Ray3d.intersectWithTriangle took ${timeByRay3d} milliseconds`);
-      GeometryCoreTestIO.consoleLog(`Calls to BarycentricTriangle.intersectRay3d took ${timeByBarycentricTriangle} milliseconds`);
+    }
+    const intersectionPoints1: Point3d[] = [];
+    const intersectionPoints2: Point3d[] = [];
+    let intersectionPoint1: Point3d | undefined;
+    let intersectionPoint2: TriangleLocationDetail | undefined;
+    let timeByRay3d: number = 0;
+    let timeByBarycentricTriangle: number = 0;
+    let startTime: number;
+    let endTime: number;
 
-      // intersection under rotation
-      const rotatedRay = Ray3d.createZero();
-      const rotatedTriangle = BarycentricTriangle.create(new Point3d(0, 0, 0), new Point3d(0, 0, 0), new Point3d(0, 0, 0));
-      const rotatedIntersectionPoints: Point3d[] = [];
-      let rotatedIntersectionPoint: Point3d | undefined; // rotate ray and triangle and then find intersection
-      let rotatedOriginalIntersectionPoint = Point3d.createZero(); // find intersection and then rotate the intersection
-      let rotationMatrix: Matrix3d;
-      const angle: Angle = Angle.createDegrees(getRandomNumber());
-      const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber());
-      if (!rotationAxis.magnitude()) {
-        rotationMatrix = Matrix3d.identity;
-      } else {
-        rotationMatrix = Matrix3d.createRotationAroundVector(rotationAxis, angle)!;
-      }
-      const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), rotationMatrix);
-
-      for (const ray of rays) {
-        for (const triangle of triangles) {
-          ray.cloneTransformed(rotationTransform, rotatedRay);
-          triangle.cloneTransformed(rotationTransform, rotatedTriangle);
-          // shoot rotated ray at rotated triangle
-          rotatedIntersectionPoint = rotatedRay.intersectionWithTriangle(
-            rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2]
-          );
-          if (rotatedIntersectionPoint !== undefined) {
-            rotatedIntersectionPoints.push(rotatedIntersectionPoint);
-          }
+    for (const ray of rays) {
+      for (const triangle of triangles) {
+        // shoot ray at triangle using Ray3d class
+        startTime = performance.now();
+        intersectionPoint1 = ray.intersectionWithTriangle(
+          triangle.points[0], triangle.points[1], triangle.points[2]
+        );
+        endTime = performance.now();
+        timeByRay3d = timeByRay3d + endTime - startTime;
+        if (intersectionPoint1 !== undefined) {
+          intersectionPoints1.push(intersectionPoint1);
+        }
+        // shoot ray at triangle using BarycentricTriangle class
+        startTime = performance.now();
+        intersectionPoint2 = triangle.intersectRay3d(ray);
+        endTime = performance.now();
+        timeByBarycentricTriangle = timeByBarycentricTriangle + endTime - startTime;
+        if (intersectionPoint2.isInsideOrOn && intersectionPoint2.a >= 0) { // ray intersection not just line intersection
+          intersectionPoints2.push(intersectionPoint2.world);
         }
       }
-      if (!ck.testExactNumber(
-        intersectionPoints1.length,
-        rotatedIntersectionPoints.length,
-        "original and rotated shots return same number of intersection points"
-      )) {
-        expect(ck.getNumErrors()).equals(0);
-      }
-      for (let i = 0; i < intersectionPoints1.length; i++) {
-        rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoints1[i]);
-        if (!ck.testPoint3d(
-          rotatedOriginalIntersectionPoint,
-          rotatedIntersectionPoints[i],
-          "rotating original intersection points gives rotated intersection points"
-        )) {
-          expect(ck.getNumErrors()).equals(0);
-        }
-      }
+    }
+    if (!ck.testExactNumber(
+      intersectionPoints1.length,
+      intersectionPoints2.length,
+      "Ray3d and BarycentricTriangle classes return same number of intersection points"
+    )) {
       expect(ck.getNumErrors()).equals(0);
     }
+    GeometryCoreTestIO.consoleLog(
+      `${intersectionPoints1.length} intersection happened out of ${rays.length * triangles.length} shoots`
+    );
+    for (let i = 0; i < intersectionPoints1.length; i++) {
+      if (!ck.testPoint3d(
+        intersectionPoints1[i],
+        intersectionPoints2[i],
+        "intersection points calculated by Ray3d and BarycentricTriangle classes are equal"
+      )) {
+        expect(ck.getNumErrors()).equals(0);
+      }
+    }
+    GeometryCoreTestIO.consoleLog(`Calls to Ray3d.intersectWithTriangle took ${timeByRay3d} milliseconds`);
+    GeometryCoreTestIO.consoleLog(`Calls to BarycentricTriangle.intersectRay3d took ${timeByBarycentricTriangle} milliseconds`);
+
+    // intersection under rotation
+    const rotatedRay = Ray3d.createZero();
+    const rotatedTriangle = BarycentricTriangle.create(new Point3d(0, 0, 0), new Point3d(0, 0, 0), new Point3d(0, 0, 0));
+    const rotatedIntersectionPoints: Point3d[] = [];
+    let rotatedIntersectionPoint: Point3d | undefined; // rotate ray and triangle and then find intersection
+    let rotatedOriginalIntersectionPoint = Point3d.createZero(); // find intersection and then rotate the intersection
+    let rotationMatrix: Matrix3d;
+    const angle: Angle = Angle.createDegrees(getRandomNumber());
+    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber());
+    if (!rotationAxis.magnitude()) {
+      rotationMatrix = Matrix3d.identity;
+    } else {
+      rotationMatrix = Matrix3d.createRotationAroundVector(rotationAxis, angle)!;
+    }
+    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), rotationMatrix);
+
+    for (const ray of rays) {
+      for (const triangle of triangles) {
+        ray.cloneTransformed(rotationTransform, rotatedRay);
+        triangle.cloneTransformed(rotationTransform, rotatedTriangle);
+        // shoot rotated ray at rotated triangle
+        rotatedIntersectionPoint = rotatedRay.intersectionWithTriangle(
+          rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2]
+        );
+        if (rotatedIntersectionPoint !== undefined) {
+          rotatedIntersectionPoints.push(rotatedIntersectionPoint);
+        }
+      }
+    }
+    if (!ck.testExactNumber(
+      intersectionPoints1.length,
+      rotatedIntersectionPoints.length,
+      "original and rotated shots return same number of intersection points"
+    )) {
+      expect(ck.getNumErrors()).equals(0);
+    }
+    for (let i = 0; i < intersectionPoints1.length; i++) {
+      rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoints1[i]);
+      if (!ck.testPoint3d(
+        rotatedOriginalIntersectionPoint,
+        rotatedIntersectionPoints[i],
+        "rotating original intersection points gives rotated intersection points"
+      )) {
+        expect(ck.getNumErrors()).equals(0);
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
   });
 });

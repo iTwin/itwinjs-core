@@ -1634,7 +1634,7 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createUniformScale(scale);
   }
   /**
-  * Multiply `matrix * point`, treating the point is a column point on the right.
+  * Multiply `matrix * point`, treating the point as a column vector on the right.
   * ```
   * equation
   * \matrixXY{A}\columnSubXYZ{U}

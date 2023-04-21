@@ -229,18 +229,15 @@ export class Ray3d implements BeJSONFunctions {
   }
   /** Create a clone and return the inverse transform of the clone. */
   public cloneInverseTransformed(transform: Transform, result?: Ray3d): Ray3d | undefined {
-    const origin = transform.multiplyInversePoint3d(this.origin);
-    const direction = transform.matrix.multiplyInverseXYZAsVector3d(
-      this.direction.x, this.direction.y, this.direction.z
+    if (!transform.computeCachedInverse(true))
+      return undefined;
+    return Ray3d.create(
+      transform.multiplyInversePoint3d(this.origin, result?.origin)!,
+      transform.matrix.multiplyInverseXYZAsVector3d(
+        this.direction.x, this.direction.y, this.direction.z, result?.direction
+      )!,
+      result
     );
-    if (undefined !== origin && undefined !== direction) {
-      if (result) {
-        result.set(this.origin, this.direction);
-        return result;
-      }
-      return new Ray3d(origin, direction);
-    }
-    return undefined;
   }
   /** Apply a transform in place. */
   public transformInPlace(transform: Transform) {
@@ -377,14 +374,14 @@ export class Ray3d implements BeJSONFunctions {
     return interval;
   }
   /**
-   * Compute the intersection of the ray with a barycentric triangle.
+   * Compute the intersection of the ray with a triangle.
    * @param vertex0 first vertex of the triangle
    * @param vertex1 second vertex of the triangle
    * @param vertex2 third vertex of the triangle
    * @param distanceTol optional tolerance used to check if ray is parallel to the triangle or if we have line
-   * intersection but not ray intersection (if tolerance is not provided Geometry.smallMetricDistance is used)
-   * @param parameterTol optional tolerance used to check if ray is parallel to the triangle or if we have line
-   * intersection but not ray intersection (if tolerance is not provided Geometry.smallFloatingPoint is used)
+   * intersection but not ray intersection (if tolerance is not provided, Geometry.smallMetricDistance is used)
+   * @param parameterTol optional tolerance used to snap barycentric coordinates of the intersection point to
+   * a triangle edge or vertex (if tolerance is not provided, Geometry.smallFloatingPoint is used)
    * @param result optional pre-allocated object to fill and return
    * @returns the intersection point if ray intersects the triangle. Otherwise, return undefined.
   */
@@ -421,11 +418,12 @@ export class Ray3d implements BeJSONFunctions {
      * u = [(rayOrigin - v0).(rayVector x (v2-v0))] / [(v1-v0).(rayVector x (v2-v0))]
      * v = [-rayVector.((rayOrigin - v0) x (v1-v0))] / [(v1-v0).(rayVector x (v2-v0))]
      *
-     * Note that we should verify 0 < u,v,w < 1. To do so we only need to check 0 < u < 1, v > 0, and u+v < 1.
-     * That's because w = 1-(u+v) and if we have those 4 checks, it's guaranteed that v < 1 and u+v > 0.
+     * Note that we should verify 0 <= u,v,w <= 1. To do so we only need to check 0 <= u <= 1, 0 <= v, and u+v <= 1.
+     * That's because w = 1-(u+v) and if we have those 4 checks, it's guaranteed that v <= 1 and 0 <= u+v and so
+     * 0 <= w <= 1.
      *
      * More info be found at
-     * https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
+     * https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
      */
     if (distanceTol === undefined || distanceTol < 0) // we explicitly allow zero tolerance
       distanceTol = Geometry.smallMetricDistance;
