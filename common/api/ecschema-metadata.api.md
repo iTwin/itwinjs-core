@@ -686,6 +686,9 @@ export class Format extends SchemaItem {
     get uomSeparator(): string;
 }
 
+// @internal (undocumented)
+export function getFormatProps(format: Format | OverrideFormat): FormatProps;
+
 // @beta
 export class InvertedUnit extends SchemaItem {
     constructor(schema: Schema, name: string);

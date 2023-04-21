@@ -8,7 +8,7 @@
 
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { DecimalPrecision, FormatProps, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
@@ -150,4 +150,8 @@ export class OverrideFormat {
 
     return formatJson;
   }
+}
+
+export function getFormatProps(format: Format | OverrideFormat): FormatProps {
+  return OverrideFormat.isOverrideFormat(format) ? format.getFormatProps() : format.toJSON();
 }

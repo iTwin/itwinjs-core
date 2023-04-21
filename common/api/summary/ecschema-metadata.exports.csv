@@ -44,6 +44,7 @@ beta;EnumerationPropertyProps
 beta;EnumerationProps 
 beta;EnumeratorProps
 beta;Format 
+internal;getFormatProps(format: Format | OverrideFormat): FormatProps
 beta;InvertedUnit 
 beta;InvertedUnitProps 
 beta;ISchemaItemLocater
