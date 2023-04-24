@@ -184,6 +184,9 @@ export class BatchedTile extends Tile {
       return;
 
     const unskippable = 0 === (this.depth % getMaxLevelsToSkip());
+    if (unskippable && this.isReady)
+      args.markReady(this);
+
     closestDisplayableAncestor = this.hasGraphics ? this : closestDisplayableAncestor;
     if (TileVisibility.TooCoarse === vis && (this.isReady || !unskippable)) {
       args.markUsed(this);
