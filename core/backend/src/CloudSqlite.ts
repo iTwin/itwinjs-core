@@ -607,6 +607,7 @@ export namespace CloudSqlite {
     public get sasToken() { return this._container.accessToken; }
     public set sasToken(token: AccessToken) { this._container.accessToken = token; }
 
+    /** the container for this DbAccess. It is automatically connected to the CloudCache whenever it is accessed. */
     public get container(): CloudContainer {
       const container = this._container;
       if (!container.isConnected)

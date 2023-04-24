@@ -15,6 +15,7 @@ export * from "./ChangeSummaryManager";
 export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
+export * from "./CloudContainerService";
 export * from "./CloudSqlite";
 export * from "./CodeService";
 export * from "./CodeSpecs";
@@ -158,12 +159,8 @@ export * from "./workspace/Workspace";
  * Classes for working with [RpcInterfaces]($docs/learning/RpcInterface.md).
  */
 /**
- * @docs-group-description CloudStorageBackend
- * Classes for working with cloud storage.
- */
-/**
- * @docs-group-description AliCloudStorageService
- * Classes for working with cloud storage using AliCloud.
+ * @docs-group-description CloudContainers
+ * Classes for working with cloud storage containers.
  */
 /**
  * @docs-group-description TileStorage
