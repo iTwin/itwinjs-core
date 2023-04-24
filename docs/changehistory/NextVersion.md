@@ -20,6 +20,8 @@ Table of contents:
   - [Deprecated API removals](#deprecated-api-removals)
   - [Deprecated API replacements](#deprecated-api-replacements)
     - [Querying ECSql](#querying-ecsql)
+- [Backend](#backend)
+  - [BackendHubAccess](#backendhubaccess)
 - [Geometry](#geometry)
   - [Mesh offset](#mesh-offset)
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
@@ -148,6 +150,12 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
   const jsRow = row.toRow();
 }
 ```
+
+## Backend
+
+### BackendHubAccess
+
+BackendHubAccess has been marked @internal from @beta. The 'hubAccess' property on [IModelHostConfiguration]($core-backend) has also been marked @internal from @beta.
 
 ## Geometry
 
