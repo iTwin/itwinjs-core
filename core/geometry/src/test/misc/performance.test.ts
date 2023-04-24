@@ -7,8 +7,7 @@ import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-
-/* eslint-disable no-console */
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {
   const savedFlag = Matrix3d.useCachedInverse;
@@ -26,17 +25,17 @@ function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResul
   const name: string = `Matrix3d inverse ${usingCache ? "Cache" : "NoCache"} ${usingResult ? "preallocate" : "new "}`;
 
   if (usingResult) {
-    console.time(name);
+    GeometryCoreTestIO.consoleTime(name);
     for (let k = 0; k < numTest; k++) {
       inverse = matrix.inverse(inverse) as Matrix3d;
     }
-    console.timeEnd(name);
+    GeometryCoreTestIO.consoleTimeEnd(name);
   } else {
-    console.time(name);
+    GeometryCoreTestIO.consoleTime(name);
     for (let k = 0; k < numTest; k++) {
       inverse = matrix.inverse() as Matrix3d;
     }
-    console.timeEnd(name);
+    GeometryCoreTestIO.consoleTimeEnd(name);
   }
   Matrix3d.useCachedInverse = savedFlag;
 }
@@ -49,100 +48,100 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
     case 0:
       Geometry.hypotenuseXY(10, -5);
       name = "Geometry_HypotenuseXY";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseXY(10, -5);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 1:
       name = "Math_HypotenuseXY";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 2:
       name = "Geometry_HypotenuseXYZ: ";
       Geometry.hypotenuseXYZ(10, -5, 2);
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseXYZ(10, -5, 2);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 3:
       name = "Math_HypotenuseXYZ";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5, 2);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 4:
       name = "Geometry_HypotenuseXYZW: ";
       Geometry.hypotenuseXYZW(10, -5, 2, 7);
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseXYZW(10, -5, 2, 7);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 5:
       name = "Math_HypotenuseXYZW";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5, 2, 7);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     /*     case 6:
           name = "Geometry_HypotenuseVariableXYZW";
-          console.time(name);
+          GeometryCoreTestIO.consoleTime(name);
           for (let i = 0; i < numTest; i++) {
             Geometry.tempHypot(10, -5, 2, 7);
           }
-          console.timeEnd(name);
+          GeometryCoreTestIO.consoleTimeEnd(name);
           break;
     */
     case 7:
       name = "Geometry_HypotenuseSquaredXY";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseSquaredXY(10, -5);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 8:
       name = "Geometry_HypotenuseSquaredXYZ";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseSquaredXYZ(10, -5, 2);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 9:
       name = "Geometry_HypotenuseWSquaredXYZW";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseSquaredXYZW(10, -5, 2, 7);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
     default:
-      console.log("ERROR - Incorrect function identifier in hypotenuse performance test");
+      GeometryCoreTestIO.consoleLog("ERROR - Incorrect function identifier in hypotenuse performance test");
       return;
   }
 }
@@ -154,33 +153,33 @@ function hypotenuseSquaredCalculationLoop(numTest: number, funcIdentifier: numbe
   switch (funcIdentifier) {
     case 0:
       name = "Geometry_HypotenuseSquaredXY";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseSquaredXY(10, -5);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 1:
       name = "Geometry_HypotenuseSquaredXYZ";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseSquaredXYZ(10, -5, 2);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 2:
       name = "Geometry_HypotenuseWSquaredXYZW";
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         Geometry.hypotenuseSquaredXYZW(10, -5, 2, 7);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     default:
-      console.log("ERROR - Incorrect function identifier in hypotenuse performance test");
+      GeometryCoreTestIO.consoleLog("ERROR - Incorrect function identifier in hypotenuse performance test");
       return;
   }
 }
@@ -194,7 +193,7 @@ function arrayCheck(numTest: number, type: number) {
     case 1:   // Normal Javascript array (float)
       name = "Javascript_Float_Array";
       arr = [10, 1, 9, 2];
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // Fetch items
         arr[0];
@@ -217,14 +216,14 @@ function arrayCheck(numTest: number, type: number) {
         arr[0] = 3;
         arr[2] = 1;
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 2:   // Growable array (float)
       name = "Growable_Float_Array";
       arr = new GrowableFloat64Array();
       arr.push(10); arr.push(1); arr.push(9); arr.push(2);
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // Fetch items
         arr.at(0);
@@ -247,13 +246,13 @@ function arrayCheck(numTest: number, type: number) {
         arr.reassign(0, 3);
         arr.reassign(2, 1);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 3:   // Javascript array (point)
       name = "Javascript_Point_Array";
       arr = [Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(2, 2, 2)];
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // Fetch items
         arr[0];
@@ -276,7 +275,7 @@ function arrayCheck(numTest: number, type: number) {
         arr[0] = Point3d.create(0, 3, 5);
         arr[2] = Point3d.create(-1, 3, 5);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
 
     case 4:   // Growable array (Point)
@@ -284,7 +283,7 @@ function arrayCheck(numTest: number, type: number) {
       arr = new GrowableXYZArray();
       const result = Point3d.create();
       arr.push(Point3d.create(0, 0, 0)); arr.push(Point3d.create(1, 1, 1)); arr.push(Point3d.create(2, 2, 2));
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // Fetch items
         arr.getPoint3dAtUncheckedPointIndex(0, result);
@@ -307,7 +306,7 @@ function arrayCheck(numTest: number, type: number) {
         arr.setXYZAtCheckedPointIndex(0, 0, 3, 5);
         arr.setXYZAtCheckedPointIndex(2, 1, 3, 5);
       }
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
       break;
   }
 }
@@ -364,22 +363,22 @@ export class Matrix3dOps extends Matrix3d {
 class TimingTests {
 
   public static runTestA(numTest: number) {
-    console.log("\n performance reps ", numTest);
+    GeometryCoreTestIO.consoleLog("\n performance reps ", numTest);
     const matrixA = Matrix3d.createScale(1, 2, 3);
     const matrixB = Matrix3d.createScale(2, -1, 2);
 
     // Non direct assignment with no pre-allocated result. let defined inside loop
-    console.time("multiplyMatrixMatrix");
+    GeometryCoreTestIO.consoleTime("multiplyMatrixMatrix");
     for (let k = 0; k < numTest; k++)
       matrixA.multiplyMatrixMatrix(matrixB);
-    console.timeEnd("multiplyMatrixMatrix");
+    GeometryCoreTestIO.consoleTimeEnd("multiplyMatrixMatrix");
 
     // Non direct assignment with pre-allocated result. let defined inside loop
     let matrixD = Matrix3d.createIdentity();
-    console.time("multiplyMatrixMatrix(result)");
+    GeometryCoreTestIO.consoleTime("multiplyMatrixMatrix(result)");
     for (let k = 0; k < numTest; k++)
       matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
-    console.timeEnd("multiplyMatrixMatrix(result)");
+    GeometryCoreTestIO.consoleTimeEnd("multiplyMatrixMatrix(result)");
 
   }
   public static runTestB(numTest: number) {
@@ -389,39 +388,39 @@ class TimingTests {
     let matrixD = Matrix3dOps.createIdentity();
 
     // Non direct assignment with no pre-allocated result
-    console.log("\n performance reps ", numTest);
-    console.time("Test_1_static_Outside");
+    GeometryCoreTestIO.consoleLog("\n performance reps ", numTest);
+    GeometryCoreTestIO.consoleTime("Test_1_static_Outside");
     for (let k = 0; k < numTest; k++)
       matrixD = matrixA.multiplyMatrixMatrix(matrixB);
-    console.timeEnd("Test_1_static_Outside");
+    GeometryCoreTestIO.consoleTimeEnd("Test_1_static_Outside");
 
-    console.time("Test_pre-allocated_result_static_Outside");
+    GeometryCoreTestIO.consoleTime("Test_pre-allocated_result_static_Outside");
     for (let k = 0; k < numTest; k++)
       matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
-    console.timeEnd("Test_pre-allocated_result_static_Outside");
+    GeometryCoreTestIO.consoleTimeEnd("Test_pre-allocated_result_static_Outside");
 
-    console.time("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
+    GeometryCoreTestIO.consoleTime("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
     for (let k = 0; k < numTest; k++)
       matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignment(matrixA, matrixB, matrixD);
-    console.timeEnd("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
+    GeometryCoreTestIO.consoleTimeEnd("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
 
     for (let numReps = 0; numReps < 20; numReps = 3 * numReps + 1) {
       const name = `Matrix3dOps.multiplyMatrixMatrixdirectAssignment (numReps ${numReps}`;
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       for (let k = 0; k < numTest; k++)
         matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignmentN(numReps, matrixA, matrixB, matrixD);
-      console.timeEnd(name);
+      GeometryCoreTestIO.consoleTimeEnd(name);
     }
   }
   public static runTestC(numTest: number) {
-    // console.log("==================");
+    // GeometryCoreTestIO.consoleLog("==================");
     inverseCalculationLoop(numTest, true, true);
     inverseCalculationLoop(numTest, false, true);
     inverseCalculationLoop(numTest, true, false);
     inverseCalculationLoop(numTest, false, false);
   }
   public static runTestD(numTest: number) {
-    // console.log("==================");
+    // GeometryCoreTestIO.consoleLog("==================");
     hypotenuseCalculationLoop(numTest, 1);
     hypotenuseCalculationLoop(numTest, 3);
     hypotenuseCalculationLoop(numTest, 5);
@@ -440,13 +439,13 @@ class TimingTests {
     hypotenuseCalculationLoop(numTest, 9);
   }
   public static runTestE(numTest: number) {
-    // console.log("==================");
+    // GeometryCoreTestIO.consoleLog("==================");
     hypotenuseSquaredCalculationLoop(numTest, 0);
     hypotenuseSquaredCalculationLoop(numTest, 1);
     hypotenuseSquaredCalculationLoop(numTest, 2);
   }
   public static runTestG(numTest: number) {
-    // console.log("==================");
+    // GeometryCoreTestIO.consoleLog("==================");
     // arrayCheck(numTest, 1);
     // arrayCheck(numTest, 2);
     arrayCheck(numTest, 3);
@@ -490,7 +489,7 @@ describe("Geometry.HypotenuseSquared", () => {
 
 describe("Array_Vs_Growable", () => {
   it("Use of indexing, pushing, popping, length, and reassignment of array types", () => {
-    console.log({ numTest: numTestGlobal });
+    GeometryCoreTestIO.consoleLog({ numTest: numTestGlobal });
     TimingTests.runTestG(numTestGlobal * 2);
   });
 });

@@ -7,25 +7,24 @@ import { expect } from "chai";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem";
 import { Checker } from "../Checker";
-
-/* eslint-disable @typescript-eslint/naming-convention, no-console */
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 class TestFixture {
   public ck: Checker;
   public constructor() { this.ck = new Checker(); }
 
   // Tester Methods -------------------------------------------------------------------
-  public checkX(A: TriDiagonalSystem, B: TriDiagonalSystem) {
-    const n = A.order();
+  public checkX(systemA: TriDiagonalSystem, systemB: TriDiagonalSystem) {
+    const n = systemA.order();
     for (let i = 0; i < n; i++) {
       // TODO: Implement correct method of comparing two Float64Array's
-      this.ck.testCoordinate(A.getX(i), B.getX(i), "Solution vectors of A and B");
+      this.ck.testCoordinate(systemA.getX(i), systemB.getX(i), "Solution vectors of A and B");
     }
   }
-  public checkB(A: TriDiagonalSystem, B: TriDiagonalSystem) {
-    const n = A.order();
+  public checkB(systemA: TriDiagonalSystem, systemB: TriDiagonalSystem) {
+    const n = systemA.order();
     for (let i = 0; i < n; i++) {
-      this.ck.testCoordinate(A.getB(i), B.getB(i), "Right side vectors of A and B");
+      this.ck.testCoordinate(systemA.getB(i), systemB.getB(i), "Right side vectors of A and B");
     }
   }
   // Setup Methods --------------------------------------------------------------------
@@ -41,21 +40,21 @@ class TestFixture {
     A.multiplyAX();
     // Checker.noisy.tridiagonalSolver = true;
     if (Checker.noisy.tridiagonalSolver) {
-      console.log("(1) A X AX");
-      console.log(A);
+      GeometryCoreTestIO.consoleLog("(1) A X AX");
+      GeometryCoreTestIO.consoleLog(A);
 
     }
     const B: TriDiagonalSystem = A.copy();
     this.ck.testTrue(A.factorAndBackSubstitute(), "FactorAndBackSubstitute");
     this.ck.testTrue(A.factor(), "repeat factor");
     if (Checker.noisy.tridiagonalSolver) {
-      console.log("(2) LU, X?, AX");
-      console.log(A);
+      GeometryCoreTestIO.consoleLog("(2) LU, X?, AX");
+      GeometryCoreTestIO.consoleLog(A);
     }
     A.multiplyAX();
     if (Checker.noisy.tridiagonalSolver) {
-      console.log("(3) LU, X?, LU(X?)");
-      console.log(A);
+      GeometryCoreTestIO.consoleLog("(3) LU, X?, LU(X?)");
+      GeometryCoreTestIO.consoleLog(A);
     }
     this.checkX(A, B);
     this.checkB(A, B);
@@ -105,18 +104,18 @@ class TestFixture {
       B = A.copy();
 
       if (Checker.noisy.tridiagonalSolver) {
-        console.log("A, X, AX");
-        console.log(A.flatten());
+        GeometryCoreTestIO.consoleLog("A, X, AX");
+        GeometryCoreTestIO.consoleLog(A.flatten());
       }
       A.factorAndBackSubstitute();
       if (Checker.noisy.tridiagonalSolver) {
-        console.log("LU, X?, AX");
-        console.log(A.flatten());
+        GeometryCoreTestIO.consoleLog("LU, X?, AX");
+        GeometryCoreTestIO.consoleLog(A.flatten());
       }
       A.multiplyAX();
       if (Checker.noisy.tridiagonalSolver) {
-        console.log("LU, X?, LU(X?)");
-        console.log(A.flatten());
+        GeometryCoreTestIO.consoleLog("LU, X?, LU(X?)");
+        GeometryCoreTestIO.consoleLog(A.flatten());
       }
       this.checkX(A, B);
       this.checkB(A, B);
@@ -135,18 +134,18 @@ class TestFixture {
     A.multiplyAX();
     const B: TriDiagonalSystem = A.copy();
     if (Checker.noisy.tridiagonalSolver) {
-      console.log("A, X, AX");
-      console.log(A.flatten());
+      GeometryCoreTestIO.consoleLog("A, X, AX");
+      GeometryCoreTestIO.consoleLog(A.flatten());
     }
     A.factorAndBackSubstitute();
     if (Checker.noisy.tridiagonalSolver) {
-      console.log("LU, X?, AX");
-      console.log(A.flatten());
+      GeometryCoreTestIO.consoleLog("LU, X?, AX");
+      GeometryCoreTestIO.consoleLog(A.flatten());
     }
     A.multiplyAX();
     if (Checker.noisy.tridiagonalSolver) {
-      console.log("LU, X?, LU(X?)");
-      console.log(A.flatten());
+      GeometryCoreTestIO.consoleLog("LU, X?, LU(X?)");
+      GeometryCoreTestIO.consoleLog(A.flatten());
     }
     this.checkX(A, B);
     this.checkB(A, B);
@@ -171,23 +170,23 @@ class TestFixture {
     const B: TriDiagonalSystem = A.copy();
 
     if (noisy) {
-      console.log("A, X, AX");
-      console.log(A.flatten());
+      GeometryCoreTestIO.consoleLog("A, X, AX");
+      GeometryCoreTestIO.consoleLog(A.flatten());
     }
     A.factorAndBackSubstitute();
     if (noisy) {
-      console.log("LU, X?, AX");
-      console.log(A.flatten());
+      GeometryCoreTestIO.consoleLog("LU, X?, AX");
+      GeometryCoreTestIO.consoleLog(A.flatten());
     }
     A.multiplyAX();
     if (noisy) {
-      console.log("LU, X?, LU(X?)");
-      console.log(A.flatten());
+      GeometryCoreTestIO.consoleLog("LU, X?, LU(X?)");
+      GeometryCoreTestIO.consoleLog(A.flatten());
     }
     A.defactor();
     if (noisy) {
-      console.log("Defactor");
-      console.log(A.flatten());
+      GeometryCoreTestIO.consoleLog("Defactor");
+      GeometryCoreTestIO.consoleLog(A.flatten());
     }
     this.checkX(A, B);
     this.checkB(A, B);

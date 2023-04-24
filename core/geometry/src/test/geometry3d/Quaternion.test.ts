@@ -9,8 +9,6 @@ import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Point4d } from "../../geometry4d/Point4d";
 import * as bsiChecker from "../Checker";
 
-/* eslint-disable no-console */
-
 function rotatexyzw(xyzw: Point4d): Point4d {
   return Point4d.create(xyzw.y, xyzw.z, xyzw.w, xyzw.x);
 }

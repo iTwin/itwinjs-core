@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable no-console */
-
 import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -65,7 +63,7 @@ function showPosition(allGeometry: GeometryQuery[], oldDetail: HalfEdgePositionD
     const pointC = pointB.plusScaled(vector01, markerSize);
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointB, pointC), x0, y0, z0);
   } else {
-    console.log(" unknown topo type", newDetail.getTopo());
+    GeometryCoreTestIO.consoleLog(" unknown topo type", newDetail.getTopo());
   }
   oldDetail.setFrom(newDetail);
 }
@@ -211,7 +209,7 @@ describe("InsertAndRetriangulateContext", () => {
         Point3d.create(1.0, 1.0), // at vertex
         Point3d.create(1.0, 1.0), // stay
       ]) {
-        //        console.log("insertAndRetriangulate", point);
+        //        GeometryCoreTestIO.consoleLog("insertAndRetriangulate", point);
         context.insertAndRetriangulate(point, true);
         numPointsInserted++;
         if (numPointsInserted < 4) {
@@ -229,7 +227,7 @@ describe("InsertAndRetriangulateContext", () => {
       for (let flip = 0; flip < 1; flip++) {
         const numFlip = Triangulator.flipTriangles(context.graph);
         ck.testExactNumber(0, numFlip, "Expect no flips from global sweep after incremental flips during insert.");
-        // console.log("numFlip " + numFlip);
+        // GeometryCoreTestIO.consoleLog("numFlip " + numFlip);
         const polyfaceB = PolyfaceBuilder.graphToPolyface(context.graph);
         GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceB, x0 + (2 + flip) * xStep, y0);
       }
@@ -251,7 +249,7 @@ describe("InsertAndRetriangulateContext", () => {
     for (const yShiftStep of [0.0, 0.01, 0.05]) {
       for (const numPoints of [9, 25, 1024, 4096 /* , 16982, 16982, 16982 */]) {
         let y0 = 0;
-        // console.log("Triangulate", numPoints);
+        // GeometryCoreTestIO.consoleLog("Triangulate", numPoints);
         const points: Point3d[] = [];
         let yShift = 0.0;
         for (let theta = 0.01 * (numPoints - 8); points.length < numPoints; theta += dTheta) {
@@ -276,17 +274,17 @@ describe("InsertAndRetriangulateContext", () => {
                 if (numInsert > 16) {
                   context.reset();
                   Triangulator.flipTriangles(context.graph);
-                  // console.log (" intermediate flips " + numFlip);
+                  // GeometryCoreTestIO.consoleLog(" intermediate flips " + numFlip);
                   numInsert = 0;
                 }
               }
               GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(context.graph!), x0, y0 + 5);
-              // console.log("Begin flips");
+              // GeometryCoreTestIO.consoleLog("Begin flips");
               for (let i = 0; i < 15; i++) {
                 const numFlip = Triangulator.flipTriangles(graph);
                 if (numFlip === 0)
                   break;
-                // console.log("     flip " + numFlip);
+                // GeometryCoreTestIO.consoleLog("     flip " + numFlip);
                 GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(context.graph!), x0, y0 + 10 + i * 4);
               }
         */
@@ -310,9 +308,9 @@ describe("InsertAndRetriangulateContext", () => {
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
         // GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
         const timerName = `before pointsToTriangulatedPolyface ${numPoints}`;
-        console.time(timerName);
+        GeometryCoreTestIO.consoleTime(timerName);
         const polyface = PolyfaceBuilder.pointsToTriangulatedPolyface(points);
-        console.timeEnd(timerName);
+        GeometryCoreTestIO.consoleTimeEnd(timerName);
         y0 += yShiftDisplay;
         GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0);
         if (ck.testDefined(polyface, "polyface triangulation") && polyface) {
@@ -323,7 +321,7 @@ describe("InsertAndRetriangulateContext", () => {
         x0 += 5;
       }
     }
-    // console.log ("write file");
+    // GeometryCoreTestIO.consoleLog("write file");
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "TriangulateInHull");
     expect(ck.getNumErrors()).equals(0);
   });

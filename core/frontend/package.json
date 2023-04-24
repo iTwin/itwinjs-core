@@ -1,14 +1,13 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.0.0-dev.56",
+  "version": "4.0.0-dev.81",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
   "typings": "lib/cjs/core-frontend",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s copy:public && npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "npm run -s copy:js:cjs && tsc 1>&2 --outDir lib/cjs",
     "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -27,7 +26,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/frontend"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/frontend"
   },
   "keywords": [
     "Bentley",
@@ -41,12 +41,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.0.0-dev.56",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.56",
-    "@itwin/core-common": "workspace:^4.0.0-dev.56",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.56",
-    "@itwin/core-orbitgt": "workspace:^4.0.0-dev.56",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.56"
+    "@itwin/appui-abstract": "workspace:^4.0.0-dev.81",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.81",
+    "@itwin/core-common": "workspace:^4.0.0-dev.81",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.81",
+    "@itwin/core-orbitgt": "workspace:^4.0.0-dev.81",
+    "@itwin/core-quantity": "workspace:^4.0.0-dev.81"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -61,23 +61,18 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
-    "@itwin/webgl-compatibility": "workspace:*",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
-    "@types/deep-assign": "^0.1.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "^18.11.5",
-    "@types/qs": "^6.5.0",
-    "@types/semver": "7.3.10",
-    "@types/superagent": "^4.1.14",
     "@types/sinon": "^9.0.0",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "glob": "^7.1.2",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
@@ -100,11 +95,7 @@
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
-    "deep-assign": "^2.0.0",
     "fuse.js": "^3.3.0",
-    "qs": "^6.5.3",
-    "semver": "^7.3.5",
-    "superagent": "^7.1.5",
     "wms-capabilities": "0.4.0",
     "reflect-metadata": "0.1.13"
   },

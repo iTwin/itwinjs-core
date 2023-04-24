@@ -3,20 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle } from "../../geometry3d/Angle";
 import { expect } from "chai";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
-import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipPrimitive } from "../../clipping/ClipPrimitive";
+import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
-import { ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, UnionOfConvexClipPlaneSets } from "../../core-geometry";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point2d} from "../../geometry3d/Point2dVector2d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("ParityRegionSweep", () => {
 it("triangleClip", () => {

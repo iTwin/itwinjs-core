@@ -278,9 +278,9 @@ export class PhillyLandmarksDataset {
   ];
 
   public static fieldsCoveragePbufferCollection =
-  {
-    version: "",
-    queryResult:
+    {
+      version: "",
+      queryResult:
      {
        featureResult:
         {
@@ -445,7 +445,7 @@ export class PhillyLandmarksDataset {
           ],
         },
      },
-  };
+    };
 
   public static polygonDrawingInfo = {drawingInfo:{renderer:{type:"simple",symbol:{type:"esriSFS",style:"esriSFSSolid",color:[76,129,205,191],outline:{type:"esriSLS",style:"esriSLSSolid",color:[0,0,0,255],width:0.75}}},transparency:0,labelingInfo:null}};
   public static lineDrawingInfo = {drawingInfo:{renderer:{type:"simple",symbol:{type:"esriSLS",style:"esriSLSSolid",color:[165,83,183,255],width:1}},transparency:0,labelingInfo:null} };

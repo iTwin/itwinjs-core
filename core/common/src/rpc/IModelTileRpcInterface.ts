@@ -8,15 +8,13 @@
 
 import type { TransferConfig } from "@itwin/object-storage-core/lib/common";
 import { Id64Array } from "@itwin/core-bentley";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
-import { TileContentIdentifier } from "../CloudStorageTileCache";
 import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcOperation } from "./core/RpcOperation";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
-import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
+import { IModelTileTreeProps, TileContentIdentifier, TileContentSource, TileVersionInfo } from "../TileProps";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
@@ -33,31 +31,13 @@ export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-di
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
-  /**
-   * @returns undefined if the backend does not support caching
+  /** Get storage config required to download tiles from the tile cache.
+   * @returns undefined if the backend does not support caching. In that case, tiles must be requested using [[generateTileContent]].
    * @beta
    */
   public async getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
     const response = await this.forward(arguments);
     return response && { ...response, expiration: new Date(response.expiration) };
-  }
-
-  /**
-   * Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
-   * @beta
-   * @deprecated in 3.x. Use [[getTileCacheConfig]] instead.
-   */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  // eslint-disable-next-line deprecation/deprecation
-  public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
-    return this.forward(arguments);
-  }
-
-  /** Returns true if an external tile cache is configured on the backend.
-   * @internal @deprecated in 3.x. Use [[getTileCacheConfig]] instead.
-   */
-  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return this.forward(arguments);
   }
 
   /** @internal */

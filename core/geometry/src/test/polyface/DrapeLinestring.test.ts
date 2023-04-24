@@ -13,7 +13,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 /** Functions useful for modifying test data. */
 export class RFunctions {
   /** Return cos(theta), where theta is 0 at x0, 2Pi at x2Pi.
@@ -107,7 +106,7 @@ it("DrapeLinestringAsLines", async () => {
             return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
           });
       const lines = await Promise.resolve(PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh));
-      // console.log({ awaitBlocks: PolyfaceQuery.awaitBlockCount });
+      // GeometryCoreTestIO.consoleLog({ awaitBlocks: PolyfaceQuery.awaitBlockCount });
       const chains = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh);
       let lineSum = 0;
       let chainSum = 0;
@@ -188,11 +187,11 @@ it("DrapeLinestringLargeMesh", async () => {
           });
       const lines = PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh);
       const name = `sweptLineString ${numX * numY} ${linestring.packedPoints.length}`;
-      console.time(name);
+      GeometryCoreTestIO.consoleTime(name);
       const _chains = Promise.resolve(PolyfaceQuery.asyncSweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh));
       ck.testLT(0, (await _chains).length);
-      console.timeEnd(name);
-      // console.log({ awaitBlocks: PolyfaceQuery.awaitBlockCount });
+      GeometryCoreTestIO.consoleTimeEnd(name);
+      // GeometryCoreTestIO.consoleLog({ awaitBlocks: PolyfaceQuery.awaitBlockCount });
       // let lineSum = 0;
       // let chainSum = 0;
       // for (const g of lines) lineSum += g.curveLength();
