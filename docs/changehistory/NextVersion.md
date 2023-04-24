@@ -215,7 +215,7 @@ The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettin
 
 Constant level-of-detail ("LOD") mapping mode is a technique that dynamically calculates texture cordinates to keep the texture near a certain size on the screen, thus preserving the level of detail no matter what the zoom level. It blends from one size of the texture to another as the view is zoomed in or out so that the change is smooth.
 
-You can create a [RenderMaterial]($common) that uses this mode on the frontend via [RenderSystem.createRenderMaterial]($frontend) by setting `useConstantLod` to `true` in [MaterialTextureMappingProps]($frontend) and optionally specifying its parameters via `constantLodParams` (see [TextureMapping.ConstantLodParamProps]($frontend)).
+You can create a [RenderMaterial]($common) that uses this mode on the frontend via [RenderSystem.createRenderMaterial]($frontend) by setting `useConstantLod` to `true` in [MaterialTextureMappingProps]($frontend) and optionally specifying its parameters via `constantLodParams` (see [TextureMapping.ConstantLodParamProps]($common)).
 
 You can also have a normal map use constant LOD mapping by setting `useConstantLod` in its properties via [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend). It is thus possible to have a pattern map which uses constant lod mapping and a normal map which uses some other texture mapping mode or visa versa.
 
