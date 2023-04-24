@@ -227,6 +227,20 @@ const renderingStyles: RenderingStyle[] = [{
     hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
     transThreshold: 1,
   },
+}, {
+  name: "Atmosphere",
+  environment: {
+    sky: {
+      display: true,
+    },
+    ground: {
+      display: true,
+    },
+    atmosphere: {
+      display: true,
+    },
+  },
+  viewflags: renderingStyleViewFlags,
 }];
 
 export class ViewAttributes {

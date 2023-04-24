@@ -8,7 +8,7 @@
 
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelDb, IpcHost } from "@itwin/core-backend";
-import { PresentationIpcEvents, UpdateInfoJSON } from "@itwin/presentation-common";
+import { PresentationIpcEvents, UpdateInfo } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { NativePlatformDefinition } from "./NativePlatform";
 
@@ -50,11 +50,11 @@ export class UpdatesTracker implements IDisposable {
   }
 }
 
-const parseUpdateInfo = (info: UpdateInfoJSON | undefined) => {
+const parseUpdateInfo = (info: UpdateInfo | undefined) => {
   if (info === undefined)
     return undefined;
 
-  const parsedInfo: UpdateInfoJSON = {};
+  const parsedInfo: UpdateInfo = {};
   for (const fileName in info) {
     // istanbul ignore if
     if (!info.hasOwnProperty(fileName))

@@ -14,7 +14,6 @@ export * from "./presentation-frontend/RulesetManager";
 export * from "./presentation-frontend/RulesetVariablesManager";
 export * from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
 export * from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-export * from "./presentation-frontend/StateTracker";
 export * from "./presentation-frontend/Diagnostics";
 
 /**

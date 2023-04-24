@@ -395,17 +395,17 @@ beta;MapLayerAccessTokenParams
 beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
 alpha;MapLayerFeatureInfo
-beta;MapLayerFormat
+public;MapLayerFormat
 internal;MapLayerFormatEntry
-beta;MapLayerFormatRegistry
-beta;MapLayerFormatType = typeof MapLayerFormat
-internal;class MapLayerImageryProvider
-beta;MapLayerImageryProviderStatus
-internal;MapLayerIndex
-beta;MapLayerOptions
+public;MapLayerFormatRegistry
+public;MapLayerFormatType = typeof MapLayerFormat
+beta;class MapLayerImageryProvider
+public;MapLayerImageryProviderStatus
+public;MapLayerIndex
+public;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
-internal;MapLayerSources
+beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
@@ -535,7 +535,6 @@ public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 public;ReadMeshArgs
 internal;ReadonlyTileUserSet 
-internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
 alpha;RealityDataError 
 beta;RealityDataSource
 beta;RealityDataSource
@@ -585,6 +584,7 @@ internal;Consumers
 internal;ConsumerType
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
+internal;RenderPlanEllipsoid
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams

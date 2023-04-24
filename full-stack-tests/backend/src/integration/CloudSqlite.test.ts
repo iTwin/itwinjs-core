@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { emptyDirSync, existsSync, mkdirsSync, rmSync } from "fs-extra";
+import { expect, use as useFromChai } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { emptyDirSync, existsSync, mkdirsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
 import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
@@ -13,6 +14,8 @@ import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
+useFromChai(chaiAsPromised);
 
 export namespace CloudSqliteTest {
   export type TestContainer = CloudSqlite.CloudContainer & { isPublic: boolean };
@@ -57,10 +60,10 @@ export namespace CloudSqliteTest {
 
     return containers;
   }
-  export function makeCache(name: string) {
-    const rootDir = join(IModelHost.cacheDir, name);
-    makeEmptyDir(rootDir);
-    return CloudSqlite.createCloudCache({ name, rootDir });
+  export function makeCache(cacheName: string) {
+    const cacheDir = join(IModelHost.cacheDir, cacheName);
+    makeEmptyDir(cacheDir);
+    return CloudSqlite.CloudCaches.getCache({ cacheName, cacheDir });
 
   }
   export function makeCaches(names: string[]) {
@@ -89,7 +92,7 @@ export namespace CloudSqliteTest {
 
     await CloudSqlite.withWriteLock("upload", container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
     expect(container.isConnected);
-    container.detach();
+    container.disconnect({ detach: true });
     expect(container.isConnected).false;
   }
 }
@@ -115,7 +118,7 @@ describe("CloudSqlite", () => {
 
     const tempDbFile = join(KnownLocations.tmpdir, "TestWorkspaces", "testws.db");
     if (existsSync(tempDbFile))
-      rmSync(tempDbFile);
+      removeSync(tempDbFile);
     EditableWorkspaceDb.createEmpty(tempDbFile); // just to create a db with a few tables
 
     await CloudSqliteTest.uploadFile(testContainers[0], caches[0], "c0-db1:0", tempDbFile);
@@ -261,8 +264,8 @@ describe("CloudSqlite", () => {
     });
     expect(retries).equals(5); // retry handler should be called 5 times
 
-    cont2.detach();
-    contain1.detach();
+    cont2.disconnect({ detach: true });
+    contain1.disconnect({ detach: true });
 
     // can't connect with invalid token
     contain1.accessToken = "bad";
@@ -293,8 +296,8 @@ describe("CloudSqlite", () => {
     imodel.close();
 
     // save so we can re-open
-    const wasCache1 = { name: caches[0].name, rootDir: caches[0].rootDir, guid: caches[0].guid };
-    const wasCache2 = { name: caches[1].name, rootDir: caches[1].rootDir, guid: caches[1].guid };
+    const wasCache1 = { cacheName: caches[0].name, cacheDir: caches[0].rootDir, guid: caches[0].guid };
+    const wasCache2 = { cacheName: caches[1].name, cacheDir: caches[1].rootDir, guid: caches[1].guid };
 
     // destroying a cache detaches all attached containers
     expect(contain1.isConnected);
@@ -305,8 +308,8 @@ describe("CloudSqlite", () => {
     caches[1].destroy();
 
     // closing and then reopening (usually in another session) a cache should preserve its guid (via localstore.itwindb)
-    const newCache1 = CloudSqlite.createCloudCache(wasCache1);
-    const newCache2 = CloudSqlite.createCloudCache(wasCache2);
+    const newCache1 = CloudSqlite.CloudCaches.getCache(wasCache1);
+    const newCache2 = CloudSqlite.CloudCaches.getCache(wasCache2);
     expect(newCache1.guid).equals(wasCache1.guid);
     expect(newCache2.guid).equals(wasCache2.guid);
     expect(newCache1.guid).not.equals(newCache2.guid);

@@ -184,7 +184,7 @@
     },
     {
       "name": "@itwin/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
@@ -228,6 +228,10 @@
     },
     {
       "name": "@itwin/hypermodeling-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/imodel-transformer",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -297,10 +301,6 @@
     {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
-      "name": "@itwin/imodel-transformer",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -689,6 +689,10 @@
     {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "sanitize-filename",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "semver",
