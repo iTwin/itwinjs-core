@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-backend",
-  "version": "4.0.0-dev.56",
+  "version": "4.0.0-dev.81",
   "description": "iTwin.js editor backend",
   "main": "lib/cjs/editor-backend.js",
   "typings": "lib/cjs/editor-backend",
@@ -10,7 +10,6 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/editor-backend/file.json --tsIndexFile=./editor-backend.ts --onlyJson",
@@ -21,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/editor/backend"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "editor/backend"
   },
   "keywords": [
     "Bentley",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.0.0-dev.56",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.56",
-    "@itwin/core-common": "workspace:^4.0.0-dev.56",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.56"
+    "@itwin/core-backend": "workspace:^4.0.0-dev.81",
+    "@itwin/core-bentley": "workspace:^4.0.0-dev.81",
+    "@itwin/core-common": "workspace:^4.0.0-dev.81",
+    "@itwin/core-geometry": "workspace:^4.0.0-dev.81"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -50,8 +50,8 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
-    "eslint": "^7.11.0",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
+    "eslint": "^8.36.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
   },

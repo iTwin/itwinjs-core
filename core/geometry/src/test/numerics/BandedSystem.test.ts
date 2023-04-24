@@ -14,7 +14,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 function maxDiff(arrayA: Float64Array, arrayB: Float64Array): number {
   let diff = 0.0;
   for (let i = 0; i < arrayA.length; i++) {
@@ -60,22 +59,22 @@ describe("BandedSystem", () => {
         a0, 4, a1,
         a0, 5, 1000]);
       if (Checker.noisy.bandedMatrix)
-        console.log("bandedMatrix", bandedMatrix);
+        GeometryCoreTestIO.consoleLog("bandedMatrix", bandedMatrix);
       // const solution0 = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8]);
       const solution0 = new Float64Array([1, 2, 3, 4]);
       if (Checker.noisy.bandedMatrix)
-        console.log("solution0", solution0);
+        GeometryCoreTestIO.consoleLog("solution0", solution0);
       ck.testExactNumber(bandedMatrix.length, bw * numRow);
       ck.testExactNumber(solution0.length, numRHS * numRow);
       const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, bandedMatrix, numRHS, solution0);
       if (Checker.noisy.bandedMatrix)
-        console.log("rhs0", rhs0);
+        GeometryCoreTestIO.consoleLog("rhs0", rhs0);
       const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, bandedMatrix, numRHS, rhs0);
       if (ck.testDefined(solution1) && solution1) {
         const diff = maxDiff(solution0, solution1);
         ck.testLE(diff, 1.0e-10, " solution diff");
         if (Checker.noisy.bandedMatrix)
-          console.log("solution1", solution1);
+          GeometryCoreTestIO.consoleLog("solution1", solution1);
       }
       a0 = a1;
     }

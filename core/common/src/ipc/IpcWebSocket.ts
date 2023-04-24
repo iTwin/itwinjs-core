@@ -132,7 +132,6 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
   private _handlers = new Map<string, (event: Event, methodName: string, ...args: any[]) => Promise<any>>();
   private _processingQueue: IpcWebSocketMessage[] = [];
-  private _processing: IpcWebSocketMessage | undefined;
 
   public constructor() {
     super();
@@ -161,7 +160,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
   }
 
   private async processMessages() {
-    if (this._processing || !this._processingQueue.length) {
+    if (!this._processingQueue.length) {
       return;
     }
 
@@ -169,8 +168,6 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
     if (message && message.method) {
       const handler = this._handlers.get(message.channel);
       if (handler) {
-        this._processing = message;
-
         let args = message.data;
         if (typeof (args) === "undefined")
           args = [];
@@ -184,8 +181,6 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
           data: response,
           sequence: -1,
         });
-
-        this._processing = undefined;
       }
     }
 

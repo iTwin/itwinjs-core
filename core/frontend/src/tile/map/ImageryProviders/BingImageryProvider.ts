@@ -9,7 +9,7 @@
 import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { Range2d } from "@itwin/core-geometry";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "../../../request/Request";
+import { request } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import {
@@ -168,11 +168,9 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   public override async initialize(): Promise<void> {
     // get the template url
     const bingRequestUrl = this._urlBase.replace("{bingKey}", this._settings.accessKey ? this._settings.accessKey.value : "");
-    const requestOptions: RequestOptions = { method: "GET" };
 
     try {
-      const response: Response = await request(bingRequestUrl, requestOptions);
-      const bingResponseProps: any = response.body;
+      const bingResponseProps = await request(bingRequestUrl, "json");
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];
       const thisResourceProps = thisResourceSetProps.resources[0];

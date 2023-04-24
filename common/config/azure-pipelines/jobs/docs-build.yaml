@@ -23,6 +23,9 @@ parameters:
   - name: useCurrentPresentationDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentTransformerDocsArtifact
+    type: boolean
+    default: false
   - name: shouldPublish
     type: boolean
     default: false
@@ -63,7 +66,7 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.ignoreAudit }}', false))
 
-      - script: node common/scripts/install-run-rush.js build:ci --to-version-policy prerelease-monorepo-lockStep
+      - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
         env:
@@ -82,6 +85,7 @@ jobs:
           useCurrentAppUIDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
           useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
           useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
+          useCurrentTransformerDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
       - script: npm install @bentley/bemetalsmith@4.3.x --legacy-peer-deps

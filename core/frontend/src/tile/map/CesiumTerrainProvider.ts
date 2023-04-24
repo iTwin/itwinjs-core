@@ -53,15 +53,14 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
 
   const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
   const apiUrl: string = requestTemplate.replace("{CesiumRequestToken}", requestKey);
-  const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
   try {
-    const apiResponse = await request(apiUrl, apiRequestOptions);
-    if (undefined === apiResponse || undefined === apiResponse.body || undefined === apiResponse.body.url) {
+    const apiResponse = await request(apiUrl, "json");
+    if (undefined === apiResponse || undefined === apiResponse.url) {
       assert(false);
       return {};
     }
-    return { token: apiResponse.body.accessToken, url: apiResponse.body.url };
+    return { token: apiResponse.accessToken, url: apiResponse.url };
   } catch (error) {
     assert(false);
     return {};
@@ -89,21 +88,15 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
 
   let layers;
   try {
-    const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
+    const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
-    const layerResponse = await request(layerUrl, layerRequestOptions);
-    if (undefined === layerResponse) {
-      notifyTerrainError();
-      return undefined;
-    }
-
-    layers = layerResponse.body;
+    layers = await request(layerUrl, "json", layerRequestOptions);
   } catch (error) {
     notifyTerrainError();
     return undefined;
   }
 
-  if (undefined === layers.tiles || undefined === layers.version) {
+  if (undefined === layers || undefined === layers.tiles || undefined === layers.version) {
     notifyTerrainError();
     return undefined;
   }
@@ -223,15 +216,15 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const quadId = tile.quadId;
     const tileUrl = this.constructUrl(quadId.row, quadId.column, quadId.level);
     const requestOptions: RequestOptions = {
-      method: "GET",
-      responseType: "arraybuffer",
-      headers: { authorization: `Bearer ${this._accessToken}` },
-      accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01",
+      headers: {
+        authorization: `Bearer ${this._accessToken}`,
+        accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01",
+      },
     };
 
     try {
-      const response = await request(tileUrl, requestOptions);
-      return response.status === 200 ? new Uint8Array(response.body) : undefined;
+      const response = await request(tileUrl, "arraybuffer", requestOptions);
+      return new Uint8Array(response);
     } catch (_) {
       return undefined;
     }

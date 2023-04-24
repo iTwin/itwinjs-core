@@ -47,8 +47,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console */
-
 class StrokeCountSearch extends NullGeometryHandler {
   public emitPackedStrokeCountMap(m: StrokeCountMap): any {
     const baseData = [m.numStroke, m.curveLength, m.a0, m.a1];
@@ -119,13 +117,13 @@ class ExerciseCurve {
     const curveA = curve.clone();
     const count0 = curveA.computeStrokeCountForOptions();
     curveA.computeAndAttachRecursiveStrokeCounts();
-    // console.log("strokes by count", count0);
-    // console.log("attached to curve", prettyPrint(StrokeCountSearch.getJSON(curveA)));
+    // GeometryCoreTestIO.consoleLog("strokes by count", count0);
+    // GeometryCoreTestIO.consoleLog("attached to curve", prettyPrint(StrokeCountSearch.getJSON(curveA)));
 
     if (ck.testPointer(curveA.strokeData, "StrokeData attached", curveA) && curveA.strokeData) {
       if (!ck.testExactNumber(curveA.strokeData.numStroke, count0, curveA)) {
-        console.log("strokes by count", count0);
-        console.log("attached to curve", prettyPrint(StrokeCountSearch.getJSON(curveA)));
+        GeometryCoreTestIO.consoleLog("strokes by count", count0);
+        GeometryCoreTestIO.consoleLog("attached to curve", prettyPrint(StrokeCountSearch.getJSON(curveA)));
       }
     }
   }
@@ -215,7 +213,7 @@ class ExerciseCurve {
       let point = curve.fractionToPoint(f);
       let pointA = curveA.fractionToPoint(1.0 - f);
       if (!ck.testPoint3d(point, pointA, "Reverse Curve", curve, f)) {
-        console.log("Reverse in place trap", curveA);
+        GeometryCoreTestIO.consoleLog("Reverse in place trap", curveA);
         point = curve.fractionToPoint(f);
         pointA = curveA.fractionToPoint(1.0 - f);
       }
@@ -352,7 +350,7 @@ class ExerciseCurve {
               const magV = plane1.vectorV.magnitude();
               const magV2 = approximateDerivative2.magnitude();
               const ratio = magV / magV2;
-              console.log(` (magU  ${magU} (magV  ${magV} (magV2  ${magV2} (magV/magV2  ${ratio} (L  ${curve.curveLength()} (radians  ${radians}`);
+              GeometryCoreTestIO.consoleLog(` (magU  ${magU} (magV  ${magV} (magV2  ${magV2} (magV/magV2  ${ratio} (L  ${curve.curveLength()} (radians  ${radians}`);
               curve.fractionToPointAnd2Derivatives(fraction);
             }
           }
@@ -455,10 +453,10 @@ class ExerciseCurve {
     ck.testLE(strokeLength, curveLength + Geometry.smallMetricDistanceSquared, "strokeLength cannot exceed curveLength");
     if (!ck.testLE(chordFraction * curveLength, strokeLength, "strokes appear accurate")
       || Checker.noisy.stroke) {
-      console.log(" CURVE", curve);
+      GeometryCoreTestIO.consoleLog(" CURVE", curve);
       const curveLength1 = curve.curveLength();
-      console.log("computed length", curveLength1);
-      console.log("STROKES", strokes);
+      GeometryCoreTestIO.consoleLog("computed length", curveLength1);
+      GeometryCoreTestIO.consoleLog("STROKES", strokes);
     }
   }
   public static testManyCurves(ck: Checker) {
@@ -731,7 +729,7 @@ describe("Curves", () => {
           if (ck.testDefined(r2))
             GeometryCoreTestIO.captureRangeEdges(allGeometry, r2, x0, y2);
         } else {
-          console.log(prettyPrint(p));
+          GeometryCoreTestIO.consoleLog(prettyPrint(p));
           break;
         }
       }
@@ -772,7 +770,7 @@ describe("Curves", () => {
       const c0 = p.closestPoint(p0, false);
       const c1 = p.closestPoint(p1, false);
       const error0 = ck.getNumErrors();
-      // console.log("\n\n  START CURVE ", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
+      // GeometryCoreTestIO.consoleLog("\n\n  START CURVE ", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
       if (ck.testPointer(c0)) {
         if (!ck.testPoint3d(ray0.origin, c0.point))
           p.closestPoint(p0, false);
@@ -796,7 +794,7 @@ describe("Curves", () => {
       }
       dx += p.range()!.xLength() + dxGap;
       if (ck.getNumErrors() > error0)
-        console.log("  With this curve", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
+        GeometryCoreTestIO.consoleLog("  With this curve", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
@@ -903,14 +901,14 @@ class NewtonEvaluatorClosestPointOnCurve extends NewtonEvaluatorRtoR {
     this._curve = curve;
     this.lastFraction = 0;
     this.lastEvaluationA = Ray3d.createZero();
-    // console.log("\n**\n");
-    // console.log("ClosestPoint", spacePoint, curve);
+    // GeometryCoreTestIO.consoleLog("\n**\n");
+    // GeometryCoreTestIO.consoleLog("ClosestPoint", spacePoint, curve);
   }
   public evaluate(f: number): boolean {
     this.lastFraction = f;
     this.lastEvaluationA = this._curve.fractionToPointAndDerivative(f, this.lastEvaluationA);
     this.currentF = this.lastEvaluationA.direction.dotProductStartEnd(this._spacePoint, this.lastEvaluationA.origin);
-    // console.log("evaluate ", this.lastFraction, this.lastEvaluationA, this.currentF);
+    // GeometryCoreTestIO.consoleLog("evaluate ", this.lastFraction, this.lastEvaluationA, this.currentF);
     return true;
   }
 
@@ -920,14 +918,14 @@ describe("CurvePrimitive.Newton", () => {
     const initialShift = 0.05;
     const ck = new Checker();
     for (const c of Sample.createSmoothCurvePrimitives()) {
-      // console.log(prettyPrint(c));
+      // GeometryCoreTestIO.consoleLog(prettyPrint(c));
       for (const f of [0.25, 0.6]) {
         const xyz = c.fractionToPoint(f);
         const evaluator = new NewtonEvaluatorClosestPointOnCurve(c, xyz);
         const searcher = new Newton1dUnboundedApproximateDerivative(evaluator);
         searcher.setX(f + initialShift);  // start searching from a fraction close to the known result.
         // the step cannot be too big for nasty curves !!!
-        // console.log("search at fraction " + f);
+        // GeometryCoreTestIO.consoleLog("search at fraction " + f);
         if (ck.testBoolean(true, searcher.runIterations(), "Newton finish")) {
           ck.testCoordinate(f, searcher.getX());
         }
@@ -957,13 +955,13 @@ describe("CurvePrimitive.TransitionSpiral", () => {
       chordSum += point0.origin.distance(point1.origin);
       trapezoidSum += 0.5 * (point0.direction.magnitude() + point1.direction.magnitude()) / numStroke;
       if (Checker.noisy.spirals)
-        console.log("f", fraction, "  point", point1);
+        GeometryCoreTestIO.consoleLog("f", fraction, "  point", point1);
       point0.setFrom(point1);
     }
     if (Checker.noisy.spirals) {
-      console.log("arcLength", c.curveLength());
-      console.log("  chordSum ", chordSum, " deltaC", chordSum - c.curveLength());
-      console.log("  trapSum ", trapezoidSum, " deltaT", trapezoidSum - c.curveLength());
+      GeometryCoreTestIO.consoleLog("arcLength", c.curveLength());
+      GeometryCoreTestIO.consoleLog("  chordSum ", chordSum, " deltaC", chordSum - c.curveLength());
+      GeometryCoreTestIO.consoleLog("  trapSum ", trapezoidSum, " deltaT", trapezoidSum - c.curveLength());
     }
     // We expect trapezoidSum to be good (really good!) approximation of the length.
     // chordSum is not so good -- allow it to haver a bigger error.
@@ -985,11 +983,11 @@ function testSamples(_ck: Checker, samples: any[], maxEcho: number = 0) {
     const s = samples[i];
     if (i < maxEcho) {
       if (s.toJSON)
-        console.log(`from toJSON(): ${JSON.stringify(s.toJSON())}`);
+        GeometryCoreTestIO.consoleLog(`from toJSON(): ${JSON.stringify(s.toJSON())}`);
       else {
         const json = IModelJson.Writer.toIModelJson(s);
         if (json)
-          console.log("IModelJson.Writer.toIModelJson:", prettyPrint(json));
+          GeometryCoreTestIO.consoleLog("IModelJson.Writer.toIModelJson:", prettyPrint(json));
       }
     }
 
@@ -997,7 +995,7 @@ function testSamples(_ck: Checker, samples: any[], maxEcho: number = 0) {
     // s.consecutive;
     if (s1 !== s0) {
       if (n0 > 0) {
-        console.log([s0, n0]);
+        GeometryCoreTestIO.consoleLog([s0, n0]);
         n0 = 0;
       }
     }
@@ -1005,7 +1003,7 @@ function testSamples(_ck: Checker, samples: any[], maxEcho: number = 0) {
     s0 = s1;
   }
   if (n0 !== 0)
-    console.log([s0, n0]);
+    GeometryCoreTestIO.consoleLog([s0, n0]);
 }
 describe("Samples", () => {
   it("Counts", () => {
@@ -1206,14 +1204,14 @@ describe("IsomorphicCurves", () => {
         Point3d.create(2, 0, 0),
         Point3d.create(2, 1, 0)];
       for (let numPoints = 2; numPoints <= allPoints.length; numPoints++) {
-        // console.log("Isomorphic LineString (" + numPoints + ")");
+        // GeometryCoreTestIO.consoleLog("Isomorphic LineString (" + numPoints + ")");
         // assemble leading numPoints part of allPoints ...
         const currentPoints = [allPoints[0]];
         for (let i = 1; i < numPoints; i++)
           currentPoints.push(allPoints[i]);
         const linestring = LineString3d.create(currentPoints);
         const path = Path.create();
-        // console.log(prettyPrint(currentPoints));
+        // GeometryCoreTestIO.consoleLog(prettyPrint(currentPoints));
         for (let i = 0; i + 1 < currentPoints.length; i++) {
           path.tryAddChild(LineSegment3d.create(currentPoints[i], currentPoints[i + 1]));
         }

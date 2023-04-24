@@ -6,17 +6,18 @@
  * @module Views
  */
 
-import { assert, Id64} from "@itwin/core-bentley";
-import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
+import { assert, Id64 } from "@itwin/core-bentley";
 import {
   ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
-import { IModelApp } from "./IModelApp";
-import { ViewState3d } from "./ViewState";
-import { DecorateContext } from "./ViewContext";
+import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import { tryImageElementFromUrl } from "./ImageUtil";
+import { IModelApp } from "./IModelApp";
 import { GraphicType } from "./render/GraphicBuilder";
+import { RenderGraphic } from "./render/RenderGraphic";
 import { RenderSkyBoxParams } from "./render/RenderSystem";
+import { DecorateContext } from "./ViewContext";
+import { ViewState3d } from "./ViewState";
 
 /** @internal */
 export interface GroundPlaneDecorations {
@@ -51,8 +52,7 @@ export class EnvironmentDecorations {
     this._view = view;
     this._onLoaded = onLoaded;
     this._onDispose = onDispose;
-
-    this._sky = { };
+    this._sky = {};
     this.loadSkyBox();
     if (this._environment.displayGround)
       this.loadGround();
@@ -86,11 +86,15 @@ export class EnvironmentDecorations {
 
   public decorate(context: DecorateContext): void {
     const env = this._environment;
-    if (env.displaySky && this._sky.params) {
-      const sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
-      if (sky)
-        context.setSkyBox(sky);
+
+    let sky: RenderGraphic | undefined;
+    if (env.displayAtmosphere) {
+      sky = IModelApp.renderSystem.createSkyBox(this.createSkyGradientParams());
+    } else if (env.displaySky && this._sky.params) {
+      sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
     }
+    if (sky)
+      context.setSkyBox(sky);
 
     if (!env.displayGround || !this._ground)
       return;
@@ -131,7 +135,7 @@ export class EnvironmentDecorations {
   private createGroundParams(above: boolean): GraphicParams | undefined {
     // Create a gradient texture.
     const ground = this._environment.ground;
-    const values = [0, 0.25, 0.5 ];
+    const values = [0, 0.25, 0.5];
     const color = above ? ground.aboveColor : ground.belowColor;
     const alpha = above ? 0x80 : 0x85;
     const groundColors = [color.withTransparency(0xff), color, color];
