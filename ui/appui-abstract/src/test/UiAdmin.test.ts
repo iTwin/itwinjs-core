@@ -198,15 +198,6 @@ describe("UiAdmin", () => {
     expect(spyOnHandler.calledOnce).to.be.true;
   });
 
-  it("get set feature flags", () => {
-    let flags = uiAdmin.featureFlags;
-    expect(Object.keys(flags).length === 0);
-    uiAdmin.updateFeatureFlags({ allowKeyinPalette: true });
-    flags = uiAdmin.featureFlags;
-    expect(Object.keys(flags).length === 1);
-    expect(flags.allowKeyinPalette).not.to.be.undefined;
-  });
-
   it("openDialog should return false by default", () => {
     class TestDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
       /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */

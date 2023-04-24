@@ -2028,8 +2028,6 @@ export class UiAdmin {
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): PointProps;
-    // (undocumented)
-    get featureFlags(): UiFlags;
     hideCalculator(): boolean;
     hideCard(): boolean;
     hideHTMLElement(): boolean;
@@ -2058,8 +2056,6 @@ export class UiAdmin {
     showLengthEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: PointProps, _htmlElement?: HTMLElement): boolean;
     showToolbar(_toolbarProps: AbstractToolbarProps, _location: PointProps, _offset: PointProps, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
-    // (undocumented)
-    updateFeatureFlags(uiFlags: UiFlags): void;
 }
 
 // @public
@@ -2099,11 +2095,6 @@ export class UiEventDispatcher {
     setTimeoutPeriod(period: number): void;
     get syncEventIds(): Set<string>;
     get timeoutPeriod(): number;
-}
-
-// @public
-export interface UiFlags {
-    allowKeyinPalette?: boolean;
 }
 
 // @public @deprecated

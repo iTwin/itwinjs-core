@@ -55,19 +55,10 @@ export interface DialogProps {
  */
 export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> { }
 
-/** Flags that control enabling/disabling certain UI features
- * @public
- */
-export interface UiFlags {
-  /** if true then Ctrl+F2 will show popup key-in palette */
-  allowKeyinPalette?: boolean;
-}
-
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the core-frontend package.
  * @public
  */
 export class UiAdmin {
-  private _featureFlags: UiFlags = {};
   private static _messagePresenter?: MessagePresenter;
 
   /** The MessagePresenter used to display messages. */
@@ -78,14 +69,6 @@ export class UiAdmin {
   }
   public static set messagePresenter(mp: MessagePresenter) {
     UiAdmin._messagePresenter = mp;
-  }
-
-  public get featureFlags(): UiFlags {
-    return { ...this._featureFlags }; // return copy so no direct access to modify value
-  }
-
-  public updateFeatureFlags(uiFlags: UiFlags) {
-    this._featureFlags = { ...this._featureFlags, ...uiFlags };
   }
 
   /** @internal */
