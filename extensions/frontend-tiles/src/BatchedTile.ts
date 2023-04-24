@@ -178,6 +178,34 @@ export class BatchedTile extends Tile {
     return this.isParentDisplayable ? SelectParent.Yes : SelectParent.No;
   }
 
+  public altSelectTiles(selected: Set<BatchedTile>, args: TileDrawArgs, closestDisplayableAncestor: BatchedTile | undefined): void {
+    const vis = this.computeVisibility(args);
+    if (TileVisibility.OutsideFrustum === vis)
+      return;
+
+    closestDisplayableAncestor = this.hasGraphics ? this : closestDisplayableAncestor;
+    if (TileVisibility.TooCoarse === vis) {
+      args.markUsed(this);
+      const childrenLoadStatus = this.loadChildren();
+      if (TileTreeLoadStatus.Loading === childrenLoadStatus)
+        args.markChildrenLoading();
+
+      const children = this._batchedChildren;
+      if (children) {
+        for (const child of children)
+          child.altSelectTiles(selected, args, closestDisplayableAncestor);
+
+        return;
+      }
+    }
+
+    if (TileVisibility.Visible === vis && !this.isReady)
+        args.insertMissing(this);
+
+    if (closestDisplayableAncestor)
+      selected.add(closestDisplayableAncestor);
+  }
+
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     let children: BatchedTile[] | undefined;
     if (this._childrenProps) {
