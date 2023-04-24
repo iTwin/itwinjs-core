@@ -14,6 +14,7 @@ Table of contents:
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
 - [Display](#display)
   - [glTF bounding boxes](#gltf-bounding-boxes)
+  - [Constant LOD mapping mode](#constant-load-mapping-mode)
 - [Presentation](#presentation)
   - [Active unit system](#active-unit-system)
   - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
@@ -69,29 +70,27 @@ There is also new support for intersecting a `Ray3d` with a triangle or a polygo
 
 The exisiting [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
 
+### Constant LOD mapping mode
+
+Constant level-of-detail ("LOD") mapping mode is a technique that dynamically calculates texture cordinates to keep the texture near a certain size on the screen, thus preserving the level of detail no matter what the zoom level. It blends from one size of the texture to another as the view is zoomed in or out so that the change is smooth.
+
+You can create a [RenderMaterial]($common) that uses this mode on the frontend via [RenderSystem.createRenderMaterial]($frontend) by setting `useConstantLod` to `true` in [MaterialTextureMappingProps]($frontend) and optionally specifying its parameters via `constantLodParams` (see [TextureMapping.ConstantLodParamProps]($frontend)).
+
+You can also have a normal map use constant LOD mapping by setting `useConstantLod` in its properties via [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend). It is thus possible to have a pattern map which uses constant lod mapping and a normal map which uses some other texture mapping mode or visa versa.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD pattern map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass in a `patternMap` with a [TextureMapProps]($common) which has `pattern_useConstantLod` set to true and optionally specify any or all of the `pattern_constantLod_*` properties.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend) and turn on the `useConstantLod` flag in its `NormalFlags` property.
+
+The image below illustrates the effects of constant LOD mapping.
+
+![Constant LOD mapping zoomin](./assets/ConstantLod.gif "Zooming in on comstant lod mapped texture. Note how detail fades out and is replaced by smaller detail as you zoom in.")     ![Constant LOD mapping](./assets/ConstantLod.jpg "view of constant lod mapping looking across surface")
+
 ## Presentation
 
 ### Active unit system
 
 [PresentationManager]($presentation-frontend) has a way to set active unit system either through props when initializing ([PresentationManagerProps.activeUnitSystem]($presentation-frontend)) or directly through a setter ([PresentationManager.activeUnitSystem]($presentation-frontend)). Both of these ways have been deprecated in favor of using [QuantityFormatter.activeUnitSystem]($core-frontend) (access `QuantityFormatter` through `IModelApp.quantityFormatter`) to avoid asking consumers set the active unit system in two places. For the time being, while we keep the deprecated unit system setters on the presentation manager, they act as an override to [QuantityFormatter.activeUnitSystem]($core-frontend), but the latter is now used by default, so setting active unit system on presentation manager is not necessary any more.
-
-### Constant LOD mapping mode
-
-Constant LOD mapping mode is a technique that dynamically calculates texture cordinates in the GPU to keep the texture near a certain size on the screen, thus preserving the level of detail no matter what the zoom level.  It blends from one size of the texture to another as the view is zoomed in or out so that the change is smooth.
-
-You can create a [RenderMaterial]($common) which uses constant lod mapping on the frontend via [RenderSystem.createRenderMaterial]($frontend) by setting useConstantLod to true in [MaterialTextureMappingProps]($frontend) and optionally specifying its parameters via constantLodParams (see [TextureMapping.ConstantLodParamProps]($frontend)).
-
-You can also have a normal map use constant lod mapping by setting useConstantLod in its properties via [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend).
-
-It is thus possible to have a pattern map which uses constant lod mapping and a normal map which uses some other texture mapping mode or visa versa.
-
-To create a [RenderMaterialElement]($backend) with a pattern map which uses constant lod mapping on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass in a patternMap with a [TextureMapProps]($common) which has pattern_useConstantLod set to true and optionally specify any or all of the pattern_constantLod_* properties.
-
-To create a [RenderMaterialElement]($backend) with a normal map which uses constant lod mapping on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend) and turn on the useConstantLod flag in its NormalFlags property.
-
-The image below illustrates the effects of constant lod mapping.
-
-![Constant LOD mapping zoomin](./assets/ConstantLod.gif "Zooming in on comstant lod mapped texture. Note how detail fades out and is replaced by smaller detail as you zoom in.")     ![Constant LOD mapping](./assets/ConstantLod.jpg "view of constant lod mapping looking across surface")
 
 ### Hierarchy level filtering and limiting
 
