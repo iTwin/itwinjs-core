@@ -5,7 +5,6 @@
 
 export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
 
-export * from "./AliCloudStorageService";
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";
@@ -17,8 +16,6 @@ export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CloudSqlite";
-export * from "./CloudStorageBackend";
-export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./DevTools";
 export * from "./DisplayStyle";
@@ -60,6 +57,7 @@ export * from "./Schema";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./Texture";
+export * from "./TileStorage";
 export * from "./TxnManager";
 export * from "./ViewDefinition";
 export * from "./workspace/Settings";

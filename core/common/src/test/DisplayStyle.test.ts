@@ -20,6 +20,7 @@ import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 import { SkyGradient } from "../SkyBox";
 import { GroundPlane } from "../GroundPlane";
+import { Atmosphere } from "../Atmosphere";
 
 describe("DisplayStyleSettings", () => {
   describe("whiteOnWhiteReversal", () => {
@@ -352,6 +353,10 @@ describe("DisplayStyleSettings overrides", () => {
         ...GroundPlane.defaults.toJSON(),
         display: false,
       },
+      atmosphere: {
+        ...Atmosphere.Settings.defaults.toJSON(),
+        display: false,
+      },
     },
     hline: {
       transThreshold: 0x7f,
@@ -652,6 +657,7 @@ describe("DisplayStyleSettings overrides", () => {
       environment: {
         sky: { ...SkyGradient.defaults.toJSON(), display: false },
         ground: { ...GroundPlane.defaults.toJSON(), display: true, elevation: 17, aboveColor: ColorByName.snow },
+        atmosphere: { ...Atmosphere.Settings.defaults.toJSON(), display: false },
       },
     });
 

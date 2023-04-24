@@ -14,8 +14,8 @@ import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 function verifyPatch(ck: Checker, patch: BilinearPatch) {
   const transform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 10), Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)));
   const patch1 = patch.cloneTransformed(transform)!;
@@ -82,10 +82,10 @@ describe("BilinearPatch", () => {
         }
         if (!ck.testExactNumber(1, numMatch, "number of ray patch intersections", intersections)) {
 
-          console.log("\n PATCH", patch);
-          console.log("RAY", ray);
+          GeometryCoreTestIO.consoleLog("\n PATCH", patch);
+          GeometryCoreTestIO.consoleLog("RAY", ray);
           for (const detail of intersections)
-            console.log({
+            GeometryCoreTestIO.consoleLog({
               fraction: detail.curveDetail.fraction,
               uv: [detail.surfaceDetail.uv.x, detail.surfaceDetail.uv.y],
               point: detail.surfaceDetail.point.toJSON(),

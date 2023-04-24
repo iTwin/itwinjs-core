@@ -23,7 +23,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console, @typescript-eslint/naming-convention */
 /** Add individual segments of  xyz array to parent. */
 function addSegmentsToChain(parent: CurveChain, points: Point3d[]) {
   for (let i = 1; i < points.length; i++)
@@ -135,7 +134,7 @@ describe("MomentData", () => {
       gyrationData.push(MomentData.inertiaProductsToPrincipalAxes(momentData0.origin, momentData0.sums)!);
 
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, x0, y0, 0);
-      // console.log(momentData0);
+      // GeometryCoreTestIO.consoleLog(momentData0);
       GeometryCoreTestIO.showMomentData(allGeometry, momentData0, true, x0, y0, 0);
       y0 += shift;
       for (const degrees of [5.0, 2.5, 1.25, 0.0625]) {

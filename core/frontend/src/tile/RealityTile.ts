@@ -75,7 +75,7 @@ export class RealityTile extends Tile {
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this.transformToRoot = props.transformToRoot;
-    this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
+    this.additiveRefinement = props.additiveRefinement ?? this.realityParent?.additiveRefinement;
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
@@ -116,7 +116,7 @@ export class RealityTile extends Tile {
   /** @internal */
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
   /** @internal */
-  public get geometry(): RealityTileGeometry | undefined { return this._geometry;  }
+  public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
 
   /** @internal */
   public override get isDisplayable(): boolean {
@@ -216,23 +216,36 @@ export class RealityTile extends Tile {
     }
   }
 
+  // Preload tiles that are protected:
+  // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
+  // * parents and siblings of other protected tiles.
   /** @internal */
-  protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
-    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-    if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-      args.markChildrenLoading();
-      traversalDetails.childrenLoading = true;
-      return;
+  public preloadProtectedTiles(args: TileDrawArgs, context: TraversalSelectionContext): boolean {
+    const children = this.realityChildren;
+    let hasProtectedChildren = false;
+
+    if (children && !this.additiveRefinement) {
+      for (const child of children) {
+        hasProtectedChildren = child.preloadProtectedTiles(args, context) || hasProtectedChildren;
+      }
     }
 
-    if (undefined !== this.realityChildren) {
-      const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
-      traversalChildren.initialize();
-      for (let i = 0; i < this.children!.length; i++)
-        this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
+    if (children && hasProtectedChildren) {
+      for (const child of children) {
+        if (child.isDisplayable && !child.isLoaded)
+          context.preload(child, args);
+      }
 
-      traversalChildren.combine(traversalDetails);
+      return true; // Parents of protected tiles are protected
     }
+
+    // Special case of the root tile
+    if (this === this.realityRoot.rootTile) {
+      context.preload(this, args);
+      return true;
+    }
+
+    return context.selected.find((tile) => tile === this) !== undefined;
   }
 
   /** @internal */
@@ -273,64 +286,196 @@ export class RealityTile extends Tile {
     for (const child of this.realityChildren) {
       if (child.isReady && child.computeVisibilityFactor(args) > 0) {
         scratchLoadedChildren.push(child);
-      } else if (!child.getLoadedRealityChildren(args))
+      } else if (!child.getLoadedRealityChildren(args)) {
         return false;
+      }
     }
     return true;
   }
-
   /** @internal */
-  public forceSelectRealityTile(): boolean { return false; }
+  protected forceSelectRealityTile(): boolean { return false; }
+  /** @internal */
+  protected minimumVisibleFactor(): number {
+    if (this.additiveRefinement)
+      return 0.25;
+    else
+      return 0;
+  }
 
   /** @internal */
   public selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     const visibility = this.computeVisibilityFactor(args);
-    if (visibility < 0)
+
+    const isNotVisible = visibility < 0;
+
+    if (isNotVisible)
       return;
 
+    // Force loading if loader requires this tile. (cesium terrain visibility).
     if (this.realityRoot.loader.forceTileLoad(this) && !this.isReady) {
-      context.selectOrQueue(this, args, traversalDetails);    // Force loading if loader requires this tile. (cesium terrain visibility).
+      context.selectOrQueue(this, args, traversalDetails);
       return;
     }
 
+    // Force to return early without selecting
     if (visibility >= 1 && this.noContentButTerminateOnSelection)
       return;
 
-    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
-      if (!this.isOccluded(args.viewingSpace)) {
+    const shouldSelectThisTile = visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded;
+    if (shouldSelectThisTile && this.isDisplayable) { // Select this tile
+
+      // Return early if tile is totally occluded
+      if (this.isOccluded(args.viewingSpace))
+        return;
+
+      // Attempt to select this tile. If not ready, queue it
+      context.selectOrQueue(this, args, traversalDetails);
+
+      // This tile is visible but not loaded - Use higher resolution children if present
+      if (!this.isReady)
+        this.selectRealityChildrenAsFallback(context, args, traversalDetails);
+
+    } else { // Select children instead of this tile
+
+      // With additive refinement it is necessary to display this tile along with any displayed children
+      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
         context.selectOrQueue(this, args, traversalDetails);
 
-        if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
-          if (this.getLoadedRealityChildren(args))
-            context.select(scratchLoadedChildren, args);
-          scratchLoadedChildren.length = 0;
-        }
-      }
-    } else {
-      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
-        context.selectOrQueue(this, args, traversalDetails);      // With additive refinement it is necessary to display this tile along with any displayed children.
-
       this.selectRealityChildren(context, args, traversalDetails);
-      if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
-        const minimumVisibleFactor = .25;     // If the tile has not yet been displayed in this viewport -- display only if it is within 25% of visible. Avoid overly tiles popping into view unexpectedly (terrain)
 
-        if (visibility > minimumVisibleFactor || this._everDisplayed)
+      // Children are not ready: use this tile to avoid leaving a hole
+      traversalDetails.shouldSelectParent = traversalDetails.shouldSelectParent || traversalDetails.queuedChildren.length !== 0;
+
+      if (traversalDetails.shouldSelectParent) {
+        // If the tile has not yet been displayed in this viewport -- display only if it is visible enough. Avoid overly tiles popping into view unexpectedly (terrain)
+        if (visibility > this.minimumVisibleFactor() || this._everDisplayed) {
           context.selectOrQueue(this, args, traversalDetails);
+        }
       }
     }
   }
 
+  // Attempt to select the children of a tile in case they could be displayed while this tile is loading. This does not take into account visibility.
   /** @internal */
-  public purgeContents(olderThan: BeTimePoint): void {
-    // Discard contents of tiles that have not been "used" recently, where "used" may mean: selected/preloaded for display or content requested.
-    // Note we do not discard the child Tile objects themselves.
-    if (this.usageMarker.isExpired(olderThan))
-      this.disposeContents();
+  protected selectRealityChildrenAsFallback(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
+    const childrenReady = this.getLoadedRealityChildren(args);
 
+    if (childrenReady) {
+      context.select(scratchLoadedChildren, args);
+      traversalDetails.shouldSelectParent = false;
+    }
+
+    scratchLoadedChildren.length = 0;
+  }
+
+  // Recurse through children to select them normally
+  /** @internal */
+  protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
+
+    // Load children if not yet requested
+    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+
+    // Children are not ready yet
+    if (childrenLoadStatus === TileTreeLoadStatus.Loading) {
+      args.markChildrenLoading();
+      traversalDetails.shouldSelectParent = true;
+      return;
+    }
+
+    if (this.realityChildren !== undefined) {
+      // Attempt to select the children
+      const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
+      traversalChildren.initialize();
+
+      for (let i = 0; i < this.children!.length; i++)
+        this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
+
+      traversalChildren.combine(traversalDetails);
+    }
+  }
+
+  /** @internal */
+  public purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void {
+    const tilesToPurge = new Set<RealityTile>();
+
+    // Get the list of tiles to purge
+    if (useProtectedTiles && !this.additiveRefinement)
+      this.getTilesToPurge(olderThan, tilesToPurge);
+    else
+      this.getTilesToPurgeWithoutProtection(olderThan, tilesToPurge);
+
+    // Discard contents of tiles that have been marked.
+    // Note we do not discard the child Tile objects themselves.
+    for (const tile of tilesToPurge)
+      tile.disposeContents();
+  }
+
+  // Populate a set with tiles that should be disposed. Prevent some tiles to be disposed to avoid holes when moving.
+  // Return true if the current tile is "protected".
+  private getTilesToPurge(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): boolean {
     const children = this.realityChildren;
-    if (children)
-      for (const child of children)
-        child.purgeContents(olderThan);
+
+    // Protected tiles cannot be purged. They are:
+    // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
+    // * parents and siblings of other protected tiles.
+    let hasProtectedChildren = false;
+
+    if (children) {
+      for (const child of children) {
+        hasProtectedChildren = child.getTilesToPurge(olderThan, tilesToPurge) || hasProtectedChildren;
+      }
+
+      if (hasProtectedChildren) {
+        // Siblings of protected tiles are protected too. We need to remove them from it
+        for (const child of children) {
+          // Because the current tile can be invisible, relying on its children to display geometry,
+          // we have to recurse in order to remove the first children that has geometry, otherwise,
+          // some holes might appear
+          child.removeFirstDisplayableChildrenFromSet(tilesToPurge);
+        }
+
+        return true; // Parents of protected tiles are protected
+      }
+    }
+
+    const isInUse = this.usageMarker.getIsTileInUse();
+
+    if (!isInUse && this.usageMarker.isTimestampExpired(olderThan)) {
+      tilesToPurge.add(this);
+    }
+
+    return isInUse;
+  }
+
+  // Populate a set with tiles that should be disposed. Does not prevent some tiles to be disposed to avoid holes when moving.
+  // This method is simpler and more fitting for devices that has a bigger memory constraint, such as mobiles.
+  // However, it causes the apparition of holes by letting important tiles to be purged.
+  private getTilesToPurgeWithoutProtection(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): void {
+    const children = this.realityChildren;
+
+    if (children) {
+      for (const child of children) {
+        child.getTilesToPurgeWithoutProtection(olderThan, tilesToPurge);
+      }
+    }
+
+    if (this.usageMarker.isExpired(olderThan))
+      tilesToPurge.add(this);
+  }
+
+  private removeFirstDisplayableChildrenFromSet(set: Set<RealityTile>): void {
+    if (set.size === 0)
+      return;
+
+    if (this.isDisplayable) {
+      set.delete(this);
+      return;
+    }
+
+    if (this.realityChildren !== undefined) {
+      for (const child of this.realityChildren)
+        child.removeFirstDisplayableChildrenFromSet(set);
+    }
   }
 
   /** @internal */
@@ -363,26 +508,6 @@ export class RealityTile extends Tile {
     }
 
     return this.maximumSize / args.getPixelSize(this);
-  }
-
-  /** @internal */
-  public preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number) {
-    const visibility = this.computeVisibilityFactor(args);
-    if (visibility < 0)
-      return;
-
-    if (visibility * preloadSizeModifier > 1) {
-      if (this.isDisplayable)
-        context.preload(this, args);
-    } else {
-      const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-      if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-        args.markChildrenLoading();
-      } else if (undefined !== this.realityChildren) {
-        for (const child of this.realityChildren)
-          child.preloadTilesInFrustum(args, context, preloadSizeModifier);
-      }
-    }
   }
 
   /** @internal */
@@ -469,7 +594,7 @@ export class RealityTile extends Tile {
   public collectTileGeometry(collector: TileGeometryCollector): void {
     const status = collector.collectTile(this);
 
-    switch(status) {
+    switch (status) {
       case "reject":
         return;
 

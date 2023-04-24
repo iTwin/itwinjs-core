@@ -7,7 +7,8 @@
  */
 
 import {
-  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams, SuppressLabelEditorParams,
+  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams,
+  SuppressLabelEditorParams,
 } from "./EditorParams";
 import { StandardEditorNames } from "./StandardEditorNames";
 import { StandardTypeNames } from "./StandardTypeNames";
@@ -89,10 +90,7 @@ export interface PropertyDescription {
   quantityType?: string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;
-  /**
-   * Should property label for composite (struct & array) properties be rendered.
-   * @alpha
-   */
+  /** Should property label for composite (struct & array) properties be rendered. */
   hideCompositePropertyLabel?: boolean;
 }
 

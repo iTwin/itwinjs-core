@@ -5,32 +5,47 @@ publish: false
 
 Table of contents:
 
-- [Updated minimum requirements](#updated-minimum-requirements)
-  - [Node.js](#nodejs)
-  - [WebGL](#webgl)
-  - [Electron](#electron)
+- [Breaking Changes](#breaking-changes)
+  - [Updated minimum requirements](#updated-minimum-requirements)
+    - [Node.js](#nodejs)
+    - [WebGL](#webgl)
+    - [Electron](#electron)
+  - [Default RPC Registration](#default-rpc-registration)
+  - [Breaking out of lockstep](#breaking-out-of-lockstep)
+    - [AppUI](#appui)
+    - [Presentation](#presentation)
+    - [Transformation](#transformation)
+    - [eslint-plugin](#eslint-plugin)
+    - [map-layers](#map-layers)
+  - [Deprecated API removals](#deprecated-api-removals)
+  - [Deprecated API replacements](#deprecated-api-replacements)
+    - [Querying ECSql](#querying-ecsql)
 - [Geometry](#geometry)
   - [Mesh offset](#mesh-offset)
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
+  - [Abstract base class Plane3d](#abstract-base-class-plane3d)
 - [Display](#display)
   - [glTF bounding boxes](#gltf-bounding-boxes)
+  - [Atmospheric Scattering](#atmospheric-scattering)
   - [Constant LOD mapping mode](#constant-load-mapping-mode)
-- [Presentation](#presentation)
+- [Presentation](#presentation-1)
   - [Active unit system](#active-unit-system)
   - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
 
-## Updated minimum requirements
+## Breaking Changes
 
-A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and featureful libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
+### Updated minimum requirements
 
-### Node.js
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
+
+#### Node.js
 
 Node 12 reached [end-of-life](https://github.com/nodejs/release#end-of-life-releases) in 2020, and Node 14 as well as Node 16 will do so shortly. iTwin.js 4.0 requires a minimum of Node 18.12.0, though we recommend using the latest long-term-support version.
 
-### WebGL
+#### WebGL
 
 Web browsers display 3d graphics using an API called [WebGL](https://en.wikipedia.org/wiki/WebGL), which comes in 2 versions: WebGL 1, released 11 years ago; and WebGL 2, released 6 years ago. WebGL 2 provides many more capabilities than WebGL 1. Because some browsers (chiefly Safari) did not provide support for WebGL 2, iTwin.js has maintained support for both versions, which imposed some limitations on the features and efficiency of its rendering system.
 
@@ -38,9 +53,102 @@ Over a year ago, support for WebGL 2 finally became [available in all major brow
 
 [IModelApp.queryRenderCompatibility]($frontend) will now produce [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility) for a client that does not support WebGL 2.
 
-### Electron
+#### Electron
 
-Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions was dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports only Electron 23.
+Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions were dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports Electron 23 and Electron 24.
+
+### Default RPC Registration
+
+Previously, `@itwin/core-electron` and `@itwin/core-mobile` automatically registered the following RPCs on your behalf:
+
+- IModelReadRpcInterface
+- IModelTileRpcInterface
+- SnapshotIModelRpcInterface
+- PresentationRpcInterface
+
+To be more aligned with other our approach on Web and to prevent unnecessary registrations and coupling of dependencies, we are now requiring the consumer to register all RPCs they need on their end. Please refer to the documentation for `ElectronApp.startup` and `MobileHost.startup`.
+
+### Breaking out of lockstep
+
+To move more quickly and release independently, the following packages have broken out of lockstep with iTwin.js Core and outside of the itwinjs-core repository.
+
+#### AppUI
+
+The source code for the following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui).
+
+- @itwin/appui-react
+- @itwin/appui-layout-react
+- @itwin/components-react
+- @itwin/core-react
+- @itwin/imodel-components-react
+
+#### Presentation
+
+The source code for the following packages was moved to the new [Presentation repository](https://github.com/iTwin/presentation).
+
+- @itwin/presentation-components
+- @itwin/presentation-opentelemetry
+- @itwin/presentation-testing
+
+#### Transformation
+
+The transformer package `@itwin/core-transformer` was renamed to [`@itwin/imodel-transformer`](https://github.com/iTwin/imodel-transformer) and has its own repository now with supporting packages.
+
+#### eslint-plugin
+
+`@itwin/eslint-plugin` has moved to the [eslint-plugin repository](https://github.com/iTwin/eslint-plugin).
+
+#### map-layers
+
+`@itwin/map-layers` has moved into the [viewer-components-react repository](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/map-layers).
+
+### Deprecated API removals
+
+The following previously-deprecated APIs have been removed:
+
+**@itwin/core-backend**:
+
+- `AliCloudStorageService`
+- `AliCloudStorageServiceCredentials`
+- `AzureBlobStorage`
+- `CloudStorageService`
+- `CloudStorageTileUploader`
+- `CloudStorageUploadOptions`
+- `tileCacheService` property of [IModelHost]($backend), [IModelHostOptions]($backend), and [IModelHostConfiguration]($backend)
+- `IModelHost.tileUploader`
+
+**@itwin/core-common**:
+
+- `CloudStorageCache`
+- `CloudStorageContainerDescriptor`
+- `CloudStorageContainerUrl`
+- `CloudStorageProvider`
+- `CloudStorageTileCache`
+- `IModelTileRpcInterface.getTileCacheContainerUrl`
+- `IModelTileRpcInterface.isUsingExternalTileCache`
+
+### Deprecated API replacements
+
+#### Querying ECSql
+
+[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+
+`createQueryReader` can now be used like below:
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const rowId = row[0]; // or 'row.id'
+}
+```
+
+It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const jsRow = row.toRow();
+}
+```
 
 ## Geometry
 
@@ -64,11 +172,44 @@ New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
 
+### Abstract base class [Plane3d]($core-geometry)
+
+A new abstract base class [Plane3d]($core-geometry) is defined to provide shared queries and enforce method names in multiple classes that act as 3D "planes" with various representations.
+
+- The following classes now declare that they _extend_ [Plane3d]($core-geometry):
+  - [Plane3dByOriginAndUnitNormal]($core-geometry) extends [Plane3d]($core-geometry)
+  - [Plane3dByOriginAndVectors]($core-geometry) extends [Plane3d]($core-geometry)
+  - [Point4d]($core-geometry) extends [Plane3d]($core-geometry)
+  - [ClipPlane]($core-geometry) extends [Plane3d]($core-geometry)
+
+This will provide more consistency and functionality than previously provided by the _interface_ [PlaneAltitudeEvaluator]($core-geometry).   API compatibility with the weaker [PlaneAltitudeEvaluator]($core-geometry) is maintained as follows:
+
+- The abstract base class [Plane3d]($core-geometry) declares that it implements the [PlaneAltitudeEvaluator]($core-geometry).
+- Classes that _extend_ [Plane3d]($core-geometry) inherit the _extended_ declaration of the base class (compatibility "by interface name").
+- Classes that _extend_ [Plane3d]($core-geometry) inherit the various _abstract_ method obligations and (non-abstract) method implementations from the base class (compatibility "by collected list of methods").
+
+With these changes the [PlaneAltitudeEvaluator]($core-geometry) can be deprecated.
+
 ## Display
 
 ### glTF bounding boxes
 
-The exisiting [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
+The existing [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
+
+### Atmospheric Scattering
+
+A physics-based Atmospheric Scattering effect is now available for the rendering system.
+
+![Globe View of Atmospheric Scattering](.\assets\atmosphere_globe.jpg)
+
+This effect can be toggled via [Environment.displayAtmosphere]($common) and adjusted through [Environment.atmosphere]($common).
+It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
+
+The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettings.backgroundMap]($common) set to a backgroundMap with [BackgroundMapSettings.globeMode]($common) equal to [GlobeMode.Ellipsoid]($common).
+
+![Sky View of Atmospheric Scattering](.\assets\atmosphere_distance.jpg)
+![Atmospheric Scattering from Space](.\assets\atmosphere_space.jpg)
+![Atmospheric Scattering at Sunset](.\assets\atmosphere_sunset.jpg)
 
 ### Constant LOD mapping mode
 
@@ -107,7 +248,7 @@ The [PresentationManager]($presentation-frontend) used to "eat" errors and retur
 - [PresentationManager.getPagedDistinctValues]($presentation-frontend)
 - [PresentationManager.getDisplayLabelDefinitions]($presentation-frontend)
 
-Consumers of these APIs should make sure they're wrapped with try/catch blocks and the errors are handled appropriately.
+Consumers of these APIs should make sure they're wrapped with try/catch blocks and the errors are handled appropriately. See our [error handling page](../presentation/advanced/ErrorHandling.md) for more details.
 
 ### Handling of long-running requests
 

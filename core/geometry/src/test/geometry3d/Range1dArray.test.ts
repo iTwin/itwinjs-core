@@ -10,7 +10,6 @@ import { compareRange1dLexicalLowHigh, Range1dArray } from "../../numerics/Range
 import { Checker } from "../Checker";
 
 // import { prettyPrint } from "./testFunctions";
-/* eslint-disable no-console */
 /**
  *
  * @param numRange number of ranges

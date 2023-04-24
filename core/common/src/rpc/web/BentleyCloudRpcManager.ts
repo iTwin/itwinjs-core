@@ -18,21 +18,23 @@ import { RpcRoutingToken } from "../core/RpcRoutingToken";
 /* eslint-disable deprecation/deprecation */
 
 /** Initialization parameters for BentleyCloudRpcConfiguration.
- * @internal
+ * @beta
  */
 export interface BentleyCloudRpcParams {
   /** Identifies the remote server that implements a set of RpcInterfaces. Note that the ID of the remote server is not a URI or hostname. It is a string that matches a key in the orchestrator's app registry. */
   info: OpenAPIInfo;
-  /** The protocol for Bentley cloud RPC interface deployments */
+  /** @internal The protocol for Bentley cloud RPC interface deployments */
   protocol?: typeof BentleyCloudRpcProtocol;
   /** The URI of the orchestrator that will route requests to the remote RpcInterface server. If not supplied, this default to the origin of the Web page. This is required only when calling initializeClient and only if the server is not the origin of the Web page. */
   uriPrefix?: string;
-  /** Handler for RPC request events. */
+  /** @internal Handler for RPC request events. */
   pendingRequestListener?: RpcRequestEventHandler;
+  /** An optional prefix for RPC operation URI paths. */
+  pathPrefix?: string;
 }
 
 /** Operating parameters for Bentley cloud RPC interface deployments.
- * @internal
+ * @beta
  */
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
   /** Access-Control header values for backend servers that serve frontends using BentleyCloudRpcProtocol. */
@@ -42,20 +44,20 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
     allowHeaders: "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version",
   };
 
-  /** The protocol of the configuration. */
+  /** @internal The protocol of the configuration. */
   public abstract override readonly protocol: BentleyCloudRpcProtocol;
 }
 
 /** Coordinates usage of RPC interfaces for Bentley cloud deployments.
- * @internal
+ * @beta
  */
 export class BentleyCloudRpcManager extends RpcManager {
-  /** Initializes BentleyCloudRpcManager for the frontend of an application. */
+  /** @beta Initializes BentleyCloudRpcManager for the frontend of an application. */
   public static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing: RpcRoutingToken = RpcRoutingToken.default): BentleyCloudRpcConfiguration {
     return BentleyCloudRpcManager.performInitialization(params, interfaces, routing);
   }
 
-  /** Initializes BentleyCloudRpcManager for the backend of an application. */
+  /** @beta Initializes BentleyCloudRpcManager for the backend of an application. */
   public static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration {
     return BentleyCloudRpcManager.performInitialization(params, interfaces);
   }
@@ -77,6 +79,11 @@ export class BentleyCloudRpcManager extends RpcManager {
     }
 
     const instance = RpcConfiguration.obtain(config);
+
+    if (params.pathPrefix) {
+      instance.protocol.pathPrefix = params.pathPrefix;
+    }
+
     RpcConfiguration.initializeInterfaces(instance);
 
     if (params.pendingRequestListener) {

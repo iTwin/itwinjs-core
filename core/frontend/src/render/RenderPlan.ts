@@ -6,17 +6,43 @@
  * @module Rendering
  */
 
-import { ClipVector, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
-  ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
+  AmbientOcclusion, AnalysisStyle, Atmosphere, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc,
+  RenderTexture, ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
+import { ClipVector, Constant, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { FlashSettings } from "../FlashSettings";
 import { Viewport } from "../Viewport";
+import { ViewState3d } from "../ViewState";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
 const scratchPoint3c = new Point3d();
+
+/**
+ * @internal
+ */
+export class RenderPlanEllipsoid {
+  public readonly ellipsoidCenter: Point3d;
+  public readonly ellipsoidRotation: Matrix3d;
+  public readonly ellipsoidRadii: Point3d;
+
+  constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d) {
+    this.ellipsoidCenter = ellipsoidCenter;
+    this.ellipsoidRotation = ellipsoidRotation;
+    this.ellipsoidRadii = ellipsoidRadii;
+  }
+
+  public equals(other: RenderPlanEllipsoid): boolean {
+    if (this.ellipsoidCenter.isAlmostEqual(other.ellipsoidCenter))
+      return false;
+    if (this.ellipsoidRotation.isAlmostEqual(other.ellipsoidRotation))
+      return false;
+    if (this.ellipsoidRadii.isAlmostEqual(other.ellipsoidRadii))
+      return false;
+    return true;
+  }
+}
 
 /** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  * @internal
@@ -36,6 +62,7 @@ export interface RenderPlan {
   readonly analysisStyle?: AnalysisStyle;
   readonly ao?: AmbientOcclusion.Settings;
   readonly thematic?: ThematicDisplay;
+  readonly atmosphere?: Atmosphere.Settings;
   readonly isFadeOutActive: boolean;
   readonly analysisTexture?: RenderTexture;
   readonly frustum: Frustum;
@@ -46,6 +73,7 @@ export interface RenderPlan {
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
   readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
+  readonly ellipsoid?: RenderPlanEllipsoid;
 }
 
 /** @internal */
@@ -79,6 +107,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const is3d = view.is3d();
 
   const globalViewTransition = view.is3d() ? view.globalViewTransition() : 0.0;
+  const isGlobeMode3D = GlobeMode.Ellipsoid === view.globeMode;
   const backgroundMapOn = view.displayStyle.viewFlags.backgroundMap;
   const frustum = vp.viewingSpace.getFrustum();
   const fraction = vp.viewingSpace.frustFraction;
@@ -100,10 +129,11 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
+  const shouldDisplayAtmosphere = (style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap) ? (vp.view as ViewState3d).getDisplayStyle3d().environment.displayAtmosphere : false;
+  const atmosphere = shouldDisplayAtmosphere ? (vp.view as ViewState3d).getDisplayStyle3d().environment.atmosphere : undefined;
 
   let upVector;
-  const isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
-  if (isGlobeMode3D) {
+  if (GlobeMode.Ellipsoid === view.globeMode) {
     const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
     const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3b);
     const cntr = lb.interpolate(0.5, rt, scratchPoint3c);
@@ -115,6 +145,16 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   let analysisTexture;
   if (analysisStyle?.thematic)
     analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
+
+  let ellipsoid: RenderPlanEllipsoid | undefined;
+  if (GlobeMode.Ellipsoid === view.globeMode) {
+    const mapEcefToDb = view.iModel.getMapEcefToDb(0);
+    ellipsoid = new RenderPlanEllipsoid(
+      Point3d.fromJSON(mapEcefToDb.origin),
+      mapEcefToDb.matrix,
+      Point3d.fromJSON({ x: Constant.earthRadiusWGS84.equator, y: Constant.earthRadiusWGS84.equator, z: Constant.earthRadiusWGS84.polar }),
+    );
+  }
 
   return {
     is3d,
@@ -131,6 +171,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     analysisStyle,
     ao,
     thematic,
+    atmosphere,
     isFadeOutActive,
     analysisTexture,
     frustum,
@@ -141,5 +182,6 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     upVector,
     lights,
     whiteOnWhiteReversal: vp.displayStyle.settings.whiteOnWhiteReversal,
+    ellipsoid,
   };
 }
