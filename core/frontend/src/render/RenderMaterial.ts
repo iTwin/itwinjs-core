@@ -92,7 +92,7 @@ export interface MaterialTextureMappingProps {
   /** Parameters for constant LOD mapping mode.
    * See [[TextureMapping.ConstantLodParamProps]] for defaults.
    */
-  constantLodParams?: TextureMapping.ConstantLodParamProps;
+  constantLodProps?: TextureMapping.ConstantLodParamProps;
 }
 
 /** Arguments supplied to [[RenderSystem.createRenderMaterial]].
