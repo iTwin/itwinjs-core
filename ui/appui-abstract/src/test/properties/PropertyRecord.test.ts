@@ -66,7 +66,6 @@ describe("PropertyRecord", () => {
 
     it("should create a valid PropertyRecord with provided description name", () => {
       const record = PropertyRecord.fromString("test value", "test description");
-      console.log(record.description);
       expect(record.description).eq("test description");
     });
 
