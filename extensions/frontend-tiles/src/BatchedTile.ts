@@ -183,8 +183,9 @@ export class BatchedTile extends Tile {
     if (TileVisibility.OutsideFrustum === vis)
       return;
 
+    const unskippable = 0 === (this.depth % getMaxLevelsToSkip());
     closestDisplayableAncestor = this.hasGraphics ? this : closestDisplayableAncestor;
-    if (TileVisibility.TooCoarse === vis) {
+    if (TileVisibility.TooCoarse === vis && (this.isReady || !unskippable)) {
       args.markUsed(this);
       const childrenLoadStatus = this.loadChildren();
       if (TileTreeLoadStatus.Loading === childrenLoadStatus)
@@ -199,7 +200,7 @@ export class BatchedTile extends Tile {
       }
     }
 
-    if (TileVisibility.Visible === vis && !this.isReady)
+    if ((TileVisibility.Visible === vis || unskippable) && !this.isReady)
         args.insertMissing(this);
 
     if (closestDisplayableAncestor)
