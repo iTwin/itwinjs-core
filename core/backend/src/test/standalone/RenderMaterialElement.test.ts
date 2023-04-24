@@ -288,7 +288,7 @@ describe("RenderMaterialElement", () => {
         pattern_constantlod_mindistanceclamp: 4,
         pattern_constantlod_maxdistanceclamp: 256,
       };
-      test({ normalMap: normalMap }, { Map: { Normal: normalMap } });
+      test({ normalMap }, { Map: { Normal: normalMap } });
     });
   });
 });
