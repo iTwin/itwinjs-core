@@ -2027,7 +2027,6 @@ export enum ToolbarUsage {
 export class UiAdmin {
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
-    createXAndY(x: number, y: number): PointProps;
     get cursorPosition(): PointProps;
     // (undocumented)
     get featureFlags(): UiFlags;

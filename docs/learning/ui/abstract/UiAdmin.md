@@ -78,7 +78,7 @@ This function call example uses the `_exampleMenuItems` above and displays the m
 ```ts
 const viewport = IModelApp.viewManager.selectedView;
 if (viewport) {
-  IModelApp.uiAdmin.showMenuButton("test1", this._exampleMenuItems, IModelApp.uiAdmin.createXAndY(150, 150), viewport.toolTipDiv);
+  IModelApp.uiAdmin.showMenuButton("test1", this._exampleMenuItems, { x: 150, y: 150 }, viewport.toolTipDiv);
 }
 ```
 
@@ -180,7 +180,7 @@ The relative position defaults to the top-right. This can be overridden using th
 
 ```ts
 IModelApp.uiAdmin.showToolbar(
-  this._exampleToolbar(), IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+  this._exampleToolbar(), IModelApp.uiAdmin.cursorPosition, { x: 8, y: 8 },
   this._toolbarItemExecuted, this._toolbarCancel);
 ```
 
@@ -298,7 +298,7 @@ private _showCard() {
   ElementTooltip.isTooltipHalted = true;
 
   IModelApp.uiAdmin.showCard(contentContainer, "Title", myToolbar,
-    IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+    IModelApp.uiAdmin.cursorPosition, { x: 8, y: 8 },
     toolbarItemExecuted, toolbarCancel, RelativePosition.Right);
 }
 ```
@@ -321,7 +321,7 @@ private _showReactCard() {
   ElementTooltip.isTooltipHalted = true;
 
   (IModelApp.uiAdmin as FrameworkUiAdmin).showReactCard(content, "Title", myToolbar,
-    IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+    IModelApp.uiAdmin.cursorPosition, { x: 8, y: 8 },
     toolbarItemExecuted, toolbarCancel, RelativePosition.Right);
 }
 ```
@@ -426,7 +426,7 @@ export class MyToolWithSettings extends PrimitiveTool {
   // . . .
 
   protected setupAndPromptForNextAction(): void {
-    const offset = IModelApp.uiAdmin.createXAndY(8, 0);
+    const offset = { x: 8, y: 0 };
 
     if (1 === this.points.length)
       IModelApp.uiAdmin.openToolSettingsPopup(this._pointOnePopupSettingsProvider,

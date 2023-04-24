@@ -94,9 +94,6 @@ export class UiAdmin {
   /** Get the cursor X and Y position. */
   public get cursorPosition(): PointProps { return { x: 0, y: 0 }; }
 
-  /** Create a PointProps object. */
-  public createXAndY(x: number, y: number): PointProps { return { x, y }; }
-
   /** Determines if focus is set to Home */
   public get isFocusOnHome(): boolean { return false; }
 
