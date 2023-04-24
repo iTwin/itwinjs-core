@@ -817,7 +817,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
    * @see [[changeToolSettingPropertyValue]]
-   * @beta
+   * @public
    */
   public async applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean> { return true; }
 

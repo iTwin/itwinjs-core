@@ -3,28 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-/* eslint-disable no-console, comma-dangle, quote-props */
-// Requires for grabbing json object from external file
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
-import { Box } from "../../solid/Box";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { DeepCompare } from "../../serialization/DeepCompare";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Box } from "../../solid/Box";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { IndexedPolyface } from "../../polyface/Polyface";
 import { testGeometryQueryRoundTrip } from "./FlatBuffer.test";
+
 // cspell:word geomlibs
 // cspell:word BSIJSON
+
 // directory containing imjs files produced by native geomlibs tests:
 const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";
 // directory containing imjs files produced by prior executions of this test file:
 const iModelJsonSamplesDirectory = "./src/test/iModelJsonSamples/fromGC/";
+// Output folder typically not tracked by git... make directory if not there
+const iModelJsonOutputSubFolder = "iModelJsonSamples";
 
 function deepAlmostEqual(g0: any, g1: any): boolean {
   if (Array.isArray(g0) && Array.isArray(g1)) {
@@ -40,15 +42,6 @@ function deepAlmostEqual(g0: any, g1: any): boolean {
   }
   return false;
 }
-// Output folder typically not tracked by git... make directory if not there
-if (!fs.existsSync(GeometryCoreTestIO.outputRootDirectory))
-  fs.mkdirSync(GeometryCoreTestIO.outputRootDirectory);
-GeometryCoreTestIO.outputRootDirectory = `${GeometryCoreTestIO.outputRootDirectory}/`;
-const iModelJsonOutputFolderPath = `${GeometryCoreTestIO.outputRootDirectory}iModelJsonSamples`;
-if (!fs.existsSync(GeometryCoreTestIO.outputRootDirectory))
-  fs.mkdirSync(GeometryCoreTestIO.outputRootDirectory);
-if (!fs.existsSync(iModelJsonOutputFolderPath))
-  fs.mkdirSync(iModelJsonOutputFolderPath);
 
 /** For each property P of the json value:  save the value as a new member of the array counter.P
  */
@@ -63,15 +56,6 @@ function saveJson(jsv: object, counter: { [key: string]: any }) {
           counter[key] = [];
         counter[key].push(jsv);
       }
-    }
-  }
-}
-/** For each property of data:  save the value in a file name `prefix + propertyName + ".json"` */
-function savePropertiesAsSeparateFiles(folderPath: string, prefix: string, data: { [key: string]: any }) {
-  for (const property in data) {
-    if (data.hasOwnProperty(property)) {
-      const filename = `${folderPath}/${prefix}${property}.imjs`;
-      fs.writeFileSync(filename, JSON.stringify(data[property])); // prettyPrint(data[property]));
     }
   }
 }
@@ -105,25 +89,25 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
     const imData = IModelJson.Writer.toIModelJson(g);
     saveJson(imData, allIModelJsonSamples);
     if (noisy)
-      console.log(prettyPrint(imData));
+      GeometryCoreTestIO.consoleLog(prettyPrint(imData));
     if (doParse) {
       const g1 = IModelJson.Reader.parse(imData) as GeometryQuery;
       if (!g1 || !g.isAlmostEqual(g1)) {
         ck.announceError("IModelJson round trip error", g, prettyPrint(imData), prettyPrint(g1));
         IModelJson.Reader.parse(imData);
-        console.log("*********** round trip data *********");
-        console.log(prettyPrint(g));
-        console.log(prettyPrint(imData));
-        console.log(prettyPrint(g1));
+        GeometryCoreTestIO.consoleLog("*********** round trip data *********");
+        GeometryCoreTestIO.consoleLog(prettyPrint(g));
+        GeometryCoreTestIO.consoleLog(prettyPrint(imData));
+        GeometryCoreTestIO.consoleLog(prettyPrint(g1));
         g.isAlmostEqual(g1);
-        console.log("=====================================");
+        GeometryCoreTestIO.consoleLog("=====================================");
 
         const imData1 = IModelJson.Writer.toIModelJson(g);
         const g2 = IModelJson.Reader.parse(imData1) as GeometryQuery;
         g.isAlmostEqual(g2);
       }
       if (noisy)
-        console.log("Round Trip", prettyPrint(g1));
+        GeometryCoreTestIO.consoleLog("Round Trip", prettyPrint(g1));
     }
     return;
   }
@@ -135,7 +119,7 @@ function exerciseIModelJSonArray(ck: Checker, g: any[], doParse: boolean = false
   const imData = writer.emit(g);
   saveJson(imData, allIModelJsonSamples);
   if (noisy)
-    console.log(prettyPrint(imData));
+    GeometryCoreTestIO.consoleLog(prettyPrint(imData));
   if (doParse) {
     const g1 = IModelJson.Reader.parse(imData) as any[];
     if (ck.testTrue(Array.isArray(g1), "[] returns as array", g1)) {
@@ -143,7 +127,7 @@ function exerciseIModelJSonArray(ck: Checker, g: any[], doParse: boolean = false
         for (let i = 0; i < g.length; i++) {
           ck.testTrue(g[i].isAlmostEqual(g1[i]), g[i], g1[i]);
           if (noisy)
-            console.log("Round Trip", prettyPrint(g1[i]));
+            GeometryCoreTestIO.consoleLog("Round Trip", prettyPrint(g1[i]));
         }
       }
     }
@@ -188,11 +172,10 @@ describe("CreateIModelJsonSamples", () => {
     exerciseIModelJSon(ck, Sample.createSimplePointStrings(), true, false);
     exerciseIModelJSon(ck, Sample.createSimpleTransitionSpirals(), true, false);
     // exerciseIModelJSon(ck, Sample.createSimpleIndexedPolyfaces(3), true, true);
-    // fs.writeFileSync(outputFolderPath + "sampleIModelJson.json", prettyPrint(allIModelJsonSamples));
-    savePropertiesAsSeparateFiles(GeometryCoreTestIO.outputRootDirectory, "iModelJsonSamples/", allIModelJsonSamples);
+    GeometryCoreTestIO.savePropertiesAsSeparateFiles(iModelJsonOutputSubFolder, allIModelJsonSamples);
     exerciseIModelJSonArray(ck, Sample.createSmoothCurvePrimitives(numSample), true, false);
 
-    // console.log(allIModelJsonSamples);
+    // GeometryCoreTestIO.consoleLog(allIModelJsonSamples);
     expect(ck.getNumErrors()).equals(0);
 
   });
@@ -200,7 +183,7 @@ describe("CreateIModelJsonSamples", () => {
   it("ArcByStartMiddleEnd", () => {
     const ck = new Checker();
     const json = {
-      arc: [[3, 1, 0], Point3d.create(3, 3, 0), { x: 1, y: 3, z: 0 }]
+      arc: [[3, 1, 0], Point3d.create(3, 3, 0), { x: 1, y: 3, z: 0 }],
     };
     // exercise variant point from json:
     const point0 = Point3d.fromJSON(json.arc[0]);
@@ -250,11 +233,11 @@ describe("CreateIModelJsonSamples", () => {
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];
     const expectedJsonMismatchList = ["indexedMesh.numPerFace.",  // the mesh flips to zero-terminated
-                                      "cone.imjs",                // cone can change to cylinder
-                                      "box.minimal.imjs",         // minimal box gets remaining fields populated
-                                     ];
+      "cone.imjs",                // cone can change to cylinder
+      "box.minimal.imjs",         // minimal box gets remaining fields populated
+    ];
     const expectedFBMismatchList = ["point.imjs", // CoordinateXYZ is not implemented in writeGeometryQueryAsFBVariantGeometry...
-                                   ];
+    ];
     // read imjs files from various places -- some produced by native, some by core-geometry ...
     for (const sourceDirectory of [iModelJsonSamplesDirectory, iModelJsonNativeSamplesDirectory]) {
       const items = fs.readdirSync(sourceDirectory);
@@ -271,7 +254,7 @@ describe("CreateIModelJsonSamples", () => {
         Checker.noisy.printJSONFailure = true;
         const data = fs.readFileSync(currFile, "utf8");
         if (Checker.noisy.reportRoundTripFileNames)
-          console.log(currFile);
+          GeometryCoreTestIO.consoleLog(currFile);
         let jsonObject1;
         if (data.length > 0) {
           jsonObject1 = JSON.parse(data);
@@ -283,7 +266,7 @@ describe("CreateIModelJsonSamples", () => {
           const geometryQuery1 = IModelJson.Reader.parse(jsonObject1);
           const jsonObject2 = IModelJson.Writer.toIModelJson(geometryQuery1);
           if (compareObj.compare(jsonObject1, jsonObject2)) {
-            if (Checker.noisy.printJSONSuccess) { console.log(`PASS: ${i}`); }
+            if (Checker.noisy.printJSONSuccess) { GeometryCoreTestIO.consoleLog(`PASS: ${i}`); }
             numValuePassed++;
           } else {
             const jsonObject3 = IModelJson.Writer.toIModelJson(geometryQuery1);
@@ -292,16 +275,16 @@ describe("CreateIModelJsonSamples", () => {
               isFiltered = false;
               for (const candidate of expectedJsonMismatchList)
                 if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
-              console.log("%s json round trip mismatch (geometry matches):", isFiltered ? "Expected" : "Warning: Unexpected", currFile);
+              GeometryCoreTestIO.consoleLog("%s json round trip mismatch (geometry matches):", isFiltered ? "Expected" : "Warning: Unexpected", currFile);
               if (!isFiltered) {
-                console.log("jsonObject1:", prettyPrint(jsonObject1));
-                console.log("jsonObject3:", prettyPrint(jsonObject3));
+                GeometryCoreTestIO.consoleLog("jsonObject1:", prettyPrint(jsonObject1));
+                GeometryCoreTestIO.consoleLog("jsonObject3:", prettyPrint(jsonObject3));
               }
             } else {
               ck.announceError("imjs => GeometryQuery => imjs round trip failure", currFile);
-              console.log("jsonObject1:", prettyPrint(jsonObject1));
-              console.log("jsonObject2:", prettyPrint(jsonObject2));
-              if (Checker.noisy.printJSONFailure) { console.log(`FAIL: ${i}`); console.log(compareObj.errorTracker); }
+              GeometryCoreTestIO.consoleLog("jsonObject1:", prettyPrint(jsonObject1));
+              GeometryCoreTestIO.consoleLog("jsonObject2:", prettyPrint(jsonObject2));
+              if (Checker.noisy.printJSONFailure) { GeometryCoreTestIO.consoleLog(`FAIL: ${i}`); GeometryCoreTestIO.consoleLog(compareObj.errorTracker); }
             }
           }
           // test geometry roundtrip thru flatbuffer (and IMJS again)
@@ -313,8 +296,8 @@ describe("CreateIModelJsonSamples", () => {
         }
       }
       if (Checker.noisy.printJSONSuccess) {
-        console.log(` imjs => geometry files from ${sourceDirectory}`);
-        console.log(`*************** ${numValuePassed} files passed out of ${numItems} checked`);
+        GeometryCoreTestIO.consoleLog(` imjs => geometry files from ${sourceDirectory}`);
+        GeometryCoreTestIO.consoleLog(`*************** ${numValuePassed} files passed out of ${numItems} checked`);
       }
     }
     ck.checkpoint("BSIJSON.ParseIMJS");

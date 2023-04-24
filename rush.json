@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.83.1",
+  "rushVersion": "5.95.0",
   "pnpmVersion": "6.35.1",
   "nodeSupportedVersionRange": "^18.0.0",
   "projectFolderMinDepth": 2,
@@ -86,13 +86,6 @@
     {
       "packageName": "@itwin/core-backend",
       "projectFolder": "core/backend",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/core-transformer",
-      "projectFolder": "core/transformer",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -206,13 +199,6 @@
       "packageName": "@itwin/presentation-frontend",
       "projectFolder": "presentation/frontend",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/presentation-opentelemetry",
-      "projectFolder": "presentation/opentelemetry",
-      "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -389,12 +375,6 @@
     {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "imodel-transformer",
-      "projectFolder": "test-apps/imodel-transformer",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

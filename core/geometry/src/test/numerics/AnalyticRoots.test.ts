@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+
 import { Arc3d } from "../../curve/Arc3d";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -12,17 +13,14 @@ import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray } from "../../geometry3d/PointHelpers";
 import { Point4d } from "../../geometry4d/Point4d";
-import {
-  AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, SmallSystem, TrigPolynomial,
-} from "../../numerics/Polynomials";
+import { AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Checker } from "../Checker";
-
-/* eslint-disable no-console, no-trailing-spaces */
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // Toggle for printing in cubic & quartic testers
 const printAll = false;
-// Linear and Quadric simple tests -----------------------------------------------
 
+// Linear and Quadric simple tests -----------------------------------------------
 describe("AnalyticRoots.SolveLinear", () => {
   const ck = new Checker();
   it("SolveLinear.OneSolution", () => {
@@ -203,11 +201,11 @@ describe("AnalyticRoots.SolveQuadric", () => {
       for (const rowB of [new Float64Array([1, 2, 1, 3, 2])]) {
         const rowB1 = rowB.slice();
         SmallSystem.eliminateFromPivot(rowA, 0, rowB1, -1.0);
-        console.log(" A", rowA);
-        console.log(" B", rowB);
-        console.log(" B1 reduced", rowB1);
+        GeometryCoreTestIO.consoleLog(" A", rowA);
+        GeometryCoreTestIO.consoleLog(" B", rowB);
+        GeometryCoreTestIO.consoleLog(" B1 reduced", rowB1);
         SmallSystem.eliminateFromPivot(rowA, 0, rowB1, +1.0);
-        console.log(" B1 rebuilt", rowB1);
+        GeometryCoreTestIO.consoleLog(" B1 rebuilt", rowB1);
         const q = NumberArray.maxAbsDiff(rowB, rowB1);
         ck.testTrue(Geometry.isAlmostEqualNumber(1, 1 + q));
       }
@@ -289,8 +287,8 @@ describe("AnalyticRoots.SolveCubic", () => {
         ck.testTrue(eMax < (1.0e-14 * (1.0 + NumberArray.maxAbsArray(target))), "root error");
 
         if (Checker.noisy.cubicRoots) {
-          console.log(`  (target ${a}) (b ${b} + )`);
-          console.log(`  (actual ${actual}) (eMax ${eMax})`);
+          GeometryCoreTestIO.consoleLog(`  (target ${a}) (b ${b} + )`);
+          GeometryCoreTestIO.consoleLog(`  (actual ${actual}) (eMax ${eMax})`);
         }
       }
     }
@@ -308,7 +306,7 @@ describe("AnalyticRoots.SolveCubic", () => {
         const u1 = x0;
         const u2 = x0 + 1;
         if (Checker.noisy.cubicRoots)
-          console.log(`Cubic Roots for [${u0}, ${u1}, ${u2}]`, { ee: e, x00: x0 });
+          GeometryCoreTestIO.consoleLog(`Cubic Roots for [${u0}, ${u1}, ${u2}]`, { ee: e, x00: x0 });
 
         const coffs = new Float64Array(4);
         coffs[3] = 1.0;
@@ -329,11 +327,11 @@ describe("AnalyticRoots.SolveCubic", () => {
 
           if (printAll || (eSafe >= (printTrigger * uMax * uMax / e))) {
             // Check::True (eMax < 1.0e-14 * DoubleOps::MaxAbs (target), "root error");
-            console.log("Cubic root variances.  These may be expected behavior under extreme origin conditions");
-            console.log(`   (known roots ${target[0]} ${target[1]} ${target[2]})  (eMax ${eMax}) (eSafe ${eSafe}`);
-            console.log(`   (computed roots ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)}`);
-            console.log(`   (correction by newton from computed root  ${newtonStep(coffs, actual.atUncheckedIndex(0))} ${newtonStep(coffs, actual.atUncheckedIndex(1))} ${newtonStep(coffs, actual.atUncheckedIndex(2))}`);
-            console.log(`   (correction by newton from known root  ${newtonStep(coffs, target[0])} ${newtonStep(coffs, target[1])} ${newtonStep(coffs, target[2])}`);
+            GeometryCoreTestIO.consoleLog("Cubic root variances.  These may be expected behavior under extreme origin conditions");
+            GeometryCoreTestIO.consoleLog(`   (known roots ${target[0]} ${target[1]} ${target[2]})  (eMax ${eMax}) (eSafe ${eSafe}`);
+            GeometryCoreTestIO.consoleLog(`   (computed roots ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)}`);
+            GeometryCoreTestIO.consoleLog(`   (correction by newton from computed root  ${newtonStep(coffs, actual.atUncheckedIndex(0))} ${newtonStep(coffs, actual.atUncheckedIndex(1))} ${newtonStep(coffs, actual.atUncheckedIndex(2))}`);
+            GeometryCoreTestIO.consoleLog(`   (correction by newton from known root  ${newtonStep(coffs, target[0])} ${newtonStep(coffs, target[1])} ${newtonStep(coffs, target[2])}`);
           }
         }
 
@@ -349,7 +347,7 @@ describe("AnalyticRoots.SolveCubic", () => {
 
       for (let e = 1.0; e > 1.0e-10; e *= 0.1) {
         if (printAll) {
-          console.log("\n\n e: " + e);
+          GeometryCoreTestIO.consoleLog("\n\n e: " + e);
         }
         for (let x0 = 0.0; x0 < 1100; x0 = 10.0 * (x0 + 1.0)) {
           const u0 = e;
@@ -386,19 +384,19 @@ describe("AnalyticRoots.SolveCubic", () => {
 
             if (printAll || (eSafe >= (printTrigger * uMax))) {
               ck.testTrue(eMax < (1.0e-14 * NumberArray.MaxAbsArray(target)), "root error");
-              console.log("Cubic root variances.  These may be expected behavior under extreme origin conditions");
-              console.log("   (known roots " + target[0] + " " + target[1] + " " + target[2] +
+              GeometryCoreTestIO.consoleLog("Cubic root variances.  These may be expected behavior under extreme origin conditions");
+              GeometryCoreTestIO.consoleLog("   (known roots " + target[0] + " " + target[1] + " " + target[2] +
                 ") (eMax " + eMax + ") (eSafe " + eSafe + ")");
-              console.log("   (computed roots " + actual[0] + " " + actual[1] + " " + actual[2] + ")");
-              console.log("   (correction by newton from computed root  " + NewtonStep(coffs, actual[0]) +
+              GeometryCoreTestIO.consoleLog("   (computed roots " + actual[0] + " " + actual[1] + " " + actual[2] + ")");
+              GeometryCoreTestIO.consoleLog("   (correction by newton from computed root  " + NewtonStep(coffs, actual[0]) +
                 " " + NewtonStep(coffs, actual[1]) + " " + NewtonStep(coffs, actual[2]) + ")");
-              console.log("   (correction by newton from known root  " + NewtonStep(coffs, target[0]) +
+              GeometryCoreTestIO.consoleLog("   (correction by newton from known root  " + NewtonStep(coffs, target[0]) +
                 " " + NewtonStep(coffs, target[1]) + " " + NewtonStep(coffs, target[2]) + ")");
             }
           } else if (numRoots === 1) {
-            console.log(" ** SINGLETON *** (u target " + u0 + " " + u1 + " " + u2 + ") (u " + actual[0] +
+            GeometryCoreTestIO.consoleLog(" ** SINGLETON *** (u target " + u0 + " " + u1 + " " + u2 + ") (u " + actual[0] +
               ") (spread factor " + ((u1 - u0) / u2) + ")");
-            console.log("    NewtonDX " + NewtonStep(coffs, actual[0]));
+            GeometryCoreTestIO.consoleLog("    NewtonDX " + NewtonStep(coffs, actual[0]));
           }
           ck.checkpoint("SolveCubic");
           expect(ck.getNumErrors()).equals(0);
@@ -437,21 +435,21 @@ function checkQuartic(u0: number, u1: number, u2: number, u3: number, tolerance:
   const ok: boolean = ck.testTrue(eMax < tolerance, "quartic root tolerance", eMax, tolerance);
   // Accurate when compared to multiple of 1.0e-8... any higher negative power likely to fail
   if (Checker.noisy.quarticRoots) {
-    console.log(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)})`);
-    console.log(`   (target ${target[0]} ${target[1]} ${target[2]} ${target[3]})`);
+    GeometryCoreTestIO.consoleLog(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)})`);
+    GeometryCoreTestIO.consoleLog(`   (target ${target[0]} ${target[1]} ${target[2]} ${target[3]})`);
 
   }
 
   // Additional testing based on NewtonStep
   for (let step = 0; (step < 10) && (eMax > 1.0e-14); step++) {
     if (!ok || printAll) {
-      console.log(`   (actualDX   ${newtonStep4(coffs, actual.atUncheckedIndex(0))} ${newtonStep4(coffs, actual.atUncheckedIndex(1))} ${newtonStep4(coffs, actual.atUncheckedIndex(2))} ${newtonStep4(coffs, actual.atUncheckedIndex(3))} `);
+      GeometryCoreTestIO.consoleLog(`   (actualDX   ${newtonStep4(coffs, actual.atUncheckedIndex(0))} ${newtonStep4(coffs, actual.atUncheckedIndex(1))} ${newtonStep4(coffs, actual.atUncheckedIndex(2))} ${newtonStep4(coffs, actual.atUncheckedIndex(3))} `);
       for (let k = 0; k < actual.length; k++) {
         actual.reassign(k, actual.atUncheckedIndex(k) - newtonStep4(coffs, actual.atUncheckedIndex(k)));
       }
       eMax = matchRoots(target, actual) / uMax;
       if (!ok || printAll) {
-        console.log(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)}   (eMax ${eMax}) `);
+        GeometryCoreTestIO.consoleLog(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)}   (eMax ${eMax}) `);
       }
     }
   }
@@ -510,7 +508,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
     if (maxF > 1.0e-8) {
       const roots1 = new GrowableFloat64Array();
       AnalyticRoots.appendQuarticRoots(coff, roots1);
-      console.log({ expectedRoots: roots, computedRoots: roots1, fOfx: ff });
+      GeometryCoreTestIO.consoleLog({ expectedRoots: roots, computedRoots: roots1, fOfx: ff });
       return false;
     }
     return true;
@@ -594,7 +592,7 @@ describe("AnalyticRoots", () => {
       for (const x1 of [-1, -0.6, -0.98]) {
         for (const x2 of [0, 0.5, 0.10]) {
           if (noisy)
-            console.log("*****************");
+            GeometryCoreTestIO.consoleLog("*****************");
           const x3 = - (x0 + x1 + x2);
           const quarticCoffs = new Float64Array([
             x0 * x1 * x2 * x3,
@@ -605,18 +603,18 @@ describe("AnalyticRoots", () => {
           const quarticRoots0 = new GrowableFloat64Array(4);
           AnalyticRoots.appendQuarticRoots(quarticCoffs, quarticRoots0);
           if (noisy) {
-            console.log("[xi]", [x0, x1, x2, x3]);
-            console.log("quarticCoffs", quarticCoffs);
+            GeometryCoreTestIO.consoleLog("[xi]", [x0, x1, x2, x3]);
+            GeometryCoreTestIO.consoleLog("quarticCoffs", quarticCoffs);
           }
           const b23 = x2 + x3;
           const b13 = x1 + x3;
           const b12 = x1 + x2;
           const bSquared = new GrowableFloat64Array(3);
           if (noisy) {
-            console.log("[roots0]", quarticRoots0);
+            GeometryCoreTestIO.consoleLog("[roots0]", quarticRoots0);
             AnalyticRoots1.appendQuarticRoots1(quarticCoffs, bSquared);
-            console.log("real b squared", [b12 * b12, b13 * b13, b23 * b23]);
-            console.log("approx bSquared", bSquared);
+            GeometryCoreTestIO.consoleLog("real b squared", [b12 * b12, b13 * b13, b23 * b23]);
+            GeometryCoreTestIO.consoleLog("approx bSquared", bSquared);
           }
         }
       }
@@ -656,11 +654,11 @@ describe("Geometry", () => {
     ck.testExactNumber(-3, Geometry.restrictToInterval(-5, -3, 4));
     ck.testExactNumber(-3, Geometry.restrictToInterval(-5, 4, -3));
 
-    ck.testTrue(Geometry.isHugeCoordinate(1.0e14));
-    ck.testTrue(Geometry.isHugeCoordinate(-1.0e14));
+    ck.testTrue(Geometry.isLargeCoordinateResult(1.0e14));
+    ck.testTrue(Geometry.isLargeCoordinateResult(-1.0e14));
 
-    ck.testFalse(Geometry.isHugeCoordinate(1.0e7));
-    ck.testFalse(Geometry.isHugeCoordinate(-1.0e10));
+    ck.testFalse(Geometry.isLargeCoordinateResult(1.0e7));
+    ck.testFalse(Geometry.isLargeCoordinateResult(-1.0e10));
     const e = Geometry.smallMetricDistance * 0.24;
     const point0 = Point3d.create(1, 43, 2);
     const point1 = Point3d.create(point0.x + 0.1 * e, point0.y + e, point0.z + 2);

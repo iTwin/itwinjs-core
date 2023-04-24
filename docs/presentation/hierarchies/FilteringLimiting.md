@@ -55,30 +55,7 @@ When any of the above is used to create a hierarchy level, filtering for that le
 Setting up hierarchy level filtering is as simple as supplying a presentation-specific tree renderer to the [ControlledTree]($components-react) component:
 
 ```tsx
-function MyTree(props: MyTreeProps) {
-  const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({
-    // supply nodes loader props
-  });
-  const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader });
-  const treeModel = useTreeModel(nodeLoader.modelSource);
-
-  // create presentation-specific tree renderer
-  const treeRenderer = (treeRendererProps: TreeRendererProps) => (
-    <PresentationTreeRenderer
-      {...treeRendererProps}
-      imodel={props.iModel}
-      modelSource={nodeLoader.modelSource}
-    />
-  );
-
-  return (
-    <ControlledTree
-      // supply tree props
-      // ...along with the custom tree renderer
-      treeRenderer={treeRenderer}
-    />
-  );
-}
+[[include:Presentation.Components.HierarchyLevelFiltering]]
 ```
 
 ## Size limiting
@@ -96,28 +73,7 @@ Our solution to that is hierarchy level size limiting, which basically just puts
 Hierarchy level limiting is an opt-in feature that has to be turned on when creating a node loader for the presentation-driven tree component:
 
 ```tsx
-export function MyTree(props: MyTreeProps) {
-  const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({
-    // supply nodes loader props
-    // ... and specify the size limit
-    hierarchyLevelSizeLimit: 1000,
-  });
-  const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader });
-  const treeModel = useTreeModel(nodeLoader.modelSource);
-  const treeRenderer = (treeRendererProps: TreeRendererProps) => (
-    <PresentationTreeRenderer
-      {...treeRendererProps}
-      imodel={props.iModel}
-      modelSource={nodeLoader.modelSource}
-    />
-  );
-
-  return (
-    <ControlledTree
-      // supply tree props
-    />
-  );
-}
+[[include:Presentation.Components.HierarchyLevelLimiting]]
 ```
 
 **Note:** While limiting is not going to be applied to unfilterable hierarchy levels, the library has no control over consumer code, which is responsible for making filtering possible by supplying a proper tree renderer. Consumers should make sure [PresentationTreeRenderer]($presentation-components) or an alternative, supporting hierarchy level filtering, is used in combination with hierarchy level limiting.

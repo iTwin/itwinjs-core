@@ -1512,7 +1512,7 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     slice(start?: number, end?: number): SortedArray<T>;
 }
 
-// @alpha
+// @public
 export enum SpanKind {
     // (undocumented)
     CLIENT = 2,
@@ -1571,7 +1571,7 @@ export abstract class SuccessCategory extends StatusCategory {
     error: boolean;
 }
 
-// @alpha
+// @public
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
     static setAttributes(attributes: SpanAttributes): void;

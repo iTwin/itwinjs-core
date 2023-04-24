@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "missing types in core-geometry barrel file",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

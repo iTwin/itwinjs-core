@@ -62,13 +62,10 @@ import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 
-/* eslint-disable no-console */
 // cspell:word CCWXY
 // cspell:word bloss
 // cspell:word Arema
 // cspell:word ABCDA
-// a typo baked into the API:
-// cspell:word creatVerticalStaggerPolygon
 /**
  * Function to be called to obtain function value at (i,n), for
  * * n fixed over many calls
@@ -2496,7 +2493,7 @@ export class Sample {
    * @param dy3
    * @param dy4
    */
-  public static creatVerticalStaggerPolygon(
+  public static createVerticalStaggerPolygon(
     dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number
   ): Point3d[] {
     const points = [];
@@ -2509,6 +2506,15 @@ export class Sample {
     points.push(Point3d.create(0, 0));
     return points;
   }
+
+  // cspell:word creat
+  /** @deprecated in 4.x. Use createVerticalStaggerPolygon instead. */
+  public static creatVerticalStaggerPolygon(
+    dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number
+  ): Point3d[] {
+    return this.createVerticalStaggerPolygon(dy1, dy2, dy3, dy4, ax, ay, dx1, dx4);
+  }
+
   /**
    * Make line segments for each pair of adjacent points.
    * @param points array of points
