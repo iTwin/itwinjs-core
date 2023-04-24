@@ -53,7 +53,6 @@ export * from "./appui-abstract/statusbar/StatusBarItemsManager";
 
 export * from "./appui-abstract/utils/callbacks";
 export * from "./appui-abstract/utils/misc";
-export * from "./appui-abstract/utils/isLetter";
 export * from "./appui-abstract/utils/IconSpecUtilities";
 export * from "./appui-abstract/utils/PointProps";
 export * from "./appui-abstract/utils/UiError";
