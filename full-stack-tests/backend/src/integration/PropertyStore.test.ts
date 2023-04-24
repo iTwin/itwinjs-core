@@ -33,7 +33,7 @@ async function createAzureContainer(containerId: string) {
 }
 async function initializeContainer(containerId: string) {
   await createAzureContainer(containerId);
-  await PropertyStore.CloudDb.initializeDb({ props: { ...storage, containerId, accessToken: makeSasToken(containerId, "racwdl") }, initContainer: { blockSize } });
+  await PropertyStore.CloudAccess.initializeDb({ props: { ...storage, containerId, accessToken: makeSasToken(containerId, "racwdl") }, initContainer: { blockSize } });
 }
 
 export function makeSasToken(containerName: string, permissionFlags: string) {
@@ -55,19 +55,19 @@ function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
   return count;
 }
 
-function makePropertyStore(name: string) {
+function makePropertyStore(moniker: string) {
   const accessProps = { ...storage, containerId: propContainer, accessToken: makeSasToken(propContainer, "racwdl") };
-  const propStore = new PropertyStore.CloudDb(accessProps);
-  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: name }));
-  propStore.lockParams.user = name;
+  const propStore = new PropertyStore.CloudAccess(accessProps);
+  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
+  propStore.lockParams.moniker = moniker;
   return propStore;
 }
 
 describe.only("PropertyStore", function (this: Suite) {
   this.timeout(0);
 
-  let ps1: PropertyStore.CloudDb;
-  let ps2: PropertyStore.CloudDb;
+  let ps1: PropertyStore.CloudAccess;
+  let ps2: PropertyStore.CloudAccess;
 
   before(async () => {
     await initializeContainer(propContainer);

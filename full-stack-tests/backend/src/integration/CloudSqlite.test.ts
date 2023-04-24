@@ -101,7 +101,7 @@ describe("CloudSqlite", () => {
   let caches: CloudSqlite.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
-  const user = "CloudSqlite test";
+  const user1 = "CloudSqlite test1";
   const user2 = "CloudSqlite test2";
 
   before(async () => {
@@ -163,7 +163,7 @@ describe("CloudSqlite", () => {
     expect(imodel.iModelId).equals(testBimGuid);
     imodel.close();
 
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
+    await CloudSqlite.withWriteLock(user1, contain1, async () => {
       await expect(contain1.copyDatabase("badName", "bad2")).eventually.rejectedWith("no such database");
       await contain1.copyDatabase("testBim", "testBim2");
     });
@@ -171,7 +171,7 @@ describe("CloudSqlite", () => {
     expect(contain1.queryDatabases().length).equals(3);
 
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
+    await CloudSqlite.withWriteLock(user1, contain1, async () => {
       expect(contain1.hasWriteLock);
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
@@ -180,7 +180,7 @@ describe("CloudSqlite", () => {
       briefcase.close();
     });
 
-    await db.withLockedContainer({ user, container: contain1, dbName: "testBim2" }, async () => {
+    await db.withLockedContainer({ moniker: user1, container: contain1, dbName: "testBim2" }, async () => {
       db.vacuum();
       db.closeDb();
 
@@ -194,7 +194,7 @@ describe("CloudSqlite", () => {
     expect(db.isOpen).false;
     expect(contain1.queryDatabase("testBim2")?.dirtyBlocks).equals(0);
 
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
+    await CloudSqlite.withWriteLock(user1, contain1, async () => {
       await contain1.copyDatabase("testBim", "testBim33");
       await contain1.deleteDatabase("testBim2");
       expect(contain1.hasLocalChanges).true;
@@ -205,7 +205,7 @@ describe("CloudSqlite", () => {
     expect(contain1.queryDatabase("testBim33")).undefined;
     expect(contain1.queryDatabase("testBim2")).not.undefined;
 
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
+    await CloudSqlite.withWriteLock(user1, contain1, async () => {
       await expect(contain1.deleteDatabase("badName")).eventually.rejectedWith("no such database");
       await contain1.deleteDatabase("testBim2");
     });
@@ -216,7 +216,7 @@ describe("CloudSqlite", () => {
     contain1.disconnect();
     CloudSqliteTest.setSasToken(contain1, "rwl"); // don't ask for delete permission
     contain1.connect(caches[1]);
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
+    await CloudSqlite.withWriteLock(user1, contain1, async () => {
       await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
@@ -224,7 +224,7 @@ describe("CloudSqlite", () => {
     CloudSqliteTest.setSasToken(contain1, "rwdl"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock(user, contain1, async () => contain1.cleanDeletedBlocks());
+    await CloudSqlite.withWriteLock(user1, contain1, async () => contain1.cleanDeletedBlocks());
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -248,15 +248,15 @@ describe("CloudSqlite", () => {
     expect(dbProps.totalBlocks).greaterThan(0);
 
     // when one cache has the lock the other should fail to obtain it
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
+    await CloudSqlite.withWriteLock(user1, contain1, async () => {
       // eslint-disable-next-line @typescript-eslint/promise-function-async
-      expect(() => cont2.acquireWriteLock(user)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
+      expect(() => cont2.acquireWriteLock(user1)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
     // test busy retry handler
     let retries = 0;
     await CloudSqlite.withWriteLock(user2, cont2, async () => {
-      await expect(CloudSqlite.withWriteLock(user, contain1, async () => { }, async (lockedBy: string, expires: string) => {
+      await expect(CloudSqlite.withWriteLock(user1, contain1, async () => { }, async (lockedBy: string, expires: string) => {
         expect(lockedBy).equals(user2);
         expect(expires.length).greaterThan(0);
         return ++retries < 5 ? undefined : "stop";
@@ -276,7 +276,7 @@ describe("CloudSqlite", () => {
     contain1.connect(caches[0]); // connect works with readonly token
     expect(contain1.isConnected);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    expect(() => contain1.acquireWriteLock(user)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
+    expect(() => contain1.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
     expect(contain1.hasWriteLock).false;
     expect(contain1.hasLocalChanges).false;
 
@@ -287,7 +287,7 @@ describe("CloudSqlite", () => {
     dbs = anonContainer.queryDatabases();
     expect(dbs.length).equals(2);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    expect(() => anonContainer.acquireWriteLock(user)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
+    expect(() => anonContainer.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
 
     // read a database from anonymous container readonly
     imodel = SnapshotDb.openFile("testBim", { container: anonContainer });

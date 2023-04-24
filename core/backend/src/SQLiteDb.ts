@@ -152,7 +152,7 @@ export class SQLiteDb {
    * @internal
    */
   public async withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => Promise<T>) {
-    return CloudSqlite.withWriteLock(args.user, args.container, async () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation), args.busyHandler);
+    return CloudSqlite.withWriteLock(args.moniker, args.container, async () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation), args.busyHandler);
   }
 
   /** vacuum this database
@@ -357,7 +357,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
     this.verifyVersions();
   }
 
-  public async upgradeSchema(arg: { dbName: string, lockContainer?: { container: CloudSqlite.CloudContainer, user: string }, upgradeFn: () => void }) {
+  public async upgradeSchema(arg: { dbName: string, lockContainer?: { container: CloudSqlite.CloudContainer, moniker: string }, upgradeFn: () => void }) {
     // can't use "this" because it checks for version, which we don't want here
     return (arg.lockContainer) ?
       super.withLockedContainer({ dbName: arg.dbName, ...arg.lockContainer }, async () => arg.upgradeFn) :

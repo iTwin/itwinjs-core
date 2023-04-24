@@ -121,8 +121,8 @@ export namespace CloudSqlite {
    * @internal
    */
   export interface ObtainLockParams {
-    /** The name of the user attempting to acquire the write lock. This name will be shown to other users while the lock is held. */
-    user?: string;
+    /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
+    moniker?: string;
     /** number of times to retry in the event the lock currently held by someone else.
      * After this number of attempts, `onFailure` is called. Default is 20.
      */
@@ -138,8 +138,8 @@ export namespace CloudSqlite {
 
   /** @internal */
   export interface LockAndOpenArgs {
-    /** the name to be displayed in the event of lock collisions */
-    user: string;
+    /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
+    moniker: string;
     /** the name of the database within the container */
     dbName: string;
     /** the CloudContainer on which the operation will be performed */
@@ -563,13 +563,13 @@ export namespace CloudSqlite {
   const logInfo = (msg: string) => Logger.logInfo("CloudSQLiteDb", msg);
   const logError = (msg: string) => Logger.logError("CloudSQLiteDb", msg);
 
-  /** Class that provides access to a SQLite database in a CloudContainer.  */
+  /** Class that provides convenient local access to a SQLite database in a CloudContainer.  */
   export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
     /** The name of the database within the cloud container. */
     public readonly dbName: string;
-    /** Parameters for obtaining the write lock for this container. */
+    /** Parameters for obtaining the write lock for this container.  */
     public readonly lockParams: ObtainLockParams = {
-      user: "unknown",
+      moniker: "",
       nRetries: 20,
       retryDelayMs: 100,
     };
@@ -595,6 +595,10 @@ export namespace CloudSqlite {
     public getCache(): CloudCache {
       return this._cache ??= this._ctor.getCacheForClass();
     }
+    /** @internal */
+    public getCloudDb(): DbType {
+      return this._cloudDb;
+    }
 
     /**
      * The token that grants access to the cloud container for this DbAccess. If it does not grant write permissions, all
@@ -615,7 +619,7 @@ export namespace CloudSqlite {
       return startCloudPrefetch(this.container, this.dbName);
     }
 
-    /** Create a new DbAccess for a VersionedSqliteDb database stored in a cloud container. */
+    /** Create a new DbAccess for a database stored in a cloud container. */
     public constructor(args: {
       /** The Constructor for DbType. */
       dbType: Constructor<DbType>;
@@ -627,6 +631,7 @@ export namespace CloudSqlite {
       this._container = createCloudContainer({ ...args.props, writeable: true });
       this._cloudDb = new args.dbType(args.props);
       this.dbName = args.dbName;
+      this.lockParams.moniker = IModelHost.userMoniker;
     }
 
     /** Close the database for this DbAccess, if it is open */
@@ -635,7 +640,7 @@ export namespace CloudSqlite {
         this._cloudDb.closeDb();
     }
 
-    /** Close the database if it is opened, and disconnect this `DbAccess from its CloudContainer. */
+    /** Close the database for this DbAccess if it is opened, and disconnect this `DbAccess from its CloudContainer. */
     public close() {
       this.closeDb();
       this._container.disconnect();
@@ -694,7 +699,7 @@ export namespace CloudSqlite {
     public async withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T> {
       let nRetries = this.lockParams.nRetries;
       const cacheGuid = this.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-      const user = this.lockParams.user ?? cacheGuid;
+      const moniker = this.lockParams.moniker ?? cacheGuid;
       const timer = new StopWatch(undefined, true);
       const showMs = () => `(${timer.elapsed.milliseconds}ms)`;
 
@@ -712,7 +717,7 @@ export namespace CloudSqlite {
       this.closeDb(); // in case it is currently open for read.
       let lockObtained = false;
       try {
-        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ moniker, dbName: this.dbName, container: this.container, busyHandler }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
@@ -725,6 +730,7 @@ export namespace CloudSqlite {
       }
     }
 
+    /** get a method member, by name, from the database object. Throws if not a Function. */
     private getDbMethod(methodName: string): Function {
       const fn = (this._cloudDb as any)[methodName] as Function;
       if (typeof fn !== "function")
@@ -756,7 +762,7 @@ export namespace CloudSqlite {
 
     /**
      * A Proxy Object to call a synchronous readonly method on the database controlled by this `DbAccess`.
-     * Whenever a method is called through this Proxy, it will first ensure that the database is opened for read access.
+     * Whenever a method is called through this Proxy, it will first ensure that the database is opened for at least read access.
      */
     public get reader() {
       return this._readerProxy ??= new Proxy(this, {

@@ -221,15 +221,15 @@ export namespace PropertyStore {
   const defaultDbName = "PropertyDb" as const;
 
   /**
-   * A cloud-based [[PropertyDb]] to hold a set of values of type [[PropertyType]], each with a unique [[PropertyName]].
+   * Provides access to a cloud-based [[PropertyDb]] to hold a set of values of type [[PropertyType]], each with a unique [[PropertyName]].
    * `PropertyStore.CloudDb`s are stored in cloud containers and require an access token that grants permission to read and/or write them.
    * All write operations will fail without an access token that grants write permission.
    *
-   * A `CloudDb` is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
+   * The database is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
    * However, that means that callers are responsible for synchronizing the local cache to ensure it includes changes
    * made by others, as appropriate (see [[synchronizeWithCloud]]).
    */
-  export class CloudDb extends CloudSqlite.DbAccess<PropertyDb> {
+  export class CloudAccess extends CloudSqlite.DbAccess<PropertyDb> {
     public constructor(props: CloudSqlite.ContainerAccessProps) {
       super({ dbType: PropertyDb, props, dbName: defaultDbName });
     }
