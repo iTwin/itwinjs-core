@@ -23,8 +23,6 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "extract-api": "betools extract-api --entry=appui-abstract",
     "test": "npm run -s webpackTests && certa -r chrome",
-    "//test": "mocha",
-    "//test": "mocha --config ../.mocharc-noreact.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
@@ -74,9 +72,6 @@
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
-  "dependencies": {
-    "@bentley/icons-generic-webfont": "^1.0.15"
-  },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "require": [

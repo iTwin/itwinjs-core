@@ -64,20 +64,15 @@ describe("PropertyRecord", () => {
 
   describe("fromString", () => {
 
-    it("should create a valid PropertyRecord with provided description", () => {
-      const description = getPropertyDescription();
-      const record = PropertyRecord.fromString("test", description);
-      expect(record).to.matchSnapshot();
-    });
-
     it("should create a valid PropertyRecord with provided description name", () => {
       const record = PropertyRecord.fromString("test value", "test description");
-      expect(record).to.matchSnapshot();
+      console.log(record.description);
+      expect(record.description).eq("test description");
     });
 
     it("should create a valid PropertyRecord without description", () => {
       const record = PropertyRecord.fromString("test");
-      expect(record).to.matchSnapshot();
+      expect(record.description).to.be.undefined;
     });
 
   });

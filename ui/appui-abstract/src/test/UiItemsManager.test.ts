@@ -101,10 +101,10 @@ describe("UiItemsManager", () => {
     const spy = sinon.spy();
     const testUiProvider = new TestUiItemsProvider();
     UiItemsManager.onUiProviderRegisteredEvent.addListener(spy);
-    spy.calledOnce.should.false;
+    expect(spy.calledOnce).to.be.false;
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     UiItemsManager.register(testUiProvider);
-    spy.calledOnce.should.true;
+    expect(spy.calledOnce).to.be.true;
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     UiItemsManager.onUiProviderRegisteredEvent.removeListener(spy);
     UiItemsManager.unregister(testUiProvider.id);
@@ -129,7 +129,7 @@ describe("UiItemsManager", () => {
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     UiItemsManager.register(testUiProvider);
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
-    UiItemsManager.register(testUiProvider, {providerId: "secondInstance", stageIds: ["test"]});
+    UiItemsManager.register(testUiProvider, { providerId: "secondInstance", stageIds: ["test"] });
     const providerIds = UiItemsManager.registeredProviderIds;
     expect(providerIds.length).to.eq(2);
     expect(providerIds[0]).to.eq(testUiProvider.id);
@@ -155,7 +155,7 @@ describe("UiItemsManager", () => {
 
   it("Registered UiProvider should return items since stage is supported ", () => {
     const testUiProvider = new TestUiItemsProvider();
-    UiItemsManager.register(testUiProvider, {stageIds: ["stage"]});
+    UiItemsManager.register(testUiProvider, { stageIds: ["stage"] });
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(1);
     const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
@@ -169,7 +169,7 @@ describe("UiItemsManager", () => {
 
   it("Registered UiProvider should return items since stage usage is supported ", () => {
     const testUiProvider = new TestUiItemsProvider();
-    UiItemsManager.register(testUiProvider, {stageUsages: ["private"]});
+    UiItemsManager.register(testUiProvider, { stageUsages: ["private"] });
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", "private", ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(1);
     const statusbarItems = UiItemsManager.getStatusBarItems("stage", "private");
@@ -183,7 +183,7 @@ describe("UiItemsManager", () => {
 
   it("Registered UiProvider should NOT return items since stage usage does not match allowed", () => {
     const testUiProvider = new TestUiItemsProvider();
-    UiItemsManager.register(testUiProvider, {stageUsages: ["private"]});
+    UiItemsManager.register(testUiProvider, { stageUsages: ["private"] });
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(0);
     const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
@@ -198,8 +198,8 @@ describe("UiItemsManager", () => {
 
   it("Should return provider specific items per stage ", () => {
     const testUiProvider = new TestUiItemsProvider();
-    UiItemsManager.register(testUiProvider, {stageIds: ["stage"]});
-    UiItemsManager.register(testUiProvider, {providerId: "stage2:testProvider", stageIds: ["stage2"]});
+    UiItemsManager.register(testUiProvider, { stageIds: ["stage"] });
+    UiItemsManager.register(testUiProvider, { providerId: "stage2:testProvider", stageIds: ["stage2"] });
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(1);
     const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
@@ -224,8 +224,8 @@ describe("UiItemsManager", () => {
 
   it("Should return provider specific items per stage and avoid duplicate", () => {
     const testUiProvider = new TestUiItemsProvider();
-    UiItemsManager.register(testUiProvider, {stageIds: ["stage"]});
-    UiItemsManager.register(testUiProvider, {providerId: "stage:testProvider", stageIds: ["stage"]}); // alternate provider but wrongly targets same stage
+    UiItemsManager.register(testUiProvider, { stageIds: ["stage"] });
+    UiItemsManager.register(testUiProvider, { providerId: "stage:testProvider", stageIds: ["stage"] }); // alternate provider but wrongly targets same stage
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(1);
     const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
@@ -241,7 +241,7 @@ describe("UiItemsManager", () => {
 
   it("Registered UiProvider should  NOT return items since stage is NOT in supported list", () => {
     const testUiProvider = new TestUiItemsProvider();
-    UiItemsManager.register(testUiProvider, {stageIds: ["stage2"]});
+    UiItemsManager.register(testUiProvider, { stageIds: ["stage2"] });
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(0);
     const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);

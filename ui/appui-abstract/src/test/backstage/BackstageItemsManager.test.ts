@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import {
   BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, ConditionalStringValue, isActionItem, isStageLauncher,
@@ -13,13 +13,13 @@ const getStageLauncherItem = () => BackstageItemUtilities.createStageLauncher("s
 
 describe("isActionItem", () => {
   it("should return true for ActionItem", () => {
-    isActionItem(getActionItem()).should.true;
+    expect(isActionItem(getActionItem())).is.true;
   });
 });
 
 describe("isStageLauncher", () => {
   it("should return true for StageLauncher", () => {
-    isStageLauncher(getStageLauncherItem()).should.true;
+    expect(isStageLauncher(getStageLauncherItem())).true;
   });
 });
 
@@ -32,7 +32,7 @@ describe("BackstageItemsManager", () => {
 
       sut.items = [];
 
-      spy.calledOnce.should.true;
+      expect(spy.calledOnce).true;
     });
 
     it("should not raise onItemsChanged event if items did not change", () => {
@@ -45,14 +45,14 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.items = items;
 
-      spy.notCalled.should.true;
+      expect(spy.notCalled).true;
     });
   });
 
   describe("add", () => {
     it("should instantiate with item", () => {
       const sut = new BackstageItemsManager([getActionItem()]);
-      sut.items.length.should.eq(1);
+      expect(sut.items.length).eq(1);
     });
 
     it("should add item without callback", () => {
@@ -62,8 +62,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.loadItems([getActionItem()]);
 
-      spy.calledOnce.should.false;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).false;
+      expect(sut.items.length).eq(1);
     });
 
     it("should add single item", () => {
@@ -73,8 +73,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.add(getActionItem());
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).true;
+      expect(sut.items.length).eq(1);
     });
 
     it("should add multiple items", () => {
@@ -84,8 +84,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.add([getActionItem(), getStageLauncherItem()]);
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(2);
+      expect(spy.calledOnce).true;
+      expect(sut.items.length).eq(2);
     });
 
     it("should not add multiple items with same id", () => {
@@ -95,8 +95,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.add([getActionItem(), getActionItem()]);
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).true;
+      expect(sut.items.length).eq(1);
     });
 
     it("should not add item that is already added", () => {
@@ -107,8 +107,8 @@ describe("BackstageItemsManager", () => {
       sut.add(getActionItem());
       sut.add(getActionItem());
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).true;
+      expect(sut.items.length).eq(1);
     });
   });
 
@@ -124,9 +124,9 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.remove("a");
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
-      sut.items[0].id.should.eq("b");
+      expect(spy.calledOnce).true;
+      assert(sut.items.length === 1);
+      expect(sut.items[0].id).eq("b");
     });
 
     it("should remove multiple items", () => {
@@ -140,8 +140,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.remove(["a", "b"]);
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(0);
+      expect(spy.calledOnce).true;
+      assert(sut.items.length === 0);
     });
   });
 
@@ -219,7 +219,8 @@ describe("BackstageItemsManager", () => {
       const sut = new BackstageItemsManager();
       sut.add(action);
       const syncIds = BackstageItemsManager.getSyncIdsOfInterest(sut.items);
-      syncIds.should.eql(["test:customid"]);
+      assert(syncIds.length === 1);
+      expect(syncIds[0]).eq("test:customid");
     });
   });
 });
