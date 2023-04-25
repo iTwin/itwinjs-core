@@ -7048,10 +7048,12 @@ export interface MaterialSpecularProps {
 
 // @public
 export interface MaterialTextureMappingProps {
+    constantLodProps?: TextureMapping.ConstantLodParamProps;
     mode?: TextureMapping.Mode;
     normalMapParams?: NormalMapParams;
     texture: RenderTexture;
     transform?: TextureMapping.Trans2x3;
+    useConstantLod?: boolean;
     weight?: number;
     // @internal (undocumented)
     worldMapping?: boolean;

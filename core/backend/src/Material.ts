@@ -105,7 +105,7 @@ export class RenderMaterialElement extends DefinitionElement {
           obj[key] = params.normalMap[key];
       }
 
-      const baseProps: TexMap = { };
+      const baseProps: TexMap = {};
       choose(baseProps, "pattern_angle");
       choose(baseProps, "pattern_u_flip");
       choose(baseProps, "pattern_flip");
@@ -114,8 +114,13 @@ export class RenderMaterialElement extends DefinitionElement {
       choose(baseProps, "pattern_scalemode");
       choose(baseProps, "pattern_mapping");
       choose(baseProps, "pattern_weight");
+      choose(baseProps, "pattern_useConstantLod");
+      choose(baseProps, "pattern_constantlod_repetitions");
+      choose(baseProps, "pattern_constantlod_offset");
+      choose(baseProps, "pattern_constantlod_mindistanceclamp");
+      choose(baseProps, "pattern_constantlod_maxdistanceclamp");
 
-      maps = { };
+      maps = {};
       if (params.patternMap)
         maps.Pattern = { ...params.patternMap, ...baseProps };
 
