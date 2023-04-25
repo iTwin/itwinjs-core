@@ -103,6 +103,10 @@ export class TileDrawArgs {
   public hiddenLineSettings?: HiddenLine.Settings;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
+  /** Tiles whose contents should be kept in memory regardless of whether or not they are selected for display.
+   * @internal
+   */
+  public readonly touchedTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
   private readonly _nearFrontCenter?: Point3d;
   /** Overrides applied to the view's [ViewFlags]($common) when drawing the tiles. */
