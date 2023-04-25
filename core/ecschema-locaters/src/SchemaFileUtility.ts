@@ -23,7 +23,7 @@ export class SchemaFileUtility {
    * @param outputPath The directory in which to create the file.
    */
   public static async writeSchemaXmlFile(schema: Schema, outputPath: string) {
-    const xml = this.writeSchemaToXmlString(schema);
+    const xml = await this.writeSchemaToXmlString(schema);
 
     const baseFile = this.getSchemaPath(schema, outputPath);
     try {

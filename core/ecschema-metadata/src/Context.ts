@@ -5,6 +5,7 @@
 
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { LazyLoadedSchema } from "./Interfaces";
 import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
@@ -51,19 +52,55 @@ export interface ISchemaItemLocater {
  */
 export class SchemaCache implements ISchemaLocater {
   private _schema: SchemaMap;
+  private _schemaPromises: Array<LazyLoadedSchema>;
 
   constructor() {
     this._schema = new SchemaMap();
+    this._schemaPromises = new Array<LazyLoadedSchema>();
   }
 
-  public get count() { return this._schema.length; }
+  public get count() { return this._schema.length + this._schemaPromises.length; }
+
+  private loadedSchemaExists(schemaKey: Readonly<SchemaKey>): boolean {
+    return undefined !== this._schema.find((schema: Schema) => schema.schemaKey.matches(schemaKey, SchemaMatchType.Latest));
+  }
+
+  private schemaPromiseExists(schemaKey: Readonly<SchemaKey>): boolean {
+    return undefined !== this._schemaPromises.find((schema: LazyLoadedSchema) => schema.matches(schemaKey, SchemaMatchType.Latest));
+  }
+
+  public schemaExits(schemaKey: Readonly<SchemaKey>): boolean {
+    return this.loadedSchemaExists(schemaKey) || this.schemaPromiseExists(schemaKey);
+  }
+
+  private removeSchemaPromise(schemaKey: Readonly<SchemaKey>) {
+    this._schemaPromises = this._schemaPromises.filter((value: LazyLoadedSchema) => !value.matches(schemaKey, SchemaMatchType.Latest));
+  }
+
+  public async addSchemaPromise(schemaPromise: LazyLoadedSchema) {
+    if (this.schemaExits(schemaPromise))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schemaPromise.toString()}, already exists within this cache.`);
+
+    schemaPromise.then((schema: Schema) => {
+      if (!this.loadedSchemaExists(schema.schemaKey))
+        this._schema.push(schema);
+    }).finally(
+      () => this.removeSchemaPromise(schemaPromise)
+    );
+
+    this._schemaPromises.push(schemaPromise);
+  }
+
+  public getSchemaPromise(schemaKey: Readonly<SchemaKey>): LazyLoadedSchema | undefined {
+    return this._schemaPromises.find((schema: LazyLoadedSchema) => schema.matches(schemaKey, SchemaMatchType.Latest));
+  }
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
   public async addSchema<T extends Schema>(schema: T) {
-    if (await this.getSchema<T>(schema.schemaKey))
+    if (this.schemaExits(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push(schema);
@@ -74,7 +111,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schema The schema to add to the cache.
    */
   public addSchemaSync<T extends Schema>(schema: T) {
-    if (this.getSchemaSync<T>(schema.schemaKey))
+    if (this.schemaExits(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push(schema);
@@ -93,10 +130,14 @@ export class SchemaCache implements ISchemaLocater {
       return schema.schemaKey.matches(schemaKey, matchType);
     };
 
-    const foundSchema = this._schema.find(findFunc);
+    let foundSchema = this._schema.find(findFunc);
 
-    if (!foundSchema)
-      return undefined;
+    if (!foundSchema) {
+      const schemaPromise = this._schemaPromises.find((value: LazyLoadedSchema) => value.matches(schemaKey, matchType));
+      if (!schemaPromise)
+        return undefined;
+      foundSchema = await schemaPromise;
+    }
 
     return foundSchema as T;
   }
@@ -115,17 +156,13 @@ export class SchemaCache implements ISchemaLocater {
     };
 
     const foundSchema = this._schema.find(findFunc);
-
-    if (!foundSchema)
-      return foundSchema;
-
     return foundSchema as T;
   }
 
   /**
    * Generator function that can iterate through each schema in _schema SchemaMap and items for each Schema
    */
-  public* getSchemaItems(): IterableIterator<SchemaItem> {
+  public * getSchemaItems(): IterableIterator<SchemaItem> {
     for (const schema of this._schema) {
       for (const schemaItem of schema.getItems()) {
         yield schemaItem;
@@ -137,7 +174,7 @@ export class SchemaCache implements ISchemaLocater {
    * Gets all the schemas from the schema cache.
    * @returns An array of Schema objects.
    */
-  public getAllSchemas(): Schema [] {
+  public getAllSchemas(): Schema[] {
     return this._schema;
   }
 }
@@ -192,6 +229,22 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema item ${schemaItem.name} to the schema ${schemaItem.key.schemaKey.toString()} because the schema could not be located.`);
 
     (schema as MutableSchema).addItem(schemaItem);
+  }
+
+  /**
+   * Returns true if the schema is already in the context
+   * @param schemaKey
+   */
+  public schemaExists(schemaKey: Readonly<SchemaKey>): boolean {
+    return this._knownSchemas.schemaExits(schemaKey);
+  }
+
+  public async addSchemaPromise(schemaPromise: LazyLoadedSchema) {
+    return this._knownSchemas.addSchemaPromise(schemaPromise);
+  }
+
+  public getSchemaPromise(schemaKey: Readonly<SchemaKey>): LazyLoadedSchema | undefined {
+    return this._knownSchemas.getSchemaPromise(schemaKey);
   }
 
   /**
@@ -269,7 +322,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * can be located by an ISchemaLocater instance added to the context.
    * @returns An array of Schema objects.
    */
-  public getKnownSchemas(): Schema [] {
+  public getKnownSchemas(): Schema[] {
     return this._knownSchemas.getAllSchemas();
   }
 }

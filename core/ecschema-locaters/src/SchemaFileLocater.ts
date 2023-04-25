@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { DelayedPromise, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
 /** @packageDocumentation
  * @module Locaters
@@ -60,6 +60,19 @@ export class FileSchemaKey extends SchemaKey {
     this.schemaText = schemaJson;
   }
 }
+/**
+ * Holds schemaPath and corresponding promise to read schema text found there
+ * @internal
+ */
+interface SchemaText {
+  schemaPath: string;
+  readSchemaTextPromise: Promise<string | undefined>;
+}
+
+/**
+ * @internal
+ */
+class SchemaTextsCache extends Array<SchemaText> { }
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
@@ -67,13 +80,18 @@ export class FileSchemaKey extends SchemaKey {
  */
 export abstract class SchemaFileLocater {
   public searchPaths: string[];
+  private _schemasStrings = new SchemaTextsCache();
 
   constructor() {
     this.searchPaths = [];
   }
 
   public async readUtf8FileToString(filePath: string): Promise<string | undefined> {
-    return new Promise<string | undefined>((resolve, reject) => {
+    const savedPromise = this._schemasStrings.find((value: SchemaText) => value.schemaPath === filePath);
+    if (savedPromise)
+      return savedPromise.readSchemaTextPromise;
+
+    const stringPromise = new Promise<string | undefined>((resolve, reject) => {
       fs.readFile(filePath, "utf-8", (err, data) => {
         if (err)
           reject(err);
@@ -81,6 +99,9 @@ export abstract class SchemaFileLocater {
           resolve(data);
       });
     });
+    this._schemasStrings.push({ schemaPath: filePath, readSchemaTextPromise: stringPromise });
+    stringPromise.finally(() => this._schemasStrings = this._schemasStrings.filter((value: SchemaText) => value.schemaPath !== filePath));
+    return stringPromise;
   }
 
   public readUtf8FileToStringSync(filePath: string): string | undefined {
