@@ -822,7 +822,7 @@ export interface TileContentDescription extends TileContentMetadata {
 /** Deserializes tile content metadata.
  * @throws [[TileReadError]]
  * @internal
- * @deprecated Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
+ * @deprecated in 4.0. Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
  */
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription {
   return decodeTileContentDescription({ stream, sizeMultiplier, is2d, options, isVolumeClassifier });
