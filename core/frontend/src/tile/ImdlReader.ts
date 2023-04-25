@@ -142,12 +142,22 @@ interface ImdlTextureMapping {
     mode?: TextureMapping.Mode;
     /** @see [TextureMapping.Params.worldMapping]($common). Default: false. */
     worldMapping?: boolean;
+    /** @see [TextureMapping.Params.useConstantLod]($common). Default: false. */
+    useConstantLod?: boolean;
+    /** Describes the [TextureMapping.ConstantLodParamProps]($common). */
+    constantLodParams?: {
+      repetitions?: number;
+      offset?: number[];
+      minDistClamp?: number;
+      maxDistClamp?: number;
+    };
   };
   /** @see [NormalMapParams]($common). */
   normalMapParams?: {
     textureName?: string;
     greenUp?: boolean;
     scale?: number;
+    useConstantLod?: boolean;
   };
 }
 
@@ -583,9 +593,9 @@ export class ImdlReader {
     this._bufferViews = imdl.bufferViews;
     this._meshes = imdl.meshes;
     this._nodes = imdl.nodes;
-    this._materialValues = imdl.materials ?? { };
-    this._renderMaterials = imdl.renderMaterials ?? { };
-    this._namedTextures = imdl.namedTextures ?? { };
+    this._materialValues = imdl.materials ?? {};
+    this._renderMaterials = imdl.renderMaterials ?? {};
+    this._namedTextures = imdl.namedTextures ?? {};
     this._patternSymbols = imdl.patternSymbols ?? {};
     this._rtcCenter = imdl.rtcCenter ? Point3d.fromJSON(imdl.rtcCenter) : undefined;
 
@@ -713,6 +723,19 @@ export class ImdlReader {
     return this._system.createMaterial(materialParams, this._iModel);
   }
 
+  private constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+    if (undefined === propsJson)
+      return undefined;
+
+    const constantLodPops: TextureMapping.ConstantLodParamProps = {
+      repetitions: JsonUtils.asDouble(propsJson.repetitions, 1.0),
+      offset: { x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0, y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0 },
+      minDistClamp: JsonUtils.asDouble(propsJson.minDistClamp, 1.0),
+      maxDistClamp: JsonUtils.asDouble(propsJson.maxDistClamp, 4096.0 * 1024.0 * 1024.0),
+    };
+    return constantLodPops;
+  }
+
   private textureMappingFromJson(json: ImdlTextureMapping | undefined): TextureMapping | undefined {
     if (undefined === json)
       return undefined;
@@ -732,6 +755,8 @@ export class ImdlReader {
       textureWeight: JsonUtils.asDouble(paramsJson.weight, 1.0),
       mapMode: JsonUtils.asInt(paramsJson.mode),
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
+      useConstantLod: JsonUtils.asBool(paramsJson.useConstantLod),
+      constantLodProps: this.constantLodParamPropsFromJson(paramsJson.constantLodParams),
     };
 
     const textureMapping = new TextureMapping(texture, new TextureMapping.Params(paramProps));
@@ -745,6 +770,7 @@ export class ImdlReader {
           normalMap,
           greenUp: JsonUtils.asBool(normalMapJson.greenUp),
           scale: JsonUtils.asDouble(normalMapJson.scale, 1),
+          useConstantLod: JsonUtils.asBool(normalMapJson.useConstantLod),
         };
       }
     }
@@ -1305,7 +1331,7 @@ export class ImdlReader {
       if (!branch) {
         branchesByNodeId.set(nodeId, branch = new GraphicBranch(true));
         branch.animationNodeId = nodeId;
-        branch.animationId =  `${this._modelId}_Node_${nodeId}`;
+        branch.animationId = `${this._modelId}_Node_${nodeId}`;
       }
 
       return branch;

@@ -1749,8 +1749,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1966080,
-    Major = 30,
+    Combined = 2031616,
+    Major = 31,
     Minor = 0
 }
 
@@ -5811,7 +5811,8 @@ export class NonUniformColor {
 // @public
 export enum NormalMapFlags {
     GreenUp = 1,
-    None = 0
+    None = 0,
+    UseConstantLod = 2
 }
 
 // @beta
@@ -9251,7 +9252,7 @@ export namespace TextureMapping {
         Spherical = 5
     }
     export interface ParamProps {
-        constantLodParams?: ConstantLodParamProps;
+        constantLodProps?: ConstantLodParamProps;
         mapMode?: TextureMapping.Mode;
         textureMat2x3?: TextureMapping.Trans2x3;
         textureWeight?: number;
@@ -9281,12 +9282,17 @@ export namespace TextureMapping {
 // @public
 export interface TextureMapProps {
     pattern_angle?: number;
+    pattern_constantlod_maxdistanceclamp?: number;
+    pattern_constantlod_mindistanceclamp?: number;
+    pattern_constantlod_offset?: Point2dProps;
+    pattern_constantlod_repetitions?: number;
     pattern_flip?: boolean;
     pattern_mapping?: TextureMapping.Mode;
     pattern_offset?: Point2dProps;
     pattern_scale?: Point2dProps;
     pattern_scalemode?: TextureMapUnits;
     pattern_u_flip?: boolean;
+    pattern_useConstantLod?: boolean;
     pattern_weight?: number;
     TextureId: Id64String;
 }
