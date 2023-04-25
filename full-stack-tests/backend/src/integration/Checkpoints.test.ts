@@ -14,9 +14,9 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
-import { CloudSqliteTest } from "./CloudSqlite.test";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import { AzuriteContainerService } from "./AzuriteContainerService";
 
 async function queryBisModelCount(imodel: IModelDb): Promise<number> {
   const reader = imodel.createQueryReader("SELECT count(*) FROM bis.model");
@@ -68,8 +68,8 @@ describe("Checkpoints", () => {
 
     // Props for daemon
     accountProps = {
-      accessName: CloudSqliteTest.storage.accessName,
-      storageType: CloudSqliteTest.storage.storageType,
+      accessName: AzuriteContainerService.storage.accessName,
+      storageType: AzuriteContainerService.storage.storageType,
     };
     cacheProps = {
       rootDir: cloudcacheDir,

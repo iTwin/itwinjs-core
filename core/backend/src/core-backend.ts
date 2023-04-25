@@ -8,6 +8,7 @@ export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentle
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";
+export * from "./BlobContainerService";
 export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangedElementsDb";
@@ -15,7 +16,6 @@ export * from "./ChangeSummaryManager";
 export * from "./ChannelControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
-export * from "./CloudContainerService";
 export * from "./CloudSqlite";
 export * from "./CodeService";
 export * from "./CodeSpecs";
@@ -159,8 +159,8 @@ export * from "./workspace/Workspace";
  * Classes for working with [RpcInterfaces]($docs/learning/RpcInterface.md).
  */
 /**
- * @docs-group-description CloudContainers
- * Classes for working with cloud storage containers.
+ * @docs-group-description BlobContainers
+ * Classes for working with cloud-based blob containers.
  */
 /**
  * @docs-group-description TileStorage

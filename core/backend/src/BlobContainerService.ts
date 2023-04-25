@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module CloudContainers
+ * @module BlobContainers
  */
 
 import { AccessToken, Id64String } from "@itwin/core-bentley";
-import { SettingObject } from "./workspace/Settings";
 
 /**
- * Service for creating, managing and providing access to cloud containers for an iTwin.
+ * Service for creating, managing and providing access to cloud-based blob containers for an iTwin.
  * @beta
  */
-export namespace CloudContainer {
+export namespace BlobContainer {
 
   export type Provider = "azure" | "google" | "aws";
   export type ContainerId = string;
@@ -26,27 +25,32 @@ export namespace CloudContainer {
   }
 
   export interface Props extends ScopeProps {
-    description: string;
-    format: string;
-    application: string;
-    json?: SettingObject;
+    id?: ContainerId;
+    isPublic?: boolean;
+    metadata: {
+      description: string;
+      format: string;
+      application: string;
+      [propertyName: string]: string;
+    }
   }
 
   export interface Address {
-    provider: Provider
     uri: string;
     id: ContainerId;
   }
 
   export interface AccessProps extends Props {
-    token: ContainerToken;
+    token: ContainerToken
+    provider: Provider;
+    emulator: boolean;
     expiration: Date;
   }
 
   export interface Service {
-    createNewContainer(arg: { props: Props, userToken: UserToken, provider?: Provider }): Promise<Address>;
-    deleteContainer(arg: { address: Address, userToken: UserToken }): Promise<void>;
-    requestAccess(arg: { address: Address, requestWriteAccess?: boolean, userToken: UserToken, durationSeconds: number }): Promise<AccessProps>;
+    create(arg: { props: Props, userToken: UserToken, provider?: Provider }): Promise<Address>;
+    delete(arg: { address: Address, userToken: UserToken }): Promise<void>;
+    getToken(arg: { address: Address, requestWriteAccess: boolean, userToken: UserToken, durationSeconds: number }): Promise<AccessProps>;
   }
 
   export let service: Service | undefined;
