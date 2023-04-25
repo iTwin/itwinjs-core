@@ -48,14 +48,16 @@ export namespace AzuriteTest {
           },
           id: container.containerId ?? Guid.createValue(),
           iTwinId: "itwin1",
-          isPublic: container.isPublic,
-        },
+        } as BlobContainer.Props,
         userToken: service.userToken.admin,
       };
 
+      if (container.isPublic)
+        arg.props.isPublic = true;
+
       const containerService = BlobContainer.service!;
       try {
-        await containerService.delete({ address: { id: arg.props.id, uri: getRootUri() }, userToken: arg.userToken });
+        await containerService.delete({ address: { id: arg.props.id!, uri: getRootUri() }, userToken: arg.userToken });
       } catch (e) {
       }
 
@@ -177,7 +179,7 @@ export namespace AzuriteTest {
         token: sasUrl.split("?")[1],
         provider: "azure",
         expiration: expiresOn,
-        emulator: true,
+        isEmulator: true,
       };
     },
   };

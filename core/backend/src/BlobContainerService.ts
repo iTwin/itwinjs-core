@@ -9,14 +9,21 @@
 import { AccessToken, Id64String } from "@itwin/core-bentley";
 
 /**
- * Service for creating, managing and authorizing access to cloud-based blob containers for an iTwin.
+ * Types and Service for creating, managing and authorizing access to cloud-based blob containers for an iTwin.
  * @beta
  */
 export namespace BlobContainer {
 
+  /** name of cloud provider for a container. */
   export type Provider = "azure" | "google" | "aws";
+
+  /** the name of the container within its [[Scope]] */
   export type ContainerId = string;
+
+  /** access token that authenticates a user. This token is required to obtain a [[ContainerToken]]. */
   export type UserToken = AccessToken;
+
+  /** access token that authenticates access to a container for either read or write. */
   export type ContainerToken = AccessToken;
 
   export interface Scope {
@@ -24,15 +31,24 @@ export namespace BlobContainer {
     iModelId?: Id64String;
   }
 
+  export interface Metadata {
+    description: string;
+    format: string;
+    application: string;
+    [propertyName: string]: string;
+  }
+
   export interface Props extends Scope {
     id?: ContainerId;
-    isPublic?: boolean;
-    metadata: {
-      description: string;
-      format: string;
-      application: string;
-      [propertyName: string]: string;
-    }
+    metadata: Metadata;
+    isPublic?: true;
+  }
+
+  export interface AccessProps extends Props {
+    provider: Provider;
+    token: ContainerToken;
+    expiration: Date;
+    isEmulator?: true;
   }
 
   export interface Address {
@@ -40,15 +56,9 @@ export namespace BlobContainer {
     id: ContainerId;
   }
 
-  export interface AccessProps extends Props {
-    token: ContainerToken
-    provider: Provider;
-    emulator: boolean;
-    expiration: Date;
-  }
-
   export interface Service {
-    create(arg: { props: Props, userToken: UserToken, provider?: Provider }): Promise<Address>;
+    /** create a new Container. Throws on failure (e.g. access denied or container already exists.) */
+    create(arg: { props: Props, userToken: UserToken }): Promise<Address>;
     delete(arg: { address: Address, userToken: UserToken }): Promise<void>;
     getToken(arg: { address: Address, requestWriteAccess: boolean, userToken: UserToken, durationSeconds: number }): Promise<AccessProps>;
   }
