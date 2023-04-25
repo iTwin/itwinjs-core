@@ -51,9 +51,12 @@ export class BatchedTileTree extends TileTree {
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   public override _selectTiles(args: TileDrawArgs): Tile[] {
-    const selected: BatchedTile[] = [];
-    this.rootTile.selectTiles(selected, args, 0);
-    return selected;
+    const selected = new Set<BatchedTile>();
+    this.rootTile.altSelectTiles(selected, args, undefined);
+    return Array.from(selected);
+    // const selected: BatchedTile[] = [];
+    // this.rootTile.selectTiles(selected, args, 0);
+    // return selected;
   }
 
   public override draw(args: TileDrawArgs): void {
