@@ -76,7 +76,7 @@
     }
   ],
   "eslint.options": {
-    "configFile": "./package.json",
+    "overrideConfigFile": "./package.json",
     "useEslintrc": false,
     "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin"
   },
