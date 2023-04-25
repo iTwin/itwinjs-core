@@ -6,12 +6,14 @@
  * @module Metadata
  */
 
-import { FormatProps } from "../Deserialization/JsonProps";
+import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString} from "@itwin/core-quantity";
+import {
+  BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
+  ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
+} from "@itwin/core-quantity";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
@@ -76,7 +78,7 @@ export class Format extends SchemaItem {
 
   protected setPrecision(precision: number) { this._base.precision = precision; }
 
-  private typecheck(formatProps: FormatProps) {
+  private typecheck(formatProps: SchemaItemFormatProps) {
     this._base.loadFormatProperties(formatProps);
 
     if (undefined !== formatProps.composite) { // TODO: This is duplicated below when the units need to be processed...
@@ -95,7 +97,7 @@ export class Format extends SchemaItem {
     }
   }
 
-  public override fromJSONSync(formatProps: FormatProps) {
+  public override fromJSONSync(formatProps: SchemaItemFormatProps) {
     super.fromJSONSync(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
@@ -110,7 +112,7 @@ export class Format extends SchemaItem {
     }
   }
 
-  public override async fromJSON(formatProps: FormatProps) {
+  public override async fromJSON(formatProps: SchemaItemFormatProps) {
     await super.fromJSON(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
@@ -130,7 +132,7 @@ export class Format extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): FormatProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): SchemaItemFormatProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.type = formatTypeToString(this.type);
     schemaJson.precision = this.precision;

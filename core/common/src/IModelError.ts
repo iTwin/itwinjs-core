@@ -7,11 +7,11 @@
  */
 
 import {
-  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, RepositoryStatus,
+  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelStatus, LoggingMetaData, RepositoryStatus,
 } from "@itwin/core-bentley";
 
 export {
-  BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, ChangeSetStatus,
+  BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, LoggingMetaData, DbResult, ChangeSetStatus,
 } from "@itwin/core-bentley";
 
 /** Numeric values for common errors produced by iTwin.js APIs, typically provided by [[IModelError]].
@@ -25,7 +25,7 @@ export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | Briefc
  * @public
  */
 export class IModelError extends BentleyError {
-  public constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData) {
     super(errorNumber, message, getMetaData);
   }
 }
@@ -48,7 +48,7 @@ export class ServerTimeoutError extends ServerError {
 
 /** @public */
 export class BackendError extends IModelError {
-  public constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) {
     super(errorNumber, message, getMetaData);
     this.name = name;
   }
@@ -59,7 +59,7 @@ export class BackendError extends IModelError {
  * @alpha
  */
 export class ChannelConstraintError extends IModelError {
-  public constructor(message: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(message: string, getMetaData?: LoggingMetaData) {
     super(RepositoryStatus.ChannelConstraintViolation, message, getMetaData);
   }
 }

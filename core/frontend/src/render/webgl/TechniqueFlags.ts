@@ -45,6 +45,9 @@ export const enum IsWiremesh { No, Yes }
 /** @internal */
 export type PositionType = "quantized" | "unquantized";
 
+/** @internal */
+export const enum EnableAtmosphere { No, Yes }
+
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
  */
@@ -60,6 +63,7 @@ export class TechniqueFlags {
   public isThematic: IsThematic = IsThematic.No;
   public isWiremesh: IsWiremesh = IsWiremesh.No;
   public positionType: PositionType = "quantized";
+  public enableAtmosphere: EnableAtmosphere = EnableAtmosphere.No;
   private _isHilite = false;
 
   public constructor(translucent: boolean = false) {
@@ -74,7 +78,7 @@ export class TechniqueFlags {
     return "quantized" === this.positionType;
   }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No, wiremesh = IsWiremesh.No, posType: PositionType = "quantized"): void {
+  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No, wiremesh = IsWiremesh.No, posType: PositionType = "quantized", enableAtmosphere = EnableAtmosphere.No): void {
     const clipStack = target.uniforms.branch.clipStack;
     const numClipPlanes = clipStack.hasClip ? clipStack.textureHeight : 0;
     this.positionType = posType;
@@ -92,6 +96,7 @@ export class TechniqueFlags {
       this.isShadowable = shadowable;
       this.isThematic = thematic;
       this.isWiremesh = wiremesh;
+      this.enableAtmosphere = enableAtmosphere;
       this.featureMode = target.uniforms.batch.featureMode;
 
       // Determine if we should use the shaders which support discarding surfaces in favor of their edges (and discarding non-planar surfaces in favor of coincident planar surfaces).
@@ -131,6 +136,7 @@ export class TechniqueFlags {
     this.isThematic = thematic;
     this.isWiremesh = IsWiremesh.No;
     this.positionType = posType;
+    this.enableAtmosphere = EnableAtmosphere.No;
     this.numClipPlanes = 0;
   }
 
@@ -167,6 +173,7 @@ export class TechniqueFlags {
       && this.isThematic === other.isThematic
       && this.isWiremesh === other.isWiremesh
       && this.positionType === other.positionType
+      && this.enableAtmosphere === other.enableAtmosphere
       && this.isHilite === other.isHilite;
   }
 
@@ -194,6 +201,8 @@ export class TechniqueFlags {
       parts.push("Wiremesh");
     if (this.positionType === "unquantized")
       parts.push("Unquantized");
+    if (this.enableAtmosphere)
+      parts.push("EnableAtmosphere");
 
     return parts.join("-");
   }
@@ -235,6 +244,9 @@ export class TechniqueFlags {
           break;
         case "Unquantized":
           flags.positionType = "unquantized";
+          break;
+        case "EnableAtmosphere":
+          flags.enableAtmosphere = EnableAtmosphere.Yes;
           break;
         case "Pick":
           flags.featureMode = FeatureMode.Pick;

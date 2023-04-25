@@ -1,18 +1,18 @@
 {
   "name": "@itwin/build-tools",
-  "version": "4.0.0-dev.60",
+  "version": "4.0.0-dev.87",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/build"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "tools/build"
   },
   "bin": {
     "betools": "bin/betools.js"
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "build:ci": "npm run -s build",
     "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",
@@ -46,9 +46,9 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "^4.0.0-dev.32",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@types/node": "^18.11.5",
-    "eslint": "^7.11.0"
+    "eslint": "^8.36.0"
   },
   "eslintConfig": {
     "plugins": [

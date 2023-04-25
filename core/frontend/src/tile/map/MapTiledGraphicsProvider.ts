@@ -14,7 +14,8 @@ import { Viewport } from "../../Viewport";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
 
 /** Position of a map-layer in the display style's map (i.e. background/overlay map)
- * @internal */
+ * @public
+ */
 export interface MapLayerIndex {
   /** True if map-layer is part of [[DisplayStyleState]]'s overlay map, otherwise map-layer is part of [[DisplayStyleState]]'s background map
   * @see [[DisplayStyleState.mapLayerAtIndex]].
@@ -91,14 +92,15 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     this._detachFromDisplayStyle.forEach((f) => f());
     this._detachFromDisplayStyle.length = 0;
   }
+
   /** @internal */
-  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined {
-    const imageryTreeRef = isOverlay ? this.overlayMap.getLayerImageryTreeRef(index) : this.backgroundMap.getLayerImageryTreeRef(index);
+  public getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined {
+    const imageryTreeRef = mapLayerIndex.isOverlay ? this.overlayMap.getLayerImageryTreeRef(mapLayerIndex.index) : this.backgroundMap.getLayerImageryTreeRef(mapLayerIndex.index);
     return imageryTreeRef?.imageryProvider;
   }
 
-  public resetMapLayer(index: number, isOverlay: boolean) {
-    const imageryTreeRef = isOverlay ? this.overlayMap.getLayerImageryTreeRef(index) : this.backgroundMap.getLayerImageryTreeRef(index);
+  public resetMapLayer(mapLayerIndex: MapLayerIndex) {
+    const imageryTreeRef = mapLayerIndex.isOverlay ? this.overlayMap.getLayerImageryTreeRef(mapLayerIndex.index) : this.backgroundMap.getLayerImageryTreeRef(mapLayerIndex.index);
     imageryTreeRef?.resetTreeOwner();
   }
 
@@ -110,13 +112,13 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     if (mapTreeId === this.backgroundMap.treeOwner.tileTree?.id) {
       for (let i = 0; i < this.backgroundMap.layerSettings.length; i++) {
         if (this.backgroundMap.getLayerImageryTreeRef(i)?.treeOwner.tileTree?.id === layerTreeId) {
-          layers.push({index: i, isOverlay:false});
+          layers.push({ index: i, isOverlay: false });
         }
       }
     } else if (mapTreeId === this.overlayMap.treeOwner.tileTree?.id) {
       for (let i = 0; i < this.overlayMap.layerSettings.length; i++) {
         if (this.overlayMap.getLayerImageryTreeRef(i)?.treeOwner.tileTree?.id === layerTreeId) {
-          layers.push({index: i, isOverlay:true});
+          layers.push({ index: i, isOverlay: true });
         }
       }
     }

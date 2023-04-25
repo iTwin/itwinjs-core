@@ -142,14 +142,13 @@ function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: L
   }
   return ok;
 }
-/* eslint-disable no-console */
 describe("BsplineCurve", () => {
 
   it("HelloWorld", () => {
     const ck = new Checker();
     for (const rational of [false, true]) {
       for (const order of [2, 3, 4, 5]) {
-        if (Checker.noisy.bsplineEvaluation) console.log("\n\n ************* order ", order);
+        if (Checker.noisy.bsplineEvaluation) GeometryCoreTestIO.consoleLog("\n\n ************* order ", order);
         // const a = 1.0;
         const b = 2.0;
         const points = [];
@@ -169,9 +168,9 @@ describe("BsplineCurve", () => {
         const arcLength = curve.curveLength();
         ck.testLE(arcLength, curve.quickLength() + Geometry.smallMetricDistance, "order", order);
         if (Checker.noisy.bsplineEvaluation) {
-          console.log("BsplineCurve", curve);
-          console.log({ numPoles: curve.numPoles, numSpan: curve.numSpan });
-          console.log("length", arcLength);
+          GeometryCoreTestIO.consoleLog("BsplineCurve", curve);
+          GeometryCoreTestIO.consoleLog({ numPoles: curve.numPoles, numSpan: curve.numSpan });
+          GeometryCoreTestIO.consoleLog("length", arcLength);
         }
         for (let span = 0; span < curve.numSpan; span++) {
           const p0 = curve.evaluatePointInSpan(span, 0.0);
@@ -192,7 +191,7 @@ describe("BsplineCurve", () => {
 
           }
           ck.testCoordinate(b, p1.y, "constant bspline y");
-          if (Checker.noisy.bsplineEvaluation) console.log("span", span, p0, p1, p2);
+          if (Checker.noisy.bsplineEvaluation) GeometryCoreTestIO.consoleLog("span", span, p0, p1, p2);
           if (span + 1 < curve.numSpan) {
             const q2 = curve.evaluatePointInSpan(span + 1, 0.0);
             ck.testPoint3d(p2, q2, "span match");
@@ -274,7 +273,7 @@ describe("BsplineCurve", () => {
       [0, 0, 0.5, 0.5, 0.75, 1, 1], 3)!;
     const path = Path.create(bcurve);
     const strokes = path.getPackedStrokes()!;
-    // console.log(prettyPrint(strokes));
+    // GeometryCoreTestIO.consoleLog(prettyPrint(strokes));
     const strokeRange = Range3d.create();
     strokes.extendRange(strokeRange);
     const curveRange = bcurve.range();
@@ -599,7 +598,7 @@ describe("BsplineCurve", () => {
     const options = new StrokeOptions();
     options.chordTol = 0.01;
     const strokes = path.getPackedStrokes(options);
-    console.log(prettyPrint(strokes!.getPoint3dArray()));
+    GeometryCoreTestIO.consoleLog(prettyPrint(strokes!.getPoint3dArray()));
     expect(ck.getNumErrors()).equals(0);
   });
   it("StrokeWithKnotsB", () => {
@@ -629,7 +628,7 @@ describe("BsplineCurve", () => {
       const options = new StrokeOptions();
       options.chordTol = 0.01;
       const strokes = path.getPackedStrokes(options);
-      console.log(prettyPrint(strokes!.getPoint3dArray()));
+      GeometryCoreTestIO.consoleLog(prettyPrint(strokes!.getPoint3dArray()));
     }
   });
   // problem: concept station observes under-stroked parabolas.

@@ -50,46 +50,6 @@
       ]
     },
     {
-      "name": "Transformer Tests (Integration)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 1
-      },
-      "cwd": "${workspaceFolder}/core/transformer/",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/core/{backend,common,transformer}/lib/**/*.js"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "Transformer Tests (Standalone)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 1
-      },
-      "cwd": "${workspaceFolder}/core/transformer/",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ],
-      "env": {
-        "LOG_TRANSFORMER_IN_TESTS": "1"
-      },
-      "outFiles": [
-        "${workspaceFolder}/core/{backend,common,transformer}/lib/**/*.js"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
       "name": "Bentley Tests",
       "presentation": {
         "group": "0_CoreTests",
@@ -676,47 +636,6 @@
       "env": {
         "WORKSPACE_EDITOR_LOGGING": "true",
       }
-    },
-    {
-      "name": "imodel-transformer (app)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [ // NOTE: edit these to specify the command line arguments for the debugging session
-        "start",
-        "--",
-        "--hub=qa",
-        "--sourceContextId='ec002f93-f0c1-4ab3-a407-351848eba233'", // iModelJsIntegrationTest
-        "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'", // ReadOnlyTest
-        "--targetFile='d:/tmp/test-target.bim'",
-        "--logTransformer",
-        "--logChangesets",
-      ],
-      "outFiles": [
-        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "imodel-transformer (tests)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
     },
     {
       "name": "synchro-schedule-importer",

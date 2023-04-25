@@ -49,6 +49,7 @@
 ### [Advanced](./advanced/index.md)
 
 - [ECExpressions](./advanced/ECExpressions.md)
+- [Diagnostics](./advanced/Diagnostics.md)
 - [Localization](./advanced/Localization.md)
 - [Ruleset Variables](./advanced/RulesetVariables.md)
 - [Ruleset Supplementation](./advanced/RulesetSupplementation.md)

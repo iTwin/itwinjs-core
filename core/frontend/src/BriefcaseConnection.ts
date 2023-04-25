@@ -58,7 +58,7 @@ export interface PullChangesOptions {
    * Function called regularly to report progress of changes download.
    * @deprecated in 3.6. Use [[downloadProgressCallback]] instead.
    */
-  progressCallback?: ProgressCallback;
+  progressCallback?: ProgressCallback; // eslint-disable-line deprecation/deprecation
   /** Function called regularly to report progress of changes download. */
   downloadProgressCallback?: OnDownloadProgress;
   /** Interval for calling progress callback (in milliseconds). */

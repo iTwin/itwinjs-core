@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Modified supplemental rules to use new content modifier's attribute `applyOnNestedContent`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}
