@@ -9,7 +9,7 @@
 import { AccessToken, Id64String } from "@itwin/core-bentley";
 
 /**
- * Service for creating, managing and providing access to cloud-based blob containers for an iTwin.
+ * Service for creating, managing and authorizing access to cloud-based blob containers for an iTwin.
  * @beta
  */
 export namespace BlobContainer {
@@ -19,12 +19,12 @@ export namespace BlobContainer {
   export type UserToken = AccessToken;
   export type ContainerToken = AccessToken;
 
-  export interface ScopeProps {
+  export interface Scope {
     iTwinId: Id64String;
     iModelId?: Id64String;
   }
 
-  export interface Props extends ScopeProps {
+  export interface Props extends Scope {
     id?: ContainerId;
     isPublic?: boolean;
     metadata: {

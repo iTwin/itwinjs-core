@@ -14,9 +14,9 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
+import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
-import { AzuriteContainerService } from "./AzuriteContainerService";
 
 async function queryBisModelCount(imodel: IModelDb): Promise<number> {
   const reader = imodel.createQueryReader("SELECT count(*) FROM bis.model");
@@ -27,7 +27,6 @@ async function queryBisModelCount(imodel: IModelDb): Promise<number> {
 
 describe("Checkpoints", () => {
   let daemon: ChildProcess;
-  let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
   let daemonProps: NativeCloudSqlite.DaemonProps;
   let accessToken: AccessToken;
@@ -47,7 +46,7 @@ describe("Checkpoints", () => {
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
     fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
-    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
+    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...AzuriteTest.storage });
     while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
@@ -66,11 +65,6 @@ describe("Checkpoints", () => {
     process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
     IModelJsFs.removeSync(cloudcacheDir);
 
-    // Props for daemon
-    accountProps = {
-      accessName: AzuriteContainerService.storage.accessName,
-      storageType: AzuriteContainerService.storage.storageType,
-    };
     cacheProps = {
       rootDir: cloudcacheDir,
       name: V2CheckpointManager.cloudCacheName,

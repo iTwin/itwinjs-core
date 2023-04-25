@@ -5,46 +5,17 @@
 
 import { expect } from "chai";
 import { Suite } from "mocha";
-import * as azureBlob from "@azure/storage-blob";
 import { CloudSqlite, PropertyStore } from "@itwin/core-backend";
+import { AzuriteTest } from "./AzuriteTest";
 
-// spell:ignore mkdirs devstoreaccount1, racwdl
+// spell:ignore mkdirs
 
 const blockSize = 64 * 1024;
-const httpAddr = "127.0.0.1:10000";
 const propContainer = "properties-itwin1";
-const storage: CloudSqlite.AccountAccessProps = {
-  accessName: "devstoreaccount1",
-  storageType: `azure?emulator=${httpAddr}&sas=1`,
-};
-const credential = new azureBlob.StorageSharedKeyCredential(storage.accessName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
 
-async function createAzureContainer(containerId: string) {
-  const pipeline = azureBlob.newPipeline(credential);
-  const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accessName}`, pipeline);
-  try {
-    await blobService.deleteContainer(containerId);
-  } catch (e) {
-  }
-  try {
-    await blobService.createContainer(containerId);
-  } catch (e) {
-  }
-}
 async function initializeContainer(containerId: string) {
-  await createAzureContainer(containerId);
-  await PropertyStore.CloudAccess.initializeDb({ props: { ...storage, containerId, accessToken: makeSasToken(containerId, "racwdl") }, initContainer: { blockSize } });
-}
-
-export function makeSasToken(containerName: string, permissionFlags: string) {
-  const now = new Date();
-  return azureBlob.generateBlobSASQueryParameters({
-    containerName,
-    permissions: azureBlob.ContainerSASPermissions.parse(permissionFlags),
-    startsOn: now,
-    expiresOn: new Date(now.valueOf() + 86400 * 1000), // one day, in milliseconds
-    version: "2018-03-28", // note: fails without this value
-  }, credential).toString();
+  await AzuriteTest.Sqlite.createAzContainer(AzuriteTest.Sqlite.makeContainer(containerId, false));
+  await PropertyStore.CloudAccess.initializeDb({ props: { ...AzuriteTest.storage, containerId, accessToken: await AzuriteTest.makeSasToken(containerId, true) }, initContainer: { blockSize } });
 }
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
@@ -55,15 +26,15 @@ function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
   return count;
 }
 
-function makePropertyStore(moniker: string) {
-  const accessProps = { ...storage, containerId: propContainer, accessToken: makeSasToken(propContainer, "racwdl") };
+async function makePropertyStore(moniker: string) {
+  const accessProps = { ...AzuriteTest.storage, containerId: propContainer, accessToken: await AzuriteTest.makeSasToken(propContainer, true) };
   const propStore = new PropertyStore.CloudAccess(accessProps);
   propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
   propStore.lockParams.moniker = moniker;
   return propStore;
 }
 
-describe.only("PropertyStore", function (this: Suite) {
+describe("PropertyStore", function (this: Suite) {
   this.timeout(0);
 
   let ps1: PropertyStore.CloudAccess;
@@ -72,8 +43,8 @@ describe.only("PropertyStore", function (this: Suite) {
   before(async () => {
     await initializeContainer(propContainer);
 
-    ps1 = makePropertyStore("propertyStore1");
-    ps2 = makePropertyStore("propertyStore2");
+    ps1 = await makePropertyStore("propertyStore1");
+    ps2 = await makePropertyStore("propertyStore2");
   });
 
   it("access PropertyStore", async () => {
