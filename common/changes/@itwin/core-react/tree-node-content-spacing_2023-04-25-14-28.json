@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Add gaps between TreeNodeItem content items.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

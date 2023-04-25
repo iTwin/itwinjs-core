@@ -21,16 +21,17 @@ $node-font-size: $iui-font-size;
   cursor: default;
   padding: 1px 1px 0px 1px;
 
-  > .contents {
+  >.contents {
     display: flex;
     align-items: center;
     width: 100%;
+    gap: 5px;
 
-    > .iui-progress-indicator-radial {
+    >.iui-progress-indicator-radial {
       margin: 0 4px;
     }
 
-    > .expansion-toggle {
+    >.expansion-toggle {
       display: inline-block;
       margin-top: auto;
       margin-bottom: auto;
@@ -43,7 +44,7 @@ $node-font-size: $iui-font-size;
       margin-right: 5px;
       background: transparent;
 
-      > input {
+      >input {
         position: relative;
         left: 0px;
         height: auto;
@@ -51,16 +52,15 @@ $node-font-size: $iui-font-size;
       }
     }
 
-    > .core-image-checkbox {
+    >.core-image-checkbox {
       top: -1px;
     }
   }
 
   &-icon {
     width: 16px;
-    margin: 0 5px;
 
-    > .bui-webfont-icon {
+    >.bui-webfont-icon {
       display: inline-block;
       width: 16px;
       text-align: center;
@@ -68,12 +68,13 @@ $node-font-size: $iui-font-size;
     }
   }
 
-  &.is-focused, &:focus {
+  &.is-focused,
+  &:focus {
     outline: 1px dotted #000;
   }
 
   &:not(.is-hover-disabled) {
-    &:hover{
+    &:hover {
       background: $buic-row-hover;
     }
   }
