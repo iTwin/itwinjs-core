@@ -77,7 +77,7 @@ export class SchemaCache implements ISchemaLocater {
    * Returns true if the schema exists in either the schema cache or the promise cache.  SchemaMatchType.Latest used.
    * @param schemaKey The key to search for.
    */
-  public schemaExits(schemaKey: Readonly<SchemaKey>): boolean {
+  public schemaExists(schemaKey: Readonly<SchemaKey>): boolean {
     return this.loadedSchemaExists(schemaKey) || this.schemaPromiseExists(schemaKey);
   }
 
@@ -87,7 +87,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schemaPromise The schema promise to add to the cache.
    */
   public async addSchemaPromise(schemaPromise: LazyLoadedSchema) {
-    if (this.schemaExits(schemaPromise))
+    if (this.schemaExists(schemaPromise))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schemaPromise.toString()}, already exists within this cache.`);
 
     schemaPromise.then((schema: Schema) => {
@@ -107,7 +107,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schema The schema to add to the cache.
    */
   public async addSchema<T extends Schema>(schema: T) {
-    if (this.schemaExits(schema.schemaKey))
+    if (this.schemaExists(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push(schema);
@@ -118,7 +118,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schema The schema to add to the cache.
    */
   public addSchemaSync<T extends Schema>(schema: T) {
-    if (this.schemaExits(schema.schemaKey))
+    if (this.schemaExists(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push(schema);
@@ -246,7 +246,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schemaKey
    */
   public schemaExists(schemaKey: Readonly<SchemaKey>): boolean {
-    return this._knownSchemas.schemaExits(schemaKey);
+    return this._knownSchemas.schemaExists(schemaKey);
   }
 
   public async addSchemaPromise(schemaPromise: LazyLoadedSchema) {
