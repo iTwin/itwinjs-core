@@ -461,7 +461,7 @@ export class RealityTileTree extends TileTree {
     if (context.missing.length === 0)
       this.reportTileVisibility(args, selected);
 
-    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
+    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles, args.touchedTiles);
     return selected;
   }
 

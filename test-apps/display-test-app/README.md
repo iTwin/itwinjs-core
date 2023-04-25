@@ -221,6 +221,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the authorization client will not be initialized for the electron app, to work around a current bug that causes it to produce constant exceptions when attempting to obtain an access token.
 * IMJS_USE_FRONTEND_TILES
   * If defined, the @itwin/frontend-tiles package will be used to obtain tile trees for spatial views, served over localhost.
+* IMJS_GPU_MEMORY_LIMIT
+  * If defined, specifies the GpuMemoryLimit with which to initialize TileAdmin (none, relaxed, default, aggressive; or a specific number of bytes).
 
 ## Key-ins
 

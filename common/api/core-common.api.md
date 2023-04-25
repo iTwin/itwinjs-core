@@ -1978,6 +1978,25 @@ export enum DbValueFormat {
     JsNames = 1
 }
 
+// @internal (undocumented)
+export function decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription;
+
+// @internal (undocumented)
+export interface DecodeTileContentDescriptionArgs {
+    // (undocumented)
+    is2d?: boolean;
+    // (undocumented)
+    isLeaf?: boolean;
+    // (undocumented)
+    isVolumeClassifier?: boolean;
+    // (undocumented)
+    options: TileOptions;
+    // (undocumented)
+    sizeMultiplier?: number;
+    // (undocumented)
+    stream: ByteStream;
+}
+
 // @internal
 export interface DecorationGeometryProps {
     // (undocumented)
@@ -7101,7 +7120,7 @@ export interface ReadableFormData extends BackendReadable {
 // @beta
 export function readElementMeshes(data: Uint8Array): IndexedPolyface[];
 
-// @internal
+// @internal @deprecated
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
 
 // @beta
