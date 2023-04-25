@@ -9,9 +9,9 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
+  BatchType, ColorDef, ColorDefProps, ComputeNodeId, decodeTileContentDescription, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
   ImageSource, ImageSourceFormat, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d,
-  readTileContentDescription, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -474,6 +474,8 @@ export interface ImdlReaderCreateArgs {
   iModel: IModelConnection;
   modelId: Id64String;
   is3d: boolean;
+  /** If undefined, the tile's leafness will be deduced by decodeTileContentDescription. */
+  isLeaf?: boolean;
   system: RenderSystem;
   type?: BatchType; // default Primary
   loadEdges?: boolean; // default true
@@ -515,6 +517,7 @@ export class ImdlReader {
   private readonly _binaryData: Uint8Array;
   private readonly _iModel: IModelConnection;
   private readonly _is3d: boolean;
+  private readonly _isLeaf?: boolean;
   private readonly _modelId: Id64String;
   private readonly _system: RenderSystem;
   private readonly _type: BatchType;
@@ -592,6 +595,7 @@ export class ImdlReader {
     this._iModel = args.iModel;
     this._modelId = args.modelId;
     this._is3d = args.is3d;
+    this._isLeaf = args.isLeaf;
     this._system = args.system;
     this._type = args.type ?? BatchType.Primary;
     this._canceled = args.isCanceled;
@@ -607,7 +611,14 @@ export class ImdlReader {
   public async read(): Promise<ImdlReaderResult> {
     let content;
     try {
-      content = readTileContentDescription(this._buffer, this._sizeMultiplier, !this._is3d, IModelApp.tileAdmin, this._isVolumeClassifier);
+      content = decodeTileContentDescription({
+        stream: this._buffer,
+        sizeMultiplier: this._sizeMultiplier,
+        is2d: !this._is3d,
+        options: IModelApp.tileAdmin,
+        isVolumeClassifier: this._isVolumeClassifier,
+        isLeaf: this._isLeaf,
+      });
     } catch (e) {
       if (e instanceof TileReadError)
         return { isLeaf: true, readStatus: e.errorNumber };
