@@ -83,6 +83,16 @@ export interface MaterialTextureMappingProps {
 
   /** @internal */
   worldMapping?: boolean;
+
+  /** True if want to use constant LOD texture mapping for the surface texture.
+   * Default: false.
+   */
+  useConstantLod?: boolean;
+
+  /** Parameters for constant LOD mapping mode.
+   * See [[TextureMapping.ConstantLodParamProps]] for defaults.
+   */
+  constantLodProps?: TextureMapping.ConstantLodParamProps;
 }
 
 /** Arguments supplied to [[RenderSystem.createRenderMaterial]].

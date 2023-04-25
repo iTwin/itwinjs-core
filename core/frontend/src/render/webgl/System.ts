@@ -608,6 +608,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         mapMode: args.textureMapping.mode,
         textureWeight: args.textureMapping.weight,
         worldMapping: args.textureMapping.worldMapping,
+        useConstantLod: args.textureMapping.useConstantLod,
+        constantLodProps: args.textureMapping.constantLodProps,
       }));
       params.textureMapping.normalMapParams = args.textureMapping.normalMapParams;
     }
