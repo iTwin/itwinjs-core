@@ -2,6 +2,21 @@
   "name": "@itwin/webgl-compatibility",
   "entries": [
     {
+<<<<<<< HEAD
+=======
+      "version": "3.7.4",
+      "tag": "@itwin/webgl-compatibility_v3.7.4",
+      "date": "Tue, 25 Apr 2023 17:50:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.3",
+      "tag": "@itwin/webgl-compatibility_v3.7.3",
+      "date": "Thu, 20 Apr 2023 13:19:29 GMT",
+      "comments": {}
+    },
+    {
+>>>>>>> 3a744eb2e5 (3.7.4)
       "version": "3.7.2",
       "tag": "@itwin/webgl-compatibility_v3.7.2",
       "date": "Wed, 12 Apr 2023 13:12:42 GMT",
