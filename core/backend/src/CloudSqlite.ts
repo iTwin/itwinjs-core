@@ -49,7 +49,8 @@ export namespace CloudSqlite {
     /** if true, container is attached in "secure" mode (blocks are encrypted). Only supported in daemon mode. */
     secure?: boolean;
     /** An Id which enhances logging provided by CloudSQLite.
-     * This Id will be used to identify, in log messages, all CloudSQLite client connections (also known as database connections) opened using this CloudContainer.
+     *  This Id will be used to identify, in log messages, all CloudSQLite client connections (also known as database connections) opened using this CloudContainer.
+     *  This Id is mostly only relevant to give more clarity to logs produced running in daemon mode, where there are usually many active CloudContainers and by extension, many ongoing HTTP requests.
      */
     clientIdentifier?: string;
   }
