@@ -249,7 +249,7 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].color, elementColor.tbgr);
   });
 
-  it.only("test uv-param mutation for patternMaps", () => {
+  it.only("test unitless texture v-param inversion", () => {
     const polyfaceBuilder = PolyfaceBuilder.create();
     polyfaceBuilder.options.needParams = polyfaceBuilder.options.needNormals = true;
     polyfaceBuilder.addFacetFromGrowableArrays(
@@ -259,22 +259,13 @@ describe("exportGraphics", () => {
       undefined
     );
 
-    const streamBuilder = new GeometryStreamBuilder();
-    const geometryParams = new GeometryParams(seedCategory);
-    geometryParams.materialId = insertRenderMaterialWithTexture("test-material-3", getTextureId(), [1, -1], TextureMapUnits.Meters);
-    streamBuilder.appendGeometryParamsChange(geometryParams);
-    streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
-    const geometryId = insertPhysicalElement(streamBuilder.geometryStream);
-
-    const infos: ExportGraphicsInfo[] = [];
-    const exportGraphicsOptions: ExportGraphicsOptions = {
-      elementIdArray: [geometryId],
-      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
-    };
-
-    const testUVParamMutation = (expectedParams: Float32Array, assertMessage: string, _disableScaling: boolean, _disableVInversion: boolean) => {
-      // exportGraphicsOptions.disableUVScaling = disableScaling ? true : undefined;
-      // exportGraphicsOptions.disableVInversion = disableVInversion ? true : undefined;
+    const testUVParamInversion = (geomId: Id64String, expectedParams: Float32Array, assertMessage: string, disableInversion: boolean) => {
+      const infos: ExportGraphicsInfo[] = [];
+      const exportGraphicsOptions: ExportGraphicsOptions = {
+        elementIdArray: [geomId],
+        onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+        disableTextureParamInvertV: disableInversion ? true : undefined
+      };
       const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
       assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
       assert.strictEqual(infos.length, 1);
@@ -282,10 +273,31 @@ describe("exportGraphics", () => {
       assert.deepStrictEqual(infos[0].mesh.params, expectedParams, assertMessage);
     };
 
-    testUVParamMutation(new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]), "exported uv-params are scaled and inverted", false, false);
-    // testUVParamMutation(new Float32Array([2, Math.sqrt(5), 0, 0, 0, Math.sqrt(5)]), "exported uv-params are scaled and NOT inverted", false, true);
-    // testUVParamMutation(new Float32Array([1, 1, 0, 0, 0, 1]), "exported uv-params are NOT scaled and NOT inverted", true, true);
-    // testUVParamMutation(new Float32Array([1, 0, 0, 1, 0, 0]), "exported uv-params are NOT scaled and inverted", true, false);
+    // if texture is not unitless, then inversion is always skipped
+    if (true) {
+      const scaledTexture = insertRenderMaterialWithTexture("test-material-scaled", getTextureId(), [1, -1], TextureMapUnits.Meters);
+      const streamBuilder = new GeometryStreamBuilder();
+      const geometryParams = new GeometryParams(seedCategory);
+      geometryParams.materialId = scaledTexture;
+      streamBuilder.appendGeometryParamsChange(geometryParams);
+      streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
+      const scaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
+      testUVParamInversion(scaledGeom, new Float32Array([2, Math.sqrt(5), 0, 0, 0, Math.sqrt(5)]), "exported scaled uv-params are not inverted by default", false);
+      testUVParamInversion(scaledGeom, new Float32Array([2, Math.sqrt(5), 0, 0, 0, Math.sqrt(5)]), "exported scaled uv-params not affected by inversion override", true);
+    }
+
+    // if texture is unitless, then we can override default v-inversion
+    if (true) {
+      const unscaledTexture = insertRenderMaterialWithTexture("test-material-unscaled", getTextureId(), [1, 1], TextureMapUnits.Relative);
+      const streamBuilder = new GeometryStreamBuilder();
+      const geometryParams = new GeometryParams(seedCategory);
+      geometryParams.materialId = unscaledTexture;
+      streamBuilder.appendGeometryParamsChange(geometryParams);
+      streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
+      const unscaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
+      testUVParamInversion(unscaledGeom, new Float32Array([1, 0, 0, 1, 0, 0]), "exported unscaled uv-params are inverted by default", false);
+      testUVParamInversion(unscaledGeom, new Float32Array([1, 1, 0, 0, 0, 1]), "exported unscaled uv-params inversion is overridden", true);
+    }
   });
 
   it("creates meshes with vertices shared as expected", () => {
