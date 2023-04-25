@@ -210,7 +210,7 @@ export class BatchedTile extends Tile {
 
     // We want to display this tile. Request its content if not already loaded.
     if ((TileVisibility.Visible === vis || unskippable) && !this.isReady)
-        args.insertMissing(this);
+      args.insertMissing(this);
 
     if (closestDisplayableAncestor)
       selected.add(closestDisplayableAncestor);

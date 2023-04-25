@@ -935,7 +935,14 @@ export class TileMetadataReader {
    * @throws [[TileReadError]]
    */
   public read(stream: ByteStream, props: TileProps): TileMetadata {
-    const content = readTileContentDescription(stream, props.sizeMultiplier, this._is2d, this._options, this._isVolumeClassifier);
+    const content = decodeTileContentDescription({
+      stream,
+      sizeMultiplier: props.sizeMultiplier,
+      is2d: this._is2d,
+      options: this._options,
+      isVolumeClassifier: this._isVolumeClassifier,
+    });
+
     return {
       contentRange: content.contentRange,
       isLeaf: content.isLeaf,

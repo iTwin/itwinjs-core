@@ -67,7 +67,7 @@ export interface DtaNumberConfiguration {
 
 export interface DtaOtherConfiguration {
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
-  gpuMemoryLimit?:string | number; // see GpuMemoryLimit in core-frontend for supported string values
+  gpuMemoryLimit?: string | number; // see GpuMemoryLimit in core-frontend for supported string values
 }
 
 /** Parameters for starting display-test-app with a specified initial configuration */
