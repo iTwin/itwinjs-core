@@ -219,12 +219,6 @@ export class SchemaKey {
 }
 
 /**
- * Contains the SchemaKey and the Schema's alias.
- * @beta
- */
-export type SchemaKeyAndAlias = SchemaKey & { alias: string };
-
-/**
  * The SchemaItemKey contains a SchemaItem's name and SchemaKey.
  * @beta
  */
