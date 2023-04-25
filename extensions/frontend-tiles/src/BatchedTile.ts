@@ -24,6 +24,7 @@ let channel: TileRequestChannel | undefined;
 /** @internal */
 export class BatchedTile extends Tile {
   private readonly _childrenProps?: Tileset3dSchema.Tile[];
+  private readonly _unskippable: boolean;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
@@ -31,6 +32,10 @@ export class BatchedTile extends Tile {
 
   public constructor(params: BatchedTileParams, tree: BatchedTileTree) {
     super(params, tree);
+
+    // The root tile never has content, so it doesn't count toward max levels to skip.
+    this._unskippable = 0 === (this.depth % getMaxLevelsToSkip());
+
     if (params.childrenProps?.length)
       this._childrenProps = params.childrenProps;
 
@@ -55,16 +60,14 @@ export class BatchedTile extends Tile {
     if (TileVisibility.OutsideFrustum === vis)
       return;
 
-    // The root tile never has content, so it doesn't count toward max levels to skip.
-    const unskippable = 0 === (this.depth % getMaxLevelsToSkip());
-    if (unskippable) {
+    if (this._unskippable) {
       // Prevent this tile's content from being unloaded due to memory pressure.
       args.touchedTiles.add(this);
       args.markUsed(this);
     }
 
     closestDisplayableAncestor = this.hasGraphics ? this : closestDisplayableAncestor;
-    if (TileVisibility.TooCoarse === vis && (this.isReady || !unskippable)) {
+    if (TileVisibility.TooCoarse === vis && (this.isReady || !this._unskippable)) {
       args.markUsed(this);
       args.markReady(this);
       const childrenLoadStatus = this.loadChildren();
@@ -81,7 +84,7 @@ export class BatchedTile extends Tile {
     }
 
     // We want to display this tile. Request its content if not already loaded.
-    if ((TileVisibility.Visible === vis || unskippable) && !this.isReady)
+    if ((TileVisibility.Visible === vis || this._unskippable) && !this.isReady)
       args.insertMissing(this);
 
     if (closestDisplayableAncestor)
