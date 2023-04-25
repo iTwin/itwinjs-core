@@ -7048,7 +7048,7 @@ export interface MaterialSpecularProps {
 
 // @public
 export interface MaterialTextureMappingProps {
-    constantLodParams?: TextureMapping.ConstantLodParamProps;
+    constantLodProps?: TextureMapping.ConstantLodParamProps;
     mode?: TextureMapping.Mode;
     normalMapParams?: NormalMapParams;
     texture: RenderTexture;
