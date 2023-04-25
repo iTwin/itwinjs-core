@@ -48,7 +48,7 @@ export interface ISchemaItemLocater {
 }
 
 /**
- * @beta
+ * @internal
  */
 export class SchemaCache implements ISchemaLocater {
   private _schema: SchemaMap;
@@ -69,14 +69,23 @@ export class SchemaCache implements ISchemaLocater {
     return undefined !== this._schemaPromises.find((schema: LazyLoadedSchema) => schema.matches(schemaKey, SchemaMatchType.Latest));
   }
 
-  public schemaExits(schemaKey: Readonly<SchemaKey>): boolean {
-    return this.loadedSchemaExists(schemaKey) || this.schemaPromiseExists(schemaKey);
-  }
-
   private removeSchemaPromise(schemaKey: Readonly<SchemaKey>) {
     this._schemaPromises = this._schemaPromises.filter((value: LazyLoadedSchema) => !value.matches(schemaKey, SchemaMatchType.Latest));
   }
 
+  /**
+   * Returns true if the schema exists in either the schema cache or the promise cache.  SchemaMatchType.Latest used.
+   * @param schemaKey The key to search for.
+   */
+  public schemaExits(schemaKey: Readonly<SchemaKey>): boolean {
+    return this.loadedSchemaExists(schemaKey) || this.schemaPromiseExists(schemaKey);
+  }
+
+  /**
+   * Adds a promise to load the schema to the cache. Does not allow for duplicate schemas in the cache of schemas or cache of promises, checks using SchemaMatchType.Latest.
+   * When the promise completes the schema will be added to the schema cache and the promise will be removed from the promise cache
+   * @param schemaPromise The schema promise to add to the cache.
+   */
   public async addSchemaPromise(schemaPromise: LazyLoadedSchema) {
     if (this.schemaExits(schemaPromise))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schemaPromise.toString()}, already exists within this cache.`);
@@ -84,15 +93,13 @@ export class SchemaCache implements ISchemaLocater {
     schemaPromise.then((schema: Schema) => {
       if (!this.loadedSchemaExists(schema.schemaKey))
         this._schema.push(schema);
+    }, (reason: any) => {
+      throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Schema load promise for ${schemaPromise.toString()} failed. Reason: ${reason.toString()}`);
     }).finally(
       () => this.removeSchemaPromise(schemaPromise)
     );
 
     this._schemaPromises.push(schemaPromise);
-  }
-
-  public getSchemaPromise(schemaKey: Readonly<SchemaKey>): LazyLoadedSchema | undefined {
-    return this._schemaPromises.find((schema: LazyLoadedSchema) => schema.matches(schemaKey, SchemaMatchType.Latest));
   }
 
   /**
@@ -160,7 +167,8 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
-   * Generator function that can iterate through each schema in _schema SchemaMap and items for each Schema
+   * Generator function that can iterate through each schema in _schema SchemaMap and items for each Schema.
+   * Does not include schema items from schemas that are not completely loaded yet.
    */
   public * getSchemaItems(): IterableIterator<SchemaItem> {
     for (const schema of this._schema) {
@@ -172,6 +180,7 @@ export class SchemaCache implements ISchemaLocater {
 
   /**
    * Gets all the schemas from the schema cache.
+   * Does not include schemas from schemas that are not completely loaded yet.
    * @returns An array of Schema objects.
    */
   public getAllSchemas(): Schema[] {
@@ -222,6 +231,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   /**
    * Adds the given SchemaItem to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
    * @param schemaItem The SchemaItem to add
+   * @deprecated use ecschema-editing package
    */
   public async addSchemaItem(schemaItem: SchemaItem) {
     const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);
@@ -232,7 +242,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   }
 
   /**
-   * Returns true if the schema is already in the context
+   * Returns true if the schema is already in the context.  SchemaMatchType.Latest is used to find a match.
    * @param schemaKey
    */
   public schemaExists(schemaKey: Readonly<SchemaKey>): boolean {
@@ -241,10 +251,6 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
 
   public async addSchemaPromise(schemaPromise: LazyLoadedSchema) {
     return this._knownSchemas.addSchemaPromise(schemaPromise);
-  }
-
-  public getSchemaPromise(schemaKey: Readonly<SchemaKey>): LazyLoadedSchema | undefined {
-    return this._knownSchemas.getSchemaPromise(schemaKey);
   }
 
   /**
@@ -279,25 +285,32 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
 
   /**
    * Attempts to get a Schema from the context's cache.
+   * Will await a partially loaded schema then return when it is completely loaded.
    * @param schemaKey The SchemaKey to identify the Schema.
    * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
    * @internal
    */
   public async getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
-    return this.getCachedSchemaSync(schemaKey, matchType) as T;
+    return this._knownSchemas.getSchema<T>(schemaKey, matchType);
   }
 
   /**
    * Attempts to get a Schema from the context's cache.
+   * Will return undefined if the cached schema is partially loaded.  Use the async method to await partially loaded schemas.
    * @param schemaKey The SchemaKey to identify the Schema.
    * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
    * @internal
    */
-  public getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
-    const schema = this._knownSchemas.getSchemaSync(schemaKey, matchType);
-    return schema as T;
+  public getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
+    return this._knownSchemas.getSchemaSync<T>(schemaKey, matchType);
   }
 
+  /**
+   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+   * Will await a partially loaded schema then look in it for the requested item
+   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
+   * @returns The requested schema item
+   */
   public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
     const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema)
@@ -305,6 +318,12 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return schema.getItem<T>(schemaItemKey.name);
   }
 
+  /**
+   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+   * Will skip a partially loaded schema and return undefined if the item belongs to that schema.  Use the async method to await partially loaded schemas.
+   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
+   * @returns The requested schema item
+   */
   public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined {
     const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema)
@@ -312,6 +331,12 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return schema.getItemSync<T>(schemaItemKey.name);
   }
 
+  /**
+   * Iterates through the items of each schema known to the context.  This includes schemas added to the
+   * context using [[SchemaContext.addSchema]]. This does not include schemas that
+   * can be located by an ISchemaLocater instance added to the context.
+   * Does not include schema items from schemas that are not completely loaded yet.
+   */
   public getSchemaItems(): IterableIterator<SchemaItem> {
     return this._knownSchemas.getSchemaItems();
   }
@@ -319,7 +344,8 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   /**
    * Gets all the Schemas known by the context. This includes schemas added to the
    * context using [[SchemaContext.addSchema]]. This does not include schemas that
-   * can be located by an ISchemaLocater instance added to the context.
+   * can be located by an ISchemaLocater instance added to the context.  Does not
+   * include schemas that are partially loaded.
    * @returns An array of Schema objects.
    */
   public getKnownSchemas(): Schema[] {

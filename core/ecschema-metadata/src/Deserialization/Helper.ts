@@ -78,15 +78,11 @@ export class SchemaReadHelper<T = unknown> {
       await this._context.addSchemaPromise(new DelayedPromiseWithProps<SchemaKey, Schema>(schema.schemaKey, async () => this.loadSchema(schema)));
     }
 
-    const cachedSchema = this._context.getCachedSchemaSync<U>(schema.schemaKey, SchemaMatchType.Latest);
-    if (undefined !== cachedSchema)
-      return cachedSchema as U;
+    const cachedSchema = await this._context.getCachedSchema<U>(schema.schemaKey, SchemaMatchType.Latest);
+    if (undefined === cachedSchema)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Could not load schema ${schema.schemaKey.toString()}`);
 
-    const schemaPromise = this._context.getSchemaPromise(schema.schemaKey);
-    if (undefined === schemaPromise)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not load schema ${schema.schemaKey.toString()}`);
-
-    return await schemaPromise as U;
+    return cachedSchema;
   }
 
   /* Finish loading the rest of the schema */
