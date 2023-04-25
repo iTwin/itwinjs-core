@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/certa"
+    }
+  ],
+  "packageName": "@itwin/certa",
+  "email": "Daniel.Rodriguez@bentley.com"
+}
