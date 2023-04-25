@@ -77,11 +77,12 @@ export class BatchedTilesetReader {
     this.baseUrl = baseUrl;
   }
 
-  public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
+  public readTileParams(json: schema.Tile, childIndex: number, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;
     const geometricError = json.geometricError;
     const range = rangeFromBoundingVolume(json.boundingVolume);
     const isLeaf = undefined === json.children || json.children.length === 0;
+    const debugId = parent ? `${parent.debugId}.${childIndex}` : "0";
 
     // ###TODO evaluate this. The geometric errors in the tiles seem far too small.
     const maximumSizeScale = 8;
@@ -93,6 +94,7 @@ export class BatchedTilesetReader {
       isLeaf,
       maximumSize: maximumSizeScale * RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
       childrenProps: isLeaf ? undefined : json.children,
+      debugId,
     };
   }
 
@@ -106,7 +108,7 @@ export class BatchedTilesetReader {
       iModel: this._iModel,
       location,
       priority: TileLoadPriority.Primary,
-      rootTile: this.readTileParams(root),
+      rootTile: this.readTileParams(root, -1),
       reader: this,
     };
   }

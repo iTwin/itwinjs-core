@@ -17,12 +17,16 @@ import { getMaxLevelsToSkip } from "./FrontendTiles";
 /** @internal */
 export interface BatchedTileParams extends TileParams {
   childrenProps: Tileset3dSchema.Tile[] | undefined;
+  debugId: string;
 }
 
 let channel: TileRequestChannel | undefined;
 
 /** @internal */
 export class BatchedTile extends Tile {
+  private readonly _debugId: string;
+  public override get debugId() { return this._debugId; }
+
   private readonly _childrenProps?: Tileset3dSchema.Tile[];
 
   public get batchedTree(): BatchedTileTree {
@@ -31,6 +35,7 @@ export class BatchedTile extends Tile {
 
   public constructor(params: BatchedTileParams, tree: BatchedTileTree) {
     super(params, tree);
+    this._debugId = params.debugId;
     if (params.childrenProps?.length)
       this._childrenProps = params.childrenProps;
 
@@ -184,7 +189,7 @@ export class BatchedTile extends Tile {
       return;
 
     const unskippable = 0 === (this.depth % getMaxLevelsToSkip());
-    if (unskippable && this.isReady)
+    // if (unskippable && this.isReady)
       args.markReady(this);
 
     closestDisplayableAncestor = this.hasGraphics ? this : closestDisplayableAncestor;
@@ -214,8 +219,9 @@ export class BatchedTile extends Tile {
     let children: BatchedTile[] | undefined;
     if (this._childrenProps) {
       try {
+        let childIndex = 0;
         for (const childProps of this._childrenProps) {
-          const params = this.batchedTree.reader.readTileParams(childProps, this);
+          const params = this.batchedTree.reader.readTileParams(childProps, childIndex++, this);
           const child = new BatchedTile(params, this.batchedTree);
           children = children ?? [];
           children.push(child);
@@ -257,6 +263,7 @@ export class BatchedTile extends Tile {
       iModel: this.tree.iModel,
       modelId: this.tree.modelId,
       is3d: true,
+      isLeaf: this.isLeaf,
       system,
       isCanceled: shouldAbort,
       options: {

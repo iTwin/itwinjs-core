@@ -71,6 +71,7 @@ export abstract class Tile {
   protected _hadGraphics = false;
   /** Uniquely identifies this tile's content in the context of its tree. */
   protected _contentId: string;
+  public get debugId(): string { return "---"; }
   /** The current loading state of this tile's children. Child tiles are loaded on-demand, potentially asynchronously. */
   protected _childrenLoadStatus: TileTreeLoadStatus;
   /** @internal */
@@ -158,6 +159,7 @@ export abstract class Tile {
 
   /** Dispose of resources held by this tile. */
   public disposeContents(): void {
+    console.log(`disposeContents ${this.debugId}`);
     this._state = TileState.NotReady;
     this._graphic = dispose(this._graphic);
     this._rangeGraphic = dispose(this._rangeGraphic);
@@ -167,6 +169,7 @@ export abstract class Tile {
 
   /** Dispose of resources held by this tile and all of its children, marking it and all of its children as "abandoned". */
   public dispose(): void {
+    console.log(`dispose ${this.debugId}`);
     this.disposeContents();
     this._state = TileState.Abandoned;
     this.disposeChildren();

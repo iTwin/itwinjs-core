@@ -63,7 +63,9 @@ export class BatchedTileTree extends TileTree {
   private _altSelectTiles(args: TileDrawArgs): Tile[] {
     const selected = new Set<BatchedTile>();
     this.rootTile.altSelectTiles(selected, args, undefined);
-    return Array.from(selected);
+    const result = Array.from(selected);
+    console.log(`selected ${result.map((tile) => tile.debugId).join()}`);
+    return result;
   }
 
   public override draw(args: TileDrawArgs): void {

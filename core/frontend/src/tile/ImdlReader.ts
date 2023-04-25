@@ -483,6 +483,8 @@ export interface ImdlReaderCreateArgs {
   containsTransformNodes?: boolean; // default false
   /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
   timeline?: RenderSchedule.ModelTimeline;
+  /** If defined, overrides computation of isLeaf by readTileContentDescription. */
+  isLeaf?: boolean;
 }
 
 type PrimitiveParams = {
@@ -515,6 +517,7 @@ export class ImdlReader {
   private readonly _binaryData: Uint8Array;
   private readonly _iModel: IModelConnection;
   private readonly _is3d: boolean;
+  private readonly _isLeaf?: boolean;
   private readonly _modelId: Id64String;
   private readonly _system: RenderSystem;
   private readonly _type: BatchType;
@@ -592,6 +595,7 @@ export class ImdlReader {
     this._iModel = args.iModel;
     this._modelId = args.modelId;
     this._is3d = args.is3d;
+    this._isLeaf = args.isLeaf;
     this._system = args.system;
     this._type = args.type ?? BatchType.Primary;
     this._canceled = args.isCanceled;
@@ -624,7 +628,8 @@ export class ImdlReader {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: true };
 
-    return this.finishRead(content.isLeaf, featureTable, content.contentRange, content.emptySubRangeMask, content.sizeMultiplier);
+    const isLeaf = this._isLeaf ?? content.isLeaf;
+    return this.finishRead(isLeaf, featureTable, content.contentRange, content.emptySubRangeMask, content.sizeMultiplier);
   }
 
   /** @internal */
