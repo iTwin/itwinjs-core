@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Renamed UnitConversion interface to UnitConversionProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

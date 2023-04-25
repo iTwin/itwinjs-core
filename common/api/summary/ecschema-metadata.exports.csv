@@ -10,7 +10,7 @@ beta;AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty
 beta;AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty
 beta;AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps
 beta;AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format
-beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps
+beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps
 beta;AnyStructProperty = StructProperty | StructArrayProperty
 beta;class ArrayProperty 
 beta;ArrayPropertyProps 
@@ -44,7 +44,7 @@ beta;EnumerationPropertyProps
 beta;EnumerationProps 
 beta;EnumeratorProps
 beta;Format 
-beta;FormatProps 
+internal;getFormatProps(format: Format | OverrideFormat): FormatProps
 beta;InvertedUnit 
 beta;InvertedUnitProps 
 beta;ISchemaItemLocater
@@ -113,11 +113,14 @@ beta;SchemaContext
 beta;SchemaGraph
 internal;SchemaGraphUtil
 beta;class SchemaItem
+beta;SchemaItemFormatProps = SchemaItemProps & FormatProps
 beta;SchemaItemKey
+beta;SchemaItemOverrideFormatProps 
 beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
+beta;SchemaItemUnitProps 
 alpha;SchemaJsonLocater 
 beta;SchemaKey
 beta;SchemaKeyProps
@@ -144,7 +147,6 @@ beta;StructPropertyProps
 beta;Unit 
 internal;UnitConversion
 internal;UnitConverter
-beta;UnitProps 
 beta;UnitSystem 
 beta;UnitSystemProps = SchemaItemProps
 internal;XmlParser 

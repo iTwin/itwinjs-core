@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import {
-  FormatProps, KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemType, schemaItemTypeToString, SchemaProps, UnitProps,
+  KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemFormatProps, SchemaItemType, schemaItemTypeToString, SchemaItemUnitProps, SchemaProps,
   UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyValueFormatter";
@@ -153,7 +153,7 @@ describe("KoqPropertyValueFormatter", () => {
   });
 });
 
-const metricUnit: UnitProps = {
+const metricUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "MetricUnit",
   definition: "MetricUnit",
@@ -163,7 +163,7 @@ const metricUnit: UnitProps = {
   schema: "TestSchema",
 };
 
-const imperialUnit: UnitProps = {
+const imperialUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "ImperialUnit",
   definition: "MetricUnit",
@@ -174,7 +174,7 @@ const imperialUnit: UnitProps = {
   schema: "TestSchema",
 };
 
-const usSurveyUnit: UnitProps = {
+const usSurveyUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "UsSurveyUnit",
   definition: "MetricUnit",
@@ -185,7 +185,7 @@ const usSurveyUnit: UnitProps = {
   schema: "TestSchema",
 };
 
-const usCustomUnit: UnitProps = {
+const usCustomUnit: SchemaItemUnitProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
   name: "UsCustomUnit",
   definition: "MetricUnit",
@@ -230,7 +230,7 @@ const phenomenon: PhenomenonProps = {
   name: "TestPhenomenon",
 };
 
-const metricFormat: FormatProps = {
+const metricFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "MetricFormat",
   schema: "TestSchema",
@@ -244,7 +244,7 @@ const metricFormat: FormatProps = {
   },
 };
 
-const imperialFormat: FormatProps = {
+const imperialFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "ImperialFormat",
   schema: "TestSchema",
@@ -258,7 +258,7 @@ const imperialFormat: FormatProps = {
   },
 };
 
-const usSurveyFormat: FormatProps = {
+const usSurveyFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "UsSurveyFormat",
   schema: "TestSchema",
@@ -272,7 +272,7 @@ const usSurveyFormat: FormatProps = {
   },
 };
 
-const usCustomFormat: FormatProps = {
+const usCustomFormat: SchemaItemFormatProps = {
   schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
   name: "UsCustomFormat",
   schema: "TestSchema",

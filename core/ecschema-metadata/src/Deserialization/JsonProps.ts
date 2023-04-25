@@ -6,6 +6,8 @@
  * @module Metadata
  */
 
+import { FormatProps } from "@itwin/core-quantity";
+
 /**
  * @beta
  */
@@ -17,7 +19,7 @@ export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClass
 /**
  * @beta
  */
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps;
+export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps;
 
 /**
  * @beta
@@ -254,27 +256,13 @@ export interface ConstantProps extends SchemaItemProps {
 /**
  * @beta
  */
-export interface FormatProps extends SchemaItemProps {
-  readonly type: string;
-  readonly precision?: number;
-  readonly roundFactor?: number;
-  readonly minWidth?: number;
-  readonly showSignOption?: string;
-  readonly formatTraits?: string | string[];
-  readonly decimalSeparator?: string;
-  readonly thousandSeparator?: string;
-  readonly uomSeparator?: string;
-  readonly scientificType?: string; // conditionally required
-  readonly stationOffsetSize?: number; // conditionally required
-  readonly stationSeparator?: string;
-  readonly composite?: {
-    readonly spacer?: string;
-    readonly includeZero?: boolean;
-    readonly units: Array<{
-      readonly name: string;
-      readonly label?: string;
-    }>;
-  };
+export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
+
+/**
+ * @beta
+ */
+export interface SchemaItemOverrideFormatProps extends SchemaItemFormatProps {
+  readonly parent: string;
 }
 
 /**
@@ -300,7 +288,7 @@ export type UnitSystemProps = SchemaItemProps;
 /**
  * @beta
  */
-export interface UnitProps extends SchemaItemProps {
+export interface SchemaItemUnitProps extends SchemaItemProps {
   readonly phenomenon: string;
   readonly unitSystem: string;
   readonly definition: string;

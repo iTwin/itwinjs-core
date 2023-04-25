@@ -20,6 +20,8 @@ Table of contents:
   - [Deprecated API removals](#deprecated-api-removals)
   - [Deprecated API replacements](#deprecated-api-replacements)
     - [Querying ECSql](#querying-ecsql)
+- [Backend](#backend)
+  - [BackendHubAccess](#backendhubaccess)
 - [Geometry](#geometry)
   - [Mesh offset](#mesh-offset)
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
@@ -149,6 +151,12 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 }
 ```
 
+## Backend
+
+### BackendHubAccess
+
+BackendHubAccess has been marked @internal from @beta. The 'hubAccess' property on [IModelHostConfiguration]($core-backend) has also been marked @internal from @beta.
+
 ## Geometry
 
 ### Mesh offset
@@ -252,3 +260,15 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
 - `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
+
+## Interfaces renamed
+
+**@itwin/core-quantity**
+
+- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+
+**@itwin/ecschema-metadata**
+
+- The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
+
+- The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
