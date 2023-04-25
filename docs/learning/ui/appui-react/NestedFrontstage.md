@@ -18,10 +18,10 @@ which will return to the previous frontstage when clicked/pressed.
 
 ## Code to Open Nested Frontstage
 
-The following code that instantiates a nested frontstage, initializes the [FrontstageDef]($appui-react), and calls [FrontstageManager.openNestedFrontstage]($appui-react) to open the nested frontstage.
+The following code that instantiates a nested frontstage, initializes the [FrontstageDef]($appui-react), and calls `UiFramework.frontstages.openNestedFrontstage` to open the nested frontstage.
 
 ```ts
 const frontstageProvider = new NestedFrontstage();
 const frontstageDef = await FrontstageDef.create(frontstageProvider);
-await FrontstageManager.openNestedFrontstage(frontstageDef);
+await UiFramework.fronstages.openNestedFrontstage(frontstageDef);
 ```
