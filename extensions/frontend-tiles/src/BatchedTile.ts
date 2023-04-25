@@ -225,6 +225,7 @@ export class BatchedTile extends Tile {
       iModel: this.tree.iModel,
       modelId: this.tree.modelId,
       is3d: true,
+      isLeaf: this.isLeaf,
       system,
       isCanceled: shouldAbort,
       options: {

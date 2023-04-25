@@ -822,8 +822,27 @@ export interface TileContentDescription extends TileContentMetadata {
 /** Deserializes tile content metadata.
  * @throws [[TileReadError]]
  * @internal
+ * @deprecated Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
  */
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription {
+  return decodeTileContentDescription({ stream, sizeMultiplier, is2d, options, isVolumeClassifier });
+}
+
+/** @internal */
+export interface DecodeTileContentDescriptionArgs {
+  stream: ByteStream;
+  options: TileOptions;
+  isVolumeClassifier?: boolean;
+  is2d?: boolean;
+  sizeMultiplier?: number;
+  isLeaf?: boolean;
+}
+
+/** @internal */
+export function decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription {
+  const { stream, options } = args;
+  const isVolumeClassifier = args.isVolumeClassifier ?? false;
+
   stream.reset();
 
   const header = new ImdlHeader(stream);
@@ -840,31 +859,35 @@ export function readTileContentDescription(stream: ByteStream, sizeMultiplier: n
 
   stream.curPos = featureTableStartPos + ftHeader.length;
 
-  // Determine subdivision based on header data.
-  const completeTile = 0 === (header.flags & ImdlFlags.Incomplete);
-  const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-  let isLeaf = (emptyTile || isVolumeClassifier); // Current classifier algorithm supports only a single tile.
-  if (!isLeaf) {
-    // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
-    // can be adversely affected by quantization issues when zooming in closely.
-    const maxLeafTolerance = 1.0;
+  let sizeMultiplier = args.sizeMultiplier;
+  let isLeaf = args.isLeaf;
+  if (undefined === isLeaf) {
+    // Determine subdivision based on header data.
+    const completeTile = 0 === (header.flags & ImdlFlags.Incomplete);
+    const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
+    isLeaf = (emptyTile || isVolumeClassifier); // Current classifier algorithm supports only a single tile.
+    if (!isLeaf) {
+      // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
+      // can be adversely affected by quantization issues when zooming in closely.
+      const maxLeafTolerance = 1.0;
 
-    // Must sub-divide if tile explicitly specifies...
-    let canSkipSubdivision = 0 === (header.flags & ImdlFlags.DisallowMagnification);
-    // ...or in 2d, or if app explicitly disabled magnification, or tolerance large enough to risk quantization error...
-    canSkipSubdivision = canSkipSubdivision && !is2d && !options.disableMagnification && header.tolerance <= maxLeafTolerance;
-    // ...or app specifies incomplete tiles must always be sub-divided.
-    canSkipSubdivision = canSkipSubdivision && (completeTile || !options.alwaysSubdivideIncompleteTiles);
-    if (canSkipSubdivision) {
-      const minElementsPerTile = 100;
-      if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
-        const containsCurves = 0 !== (header.flags & ImdlFlags.ContainsCurves);
-        if (!containsCurves)
-          isLeaf = true;
-        else if (undefined === sizeMultiplier)
+      // Must sub-divide if tile explicitly specifies...
+      let canSkipSubdivision = 0 === (header.flags & ImdlFlags.DisallowMagnification);
+      // ...or in 2d, or if app explicitly disabled magnification, or tolerance large enough to risk quantization error...
+      canSkipSubdivision = canSkipSubdivision && !args.is2d && !options.disableMagnification && header.tolerance <= maxLeafTolerance;
+      // ...or app specifies incomplete tiles must always be sub-divided.
+      canSkipSubdivision = canSkipSubdivision && (completeTile || !options.alwaysSubdivideIncompleteTiles);
+      if (canSkipSubdivision) {
+        const minElementsPerTile = 100;
+        if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
+          const containsCurves = 0 !== (header.flags & ImdlFlags.ContainsCurves);
+          if (!containsCurves)
+            isLeaf = true;
+          else if (undefined === sizeMultiplier)
+            sizeMultiplier = 1.0;
+        } else if (undefined === sizeMultiplier && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
           sizeMultiplier = 1.0;
-      } else if (undefined === sizeMultiplier && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
-        sizeMultiplier = 1.0;
+        }
       }
     }
   }

@@ -168,6 +168,8 @@ internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DbValueFormat
+internal;decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription
+internal;DecodeTileContentDescriptionArgs
 internal;DecorationGeometryProps
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
@@ -600,6 +602,7 @@ public;Rank
 internal;ReadableFormData 
 beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+deprecated;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
 beta;RealityDataFormat
