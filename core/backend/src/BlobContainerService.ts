@@ -47,6 +47,7 @@ export namespace BlobContainer {
   /**
    * Metadata about the use of a container so that:
    *  - administrators can understand why a container exists for assigning RBAC permissions appropriately
+   *  - usage reports can aggregate types of containers
    *  - applications can identify their containers
    *  - applications can store important (to them) properties "on" their containers
    */
