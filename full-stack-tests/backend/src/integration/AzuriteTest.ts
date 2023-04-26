@@ -23,10 +23,10 @@ export namespace AzuriteTest {
   export const getContainerUri = (id: string) => `${getRootUri()}/${id}`;
   export const createAzClient = (id: string) => new azureBlob.ContainerClient(getContainerUri(id), pipeline);
 
-  export const makeSasToken = async (containerId: string, requestWriteAccess: boolean) => {
+  export const makeSasToken = async (containerId: string, forWriteAccess: boolean) => {
     const address = { id: containerId, uri: getRootUri() };
-    const userToken = requestWriteAccess ? service.userToken.readWrite : service.userToken.readOnly;
-    const access = await BlobContainer.service!.requestToken({ address, userToken, requestWriteAccess });
+    const userToken = forWriteAccess ? service.userToken.readWrite : service.userToken.readOnly;
+    const access = await BlobContainer.service!.requestToken({ address, userToken, forWriteAccess });
     return access.token;
   };
 
@@ -62,7 +62,7 @@ export namespace AzuriteTest {
       }
 
       const address = await containerService.create(createProps);
-      const access = await containerService.requestToken({ address, userToken: createProps.userToken, requestWriteAccess: true });
+      const access = await containerService.requestToken({ address, userToken: createProps.userToken, forWriteAccess: true });
       container.accessToken = access.token;
     };
     export const initializeContainers = async (containers: TestContainer[]) => {
@@ -156,7 +156,7 @@ export namespace AzuriteTest {
         case service.userToken.readWrite:
           break;
         case service.userToken.readOnly:
-          if (!arg.requestWriteAccess)
+          if (!arg.forWriteAccess)
             break;
         // eslint-disable-next-line no-fallthrough
         default:
@@ -165,7 +165,7 @@ export namespace AzuriteTest {
       const azCont = createAzClient(arg.address.id);
       const startsOn = new Date();
       const expiresOn = new Date(startsOn.valueOf() + ((arg.durationSeconds ?? 12 * 60 * 60) * 1000));
-      const permissions = azureBlob.ContainerSASPermissions.parse(arg.requestWriteAccess ? "racwdl" : "rl");
+      const permissions = azureBlob.ContainerSASPermissions.parse(arg.forWriteAccess ? "racwdl" : "rl");
       const sasUrl = await azCont.generateSasUrl({ permissions, startsOn, expiresOn });
       const contProps = await azCont.getProperties();
       const metadata = contProps.metadata as any;

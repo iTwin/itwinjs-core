@@ -90,13 +90,14 @@ export namespace BlobContainer {
     userToken: UserToken;
   }
 
+  /** Information required to request an access token for a container. */
   export interface RequestTokenProps extends AccessContainerProps {
     /** If true, token should provide write access.
-     * @note if write access is requested and the user is authorized for read but not write, an exception will be thrown (i.e. a read token is not returned).
+     * @note if write access is requested and the user is authorized for read but not write, an exception will be thrown (i.e. a read token is *not* returned).
      */
-    requestWriteAccess: boolean;
+    forWriteAccess?: boolean;
     /** the number of seconds before the token should expire.
-     * @note A maximum duration is determined by the service. If not supplied, or longer than the maximum, the maximum duration is used.
+     * @note A maximum duration is determined by the service. If no value is supplied, or the value is larger than the maximum, the maximum duration is used.
      */
     durationSeconds?: number;
   }
@@ -125,7 +126,7 @@ export namespace BlobContainer {
 
     /**
      * Delete an existing blob container.
-     * @note This method requires that the user be an authorized administrator for the iTwin.
+     * @note This method requires that the user be authorized with "delete container" RBAC role for the iTwin.
      */
     delete(props: AccessContainerProps): Promise<void>;
 
