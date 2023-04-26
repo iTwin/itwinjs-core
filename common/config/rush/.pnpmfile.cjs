@@ -1,7 +1,4 @@
 function readPackage(pkg) {
-  if (pkg.name == "typedoc" && pkg.dependencies) {
-    pkg.dependencies["typescript"] = "~4.7.0";
-  }
 
   // Hacky mess: For external packages to this monorepo that have peer dependencies on packages
   // in this repo, we need to do some magic in order to get the peerDeps to point to a correct
@@ -10,7 +7,7 @@ function readPackage(pkg) {
   // dependency of any published packages.
 
   // https://github.com/iTwin/imodels-clients
-  else if (pkg.name == "@itwin/imodels-access-backend") {
+  if (pkg.name == "@itwin/imodels-access-backend") {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
     pkg.dependencies["@itwin/core-backend"] = "workspace:*";
     pkg.dependencies["@itwin/core-common"] = "workspace:*";
