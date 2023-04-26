@@ -26,7 +26,7 @@ export namespace AzuriteTest {
   export const makeSasToken = async (containerId: string, requestWriteAccess: boolean) => {
     const address = { id: containerId, uri: getRootUri() };
     const userToken = requestWriteAccess ? service.userToken.readWrite : service.userToken.readOnly;
-    const access = await BlobContainer.service!.getToken({ address, durationSeconds: 12 * 60 * 60, userToken, requestWriteAccess });
+    const access = await BlobContainer.service!.requestToken({ address, userToken, requestWriteAccess });
     return access.token;
   };
 
@@ -38,35 +38,35 @@ export namespace AzuriteTest {
     };
 
     export const createAzContainer = async (container: TestContainer) => {
-      const arg = {
-        props: {
-          metadata: {
-            application: "test app",
-            description: "test container",
-            format: "CloudSqlite",
-            blockSize: "64K",
-          },
-          id: container.containerId ?? Guid.createValue(),
-          iTwinId: "itwin1",
-        } as BlobContainer.Props,
+      const createProps: BlobContainer.CreateNewContainerProps = {
+        metadata: {
+          application: IModelHost.applicationId,
+          description: "CloudSqlite container for tests",
+          format: "CloudSqlite",
+          blockSize: "64K",
+        },
+        id: container.containerId ?? Guid.createValue(),
+        scope: {
+          iTwinId: "itwin-for-tests",
+        },
         userToken: service.userToken.admin,
       };
 
       if (container.isPublic)
-        arg.props.isPublic = true;
+        (createProps as any).isPublic = true; // just for tests.
 
       const containerService = BlobContainer.service!;
       try {
-        await containerService.delete({ address: { id: arg.props.id!, uri: getRootUri() }, userToken: arg.userToken });
+        await containerService.delete({ address: { id: createProps.id!, uri: getRootUri() }, userToken: createProps.userToken });
       } catch (e) {
       }
 
-      const address = await containerService.create(arg);
-      const access = await containerService.getToken({ address, durationSeconds: 60 * 60, userToken: arg.userToken, requestWriteAccess: true });
+      const address = await containerService.create(createProps);
+      const access = await containerService.requestToken({ address, userToken: createProps.userToken, requestWriteAccess: true });
       container.accessToken = access.token;
     };
     export const initializeContainers = async (containers: TestContainer[]) => {
-      for await (const container of containers) {
+      for (const container of containers) {
         await createAzContainer(container);
         container.initializeContainer({ checksumBlockNames: true });
       }
@@ -122,35 +122,35 @@ export namespace AzuriteTest {
       readWrite: fakeToken(),
     },
 
-    create: async (arg: { props: BlobContainer.Props, userToken: BlobContainer.UserToken, provider?: BlobContainer.Provider }): Promise<BlobContainer.Address> => {
+    create: async (arg: BlobContainer.CreateNewContainerProps & { isPublic?: true }) => {
       if (arg.userToken !== service.userToken.admin)
         throw new Error("only admins may create containers");
 
-      const address: BlobContainer.Address = { id: arg.props.id ?? Guid.createValue(), uri: getRootUri() };
+      const address: BlobContainer.Address = { id: arg.id ?? Guid.createValue(), uri: getRootUri() };
       const azCont = createAzClient(address.id);
       const opts: azureBlob.ContainerCreateOptions = {
         metadata: {
-          itwinid: arg.props.iTwinId,
-          ...arg.props.metadata,
+          itwinid: arg.scope.iTwinId,
+          ...arg.metadata,
         },
       };
-      if (arg.props.iModelId)
-        opts.metadata!.imodelid = arg.props.iModelId;
-      if (arg.props.isPublic)
+      if (arg.scope.iModelId)
+        opts.metadata!.imodelid = arg.scope.iModelId;
+      if (arg.isPublic)
         opts.access = "blob";
 
       await azCont.create(opts);
       return address;
     },
 
-    delete: async (arg: { address: BlobContainer.Address, userToken: BlobContainer.UserToken }): Promise<void> => {
+    delete: async (arg: BlobContainer.AccessContainerProps): Promise<void> => {
       if (arg.userToken !== service.userToken.admin)
         throw new Error("only admins may delete containers");
 
       await createAzClient(arg.address.id).delete();
     },
 
-    getToken: async (arg: { address: BlobContainer.Address, requestWriteAccess: boolean, userToken: BlobContainer.UserToken, durationSeconds: number }): Promise<BlobContainer.AccessProps> => {
+    requestToken: async (arg: BlobContainer.RequestTokenProps): Promise<BlobContainer.TokenProps> => {
       switch (arg.userToken) {
         case service.userToken.admin:
         case service.userToken.readWrite:
@@ -164,7 +164,7 @@ export namespace AzuriteTest {
       }
       const azCont = createAzClient(arg.address.id);
       const startsOn = new Date();
-      const expiresOn = new Date(startsOn.valueOf() + arg.durationSeconds * 1000);
+      const expiresOn = new Date(startsOn.valueOf() + ((arg.durationSeconds ?? 12 * 60 * 60) * 1000));
       const permissions = azureBlob.ContainerSASPermissions.parse(arg.requestWriteAccess ? "racwdl" : "rl");
       const sasUrl = await azCont.generateSasUrl({ permissions, startsOn, expiresOn });
       const contProps = await azCont.getProperties();
@@ -173,13 +173,14 @@ export namespace AzuriteTest {
         throw new Error("invalid container");
 
       return {
-        iTwinId: metadata.itwinid,
-        iModelId: metadata.imodelid,
+        scope: {
+          iTwinId: metadata.itwinid,
+          iModelId: metadata.imodelid,
+        },
         metadata,
         token: sasUrl.split("?")[1],
         provider: "azure",
         expiration: expiresOn,
-        isEmulator: true,
       };
     },
   };
