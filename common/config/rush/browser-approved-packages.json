@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/aec-units-schema",
@@ -307,10 +307,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/node-cli-authorization",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/object-storage-azure",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -332,7 +328,7 @@
     },
     {
       "name": "@itwin/presentation-common",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/presentation-frontend",
@@ -373,18 +369,6 @@
     {
       "name": "@opentelemetry/api",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "@opentelemetry/resources",
-      "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "@opentelemetry/sdk-trace-base",
-      "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "@opentelemetry/semantic-conventions",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@svgdotjs/svg.js",
@@ -507,10 +491,6 @@
       "allowedCategories": [ "common" ]
     },
     {
-      "name": "deep-assign",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
       "name": "deep-equal",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
@@ -620,7 +600,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "jsdom",
@@ -684,7 +664,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",
@@ -715,10 +695,6 @@
       "allowedCategories": [ "integration-testing", "tools" ]
     },
     {
-      "name": "qs",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
     },
@@ -744,7 +720,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "sinon",
@@ -776,7 +752,7 @@
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "supertest",

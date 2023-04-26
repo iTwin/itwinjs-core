@@ -9,9 +9,9 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
+  BatchType, ColorDef, ColorDefProps, ComputeNodeId, decodeTileContentDescription, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
   ImageSource, ImageSourceFormat, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d,
-  readTileContentDescription, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -142,12 +142,22 @@ interface ImdlTextureMapping {
     mode?: TextureMapping.Mode;
     /** @see [TextureMapping.Params.worldMapping]($common). Default: false. */
     worldMapping?: boolean;
+    /** @see [TextureMapping.Params.useConstantLod]($common). Default: false. */
+    useConstantLod?: boolean;
+    /** Describes the [TextureMapping.ConstantLodParamProps]($common). */
+    constantLodParams?: {
+      repetitions?: number;
+      offset?: number[];
+      minDistClamp?: number;
+      maxDistClamp?: number;
+    };
   };
   /** @see [NormalMapParams]($common). */
   normalMapParams?: {
     textureName?: string;
     greenUp?: boolean;
     scale?: number;
+    useConstantLod?: boolean;
   };
 }
 
@@ -474,6 +484,8 @@ export interface ImdlReaderCreateArgs {
   iModel: IModelConnection;
   modelId: Id64String;
   is3d: boolean;
+  /** If undefined, the tile's leafness will be deduced by decodeTileContentDescription. */
+  isLeaf?: boolean;
   system: RenderSystem;
   type?: BatchType; // default Primary
   loadEdges?: boolean; // default true
@@ -515,6 +527,7 @@ export class ImdlReader {
   private readonly _binaryData: Uint8Array;
   private readonly _iModel: IModelConnection;
   private readonly _is3d: boolean;
+  private readonly _isLeaf?: boolean;
   private readonly _modelId: Id64String;
   private readonly _system: RenderSystem;
   private readonly _type: BatchType;
@@ -583,15 +596,16 @@ export class ImdlReader {
     this._bufferViews = imdl.bufferViews;
     this._meshes = imdl.meshes;
     this._nodes = imdl.nodes;
-    this._materialValues = imdl.materials ?? { };
-    this._renderMaterials = imdl.renderMaterials ?? { };
-    this._namedTextures = imdl.namedTextures ?? { };
+    this._materialValues = imdl.materials ?? {};
+    this._renderMaterials = imdl.renderMaterials ?? {};
+    this._namedTextures = imdl.namedTextures ?? {};
     this._patternSymbols = imdl.patternSymbols ?? {};
     this._rtcCenter = imdl.rtcCenter ? Point3d.fromJSON(imdl.rtcCenter) : undefined;
 
     this._iModel = args.iModel;
     this._modelId = args.modelId;
     this._is3d = args.is3d;
+    this._isLeaf = args.isLeaf;
     this._system = args.system;
     this._type = args.type ?? BatchType.Primary;
     this._canceled = args.isCanceled;
@@ -607,7 +621,14 @@ export class ImdlReader {
   public async read(): Promise<ImdlReaderResult> {
     let content;
     try {
-      content = readTileContentDescription(this._buffer, this._sizeMultiplier, !this._is3d, IModelApp.tileAdmin, this._isVolumeClassifier);
+      content = decodeTileContentDescription({
+        stream: this._buffer,
+        sizeMultiplier: this._sizeMultiplier,
+        is2d: !this._is3d,
+        options: IModelApp.tileAdmin,
+        isVolumeClassifier: this._isVolumeClassifier,
+        isLeaf: this._isLeaf,
+      });
     } catch (e) {
       if (e instanceof TileReadError)
         return { isLeaf: true, readStatus: e.errorNumber };
@@ -713,6 +734,19 @@ export class ImdlReader {
     return this._system.createMaterial(materialParams, this._iModel);
   }
 
+  private constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+    if (undefined === propsJson)
+      return undefined;
+
+    const constantLodPops: TextureMapping.ConstantLodParamProps = {
+      repetitions: JsonUtils.asDouble(propsJson.repetitions, 1.0),
+      offset: { x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0, y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0 },
+      minDistClamp: JsonUtils.asDouble(propsJson.minDistClamp, 1.0),
+      maxDistClamp: JsonUtils.asDouble(propsJson.maxDistClamp, 4096.0 * 1024.0 * 1024.0),
+    };
+    return constantLodPops;
+  }
+
   private textureMappingFromJson(json: ImdlTextureMapping | undefined): TextureMapping | undefined {
     if (undefined === json)
       return undefined;
@@ -732,6 +766,8 @@ export class ImdlReader {
       textureWeight: JsonUtils.asDouble(paramsJson.weight, 1.0),
       mapMode: JsonUtils.asInt(paramsJson.mode),
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
+      useConstantLod: JsonUtils.asBool(paramsJson.useConstantLod),
+      constantLodProps: this.constantLodParamPropsFromJson(paramsJson.constantLodParams),
     };
 
     const textureMapping = new TextureMapping(texture, new TextureMapping.Params(paramProps));
@@ -745,6 +781,7 @@ export class ImdlReader {
           normalMap,
           greenUp: JsonUtils.asBool(normalMapJson.greenUp),
           scale: JsonUtils.asDouble(normalMapJson.scale, 1),
+          useConstantLod: JsonUtils.asBool(normalMapJson.useConstantLod),
         };
       }
     }
@@ -1305,7 +1342,7 @@ export class ImdlReader {
       if (!branch) {
         branchesByNodeId.set(nodeId, branch = new GraphicBranch(true));
         branch.animationNodeId = nodeId;
-        branch.animationId =  `${this._modelId}_Node_${nodeId}`;
+        branch.animationId = `${this._modelId}_Node_${nodeId}`;
       }
 
       return branch;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "change backendhubaccess and related properties to @internal",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
