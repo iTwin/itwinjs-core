@@ -6,11 +6,11 @@
 import { expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { emptyDirSync, existsSync, mkdirsSync, removeSync } from "fs-extra";
-import { join } from "path";
+import { basename, join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -142,7 +142,7 @@ describe("CloudSqlite", () => {
     };
     const container = CloudSqlite.createCloudContainer(containerProps);
     container.initializeContainer();
-    container.connect(cache);
+    container.connect(caches[1]);
 
     let rows = container.queryHttpLog();
     expect(rows.length).to.equal(2); // manifest and bcv_kv GETs.
@@ -158,7 +158,6 @@ describe("CloudSqlite", () => {
     container.acquireWriteLock("test");
     await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: testBimFileName});
     container.releaseWriteLock();
-    container.checkForChanges();
 
     // 6 entries added by grabbing the write lock and checking for changes.
     // 2 entries from before. Expect 6 total entries because we're filtering by endTime from before.
@@ -190,7 +189,7 @@ describe("CloudSqlite", () => {
 
   it("should pass cloudSqliteLogId through container to database", async () => {
     const containerId = Guid.createValue();
-    const sasToken = CloudSqliteTest.makeSasToken(containerId, "rwl");
+    const sasToken = CloudSqliteTest.makeSasToken(containerId,"racwdl");
     const containerProps: CloudSqlite.ContainerAccessProps = {
       accessName: CloudSqliteTest.storage.accessName,
       storageType: CloudSqliteTest.storage.storageType,
@@ -201,16 +200,16 @@ describe("CloudSqlite", () => {
     };
     const container = CloudSqlite.createCloudContainer(containerProps);
     container.initializeContainer();
-    container.connect(cache);
+    container.connect(caches[1]);
 
     container.acquireWriteLock("test");
-    await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: testBimFileName});
+    await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: basename(testBimFileName)});
     container.releaseWriteLock();
     container.checkForChanges();
 
-    let db: IModelJsNative.DgnDb = new IModelDb.openDgnDb(testBimFileName, OpenMode.Readonly, undefined, container);
-    let stmt = new SqliteStatement();
-    stmt.prepare(db, "PRAGMA bcv_client");
+    let db: IModelJsNative.DgnDb = IModelDb.openDgnDb({ path: basename(testBimFileName) }, OpenMode.Readonly, undefined, {container});
+    const stmt = new SqliteStatement("PRAGMA bcv_client");
+    stmt.prepare(db);
     stmt.step();
     expect(stmt.getValueString(0)).equal(containerProps.cloudSqliteLogId);
     stmt.dispose();
@@ -226,12 +225,12 @@ describe("CloudSqlite", () => {
       writeable: true,
     };
     const container2 = CloudSqlite.createCloudContainer(containerProps2);
-    container2.connect(cache);
+    container2.connect(caches[1]);
 
     container2.checkForChanges();
 
-    db = new IModelDb.openDgnDb(testBimFileName, OpenMode.Readonly, undefined, container);
-    stmt.prepare(db, "PRAGMA bcv_client");
+    db = IModelDb.openDgnDb({ path: basename(testBimFileName) }, OpenMode.Readonly, undefined, { container: container2 });
+    stmt.prepare(db);
     stmt.step();
     expect(stmt.getValueString(0)).equal(containerProps2.cloudSqliteLogId);
     stmt.dispose();
@@ -246,12 +245,12 @@ describe("CloudSqlite", () => {
       writeable: true,
     };
     const container3 = CloudSqlite.createCloudContainer(containerProps3);
-    container3.connect(cache);
+    container3.connect(caches[1]);
 
     container3.checkForChanges();
 
-    db = new IModelDb.openDgnDb(testBimFileName, OpenMode.Readonly, undefined, container);
-    stmt.prepare(db, "PRAGMA bcv_client");
+    db = IModelDb.openDgnDb({ path: basename(testBimFileName) }, OpenMode.Readonly, undefined, { container: container3 });
+    stmt.prepare(db);
     stmt.step();
     expect(stmt.getValueString(0)).equal("");
     stmt.dispose();
