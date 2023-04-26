@@ -8,9 +8,9 @@ import * as chaiAsPromised from "chai-as-promised";
 import { emptyDirSync, existsSync, mkdirsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -101,6 +101,7 @@ describe("CloudSqlite", () => {
   let caches: CloudSqlite.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
+  let testBimFileName: string;
   const user = "CloudSqlite test";
   const user2 = "CloudSqlite test2";
 
@@ -111,7 +112,7 @@ describe("CloudSqlite", () => {
 
     expect(caches[0].isDaemon).false;
 
-    const testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
+    testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
     const imodel = SnapshotDb.openFile(testBimFileName);
     testBimGuid = imodel.iModelId;
     imodel.close();
@@ -126,6 +127,136 @@ describe("CloudSqlite", () => {
     await CloudSqliteTest.uploadFile(testContainers[1], caches[0], "c1-db1:2.1", tempDbFile);
     await CloudSqliteTest.uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
     await CloudSqliteTest.uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
+  });
+
+  it("should query bcvHttpLog", async () => {
+    const containerId = Guid.createValue();
+    const sasToken = CloudSqliteTest.makeSasToken(containerId, "rwl");
+    const containerProps: CloudSqlite.ContainerAccessProps = {
+      accessName: CloudSqliteTest.storage.accessName,
+      storageType: CloudSqliteTest.storage.storageType,
+      containerId,
+      accessToken: sasToken,
+      cloudSqliteLogId: "ContainerIdentifier",
+      writeable: true,
+    };
+    const container = CloudSqlite.createCloudContainer(containerProps);
+    container.initializeContainer();
+    container.connect(cache);
+
+    let rows = container.queryHttpLog();
+    expect(rows.length).to.equal(2); // manifest and bcv_kv GETs.
+
+    // endTime to exclude these first 2 entries in later queries.
+    await BeDuration.wait(10);
+    const endTime = new Date().toISOString();
+
+    rows = container.queryHttpLog({startFromId: 2});
+    expect(rows.length).to.equal(1);
+    expect(rows[0].id).to.equal(2);
+
+    container.acquireWriteLock("test");
+    await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: testBimFileName});
+    container.releaseWriteLock();
+    container.checkForChanges();
+
+    // 6 entries added by grabbing the write lock and checking for changes.
+    // 2 entries from before. Expect 6 total entries because we're filtering by endTime from before.
+    rows = container.queryHttpLog({finishedAtOrAfterTime: endTime, startFromId: 1});
+    expect(rows.length).to.equal(6);
+    expect(rows.find((value) => {
+      return value.id === 1 || value.id === 2;
+    })).to.equal(undefined);
+
+    rows = container.queryHttpLog({finishedAtOrAfterTime: endTime});
+    expect(rows.length).to.equal(6);
+    expect(rows.find((value) => {
+      return value.id === 1 || value.id === 2;
+    })).to.equal(undefined);
+
+    rows = container.queryHttpLog({finishedAtOrAfterTime: endTime, startFromId: 1, showOnlyFinished: true});
+    expect(rows.length).to.equal(6);
+    expect(rows.find((value) => {
+      return value.id === 1 || value.id === 2;
+    })).to.equal(undefined);
+
+    rows = container.queryHttpLog({showOnlyFinished: true});
+    expect(rows.length).to.equal(8);
+
+    rows = container.queryHttpLog({startFromId: 4, showOnlyFinished: true});
+    expect(rows.length).to.equal(5);
+
+  });
+
+  it("should pass cloudSqliteLogId through container to database", async () => {
+    const containerId = Guid.createValue();
+    const sasToken = CloudSqliteTest.makeSasToken(containerId, "rwl");
+    const containerProps: CloudSqlite.ContainerAccessProps = {
+      accessName: CloudSqliteTest.storage.accessName,
+      storageType: CloudSqliteTest.storage.storageType,
+      containerId,
+      accessToken: sasToken,
+      cloudSqliteLogId: "ContainerIdentifier",
+      writeable: true,
+    };
+    const container = CloudSqlite.createCloudContainer(containerProps);
+    container.initializeContainer();
+    container.connect(cache);
+
+    container.acquireWriteLock("test");
+    await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: testBimFileName});
+    container.releaseWriteLock();
+    container.checkForChanges();
+
+    let db: IModelJsNative.DgnDb = new IModelDb.openDgnDb(testBimFileName, OpenMode.Readonly, undefined, container);
+    let stmt = new SqliteStatement();
+    stmt.prepare(db, "PRAGMA bcv_client");
+    stmt.step();
+    expect(stmt.getValueString(0)).equal(containerProps.cloudSqliteLogId);
+    stmt.dispose();
+    db.closeIModel();
+    container.disconnect();
+
+    const containerProps2: CloudSqlite.ContainerAccessProps = {
+      accessName: CloudSqliteTest.storage.accessName,
+      storageType: CloudSqliteTest.storage.storageType,
+      containerId,
+      cloudSqliteLogId: "",
+      accessToken: sasToken,
+      writeable: true,
+    };
+    const container2 = CloudSqlite.createCloudContainer(containerProps2);
+    container2.connect(cache);
+
+    container2.checkForChanges();
+
+    db = new IModelDb.openDgnDb(testBimFileName, OpenMode.Readonly, undefined, container);
+    stmt.prepare(db, "PRAGMA bcv_client");
+    stmt.step();
+    expect(stmt.getValueString(0)).equal(containerProps2.cloudSqliteLogId);
+    stmt.dispose();
+    db.closeIModel();
+    container2.disconnect();
+
+    const containerProps3: CloudSqlite.ContainerAccessProps = { // No cloudsqlitelogid, so undefined. Should be "" by default.
+      accessName: CloudSqliteTest.storage.accessName,
+      storageType: CloudSqliteTest.storage.storageType,
+      containerId,
+      accessToken: sasToken,
+      writeable: true,
+    };
+    const container3 = CloudSqlite.createCloudContainer(containerProps3);
+    container3.connect(cache);
+
+    container3.checkForChanges();
+
+    db = new IModelDb.openDgnDb(testBimFileName, OpenMode.Readonly, undefined, container);
+    stmt.prepare(db, "PRAGMA bcv_client");
+    stmt.step();
+    expect(stmt.getValueString(0)).equal("");
+    stmt.dispose();
+    db.closeIModel();
+    container3.disconnect();
   });
 
   it("cloud containers", async () => {
