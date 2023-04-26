@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "4.0.0-dev.85",
+  "version": "4.0.0-dev.88",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -39,8 +39,8 @@
     "mocha-junit-reporter": "^2.0.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.0",
-    "typedoc": "^0.22.11",
-    "typedoc-plugin-merge-modules": "^3.0.2",
+    "typedoc": "^0.23.28",
+    "typedoc-plugin-merge-modules": "^4.0.1",
     "typescript": "~5.0.2",
     "wtfnode": "^0.9.1",
     "yargs": "^17.4.0"
