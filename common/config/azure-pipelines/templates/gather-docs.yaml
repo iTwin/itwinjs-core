@@ -72,7 +72,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
       artifactName: Transformer Docs
-      defaultBranch: refs/heads/main
+      defaultBranch: refs/heads/bdp/typedoc-0.23
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
   # The .updated.json is cached to track when the docs were last updated
