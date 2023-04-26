@@ -70,7 +70,7 @@ export namespace CloudSqlite {
   }
 
   /** Filter options passed to CloudContainer.queryHttpLog */
-  interface BcvHttpLogFilterOptions {
+  export interface BcvHttpLogFilterOptions {
     /** only return rows whose ID is >= the provided id */
     startFromId?: number;
     /** only return rows whose endTime is null OR >= the provided endTime. */
