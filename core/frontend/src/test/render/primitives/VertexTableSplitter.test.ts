@@ -6,14 +6,14 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, ComputeNodeId, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, SegmentEdgeParams, splitMeshParams, splitPointStringParams,
+  ComputeAnimationNodeId, EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, SegmentEdgeParams, splitMeshParams, splitPointStringParams,
   SurfaceType, TesselatedPolyline, VertexTable,
 } from "../../../render-primitives";
 
@@ -424,9 +424,9 @@ describe("VertexTableSplitter", () => {
     MockSystem.maxTextureSize = max;
   }
 
-  function makeComputeNodeId(featureTable: PackedFeatureTable, computeFromElementId: (id: Id64.Uint32Pair) => number): ComputeNodeId {
+  function makeComputeNodeId(featureTable: PackedFeatureTable, computeFromElementId: (id: Id64.Uint32Pair) => number): ComputeAnimationNodeId {
     const elemIdPair = { lower: 0, upper: 0 };
-    return (_unused: Id64.Uint32Pair, featureIndex: number) => {
+    return (featureIndex: number) => {
       featureTable.getElementIdPair(featureIndex, elemIdPair);
       return computeFromElementId(elemIdPair);
     };
