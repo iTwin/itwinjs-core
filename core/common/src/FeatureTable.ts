@@ -6,7 +6,9 @@
  * @module Rendering
  */
 
-import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap } from "@itwin/core-bentley";
+import {
+  assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap, UintArray,
+} from "@itwin/core-bentley";
 import { GeometryClass } from "./GeometryParams";
 
 /** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be
@@ -204,7 +206,7 @@ export class FeatureTable extends IndexMap<Feature> {
 }
 
 /** @alpha */
-export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
+export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 /** Interface common to PackedFeatureTable and MultiModelPackedFeatureTable.
  * @internal
@@ -251,16 +253,16 @@ export class PackedFeatureTable implements RenderFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
-  private _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
+  private _animationNodeIds?: UintArray;
 
   public get byteLength(): number { return this._data.byteLength; }
-  public get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined { return this._animationNodeIds; }
+  public get animationNodeIds(): Readonly<UintArray> | undefined { return this._animationNodeIds; }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
    * @internal
    */
-  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
+  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: UintArray) {
     this._data = data;
     this.batchModelId = modelId;
     this.batchModelIdPair = Id64.getUint32Pair(modelId);
@@ -417,16 +419,16 @@ export class PackedFeatureTable implements RenderFeatureTable {
     assert(undefined === this._animationNodeIds);
     assert(maxNodeId > 0);
 
-    const pair = { lower: 0, upper: 0 };
+    const outputFeature = PackedFeature.createWithIndex();
     let haveNodes = false;
     const size = this.numFeatures;
     const nodeIds = maxNodeId < 0x100 ? new Uint8Array(size) : (maxNodeId < 0x10000 ? new Uint16Array(size) : new Uint32Array(size));
-    for (let i = 0; i < this.numFeatures; i++) {
-      this.getElementIdPair(i, pair);
-      const nodeId = computeNodeId(pair, i);
+
+    for (const feature of this.iterable(outputFeature)) {
+      const nodeId = computeNodeId(feature);
       assert(nodeId <= maxNodeId);
       if (0 !== nodeId) {
-        nodeIds[i] = nodeId;
+        nodeIds[feature.index] = nodeId;
         haveNodes = true;
       }
     }
@@ -567,6 +569,7 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   public get batchModelIdPair() { return this._features.batchModelIdPair; }
   public get numFeatures() { return this._features.numFeatures; }
   public get type() { return this._features.type; }
+  public get animationNodeIds(): Readonly<UintArray> | undefined { return this._features.animationNodeIds; }
 
   public get byteLength() {
     return this._features.byteLength + this._models.byteLength;
@@ -616,5 +619,13 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     return {
       [Symbol.iterator]: () => this.iterator(output),
     };
+  }
+
+  public getAnimationNodeId(featureIndex: number): number {
+    return this._features.getAnimationNodeId(featureIndex);
+  }
+
+  public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
+    this._features.populateAnimationNodeIds(computeNodeId, maxNodeId);
   }
 }
