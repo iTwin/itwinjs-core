@@ -491,7 +491,7 @@ export class IModelHost {
     this.configuration = options;
     this.setupTileCache();
 
-    process.once("beforeExit", IModelHost.shutdown);
+    process.once("beforeExit", async () => this.shutdown());
     this.onAfterStartup.raiseEvent();
   }
 
@@ -522,7 +522,7 @@ export class IModelHost {
     this._appWorkspace = undefined;
 
     CloudSqlite.CloudCaches.destroy();
-    process.removeListener("beforeExit", IModelHost.shutdown);
+    process.removeListener("beforeExit", async () => this.shutdown());
   }
 
   /**

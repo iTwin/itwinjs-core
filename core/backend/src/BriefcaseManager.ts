@@ -120,7 +120,7 @@ export class BriefcaseManager {
     if (this._initialized)
       return;
     this.setupCacheDir(cacheRootDir);
-    IModelHost.onBeforeShutdown.addOnce(this.finalize, this);
+    IModelHost.onBeforeShutdown.addOnce(() => this.finalize(), this);
     this._initialized = true;
   }
 
