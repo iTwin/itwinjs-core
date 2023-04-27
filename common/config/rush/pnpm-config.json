@@ -9,13 +9,11 @@
       "@babel/plugin-transform-react-jsx",
       "@testing-library/dom",
       "@types/node",
-      "@typescript-eslint/parser"
+      "@typescript-eslint/parser",
+      "typescript"
     ]
   },
-  "globalOverrides": {
-    "@typescript-eslint/eslint-plugin": "^5.55.0",
-    "@typescript-eslint/parser": "^5.55.0"
-  },
+  "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
