@@ -8,10 +8,10 @@ import * as fs from "fs";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, DbResult, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps,
+  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
-  Angle, Box, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+  Angle, Box, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
 } from "@itwin/core-geometry";
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
@@ -37,9 +37,14 @@ describe("exportGraphics", () => {
     return iModel.elements.insertElement(elementProps);
   }
 
-  function insertRenderMaterialWithTexture(name: string, textureId: Id64String): Id64String {
+  function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: { TextureId: textureId } });
+    const props: TextureMapProps = { TextureId: textureId };
+    if (patternScale)
+      props.pattern_scale = patternScale;
+    if (patternScaleMode)
+      props.pattern_scalemode = patternScaleMode;
+    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props });
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
@@ -202,18 +207,24 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[1].color, materialColor0.tbgr);
   });
 
-  it("handles materials with textures", () => {
+  let textureIdString: undefined | string;
+  function getTextureId(): string {
+    if (textureIdString !== undefined)
+      return textureIdString;
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
-    const pngData = new Uint8Array([
-      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
+    const pngData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
       74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
       97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
       84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
       0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]);
-    const textureId = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
-    const materialId = insertRenderMaterialWithTexture("test-material-two", textureId);
+    return textureIdString = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
+  }
+
+  it("handles materials with textures", () => {
+    const textureId = getTextureId();
+    const materialId = insertRenderMaterialWithTexture("test-material-2", textureId);
     const elementColor = ColorDef.fromString("aquamarine");
 
     const builder = new GeometryStreamBuilder();
@@ -237,6 +248,63 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].materialId, materialId);
     assert.strictEqual(infos[0].textureId, textureId);
     assert.strictEqual(infos[0].color, elementColor.tbgr);
+  });
+
+  it("creates meshes with raw parameters as requested", () => {
+    const rawUVParams = new Float32Array([1, 1, 0, 0, 0, 1]);
+    const rawUVParamsGrowable = GrowableXYArray.create([]);
+    for (let i = 0; i + 1 < rawUVParams.length; i += 2)
+      rawUVParamsGrowable.pushXY(rawUVParams[i], rawUVParams[i + 1]);
+
+    const polyfaceBuilder = PolyfaceBuilder.create();
+    polyfaceBuilder.options.needParams = polyfaceBuilder.options.needNormals = true;
+    polyfaceBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1, 0, 1], [0, 0, -1], [-1, 0, 1]]), // xyz
+      GrowableXYZArray.create([[0, 1, 0], [0, 1, 0], [0, 1, 0]]),   // normals
+      rawUVParamsGrowable,
+      undefined // no colors
+    );
+
+    const testUVParamExport = (geomId: Id64String, expectedParams: Float32Array, assertMessage: string, rawParams: boolean) => {
+      const infos: ExportGraphicsInfo[] = [];
+      const exportGraphicsOptions: ExportGraphicsOptions = {
+        elementIdArray: [geomId],
+        onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+      };
+      if (rawParams)
+        exportGraphicsOptions.exportRawParameters = true;
+      const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+      assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+      assert.strictEqual(infos.length, 1);
+      assert.strictEqual(infos[0].mesh.params.length, 6);
+      assert.deepStrictEqual(infos[0].mesh.params, expectedParams, assertMessage);
+    };
+
+    const textureId = getTextureId();
+
+    if ("scaled texture") {
+      const scaledTexture = insertRenderMaterialWithTexture("test-material-scaled", textureId, [1, -1], TextureMapUnits.Meters);
+      const streamBuilder = new GeometryStreamBuilder();
+      const geometryParams = new GeometryParams(seedCategory);
+      geometryParams.materialId = scaledTexture;
+      streamBuilder.appendGeometryParamsChange(geometryParams);
+      streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
+      const scaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
+      testUVParamExport(scaledGeom, new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]), "export with scaled texture", false);  // current behavior seems wrong
+      testUVParamExport(scaledGeom, rawUVParams, "export with scaled texture and rawParams override", true);
+    }
+
+    if ("unscaled texture") {
+      const unscaledTexture = insertRenderMaterialWithTexture("test-material-unscaled", textureId, [1, 1], TextureMapUnits.Relative);
+      const streamBuilder = new GeometryStreamBuilder();
+      const geometryParams = new GeometryParams(seedCategory);
+      geometryParams.materialId = unscaledTexture;
+      streamBuilder.appendGeometryParamsChange(geometryParams);
+      streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
+      const unscaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
+      testUVParamExport(unscaledGeom, new Float32Array([1, 2, 0, 1, 0, 2]), "export with unscaled texture", false);  // current behavior seems wrong
+      testUVParamExport(unscaledGeom, rawUVParams, "export with unscaled texture and rawParams override", true);
+    }
   });
 
   it("creates meshes with vertices shared as expected", () => {
