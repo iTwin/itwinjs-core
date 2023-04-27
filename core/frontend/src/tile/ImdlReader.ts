@@ -1348,8 +1348,8 @@ export class ImdlReader {
       return branch;
     };
 
-    featureTable.populateAnimationNodeIds((feature) => {
-      const elementTimeline = timeline.getTimelineForElement(feature.elementId.lower, feature.elementId.upper);
+    featureTable.populateAnimationNodeIds((elemIdPair) => {
+      const elementTimeline = timeline.getTimelineForElement(elemIdPair.lower, elemIdPair.upper);
       return elementTimeline?.batchId ?? 0;
     }, timeline.maxBatchId);
 
