@@ -417,7 +417,6 @@ describe("Content", () => {
             propertyOverrides: [{
               name: "FederationGuid",
               isDisplayed: true,
-              doNotHideOtherPropertiesOnDisplayOverride: true
             }]
           }],
         }],
@@ -425,7 +424,7 @@ describe("Content", () => {
       const content = await Presentation.presentation.getContent({
         imodel: imodelConnection,
         rulesetOrId: ruleset,
-        keys: new KeySet([{ className: instanceKey!.className, id: instanceKey!.id }]),
+        keys: new KeySet([instanceKey!]),
         descriptor: {},
       });
       const field = getFieldByLabel(content!.descriptor.fields, "Federation GUID");
