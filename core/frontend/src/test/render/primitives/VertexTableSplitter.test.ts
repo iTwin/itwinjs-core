@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  ColorDef, ColorIndex, ComputeNodeId, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
@@ -423,6 +424,14 @@ describe("VertexTableSplitter", () => {
     MockSystem.maxTextureSize = max;
   }
 
+  function makeComputeNodeId(featureTable: PackedFeatureTable, computeFromElementId: (id: Id64.Uint32Pair) => number): ComputeNodeId {
+    const elemIdPair = { lower: 0, upper: 0 };
+    return (_unused: Id64.Uint32Pair, featureIndex: number) => {
+      featureTable.getElementIdPair(featureIndex, elemIdPair);
+      return computeFromElementId(elemIdPair);
+    };
+  }
+
   it("splits point string params based on node Id", () => {
     const featureTable = makePackedFeatureTable("0x1", "0x2", "0x10000000002");
 
@@ -437,7 +446,10 @@ describe("VertexTableSplitter", () => {
     const params = makePointStringParams(points, ColorDef.red);
     expectPointStrings(params, ColorDef.red, points);
 
-    const split = splitPointStringParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.upper > 0 ? 1 : 0 });
+    const split = splitPointStringParams({
+      params, featureTable, maxDimension: 2048,
+      computeNodeId: makeComputeNodeId(featureTable, (id) => id.upper > 0 ? 1 : 0),
+    });
     expect(split.size).to.equal(2);
 
     expectPointStrings(split.get(0)!, ColorDef.red, [
@@ -467,7 +479,10 @@ describe("VertexTableSplitter", () => {
     const params = makePointStringParams(points, colors);
     expectPointStrings(params, colors, points);
 
-    const split = splitPointStringParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
+    const split = splitPointStringParams({
+      params, featureTable, maxDimension: 2048,
+      computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+    });
     expect(split.size).to.equal(2);
 
     expectPointStrings(split.get(1)!, [ ColorDef.blue, ColorDef.red ], [
@@ -509,7 +524,10 @@ describe("VertexTableSplitter", () => {
     const params = makePointStringParams(points, colors);
     expectPointStrings(params, colors, points);
 
-    const split = splitPointStringParams({ params, featureTable, maxDimension: 6, computeNodeId: (id) => id.lower });
+    const split = splitPointStringParams({
+      params, featureTable, maxDimension: 6,
+      computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+    });
     expect(split.size).to.equal(4);
 
     const p1 = split.get(0x2)!;
@@ -584,7 +602,10 @@ describe("VertexTableSplitter", () => {
     const { params, featureTable } = makeSurface(adjustPt);
     const texture = params.surface.textureMapping?.texture;
 
-    const split = splitMeshParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
+    const split = splitMeshParams({
+      params, featureTable, maxDimension: 2048,
+      computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+    });
     expect(split.size).to.equal(3);
 
     expectMesh(split.get(1)!, {
@@ -696,7 +717,10 @@ describe("VertexTableSplitter", () => {
     expectEdges(surface.params.edges, edges);
 
     const { params, featureTable } = surface;
-    const split = splitMeshParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
+    const split = splitMeshParams({
+      params, featureTable, maxDimension: 2048,
+      computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+    });
     expect(split.size).to.equal(3);
 
     expectEdges(split.get(1)!.edges, {
