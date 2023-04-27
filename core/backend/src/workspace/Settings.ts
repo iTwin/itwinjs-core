@@ -16,7 +16,7 @@ import { IModelJsFs } from "../IModelJsFs";
 /** The type of a Setting, according to its schema
  * @beta
  */
-export type SettingType = JSONSchemaType & { resolve?: never };
+export type SettingType = JSONSchemaType;
 
 /**
  * The name of a Setting. SettingNames must be valid JavaScript property names, defined in a [[SettingSchema]].

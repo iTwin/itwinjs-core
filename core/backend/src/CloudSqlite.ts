@@ -117,9 +117,7 @@ export namespace CloudSqlite {
     curlDiagnostics?: boolean;
   }
 
-  /** Parameters used to obtain the write lock on a cloud container
-   * @internal
-   */
+  /** Parameters used to obtain the write lock on a cloud container */
   export interface ObtainLockParams {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
     moniker?: string;

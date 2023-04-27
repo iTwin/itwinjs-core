@@ -12,6 +12,7 @@ public;BackendLoggerCategory
 internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
+beta;BlobContainer
 public;BriefcaseDb 
 public;BriefcaseDbArg 
 public;BriefcaseIdArg 
@@ -39,11 +40,15 @@ internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
 public;CloudContainerArgs
-beta;CloudPropertyStore
 beta;CloudSqlite
 internal;LockAndOpenArgs
-internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
+alpha;CodeService
+alpha;CodeService
+internal;BisCodeSpecIndexProps
+internal;FontIndexProps
+internal;InternalCodes = CodesDb & InternalWriteMethods & InternalReadMethods
+internal;InternalWriteMethods 
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
