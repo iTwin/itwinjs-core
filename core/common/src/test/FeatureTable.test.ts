@@ -26,7 +26,7 @@ describe("PackedFeatureTable", () => {
     it("can be populated after construction", () => {
       const table = makePackedFeatureTable(3);
       expect(table.animationNodeIds).to.be.undefined;
-      table.populateAnimationNodeIds((_, i) => (2 - i) * 4 + 1, 9);
+      table.populateAnimationNodeIds((feature) => (2 - feature.index) * 4 + 1, 9);
 
       const ids = table.animationNodeIds!;
       expect(ids).not.to.be.undefined;
