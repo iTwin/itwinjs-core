@@ -179,23 +179,45 @@ export enum PresentationBackendNativeLoggerCategory {
     // (undocumented)
     ECPresentation_Connections = "ECPresentation.Connections",
     // (undocumented)
+    ECPresentation_Content = "ECPresentation.Content",
+    // (undocumented)
+    ECPresentation_ECExpressions = "ECPresentation.ECExpressions",
+    // (undocumented)
+    ECPresentation_Hierarchies = "ECPresentation.Navigation",
+    // (undocumented)
+    ECPresentation_Hierarchies_Cache = "ECPresentation.Navigation.Cache",
+    // @deprecated (undocumented)
     ECPresentation_Localization = "ECPresentation.Localization",
     // (undocumented)
+    ECPresentation_Rules = "ECPresentation.Rules",
+    // @deprecated (undocumented)
     ECPresentation_RulesEngine = "ECPresentation.RulesEngine",
+    // @deprecated (undocumented)
+    ECPresentation_RulesEngine_Content = "ECPresentation.Content",
+    // @deprecated (undocumented)
+    ECPresentation_RulesEngine_Localization = "ECPresentation.Localization",
+    // @deprecated (undocumented)
+    ECPresentation_RulesEngine_Navigation = "ECPresentation.Navigation",
+    // @deprecated (undocumented)
+    ECPresentation_RulesEngine_Navigation_Cache = "ECPresentation.Navigation.Cache",
+    // @deprecated (undocumented)
+    ECPresentation_RulesEngine_RulesetVariables = "ECPresentation.RulesetVariables",
+    // @deprecated (undocumented)
+    ECPresentation_RulesEngine_Threads = "ECPresentation.Tasks",
+    // @deprecated (undocumented)
+    ECPresentation_RulesEngine_Update = "ECPresentation.Update",
     // (undocumented)
-    ECPresentation_RulesEngine_Content = "ECPresentation.RulesEngine.Content",
+    ECPresentation_RulesetVariables = "ECPresentation.RulesetVariables",
     // (undocumented)
-    ECPresentation_RulesEngine_Localization = "ECPresentation.RulesEngine.Localization",
+    ECPresentation_Serialization = "ECPresentation.Serialization",
     // (undocumented)
-    ECPresentation_RulesEngine_Navigation = "ECPresentation.RulesEngine.Navigation",
+    ECPresentation_Tasks = "ECPresentation.Tasks",
     // (undocumented)
-    ECPresentation_RulesEngine_Navigation_Cache = "ECPresentation.RulesEngine.Navigation.Cache",
+    ECPresentation_Update = "ECPresentation.Update",
     // (undocumented)
-    ECPresentation_RulesEngine_RulesetVariables = "ECPresentation.RulesEngine.RulesetVariables",
+    ECPresentation_Update_Content = "ECPresentation.Update.Content",
     // (undocumented)
-    ECPresentation_RulesEngine_Threads = "ECPresentation.RulesEngine.Threads",
-    // (undocumented)
-    ECPresentation_RulesEngine_Update = "ECPresentation.RulesEngine.Update"
+    ECPresentation_Update_Hierarchies = "ECPresentation.Update.Hierarchies"
 }
 
 // @public
