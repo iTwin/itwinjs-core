@@ -1328,7 +1328,7 @@ export class ImdlReader {
     return geometry;
   }
 
-  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh, featureTable: PackedFeatureTable): void {
+  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh, featureTable: RenderFeatureTable): void {
     const timeline = this._timeline;
     assert(undefined !== timeline);
 
@@ -1467,7 +1467,6 @@ export class ImdlReader {
         if ("Node_Root" === nodeKey) {
           if (this._timeline) {
             // Split up the root node into transform nodes.
-            assert(featureTable instanceof PackedFeatureTable, "multi-model feature tables never include animation branches");
             this.readAnimationBranches(graphics, meshValue, featureTable);
           } else if (this._containsTransformNodes) {
             // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with

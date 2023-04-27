@@ -237,6 +237,8 @@ export interface RenderFeatureTable {
   getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
   /** Get an object that provides iteration over all features, in order. `output` is reused as the current value on each iteration. */
   iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+  populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
+  getAnimationNodeId(featureIndex: number): number;
 }
 
 const scratchPackedFeature = PackedFeature.create();

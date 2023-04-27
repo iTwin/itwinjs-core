@@ -7,7 +7,7 @@
  */
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
-import { ColorDef, ComputeNodeId, PackedFeatureTable } from "@itwin/core-common";
+import { ColorDef, ComputeNodeId, RenderFeatureTable } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
 } from "./VertexTable";
@@ -279,7 +279,7 @@ class Node {
 }
 
 interface VertexTableSplitArgs extends VertexTableWithIndices {
-  featureTable: PackedFeatureTable;
+  featureTable: RenderFeatureTable;
   atlasOffset?: number;
 }
 
@@ -339,7 +339,7 @@ class VertexTableSplitter {
 }
 
 export interface SplitVertexTableArgs {
-  featureTable: PackedFeatureTable;
+  featureTable: RenderFeatureTable;
   maxDimension: number;
   computeNodeId: ComputeAnimationNodeId;
 }
