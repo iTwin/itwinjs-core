@@ -69,7 +69,9 @@ export namespace CloudSqlite {
     readonly state: "" | "copied" | "deleted";
   }
 
-  /** Filter options passed to CloudContainer.queryHttpLog */
+  /** Filter options passed to CloudContainer.queryHttpLog
+   *  @internal
+  */
   export interface BcvHttpLogFilterOptions {
     /** only return rows whose ID is >= the provided id */
     startFromId?: number;
@@ -79,7 +81,9 @@ export namespace CloudSqlite {
     showOnlyFinished?: boolean;
   }
 
-  /** Returned from 'CloudContainer.queryHttpLog' describing a row in the bcv_http_log table. */
+  /** Returned from 'CloudContainer.queryHttpLog' describing a row in the bcv_http_log table.
+   *  @internal
+  */
   export interface BcvHttpLog {
     /** Unique, monotonically increasing id value */
     readonly id: number;
@@ -93,7 +97,7 @@ export namespace CloudSqlite {
      *  Name of client can be configured by passing a 'cloudSqliteLogId' to a CloudContainer's ContainerProps.
      *  Empty string otherwise.
      */
-    readonly client: string;
+    readonly cloudSqliteLogId: string;
     /** Log message associated with request */
     readonly logmsg: string;
     /** URI of request */
@@ -405,6 +409,7 @@ export namespace CloudSqlite {
      * query the bcv_http_log table
      * @note the bcv_http_log table contains one row for each HTTP request made by the VFS or connected daemon.
      * @note Entries are automatically removed from the table on a FIFO basis. By default entries which are 1 hr old will be removed.
+     * @internal
      */
     queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
 
