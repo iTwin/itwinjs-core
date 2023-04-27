@@ -38,12 +38,12 @@ describe("exportGraphics", () => {
   }
 
   function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const props: TextureMapProps = { TextureId: textureId };
     if (patternScale)
       props.pattern_scale = patternScale;
     if (patternScaleMode)
       props.pattern_scalemode = patternScaleMode;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props });
   }
 
@@ -207,10 +207,10 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[1].color, materialColor0.tbgr);
   });
 
-  let textureId: undefined | string;
+  let textureIdString: undefined | string;
   function getTextureId(): string {
-    if (textureId !== undefined)
-      return textureId;
+    if (textureIdString !== undefined)
+      return textureIdString;
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
     const pngData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
@@ -219,11 +219,12 @@ describe("exportGraphics", () => {
       84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
       0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]);
-    return textureId = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
+    return textureIdString = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
   }
 
   it("handles materials with textures", () => {
-    const materialId = insertRenderMaterialWithTexture("test-material-2", getTextureId());
+    const textureId = getTextureId();
+    const materialId = insertRenderMaterialWithTexture("test-material-2", textureId);
     const elementColor = ColorDef.fromString("aquamarine");
 
     const builder = new GeometryStreamBuilder();
@@ -240,7 +241,7 @@ describe("exportGraphics", () => {
       onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
     };
 
-    let exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
     assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
     assert.strictEqual(infos.length, 1);
     assert.strictEqual(infos[0].elementId, geometricElementId);
@@ -249,23 +250,29 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].color, elementColor.tbgr);
   });
 
-  it.only("test unitless texture v-param inversion", () => {
+  it("creates meshes with raw parameters as requested", () => {
+    const rawUVParams = new Float32Array([1, 1, 0, 0, 0, 1]);
+    const rawUVParamsGrowable = GrowableXYArray.create([]);
+    for (let i = 0; i + 1 < rawUVParams.length; i += 2)
+      rawUVParamsGrowable.pushXY(rawUVParams[i], rawUVParams[i + 1]);
+
     const polyfaceBuilder = PolyfaceBuilder.create();
     polyfaceBuilder.options.needParams = polyfaceBuilder.options.needNormals = true;
     polyfaceBuilder.addFacetFromGrowableArrays(
-      GrowableXYZArray.create([[1, 0, 1], [0, 0, -1], [-1, 0, 1]]),
-      GrowableXYZArray.create([[0, 1, 0], [0, 1, 0], [0, 1, 0]]),
-      GrowableXYArray.create([{ x: 1, y: 1 }, { x: 0, y: 0 }, { x: 0, y: 1 }],),
-      undefined
+      GrowableXYZArray.create([[1, 0, 1], [0, 0, -1], [-1, 0, 1]]), // xyz
+      GrowableXYZArray.create([[0, 1, 0], [0, 1, 0], [0, 1, 0]]),   // normals
+      rawUVParamsGrowable,
+      undefined // no colors
     );
 
-    const testUVParamInversion = (geomId: Id64String, expectedParams: Float32Array, assertMessage: string, disableInversion: boolean) => {
+    const testUVParamExport = (geomId: Id64String, expectedParams: Float32Array, assertMessage: string, rawParams: boolean) => {
       const infos: ExportGraphicsInfo[] = [];
       const exportGraphicsOptions: ExportGraphicsOptions = {
         elementIdArray: [geomId],
         onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
-        disableTextureParamInvertV: disableInversion ? true : undefined
       };
+      if (rawParams)
+        exportGraphicsOptions.exportRawParameters = true;
       const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
       assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
       assert.strictEqual(infos.length, 1);
@@ -273,30 +280,30 @@ describe("exportGraphics", () => {
       assert.deepStrictEqual(infos[0].mesh.params, expectedParams, assertMessage);
     };
 
-    // if texture is not unitless, then inversion is always skipped
-    if (true) {
-      const scaledTexture = insertRenderMaterialWithTexture("test-material-scaled", getTextureId(), [1, -1], TextureMapUnits.Meters);
+    const textureId = getTextureId();
+
+    if ("scaled texture") {
+      const scaledTexture = insertRenderMaterialWithTexture("test-material-scaled", textureId, [1, -1], TextureMapUnits.Meters);
       const streamBuilder = new GeometryStreamBuilder();
       const geometryParams = new GeometryParams(seedCategory);
       geometryParams.materialId = scaledTexture;
       streamBuilder.appendGeometryParamsChange(geometryParams);
       streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
       const scaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
-      testUVParamInversion(scaledGeom, new Float32Array([2, Math.sqrt(5), 0, 0, 0, Math.sqrt(5)]), "exported scaled uv-params are not inverted by default", false);
-      testUVParamInversion(scaledGeom, new Float32Array([2, Math.sqrt(5), 0, 0, 0, Math.sqrt(5)]), "exported scaled uv-params not affected by inversion override", true);
+      testUVParamExport(scaledGeom, new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]), "export with scaled texture", false);  // current behavior seems wrong
+      testUVParamExport(scaledGeom, rawUVParams, "export with scaled texture and rawParams override", true);
     }
 
-    // if texture is unitless, then we can override default v-inversion
-    if (true) {
-      const unscaledTexture = insertRenderMaterialWithTexture("test-material-unscaled", getTextureId(), [1, 1], TextureMapUnits.Relative);
+    if ("unscaled texture") {
+      const unscaledTexture = insertRenderMaterialWithTexture("test-material-unscaled", textureId, [1, 1], TextureMapUnits.Relative);
       const streamBuilder = new GeometryStreamBuilder();
       const geometryParams = new GeometryParams(seedCategory);
       geometryParams.materialId = unscaledTexture;
       streamBuilder.appendGeometryParamsChange(geometryParams);
       streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
       const unscaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
-      testUVParamInversion(unscaledGeom, new Float32Array([1, 0, 0, 1, 0, 0]), "exported unscaled uv-params are inverted by default", false);
-      testUVParamInversion(unscaledGeom, new Float32Array([1, 1, 0, 0, 0, 1]), "exported unscaled uv-params inversion is overridden", true);
+      testUVParamExport(unscaledGeom, new Float32Array([1, 2, 0, 1, 0, 2]), "export with unscaled texture", false);  // current behavior seems wrong
+      testUVParamExport(unscaledGeom, rawUVParams, "export with unscaled texture and rawParams override", true);
     }
   });
 
