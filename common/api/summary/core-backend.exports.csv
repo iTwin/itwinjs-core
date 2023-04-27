@@ -7,7 +7,7 @@ public;AuxCoordSystem2d
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorageCredentials
-beta;BackendHubAccess
+internal;BackendHubAccess
 public;BackendLoggerCategory
 internal;BaseSettings 
 public;BindParameter = number | string

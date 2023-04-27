@@ -5191,6 +5191,7 @@ export interface ImdlReaderCreateArgs {
     is3d: boolean;
     // (undocumented)
     isCanceled?: ShouldAbortImdlReader;
+    isLeaf?: boolean;
     // (undocumented)
     loadEdges?: boolean;
     // (undocumented)
@@ -7047,10 +7048,12 @@ export interface MaterialSpecularProps {
 
 // @public
 export interface MaterialTextureMappingProps {
+    constantLodProps?: TextureMapping.ConstantLodParamProps;
     mode?: TextureMapping.Mode;
     normalMapParams?: NormalMapParams;
     texture: RenderTexture;
     transform?: TextureMapping.Trans2x3;
+    useConstantLod?: boolean;
     weight?: number;
     // @internal (undocumented)
     worldMapping?: boolean;
@@ -11577,7 +11580,7 @@ export class TileAdmin {
     addExternalTilesForUser(user: TileUser, statistics: ExternalTileStatistics): void;
     addLoadListener(callback: (imodel: IModelConnection) => void): () => void;
     // @internal
-    addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>): void;
+    addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>, touched: Set<Tile>): void;
     // @internal (undocumented)
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
@@ -11926,6 +11929,8 @@ export class TileDrawArgs {
     get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined;
     get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     get tileSizeModifier(): number;
+    // @internal
+    readonly touchedTiles: Set<Tile>;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
     get viewFlagOverrides(): ViewFlagOverrides;

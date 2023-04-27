@@ -20,6 +20,8 @@ Table of contents:
   - [Deprecated API removals](#deprecated-api-removals)
   - [Deprecated API replacements](#deprecated-api-replacements)
     - [Querying ECSql](#querying-ecsql)
+- [Backend](#backend)
+  - [BackendHubAccess](#backendhubaccess)
 - [Geometry](#geometry)
   - [Mesh offset](#mesh-offset)
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
@@ -27,6 +29,7 @@ Table of contents:
 - [Display](#display)
   - [glTF bounding boxes](#gltf-bounding-boxes)
   - [Atmospheric Scattering](#atmospheric-scattering)
+  - [Constant LOD mapping mode](#constant-load-mapping-mode)
 - [Presentation](#presentation-1)
   - [Active unit system](#active-unit-system)
   - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
@@ -149,6 +152,12 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 }
 ```
 
+## Backend
+
+### BackendHubAccess
+
+BackendHubAccess has been marked @internal from @beta. The 'hubAccess' property on [IModelHostConfiguration]($core-backend) has also been marked @internal from @beta.
+
 ## Geometry
 
 ### Mesh offset
@@ -209,6 +218,22 @@ The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettin
 ![Sky View of Atmospheric Scattering](.\assets\atmosphere_distance.jpg)
 ![Atmospheric Scattering from Space](.\assets\atmosphere_space.jpg)
 ![Atmospheric Scattering at Sunset](.\assets\atmosphere_sunset.jpg)
+
+### Constant LOD mapping mode
+
+Constant level-of-detail ("LOD") mapping mode is a technique that dynamically calculates texture cordinates to keep the texture near a certain size on the screen, thus preserving the level of detail no matter what the zoom level. It blends from one size of the texture to another as the view is zoomed in or out so that the change is smooth.
+
+You can create a [RenderMaterial]($common) that uses this mode on the frontend via [RenderSystem.createRenderMaterial]($frontend) by setting `useConstantLod` to `true` in [MaterialTextureMappingProps]($frontend) and optionally specifying its parameters via `constantLodProps` (see [TextureMapping.ConstantLodParamProps]($common)).
+
+You can also have a normal map use constant LOD mapping by setting `useConstantLod` in its properties via [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend). It is thus possible to have a pattern map which uses constant lod mapping and a normal map which uses some other texture mapping mode or visa versa.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD pattern map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass in a `patternMap` with a [TextureMapProps]($common) which has `pattern_useConstantLod` set to true and optionally specify any or all of the `pattern_constantLod_*` properties.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend) and turn on the `useConstantLod` flag in its `NormalFlags` property.
+
+The image below illustrates the effects of constant LOD mapping.
+
+![Constant LOD mapping zoomin](./assets/ConstantLod.gif "Zooming in on comstant lod mapped texture. Note how detail fades out and is replaced by smaller detail as you zoom in.")     ![Constant LOD mapping](./assets/ConstantLod.jpg "view of constant lod mapping looking across surface")
 
 ## Presentation
 
