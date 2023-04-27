@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module IModelApp
- */
-
 // cSpell:ignore segoe
 
+/**
+ * @internal
+ */
 let iModelJsCss: string | undefined = `
 :root {
   --background-1:#ffffff;
