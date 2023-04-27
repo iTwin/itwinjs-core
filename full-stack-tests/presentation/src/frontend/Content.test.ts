@@ -14,7 +14,7 @@ import {
 import { Presentation } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
+import { buildTestIModelConnection, getFieldByLabel, insertDocumentPartition } from "../Utils";
 
 describe("Content", () => {
 
@@ -398,6 +398,44 @@ describe("Content", () => {
     });
 
   });
+
+  describe("Guid properties", () => {
+
+    it("creates guid fields", async function () {
+      const guid = Guid.createValue();
+      let instanceKey: InstanceKey;
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        instanceKey = insertDocumentPartition(db, "Test", undefined, guid);
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.SelectedNodeInstances,
+            propertyOverrides: [{
+              name: "FederationGuid",
+              isDisplayed: true,
+              doNotHideOtherPropertiesOnDisplayOverride: true
+            }]
+          }],
+        }],
+      };
+      const content = await Presentation.presentation.getContent({
+        imodel: imodelConnection,
+        rulesetOrId: ruleset,
+        keys: new KeySet([{ className: instanceKey!.className, id: instanceKey!.id }]),
+        descriptor: {},
+      });
+      const field = getFieldByLabel(content!.descriptor.fields, "Federation GUID");
+
+      expect(content?.contentSet.length).to.eq(1);
+      expect(content?.contentSet[0].values[field.name]).to.eq(guid);
+      expect(content?.contentSet[0].displayValues[field.name]).to.eq(guid);
+    })
+
+  })
 
   describe("Navigation Properties", () => {
 
