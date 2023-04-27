@@ -47,8 +47,6 @@ alpha;CodeService
 alpha;CodeService
 internal;BisCodeSpecIndexProps
 internal;FontIndexProps
-internal;InternalCodes = CodesDb & InternalWriteMethods & InternalReadMethods
-internal;InternalWriteMethods 
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions

@@ -23,9 +23,7 @@ export interface CodeService {
   /** the index for external Codes for this CodeService */
   readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb, CodeService.ReadMethods, CodeService.WriteMethods>;
 
-  /** the index for internal Codes for this CodeService
-   * @internal
-   */
+  /** the index for internal Codes for this CodeService */
   readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes, CodeService.InternalReadMethods, CodeService.InternalWriteMethods>;
 
   /**
@@ -78,8 +76,8 @@ export namespace CodeService {
     reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
 
     /**
-   * Attempt to reserve the next available code for a code sequence and scope.
-   */
+     * Attempt to reserve the next available code for a code sequence and scope.
+     */
     reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
 
     /**
@@ -160,16 +158,17 @@ export namespace CodeService {
 
   export type CodesDb = VersionedSqliteDb & WriteMethods & ReadMethods;
 
-  /**  @internal */
   export interface InternalWriteMethods extends WriteMethods {
+    /**  @internal */
     reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
+    /**  @internal */
     reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
   }
   export interface InternalReadMethods extends ReadMethods {
+    /**  @internal */
     verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
   }
 
-  /**  @internal */
   export type InternalCodes = CodesDb & InternalWriteMethods & InternalReadMethods;
 
   /** @internal */

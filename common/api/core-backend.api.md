@@ -989,7 +989,6 @@ export interface CodeService {
     readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb, CodeService.ReadMethods, CodeService.WriteMethods>;
     // (undocumented)
     initialize(iModel: IModelDb): Promise<void>;
-    // @internal
     readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes, CodeService.InternalReadMethods, CodeService.InternalWriteMethods>;
     verifyCode(props: CodeService.ElementCodeProps): void;
 }
@@ -1071,18 +1070,18 @@ export namespace CodeService {
         id?: number;
     }
     export function getSequence(name: string): CodeSequence;
-    // @internal (undocumented)
+    // (undocumented)
     export type InternalCodes = CodesDb & InternalWriteMethods & InternalReadMethods;
     // (undocumented)
     export interface InternalReadMethods extends ReadMethods {
-        // (undocumented)
+        // @internal (undocumented)
         verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export interface InternalWriteMethods extends WriteMethods {
-        // (undocumented)
+        // @internal (undocumented)
         reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
-        // (undocumented)
+        // @internal (undocumented)
         reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
     }
     export type IterationReturn = void | "stop";
