@@ -290,8 +290,8 @@ describe("exportGraphics", () => {
       streamBuilder.appendGeometryParamsChange(geometryParams);
       streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
       const scaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
-      testUVParamExport(scaledGeom, new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]), "export with scaled texture", false);  // current behavior seems wrong
-      testUVParamExport(scaledGeom, rawUVParams, "export with scaled texture and rawParams override", true);
+      testUVParamExport(scaledGeom, new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]), "export scaled, v-inverted params", false);
+      testUVParamExport(scaledGeom, rawUVParams, "export scaled texture with rawParams override", true);
     }
 
     if ("unscaled texture") {
@@ -302,8 +302,8 @@ describe("exportGraphics", () => {
       streamBuilder.appendGeometryParamsChange(geometryParams);
       streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
       const unscaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
-      testUVParamExport(unscaledGeom, new Float32Array([1, 2, 0, 1, 0, 2]), "export with unscaled texture", false);  // current behavior seems wrong
-      testUVParamExport(unscaledGeom, rawUVParams, "export with unscaled texture and rawParams override", true);
+      testUVParamExport(unscaledGeom, new Float32Array([1, 2, 0, 1, 0, 2]), "export unscaled, v-inverted params", false);
+      testUVParamExport(unscaledGeom, rawUVParams, "export unscaled texture with rawParams override", true);
     }
   });
 
