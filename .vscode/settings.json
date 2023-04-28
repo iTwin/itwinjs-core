@@ -6,19 +6,16 @@
     "source.fixAll.eslint": true,
     "source.fixAll.markdownlint": true
   },
-  // "editor.formatOnSave": true,
+  "editor.formatOnSave": true,
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
   "eslint.debug": true,
   "eslint.enable": true,
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
-  // "eslint.nodePath": "common/temp/node_modules/eslint",
-  "eslint.nodePath": "./node_modules",
   "eslint.options": {
     "overrideConfigFile": "./package.json",
-    "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin",
-    // "resolvePluginsRelativeTo": "common/temp/node_modules/",
+    "resolvePluginsRelativeTo": "../../common/temp/node_modules/.pnpm/@itwin+eslint-plugin@*/node_modules",
     "useEslintrc": false
   },
   "eslint.packageManager": "pnpm",
@@ -35,7 +32,6 @@
       "mode": "auto"
     }
   ],
-  // "eslint.useESLintClass": true,
   "files.associations": {
     ".nycrc": "json",
     "*.snap": "javascript",
