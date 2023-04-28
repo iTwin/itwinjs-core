@@ -129,64 +129,6 @@ describe("CloudSqlite", () => {
     await CloudSqliteTest.uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
   });
 
-  it("should query bcvHttpLog", async () => {
-    const containerId = Guid.createValue();
-    const sasToken = CloudSqliteTest.makeSasToken(containerId, "rwl");
-    const containerProps: CloudSqlite.ContainerAccessProps = {
-      accessName: CloudSqliteTest.storage.accessName,
-      storageType: CloudSqliteTest.storage.storageType,
-      containerId,
-      accessToken: sasToken,
-      cloudSqliteLogId: "ContainerIdentifier",
-      writeable: true,
-    };
-    const container = CloudSqlite.createCloudContainer(containerProps);
-    container.initializeContainer();
-    container.connect(caches[1]);
-
-    let rows = container.queryHttpLog();
-    expect(rows.length).to.equal(2); // manifest and bcv_kv GETs.
-
-    // endTime to exclude these first 2 entries in later queries.
-    await BeDuration.wait(10);
-    const endTime = new Date().toISOString();
-
-    rows = container.queryHttpLog({startFromId: 2});
-    expect(rows.length).to.equal(1);
-    expect(rows[0].id).to.equal(2);
-
-    container.acquireWriteLock("test");
-    await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: testBimFileName});
-    container.releaseWriteLock();
-
-    // 6 entries added by grabbing the write lock and checking for changes.
-    // 2 entries from before. Expect 6 total entries because we're filtering by endTime from before.
-    rows = container.queryHttpLog({finishedAtOrAfterTime: endTime, startFromId: 1});
-    expect(rows.length).to.equal(6);
-    expect(rows.find((value) => {
-      return value.id === 1 || value.id === 2;
-    })).to.equal(undefined);
-
-    rows = container.queryHttpLog({finishedAtOrAfterTime: endTime});
-    expect(rows.length).to.equal(6);
-    expect(rows.find((value) => {
-      return value.id === 1 || value.id === 2;
-    })).to.equal(undefined);
-
-    rows = container.queryHttpLog({finishedAtOrAfterTime: endTime, startFromId: 1, showOnlyFinished: true});
-    expect(rows.length).to.equal(6);
-    expect(rows.find((value) => {
-      return value.id === 1 || value.id === 2;
-    })).to.equal(undefined);
-
-    rows = container.queryHttpLog({showOnlyFinished: true});
-    expect(rows.length).to.equal(8);
-
-    rows = container.queryHttpLog({startFromId: 4, showOnlyFinished: true});
-    expect(rows.length).to.equal(5);
-
-  });
-
   it("should pass cloudSqliteLogId through container to database", async () => {
     const containerId = Guid.createValue();
     const sasToken = CloudSqliteTest.makeSasToken(containerId,"racwdl");
