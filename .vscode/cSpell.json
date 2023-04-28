@@ -196,6 +196,7 @@
         "lstyle",
         "Manip",
         "Mapbox",
+        "maptype",
         "memoization",
         "memoized",
         "Memoizer",
