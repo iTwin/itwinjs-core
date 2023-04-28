@@ -6,11 +6,11 @@
 import { expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { emptyDirSync, existsSync, mkdirsSync, removeSync } from "fs-extra";
-import { basename, join } from "path";
+import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
