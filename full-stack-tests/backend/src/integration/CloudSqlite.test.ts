@@ -101,6 +101,7 @@ describe("CloudSqlite", () => {
   let caches: CloudSqlite.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
+  let testBimFileName: string;
   const user = "CloudSqlite test";
   const user2 = "CloudSqlite test2";
 
@@ -111,7 +112,7 @@ describe("CloudSqlite", () => {
 
     expect(caches[0].isDaemon).false;
 
-    const testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
+    testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
     const imodel = SnapshotDb.openFile(testBimFileName);
     testBimGuid = imodel.iModelId;
     imodel.close();
